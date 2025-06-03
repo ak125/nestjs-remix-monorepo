@@ -96,7 +96,7 @@ export default function Login() {
                     inputProps={getInputProps(fields.email, {
                         type: 'email',
                     })}
-                    labelsProps={{
+                    labelProps={{
                         children: 'Adresse e-email',
                     }}
                     errors={fields.email.errors}
@@ -106,7 +106,7 @@ export default function Login() {
                     inputProps={getInputProps(fields.password, {
                         type: 'password',
                     })}
-                    labelsProps={{
+                    labelProps={{
                         children: 'Mot de passe',
                     }}
                     errors={fields.password.errors}

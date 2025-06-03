@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { Bell, ReceiptEuro, UserRound } from 'lucide-react';
-import { useOptionalUser } from "~/root";
+import { useOptionalUser } from "../root";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
@@ -15,7 +15,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
         {user ? <span>{user.name}</span> : null}
 
         <Link 
-          to='/' 
+          to='/my-services' 
           className="hover:text-blue-200 transition-colors"
           aria-label="Factures"
         >
