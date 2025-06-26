@@ -1,0 +1,39 @@
+{
+  "version": "2.0",
+  "generator": "MCP Context-7",
+  "source": {
+    "type": "PHP Legacy",
+    "files": 245,
+    "path": "legacy-php"
+  },
+  "output": {
+    "backend": "NestJS",
+    "frontend": "Remix",
+    "types": "TypeScript",
+    "validation": "Zod/class-validator"
+  },
+  "modules": [
+    "authentication",
+    "ecommerce",
+    "catalog",
+    "blog",
+    "errors",
+    "config",
+    "auth",
+    "cart",
+    "stock",
+    "users"
+  ],
+  "features": {
+    "smartScoring": true,
+    "autoCorrection": true,
+    "typeGeneration": true,
+    "dtoValidation": true
+  },
+  "stats": {
+    "totalArtifacts": 316,
+    "backendFiles": 188,
+    "frontendRoutes": 46,
+    "sharedTypes": 82
+  }
+}
