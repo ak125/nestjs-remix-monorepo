@@ -1,7 +1,7 @@
 # 📦 INDEX DES MODULES MCP GÉNÉRÉS
 
 ## 🎯 Vue d'ensemble
-- **Date de génération**: 2025-06-26 23:40:23
+- **Date de génération**: 2025-06-26 23:43:45
 - **Source**: Migration MCP depuis PHP Legacy (245 fichiers)
 - **Total modules**: 10
 - **Total artefacts**: 316+ fichiers
