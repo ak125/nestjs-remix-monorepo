@@ -1,0 +1,50 @@
+{
+  "name": "nestjs-remix-monorepo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "turbo test",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "start": "cd backend && npm run start",
+    "clean-node-modules": "find . -type d -name 'node_modules' -exec rm -rf {} + && find . -name 'package-lock.json' -exec rm -f {} +",
+    "clean-turbo-cache": "find . -name '.turbo' -type d -exec rm -rf {} +",
+    "pipeline:full": "node scripts/mcp-orchestrator.js",
+    "migrate:auto": "node scripts/auto-migrate.js",
+    "audit:full": "node ../audit-migration-exhaustif.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "npm@10.8.2",
+  "description": "",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.4.1",
+    "turbo": "^2.2.3",
+    "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0",
+    "@remix-run/dev": "^2.14.0",
+    "@remix-run/express": "^2.14.0",
+    "@remix-run/node": "^2.14.0",
+    "@remix-run/react": "^2.14.0",
+    "@remix-run/serve": "^2.14.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "prisma": "^6.1.0",
+    "remix-flat-routes": "^0.6.5",
+    "tailwindcss": "^3.4.15",
+    "vite": "^5.4.11"
+  }
+}
