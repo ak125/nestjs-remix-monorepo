@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database/database.module';
 import { AuthModule } from '../auth/auth.module';
+import { CacheModule } from '../cache/cache.module';
 import { RemixService } from './remix.service';
 
 @Module({
-  imports: [DatabaseModule, AuthModule],
+  imports: [DatabaseModule, AuthModule, CacheModule],
   providers: [RemixService],
   exports: [RemixService],
 })

@@ -16,9 +16,14 @@ export const getOptionalUser = async ({ context }: { context: AppLoadContext }) 
     
     const user = authentictedUserSchema.optional().nullable().parse(context.user);
     if (user) {
-      return await context.remixService.getUser({
-        userId: user.id 
-      });
+      try {
+        return await context.remixService.getUser({
+          userId: user.id 
+        });
+      } catch (error) {
+        console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+        return null;
+      }
     }
     return null;
   } catch (error) {
@@ -33,4 +38,22 @@ export const requireUser = async ({ context }: { context: AppLoadContext }) => {
     throw redirect('/login');
   }
   return user;
+}
+
+export const requireUserWithRedirect = async ({ request, context }: { request: Request, context: AppLoadContext }) => {
+  const user = await getOptionalUser({ context })
+  if (!user) {
+    const url = new URL(request.url);
+    const redirectTo = url.pathname + url.search;
+    throw redirect(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
+  return user;
+}
+
+export const redirectIfAuthenticated = async ({ context }: { context: AppLoadContext }) => {
+  const user = await getOptionalUser({ context })
+  if (user) {
+    throw redirect('/');
+  }
+  return null;
 }

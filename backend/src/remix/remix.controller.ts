@@ -16,14 +16,29 @@ export class RemixController {
   ) {
     console.log('--- RemixController handler ---');
     console.log('Request URL:', request.url);
+    
+    // Ne pas capturer les routes /api/*
+    if (request.url.startsWith('/api/')) {
+      console.log('🔀 Skipping API route, calling next()');
+      return next();
+    }
+    
     console.log('Request user:', request.user);
     console.log('Request session:', request.session);
+    
+    // Debug: Vérifier si le body est disponible
+    if (request.method === 'POST') {
+      console.log('🔍 DEBUG: POST request body:', request.body);
+      console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
+    }
     
     return createRequestHandler({
       build: await getServerBuild(),
       getLoadContext: () => ({
         user: request.user,
         remixService: this.remixService,
+        // Passer le body parsé par Express
+        parsedBody: request.body,
       }),
     })(request, response, next);
   }

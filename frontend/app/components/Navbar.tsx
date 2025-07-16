@@ -51,6 +51,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           <>
             <Link className='text-xs' to='/login'>Connexion</Link>
             <Link className='text-xs' to='/register'>Inscription</Link>
+            <Link className='text-xs' to='/forgot-password'>Mot de passe oublié</Link>
           </>
         )}
             </div>

@@ -5,6 +5,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthModule } from './auth/auth.module';
 import { RemixModule } from './remix/remix.module';
 import { DatabaseModule } from './database/database.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { DatabaseModule } from './database/database.module';
     DatabaseModule,
     AuthModule,
     RemixModule,
+    UsersModule,
   ],
   controllers: [AuthController, RemixController],
   providers: [],

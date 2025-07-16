@@ -60,20 +60,26 @@ export class SupabaseRestService {
 
   async findUserByEmail(email: string): Promise<User | null> {
     try {
-      const response = await fetch(
-        `${this.baseUrl}/___xtr_customer?cst_mail=eq.${email}&select=*`,
-        {
-          method: 'GET',
-          headers: this.headers,
-        },
-      );
+      console.log(`🔍 findUserByEmail: ${email}`);
+      const url = `${this.baseUrl}/___xtr_customer?cst_mail=eq.${email}&select=*`;
+      console.log(`📡 URL: ${url}`);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
 
+      console.log(`📈 Response status: ${response.status}`);
+      
       if (!response.ok) {
         console.error('Erreur Supabase:', response.status, response.statusText);
         return null;
       }
 
       const users = await response.json();
+      console.log(`👥 Users found: ${users.length}`);
+      console.log(`📄 Users data:`, users);
+      
       return users.length > 0 ? users[0] : null;
     } catch (error) {
       console.error('Erreur lors de la recherche utilisateur:', error);
@@ -228,24 +234,24 @@ export class SupabaseRestService {
   }
 
   async getUserById(userId: string): Promise<User | null> {
+    console.log('--- Début de getUserById ---');
+    console.log('ID utilisateur recherché:', userId);
+
     try {
-      console.log('--- Début de getUserById ---');
-      console.log('ID utilisateur recherché:', userId);
-      
       const response = await fetch(
-        `${this.baseUrl}/___xtr_customer?cst_id=eq.${userId}&select=*`,
+        `${this.baseUrl}/___xtr_customer?select=*&cst_id=eq.${userId}`,
         {
           method: 'GET',
-          headers: this.headers,
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: this.supabaseServiceKey,
+            Authorization: `Bearer ${this.supabaseServiceKey}`,
+          },
         },
       );
 
       if (!response.ok) {
-        console.error(
-          'Erreur récupération utilisateur:',
-          response.status,
-          response.statusText,
-        );
+        console.error('Erreur HTTP:', response.status, response.statusText);
         return null;
       }
 
@@ -264,5 +270,109 @@ export class SupabaseRestService {
       console.error('Erreur lors de la récupération utilisateur:', error);
       return null;
     }
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    console.log('--- Début de hashPassword ---');
+    try {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      console.log('Mot de passe hashé avec succès');
+      return hashedPassword;
+    } catch (error) {
+      console.error('Erreur lors du hashage du mot de passe:', error);
+      throw error;
+    }
+  }
+
+  async updateUserPassword(email: string, hashedPassword: string): Promise<boolean> {
+    console.log('--- Début de updateUserPassword ---');
+    console.log('Email:', email);
+
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/___xtr_customer?cst_mail=eq.${email}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: this.supabaseServiceKey,
+            Authorization: `Bearer ${this.supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            cst_pswd: hashedPassword,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        console.error('Erreur HTTP:', response.status, response.statusText);
+        return false;
+      }
+
+      console.log('Mot de passe mis à jour avec succès');
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du mot de passe:', error);
+      return false;
+    }
+  }
+
+  async updateUserProfile(userId: string, updates: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    tel?: string;
+    address?: string;
+    city?: string;
+    zipCode?: string;
+    country?: string;
+  }): Promise<User | null> {
+    console.log('--- Début de updateUserProfile ---');
+    console.log('User ID:', userId);
+    console.log('Updates:', updates);
+
+    try {
+      const updateData: any = {};
+
+      if (updates.firstName) updateData.cst_fname = updates.firstName;
+      if (updates.lastName) updateData.cst_name = updates.lastName;
+      if (updates.email) updateData.cst_mail = updates.email;
+      if (updates.tel) updateData.cst_tel = updates.tel;
+      if (updates.address) updateData.cst_address = updates.address;
+      if (updates.city) updateData.cst_city = updates.city;
+      if (updates.zipCode) updateData.cst_zip_code = updates.zipCode;
+      if (updates.country) updateData.cst_country = updates.country;
+
+      const response = await fetch(
+        `${this.baseUrl}/___xtr_customer?cst_id=eq.${userId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: this.supabaseServiceKey,
+            Authorization: `Bearer ${this.supabaseServiceKey}`,
+          },
+          body: JSON.stringify(updateData),
+        },
+      );
+
+      if (!response.ok) {
+        console.error('Erreur HTTP:', response.status, response.statusText);
+        return null;
+      }
+
+      // Récupérer l'utilisateur mis à jour
+      const updatedUser = await this.getUserById(userId);
+      console.log('Profil mis à jour avec succès:', updatedUser);
+      return updatedUser;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du profil:', error);
+      return null;
+    }
+  }
+
+  async findUserById(userId: string): Promise<User | null> {
+    return await this.getUserById(userId);
   }
 }

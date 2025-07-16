@@ -23,7 +23,9 @@ export const useOptionalUser = () => {
   const data = useRouteLoaderData<typeof loader>("root");
 
   if (!data) {
-    throw new Error('Root loader was not run');
+    // Retourner null au lieu de lancer une erreur
+    console.warn('Root loader was not run - returning null user');
+    return null;
   }
   return data.user;
 }

@@ -1,10 +1,14 @@
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { getOptionalUser } from "~/server/auth.server";
+import { useSearchParams } from "@remix-run/react";
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const user = await getOptionalUser({ context });
     if (user) {
-        return redirect('/');
+        // Rediriger vers la page demandée ou le profil par défaut
+        const url = new URL(request.url);
+        const redirectTo = url.searchParams.get('redirectTo') || '/profile';
+        return redirect(redirectTo);
     }
     return null;
 };
@@ -15,9 +19,38 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 };
 
 export default function Register() {
+    const [searchParams] = useSearchParams();
+    const error = searchParams.get("error");
+
     return (
         <div className='max-w-[600px] mx-auto'>
             <h1>Création de compte</h1>
+            
+            <div className="mb-6 p-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200">
+                ℹ️ <strong>Information :</strong> Après avoir créé votre compte, vous serez automatiquement connecté et redirigé vers la page d'accueil.
+            </div>
+
+            {error && (
+                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg border border-red-200">
+                    {error === "user_exists" && (
+                        <>
+                            ⚠️ <strong>Utilisateur existant :</strong> Un compte avec cette adresse email existe déjà. 
+                            <a href="/login" className="underline ml-2">Se connecter</a>
+                        </>
+                    )}
+                    {error === "creation_failed" && (
+                        <>
+                            ❌ <strong>Erreur :</strong> Impossible de créer le compte. Veuillez réessayer.
+                        </>
+                    )}
+                    {error === "server_error" && (
+                        <>
+                            🔧 <strong>Erreur serveur :</strong> Problème technique temporaire. Veuillez réessayer dans quelques instants.
+                        </>
+                    )}
+                </div>
+            )}
+            
             <form
                 method='POST'
                 action='/auth/register'
