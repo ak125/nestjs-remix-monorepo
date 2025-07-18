@@ -4,7 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://MASSDOC_owner:Fv4Eang6HxBb@ep-young-haze-a2gss4oh-pooler.eu-central-1.aws.neon.tech/MASSDOC?sslmode=require"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -24,4 +25,78 @@ model Session {
   userAgent    String?
   sessionToken String  @unique
   user         User    @relation(fields: [userId], references: [id])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique @map("order_number")
+  customerId    String      @map("customer_id")
+  status        OrderStatus @default(PENDING)
+  paymentMethod PaymentMethod @map("payment_method")
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  
+  // Adresses
+  billingAddress  Json @map("billing_address")
+  deliveryAddress Json @map("delivery_address")
+  
+  // Montants
+  totalAmountHT  Float @map("total_amount_ht")
+  taxAmount      Float @map("tax_amount")
+  totalAmountTTC Float @map("total_amount_ttc")
+  shippingCost   Float @default(0) @map("shipping_cost")
+  
+  // Métadonnées
+  customerNotes  String? @map("customer_notes")
+  internalNotes  String? @map("internal_notes")
+  
+  // Dates
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  shippedAt    DateTime? @map("shipped_at")
+  deliveredAt  DateTime? @map("delivered_at")
+  
+  // Relations
+  orderLines   OrderLine[]
+  
+  @@map("orders")
+}
+
+model OrderLine {
+  id              String @id @default(cuid())
+  orderId         String @map("order_id")
+  productId       String @map("product_id")
+  productName     String @map("product_name")
+  productReference String @map("product_reference")
+  quantity        Int
+  unitPrice       Float @map("unit_price")
+  totalPrice      Float @map("total_price")
+  
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@map("order_lines")
+}
+
+enum OrderStatus {
+  PENDING
+  VALIDATED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  BANK_TRANSFER
+  PAYPAL
+  CASH_ON_DELIVERY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }

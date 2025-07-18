@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { RemixModule } from './remix/remix.module';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     RemixModule,
     UsersModule,
+    OrdersModule,
   ],
   controllers: [AuthController, RemixController],
   providers: [],

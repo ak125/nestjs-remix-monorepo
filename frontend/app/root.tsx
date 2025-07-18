@@ -2,7 +2,7 @@ import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
 import { Footer } from "./components/Footer";
-import { Navbar } from "./components/Navbar";
+import Navbar from "./components/ui/navbar";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 import logo from "./routes/_assets/logo-automecanik-dark.png";
@@ -38,8 +38,11 @@ declare module "@remix-run/node" {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const data = useRouteLoaderData("root") as { user: any } | undefined;
+  const user = data?.user || null;
+  
   return (
-    <html lang="en" className="h-full">
+    <html lang="fr" className="h-full">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -48,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full bg-gray-100">
         <div className="min-h-screen flex flex-col">
-          <Navbar logo={logo} />
+          <Navbar user={user} />
           <main className="flex-grow flex flex-col">
             <div className="flex-grow">
               {children}

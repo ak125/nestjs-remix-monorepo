@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound } from 'lucide-react';
+import { Bell, ReceiptEuro, UserRound, Package } from 'lucide-react';
 import { useOptionalUser } from "~/root";
 
 export const Navbar = ({ logo }: { logo: string }) => {
@@ -13,6 +13,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
       />
       <div className='flex gap-4'>
         {user ? <span>{user.firstName} {user.lastName}</span> : null}
+
+        <Link 
+          to='/orders' 
+          className="hover:text-blue-200 transition-colors"
+          aria-label="Commandes"
+        >
+          <Package className="flex-shrink-0" />
+        </Link>
 
         <Link 
           to='/' 

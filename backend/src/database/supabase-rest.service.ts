@@ -25,6 +25,122 @@ export interface User {
   cst_is_cpy?: string;
 }
 
+// Interface pour la table ___xtr_order (structure complète)
+export interface Order {
+  ord_id: string;
+  ord_cst_id: string;
+  ord_cba_id: string;
+  ord_cda_id: string;
+  ord_date: string;
+  ord_amount_ht: string;
+  ord_deposit_ht: string;
+  ord_shipping_fee_ht: string;
+  ord_total_ht: string;
+  ord_tva: string;
+  ord_amount_ttc: string;
+  ord_deposit_ttc: string;
+  ord_shipping_fee_ttc: string;
+  ord_total_ttc: string;
+  ord_is_pay: string;
+  ord_date_pay: string;
+  ord_da_id: string;
+  ord_info: string;
+  ord_dept_id: string;
+  ord_ords_id: string;
+  ord_parent: string;
+  ord_link: string;
+  ord_link_type: string;
+}
+
+// Interface pour les lignes de commande basée sur la table ___xtr_order_line
+export interface OrderLine {
+  orl_id: string;
+  orl_ord_id: string;
+  orl_pg_id: string;
+  orl_pg_name: string;
+  orl_pm_id: string;
+  orl_pm_name: string;
+  orl_art_ref: string;
+  orl_art_ref_clean: string;
+  orl_art_price_buy_unit_public_ht: string;
+  orl_art_price_buy_unit_public_ttc: string;
+  orl_art_price_buy_discount: string;
+  orl_art_price_buy_unit_ht: string;
+  orl_art_price_buy_unit_ttc: string;
+  orl_art_price_sell_margin: string;
+  orl_art_price_sell_unit_ht: string;
+  orl_art_price_sell_unit_ttc: string;
+  orl_art_deposit_unit_ht: string;
+  orl_art_deposit_unit_ttc: string;
+  orl_art_quantity: string;
+  orl_art_price_buy_ht: string;
+  orl_art_price_buy_ttc: string;
+  orl_art_price_sell_ht: string;
+  orl_art_price_sell_ttc: string;
+  orl_art_deposit_ht: string;
+  orl_art_deposit_ttc: string;
+  orl_spl_id: string;
+  orl_spl_name: string;
+  orl_spl_date: string;
+  orl_spl_price_buy_unit_ht: string;
+  orl_spl_price_buy_unit_ttc: string;
+  orl_spl_price_buy_ht: string;
+  orl_spl_price_buy_ttc: string;
+  orl_website_url: string;
+  orl_orls_id: string;
+  orl_equiv_id: string;
+}
+
+// Interface pour les statuts de commande basée sur la table ___xtr_order_status
+export interface OrderStatus {
+  ords_id: string;
+  ords_named: string;
+  ords_action: string;
+  ords_color: string;
+  ords_dept_id: string;
+}
+
+// Interface pour les statuts des lignes de commande basée sur la table ___xtr_order_line_status
+export interface OrderLineStatus {
+  orls_id: string;
+  orls_name: string;
+  orls_action: string;
+  orls_color: string;
+  orls_dept_id: string;
+}
+
+// Interface pour les adresses de facturation client basée sur la table ___xtr_customer_billing_address
+export interface CustomerBillingAddress {
+  cba_id: string;
+  cba_cst_id: string;
+  cba_mail: string;
+  cba_civility: string;
+  cba_name: string;
+  cba_fname: string;
+  cba_address: string;
+  cba_zip_code: string;
+  cba_city: string;
+  cba_country: string;
+  cba_tel: string;
+  cba_gsm: string;
+}
+
+// Interface pour les adresses de livraison client basée sur la table ___xtr_customer_delivery_address
+export interface CustomerDeliveryAddress {
+  cda_id: string;
+  cda_cst_id: string;
+  cda_mail: string;
+  cda_civility: string;
+  cda_name: string;
+  cda_fname: string;
+  cda_address: string;
+  cda_zip_code: string;
+  cda_city: string;
+  cda_country: string;
+  cda_tel: string;
+  cda_gsm: string;
+}
+
 @Injectable()
 export class SupabaseRestService {
   private readonly supabaseUrl: string;
@@ -374,5 +490,374 @@ export class SupabaseRestService {
 
   async findUserById(userId: string): Promise<User | null> {
     return await this.getUserById(userId);
+  }
+
+  // ======= MÉTHODES ORDERS COMPLÈTES AVEC TOUTES LES TABLES =======
+
+  async getOrdersWithAllRelations(
+    page: number = 1,
+    limit: number = 10,
+    filters?: {
+      status?: string;
+      customerId?: string;
+      dateFrom?: string;
+      dateTo?: string;
+    }
+  ): Promise<{ orders: any[]; total: number }> {
+    try {
+      console.log(`🔍 getOrdersWithAllRelations: page=${page}, limit=${limit}`);
+      
+      const offset = (page - 1) * limit;
+      
+      // Construire la requête avec tous les filtres
+      let query = `${this.baseUrl}/___xtr_order?select=*`;
+      
+      if (filters?.status) {
+        query += `&ord_ords_id=eq.${filters.status}`;
+      }
+      if (filters?.customerId) {
+        query += `&ord_cst_id=eq.${filters.customerId}`;
+      }
+      if (filters?.dateFrom) {
+        query += `&ord_date=gte.${filters.dateFrom}`;
+      }
+      if (filters?.dateTo) {
+        query += `&ord_date=lte.${filters.dateTo}`;
+      }
+      
+      query += `&order=ord_date.desc&offset=${offset}&limit=${limit}`;
+      
+      console.log(`📡 Query: ${query}`);
+      
+      const response = await fetch(query, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur Supabase:', response.status, response.statusText);
+        return { orders: [], total: 0 };
+      }
+
+      const orders = await response.json();
+      
+      // Enrichir chaque commande avec toutes les relations
+      const enrichedOrders = await Promise.all(
+        orders.map(async (order: any) => {
+          // Récupérer le statut de commande
+          const statusDetails = await this.getOrderStatusById(order.ord_ords_id);
+          
+          // Récupérer les informations client
+          const customer = await this.getUserById(order.ord_cst_id);
+          
+          // Récupérer l'adresse de facturation
+          const billingAddress = await this.getCustomerBillingAddress(order.ord_cba_id);
+          
+          // Récupérer l'adresse de livraison
+          const deliveryAddress = await this.getCustomerDeliveryAddress(order.ord_cda_id);
+          
+          // Récupérer les lignes de commande avec leurs statuts
+          const orderLines = await this.getOrderLinesWithStatus(order.ord_id);
+          
+          return {
+            ...order,
+            statusDetails,
+            customer,
+            billingAddress,
+            deliveryAddress,
+            orderLines,
+            // Calculer des statistiques
+            totalLines: orderLines.length,
+            totalQuantity: orderLines.reduce((sum: number, line: any) => 
+              sum + parseInt(line.orl_art_quantity || '0'), 0),
+          };
+        })
+      );
+
+      // Compter le total (sans pagination)
+      const countQuery = `${this.baseUrl}/___xtr_order?select=count`;
+      const countResponse = await fetch(countQuery, {
+        method: 'GET',
+        headers: this.headers,
+      });
+      
+      const countResult = await countResponse.json();
+      const total = countResult[0]?.count || 0;
+
+      console.log(`✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`);
+      return {
+        orders: enrichedOrders,
+        total: total
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des commandes enrichies:', error);
+      return { orders: [], total: 0 };
+    }
+  }
+
+  async getOrderStatusById(statusId: string): Promise<OrderStatus | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order_status?ords_id=eq.${statusId}&select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération statut:', response.status);
+        return null;
+      }
+
+      const statuses = await response.json();
+      return statuses.length > 0 ? statuses[0] : null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du statut:', error);
+      return null;
+    }
+  }
+
+  async getAllOrderStatuses(): Promise<OrderStatus[]> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order_status?select=*&order=ords_id.asc`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération statuts:', response.status);
+        return [];
+      }
+
+      const statuses = await response.json();
+      return statuses;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des statuts:', error);
+      return [];
+    }
+  }
+
+  async getCustomerBillingAddress(addressId: string): Promise<CustomerBillingAddress | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_customer_billing_address?cba_id=eq.${addressId}&select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération adresse facturation:', response.status);
+        return null;
+      }
+
+      const addresses = await response.json();
+      return addresses.length > 0 ? addresses[0] : null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'adresse de facturation:', error);
+      return null;
+    }
+  }
+
+  async getCustomerDeliveryAddress(addressId: string): Promise<CustomerDeliveryAddress | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_customer_delivery_address?cda_id=eq.${addressId}&select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération adresse livraison:', response.status);
+        return null;
+      }
+
+      const addresses = await response.json();
+      return addresses.length > 0 ? addresses[0] : null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'adresse de livraison:', error);
+      return null;
+    }
+  }
+
+  async getOrderLinesWithStatus(orderId: string): Promise<any[]> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order_line?orl_ord_id=eq.${orderId}&select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération lignes commande:', response.status);
+        return [];
+      }
+
+      const orderLines = await response.json();
+      
+      // Enrichir chaque ligne avec son statut
+      const enrichedLines = await Promise.all(
+        orderLines.map(async (line: any) => {
+          const lineStatus = await this.getOrderLineStatusById(line.orl_orls_id);
+          return {
+            ...line,
+            lineStatus
+          };
+        })
+      );
+
+      return enrichedLines;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des lignes de commande:', error);
+      return [];
+    }
+  }
+
+  async getOrderLineStatusById(statusId: string): Promise<OrderLineStatus | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order_line_status?orls_id=eq.${statusId}&select=*`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération statut ligne:', response.status);
+        return null;
+      }
+
+      const statuses = await response.json();
+      return statuses.length > 0 ? statuses[0] : null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du statut de ligne:', error);
+      return null;
+    }
+  }
+
+  async getAllOrderLineStatuses(): Promise<OrderLineStatus[]> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order_line_status?select=*&order=orls_id.asc`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération statuts lignes:', response.status);
+        return [];
+      }
+
+      const statuses = await response.json();
+      return statuses;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des statuts de lignes:', error);
+      return [];
+    }
+  }
+
+  // Méthodes supplémentaires pour orders service
+  async getOrdersByCustomerId(customerId: string): Promise<any[]> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order?ord_cst_id=eq.${customerId}&select=*&order=ord_date.desc`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération commandes client:', response.status);
+        return [];
+      }
+
+      const orders = await response.json();
+      return orders;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des commandes client:', error);
+      return [];
+    }
+  }
+
+  async updateOrder(orderId: string, updates: any): Promise<any> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order?ord_id=eq.${orderId}`;
+      const response = await fetch(url, {
+        method: 'PATCH',
+        headers: {
+          ...this.headers,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (!response.ok) {
+        console.error('Erreur mise à jour commande:', response.status);
+        return null;
+      }
+
+      const updatedOrders = await response.json();
+      return updatedOrders[0] || null;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la commande:', error);
+      return null;
+    }
+  }
+
+  async getOrderStats(): Promise<any> {
+    try {
+      // Statistiques basiques
+      const totalOrdersResponse = await fetch(`${this.baseUrl}/___xtr_order?select=count`, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      const totalOrders = await totalOrdersResponse.json();
+      
+      return {
+        totalOrders: totalOrders[0]?.count || 0,
+        // Ajoutez d'autres statistiques si nécessaire
+      };
+    } catch (error) {
+      console.error('Erreur lors du calcul des statistiques:', error);
+      return { totalOrders: 0 };
+    }
+  }
+
+  async createOrder(orderData: any): Promise<any> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          ...this.headers,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        console.error('Erreur création commande:', response.status);
+        return null;
+      }
+
+      const createdOrders = await response.json();
+      return createdOrders[0] || null;
+    } catch (error) {
+      console.error('Erreur lors de la création de la commande:', error);
+      return null;
+    }
+  }
+
+  async deleteOrder(orderId: string): Promise<boolean> {
+    try {
+      const url = `${this.baseUrl}/___xtr_order?ord_id=eq.${orderId}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: this.headers,
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la commande:', error);
+      return false;
+    }
   }
 }
