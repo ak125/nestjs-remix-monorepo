@@ -22,7 +22,7 @@ export class OrdersCompleteService {
     }
   ): Promise<{ orders: any[]; total: number }> {
     try {
-      console.log(`🔍 OrdersCompleteService.getOrdersWithAllRelations: page=${page}, limit=${limit}`);
+      console.log(`🔍 OrdersCompleteService.getOrdersWithAllRelations: page=${page}, limit=${limit}`, filters);
       
       const offset = (page - 1) * limit;
       
@@ -30,7 +30,14 @@ export class OrdersCompleteService {
       let query = `${this.supabaseService['baseUrl']}/___xtr_order?select=*`;
       
       if (filters?.status) {
-        query += `&ord_ords_id=eq.${filters.status}`;
+        // Mapper les statuts textuels vers les IDs numériques si nécessaire
+        const statusId = await this.mapStatusToId(filters.status);
+        if (statusId) {
+          query += `&ord_ords_id=eq.${statusId}`;
+          console.log(`📝 Filtre statut appliqué: ${filters.status} -> ${statusId}`);
+        } else {
+          console.log(`⚠️ Statut non trouvé: ${filters.status}, affichage de toutes les commandes`);
+        }
       }
       if (filters?.customerId) {
         query += `&ord_cst_id=eq.${filters.customerId}`;
@@ -91,15 +98,36 @@ export class OrdersCompleteService {
         })
       );
 
-      // Compter le total (sans pagination)
-      const countQuery = `${this.supabaseService['baseUrl']}/___xtr_order?select=count`;
+      // Compter le total (sans pagination) - utiliser l'en-tête Content-Range
+      const countQuery = `${this.supabaseService['baseUrl']}/___xtr_order?select=ord_id`;
       const countResponse = await fetch(countQuery, {
-        method: 'GET',
-        headers: this.supabaseService['headers'],
+        method: 'HEAD',
+        headers: {
+          ...this.supabaseService['headers'],
+          'Prefer': 'count=exact'
+        },
       });
       
-      const countResult = await countResponse.json();
-      const total = countResult[0]?.count || 0;
+      const contentRange = countResponse.headers.get('content-range');
+      let total = 0;
+      
+      if (contentRange) {
+        // Format: "0-9/1417" -> on veut le nombre après le "/"
+        const match = contentRange.match(/\/(\d+)$/);
+        if (match) {
+          total = parseInt(match[1], 10);
+        }
+      } else {
+        // Fallback: récupérer tous les IDs et compter
+        const fallbackResponse = await fetch(countQuery, {
+          method: 'GET',
+          headers: this.supabaseService['headers'],
+        });
+        if (fallbackResponse.ok) {
+          const allIds = await fallbackResponse.json();
+          total = allIds.length;
+        }
+      }
 
       console.log(`✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`);
       return {
@@ -385,6 +413,57 @@ export class OrdersCompleteService {
     } catch (error) {
       console.error('Erreur lors du calcul des statistiques:', error);
       return [];
+    }
+  }
+
+  /**
+   * Mapper les statuts textuels vers les IDs numériques
+   */
+  private async mapStatusToId(statusText: string): Promise<string | null> {
+    try {
+      // Récupérer tous les statuts
+      const allStatuses = await this.getAllOrderStatuses();
+      
+      // Chercher par nom/libellé (supposant qu'il y a un champ comme ords_name ou ords_label)
+      const foundStatus = allStatuses.find(status => 
+        status.ords_name?.toLowerCase() === statusText.toLowerCase() ||
+        status.ords_label?.toLowerCase() === statusText.toLowerCase() ||
+        status.ords_libelle?.toLowerCase() === statusText.toLowerCase() ||
+        status.ords_id === statusText
+      );
+      
+      if (foundStatus) {
+        console.log(`✅ Statut trouvé: ${statusText} -> ${foundStatus.ords_id}`);
+        return foundStatus.ords_id;
+      }
+      
+      // Si pas trouvé, essayer les mappings courants
+      const statusMappings: { [key: string]: string } = {
+        'pending': '1',
+        'confirmed': '2',
+        'processing': '3',
+        'shipped': '4',
+        'delivered': '5',
+        'cancelled': '6',
+        'en_attente': '1',
+        'confirme': '2',
+        'en_cours': '3',
+        'expedie': '4',
+        'livre': '5',
+        'annule': '6'
+      };
+      
+      const mappedId = statusMappings[statusText.toLowerCase()];
+      if (mappedId) {
+        console.log(`✅ Statut mappé: ${statusText} -> ${mappedId}`);
+        return mappedId;
+      }
+      
+      console.log(`❌ Statut non trouvé: ${statusText}`);
+      return null;
+    } catch (error) {
+      console.error('Erreur lors du mapping du statut:', error);
+      return null;
     }
   }
 }

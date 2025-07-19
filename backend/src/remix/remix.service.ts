@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import { SupabaseRestService } from '../database/supabase-rest.service';
 import { CacheService } from '../cache/cache.service';
+import { RemixIntegrationService } from './remix-integration.service';
 
 @Injectable()
 export class RemixService {
@@ -9,6 +10,7 @@ export class RemixService {
     public readonly supabaseRestService: SupabaseRestService,
     public readonly auth: AuthService,
     private readonly cacheService: CacheService,
+    public readonly integration: RemixIntegrationService,
   ) {}
 
   public readonly getUser = async ({ userId }: { userId: string }) => {
@@ -174,6 +176,29 @@ export class RemixService {
       return result;
     } catch (error) {
       console.error('Erreur dans changePassword (RemixService):', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Récupérer les commandes via le service d'intégration
+   */
+  public readonly getOrders = async (params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    paymentStatus?: string;
+    search?: string;
+  }) => {
+    console.log('--- Début de getOrders (RemixService) ---');
+    console.log('Paramètres:', params);
+    
+    try {
+      const result = await this.integration.getOrdersForRemix(params);
+      console.log('Résultat getOrders:', result.total, 'commandes trouvées');
+      return result;
+    } catch (error) {
+      console.error('Erreur dans getOrders (RemixService):', error);
       throw error;
     }
   };
