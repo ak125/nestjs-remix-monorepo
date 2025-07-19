@@ -50,13 +50,9 @@ export class StaffService {
     console.log('🔍 StaffService.findAll');
     
     try {
-      const { data } = await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .select('*')
-        .eq('cnfa_activ', '1')
-        .order('cnfa_level', { ascending: false });
-      
-      return data?.map(this.mapToStaffMember) || [];
+      // TODO: Implémenter la récupération via SupabaseRestService
+      console.log('⚠️ StaffService.findAll: Méthode non implémentée - utilisation de données vides');
+      return [];
     } catch (error) {
       console.error('❌ Erreur findAll staff:', error);
       throw error;
@@ -67,14 +63,9 @@ export class StaffService {
     console.log('🔍 StaffService.findById:', id);
     
     try {
-      const { data } = await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .select('*')
-        .eq('cnfa_id', id)
-        .eq('cnfa_activ', '1')
-        .single();
-      
-      return data ? this.mapToStaffMember(data) : null;
+      // TODO: Implémenter la récupération via SupabaseRestService
+      console.log('⚠️ StaffService.findById: Méthode non implémentée - retour null');
+      return null;
     } catch (error) {
       console.error('❌ Erreur findById staff:', error);
       return null;
@@ -85,74 +76,35 @@ export class StaffService {
     console.log('🔍 StaffService.findByLogin:', login);
     
     try {
-      const { data } = await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .select('*')
-        .eq('cnfa_login', login)
-        .eq('cnfa_activ', '1')
-        .single();
-      
-      return data ? this.mapToStaffMember(data) : null;
+      // TODO: Implémenter la récupération via SupabaseRestService
+      console.log('⚠️ StaffService.findByLogin: Méthode non implémentée - retour null');
+      return null;
     } catch (error) {
       console.error('❌ Erreur findByLogin staff:', error);
       return null;
     }
   }
 
-  async create(staffData: Partial<StaffMember>): Promise<StaffMember> {
+  async create(staffData: CreateStaffDto): Promise<StaffMember> {
     console.log('🔧 StaffService.create:', staffData);
     
     try {
-      const hashedPassword = await bcrypt.hash(staffData.password || 'TempPassword123!', 10);
-      const keylog = `STAFF_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const { data } = await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .insert([{
-          cnfa_login: staffData.login,
-          cnfa_pswd: hashedPassword,
-          cnfa_mail: staffData.email,
-          cnfa_keylog: keylog,
-          cnfa_level: staffData.level || 7,
-          cnfa_job: staffData.job || 'Administrateur',
-          cnfa_name: staffData.name,
-          cnfa_fname: staffData.firstName,
-          cnfa_tel: staffData.phone,
-          cnfa_activ: '1',
-          s_id: staffData.departmentId || 'ADM'
-        }])
-        .select()
-        .single();
-      
-      return this.mapToStaffMember(data);
+      // TODO: Implémenter la création via SupabaseRestService
+      console.log('⚠️ StaffService.create: Méthode non implémentée');
+      throw new Error('Méthode non implémentée');
     } catch (error) {
       console.error('❌ Erreur create staff:', error);
       throw error;
     }
   }
 
-  async update(id: string, updates: Partial<StaffMember>): Promise<StaffMember> {
+  async update(id: string, updates: UpdateStaffDto): Promise<StaffMember> {
     console.log('🔧 StaffService.update:', id, updates);
     
     try {
-      const updateData: any = {};
-      
-      if (updates.email) updateData.cnfa_mail = updates.email;
-      if (updates.level) updateData.cnfa_level = updates.level;
-      if (updates.job) updateData.cnfa_job = updates.job;
-      if (updates.name) updateData.cnfa_name = updates.name;
-      if (updates.firstName) updateData.cnfa_fname = updates.firstName;
-      if (updates.phone) updateData.cnfa_tel = updates.phone;
-      if (updates.isActive !== undefined) updateData.cnfa_activ = updates.isActive ? '1' : '0';
-      
-      const { data } = await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .update(updateData)
-        .eq('cnfa_id', id)
-        .select()
-        .single();
-      
-      return this.mapToStaffMember(data);
+      // TODO: Implémenter la mise à jour via SupabaseRestService
+      console.log('⚠️ StaffService.update: Méthode non implémentée');
+      throw new Error('Méthode non implémentée');
     } catch (error) {
       console.error('❌ Erreur update staff:', error);
       throw error;
@@ -163,10 +115,8 @@ export class StaffService {
     console.log('🗑️ StaffService.delete:', id);
     
     try {
-      await this.supabaseRestService.supabase
-        .from('___config_admin')
-        .update({ cnfa_activ: '0' })
-        .eq('cnfa_id', id);
+      // TODO: Implémenter la suppression via SupabaseRestService
+      console.log('⚠️ StaffService.delete: Méthode non implémentée');
     } catch (error) {
       console.error('❌ Erreur delete staff:', error);
       throw error;
