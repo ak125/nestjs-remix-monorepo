@@ -40,12 +40,12 @@ export async function loader({ context }: LoaderFunctionArgs) {
       success: false,
       orders: [],
       total: 0,
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
+      error: error.message
     });
   }
 }
 
-export default function AdminOrdersPage() {
+export default function AdminOrdersSimple() {
   const data = useLoaderData<typeof loader>();
   const orders = data.orders || [];
   
@@ -88,7 +88,7 @@ export default function AdminOrdersPage() {
         {/* Debug info */}
         {!data.success && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <strong>Erreur:</strong> {(data as any).error}
+            <strong>Erreur:</strong> {data.error}
           </div>
         )}
 
