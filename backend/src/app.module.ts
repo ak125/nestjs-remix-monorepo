@@ -7,6 +7,7 @@ import { RemixModule } from './remix/remix.module';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     RemixModule,
     UsersModule,
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [AuthController, RemixController],
   providers: [],
