@@ -46,28 +46,34 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   }
 
   try {
-    // Récupérer les commandes spécifiques à l'utilisateur via l'API customer
-    // Utiliser l'ID utilisateur pour récupérer ses commandes
-    const response = await fetch(`http://localhost:3000/api/orders/customer/${user.id}`);
-    
-    if (!response.ok) {
-      // Si l'API customer ne fonctionne pas, essayer avec l'API générale
-      const fallbackResponse = await fetch(`http://localhost:3000/api/orders?limit=100`);
-      if (!fallbackResponse.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-      const fallbackData = await fallbackResponse.json();
-      // Filtrer côté client pour s'assurer qu'on n'a que les commandes de l'utilisateur
-      const userOrders = fallbackData.orders?.filter((order: Order) => 
-        order.customerId === user.id
-      ) || [];
-      return json<LoaderData>({ orders: userOrders, user });
+    // ✅ Approche intégrée : appel direct au service via Remix
+    if (!context.remixService?.integration) {
+      throw new Error('Service d\'intégration Remix non disponible');
     }
 
-    const data = await response.json();
-    return json<LoaderData>({ orders: data.orders || [], user });
+    console.log('🛒 Récupération des commandes pour l\'utilisateur:', user.id);
+    const result = await context.remixService.integration.getOrdersForRemix({
+      page: 1,
+      limit: 50,
+      // Pour l'instant, récupérer toutes les commandes et filtrer côté client
+      // TODO: Ajouter getUserOrdersForRemix au contrôleur Remix
+    });
+
+    if (!result.success) {
+      console.error('❌ Erreur lors de la récupération des commandes:', result.error);
+      return json<LoaderData>({ orders: [], user });
+    }
+
+    // Filtrer les commandes pour l'utilisateur connecté
+    const userOrders = result.orders?.filter((order: any) => 
+      order.ord_cst_id === user.id || order.customerId === user.id
+    ) || [];
+
+    console.log(`✅ ${userOrders.length} commandes filtrées pour l'utilisateur sur ${result.orders?.length || 0} totales`);
+    return json<LoaderData>({ orders: userOrders, user });
+
   } catch (error) {
-    console.error('Error fetching user orders:', error);
+    console.error('❌ Erreur dans loader my-orders:', error);
     return json<LoaderData>({ orders: [], user });
   }
 };

@@ -302,7 +302,7 @@ export default function UserManagement() {
                     </div>
                   </td>
                 </tr>
-              ) : displayUsers.length === 0 ? (
+              ) : !displayUsers || displayUsers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     Aucun utilisateur trouvé

@@ -6,27 +6,30 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
   const email = formData.get("email");
 
-  if (!email) {
+  if (!email || typeof email !== 'string') {
     return json({ error: "Email is required" }, { status: 400 });
   }
 
-  // Faire la requête au backend
-  const response = await fetch("http://localhost:3000/auth/forgot-password", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
+  // ✅ Approche intégrée : appel direct au service via Remix
+  if (!context.remixService?.integration) {
+    return json({ error: "Service d'intégration non disponible" }, { status: 500 });
+  }
 
-  if (response.ok) {
-    return redirect("/forgot-password?status=sent");
-  } else {
-    return json({ error: "Une erreur est survenue" }, { status: 500 });
+  try {
+    const result = await context.remixService.integration.sendForgotPasswordForRemix(email);
+
+    if (result.success) {
+      return redirect("/forgot-password?status=sent");
+    } else {
+      return json({ error: result.error || "Une erreur est survenue" }, { status: 500 });
+    }
+  } catch (error) {
+    console.error('❌ Erreur forgot password:', error);
+    return json({ error: "Erreur lors de l'envoi" }, { status: 500 });
   }
 };
 

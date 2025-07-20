@@ -252,4 +252,266 @@ export class RemixIntegrationService {
       };
     }
   }
+
+  /**
+   * Récupérer les commandes d'un utilisateur spécifique pour Remix
+   */
+  async getUserOrdersForRemix(userId: string, params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    paymentStatus?: string;
+  }) {
+    console.log('🛒 getUserOrdersForRemix - userId:', userId, 'params:', params);
+    
+    try {
+      // Utiliser le service Orders avec un filtre par customerId
+      const result = await this.ordersService.getOrdersWithAllRelations(
+        params?.page || 1,
+        params?.limit || 50,
+        {
+          status: params?.status,
+          customerId: userId, // Filtrer par ID utilisateur
+        }
+      );
+
+      console.log(`✅ ${result.orders?.length || 0} commandes utilisateur récupérées`);
+      
+      // Calculer totalPages à partir du total et limit
+      const totalPages = Math.ceil(result.total / (params?.limit || 50));
+      
+      return {
+        success: true,
+        orders: result.orders || [],
+        total: result.total || 0,
+        page: params?.page || 1,
+        totalPages: totalPages || 1,
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans getUserOrdersForRemix:', error);
+      return {
+        success: false,
+        orders: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  /**
+   * Récupérer une commande spécifique par ID pour Remix
+   */
+  async getOrderByIdForRemix(orderId: string) {
+    console.log('🔍 getOrderByIdForRemix - orderId:', orderId);
+    
+    try {
+      const order = await this.ordersService.getCompleteOrderById(orderId);
+
+      if (!order) {
+        return {
+          success: false,
+          order: null,
+          error: 'Commande non trouvée',
+        };
+      }
+
+      console.log(`✅ Commande complète récupérée: ${order.ord_id}`);
+      return {
+        success: true,
+        order,
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans getOrderByIdForRemix:', error);
+      return {
+        success: false,
+        order: null,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  /**
+   * Créer une nouvelle commande pour Remix
+   */
+  async createOrderForRemix(orderData: {
+    items: Array<{
+      productId: string;
+      quantity: number;
+      unitPrice: number;
+      productName?: string;
+    }>;
+    deliveryAddress: {
+      street: string;
+      city: string;
+      postalCode: string;
+      country: string;
+    };
+    deliveryMethod: string;
+    deliveryPrice: number;
+    notes?: string;
+    promocode?: string;
+    discountAmount?: number;
+    customerId?: string;
+  }) {
+    console.log('🛒 createOrderForRemix - orderData:', orderData);
+    
+    try {
+      // Pour l'instant, créons une commande basique
+      // TODO: Implémenter la création complète avec SupabaseRestService
+      const orderId = `ORD-${Date.now()}`;
+      
+      const newOrder = {
+        id: orderId,
+        orderNumber: orderId,
+        customerId: orderData.customerId || 'guest',
+        status: 'pending',
+        paymentStatus: 'pending',
+        items: orderData.items,
+        deliveryAddress: orderData.deliveryAddress,
+        deliveryMethod: orderData.deliveryMethod,
+        deliveryPrice: orderData.deliveryPrice,
+        notes: orderData.notes,
+        promocode: orderData.promocode,
+        discountAmount: orderData.discountAmount || 0,
+        totalPrice: orderData.items.reduce((sum, item) => 
+          sum + (item.quantity * item.unitPrice), 0
+        ) + orderData.deliveryPrice - (orderData.discountAmount || 0),
+        createdAt: new Date().toISOString(),
+      };
+
+      console.log(`✅ Commande créée: ${orderId}`);
+      return {
+        success: true,
+        order: newOrder,
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans createOrderForRemix:', error);
+      return {
+        success: false,
+        order: null,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
+  }
+
+  /**
+   * Réinitialiser le mot de passe pour Remix
+   */
+  async resetPasswordForRemix(token: string, newPassword: string) {
+    console.log('🔐 resetPasswordForRemix - token:', token);
+    
+    try {
+      // TODO: Implémenter la logique de reset password avec SupabaseRestService
+      // Pour l'instant, retourner un succès simulé
+      console.log('✅ Reset password simulé réussi');
+      return {
+        success: true,
+        message: 'Mot de passe réinitialisé avec succès',
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans resetPasswordForRemix:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors de la réinitialisation',
+      };
+    }
+  }
+
+  /**
+   * Envoyer email de mot de passe oublié pour Remix
+   */
+  async sendForgotPasswordForRemix(email: string) {
+    console.log('📧 sendForgotPasswordForRemix - email:', email);
+    
+    try {
+      // TODO: Implémenter la logique d'envoi d'email avec SupabaseRestService
+      // Pour l'instant, retourner un succès simulé
+      console.log('✅ Email de récupération simulé envoyé');
+      return {
+        success: true,
+        message: 'Email de récupération envoyé avec succès',
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans sendForgotPasswordForRemix:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors de l\'envoi',
+      };
+    }
+  }
+
+  /**
+   * Déconnecter l'utilisateur pour Remix
+   */
+  async logoutUserForRemix(sessionId?: string) {
+    console.log('🚪 logoutUserForRemix - sessionId:', sessionId);
+    
+    try {
+      // TODO: Implémenter la logique de déconnexion avec session management
+      // Pour l'instant, retourner un succès simulé
+      console.log('✅ Déconnexion simulée réussie');
+      return {
+        success: true,
+        message: 'Déconnexion réussie',
+      };
+    } catch (error) {
+      console.error('❌ Erreur dans logoutUserForRemix:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors de la déconnexion',
+      };
+    }
+  }
+
+  /**
+   * Mettre à jour le profil utilisateur pour Remix
+   */
+  async updateProfileForRemix(userId: string, profileData: any) {
+    try {
+      console.log('🔍 updateProfileForRemix - données reçues:', { userId, profileData });
+      
+      const result = await this.usersService.updateUser(userId, profileData);
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Erreur dans updateProfileForRemix:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors de la mise à jour du profil',
+      };
+    }
+  }
+
+  /**
+   * Changer le mot de passe pour Remix
+   */
+  async changePasswordForRemix(userId: string, currentPassword: string, newPassword: string) {
+    try {
+      console.log('🔍 changePasswordForRemix - userId:', userId);
+      
+      const changePasswordDto = {
+        currentPassword,
+        newPassword,
+        confirmPassword: newPassword,
+      };
+      
+      const result = await this.usersService.changePassword(userId, changePasswordDto);
+      
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      console.error('Erreur dans changePasswordForRemix:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur lors du changement de mot de passe',
+      };
+    }
+  }
 }

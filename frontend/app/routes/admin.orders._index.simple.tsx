@@ -3,8 +3,16 @@ import { useLoaderData } from "@remix-run/react";
 import { useState, useMemo } from 'react';
 import { Package, Users, TrendingUp, Filter, Search, Download, Menu } from 'lucide-react';
 
+// Type pour le retour du loader
+type LoaderData = {
+  success: boolean;
+  orders: any[];
+  total: number;
+  error?: string;
+};
+
 // Loader Remix - exécuté côté serveur
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ context }: LoaderFunctionArgs): Promise<Response> {
   try {
     // Utilisation directe du service NestJS via le contexte
     if (context.remixService?.integration) {
@@ -18,35 +26,34 @@ export async function loader({ context }: LoaderFunctionArgs) {
         return json({
           success: true,
           orders: result.orders,
-          total: result.total
+          total: result.total,
+          error: undefined
         });
       }
     }
     
-    // Fallback : appel HTTP à notre propre API
-    console.log('⚠️ Fallback vers API HTTP');
-    const response = await fetch('http://localhost:3000/api/orders');
-    const data = await response.json();
-    
+    // Fallback : service intégré non disponible
+    console.log('⚠️ Service intégré non disponible');
     return json({
-      success: true,
-      orders: data.orders || [],
-      total: data.total || 0
+      success: false,
+      orders: [],
+      total: 0,
+      error: 'Service intégré non disponible'
     });
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erreur loader:', error);
     return json({
       success: false,
       orders: [],
       total: 0,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Erreur inconnue'
     });
   }
 }
 
 export default function AdminOrdersSimple() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData<LoaderData>();
   const orders = data.orders || [];
   
   console.log('🎯 Remix Loader Data:', {

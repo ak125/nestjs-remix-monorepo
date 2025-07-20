@@ -1,14 +1,39 @@
 /**
  * DTOs pour les commandes automobiles dans le monorepo NestJS Remix
- * Adapté pour les vraies tables: Order, OrderLine avec schéma Prisma
+ * Adapté pour les vraies données de commandes depuis SupabaseRestService
  * Compatible avec les tables legacy: ___xtr_order, ___xtr_order_line
  */
 
 import { z } from 'zod';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// Import des types Prisma existants
-import { OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
+// Types personnalisés pour remplacer les types Prisma
+export enum OrderStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  PROCESSING = 'PROCESSING',
+  SHIPPED = 'SHIPPED',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED'
+}
+
+export enum PaymentMethod {
+  STRIPE = 'STRIPE',
+  CYBERPLUS = 'CYBERPLUS',
+  PAYPAL = 'PAYPAL',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  CASH = 'CASH'
+}
+
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  SUCCEEDED = 'SUCCEEDED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED'
+}
 
 // Schémas de validation pour les données véhicule
 const vehicleRegistrationSchema = z.object({

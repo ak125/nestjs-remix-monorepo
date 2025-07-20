@@ -5,31 +5,30 @@
 
 import { redirect, type ActionFunction } from "@remix-run/node";
 
-export const action: ActionFunction = async ({ request }) => {
-  // Faire un POST vers le contrôleur backend pour déconnecter l'utilisateur
-  try {
-    const response = await fetch(`http://localhost:3000/auth/logout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': request.headers.get('Cookie') || '',
-      },
-    });
+export const action: ActionFunction = async ({ request, context }) => {
+  // ✅ Approche intégrée : appel direct au service via Remix
+  if (!context.remixService?.integration) {
+    return redirect('/?error=service-unavailable');
+  }
 
-    if (response.ok) {
-      // Suivre la redirection du contrôleur backend
+  try {
+    const result = await context.remixService.integration.logoutUserForRemix();
+
+    if (result.success) {
+      // Suivre la redirection vers la page d'accueil
       return redirect('/', {
         headers: {
-          'Set-Cookie': response.headers.get('Set-Cookie') || 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
+          'Set-Cookie': 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
         }
       });
+    } else {
+      console.error('❌ Erreur logout:', result.error);
+      return redirect('/?error=logout-failed');
     }
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error('❌ Erreur dans logout action:', error);
+    return redirect('/?error=logout-error');
   }
-  
-  // Fallback: rediriger vers la page d'accueil
-  return redirect('/');
 };
 
 export default function Logout() {

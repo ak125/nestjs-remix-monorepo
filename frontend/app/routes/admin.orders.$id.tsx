@@ -1,6 +1,28 @@
 /**
  * Page de détails d'une commande avec les vraies données
- * Affiche toutes les informations d'une commande spécifique avec adresses
+ * Affiche toutes leexport const loader: LoaderFunction = async ({ params, context }) => {
+  const orderId = params.id;
+  
+  if (!orderId) {
+    return json<LoaderData>({ order: null, error: "ID de commande manquant" });
+  }
+
+  try {
+    // ✅ Approche intégrée : appel direct au service via Remix
+    if (!context.remixService?.integration) {
+      throw new Error('Service d\'intégration Remix non disponible');
+    }
+
+    console.log('🔍 Récupération de la commande ID:', orderId);
+    const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
+
+    if (!result.success) {
+      console.error('❌ Erreur lors de la récupération de la commande:', result.error);
+      return json<LoaderData>({ order: null, error: result.error });
+    }
+
+    console.log(`✅ Commande récupérée avec succès: ${result.order?.ord_id}`);
+    return json<LoaderData>({ order: result.order });e commande spécifique avec adresses
  */
 
 import { json, type LoaderFunction } from "@remix-run/node";
@@ -80,7 +102,7 @@ interface LoaderData {
   error?: string;
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ params, context }) => {
   const orderId = params.id;
   
   if (!orderId) {
@@ -88,26 +110,29 @@ export const loader: LoaderFunction = async ({ params }) => {
   }
 
   try {
-    const response = await fetch(`http://localhost:3000/api/orders/${orderId}`);
-    
-    if (!response.ok) {
-      if (response.status === 404) {
-        return json<LoaderData>({ order: null, error: "Commande non trouvée" });
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // ✅ Approche intégrée : appel direct au service via Remix
+    if (!context.remixService?.integration) {
+      throw new Error('Service d\'intégration Remix non disponible');
     }
 
-    const order = await response.json();
-    
+    console.log('🔍 Récupération de la commande ID:', orderId);
+    const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
+
+    if (!result.success) {
+      console.error('❌ Erreur lors de la récupération de la commande:', result.error);
+      return json<LoaderData>({ order: null, error: result.error });
+    }
+
+    console.log(`✅ Commande récupérée avec succès: ${result.order?.ord_id}`);
     return json<LoaderData>({
-      order: order,
+      order: result.order,
       error: undefined
     });
   } catch (error) {
-    console.error("Error loading order:", error);
+    console.error("❌ Erreur dans loader admin.orders.$id:", error);
     return json<LoaderData>({ 
       order: null, 
-      error: "Erreur lors du chargement de la commande" 
+      error: error instanceof Error ? error.message : "Erreur lors du chargement de la commande" 
     });
   }
 };

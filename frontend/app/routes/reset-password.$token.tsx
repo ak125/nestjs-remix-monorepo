@@ -16,37 +16,48 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ token });
 };
 
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction = async ({ request, params, context }) => {
   const { token } = params;
   const formData = await request.formData();
   const password = formData.get("password");
   const confirmPassword = formData.get("confirmPassword");
 
+  if (!token) {
+    return json({ error: "Token manquant" }, { status: 400 });
+  }
+
   if (!password || !confirmPassword) {
     return json({ error: "Tous les champs sont requis" }, { status: 400 });
+  }
+
+  if (typeof password !== 'string' || typeof confirmPassword !== 'string') {
+    return json({ error: "Données invalides" }, { status: 400 });
   }
 
   if (password !== confirmPassword) {
     return json({ error: "Les mots de passe ne correspondent pas" }, { status: 400 });
   }
 
-  if (typeof password === 'string' && password.length < 6) {
+  if (password.length < 6) {
     return json({ error: "Le mot de passe doit contenir au moins 6 caractères" }, { status: 400 });
   }
 
-  // Faire la requête au backend
-  const response = await fetch(`http://localhost:3000/auth/reset-password/${token}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ password }),
-  });
+  // ✅ Approche intégrée : appel direct au service via Remix
+  if (!context.remixService?.integration) {
+    return json({ error: "Service d'intégration non disponible" }, { status: 500 });
+  }
 
-  if (response.ok) {
-    return redirect("/login?reset=success");
-  } else {
-    return json({ error: "Token invalide ou expiré" }, { status: 400 });
+  try {
+    const result = await context.remixService.integration.resetPasswordForRemix(token, password);
+
+    if (result.success) {
+      return redirect("/login?reset=success");
+    } else {
+      return json({ error: result.error || "Token invalide ou expiré" }, { status: 400 });
+    }
+  } catch (error) {
+    console.error('❌ Erreur reset password:', error);
+    return json({ error: "Erreur lors de la réinitialisation" }, { status: 500 });
   }
 };
 

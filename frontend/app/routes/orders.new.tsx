@@ -62,7 +62,7 @@ export const loader: LoaderFunction = async ({ context }) => {
   });
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
   
   try {
@@ -75,7 +75,7 @@ export const action: ActionFunction = async ({ request }) => {
     const promocode = formData.get("promocode") as string;
     const discountAmount = parseFloat(formData.get("discountAmount") as string) || 0;
 
-    const orderData: FormData = {
+    const orderData = {
       items,
       deliveryAddress,
       deliveryMethod,
@@ -98,26 +98,24 @@ export const action: ActionFunction = async ({ request }) => {
       }, { status: 400 });
     }
 
-    // Envoyer la requête à l'API
-    const response = await fetch("http://localhost:3000/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(orderData),
-    });
+    // ✅ Approche intégrée : appel direct au service via Remix
+    if (!context.remixService?.integration) {
+      throw new Error('Service d\'intégration Remix non disponible');
+    }
 
-    if (!response.ok) {
-      const errorData = await response.json();
+    console.log('🛒 Création de commande via service intégré');
+    const result = await context.remixService.integration.createOrderForRemix(orderData);
+
+    if (!result.success) {
       return json<ActionData>({ 
-        error: errorData.message || "Erreur lors de la création de la commande" 
+        error: result.error || "Erreur lors de la création de la commande" 
       }, { status: 400 });
     }
 
-    const order = await response.json();
-    return redirect(`/orders/${order.id}`);
+    console.log(`✅ Commande créée avec succès: ${result.order?.id}`);
+    return redirect(`/orders/${result.order?.id}`);
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("❌ Erreur création commande:", error);
     return json<ActionData>({ 
       error: "Erreur lors de la création de la commande" 
     }, { status: 500 });

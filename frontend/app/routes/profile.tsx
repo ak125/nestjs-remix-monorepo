@@ -18,6 +18,11 @@ export const action: ActionFunction = async ({ request, context }) => {
   console.log("🔍 DEBUG: Action POST Profile démarrée");
   
   try {
+    // Vérifier la disponibilité du service d'intégration
+    if (!context.remixService?.integration) {
+      throw new Error('Service d\'intégration non disponible');
+    }
+
     // Utiliser le body parsé par Express au lieu de request.formData()
     const parsedBody = (context as any).parsedBody;
     console.log("🔍 DEBUG: Body parsé par Express:", parsedBody);
@@ -53,14 +58,18 @@ export const action: ActionFunction = async ({ request, context }) => {
       console.log("🔍 DEBUG: Données profil:", profileData);
 
       try {
-        console.log("🔍 DEBUG: Appel updateProfile service...");
-        await context.remixService.updateProfile({
-          userId: user.id,
-          ...profileData
-        });
-        console.log("🔍 DEBUG: updateProfile réussi");
+        console.log("🔍 DEBUG: Appel updateProfileForRemix service...");
+        const result = await context.remixService.integration.updateProfileForRemix(
+          user.id,
+          profileData
+        );
         
-        return json({ success: "Profil mis à jour avec succès" });
+        if (result.success) {
+          console.log("🔍 DEBUG: updateProfile réussi");
+          return json({ success: "Profil mis à jour avec succès" });
+        } else {
+          return json({ error: result.error || "Erreur lors de la mise à jour du profil" }, { status: 500 });
+        }
       } catch (error) {
         console.error('🔍 DEBUG: Erreur updateProfile:', error);
         return json({ error: "Erreur lors de la mise à jour du profil" }, { status: 500 });
@@ -82,15 +91,19 @@ export const action: ActionFunction = async ({ request, context }) => {
       }
 
       try {
-        console.log("🔍 DEBUG: Appel changePassword service...");
-        await context.remixService.changePassword({
-          userId: user.id,
-          currentPassword: passwordData.currentPassword as string,
-          newPassword: passwordData.newPassword as string
-        });
-        console.log("🔍 DEBUG: changePassword réussi");
+        console.log("🔍 DEBUG: Appel changePasswordForRemix service...");
+        const result = await context.remixService.integration.changePasswordForRemix(
+          user.id,
+          passwordData.currentPassword as string,
+          passwordData.newPassword as string
+        );
         
-        return json({ success: "Mot de passe changé avec succès" });
+        if (result.success) {
+          console.log("🔍 DEBUG: changePassword réussi");
+          return json({ success: "Mot de passe changé avec succès" });
+        } else {
+          return json({ error: result.error || "Erreur lors du changement de mot de passe" }, { status: 500 });
+        }
       } catch (error) {
         console.error('🔍 DEBUG: Erreur changePassword:', error);
         return json({ error: "Erreur lors du changement de mot de passe" }, { status: 500 });
