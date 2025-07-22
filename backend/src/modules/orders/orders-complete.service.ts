@@ -7,8 +7,8 @@ export class OrdersCompleteService {
 
   /**
    * Récupérer les commandes avec toutes les relations
-   * Utilise toutes les tables : ___xtr_order, ___xtr_order_line, ___xtr_customer, 
-   * ___xtr_order_status, ___xtr_order_line_status, ___xtr_customer_billing_address, 
+   * Utilise toutes les tables : ___xtr_order, ___xtr_order_line, ___xtr_customer,
+   * ___xtr_order_status, ___xtr_order_line_status, ___xtr_customer_billing_address,
    * ___xtr_customer_delivery_address
    */
   async getOrdersWithAllRelations(
@@ -19,24 +19,31 @@ export class OrdersCompleteService {
       customerId?: string;
       dateFrom?: string;
       dateTo?: string;
-    }
+    },
   ): Promise<{ orders: any[]; total: number }> {
     try {
-      console.log(`🔍 OrdersCompleteService.getOrdersWithAllRelations: page=${page}, limit=${limit}`, filters);
-      
+      console.log(
+        `🔍 OrdersCompleteService.getOrdersWithAllRelations: page=${page}, limit=${limit}`,
+        filters,
+      );
+
       const offset = (page - 1) * limit;
-      
+
       // Construire la requête avec tous les filtres
       let query = `${this.supabaseService['baseUrl']}/___xtr_order?select=*`;
-      
+
       if (filters?.status) {
         // Mapper les statuts textuels vers les IDs numériques si nécessaire
         const statusId = await this.mapStatusToId(filters.status);
         if (statusId) {
           query += `&ord_ords_id=eq.${statusId}`;
-          console.log(`📝 Filtre statut appliqué: ${filters.status} -> ${statusId}`);
+          console.log(
+            `📝 Filtre statut appliqué: ${filters.status} -> ${statusId}`,
+          );
         } else {
-          console.log(`⚠️ Statut non trouvé: ${filters.status}, affichage de toutes les commandes`);
+          console.log(
+            `⚠️ Statut non trouvé: ${filters.status}, affichage de toutes les commandes`,
+          );
         }
       }
       if (filters?.customerId) {
@@ -48,11 +55,11 @@ export class OrdersCompleteService {
       if (filters?.dateTo) {
         query += `&ord_date=lte.${filters.dateTo}`;
       }
-      
+
       query += `&order=ord_date.desc&offset=${offset}&limit=${limit}`;
-      
+
       console.log(`📡 Query: ${query}`);
-      
+
       const response = await fetch(query, {
         method: 'GET',
         headers: this.supabaseService['headers'],
@@ -64,25 +71,33 @@ export class OrdersCompleteService {
       }
 
       const orders = await response.json();
-      
+
       // Enrichir chaque commande avec toutes les relations
       const enrichedOrders = await Promise.all(
         orders.map(async (order: any) => {
           // Récupérer le statut de commande
-          const statusDetails = await this.getOrderStatusById(order.ord_ords_id);
-          
+          const statusDetails = await this.getOrderStatusById(
+            order.ord_ords_id,
+          );
+
           // Récupérer les informations client
-          const customer = await this.supabaseService.getUserById(order.ord_cst_id);
-          
+          const customer = await this.supabaseService.getUserById(
+            order.ord_cst_id,
+          );
+
           // Récupérer l'adresse de facturation
-          const billingAddress = await this.getCustomerBillingAddress(order.ord_cba_id);
-          
+          const billingAddress = await this.getCustomerBillingAddress(
+            order.ord_cba_id,
+          );
+
           // Récupérer l'adresse de livraison
-          const deliveryAddress = await this.getCustomerDeliveryAddress(order.ord_cda_id);
-          
+          const deliveryAddress = await this.getCustomerDeliveryAddress(
+            order.ord_cda_id,
+          );
+
           // Récupérer les lignes de commande avec leurs statuts
           const orderLines = await this.getOrderLinesWithStatus(order.ord_id);
-          
+
           return {
             ...order,
             statusDetails,
@@ -92,10 +107,13 @@ export class OrdersCompleteService {
             orderLines,
             // Calculer des statistiques
             totalLines: orderLines.length,
-            totalQuantity: orderLines.reduce((sum: number, line: any) => 
-              sum + parseInt(line.orl_art_quantity || '0'), 0),
+            totalQuantity: orderLines.reduce(
+              (sum: number, line: any) =>
+                sum + parseInt(line.orl_art_quantity || '0'),
+              0,
+            ),
           };
-        })
+        }),
       );
 
       // Compter le total (sans pagination) - utiliser l'en-tête Content-Range
@@ -104,13 +122,13 @@ export class OrdersCompleteService {
         method: 'HEAD',
         headers: {
           ...this.supabaseService['headers'],
-          'Prefer': 'count=exact'
+          Prefer: 'count=exact',
         },
       });
-      
+
       const contentRange = countResponse.headers.get('content-range');
       let total = 0;
-      
+
       if (contentRange) {
         // Format: "0-9/1417" -> on veut le nombre après le "/"
         const match = contentRange.match(/\/(\d+)$/);
@@ -129,13 +147,18 @@ export class OrdersCompleteService {
         }
       }
 
-      console.log(`✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`);
+      console.log(
+        `✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`,
+      );
       return {
         orders: enrichedOrders,
-        total: total
+        total: total,
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des commandes enrichies:', error);
+      console.error(
+        'Erreur lors de la récupération des commandes enrichies:',
+        error,
+      );
       return { orders: [], total: 0 };
     }
   }
@@ -170,14 +193,20 @@ export class OrdersCompleteService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération adresse facturation:', response.status);
+        console.error(
+          'Erreur récupération adresse facturation:',
+          response.status,
+        );
         return null;
       }
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de facturation:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de facturation:",
+        error,
+      );
       return null;
     }
   }
@@ -191,14 +220,20 @@ export class OrdersCompleteService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération adresse livraison:', response.status);
+        console.error(
+          'Erreur récupération adresse livraison:',
+          response.status,
+        );
         return null;
       }
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de livraison:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de livraison:",
+        error,
+      );
       return null;
     }
   }
@@ -217,21 +252,26 @@ export class OrdersCompleteService {
       }
 
       const orderLines = await response.json();
-      
+
       // Enrichir chaque ligne avec son statut
       const enrichedLines = await Promise.all(
         orderLines.map(async (line: any) => {
-          const lineStatus = await this.getOrderLineStatusById(line.orl_orls_id);
+          const lineStatus = await this.getOrderLineStatusById(
+            line.orl_orls_id,
+          );
           return {
             ...line,
-            lineStatus
+            lineStatus,
           };
-        })
+        }),
       );
 
       return enrichedLines;
     } catch (error) {
-      console.error('Erreur lors de la récupération des lignes de commande:', error);
+      console.error(
+        'Erreur lors de la récupération des lignes de commande:',
+        error,
+      );
       return [];
     }
   }
@@ -252,7 +292,10 @@ export class OrdersCompleteService {
       const statuses = await response.json();
       return statuses.length > 0 ? statuses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération du statut de ligne:', error);
+      console.error(
+        'Erreur lors de la récupération du statut de ligne:',
+        error,
+      );
       return null;
     }
   }
@@ -300,7 +343,10 @@ export class OrdersCompleteService {
       const statuses = await response.json();
       return statuses;
     } catch (error) {
-      console.error('Erreur lors de la récupération des statuts de lignes:', error);
+      console.error(
+        'Erreur lors de la récupération des statuts de lignes:',
+        error,
+      );
       return [];
     }
   }
@@ -311,7 +357,7 @@ export class OrdersCompleteService {
   async getCompleteOrderById(orderId: string): Promise<any> {
     try {
       console.log(`🔍 OrdersCompleteService.getCompleteOrderById: ${orderId}`);
-      
+
       const url = `${this.supabaseService['baseUrl']}/___xtr_order?ord_id=eq.${orderId}&select=*`;
       const response = await fetch(url, {
         method: 'GET',
@@ -324,20 +370,24 @@ export class OrdersCompleteService {
       }
 
       const orders = await response.json();
-      
+
       if (orders.length === 0) {
         return null;
       }
 
       const order = orders[0];
-      
+
       // Enrichir avec toutes les relations
       const statusDetails = await this.getOrderStatusById(order.ord_ords_id);
       const customer = await this.supabaseService.getUserById(order.ord_cst_id);
-      const billingAddress = await this.getCustomerBillingAddress(order.ord_cba_id);
-      const deliveryAddress = await this.getCustomerDeliveryAddress(order.ord_cda_id);
+      const billingAddress = await this.getCustomerBillingAddress(
+        order.ord_cba_id,
+      );
+      const deliveryAddress = await this.getCustomerDeliveryAddress(
+        order.ord_cda_id,
+      );
       const orderLines = await this.getOrderLinesWithStatus(order.ord_id);
-      
+
       return {
         ...order,
         statusDetails,
@@ -346,11 +396,17 @@ export class OrdersCompleteService {
         deliveryAddress,
         orderLines,
         totalLines: orderLines.length,
-        totalQuantity: orderLines.reduce((sum: number, line: any) => 
-          sum + parseInt(line.orl_art_quantity || '0'), 0),
+        totalQuantity: orderLines.reduce(
+          (sum: number, line: any) =>
+            sum + parseInt(line.orl_art_quantity || '0'),
+          0,
+        ),
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération de la commande complète:', error);
+      console.error(
+        'Erreur lors de la récupération de la commande complète:',
+        error,
+      );
       return null;
     }
   }
@@ -361,10 +417,10 @@ export class OrdersCompleteService {
   async getOrderStatsByStatus(): Promise<any[]> {
     try {
       console.log(`🔍 OrdersCompleteService.getOrderStatsByStatus`);
-      
+
       // Récupérer tous les statuts
       const allStatuses = await this.getAllOrderStatuses();
-      
+
       // Pour chaque statut, compter les commandes
       const statsByStatus = await Promise.all(
         allStatuses.map(async (status) => {
@@ -373,41 +429,44 @@ export class OrdersCompleteService {
             method: 'GET',
             headers: this.supabaseService['headers'],
           });
-          
+
           if (!response.ok) {
             console.error('Erreur comptage commandes:', response.status);
             return {
               status: status,
               orderCount: 0,
-              totalAmount: 0
+              totalAmount: 0,
             };
           }
-          
+
           const countResult = await response.json();
           const orderCount = countResult[0]?.count || 0;
-          
+
           // Calculer le montant total pour ce statut
           const amountUrl = `${this.supabaseService['baseUrl']}/___xtr_order?ord_ords_id=eq.${status.ords_id}&select=ord_total_ttc`;
           const amountResponse = await fetch(amountUrl, {
             method: 'GET',
             headers: this.supabaseService['headers'],
           });
-          
+
           let totalAmount = 0;
           if (amountResponse.ok) {
             const orders = await amountResponse.json();
-            totalAmount = orders.reduce((sum: number, order: any) => 
-              sum + parseFloat(order.ord_total_ttc || '0'), 0);
+            totalAmount = orders.reduce(
+              (sum: number, order: any) =>
+                sum + parseFloat(order.ord_total_ttc || '0'),
+              0,
+            );
           }
-          
+
           return {
             status: status,
             orderCount: orderCount,
-            totalAmount: totalAmount
+            totalAmount: totalAmount,
           };
-        })
+        }),
       );
-      
+
       console.log(`✅ Order stats by status calculated`);
       return statsByStatus.sort((a, b) => b.orderCount - a.orderCount);
     } catch (error) {
@@ -423,42 +482,45 @@ export class OrdersCompleteService {
     try {
       // Récupérer tous les statuts
       const allStatuses = await this.getAllOrderStatuses();
-      
+
       // Chercher par nom/libellé (supposant qu'il y a un champ comme ords_name ou ords_label)
-      const foundStatus = allStatuses.find(status => 
-        status.ords_name?.toLowerCase() === statusText.toLowerCase() ||
-        status.ords_label?.toLowerCase() === statusText.toLowerCase() ||
-        status.ords_libelle?.toLowerCase() === statusText.toLowerCase() ||
-        status.ords_id === statusText
+      const foundStatus = allStatuses.find(
+        (status) =>
+          status.ords_name?.toLowerCase() === statusText.toLowerCase() ||
+          status.ords_label?.toLowerCase() === statusText.toLowerCase() ||
+          status.ords_libelle?.toLowerCase() === statusText.toLowerCase() ||
+          status.ords_id === statusText,
       );
-      
+
       if (foundStatus) {
-        console.log(`✅ Statut trouvé: ${statusText} -> ${foundStatus.ords_id}`);
+        console.log(
+          `✅ Statut trouvé: ${statusText} -> ${foundStatus.ords_id}`,
+        );
         return foundStatus.ords_id;
       }
-      
+
       // Si pas trouvé, essayer les mappings courants
       const statusMappings: { [key: string]: string } = {
-        'pending': '1',
-        'confirmed': '2',
-        'processing': '3',
-        'shipped': '4',
-        'delivered': '5',
-        'cancelled': '6',
-        'en_attente': '1',
-        'confirme': '2',
-        'en_cours': '3',
-        'expedie': '4',
-        'livre': '5',
-        'annule': '6'
+        pending: '1',
+        confirmed: '2',
+        processing: '3',
+        shipped: '4',
+        delivered: '5',
+        cancelled: '6',
+        en_attente: '1',
+        confirme: '2',
+        en_cours: '3',
+        expedie: '4',
+        livre: '5',
+        annule: '6',
       };
-      
+
       const mappedId = statusMappings[statusText.toLowerCase()];
       if (mappedId) {
         console.log(`✅ Statut mappé: ${statusText} -> ${mappedId}`);
         return mappedId;
       }
-      
+
       console.log(`❌ Statut non trouvé: ${statusText}`);
       return null;
     } catch (error) {

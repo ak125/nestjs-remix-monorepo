@@ -4,15 +4,15 @@
  */
 
 import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
-import { useLoaderData, Form, useActionData, useNavigate } from "@remix-run/react";
+import { Form, useActionData, useNavigate } from "@remix-run/react";
+import { ArrowLeft, Plus, Trash2, Package, MapPin, CreditCard } from "lucide-react";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { ArrowLeft, Plus, Trash2, Package, MapPin, CreditCard } from "lucide-react";
 
 interface FormData {
   items: Array<{
@@ -75,7 +75,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     const promocode = formData.get("promocode") as string;
     const discountAmount = parseFloat(formData.get("discountAmount") as string) || 0;
 
-    const orderData = {
+    const orderData: FormData = {
       items,
       deliveryAddress,
       deliveryMethod,
@@ -98,12 +98,7 @@ export const action: ActionFunction = async ({ request, context }) => {
       }, { status: 400 });
     }
 
-    // ✅ Approche intégrée : appel direct au service via Remix
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible');
-    }
-
-    console.log('🛒 Création de commande via service intégré');
+    // Utiliser l'intégration directe pour créer la commande
     const result = await context.remixService.integration.createOrderForRemix(orderData);
 
     if (!result.success) {
@@ -112,10 +107,9 @@ export const action: ActionFunction = async ({ request, context }) => {
       }, { status: 400 });
     }
 
-    console.log(`✅ Commande créée avec succès: ${result.order?.id}`);
-    return redirect(`/orders/${result.order?.id}`);
+    return redirect(`/orders/${result.order.id}`);
   } catch (error) {
-    console.error("❌ Erreur création commande:", error);
+    console.error("Error creating order:", error);
     return json<ActionData>({ 
       error: "Erreur lors de la création de la commande" 
     }, { status: 500 });

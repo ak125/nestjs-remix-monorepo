@@ -3,7 +3,6 @@ import { UsersService } from './users.service';
 import { SupabaseRestService } from '../../database/supabase-rest.service';
 import { CacheService } from '../../cache/cache.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 describe('UsersService', () => {
@@ -112,7 +111,9 @@ describe('UsersService', () => {
 
       supabaseService.findUserByEmail.mockResolvedValue(existingUser);
 
-      await expect(service.createUser(createUserDto)).rejects.toThrow('Un utilisateur avec cet email existe déjà');
+      await expect(service.createUser(createUserDto)).rejects.toThrow(
+        'Un utilisateur avec cet email existe déjà',
+      );
     });
   });
 
@@ -141,9 +142,15 @@ describe('UsersService', () => {
       const result = await service.changePassword('1', changePasswordDto);
 
       expect(result).toBe(true);
-      expect(supabaseService.validatePassword).toHaveBeenCalledWith('OldPass123!', 'hashedOldPassword');
+      expect(supabaseService.validatePassword).toHaveBeenCalledWith(
+        'OldPass123!',
+        'hashedOldPassword',
+      );
       expect(supabaseService.hashPassword).toHaveBeenCalledWith('NewPass123!');
-      expect(supabaseService.updateUserPassword).toHaveBeenCalledWith('test@example.com', 'hashedNewPassword');
+      expect(supabaseService.updateUserPassword).toHaveBeenCalledWith(
+        'test@example.com',
+        'hashedNewPassword',
+      );
     });
 
     it('should throw BadRequestException for incorrect current password', async () => {
@@ -164,7 +171,9 @@ describe('UsersService', () => {
       supabaseService.findUserById.mockResolvedValue(mockUser);
       supabaseService.validatePassword.mockResolvedValue(false);
 
-      await expect(service.changePassword('1', changePasswordDto)).rejects.toThrow('Mot de passe actuel incorrect');
+      await expect(
+        service.changePassword('1', changePasswordDto),
+      ).rejects.toThrow('Mot de passe actuel incorrect');
     });
   });
 
@@ -199,7 +208,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException if user not found', async () => {
       supabaseService.findUserById.mockResolvedValue(null);
 
-      await expect(service.getUserProfile('999')).rejects.toThrow('Utilisateur non trouvé');
+      await expect(service.getUserProfile('999')).rejects.toThrow(
+        'Utilisateur non trouvé',
+      );
     });
   });
 
@@ -247,7 +258,10 @@ describe('UsersService', () => {
         isPro: false,
         isActive: true,
       });
-      expect(cacheService.cacheUser).toHaveBeenCalledWith('1', expect.any(Object));
+      expect(cacheService.cacheUser).toHaveBeenCalledWith(
+        '1',
+        expect.any(Object),
+      );
     });
 
     it('should return null if user not found', async () => {
@@ -336,7 +350,10 @@ describe('UsersService', () => {
         isPro: false,
         isActive: true,
       });
-      expect(supabaseService.updateUserProfile).toHaveBeenCalledWith('1', updateDto);
+      expect(supabaseService.updateUserProfile).toHaveBeenCalledWith(
+        '1',
+        updateDto,
+      );
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -345,7 +362,9 @@ describe('UsersService', () => {
       cacheService.getCachedUser.mockResolvedValue(null);
       supabaseService.getUserById.mockResolvedValue(null);
 
-      await expect(service.updateUser('999', updateDto)).rejects.toThrow('Utilisateur non trouvé');
+      await expect(service.updateUser('999', updateDto)).rejects.toThrow(
+        'Utilisateur non trouvé',
+      );
     });
 
     it('should throw ConflictException if email already exists', async () => {
@@ -373,7 +392,9 @@ describe('UsersService', () => {
       cacheService.getCachedUser.mockResolvedValue(existingUser);
       supabaseService.findUserByEmail.mockResolvedValue(emailOwner);
 
-      await expect(service.updateUser('1', updateDto)).rejects.toThrow('Cet email est déjà utilisé par un autre utilisateur');
+      await expect(service.updateUser('1', updateDto)).rejects.toThrow(
+        'Cet email est déjà utilisé par un autre utilisateur',
+      );
     });
   });
 
@@ -413,7 +434,9 @@ describe('UsersService', () => {
       cacheService.getCachedUser.mockResolvedValue(null);
       supabaseService.getUserById.mockResolvedValue(null);
 
-      await expect(service.deleteUser('999')).rejects.toThrow('Utilisateur non trouvé');
+      await expect(service.deleteUser('999')).rejects.toThrow(
+        'Utilisateur non trouvé',
+      );
     });
   });
 
@@ -432,7 +455,10 @@ describe('UsersService', () => {
       supabaseService.findUserByEmail.mockResolvedValue(mockUser);
       supabaseService.validatePassword.mockResolvedValue(true);
 
-      const result = await service.validateUserCredentials('test@example.com', 'correctPassword');
+      const result = await service.validateUserCredentials(
+        'test@example.com',
+        'correctPassword',
+      );
 
       expect(result).toMatchObject({
         id: '1',
@@ -458,7 +484,10 @@ describe('UsersService', () => {
       supabaseService.findUserByEmail.mockResolvedValue(mockUser);
       supabaseService.validatePassword.mockResolvedValue(false);
 
-      const result = await service.validateUserCredentials('test@example.com', 'wrongPassword');
+      const result = await service.validateUserCredentials(
+        'test@example.com',
+        'wrongPassword',
+      );
 
       expect(result).toBeNull();
     });
@@ -466,7 +495,10 @@ describe('UsersService', () => {
     it('should return null for non-existent user', async () => {
       supabaseService.findUserByEmail.mockResolvedValue(null);
 
-      const result = await service.validateUserCredentials('notfound@example.com', 'password');
+      const result = await service.validateUserCredentials(
+        'notfound@example.com',
+        'password',
+      );
 
       expect(result).toBeNull();
     });

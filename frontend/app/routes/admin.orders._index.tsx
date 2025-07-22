@@ -1,40 +1,41 @@
-import { json, LoaderFunctionArgs } from "@remix-run/node";
+import  { type LoaderFunctionArgs , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState, useMemo } from 'react';
-import { Package, Users, TrendingUp, Filter, Search, Download, Menu } from 'lucide-react';
+import { Package, Users, TrendingUp } from 'lucide-react';
+import { useMemo } from 'react';
 
-// Loader Remix - exécuté côté serveur (Approche Intégrée)
+// Loader Remix - exécuté côté serveur
 export async function loader({ context }: LoaderFunctionArgs) {
   try {
-    console.log('🔍 Chargement des commandes via service intégré...');
-    
-    // Vérification de la présence du service d'intégration
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible dans le contexte');
+    // Utilisation directe du service NestJS via le contexte
+    if (context.remixService?.integration) {
+      console.log('✅ Utilisation du service d\'intégration direct');
+      const result = await context.remixService.integration.getOrdersForRemix({
+        page: 1,
+        limit: 50
+      });
+      
+      if (result.success) {
+        return json({
+          success: true,
+          orders: result.orders,
+          total: result.total
+        });
+      }
     }
     
-    console.log('✅ Utilisation du service d\'intégration direct - Performance optimale');
-    const result = await context.remixService.integration.getOrdersForRemix({
-      page: 1,
-      limit: 50
-    });
-    
-    if (!result.success) {
-      throw new Error(`Erreur du service d'intégration: ${result.error || 'Erreur inconnue'}`);
-    }
-    
-    console.log(`✅ ${result.orders?.length || 0} commandes récupérées sur ${result.total || 0} au total`);
+    // Fallback : appel HTTP à notre propre API
+    console.log('⚠️ Fallback vers API HTTP');
+    const response = await fetch('http://localhost:3000/api/orders');
+    const data = await response.json();
     
     return json({
       success: true,
-      orders: result.orders || [],
-      total: result.total || 0
+      orders: data.orders || [],
+      total: data.total || 0
     });
     
   } catch (error) {
-    console.error('❌ Erreur dans le loader des commandes:', error);
-    
-    // En cas d'erreur, retourner une structure vide mais cohérente
+    console.error('❌ Erreur loader:', error);
     return json({
       success: false,
       orders: [],
@@ -46,7 +47,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
 export default function AdminOrdersPage() {
   const data = useLoaderData<typeof loader>();
-  const orders: any[] = data.orders || [];
+  const orders = data.orders || [];
   
   console.log('🎯 Remix Loader Data:', {
     success: data.success,
@@ -59,8 +60,8 @@ export default function AdminOrdersPage() {
   const stats = useMemo(() => {
     const totalOrders = orders.length;
     const uniqueCustomers = new Set(orders.map(o => o.customer?.cst_id)).size;
-    const totalRevenue = orders.reduce((sum: number, order: any) => {
-      return sum + (parseFloat(order?.ord_total_ttc?.toString() || '0'));
+    const totalRevenue = orders.reduce((sum, order) => {
+      return sum + (parseFloat(order.ord_total_ttc?.toString() || '0'));
     }, 0);
     const paidOrders = orders.filter(o => o.ord_is_pay === '1' || o.ord_is_pay === 1).length;
 
@@ -79,15 +80,15 @@ export default function AdminOrdersPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">✅ Gestion des Commandes</h1>
-            <p className="text-gray-600">Données chargées via service intégré NestJS-Remix (Performance optimale)</p>
+            <h1 className="text-3xl font-bold text-gray-900">✅ Interface Remix Loader - Gestion des Commandes</h1>
+            <p className="text-gray-600">Données chargées côté serveur via Remix Loader</p>
           </div>
         </div>
 
         {/* Debug info */}
         {!data.success && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <strong>Erreur du service intégré:</strong> {(data as any).error}
+            <strong>Erreur:</strong> {(data as any).error}
           </div>
         )}
 

@@ -1,24 +1,22 @@
-/**
- * Session management utilities
- */
+import { createCookieSessionStorage } from "@remix-run/node";
 
-import { createCookieSessionStorage } from '@remix-run/node';
+const sessionSecret = process.env.SESSION_SECRET || "default-secret-change-in-production";
 
-// Session storage configuration
-const sessionStorage = createCookieSessionStorage({
+export const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: '__session',
+    name: "__session",
     httpOnly: true,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    path: '/',
-    sameSite: 'lax',
-    secrets: [process.env.SESSION_SECRET || 'default-secret'],
-    secure: process.env.NODE_ENV === 'production',
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+    path: "/",
+    sameSite: "lax",
+    secrets: [sessionSecret],
+    secure: process.env.NODE_ENV === "production",
   },
 });
 
-export async function getSession(cookieHeader: string | null) {
-  return sessionStorage.getSession(cookieHeader);
+export async function getSession(request: Request) {
+  const cookie = request.headers.get("Cookie");
+  return sessionStorage.getSession(cookie);
 }
 
 export async function commitSession(session: any) {

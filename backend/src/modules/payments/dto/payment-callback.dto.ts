@@ -20,7 +20,7 @@ export const PaymentCallbackSchema = z.object({
   cardType: z.string().optional(),
   signature: z.string().optional(),
   timestamp: z.string().optional(),
-  
+
   // Données additionnelles
   message: z.string().optional(),
   errorMessage: z.string().optional(),
@@ -55,7 +55,7 @@ export class PaymentCallbackDto {
   @ApiPropertyOptional({ description: 'Code de réponse de la gateway' })
   responseCode?: string;
 
-  @ApiPropertyOptional({ description: 'Code d\'autorisation bancaire' })
+  @ApiPropertyOptional({ description: "Code d'autorisation bancaire" })
   authorizationCode?: string;
 
   @ApiPropertyOptional({ description: 'Montant du paiement' })
@@ -82,7 +82,7 @@ export class PaymentCallbackDto {
   @ApiPropertyOptional({ description: 'Message de la gateway' })
   message?: string;
 
-  @ApiPropertyOptional({ description: 'Message d\'erreur' })
+  @ApiPropertyOptional({ description: "Message d'erreur" })
   errorMessage?: string;
 
   @ApiPropertyOptional({ description: 'Métadonnées additionnelles' })
@@ -96,7 +96,7 @@ export class CallbackValidationResult {
   @ApiPropertyOptional({ description: 'ID du paiement associé' })
   paymentId?: string;
 
-  @ApiPropertyOptional({ description: 'Message d\'erreur si invalide' })
+  @ApiPropertyOptional({ description: "Message d'erreur si invalide" })
   errorMessage?: string;
 
   @ApiPropertyOptional({ description: 'Détails de validation' })
@@ -108,4 +108,6 @@ export class CallbackValidationResult {
 // ================================================================
 
 export type PaymentCallbackType = z.infer<typeof PaymentCallbackSchema>;
-export type CallbackValidationResultType = z.infer<typeof CallbackValidationResultSchema>;
+export type CallbackValidationResultType = z.infer<
+  typeof CallbackValidationResultSchema
+>;

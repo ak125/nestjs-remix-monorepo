@@ -13,8 +13,9 @@ export class CacheService {
 
   private async initializeRedis() {
     try {
-      const redisUrl = this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
-      
+      const redisUrl =
+        this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
+
       this.redisClient = new Redis(redisUrl);
 
       this.redisClient.on('error', (err: any) => {
@@ -24,7 +25,6 @@ export class CacheService {
       this.redisClient.on('connect', () => {
         console.log('✅ Cache Redis connecté');
       });
-
     } catch (error) {
       console.error('❌ Erreur de connexion Redis Cache:', error);
     }
@@ -33,7 +33,7 @@ export class CacheService {
   async get<T>(key: string): Promise<T | null> {
     try {
       if (!this.redisClient) return null;
-      
+
       const value = await this.redisClient.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
@@ -42,10 +42,14 @@ export class CacheService {
     }
   }
 
-  async set<T>(key: string, value: T, ttl: number = this.defaultTTL): Promise<void> {
+  async set<T>(
+    key: string,
+    value: T,
+    ttl: number = this.defaultTTL,
+  ): Promise<void> {
     try {
       if (!this.redisClient) return;
-      
+
       await this.redisClient.setex(key, ttl, JSON.stringify(value));
     } catch (error) {
       console.error('Cache set error:', error);
@@ -55,7 +59,7 @@ export class CacheService {
   async del(key: string): Promise<void> {
     try {
       if (!this.redisClient) return;
-      
+
       await this.redisClient.del(key);
     } catch (error) {
       console.error('Cache delete error:', error);
@@ -65,7 +69,7 @@ export class CacheService {
   async exists(key: string): Promise<boolean> {
     try {
       if (!this.redisClient) return false;
-      
+
       return (await this.redisClient.exists(key)) === 1;
     } catch (error) {
       console.error('Cache exists error:', error);
@@ -73,33 +77,47 @@ export class CacheService {
     }
   }
 
-  async setResetToken(token: string, email: string, ttl: number = 3600): Promise<void> {
+  async setResetToken(
+    token: string,
+    email: string,
+    ttl: number = 3600,
+  ): Promise<void> {
     const tokenKey = `reset_token:${token}`;
     const tokenData = {
       email,
       expires: new Date(Date.now() + ttl * 1000).toISOString(),
       used: false,
     };
-    
+
     await this.set(tokenKey, tokenData, ttl);
   }
 
-  async getResetToken(token: string): Promise<{ email: string; expires: string; used: boolean } | null> {
+  async getResetToken(
+    token: string,
+  ): Promise<{ email: string; expires: string; used: boolean } | null> {
     const tokenKey = `reset_token:${token}`;
     return await this.get(tokenKey);
   }
 
   async markTokenAsUsed(token: string): Promise<void> {
     const tokenKey = `reset_token:${token}`;
-    const tokenData = await this.get<{ email: string; expires: string; used: boolean }>(tokenKey);
-    
+    const tokenData = await this.get<{
+      email: string;
+      expires: string;
+      used: boolean;
+    }>(tokenKey);
+
     if (tokenData) {
       tokenData.used = true;
       await this.set(tokenKey, tokenData, 3600); // Garder 1h pour éviter la réutilisation
     }
   }
 
-  async cacheUser(userId: string, user: any, ttl: number = 1800): Promise<void> {
+  async cacheUser(
+    userId: string,
+    user: any,
+    ttl: number = 1800,
+  ): Promise<void> {
     const userKey = `user:${userId}`;
     await this.set(userKey, user, ttl);
   }
@@ -116,7 +134,7 @@ export class CacheService {
 
   async incrementLoginAttempts(email: string): Promise<number> {
     const key = `login_attempts:${email}`;
-    const current = await this.get<number>(key) || 0;
+    const current = (await this.get<number>(key)) || 0;
     const newCount = current + 1;
     await this.set(key, newCount, 900); // 15 minutes
     return newCount;
@@ -124,7 +142,7 @@ export class CacheService {
 
   async getLoginAttempts(email: string): Promise<number> {
     const key = `login_attempts:${email}`;
-    return await this.get<number>(key) || 0;
+    return (await this.get<number>(key)) || 0;
   }
 
   async clearLoginAttempts(email: string): Promise<void> {

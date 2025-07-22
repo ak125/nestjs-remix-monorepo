@@ -1,36 +1,15 @@
 /**
  * Page de détails d'une commande avec les vraies données
- * Affiche toutes leexport const loader: LoaderFunction = async ({ params, context }) => {
-  const orderId = params.id;
-  
-  if (!orderId) {
-    return json<LoaderData>({ order: null, error: "ID de commande manquant" });
-  }
-
-  try {
-    // ✅ Approche intégrée : appel direct au service via Remix
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible');
-    }
-
-    console.log('🔍 Récupération de la commande ID:', orderId);
-    const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
-
-    if (!result.success) {
-      console.error('❌ Erreur lors de la récupération de la commande:', result.error);
-      return json<LoaderData>({ order: null, error: result.error });
-    }
-
-    console.log(`✅ Commande récupérée avec succès: ${result.order?.ord_id}`);
-    return json<LoaderData>({ order: result.order });e commande spécifique avec adresses
+ * Affiche toutes les informations d'une commande spécifique avec adresses
  */
 
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ArrowLeft, Edit, Package, MapPin, CreditCard, FileText, User, Phone, Mail } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { ArrowLeft, Edit, Package, MapPin, CreditCard, FileText, User, Phone, Mail } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface OrderDetails {
   ord_id: string;
@@ -110,29 +89,25 @@ export const loader: LoaderFunction = async ({ params, context }) => {
   }
 
   try {
-    // ✅ Approche intégrée : appel direct au service via Remix
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible');
-    }
-
-    console.log('🔍 Récupération de la commande ID:', orderId);
+    // Utiliser l'intégration directe pour récupérer la commande
     const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
-
+    
     if (!result.success) {
-      console.error('❌ Erreur lors de la récupération de la commande:', result.error);
-      return json<LoaderData>({ order: null, error: result.error });
+      return json<LoaderData>({ 
+        order: null, 
+        error: result.error || "Commande non trouvée" 
+      });
     }
 
-    console.log(`✅ Commande récupérée avec succès: ${result.order?.ord_id}`);
     return json<LoaderData>({
       order: result.order,
       error: undefined
     });
   } catch (error) {
-    console.error("❌ Erreur dans loader admin.orders.$id:", error);
+    console.error("Error loading order:", error);
     return json<LoaderData>({ 
       order: null, 
-      error: error instanceof Error ? error.message : "Erreur lors du chargement de la commande" 
+      error: "Erreur lors du chargement de la commande" 
     });
   }
 };

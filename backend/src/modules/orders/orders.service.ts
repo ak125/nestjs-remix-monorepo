@@ -1,7 +1,7 @@
 /**
  * Service Orders moderne utilisant toutes les tables liées
- * Tables utilisées : ___xtr_order, ___xtr_order_line, ___xtr_customer, 
- * ___xtr_order_status, ___xtr_order_line_status, ___xtr_customer_billing_address, 
+ * Tables utilisées : ___xtr_order, ___xtr_order_line, ___xtr_customer,
+ * ___xtr_order_status, ___xtr_order_line_status, ___xtr_customer_billing_address,
  * ___xtr_customer_delivery_address
  */
 
@@ -15,7 +15,7 @@ export class OrdersService {
 
   constructor(
     private readonly supabaseService: SupabaseRestService,
-    private readonly ordersCompleteService: OrdersCompleteService
+    private readonly ordersCompleteService: OrdersCompleteService,
   ) {}
 
   /**
@@ -29,10 +29,12 @@ export class OrdersService {
       customerId?: string;
       dateFrom?: string;
       dateTo?: string;
-    }
+    },
   ) {
     try {
-      console.log(`🔍 OrdersService.findOrdersWithPagination: page=${page}, limit=${limit}`);
+      console.log(
+        `🔍 OrdersService.findOrdersWithPagination: page=${page}, limit=${limit}`,
+      );
       console.log('--- Début de getOrdersWithPagination ---');
       console.log('Pagination: {');
       console.log(`  page: ${page},`);
@@ -44,15 +46,25 @@ export class OrdersService {
       console.log(`    dateTo: ${filters?.dateTo || 'undefined'}`);
       console.log('  }');
       console.log('}');
-      
-      const result = await this.ordersCompleteService.getOrdersWithAllRelations(page, limit, filters);
-      
-      console.log(`Commandes récupérées: ${result.orders.length}, Total: ${result.total}`);
-      console.log(`✅ Orders retrieved: ${result.orders.length}/${result.total}`);
-      
+
+      const result = await this.ordersCompleteService.getOrdersWithAllRelations(
+        page,
+        limit,
+        filters,
+      );
+
+      console.log(
+        `Commandes récupérées: ${result.orders.length}, Total: ${result.total}`,
+      );
+      console.log(
+        `✅ Orders retrieved: ${result.orders.length}/${result.total}`,
+      );
+
       return result;
     } catch (error) {
-      console.error(`❌ Error in OrdersService.findOrdersWithPagination: ${error}`);
+      console.error(
+        `❌ Error in OrdersService.findOrdersWithPagination: ${error}`,
+      );
       throw error;
     }
   }
@@ -63,19 +75,24 @@ export class OrdersService {
   async findOrdersByCustomerId(customerId: string) {
     try {
       console.log(`🔍 OrdersService.findOrdersByCustomerId: ${customerId}`);
-      const orders = await this.supabaseService.getOrdersByCustomerId(customerId);
-      
+      const orders =
+        await this.supabaseService.getOrdersByCustomerId(customerId);
+
       // Enrichir avec les relations via le service complet
       const enrichedOrders = await Promise.all(
         orders.map(async (order) => {
-          return await this.ordersCompleteService.getCompleteOrderById(order.ord_id);
-        })
+          return await this.ordersCompleteService.getCompleteOrderById(
+            order.ord_id,
+          );
+        }),
       );
-      
+
       console.log(`✅ Orders found: ${enrichedOrders.length}`);
       return enrichedOrders;
     } catch (error) {
-      console.error(`❌ Error in OrdersService.findOrdersByCustomerId: ${error}`);
+      console.error(
+        `❌ Error in OrdersService.findOrdersByCustomerId: ${error}`,
+      );
       throw error;
     }
   }
@@ -86,13 +103,14 @@ export class OrdersService {
   async findOrderById(orderId: string) {
     try {
       console.log(`🔍 OrdersService.findOrderById: ${orderId}`);
-      const order = await this.ordersCompleteService.getCompleteOrderById(orderId);
-      
+      const order =
+        await this.ordersCompleteService.getCompleteOrderById(orderId);
+
       if (!order) {
         console.log(`❌ Order not found: ${orderId}`);
         return null;
       }
-      
+
       console.log(`✅ Order found: ${order.ord_id}`);
       return order;
     } catch (error) {
@@ -108,11 +126,13 @@ export class OrdersService {
     try {
       console.log(`🔍 OrdersService.getOrderStatsByStatus`);
       const stats = await this.ordersCompleteService.getOrderStatsByStatus();
-      
+
       console.log(`✅ Order stats by status calculated`);
       return stats;
     } catch (error) {
-      console.error(`❌ Error in OrdersService.getOrderStatsByStatus: ${error}`);
+      console.error(
+        `❌ Error in OrdersService.getOrderStatsByStatus: ${error}`,
+      );
       throw error;
     }
   }
@@ -124,7 +144,7 @@ export class OrdersService {
     try {
       console.log(`🔍 OrdersService.getAllOrderStatuses`);
       const statuses = await this.ordersCompleteService.getAllOrderStatuses();
-      
+
       console.log(`✅ Order statuses retrieved: ${statuses.length}`);
       return statuses;
     } catch (error) {
@@ -139,12 +159,15 @@ export class OrdersService {
   async getAllOrderLineStatuses() {
     try {
       console.log(`🔍 OrdersService.getAllOrderLineStatuses`);
-      const statuses = await this.ordersCompleteService.getAllOrderLineStatuses();
-      
+      const statuses =
+        await this.ordersCompleteService.getAllOrderLineStatuses();
+
       console.log(`✅ Order line statuses retrieved: ${statuses.length}`);
       return statuses;
     } catch (error) {
-      console.error(`❌ Error in OrdersService.getAllOrderLineStatuses: ${error}`);
+      console.error(
+        `❌ Error in OrdersService.getAllOrderLineStatuses: ${error}`,
+      );
       throw error;
     }
   }
@@ -154,18 +177,20 @@ export class OrdersService {
    */
   async updatePaymentStatus(orderId: string, isPaid: boolean) {
     try {
-      console.log(`🔍 OrdersService.updatePaymentStatus: ${orderId}, isPaid=${isPaid}`);
-      
+      console.log(
+        `🔍 OrdersService.updatePaymentStatus: ${orderId}, isPaid=${isPaid}`,
+      );
+
       const updates: any = {
-        ord_is_pay: isPaid ? '1' : '0'
+        ord_is_pay: isPaid ? '1' : '0',
       };
-      
+
       if (isPaid) {
         updates.ord_date_pay = new Date().toISOString();
       }
-      
+
       const success = await this.supabaseService.updateOrder(orderId, updates);
-      
+
       console.log(`✅ Payment status updated: ${success}`);
       return success;
     } catch (error) {
@@ -179,14 +204,16 @@ export class OrdersService {
    */
   async updateOrderStatus(orderId: string, statusId: string) {
     try {
-      console.log(`🔍 OrdersService.updateOrderStatus: ${orderId}, status=${statusId}`);
-      
+      console.log(
+        `🔍 OrdersService.updateOrderStatus: ${orderId}, status=${statusId}`,
+      );
+
       const updates = {
-        ord_ords_id: statusId
+        ord_ords_id: statusId,
       };
-      
+
       const success = await this.supabaseService.updateOrder(orderId, updates);
-      
+
       console.log(`✅ Order status updated: ${success}`);
       return success;
     } catch (error) {
@@ -202,7 +229,7 @@ export class OrdersService {
     try {
       console.log(`🔍 OrdersService.getOrderStats`);
       const stats = await this.supabaseService.getOrderStats();
-      
+
       console.log(`✅ Order stats retrieved`);
       return stats;
     } catch (error) {
@@ -217,10 +244,10 @@ export class OrdersService {
   async createOrder(orderData: any) {
     try {
       console.log(`🔍 OrdersService.createOrder`);
-      
+
       // Générer un ID unique pour la commande
       const orderId = `ORD_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const newOrder = await this.supabaseService.createOrder({
         ord_id: orderId,
         ord_cst_id: orderData.customerId,
@@ -228,9 +255,9 @@ export class OrdersService {
         ord_total_ttc: orderData.totalAmount?.toString() || '0',
         ord_is_pay: '0', // Non payé par défaut
         ord_ords_id: '1', // Statut par défaut
-        ...orderData
+        ...orderData,
       });
-      
+
       console.log(`✅ Order created: ${newOrder?.ord_id}`);
       return newOrder;
     } catch (error) {
@@ -245,8 +272,11 @@ export class OrdersService {
   async updateOrder(orderId: string, updates: any) {
     try {
       console.log(`🔍 OrdersService.updateOrder: ${orderId}`);
-      const updatedOrder = await this.supabaseService.updateOrder(orderId, updates);
-      
+      const updatedOrder = await this.supabaseService.updateOrder(
+        orderId,
+        updates,
+      );
+
       console.log(`✅ Order updated: ${updatedOrder?.ord_id}`);
       return updatedOrder;
     } catch (error) {
@@ -262,7 +292,7 @@ export class OrdersService {
     try {
       console.log(`🔍 OrdersService.deleteOrder: ${orderId}`);
       const success = await this.supabaseService.deleteOrder(orderId);
-      
+
       console.log(`✅ Order deleted: ${success}`);
       return success;
     } catch (error) {

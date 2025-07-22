@@ -1,7 +1,7 @@
-import { json, LoaderFunctionArgs } from "@remix-run/node";
+import  { type LoaderFunctionArgs , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
-import { getPaymentStats, LegacyPayment, PaymentStats } from "~/utils/api";
+import  { type LegacyPayment, type PaymentStats , getPaymentStats } from "~/utils/api";
 
 /**
  * Interface étendue pour les données du loader

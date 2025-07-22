@@ -50,31 +50,31 @@ export interface Order {
   ord_parent: string;
   // Champs pour les paiements (utilisent la colonne ord_is_pay existante)
   payment_gateway?: string; // Stocké dans ord_info (JSON)
-  payment_status?: string;  // Mapping: ord_is_pay (0=PENDING, 1=PAID)
-  transaction_id?: string;  // Stocké dans ord_info (JSON)
-  payment_metadata?: any;   // Stocké dans ord_info (JSON)
+  payment_status?: string; // Mapping: ord_is_pay (0=PENDING, 1=PAID)
+  transaction_id?: string; // Stocké dans ord_info (JSON)
+  payment_metadata?: any; // Stocké dans ord_info (JSON)
   ord_link: string;
   ord_link_type: string;
 }
 
-// Interface pour la table ic_postback (VRAIE TABLE LEGACY) - Callbacks de paiement  
+// Interface pour la table ic_postback (VRAIE TABLE LEGACY) - Callbacks de paiement
 export interface PaymentCallback {
   // Colonnes existantes dans ic_postback (à vérifier avec DESCRIBE)
   id?: string;
   created_at?: string;
-  data?: any;          // Données du callback (JSON)
-  status?: string;     // Statut du callback
-  reference?: string;  // Référence de transaction
-  amount?: number;     // Montant 
-  currency?: string;   // Devise
-  gateway?: string;    // Gateway utilisée (STRIPE, PAYPAL, etc.)
-  order_id?: string;   // ID de commande liée
+  data?: any; // Données du callback (JSON)
+  status?: string; // Statut du callback
+  reference?: string; // Référence de transaction
+  amount?: number; // Montant
+  currency?: string; // Devise
+  gateway?: string; // Gateway utilisée (STRIPE, PAYPAL, etc.)
+  order_id?: string; // ID de commande liée
   // Champs additionnels pour notre module
-  action_type?: string;    // Type d'action (PAYMENT_RECEIVED, REFUND, etc.)
-  ip_address?: string;     // IP de la requête
-  user_agent?: string;     // User agent
-  verified?: boolean;      // Signature vérifiée
-  error_message?: string;  // Message d'erreur si échec
+  action_type?: string; // Type d'action (PAYMENT_RECEIVED, REFUND, etc.)
+  ip_address?: string; // IP de la requête
+  user_agent?: string; // User agent
+  verified?: boolean; // Signature vérifiée
+  error_message?: string; // Message d'erreur si échec
 }
 
 // Interface pour les lignes de commande basée sur la table ___xtr_order_line
@@ -213,23 +213,23 @@ export interface Payment {
   pay_id: string;
   pay_ord_id: string; // Référence à la commande
   pay_cst_id: string; // Référence au client
-  
+
   // Informations de paiement
   pay_amount: string; // DECIMAL(10, 2) en string
   pay_currency: string;
   pay_gateway: string; // CYBERPLUS, STRIPE, PAYPAL, BANK_TRANSFER
   pay_status: string; // PENDING, PAID, FAILED, REFUNDED, SUCCESS, CANCELLED
-  
+
   // Références externes
   pay_transaction_id?: string;
   pay_bank_reference?: string;
-  
+
   // URLs et métadonnées
   pay_return_url?: string;
   pay_cancel_url?: string;
   pay_callback_url?: string;
   pay_metadata?: any; // JSONB
-  
+
   // Dates
   pay_created_at: string;
   pay_updated_at: string;
@@ -240,15 +240,15 @@ export interface Payment {
 export interface PaymentLog {
   log_id: number;
   log_pay_id?: string; // Peut être NULL pour les callbacks non associés
-  
+
   // Action et données
   log_action: string; // PAYMENT_INITIATED, PAYMENT_SUCCESS, etc.
   log_data?: any; // JSONB
-  
+
   // Informations de contexte
   log_ip_address?: string;
   log_user_agent?: string;
-  
+
   // Date
   log_created_at: string;
 }
@@ -260,14 +260,14 @@ export enum PaymentStatus {
   FAILED = 'FAILED',
   REFUNDED = 'REFUNDED',
   SUCCESS = 'SUCCESS',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
 }
 
 export enum PaymentGateway {
   CYBERPLUS = 'CYBERPLUS',
   STRIPE = 'STRIPE',
   PAYPAL = 'PAYPAL',
-  BANK_TRANSFER = 'BANK_TRANSFER'
+  BANK_TRANSFER = 'BANK_TRANSFER',
 }
 
 export enum PaymentLogAction {
@@ -279,7 +279,7 @@ export enum PaymentLogAction {
   CALLBACK_RECEIVED = 'CALLBACK_RECEIVED',
   BANK_RESPONSE = 'BANK_RESPONSE',
   SIGNATURE_VALIDATION = 'SIGNATURE_VALIDATION',
-  AMOUNT_VALIDATION = 'AMOUNT_VALIDATION'
+  AMOUNT_VALIDATION = 'AMOUNT_VALIDATION',
 }
 
 @Injectable()
@@ -291,7 +291,7 @@ export class SupabaseRestService {
   constructor(private configService: ConfigService) {
     // Debug de la configuration
     debugConfiguration(configService);
-    
+
     this.supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
     this.supabaseServiceKey =
       this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -320,14 +320,14 @@ export class SupabaseRestService {
       console.log(`🔍 findUserByEmail: ${email}`);
       const url = `${this.baseUrl}/___xtr_customer?cst_mail=eq.${email}&select=*`;
       console.log(`📡 URL: ${url}`);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: this.headers,
       });
 
       console.log(`📈 Response status: ${response.status}`);
-      
+
       if (!response.ok) {
         console.error('Erreur Supabase:', response.status, response.statusText);
         return null;
@@ -336,7 +336,7 @@ export class SupabaseRestService {
       const users = await response.json();
       console.log(`👥 Users found: ${users.length}`);
       console.log(`📄 Users data:`, users);
-      
+
       return users.length > 0 ? users[0] : null;
     } catch (error) {
       console.error('Erreur lors de la recherche utilisateur:', error);
@@ -395,30 +395,30 @@ export class SupabaseRestService {
       console.log('=== Validation du mot de passe ===');
       console.log('Mot de passe en clair:', plainPassword);
       console.log('Mot de passe stocké:', hashedPassword);
-      
+
       // Vérification si le mot de passe est déjà en clair (ancien système)
       if (plainPassword === hashedPassword) {
         console.log('✅ Mot de passe en clair - correspondance directe');
         return true;
       }
-      
+
       // Vérification avec SHA-1 (système intermédiaire)
       const sha1Hash = createHash('sha1').update(plainPassword).digest('hex');
       console.log('🔍 SHA-1 hash calculé:', sha1Hash);
-      
+
       if (sha1Hash === hashedPassword) {
         console.log('✅ Mot de passe SHA-1 - correspondance');
         return true;
       }
-      
+
       // Vérification avec bcrypt (nouveau système)
       const bcryptResult = await bcrypt.compare(plainPassword, hashedPassword);
       console.log('🔐 Résultat bcrypt:', bcryptResult);
-      
+
       if (bcryptResult) {
         return true;
       }
-      
+
       // Vérification avec Unix DES crypt (ancien système Unix)
       if (hashedPassword.length === 13) {
         console.log('🔑 Test Unix DES crypt (longueur 13)');
@@ -427,7 +427,7 @@ export class SupabaseRestService {
           const salt = hashedPassword.substring(0, 2);
           const cryptResult = crypt.default(plainPassword, salt);
           console.log('🔍 Hash Unix DES calculé:', cryptResult);
-          
+
           if (cryptResult === hashedPassword) {
             console.log('✅ Mot de passe Unix DES crypt - correspondance');
             return true;
@@ -436,7 +436,7 @@ export class SupabaseRestService {
           console.error('Erreur Unix DES crypt:', cryptError);
         }
       }
-      
+
       console.log('❌ Aucune correspondance trouvée');
       return false;
     } catch (error) {
@@ -514,13 +514,13 @@ export class SupabaseRestService {
 
       const users = await response.json();
       console.log('Utilisateurs trouvés:', users);
-      
+
       if (users && users.length > 0) {
         const user = users[0];
         console.log('Utilisateur récupéré:', user);
         return user;
       }
-      
+
       console.log('Aucun utilisateur trouvé avec cet ID');
       return null;
     } catch (error) {
@@ -542,7 +542,10 @@ export class SupabaseRestService {
     }
   }
 
-  async updateUserPassword(email: string, hashedPassword: string): Promise<boolean> {
+  async updateUserPassword(
+    email: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     console.log('--- Début de updateUserPassword ---');
     console.log('Email:', email);
 
@@ -575,16 +578,19 @@ export class SupabaseRestService {
     }
   }
 
-  async updateUserProfile(userId: string, updates: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    tel?: string;
-    address?: string;
-    city?: string;
-    zipCode?: string;
-    country?: string;
-  }): Promise<User | null> {
+  async updateUserProfile(
+    userId: string,
+    updates: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      tel?: string;
+      address?: string;
+      city?: string;
+      zipCode?: string;
+      country?: string;
+    },
+  ): Promise<User | null> {
     console.log('--- Début de updateUserProfile ---');
     console.log('User ID:', userId);
     console.log('Updates:', updates);
@@ -643,16 +649,16 @@ export class SupabaseRestService {
       customerId?: string;
       dateFrom?: string;
       dateTo?: string;
-    }
+    },
   ): Promise<{ orders: any[]; total: number }> {
     try {
       console.log(`🔍 getOrdersWithAllRelations: page=${page}, limit=${limit}`);
-      
+
       const offset = (page - 1) * limit;
-      
+
       // Construire la requête avec tous les filtres
       let query = `${this.baseUrl}/___xtr_order?select=*`;
-      
+
       if (filters?.status) {
         query += `&ord_ords_id=eq.${filters.status}`;
       }
@@ -665,11 +671,11 @@ export class SupabaseRestService {
       if (filters?.dateTo) {
         query += `&ord_date=lte.${filters.dateTo}`;
       }
-      
+
       query += `&order=ord_date.desc&offset=${offset}&limit=${limit}`;
-      
+
       console.log(`📡 Query: ${query}`);
-      
+
       const response = await fetch(query, {
         method: 'GET',
         headers: this.headers,
@@ -681,25 +687,31 @@ export class SupabaseRestService {
       }
 
       const orders = await response.json();
-      
+
       // Enrichir chaque commande avec toutes les relations
       const enrichedOrders = await Promise.all(
         orders.map(async (order: any) => {
           // Récupérer le statut de commande
-          const statusDetails = await this.getOrderStatusById(order.ord_ords_id);
-          
+          const statusDetails = await this.getOrderStatusById(
+            order.ord_ords_id,
+          );
+
           // Récupérer les informations client
           const customer = await this.getUserById(order.ord_cst_id);
-          
+
           // Récupérer l'adresse de facturation
-          const billingAddress = await this.getCustomerBillingAddress(order.ord_cba_id);
-          
+          const billingAddress = await this.getCustomerBillingAddress(
+            order.ord_cba_id,
+          );
+
           // Récupérer l'adresse de livraison
-          const deliveryAddress = await this.getCustomerDeliveryAddress(order.ord_cda_id);
-          
+          const deliveryAddress = await this.getCustomerDeliveryAddress(
+            order.ord_cda_id,
+          );
+
           // Récupérer les lignes de commande avec leurs statuts
           const orderLines = await this.getOrderLinesWithStatus(order.ord_id);
-          
+
           return {
             ...order,
             statusDetails,
@@ -709,10 +721,13 @@ export class SupabaseRestService {
             orderLines,
             // Calculer des statistiques
             totalLines: orderLines.length,
-            totalQuantity: orderLines.reduce((sum: number, line: any) => 
-              sum + parseInt(line.orl_art_quantity || '0'), 0),
+            totalQuantity: orderLines.reduce(
+              (sum: number, line: any) =>
+                sum + parseInt(line.orl_art_quantity || '0'),
+              0,
+            ),
           };
-        })
+        }),
       );
 
       // Compter le total (sans pagination)
@@ -721,17 +736,22 @@ export class SupabaseRestService {
         method: 'GET',
         headers: this.headers,
       });
-      
+
       const countResult = await countResponse.json();
       const total = countResult[0]?.count || 0;
 
-      console.log(`✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`);
+      console.log(
+        `✅ Enriched orders retrieved: ${enrichedOrders.length}/${total}`,
+      );
       return {
         orders: enrichedOrders,
-        total: total
+        total: total,
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des commandes enrichies:', error);
+      console.error(
+        'Erreur lors de la récupération des commandes enrichies:',
+        error,
+      );
       return { orders: [], total: 0 };
     }
   }
@@ -778,7 +798,9 @@ export class SupabaseRestService {
     }
   }
 
-  async getCustomerBillingAddress(addressId: string): Promise<CustomerBillingAddress | null> {
+  async getCustomerBillingAddress(
+    addressId: string,
+  ): Promise<CustomerBillingAddress | null> {
     try {
       const url = `${this.baseUrl}/___xtr_customer_billing_address?cba_id=eq.${addressId}&select=*`;
       const response = await fetch(url, {
@@ -787,19 +809,27 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération adresse facturation:', response.status);
+        console.error(
+          'Erreur récupération adresse facturation:',
+          response.status,
+        );
         return null;
       }
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de facturation:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de facturation:",
+        error,
+      );
       return null;
     }
   }
 
-  async getCustomerDeliveryAddress(addressId: string): Promise<CustomerDeliveryAddress | null> {
+  async getCustomerDeliveryAddress(
+    addressId: string,
+  ): Promise<CustomerDeliveryAddress | null> {
     try {
       const url = `${this.baseUrl}/___xtr_customer_delivery_address?cda_id=eq.${addressId}&select=*`;
       const response = await fetch(url, {
@@ -808,14 +838,20 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération adresse livraison:', response.status);
+        console.error(
+          'Erreur récupération adresse livraison:',
+          response.status,
+        );
         return null;
       }
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de livraison:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de livraison:",
+        error,
+      );
       return null;
     }
   }
@@ -834,26 +870,33 @@ export class SupabaseRestService {
       }
 
       const orderLines = await response.json();
-      
+
       // Enrichir chaque ligne avec son statut
       const enrichedLines = await Promise.all(
         orderLines.map(async (line: any) => {
-          const lineStatus = await this.getOrderLineStatusById(line.orl_orls_id);
+          const lineStatus = await this.getOrderLineStatusById(
+            line.orl_orls_id,
+          );
           return {
             ...line,
-            lineStatus
+            lineStatus,
           };
-        })
+        }),
       );
 
       return enrichedLines;
     } catch (error) {
-      console.error('Erreur lors de la récupération des lignes de commande:', error);
+      console.error(
+        'Erreur lors de la récupération des lignes de commande:',
+        error,
+      );
       return [];
     }
   }
 
-  async getOrderLineStatusById(statusId: string): Promise<OrderLineStatus | null> {
+  async getOrderLineStatusById(
+    statusId: string,
+  ): Promise<OrderLineStatus | null> {
     try {
       const url = `${this.baseUrl}/___xtr_order_line_status?orls_id=eq.${statusId}&select=*`;
       const response = await fetch(url, {
@@ -869,7 +912,10 @@ export class SupabaseRestService {
       const statuses = await response.json();
       return statuses.length > 0 ? statuses[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération du statut de ligne:', error);
+      console.error(
+        'Erreur lors de la récupération du statut de ligne:',
+        error,
+      );
       return null;
     }
   }
@@ -890,7 +936,10 @@ export class SupabaseRestService {
       const statuses = await response.json();
       return statuses;
     } catch (error) {
-      console.error('Erreur lors de la récupération des statuts de lignes:', error);
+      console.error(
+        'Erreur lors de la récupération des statuts de lignes:',
+        error,
+      );
       return [];
     }
   }
@@ -912,7 +961,10 @@ export class SupabaseRestService {
       const orders = await response.json();
       return orders;
     } catch (error) {
-      console.error('Erreur lors de la récupération des commandes client:', error);
+      console.error(
+        'Erreur lors de la récupération des commandes client:',
+        error,
+      );
       return [];
     }
   }
@@ -924,9 +976,9 @@ export class SupabaseRestService {
         method: 'PATCH',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
@@ -945,13 +997,16 @@ export class SupabaseRestService {
   async getOrderStats(): Promise<any> {
     try {
       // Statistiques basiques
-      const totalOrdersResponse = await fetch(`${this.baseUrl}/___xtr_order?select=count`, {
-        method: 'GET',
-        headers: this.headers,
-      });
+      const totalOrdersResponse = await fetch(
+        `${this.baseUrl}/___xtr_order?select=count`,
+        {
+          method: 'GET',
+          headers: this.headers,
+        },
+      );
 
       const totalOrders = await totalOrdersResponse.json();
-      
+
       return {
         totalOrders: totalOrders[0]?.count || 0,
         // Ajoutez d'autres statistiques si nécessaire
@@ -992,9 +1047,9 @@ export class SupabaseRestService {
         method: 'POST',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderData),
       });
 
       if (!response.ok) {
@@ -1024,7 +1079,7 @@ export class SupabaseRestService {
       return false;
     }
   }
-  
+
   // ================================================================
   // MÉTHODES POUR LES PAIEMENTS - VRAIES TABLES LEGACY
   // ================================================================
@@ -1035,7 +1090,7 @@ export class SupabaseRestService {
   async createLegacyPayment(orderData: Partial<Order>): Promise<Order | null> {
     try {
       console.log('🆕 Création paiement legacy:', orderData);
-      
+
       // Préparer les données pour ___xtr_order
       const orderPayload = {
         ord_cst_id: orderData.ord_cst_id,
@@ -1046,23 +1101,27 @@ export class SupabaseRestService {
         ord_info: JSON.stringify({
           payment_gateway: orderData.payment_gateway || 'CYBERPLUS',
           payment_metadata: orderData.payment_metadata || {},
-          transaction_id: orderData.transaction_id
+          transaction_id: orderData.transaction_id,
         }),
-        ...orderData
+        ...orderData,
       };
-      
+
       const url = `${this.baseUrl}/___xtr_order`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(orderPayload)
+        body: JSON.stringify(orderPayload),
       });
 
       if (!response.ok) {
-        console.error('Erreur création paiement legacy:', response.status, await response.text());
+        console.error(
+          'Erreur création paiement legacy:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1099,9 +1158,11 @@ export class SupabaseRestService {
   }
 
   /**
-   * Récupérer un paiement par ID de transaction via ___xtr_order  
+   * Récupérer un paiement par ID de transaction via ___xtr_order
    */
-  async getLegacyPaymentByTransactionId(transactionId: string): Promise<Order | null> {
+  async getLegacyPaymentByTransactionId(
+    transactionId: string,
+  ): Promise<Order | null> {
     try {
       // Rechercher dans ord_info qui contient les données JSON du paiement
       const url = `${this.baseUrl}/___xtr_order?ord_info->>transaction_id=eq."${transactionId}"&select=*`;
@@ -1111,14 +1172,20 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération paiement par transaction:', response.status);
+        console.error(
+          'Erreur récupération paiement par transaction:',
+          response.status,
+        );
         return null;
       }
 
       const orders = await response.json();
       return orders.length > 0 ? orders[0] : null;
     } catch (error) {
-      console.error('Erreur lors de la récupération du paiement par transaction:', error);
+      console.error(
+        'Erreur lors de la récupération du paiement par transaction:',
+        error,
+      );
       return null;
     }
   }
@@ -1126,12 +1193,15 @@ export class SupabaseRestService {
   /**
    * Mettre à jour le statut de paiement d'une commande
    */
-  async updateLegacyPaymentStatus(orderId: string, status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'): Promise<Order | null> {
+  async updateLegacyPaymentStatus(
+    orderId: string,
+    status: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED',
+  ): Promise<Order | null> {
     try {
       const payStatus = status === 'PAID' ? '1' : '0';
       const updateData = {
         ord_is_pay: payStatus,
-        ord_date_pay: status === 'PAID' ? new Date().toISOString() : null
+        ord_date_pay: status === 'PAID' ? new Date().toISOString() : null,
       };
 
       const url = `${this.baseUrl}/___xtr_order?ord_id=eq.${orderId}`;
@@ -1139,41 +1209,50 @@ export class SupabaseRestService {
         method: 'PATCH',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
-        console.error('Erreur mise à jour statut paiement:', response.status, await response.text());
+        console.error(
+          'Erreur mise à jour statut paiement:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
       const orders = await response.json();
       return orders[0] || null;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du statut de paiement:', error);
+      console.error(
+        'Erreur lors de la mise à jour du statut de paiement:',
+        error,
+      );
       return null;
     }
   }
 
   // ================================================================
-  // MÉTHODES POUR LES CALLBACKS DE PAIEMENT - TABLE ic_postback  
+  // MÉTHODES POUR LES CALLBACKS DE PAIEMENT - TABLE ic_postback
   // ================================================================
 
   /**
    * Créer un callback de paiement dans ic_postback
    */
-  async createPaymentCallback(callbackData: Partial<PaymentCallback>): Promise<PaymentCallback | null> {
+  async createPaymentCallback(
+    callbackData: Partial<PaymentCallback>,
+  ): Promise<PaymentCallback | null> {
     try {
       console.log('📥 Création callback paiement:', callbackData);
-      
+
       const url = `${this.baseUrl}/ic_postback`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
         body: JSON.stringify({
           created_at: new Date().toISOString(),
@@ -1188,12 +1267,16 @@ export class SupabaseRestService {
           ip_address: callbackData.ip_address,
           user_agent: callbackData.user_agent,
           verified: callbackData.verified || false,
-          error_message: callbackData.error_message
-        })
+          error_message: callbackData.error_message,
+        }),
       });
 
       if (!response.ok) {
-        console.error('Erreur création callback:', response.status, await response.text());
+        console.error(
+          'Erreur création callback:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1240,14 +1323,20 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération paiements commande:', response.status);
+        console.error(
+          'Erreur récupération paiements commande:',
+          response.status,
+        );
         return [];
       }
 
       const payments = await response.json();
       return payments;
     } catch (error) {
-      console.error('Erreur lors de la récupération des paiements de la commande:', error);
+      console.error(
+        'Erreur lors de la récupération des paiements de la commande:',
+        error,
+      );
       return [];
     }
   }
@@ -1255,22 +1344,29 @@ export class SupabaseRestService {
   /**
    * Mettre à jour un paiement
    */
-  async updatePayment(paymentId: string, updates: Partial<Payment>): Promise<Payment | null> {
+  async updatePayment(
+    paymentId: string,
+    updates: Partial<Payment>,
+  ): Promise<Payment | null> {
     try {
       console.log('🔄 Mise à jour paiement:', paymentId, updates);
-      
+
       const url = `${this.baseUrl}/payment?pay_id=eq.${paymentId}`;
       const response = await fetch(url, {
         method: 'PATCH',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(updates)
+        body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
-        console.error('Erreur mise à jour paiement:', response.status, await response.text());
+        console.error(
+          'Erreur mise à jour paiement:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1285,20 +1381,26 @@ export class SupabaseRestService {
   /**
    * Créer un log de paiement
    */
-  async createPaymentLog(logData: Partial<PaymentLog>): Promise<PaymentLog | null> {
+  async createPaymentLog(
+    logData: Partial<PaymentLog>,
+  ): Promise<PaymentLog | null> {
     try {
       const url = `${this.baseUrl}/payment_log`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(logData)
+        body: JSON.stringify(logData),
       });
 
       if (!response.ok) {
-        console.error('Erreur création log paiement:', response.status, await response.text());
+        console.error(
+          'Erreur création log paiement:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1329,7 +1431,10 @@ export class SupabaseRestService {
       const logs = await response.json();
       return logs;
     } catch (error) {
-      console.error('Erreur lors de la récupération des logs de paiement:', error);
+      console.error(
+        'Erreur lors de la récupération des logs de paiement:',
+        error,
+      );
       return [];
     }
   }
@@ -1340,7 +1445,7 @@ export class SupabaseRestService {
   async getPaymentStats(startDate?: string, endDate?: string): Promise<any> {
     try {
       let url = `${this.baseUrl}/payment?select=pay_status,pay_amount,pay_gateway,pay_created_at`;
-      
+
       const conditions = [];
       if (startDate) {
         conditions.push(`pay_created_at=gte.${startDate}`);
@@ -1348,7 +1453,7 @@ export class SupabaseRestService {
       if (endDate) {
         conditions.push(`pay_created_at=lte.${endDate}`);
       }
-      
+
       if (conditions.length > 0) {
         url += `&${conditions.join('&')}`;
       }
@@ -1364,28 +1469,42 @@ export class SupabaseRestService {
       }
 
       const payments = await response.json();
-      
+
       // Calculer les statistiques
       const stats: any = {
         total: payments.length,
-        successful: payments.filter((p: Payment) => ['SUCCESS', 'PAID'].includes(p.pay_status)).length,
-        failed: payments.filter((p: Payment) => p.pay_status === 'FAILED').length,
-        pending: payments.filter((p: Payment) => p.pay_status === 'PENDING').length,
-        cancelled: payments.filter((p: Payment) => p.pay_status === 'CANCELLED').length,
+        successful: payments.filter((p: Payment) =>
+          ['SUCCESS', 'PAID'].includes(p.pay_status),
+        ).length,
+        failed: payments.filter((p: Payment) => p.pay_status === 'FAILED')
+          .length,
+        pending: payments.filter((p: Payment) => p.pay_status === 'PENDING')
+          .length,
+        cancelled: payments.filter((p: Payment) => p.pay_status === 'CANCELLED')
+          .length,
         totalAmount: payments
           .filter((p: Payment) => ['SUCCESS', 'PAID'].includes(p.pay_status))
-          .reduce((sum: number, p: Payment) => sum + parseFloat(p.pay_amount), 0),
+          .reduce(
+            (sum: number, p: Payment) => sum + parseFloat(p.pay_amount),
+            0,
+          ),
         byGateway: payments.reduce((acc: any, p: Payment) => {
           acc[p.pay_gateway] = (acc[p.pay_gateway] || 0) + 1;
           return acc;
         }, {}),
       };
 
-      stats.successRate = stats.total > 0 ? ((stats.successful / stats.total) * 100).toFixed(2) : '0.00';
+      stats.successRate =
+        stats.total > 0
+          ? ((stats.successful / stats.total) * 100).toFixed(2)
+          : '0.00';
 
       return stats;
     } catch (error) {
-      console.error('Erreur lors du calcul des statistiques de paiement:', error);
+      console.error(
+        'Erreur lors du calcul des statistiques de paiement:',
+        error,
+      );
       return null;
     }
   }
@@ -1393,12 +1512,17 @@ export class SupabaseRestService {
   /**
    * Compter les tentatives de paiement par IP
    */
-  async countPaymentAttemptsByIP(ipAddress: string, minutes: number = 60): Promise<number> {
+  async countPaymentAttemptsByIP(
+    ipAddress: string,
+    minutes: number = 60,
+  ): Promise<number> {
     try {
-      const sinceDate = new Date(Date.now() - minutes * 60 * 1000).toISOString();
-      
+      const sinceDate = new Date(
+        Date.now() - minutes * 60 * 1000,
+      ).toISOString();
+
       const url = `${this.baseUrl}/payment_log?log_ip_address=eq.${ipAddress}&log_action=eq.PAYMENT_INITIATED&log_created_at=gte.${sinceDate}&select=log_id`;
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: this.headers,
@@ -1440,7 +1564,9 @@ export class SupabaseRestService {
   /**
    * Récupérer les paiements d'une commande ___XTR_ORDER
    */
-  async getLegacyPaymentsByOrderId(orderId: string): Promise<LegacyPaymentOrder[]> {
+  async getLegacyPaymentsByOrderId(
+    orderId: string,
+  ): Promise<LegacyPaymentOrder[]> {
     try {
       const url = `${this.baseUrl}/backofficeplateform_commande?ord_id=eq.${orderId}&select=*&order=date_creation.desc`;
       const response = await fetch(url, {
@@ -1449,14 +1575,20 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération paiements commande legacy:', response.status);
+        console.error(
+          'Erreur récupération paiements commande legacy:',
+          response.status,
+        );
         return [];
       }
 
       const payments = await response.json();
       return payments;
     } catch (error) {
-      console.error('Erreur lors de la récupération des paiements de la commande legacy:', error);
+      console.error(
+        'Erreur lors de la récupération des paiements de la commande legacy:',
+        error,
+      );
       return [];
     }
   }
@@ -1464,13 +1596,16 @@ export class SupabaseRestService {
   /**
    * Mettre à jour un paiement legacy
    */
-  async updateLegacyPayment(paymentId: string, updates: Partial<LegacyPaymentOrder>): Promise<LegacyPaymentOrder | null> {
+  async updateLegacyPayment(
+    paymentId: string,
+    updates: Partial<LegacyPaymentOrder>,
+  ): Promise<LegacyPaymentOrder | null> {
     try {
       console.log('🔄 Mise à jour paiement legacy:', paymentId, updates);
-      
+
       const updateData = {
         ...updates,
-        date_modification: new Date().toISOString()
+        date_modification: new Date().toISOString(),
       };
 
       const url = `${this.baseUrl}/backofficeplateform_commande?id=eq.${paymentId}`;
@@ -1478,13 +1613,17 @@ export class SupabaseRestService {
         method: 'PATCH',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
-        console.error('Erreur mise à jour paiement legacy:', response.status, await response.text());
+        console.error(
+          'Erreur mise à jour paiement legacy:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1499,16 +1638,18 @@ export class SupabaseRestService {
   /**
    * Créer un callback dans ic_postback
    */
-  async createLegacyPaymentCallback(callbackData: Partial<LegacyPaymentCallback>): Promise<LegacyPaymentCallback | null> {
+  async createLegacyPaymentCallback(
+    callbackData: Partial<LegacyPaymentCallback>,
+  ): Promise<LegacyPaymentCallback | null> {
     try {
       console.log('📥 Création callback legacy:', callbackData);
-      
+
       const url = `${this.baseUrl}/ic_postback`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           ...this.headers,
-          'Prefer': 'return=representation'
+          Prefer: 'return=representation',
         },
         body: JSON.stringify({
           commande_id: callbackData.commande_id,
@@ -1523,12 +1664,16 @@ export class SupabaseRestService {
           devise_confirmee: callbackData.devise_confirmee,
           signature_verifiee: callbackData.signature_verifiee,
           date_reception: new Date().toISOString(),
-          erreur_message: callbackData.erreur_message
-        })
+          erreur_message: callbackData.erreur_message,
+        }),
       });
 
       if (!response.ok) {
-        console.error('Erreur création callback legacy:', response.status, await response.text());
+        console.error(
+          'Erreur création callback legacy:',
+          response.status,
+          await response.text(),
+        );
         return null;
       }
 
@@ -1543,7 +1688,9 @@ export class SupabaseRestService {
   /**
    * Récupérer les callbacks d'un paiement
    */
-  async getLegacyPaymentCallbacks(paymentId: string): Promise<LegacyPaymentCallback[]> {
+  async getLegacyPaymentCallbacks(
+    paymentId: string,
+  ): Promise<LegacyPaymentCallback[]> {
     try {
       const url = `${this.baseUrl}/ic_postback?commande_id=eq.${paymentId}&select=*&order=date_reception.desc`;
       const response = await fetch(url, {
@@ -1559,7 +1706,10 @@ export class SupabaseRestService {
       const callbacks = await response.json();
       return callbacks;
     } catch (error) {
-      console.error('Erreur lors de la récupération des callbacks legacy:', error);
+      console.error(
+        'Erreur lors de la récupération des callbacks legacy:',
+        error,
+      );
       return [];
     }
   }
@@ -1567,10 +1717,13 @@ export class SupabaseRestService {
   /**
    * Obtenir des statistiques de paiement legacy
    */
-  async getLegacyPaymentStats(startDate?: string, endDate?: string): Promise<any> {
+  async getLegacyPaymentStats(
+    startDate?: string,
+    endDate?: string,
+  ): Promise<any> {
     try {
       let url = `${this.baseUrl}/backofficeplateform_commande?select=statut_paiement,montant_total,methode_paiement,date_creation`;
-      
+
       const conditions = [];
       if (startDate) {
         conditions.push(`date_creation=gte.${startDate}`);
@@ -1578,7 +1731,7 @@ export class SupabaseRestService {
       if (endDate) {
         conditions.push(`date_creation=lte.${endDate}`);
       }
-      
+
       if (conditions.length > 0) {
         url += `&${conditions.join('&')}`;
       }
@@ -1589,34 +1742,57 @@ export class SupabaseRestService {
       });
 
       if (!response.ok) {
-        console.error('Erreur récupération stats paiement legacy:', response.status);
+        console.error(
+          'Erreur récupération stats paiement legacy:',
+          response.status,
+        );
         return null;
       }
 
       const payments = await response.json();
-      
+
       // Calculer les statistiques
       const stats: any = {
         total: payments.length,
-        successful: payments.filter((p: LegacyPaymentOrder) => p.statut_paiement === 'PAYE').length,
-        failed: payments.filter((p: LegacyPaymentOrder) => p.statut_paiement === 'ECHEC').length,
-        pending: payments.filter((p: LegacyPaymentOrder) => p.statut_paiement === 'EN_ATTENTE').length,
-        cancelled: payments.filter((p: LegacyPaymentOrder) => p.statut_paiement === 'ANNULE').length,
-        refunded: payments.filter((p: LegacyPaymentOrder) => p.statut_paiement === 'REMBOURSE').length,
+        successful: payments.filter(
+          (p: LegacyPaymentOrder) => p.statut_paiement === 'PAYE',
+        ).length,
+        failed: payments.filter(
+          (p: LegacyPaymentOrder) => p.statut_paiement === 'ECHEC',
+        ).length,
+        pending: payments.filter(
+          (p: LegacyPaymentOrder) => p.statut_paiement === 'EN_ATTENTE',
+        ).length,
+        cancelled: payments.filter(
+          (p: LegacyPaymentOrder) => p.statut_paiement === 'ANNULE',
+        ).length,
+        refunded: payments.filter(
+          (p: LegacyPaymentOrder) => p.statut_paiement === 'REMBOURSE',
+        ).length,
         totalAmount: payments
           .filter((p: LegacyPaymentOrder) => p.statut_paiement === 'PAYE')
-          .reduce((sum: number, p: LegacyPaymentOrder) => sum + parseFloat(p.montant_total), 0),
+          .reduce(
+            (sum: number, p: LegacyPaymentOrder) =>
+              sum + parseFloat(p.montant_total),
+            0,
+          ),
         byGateway: payments.reduce((acc: any, p: LegacyPaymentOrder) => {
           acc[p.methode_paiement] = (acc[p.methode_paiement] || 0) + 1;
           return acc;
         }, {}),
       };
 
-      stats.successRate = stats.total > 0 ? ((stats.successful / stats.total) * 100).toFixed(2) : '0.00';
+      stats.successRate =
+        stats.total > 0
+          ? ((stats.successful / stats.total) * 100).toFixed(2)
+          : '0.00';
 
       return stats;
     } catch (error) {
-      console.error('Erreur lors du calcul des statistiques de paiement legacy:', error);
+      console.error(
+        'Erreur lors du calcul des statistiques de paiement legacy:',
+        error,
+      );
       return null;
     }
   }
@@ -1662,7 +1838,10 @@ export class SupabaseRestService {
       const orders = await response.json();
       return orders.length > 0;
     } catch (error) {
-      console.error('Erreur lors de la vérification de la commande legacy:', error);
+      console.error(
+        'Erreur lors de la vérification de la commande legacy:',
+        error,
+      );
       return false;
     }
   }

@@ -1,27 +1,25 @@
 /**
- * Module Orders - Gestion complète des commandes  
- * 
- * ÉTAT ACTUEL:
- * ✅ OrdersService - Fonctionnel avec SupabaseRestService
- * ✅ OrdersCompleteService - Fonctionnel avec SupabaseRestService  
- * ✅ Approche intégrée NestJS-Remix - Performance optimale
- * 
- * SERVICES AUTOMOBILES TEMPORAIREMENT DÉSACTIVÉS:
- * ❌ Services nécessitent refactorisation complète Prisma -> SupabaseRestService
- * ❌ 15 erreurs TypeScript à résoudre avant réactivation
- * 
- * PLAN DE REFACTORISATION:
- * 1. Migrer TaxCalculationService vers SupabaseRestService
- * 2. Migrer VehicleDataService vers SupabaseRestService
- * 3. Migrer AdvancedShippingService vers SupabaseRestService
- * 4. Recréer AutomotiveOrdersService avec nouvelle architecture
- * 5. Réactiver AutomotiveOrdersController
- * 
- * Fonctionnalités principales actives:
+ * Module Orders - Gestion complète des commandes
+ *
+ * Généré automatiquement depuis l'analyse de 50 fichiers PHP
+ * Entités analysées: 16 entités, 18 opérations métier
+ *
+ * Fonctionnalités principales:
  * - Gestion complète du cycle de vie des commandes
- * - Intégration directe avec Remix (zéro latence)
- * - Cache pour les performances
+ * - Calcul automatique des frais de livraison
+ * - Gestion des statuts et transitions
  * - Audit trail complet
+ * - Intégration avec système de facturation
+ * - Gestion du panier
+ * - Notifications email
+ * - Cache pour les performances
+ *
+ * Architecture basée sur l'analyse PHP:
+ * - shopping_cart.class.php → CartService
+ * - class_order.php → OrdersService
+ * - class_order_line.php → OrderLine management
+ * - class_delivery_agent.php → ShippingService
+ * - class_invoice.php → InvoiceService
  */
 
 import { Module } from '@nestjs/common';
@@ -33,18 +31,8 @@ import { SupabaseRestService } from '../../database/supabase-rest.service';
 
 @Module({
   imports: [],
-  controllers: [
-    OrdersController, 
-    OrdersApiController,
-  ],
-  providers: [
-    OrdersService, 
-    OrdersCompleteService, 
-    SupabaseRestService,
-  ],
-  exports: [
-    OrdersService, 
-    OrdersCompleteService,
-  ]
+  controllers: [OrdersController, OrdersApiController],
+  providers: [OrdersService, OrdersCompleteService, SupabaseRestService],
+  exports: [OrdersService, OrdersCompleteService, SupabaseRestService],
 })
 export class OrdersModule {}

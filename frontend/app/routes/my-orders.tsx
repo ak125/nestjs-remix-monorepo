@@ -5,10 +5,11 @@
 
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Package, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Package, Clock, CheckCircle, XCircle } from "lucide-react";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getOptionalUser } from "~/server/auth.server";
 
 interface Order {
@@ -46,34 +47,19 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   }
 
   try {
-    // ✅ Approche intégrée : appel direct au service via Remix
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible');
-    }
-
-    console.log('🛒 Récupération des commandes pour l\'utilisateur:', user.id);
-    const result = await context.remixService.integration.getOrdersForRemix({
-      page: 1,
-      limit: 50,
-      // Pour l'instant, récupérer toutes les commandes et filtrer côté client
-      // TODO: Ajouter getUserOrdersForRemix au contrôleur Remix
+    // Utiliser l'intégration directe pour récupérer les commandes de l'utilisateur
+    const result = await context.remixService.integration.getUserOrdersForRemix(user.id, {
+      limit: 100
     });
-
+    
     if (!result.success) {
-      console.error('❌ Erreur lors de la récupération des commandes:', result.error);
+      console.error('Error fetching user orders:', result.error);
       return json<LoaderData>({ orders: [], user });
     }
 
-    // Filtrer les commandes pour l'utilisateur connecté
-    const userOrders = result.orders?.filter((order: any) => 
-      order.ord_cst_id === user.id || order.customerId === user.id
-    ) || [];
-
-    console.log(`✅ ${userOrders.length} commandes filtrées pour l'utilisateur sur ${result.orders?.length || 0} totales`);
-    return json<LoaderData>({ orders: userOrders, user });
-
+    return json<LoaderData>({ orders: result.orders || [], user });
   } catch (error) {
-    console.error('❌ Erreur dans loader my-orders:', error);
+    console.error('Error fetching user orders:', error);
     return json<LoaderData>({ orders: [], user });
   }
 };

@@ -41,16 +41,17 @@ export interface UpdateStaffDto {
 
 @Injectable()
 export class StaffAdminService {
-  constructor(
-    private readonly cacheService: CacheService,
-  ) {}
+  constructor(private readonly cacheService: CacheService) {}
 
   /**
    * Récupère tous les staff selon le niveau d'autorisation
    */
   async findAllStaff(currentUserLevel: number): Promise<AdminStaff[]> {
-    console.log('🔍 StaffAdminService.findAllStaff pour niveau:', currentUserLevel);
-    
+    console.log(
+      '🔍 StaffAdminService.findAllStaff pour niveau:',
+      currentUserLevel,
+    );
+
     try {
       // Simuler des données d'admin basées sur l'analyse PHP
       const mockStaff: AdminStaff[] = [
@@ -66,13 +67,13 @@ export class StaffAdminService {
           cnfa_fname: 'Jean',
           cnfa_tel: '0123456789',
           cnfa_activ: '1',
-          s_id: 'dept_1'
-        }
+          s_id: 'dept_1',
+        },
       ];
 
       // Filtrer selon le niveau d'autorisation
-      const accessibleStaff = mockStaff.filter(staff => 
-        staff.cnfa_level < currentUserLevel
+      const accessibleStaff = mockStaff.filter(
+        (staff) => staff.cnfa_level < currentUserLevel,
       );
 
       return accessibleStaff;
@@ -85,9 +86,17 @@ export class StaffAdminService {
   /**
    * Récupère un staff par ID
    */
-  async findStaffById(id: number, currentUserLevel: number): Promise<AdminStaff | null> {
-    console.log('🔍 StaffAdminService.findStaffById:', id, 'niveau:', currentUserLevel);
-    
+  async findStaffById(
+    id: number,
+    currentUserLevel: number,
+  ): Promise<AdminStaff | null> {
+    console.log(
+      '🔍 StaffAdminService.findStaffById:',
+      id,
+      'niveau:',
+      currentUserLevel,
+    );
+
     try {
       // Simuler la récupération d'un admin spécifique
       const mockStaff: AdminStaff = {
@@ -102,7 +111,7 @@ export class StaffAdminService {
         cnfa_fname: 'Jean',
         cnfa_tel: '0123456789',
         cnfa_activ: '1',
-        s_id: 'dept_1'
+        s_id: 'dept_1',
       };
 
       // Vérifier l'autorisation
@@ -122,11 +131,14 @@ export class StaffAdminService {
    */
   async createStaff(staffData: CreateStaffDto): Promise<AdminStaff> {
     console.log('🔧 StaffAdminService.createStaff:', staffData);
-    
+
     try {
-      const hashedPassword = await bcrypt.hash(staffData.password || 'TempPassword123!', 10);
+      const hashedPassword = await bcrypt.hash(
+        staffData.password || 'TempPassword123!',
+        10,
+      );
       const keylog = `STAFF_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Simuler la création d'un admin
       const newStaff: AdminStaff = {
         cnfa_id: Date.now(),
@@ -140,7 +152,7 @@ export class StaffAdminService {
         cnfa_fname: staffData.firstName,
         cnfa_tel: staffData.phone,
         cnfa_activ: '1',
-        s_id: 'dept_1'
+        s_id: 'dept_1',
       };
 
       console.log('✅ Admin créé:', newStaff);
@@ -154,9 +166,13 @@ export class StaffAdminService {
   /**
    * Met à jour un administrateur
    */
-  async updateStaff(id: number, staffData: UpdateStaffDto, currentUserLevel: number): Promise<AdminStaff> {
+  async updateStaff(
+    id: number,
+    staffData: UpdateStaffDto,
+    currentUserLevel: number,
+  ): Promise<AdminStaff> {
     console.log('🔧 StaffAdminService.updateStaff:', id, staffData);
-    
+
     try {
       // Vérifier que l'admin existe et est accessible
       const existingStaff = await this.findStaffById(id, currentUserLevel);
@@ -173,7 +189,7 @@ export class StaffAdminService {
         cnfa_job: staffData.job || existingStaff.cnfa_job,
         cnfa_name: staffData.lastName || existingStaff.cnfa_name,
         cnfa_fname: staffData.firstName || existingStaff.cnfa_fname,
-        cnfa_tel: staffData.phone || existingStaff.cnfa_tel
+        cnfa_tel: staffData.phone || existingStaff.cnfa_tel,
       };
 
       console.log('✅ Admin mis à jour:', updatedStaff);
@@ -189,7 +205,7 @@ export class StaffAdminService {
    */
   async enableStaff(id: number, currentUserLevel: number): Promise<boolean> {
     console.log('🔧 StaffAdminService.enableStaff:', id);
-    
+
     try {
       const staff = await this.findStaffById(id, currentUserLevel);
       if (!staff) {
@@ -210,7 +226,7 @@ export class StaffAdminService {
    */
   async disableStaff(id: number, currentUserLevel: number): Promise<boolean> {
     console.log('🔧 StaffAdminService.disableStaff:', id);
-    
+
     try {
       const staff = await this.findStaffById(id, currentUserLevel);
       if (!staff) {
@@ -236,18 +252,21 @@ export class StaffAdminService {
     byLevel: Record<number, number>;
   }> {
     console.log('📊 StaffAdminService.getStaffStats niveau:', currentUserLevel);
-    
+
     try {
       const allStaff = await this.findAllStaff(currentUserLevel);
-      
+
       const stats = {
         total: allStaff.length,
-        active: allStaff.filter(s => s.cnfa_activ === '1').length,
-        inactive: allStaff.filter(s => s.cnfa_activ === '0').length,
-        byLevel: allStaff.reduce((acc, staff) => {
-          acc[staff.cnfa_level] = (acc[staff.cnfa_level] || 0) + 1;
-          return acc;
-        }, {} as Record<number, number>)
+        active: allStaff.filter((s) => s.cnfa_activ === '1').length,
+        inactive: allStaff.filter((s) => s.cnfa_activ === '0').length,
+        byLevel: allStaff.reduce(
+          (acc, staff) => {
+            acc[staff.cnfa_level] = (acc[staff.cnfa_level] || 0) + 1;
+            return acc;
+          },
+          {} as Record<number, number>,
+        ),
       };
 
       console.log('📊 Statistiques:', stats);
@@ -263,12 +282,27 @@ export class StaffAdminService {
    */
   async getPermissions(level: number): Promise<string[]> {
     console.log('🔐 StaffAdminService.getPermissions niveau:', level);
-    
+
     // Basé sur l'analyse PHP
     const permissions: Record<number, string[]> = {
       7: ['view_orders', 'manage_customers', 'view_stats'],
-      8: ['view_orders', 'manage_customers', 'view_stats', 'manage_staff_level_7', 'advanced_settings'],
-      9: ['view_orders', 'manage_customers', 'view_stats', 'manage_staff_level_7', 'manage_staff_level_8', 'advanced_settings', 'super_admin_tools', 'payment_management']
+      8: [
+        'view_orders',
+        'manage_customers',
+        'view_stats',
+        'manage_staff_level_7',
+        'advanced_settings',
+      ],
+      9: [
+        'view_orders',
+        'manage_customers',
+        'view_stats',
+        'manage_staff_level_7',
+        'manage_staff_level_8',
+        'advanced_settings',
+        'super_admin_tools',
+        'payment_management',
+      ],
     };
 
     return permissions[level] || [];
@@ -287,8 +321,23 @@ export class StaffAdminService {
   getStaffPermissions(level: number): string[] {
     const permissions: Record<number, string[]> = {
       7: ['view_orders', 'manage_customers', 'view_stats'],
-      8: ['view_orders', 'manage_customers', 'view_stats', 'manage_staff_level_7', 'advanced_settings'],
-      9: ['view_orders', 'manage_customers', 'view_stats', 'manage_staff_level_7', 'manage_staff_level_8', 'advanced_settings', 'super_admin_tools', 'payment_management']
+      8: [
+        'view_orders',
+        'manage_customers',
+        'view_stats',
+        'manage_staff_level_7',
+        'advanced_settings',
+      ],
+      9: [
+        'view_orders',
+        'manage_customers',
+        'view_stats',
+        'manage_staff_level_7',
+        'manage_staff_level_8',
+        'advanced_settings',
+        'super_admin_tools',
+        'payment_management',
+      ],
     };
 
     return permissions[level] || [];
@@ -305,11 +354,11 @@ export class StaffAdminService {
     phone: string;
   }): Promise<AdminStaff> {
     console.log('🔧 StaffAdminService.createSuperAdmin:', superAdminData);
-    
+
     try {
       const hashedPassword = await bcrypt.hash('SuperAdmin123!', 10);
       const keylog = `SUPER_ADMIN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       const superAdmin: AdminStaff = {
         cnfa_id: Date.now(),
         cnfa_login: superAdminData.login,
@@ -322,7 +371,7 @@ export class StaffAdminService {
         cnfa_fname: superAdminData.firstName,
         cnfa_tel: superAdminData.phone,
         cnfa_activ: '1',
-        s_id: 'super_admin_dept'
+        s_id: 'super_admin_dept',
       };
 
       console.log('✅ Super-Admin créé:', superAdmin);

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseRestService } from '../database/supabase-rest.service';
 import { CacheService } from '../cache/cache.service';
-import * as bcrypt from 'bcryptjs';
 
 export interface StaffMember {
   id: string;
@@ -48,10 +47,12 @@ export class StaffService {
 
   async findAll(): Promise<StaffMember[]> {
     console.log('🔍 StaffService.findAll');
-    
+
     try {
       // TODO: Implémenter la récupération via SupabaseRestService
-      console.log('⚠️ StaffService.findAll: Méthode non implémentée - utilisation de données vides');
+      console.log(
+        '⚠️ StaffService.findAll: Méthode non implémentée - utilisation de données vides',
+      );
       return [];
     } catch (error) {
       console.error('❌ Erreur findAll staff:', error);
@@ -61,10 +62,12 @@ export class StaffService {
 
   async findById(id: string): Promise<StaffMember | null> {
     console.log('🔍 StaffService.findById:', id);
-    
+
     try {
       // TODO: Implémenter la récupération via SupabaseRestService
-      console.log('⚠️ StaffService.findById: Méthode non implémentée - retour null');
+      console.log(
+        '⚠️ StaffService.findById: Méthode non implémentée - retour null',
+      );
       return null;
     } catch (error) {
       console.error('❌ Erreur findById staff:', error);
@@ -74,10 +77,12 @@ export class StaffService {
 
   async findByLogin(login: string): Promise<StaffMember | null> {
     console.log('🔍 StaffService.findByLogin:', login);
-    
+
     try {
       // TODO: Implémenter la récupération via SupabaseRestService
-      console.log('⚠️ StaffService.findByLogin: Méthode non implémentée - retour null');
+      console.log(
+        '⚠️ StaffService.findByLogin: Méthode non implémentée - retour null',
+      );
       return null;
     } catch (error) {
       console.error('❌ Erreur findByLogin staff:', error);
@@ -87,7 +92,7 @@ export class StaffService {
 
   async create(staffData: CreateStaffDto): Promise<StaffMember> {
     console.log('🔧 StaffService.create:', staffData);
-    
+
     try {
       // TODO: Implémenter la création via SupabaseRestService
       console.log('⚠️ StaffService.create: Méthode non implémentée');
@@ -100,7 +105,7 @@ export class StaffService {
 
   async update(id: string, updates: UpdateStaffDto): Promise<StaffMember> {
     console.log('🔧 StaffService.update:', id, updates);
-    
+
     try {
       // TODO: Implémenter la mise à jour via SupabaseRestService
       console.log('⚠️ StaffService.update: Méthode non implémentée');
@@ -113,7 +118,7 @@ export class StaffService {
 
   async delete(id: string): Promise<void> {
     console.log('🗑️ StaffService.delete:', id);
-    
+
     try {
       // TODO: Implémenter la suppression via SupabaseRestService
       console.log('⚠️ StaffService.delete: Méthode non implémentée');
@@ -135,7 +140,7 @@ export class StaffService {
       phone: data.cnfa_tel,
       isActive: data.cnfa_activ === '1',
       keylog: data.cnfa_keylog,
-      departmentId: data.s_id
+      departmentId: data.s_id,
     };
   }
 }

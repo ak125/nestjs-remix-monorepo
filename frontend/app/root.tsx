@@ -5,7 +5,8 @@ import { Footer } from "./components/Footer";
 import Navbar from "./components/ui/navbar";
 // @ts-ignore
 import stylesheet from "./global.css?url";
-import logo from "./routes/_assets/logo-automecanik-dark.png";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 import { getOptionalUser } from "./server/auth.server";
 
 export const links: LinksFunction = () => [

@@ -9,7 +9,6 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 
 describe('UsersService (Integration)', () => {
   let service: UsersService;
-  let supabaseService: SupabaseRestService;
   let cacheService: CacheService;
   let testUserId: string;
   let testEmail: string;
@@ -25,7 +24,9 @@ describe('UsersService (Integration)', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    supabaseService = module.get<SupabaseRestService>(SupabaseRestService);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const supabaseService =
+      module.get<SupabaseRestService>(SupabaseRestService);
     cacheService = module.get<CacheService>(CacheService);
 
     // Générer un email unique pour les tests
@@ -112,7 +113,9 @@ describe('UsersService (Integration)', () => {
       expect(result.tel).toBe('+33987654321');
       expect(result.isPro).toBe(true);
 
-      console.log(`✅ Utilisateur mis à jour: ${result.firstName} ${result.lastName}`);
+      console.log(
+        `✅ Utilisateur mis à jour: ${result.firstName} ${result.lastName}`,
+      );
     });
 
     it('should get user profile', async () => {
@@ -124,7 +127,9 @@ describe('UsersService (Integration)', () => {
       expect(result.firstName).toBe('UpdatedTest');
       expect(result.lastName).toBe('UpdatedUser');
 
-      console.log(`✅ Profil utilisateur récupéré: ${result.firstName} ${result.lastName}`);
+      console.log(
+        `✅ Profil utilisateur récupéré: ${result.firstName} ${result.lastName}`,
+      );
     });
 
     it('should change password', async () => {
@@ -134,7 +139,10 @@ describe('UsersService (Integration)', () => {
         confirmPassword: 'NewPassword123!',
       };
 
-      const result = await service.changePassword(testUserId, changePasswordDto);
+      const result = await service.changePassword(
+        testUserId,
+        changePasswordDto,
+      );
 
       expect(result).toBe(true);
 
@@ -142,7 +150,10 @@ describe('UsersService (Integration)', () => {
     });
 
     it('should validate credentials with new password', async () => {
-      const result = await service.validateUserCredentials(testEmail, 'NewPassword123!');
+      const result = await service.validateUserCredentials(
+        testEmail,
+        'NewPassword123!',
+      );
 
       expect(result).toBeDefined();
       expect(result!.email).toBe(testEmail);
@@ -151,11 +162,14 @@ describe('UsersService (Integration)', () => {
     });
 
     it('should fail validation with old password', async () => {
-      const result = await service.validateUserCredentials(testEmail, 'TestPassword123!');
+      const result = await service.validateUserCredentials(
+        testEmail,
+        'TestPassword123!',
+      );
 
       expect(result).toBeNull();
 
-      console.log('✅ Validation échouée avec l\'ancien mot de passe (attendu)');
+      console.log("✅ Validation échouée avec l'ancien mot de passe (attendu)");
     });
 
     it('should manage user levels', async () => {
@@ -197,9 +211,11 @@ describe('UsersService (Integration)', () => {
         isActive: true,
       };
 
-      await expect(service.createUser(createUserDto)).rejects.toThrow('Un utilisateur avec cet email existe déjà');
+      await expect(service.createUser(createUserDto)).rejects.toThrow(
+        'Un utilisateur avec cet email existe déjà',
+      );
 
-      console.log('✅ Erreur de duplication d\'email détectée');
+      console.log("✅ Erreur de duplication d'email détectée");
     });
 
     it('should throw NotFoundException for non-existent user', async () => {
@@ -215,8 +231,9 @@ describe('UsersService (Integration)', () => {
         confirmPassword: 'NewPassword123!',
       };
 
-      await expect(service.changePassword(testUserId, changePasswordDto))
-        .rejects.toThrow('Mot de passe actuel incorrect');
+      await expect(
+        service.changePassword(testUserId, changePasswordDto),
+      ).rejects.toThrow('Mot de passe actuel incorrect');
 
       console.log('✅ Erreur mot de passe incorrect détectée');
     });
@@ -257,7 +274,7 @@ describe('UsersService (Integration)', () => {
       const users = await service.getUsersByLevel(6);
 
       expect(Array.isArray(users)).toBe(true);
-      // Le test user devrait être dans la liste 
+      // Le test user devrait être dans la liste
       const testUser = users.find((u: any) => u.id === testUserId);
       expect(testUser).toBeDefined();
       // expect(testUser!.level).toBe(6); // Propriété level non encore implémentée
@@ -300,7 +317,7 @@ describe('UsersService (Integration)', () => {
 
       expect(Array.isArray(results)).toBe(true);
       // Notre utilisateur de test devrait être trouvé
-      const testUser = results.find(u => u.id === testUserId);
+      const testUser = results.find((u) => u.id === testUserId);
       expect(testUser).toBeDefined();
 
       console.log(`✅ Recherche utilisateurs: ${results.length} résultats`);
@@ -315,7 +332,9 @@ describe('UsersService (Integration)', () => {
       expect(result.page).toBe(1);
       expect(result.limit).toBe(5);
 
-      console.log(`✅ Pagination: ${result.users.length} utilisateurs sur ${result.total} total`);
+      console.log(
+        `✅ Pagination: ${result.users.length} utilisateurs sur ${result.total} total`,
+      );
     });
   });
 });

@@ -1,12 +1,22 @@
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { SupabaseRestService } from '../../database/supabase-rest.service';
 import { CacheService } from '../../cache/cache.service';
 import { CreateUserDto, CreateUserSchema } from './dto/create-user.dto';
 import { UpdateUserDto, UpdateUserSchema } from './dto/update-user.dto';
-import { UserResponseDto, transformUserToResponse } from './dto/user-response.dto';
-import { ChangePasswordDto, ChangePasswordSchema } from './dto/change-password.dto';
+import {
+  UserResponseDto,
+  transformUserToResponse,
+} from './dto/user-response.dto';
+import {
+  ChangePasswordDto,
+  ChangePasswordSchema,
+} from './dto/change-password.dto';
 import { UserProfileDto, transformUserToProfile } from './dto/user-profile.dto';
-import { CreateUserAddressDto, UpdateUserAddressDto, UserAddressDto } from './dto/user-address.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +28,7 @@ export class UsersService {
   async findById(id: string): Promise<UserResponseDto | null> {
     try {
       console.log(`🔍 UsersService.findById: ${id}`);
-      
+
       // Essayer le cache d'abord
       try {
         const cachedUser = await this.cacheService.getCachedUser(id);
@@ -27,7 +37,10 @@ export class UsersService {
           return cachedUser;
         }
       } catch (cacheError) {
-        console.log('Cache indisponible, recherche en DB:', (cacheError as Error).message);
+        console.log(
+          'Cache indisponible, recherche en DB:',
+          (cacheError as Error).message,
+        );
       }
 
       const user = await this.supabaseService.getUserById(id);
@@ -36,12 +49,15 @@ export class UsersService {
       }
 
       const userResponse = transformUserToResponse(user);
-      
+
       // Mettre en cache le résultat
       try {
         await this.cacheService.cacheUser(id, userResponse);
       } catch (cacheError) {
-        console.log('Erreur lors de la mise en cache:', (cacheError as Error).message);
+        console.log(
+          'Erreur lors de la mise en cache:',
+          (cacheError as Error).message,
+        );
       }
 
       console.log(`✅ User found in service: ${userResponse.email}`);
@@ -71,7 +87,9 @@ export class UsersService {
 
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     try {
-      console.log('🔨 UsersService.createUser:', { email: createUserDto.email });
+      console.log('🔨 UsersService.createUser:', {
+        email: createUserDto.email,
+      });
 
       // Validation avec Zod
       const validatedData = CreateUserSchema.parse(createUserDto);
@@ -79,22 +97,29 @@ export class UsersService {
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await this.findByEmail(validatedData.email);
       if (existingUser) {
-        throw new ConflictException('Un utilisateur avec cet email existe déjà');
+        throw new ConflictException(
+          'Un utilisateur avec cet email existe déjà',
+        );
       }
 
       // Créer l'utilisateur
       const newUser = await this.supabaseService.createUser(validatedData);
       if (!newUser) {
-        throw new BadRequestException('Erreur lors de la création de l\'utilisateur');
+        throw new BadRequestException(
+          "Erreur lors de la création de l'utilisateur",
+        );
       }
 
       const userResponse = transformUserToResponse(newUser);
-      
+
       // Mettre en cache
       try {
         await this.cacheService.cacheUser(userResponse.id, userResponse);
       } catch (cacheError) {
-        console.log('Erreur lors de la mise en cache:', (cacheError as Error).message);
+        console.log(
+          'Erreur lors de la mise en cache:',
+          (cacheError as Error).message,
+        );
       }
 
       console.log(`✅ User created successfully: ${userResponse.email}`);
@@ -105,7 +130,10 @@ export class UsersService {
     }
   }
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async updateUser(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
     try {
       console.log(`� UsersService.updateUser: ${id}`, updateUserDto);
 
@@ -122,23 +150,31 @@ export class UsersService {
       if (validatedData.email && validatedData.email !== existingUser.email) {
         const userWithEmail = await this.findByEmail(validatedData.email);
         if (userWithEmail) {
-          throw new ConflictException('Cet email est déjà utilisé par un autre utilisateur');
+          throw new ConflictException(
+            'Cet email est déjà utilisé par un autre utilisateur',
+          );
         }
       }
 
       // Mettre à jour l'utilisateur
-      const updatedUser = await this.supabaseService.updateUserProfile(id, validatedData);
+      const updatedUser = await this.supabaseService.updateUserProfile(
+        id,
+        validatedData,
+      );
       if (!updatedUser) {
         throw new BadRequestException('Erreur lors de la mise à jour');
       }
 
       const userResponse = transformUserToResponse(updatedUser);
-      
+
       // Mettre à jour le cache
       try {
         await this.cacheService.cacheUser(id, userResponse);
       } catch (cacheError) {
-        console.log('Erreur lors de la mise à jour du cache:', (cacheError as Error).message);
+        console.log(
+          'Erreur lors de la mise à jour du cache:',
+          (cacheError as Error).message,
+        );
       }
 
       console.log(`✅ User updated successfully: ${userResponse.email}`);
@@ -161,12 +197,15 @@ export class UsersService {
 
       // Soft delete : désactiver le compte au lieu de le supprimer
       const deactivatedUser = await this.updateUser(id, { isActive: false });
-      
+
       // Supprimer du cache
       try {
         await this.cacheService.invalidateUser(id);
       } catch (cacheError) {
-        console.log('Erreur lors de la suppression du cache:', (cacheError as Error).message);
+        console.log(
+          'Erreur lors de la suppression du cache:',
+          (cacheError as Error).message,
+        );
       }
 
       console.log(`✅ User deactivated successfully: ${deactivatedUser.email}`);
@@ -177,19 +216,29 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(page: number = 1, limit: number = 20): Promise<{ users: UserResponseDto[], total: number, page: number, limit: number }> {
+  async getAllUsers(
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     try {
       console.log(`📋 UsersService.getAllUsers: page=${page}, limit=${limit}`);
 
       // Pour l'instant, méthode simplifiée
       // TODO: Implémenter la pagination dans SupabaseRestService
-      console.log('⚠️ getAllUsers: Méthode non implémentée - utilisation de données vides');
-      
+      console.log(
+        '⚠️ getAllUsers: Méthode non implémentée - utilisation de données vides',
+      );
+
       return {
         users: [],
         total: 0,
         page,
-        limit
+        limit,
       };
     } catch (error) {
       console.error(`❌ Error in UsersService.getAllUsers: ${error}`);
@@ -202,8 +251,10 @@ export class UsersService {
       console.log(`🔍 UsersService.searchUsers: ${searchTerm}`);
 
       // TODO: Implémenter la recherche dans SupabaseRestService
-      console.log('⚠️ searchUsers: Méthode non implémentée - retour de tableau vide');
-      
+      console.log(
+        '⚠️ searchUsers: Méthode non implémentée - retour de tableau vide',
+      );
+
       return [];
     } catch (error) {
       console.error(`❌ Error in UsersService.searchUsers: ${error}`);
@@ -211,7 +262,10 @@ export class UsersService {
     }
   }
 
-  async validateUserCredentials(email: string, password: string): Promise<UserResponseDto | null> {
+  async validateUserCredentials(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto | null> {
     try {
       console.log(`🔐 UsersService.validateUserCredentials: ${email}`);
 
@@ -220,7 +274,10 @@ export class UsersService {
         return null;
       }
 
-      const isPasswordValid = await this.supabaseService.validatePassword(password, user.cst_pswd);
+      const isPasswordValid = await this.supabaseService.validatePassword(
+        password,
+        user.cst_pswd,
+      );
       if (!isPasswordValid) {
         return null;
       }
@@ -229,12 +286,17 @@ export class UsersService {
       console.log(`✅ User credentials validated: ${userResponse.email}`);
       return userResponse;
     } catch (error) {
-      console.error(`❌ Error in UsersService.validateUserCredentials: ${error}`);
+      console.error(
+        `❌ Error in UsersService.validateUserCredentials: ${error}`,
+      );
       throw error;
     }
   }
 
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<boolean> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<boolean> {
     try {
       console.log(`🔒 UsersService.changePassword: ${userId}`);
 
@@ -248,28 +310,39 @@ export class UsersService {
       }
 
       // Vérifier le mot de passe actuel
-      const isCurrentPasswordValid = await this.supabaseService.validatePassword(
-        validatedData.currentPassword,
-        user.cst_pswd
-      );
+      const isCurrentPasswordValid =
+        await this.supabaseService.validatePassword(
+          validatedData.currentPassword,
+          user.cst_pswd,
+        );
 
       if (!isCurrentPasswordValid) {
         throw new BadRequestException('Mot de passe actuel incorrect');
       }
 
       // Changer le mot de passe
-      const hashedPassword = await this.supabaseService.hashPassword(validatedData.newPassword);
-      const result = await this.supabaseService.updateUserPassword(user.cst_mail, hashedPassword);
+      const hashedPassword = await this.supabaseService.hashPassword(
+        validatedData.newPassword,
+      );
+      const result = await this.supabaseService.updateUserPassword(
+        user.cst_mail,
+        hashedPassword,
+      );
 
       if (!result) {
-        throw new BadRequestException('Erreur lors du changement de mot de passe');
+        throw new BadRequestException(
+          'Erreur lors du changement de mot de passe',
+        );
       }
 
       // Invalider le cache utilisateur
       try {
         await this.cacheService.invalidateUser(userId);
       } catch (cacheError) {
-        console.log('Erreur lors de l\'invalidation du cache:', (cacheError as Error).message);
+        console.log(
+          "Erreur lors de l'invalidation du cache:",
+          (cacheError as Error).message,
+        );
       }
 
       console.log(`✅ Password changed successfully for user: ${userId}`);
@@ -302,23 +375,32 @@ export class UsersService {
     }
   }
 
-  async updateUserLevel(userId: string, level: number): Promise<UserResponseDto> {
+  async updateUserLevel(
+    userId: string,
+    level: number,
+  ): Promise<UserResponseDto> {
     try {
-      console.log(`⬆️ UsersService.updateUserLevel: ${userId} -> level ${level}`);
+      console.log(
+        `⬆️ UsersService.updateUserLevel: ${userId} -> level ${level}`,
+      );
 
       // Vérifier que le niveau est valide (basé sur l'analyse legacy)
       if (![2, 6, 9].includes(level)) {
-        throw new BadRequestException('Niveau d\'autorisation invalide. Niveaux autorisés: 2, 6, 9');
+        throw new BadRequestException(
+          "Niveau d'autorisation invalide. Niveaux autorisés: 2, 6, 9",
+        );
       }
 
       // TODO: Implémenter la mise à jour du niveau dans SupabaseRestService
       // Pour l'instant, utiliser updateUserProfile
-      const updatedUser = await this.updateUser(userId, { 
+      const updatedUser = await this.updateUser(userId, {
         // Ajouter le niveau aux données à mettre à jour
         // Ce champ devra être ajouté au UpdateUserDto
       } as any);
 
-      console.log(`✅ User level updated: ${updatedUser.email} -> level ${level}`);
+      console.log(
+        `✅ User level updated: ${updatedUser.email} -> level ${level}`,
+      );
       return updatedUser;
     } catch (error) {
       console.error(`❌ Error in UsersService.updateUserLevel: ${error}`);
@@ -361,8 +443,10 @@ export class UsersService {
 
       // TODO: Implémenter la recherche par niveau dans SupabaseRestService
       // Pour l'instant, retourner un tableau vide
-      console.log('⚠️ getUsersByLevel: Méthode non implémentée - retour de tableau vide');
-      
+      console.log(
+        '⚠️ getUsersByLevel: Méthode non implémentée - retour de tableau vide',
+      );
+
       return [];
     } catch (error) {
       console.error(`❌ Error in UsersService.getUsersByLevel: ${error}`);
@@ -370,22 +454,32 @@ export class UsersService {
     }
   }
 
-  async getActiveUsers(page: number = 1, limit: number = 20): Promise<{ users: UserResponseDto[], total: number, page: number, limit: number }> {
+  async getActiveUsers(
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     try {
-      console.log(`✅ UsersService.getActiveUsers: page=${page}, limit=${limit}`);
+      console.log(
+        `✅ UsersService.getActiveUsers: page=${page}, limit=${limit}`,
+      );
 
       // TODO: Implémenter le filtrage des utilisateurs actifs
       // Pour l'instant, utiliser getAllUsers
       const result = await this.getAllUsers(page, limit);
-      
+
       // Filtrer les utilisateurs actifs côté application (temporaire)
-      const activeUsers = result.users.filter(user => user.isActive);
-      
+      const activeUsers = result.users.filter((user) => user.isActive);
+
       return {
         users: activeUsers,
         total: activeUsers.length,
         page,
-        limit
+        limit,
       };
     } catch (error) {
       console.error(`❌ Error in UsersService.getActiveUsers: ${error}`);

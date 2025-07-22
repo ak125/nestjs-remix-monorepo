@@ -122,19 +122,22 @@ export class AuthService {
     console.log('--- Début de authenticateUser ---');
     console.log('Type email:', typeof email, 'Valeur:', email);
     console.log('Type password:', typeof password, 'Valeur:', password);
-    
+
     try {
       // Vérifier les tentatives de connexion (avec fallback)
       const attempts = await this.cacheService.getLoginAttempts(email);
       if (attempts >= 5) {
         console.log('Trop de tentatives de connexion pour:', email);
         return {
-          message: "Trop de tentatives de connexion. Réessayez plus tard.",
+          message: 'Trop de tentatives de connexion. Réessayez plus tard.',
           error: true,
         };
       }
     } catch (error) {
-      console.log('Erreur cache lors de la vérification des tentatives:', error);
+      console.log(
+        'Erreur cache lors de la vérification des tentatives:',
+        error,
+      );
       // Continuer sans cache
     }
 
@@ -160,7 +163,7 @@ export class AuthService {
       try {
         await this.cacheService.incrementLoginAttempts(email);
       } catch (error) {
-        console.log('Erreur cache lors de l\'échec de connexion:', error);
+        console.log("Erreur cache lors de l'échec de connexion:", error);
         // Continuer sans cache
       }
       return result;
@@ -199,7 +202,10 @@ export class AuthService {
     }
   }
 
-  async resetPasswordWithToken(token: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  async resetPasswordWithToken(
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('--- Début de resetPasswordWithToken ---');
       console.log('Token:', token);
@@ -227,8 +233,12 @@ export class AuthService {
       }
 
       // Mettre à jour le mot de passe
-      const hashedPassword = await this.supabaseRestService.hashPassword(newPassword);
-      const updateResult = await this.supabaseRestService.updateUserPassword(tokenData.email, hashedPassword);
+      const hashedPassword =
+        await this.supabaseRestService.hashPassword(newPassword);
+      const updateResult = await this.supabaseRestService.updateUserPassword(
+        tokenData.email,
+        hashedPassword,
+      );
 
       if (updateResult) {
         // Marquer le token comme utilisé
@@ -243,30 +253,35 @@ export class AuthService {
       } else {
         return { success: false, error: 'update_failed' };
       }
-
     } catch (error) {
       console.error('Erreur lors du reset du mot de passe:', error);
       return { success: false, error: 'server_error' };
     }
   }
 
-  async updateUserProfile(userId: string, updates: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    tel?: string;
-    address?: string;
-    city?: string;
-    zipCode?: string;
-    country?: string;
-  }): Promise<any> {
+  async updateUserProfile(
+    userId: string,
+    updates: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      tel?: string;
+      address?: string;
+      city?: string;
+      zipCode?: string;
+      country?: string;
+    },
+  ): Promise<any> {
     try {
       console.log('--- Début de updateUserProfile ---');
       console.log('User ID:', userId);
       console.log('Updates:', updates);
 
-      const result = await this.supabaseRestService.updateUserProfile(userId, updates);
-      
+      const result = await this.supabaseRestService.updateUserProfile(
+        userId,
+        updates,
+      );
+
       if (result) {
         const userResponse = {
           id: result.cst_id,
@@ -289,10 +304,10 @@ export class AuthService {
           console.log('Erreur cache lors de la mise à jour du profil:', error);
           // Continuer sans cache
         }
-        
+
         return userResponse;
       }
-      
+
       return null;
     } catch (error) {
       console.error('Erreur lors de la mise à jour du profil:', error);
@@ -300,7 +315,11 @@ export class AuthService {
     }
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('--- Début de changePassword ---');
       console.log('User ID:', userId);
@@ -312,25 +331,29 @@ export class AuthService {
       }
 
       // Vérifier le mot de passe actuel
-      const isCurrentPasswordValid = await this.supabaseRestService.validatePassword(
-        currentPassword,
-        user.cst_pswd
-      );
+      const isCurrentPasswordValid =
+        await this.supabaseRestService.validatePassword(
+          currentPassword,
+          user.cst_pswd,
+        );
 
       if (!isCurrentPasswordValid) {
         return { success: false, error: 'invalid_current_password' };
       }
 
       // Changer le mot de passe
-      const hashedPassword = await this.supabaseRestService.hashPassword(newPassword);
-      const updateResult = await this.supabaseRestService.updateUserPassword(user.cst_mail, hashedPassword);
+      const hashedPassword =
+        await this.supabaseRestService.hashPassword(newPassword);
+      const updateResult = await this.supabaseRestService.updateUserPassword(
+        user.cst_mail,
+        hashedPassword,
+      );
 
       if (updateResult) {
         return { success: true };
       } else {
         return { success: false, error: 'update_failed' };
       }
-
     } catch (error) {
       console.error('Erreur lors du changement de mot de passe:', error);
       return { success: false, error: 'server_error' };

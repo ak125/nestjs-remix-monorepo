@@ -5,10 +5,10 @@
 
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { ArrowLeft, Edit, Package, MapPin, CreditCard, FileText } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { ArrowLeft, Edit, Package, MapPin, CreditCard, FileText } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface OrderDetails {
   id: string;
@@ -58,26 +58,22 @@ export const loader: LoaderFunction = async ({ params, context }) => {
   }
 
   try {
-    // ✅ Approche intégrée : appel direct au service via Remix
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration Remix non disponible');
-    }
-
-    console.log('🔍 Récupération de la commande publique ID:', orderId);
+    // Utiliser l'intégration directe pour récupérer la commande
     const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
-
+    
     if (!result.success) {
-      console.error('❌ Erreur lors de la récupération de la commande publique:', result.error);
-      return json<LoaderData>({ order: null, error: result.error });
+      return json<LoaderData>({ 
+        order: null, 
+        error: result.error || "Commande non trouvée" 
+      });
     }
 
-    console.log(`✅ Commande publique récupérée avec succès: ${result.order?.ord_id}`);
     return json<LoaderData>({ order: result.order });
   } catch (error) {
-    console.error("❌ Erreur dans loader orders.$id:", error);
+    console.error("Error loading order:", error);
     return json<LoaderData>({ 
       order: null, 
-      error: error instanceof Error ? error.message : "Erreur lors du chargement de la commande" 
+      error: "Erreur lors du chargement de la commande" 
     });
   }
 };

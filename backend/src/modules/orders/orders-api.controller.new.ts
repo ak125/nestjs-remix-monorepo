@@ -3,7 +3,18 @@
  * Toutes les fonctionnalités pour les tests curl
  */
 
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, HttpException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  HttpStatus,
+  HttpException,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersCompleteService } from './orders-complete.service';
 
@@ -11,7 +22,7 @@ import { OrdersCompleteService } from './orders-complete.service';
 export class OrdersApiController {
   constructor(
     private readonly ordersService: OrdersService,
-    private readonly ordersCompleteService: OrdersCompleteService
+    private readonly ordersCompleteService: OrdersCompleteService,
   ) {}
 
   /**
@@ -24,22 +35,27 @@ export class OrdersApiController {
     @Query('status') status?: string,
     @Query('customerId') customerId?: string,
     @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string
+    @Query('dateTo') dateTo?: string,
   ) {
     console.log(`📡 API Orders: GET /api/orders?page=${page}&limit=${limit}`);
-    
+
     try {
       const result = await this.ordersService.findOrdersWithPagination(
         Number(page),
         Number(limit),
-        { status, customerId, dateFrom, dateTo }
+        { status, customerId, dateFrom, dateTo },
       );
-      
-      console.log(`✅ API Orders: ${result.orders.length} commandes retournées`);
+
+      console.log(
+        `✅ API Orders: ${result.orders.length} commandes retournées`,
+      );
       return result;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -49,7 +65,7 @@ export class OrdersApiController {
   @Get(':id')
   async getOrderById(@Param('id') id: string) {
     console.log(`📡 API Orders: GET /api/orders/${id}`);
-    
+
     try {
       const order = await this.ordersService.findOrderById(id);
       if (!order) {
@@ -63,7 +79,10 @@ export class OrdersApiController {
         throw error;
       }
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -73,14 +92,20 @@ export class OrdersApiController {
   @Get('customer/:customerId')
   async getOrdersByCustomer(@Param('customerId') customerId: string) {
     console.log(`📡 API Orders: GET /api/orders/customer/${customerId}`);
-    
+
     try {
-      const orders = await this.ordersService.findOrdersByCustomerId(customerId);
-      console.log(`✅ API Orders: ${orders.length} commandes pour le client ${customerId}`);
+      const orders =
+        await this.ordersService.findOrdersByCustomerId(customerId);
+      console.log(
+        `✅ API Orders: ${orders.length} commandes pour le client ${customerId}`,
+      );
       return orders;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -90,14 +115,17 @@ export class OrdersApiController {
   @Get('stats/by-status')
   async getOrderStatsByStatus() {
     console.log(`📡 API Orders: GET /api/orders/stats/by-status`);
-    
+
     try {
       const stats = await this.ordersService.getOrderStatsByStatus();
       console.log(`✅ API Orders: Statistiques par statut récupérées`);
       return stats;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -107,14 +135,17 @@ export class OrdersApiController {
   @Get('stats/general')
   async getOrderStats() {
     console.log(`📡 API Orders: GET /api/orders/stats/general`);
-    
+
     try {
       const stats = await this.ordersService.getOrderStats();
       console.log(`✅ API Orders: Statistiques générales récupérées`);
       return stats;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -124,14 +155,17 @@ export class OrdersApiController {
   @Get('statuses/orders')
   async getOrderStatuses() {
     console.log(`📡 API Orders: GET /api/orders/statuses/orders`);
-    
+
     try {
       const statuses = await this.ordersService.getAllOrderStatuses();
       console.log(`✅ API Orders: Statuts de commande récupérés`);
       return statuses;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -141,14 +175,17 @@ export class OrdersApiController {
   @Get('statuses/lines')
   async getOrderLineStatuses() {
     console.log(`📡 API Orders: GET /api/orders/statuses/lines`);
-    
+
     try {
       const statuses = await this.ordersService.getAllOrderLineStatuses();
       console.log(`✅ API Orders: Statuts de ligne récupérés`);
       return statuses;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -162,21 +199,26 @@ export class OrdersApiController {
     @Query('status') status?: string,
     @Query('customerId') customerId?: string,
     @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string
+    @Query('dateTo') dateTo?: string,
   ) {
     console.log(`📡 API Orders: GET /api/orders/admin/all-relations`);
-    
+
     try {
       const result = await this.ordersCompleteService.getOrdersWithAllRelations(
         Number(page),
         Number(limit),
-        { status, customerId, dateFrom, dateTo }
+        { status, customerId, dateFrom, dateTo },
       );
-      console.log(`✅ API Orders: ${result.orders.length} commandes avec relations complètes`);
+      console.log(
+        `✅ API Orders: ${result.orders.length} commandes avec relations complètes`,
+      );
       return result;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -186,7 +228,7 @@ export class OrdersApiController {
   @Get('admin/:id/complete')
   async getCompleteOrderById(@Param('id') id: string) {
     console.log(`📡 API Orders: GET /api/orders/admin/${id}/complete`);
-    
+
     try {
       const order = await this.ordersCompleteService.getCompleteOrderById(id);
       if (!order) {
@@ -199,7 +241,10 @@ export class OrdersApiController {
         throw error;
       }
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur serveur', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Erreur serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -209,14 +254,17 @@ export class OrdersApiController {
   @Post()
   async createOrder(@Body() orderData: any) {
     console.log(`📡 API Orders: POST /api/orders`);
-    
+
     try {
       const newOrder = await this.ordersService.createOrder(orderData);
       console.log(`✅ API Orders: Commande créée ${newOrder?.ord_id}`);
       return newOrder;
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur lors de la création', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la création',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -226,7 +274,7 @@ export class OrdersApiController {
   @Put(':id')
   async updateOrder(@Param('id') id: string, @Body() updates: any) {
     console.log(`📡 API Orders: PUT /api/orders/${id}`);
-    
+
     try {
       const updatedOrder = await this.ordersService.updateOrder(id, updates);
       if (!updatedOrder) {
@@ -239,7 +287,10 @@ export class OrdersApiController {
         throw error;
       }
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur lors de la mise à jour', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la mise à jour',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -247,16 +298,25 @@ export class OrdersApiController {
    * Mettre à jour le statut d'une commande - API
    */
   @Put(':id/status')
-  async updateOrderStatus(@Param('id') id: string, @Body() body: { statusId: string }) {
+  async updateOrderStatus(
+    @Param('id') id: string,
+    @Body() body: { statusId: string },
+  ) {
     console.log(`📡 API Orders: PUT /api/orders/${id}/status`);
-    
+
     try {
-      const success = await this.ordersService.updateOrderStatus(id, body.statusId);
+      const success = await this.ordersService.updateOrderStatus(
+        id,
+        body.statusId,
+      );
       console.log(`✅ API Orders: Statut commande ${id} mis à jour`);
       return { success };
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur lors de la mise à jour du statut', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la mise à jour du statut',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -264,16 +324,25 @@ export class OrdersApiController {
    * Mettre à jour le statut de paiement - API
    */
   @Put(':id/payment')
-  async updatePaymentStatus(@Param('id') id: string, @Body() body: { isPaid: boolean }) {
+  async updatePaymentStatus(
+    @Param('id') id: string,
+    @Body() body: { isPaid: boolean },
+  ) {
     console.log(`📡 API Orders: PUT /api/orders/${id}/payment`);
-    
+
     try {
-      const success = await this.ordersService.updatePaymentStatus(id, body.isPaid);
+      const success = await this.ordersService.updatePaymentStatus(
+        id,
+        body.isPaid,
+      );
       console.log(`✅ API Orders: Statut paiement ${id} mis à jour`);
       return { success };
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur lors de la mise à jour du paiement', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la mise à jour du paiement',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -283,14 +352,17 @@ export class OrdersApiController {
   @Delete(':id')
   async deleteOrder(@Param('id') id: string) {
     console.log(`📡 API Orders: DELETE /api/orders/${id}`);
-    
+
     try {
       const success = await this.ordersService.deleteOrder(id);
       console.log(`✅ API Orders: Commande ${id} supprimée`);
       return { success };
     } catch (error: any) {
       console.error(`❌ API Orders Error: ${error.message || error}`);
-      throw new HttpException('Erreur lors de la suppression', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'Erreur lors de la suppression',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

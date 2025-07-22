@@ -3,7 +3,18 @@
  * Utilise les services propres et les méthodes disponibles
  */
 
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  // Request - temporairement non utilisé
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersCompleteService } from './orders-complete.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -13,7 +24,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
-    private readonly ordersCompleteService: OrdersCompleteService
+    private readonly ordersCompleteService: OrdersCompleteService,
   ) {}
 
   /**
@@ -26,13 +37,14 @@ export class OrdersController {
     @Query('status') status?: string,
     @Query('customerId') customerId?: string,
     @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string
+    @Query('dateTo') dateTo?: string,
   ) {
-    return this.ordersService.findOrdersWithPagination(
-      page,
-      limit,
-      { status, customerId, dateFrom, dateTo }
-    );
+    return this.ordersService.findOrdersWithPagination(page, limit, {
+      status,
+      customerId,
+      dateFrom,
+      dateTo,
+    });
   }
 
   /**
@@ -105,7 +117,7 @@ export class OrdersController {
   @Put(':id/payment-status')
   async updatePaymentStatus(
     @Param('id') id: string,
-    @Body() body: { isPaid: boolean }
+    @Body() body: { isPaid: boolean },
   ) {
     return this.ordersService.updatePaymentStatus(id, body.isPaid);
   }
@@ -116,7 +128,7 @@ export class OrdersController {
   @Put(':id/status')
   async updateOrderStatus(
     @Param('id') id: string,
-    @Body() body: { statusId: string }
+    @Body() body: { statusId: string },
   ) {
     return this.ordersService.updateOrderStatus(id, body.statusId);
   }
@@ -139,13 +151,14 @@ export class OrdersController {
     @Query('status') status?: string,
     @Query('customerId') customerId?: string,
     @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string
+    @Query('dateTo') dateTo?: string,
   ) {
-    return this.ordersCompleteService.getOrdersWithAllRelations(
-      page,
-      limit,
-      { status, customerId, dateFrom, dateTo }
-    );
+    return this.ordersCompleteService.getOrdersWithAllRelations(page, limit, {
+      status,
+      customerId,
+      dateFrom,
+      dateTo,
+    });
   }
 
   /**

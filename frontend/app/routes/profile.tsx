@@ -1,10 +1,10 @@
-import { json, type ActionFunction, type LoaderFunction, redirect } from "@remix-run/node";
+import { json, type ActionFunction, type LoaderFunction } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useSearchParams } from "@remix-run/react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { requireUser } from "~/server/auth.server";
 
@@ -18,11 +18,6 @@ export const action: ActionFunction = async ({ request, context }) => {
   console.log("🔍 DEBUG: Action POST Profile démarrée");
   
   try {
-    // Vérifier la disponibilité du service d'intégration
-    if (!context.remixService?.integration) {
-      throw new Error('Service d\'intégration non disponible');
-    }
-
     // Utiliser le body parsé par Express au lieu de request.formData()
     const parsedBody = (context as any).parsedBody;
     console.log("🔍 DEBUG: Body parsé par Express:", parsedBody);
@@ -58,18 +53,14 @@ export const action: ActionFunction = async ({ request, context }) => {
       console.log("🔍 DEBUG: Données profil:", profileData);
 
       try {
-        console.log("🔍 DEBUG: Appel updateProfileForRemix service...");
-        const result = await context.remixService.integration.updateProfileForRemix(
-          user.id,
-          profileData
-        );
+        console.log("🔍 DEBUG: Appel updateProfile service...");
+        await context.remixService.updateProfile({
+          userId: user.id,
+          ...profileData
+        });
+        console.log("🔍 DEBUG: updateProfile réussi");
         
-        if (result.success) {
-          console.log("🔍 DEBUG: updateProfile réussi");
-          return json({ success: "Profil mis à jour avec succès" });
-        } else {
-          return json({ error: result.error || "Erreur lors de la mise à jour du profil" }, { status: 500 });
-        }
+        return json({ success: "Profil mis à jour avec succès" });
       } catch (error) {
         console.error('🔍 DEBUG: Erreur updateProfile:', error);
         return json({ error: "Erreur lors de la mise à jour du profil" }, { status: 500 });
@@ -91,19 +82,15 @@ export const action: ActionFunction = async ({ request, context }) => {
       }
 
       try {
-        console.log("🔍 DEBUG: Appel changePasswordForRemix service...");
-        const result = await context.remixService.integration.changePasswordForRemix(
-          user.id,
-          passwordData.currentPassword as string,
-          passwordData.newPassword as string
-        );
+        console.log("🔍 DEBUG: Appel changePassword service...");
+        await context.remixService.changePassword({
+          userId: user.id,
+          currentPassword: passwordData.currentPassword as string,
+          newPassword: passwordData.newPassword as string
+        });
+        console.log("🔍 DEBUG: changePassword réussi");
         
-        if (result.success) {
-          console.log("🔍 DEBUG: changePassword réussi");
-          return json({ success: "Mot de passe changé avec succès" });
-        } else {
-          return json({ error: result.error || "Erreur lors du changement de mot de passe" }, { status: 500 });
-        }
+        return json({ success: "Mot de passe changé avec succès" });
       } catch (error) {
         console.error('🔍 DEBUG: Erreur changePassword:', error);
         return json({ error: "Erreur lors du changement de mot de passe" }, { status: 500 });
@@ -137,7 +124,8 @@ export default function Profile() {
   const actionData = useActionData<typeof action>();
   
   const updateStatus = searchParams.get("update");
-  const passwordStatus = searchParams.get("password");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const passwordStatus = searchParams.get("password"); // TODO: utiliser pour afficher le statut de changement de mot de passe
   const error = searchParams.get("error");
 
   return (

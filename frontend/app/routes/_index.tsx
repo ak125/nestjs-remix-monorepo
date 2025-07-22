@@ -1,8 +1,8 @@
 import { type LoaderFunctionArgs, json } from "@remix-run/node";
 import { Link, useSearchParams } from "@remix-run/react";
 import { Package, ReceiptEuro, Users, BarChart3 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   // Optionnel : charger des statistiques d'accueil

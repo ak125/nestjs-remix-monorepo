@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { useSearchParams, Link } from "@remix-run/react";
 import { getOptionalUser } from "~/server/auth.server";
-import { useSearchParams } from "@remix-run/react";
 
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -144,15 +144,15 @@ export default function Login() {
             
             <div className="mt-4 text-center space-y-2">
                 <p className="text-sm text-gray-600">
-                    <a href="/forgot-password" className="text-blue-600 hover:underline">
+                    <Link to="/forgot-password" className="text-blue-600 hover:underline">
                         Mot de passe oublié ?
-                    </a>
+                    </Link>
                 </p>
                 <p className="text-sm text-gray-600">
                     Pas encore de compte ? {' '}
-                    <a href="/register" className="text-blue-600 hover:underline">
+                    <Link to="/register" className="text-blue-600 hover:underline">
                         S'inscrire
-                    </a>
+                    </Link>
                 </p>
             </div>
         </div>

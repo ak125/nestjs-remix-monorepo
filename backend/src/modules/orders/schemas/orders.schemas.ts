@@ -93,7 +93,9 @@ export const OrderCalculationItemSchema = z.object({
 });
 
 export const CalculateOrderSchema = z.object({
-  items: z.array(OrderCalculationItemSchema).min(1, 'Au moins un article est requis'),
+  items: z
+    .array(OrderCalculationItemSchema)
+    .min(1, 'Au moins un article est requis'),
   deliveryMethod: z.nativeEnum(DeliveryMethod),
   promocode: z.string().optional(),
   deliveryAddress: DeliveryAddressSchema.optional(),

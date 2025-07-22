@@ -3,8 +3,8 @@
  * Inclut toutes les fonctionnalités migrées du PHP legacy
  */
 
-import React, { useState } from 'react';
 import { Link, useLocation } from '@remix-run/react';
+import React, { useState } from 'react';
 
 interface NavigationItem {
   name: string;

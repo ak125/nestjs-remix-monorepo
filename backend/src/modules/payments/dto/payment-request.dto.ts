@@ -6,41 +6,62 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 // ================================================================
 
 // Enum pour les méthodes de paiement (tables legacy)
-export const PaymentGatewaySchema = z.enum(['CYBERPLUS', 'STRIPE', 'PAYPAL', 'BANK_TRANSFER']);
+export const PaymentGatewaySchema = z.enum([
+  'CYBERPLUS',
+  'STRIPE',
+  'PAYPAL',
+  'BANK_TRANSFER',
+]);
 
 // Enum pour les statuts de paiement (tables legacy)
-export const PaymentStatusSchema = z.enum(['EN_ATTENTE', 'PAYE', 'ECHEC', 'REMBOURSE', 'ANNULE']);
+export const PaymentStatusSchema = z.enum([
+  'EN_ATTENTE',
+  'PAYE',
+  'ECHEC',
+  'REMBOURSE',
+  'ANNULE',
+]);
 
 // Schéma pour créer un paiement - VRAIES TABLES LEGACY ___xtr_order
 export const CreateLegacyPaymentSchema = z.object({
-  ord_cst_id: z.string().min(1, 'L\'ID client (___XTR_CUSTOMER) est requis'),    // Clé étrangère vers ___xtr_customer
-  ord_total_ttc: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Format de montant invalide'), // Montant TTC
-  ord_currency: z.string().length(3, 'La devise doit faire 3 caractères').optional().default('EUR'),
-  payment_gateway: PaymentGatewaySchema.optional().default('CYBERPLUS'),        // Stocké dans ord_info (JSON)
-  return_url: z.string().url('URL de retour invalide').optional(),             // Stocké dans ord_info (JSON)  
-  cancel_url: z.string().url('URL d\'annulation invalide').optional(),         // Stocké dans ord_info (JSON)
-  callback_url: z.string().url('URL de callback invalide').optional(),         // Stocké dans ord_info (JSON)
-  payment_metadata: z.record(z.string(), z.any()).optional(),                  // Stocké dans ord_info (JSON)
+  ord_cst_id: z.string().min(1, "L'ID client (___XTR_CUSTOMER) est requis"), // Clé étrangère vers ___xtr_customer
+  ord_total_ttc: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, 'Format de montant invalide'), // Montant TTC
+  ord_currency: z
+    .string()
+    .length(3, 'La devise doit faire 3 caractères')
+    .optional()
+    .default('EUR'),
+  payment_gateway: PaymentGatewaySchema.optional().default('CYBERPLUS'), // Stocké dans ord_info (JSON)
+  return_url: z.string().url('URL de retour invalide').optional(), // Stocké dans ord_info (JSON)
+  cancel_url: z.string().url("URL d'annulation invalide").optional(), // Stocké dans ord_info (JSON)
+  callback_url: z.string().url('URL de callback invalide').optional(), // Stocké dans ord_info (JSON)
+  payment_metadata: z.record(z.string(), z.any()).optional(), // Stocké dans ord_info (JSON)
 });
 
 // Schéma pour initier un paiement legacy - PLUS FLEXIBLE
 export const InitiateLegacyPaymentSchema = z.object({
   payment_gateway: PaymentGatewaySchema.optional().default('CYBERPLUS'),
   return_url: z.string().url('URL de retour invalide').optional(),
-  cancel_url: z.string().url('URL d\'annulation invalide').optional(), 
+  cancel_url: z.string().url("URL d'annulation invalide").optional(),
   callback_url: z.string().url('URL de callback invalide').optional(),
-  customerInfo: z.object({
-    email: z.string().email('Email invalide').optional(),
-    firstName: z.string().min(1, 'Prénom requis').optional(),
-    lastName: z.string().min(1, 'Nom requis').optional(),
-    phone: z.string().optional(),
-  }).optional(),
-  billingAddress: z.object({
-    street: z.string().min(1, 'Rue requise').optional(),
-    city: z.string().min(1, 'Ville requise').optional(),
-    postalCode: z.string().min(1, 'Code postal requis').optional(),
-    country: z.string().optional().default('France'),
-  }).optional(),
+  customerInfo: z
+    .object({
+      email: z.string().email('Email invalide').optional(),
+      firstName: z.string().min(1, 'Prénom requis').optional(),
+      lastName: z.string().min(1, 'Nom requis').optional(),
+      phone: z.string().optional(),
+    })
+    .optional(),
+  billingAddress: z
+    .object({
+      street: z.string().min(1, 'Rue requise').optional(),
+      city: z.string().min(1, 'Ville requise').optional(),
+      postalCode: z.string().min(1, 'Code postal requis').optional(),
+      country: z.string().optional().default('France'),
+    })
+    .optional(),
   payment_metadata: z.record(z.string(), z.any()).optional(),
 });
 
@@ -85,40 +106,55 @@ export const CreateLegacyCallbackSchema = z.object({
 // ================================================================
 
 export class CreateLegacyPaymentDto {
-  @ApiProperty({ description: 'ID du client (___XTR_CUSTOMER)', example: '456' })
+  @ApiProperty({
+    description: 'ID du client (___XTR_CUSTOMER)',
+    example: '456',
+  })
   ord_cst_id!: string;
 
   @ApiProperty({ description: 'Montant TTC du paiement', example: '99.99' })
   ord_total_ttc!: string;
 
-  @ApiPropertyOptional({ description: 'Devise', example: 'EUR', default: 'EUR' })
+  @ApiPropertyOptional({
+    description: 'Devise',
+    example: 'EUR',
+    default: 'EUR',
+  })
   ord_currency?: string;
 
-  @ApiPropertyOptional({ 
-    description: 'Gateway de paiement (stocké dans ord_info)', 
+  @ApiPropertyOptional({
+    description: 'Gateway de paiement (stocké dans ord_info)',
     enum: ['CYBERPLUS', 'STRIPE', 'PAYPAL', 'BANK_TRANSFER'],
-    default: 'CYBERPLUS'
+    default: 'CYBERPLUS',
   })
   payment_gateway?: string;
 
-  @ApiPropertyOptional({ description: 'URL de retour après paiement réussi (stockée dans ord_info)' })
+  @ApiPropertyOptional({
+    description: 'URL de retour après paiement réussi (stockée dans ord_info)',
+  })
   return_url?: string;
 
-  @ApiPropertyOptional({ description: 'URL de retour après annulation (stockée dans ord_info)' })
+  @ApiPropertyOptional({
+    description: 'URL de retour après annulation (stockée dans ord_info)',
+  })
   cancel_url?: string;
 
-  @ApiPropertyOptional({ description: 'URL de callback pour notifications (stockée dans ord_info)' })
+  @ApiPropertyOptional({
+    description: 'URL de callback pour notifications (stockée dans ord_info)',
+  })
   callback_url?: string;
 
-  @ApiPropertyOptional({ description: 'Métadonnées additionnelles (stockées dans ord_info)' })
+  @ApiPropertyOptional({
+    description: 'Métadonnées additionnelles (stockées dans ord_info)',
+  })
   payment_metadata?: Record<string, any>;
 }
 
 export class InitiateLegacyPaymentDto {
-  @ApiPropertyOptional({ 
-    description: 'Gateway de paiement', 
+  @ApiPropertyOptional({
+    description: 'Gateway de paiement',
     enum: ['CYBERPLUS', 'STRIPE', 'PAYPAL', 'BANK_TRANSFER'],
-    default: 'CYBERPLUS'
+    default: 'CYBERPLUS',
   })
   payment_gateway?: string;
 
@@ -152,7 +188,9 @@ export class InitiateLegacyPaymentDto {
 }
 
 export class LegacyPaymentResponseDto {
-  @ApiProperty({ description: 'ID unique du paiement (backofficeplateform_commande.id)' })
+  @ApiProperty({
+    description: 'ID unique du paiement (backofficeplateform_commande.id)',
+  })
   id!: number;
 
   @ApiProperty({ description: 'ID de la commande ___XTR_ORDER' })
@@ -167,15 +205,15 @@ export class LegacyPaymentResponseDto {
   @ApiProperty({ description: 'Devise' })
   devise!: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Statut du paiement',
-    enum: ['EN_ATTENTE', 'PAYE', 'ECHEC', 'REMBOURSE', 'ANNULE']
+    enum: ['EN_ATTENTE', 'PAYE', 'ECHEC', 'REMBOURSE', 'ANNULE'],
   })
   statutPaiement!: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Méthode de paiement',
-    enum: ['CYBERPLUS', 'STRIPE', 'PAYPAL', 'VIREMENT']
+    enum: ['CYBERPLUS', 'STRIPE', 'PAYPAL', 'VIREMENT'],
   })
   methodePaiement!: string;
 
@@ -235,36 +273,36 @@ export class LegacyPaymentResponseDto {
    */
   static fromSupabaseOrder(order: any): LegacyPaymentResponseDto {
     const response = new LegacyPaymentResponseDto();
-    
+
     // Mapper les champs de ___xtr_order vers notre DTO
     response.id = parseInt(order.ord_id);
     response.orderId = parseInt(order.ord_id);
     response.customerId = parseInt(order.ord_cst_id);
     response.montantTotal = parseFloat(order.ord_total_ttc || '0');
     response.devise = 'EUR'; // Par défaut
-    
+
     // Mapper le statut ord_is_pay -> statut lisible
     response.statutPaiement = order.ord_is_pay === '1' ? 'PAYE' : 'EN_ATTENTE';
-    
+
     // Extraire les infos du JSON ord_info
     let orderInfo: any = {};
     try {
       orderInfo = order.ord_info ? JSON.parse(order.ord_info) : {};
-    } catch (e) {
+    } catch {
       orderInfo = {};
     }
-    
+
     response.methodePaiement = orderInfo.payment_gateway || 'CYBERPLUS';
     response.urlRetourOk = orderInfo.return_url;
     response.urlRetourNok = orderInfo.cancel_url;
     response.urlCallback = orderInfo.callback_url;
     response.referenceTransaction = orderInfo.transaction_id;
     response.donneesMeta = orderInfo.payment_metadata || {};
-    
+
     response.dateCreation = order.ord_date || new Date().toISOString();
     response.dateModification = order.ord_date || new Date().toISOString();
     response.datePaiement = order.ord_date_pay;
-    
+
     return response;
   }
 }
@@ -312,8 +350,14 @@ export class LegacyCallbackDto {
 // ================================================================
 
 export type CreateLegacyPaymentType = z.infer<typeof CreateLegacyPaymentSchema>;
-export type InitiateLegacyPaymentType = z.infer<typeof InitiateLegacyPaymentSchema>;
-export type LegacyPaymentResponseType = z.infer<typeof LegacyPaymentResponseSchema>;
-export type CreateLegacyCallbackType = z.infer<typeof CreateLegacyCallbackSchema>;
+export type InitiateLegacyPaymentType = z.infer<
+  typeof InitiateLegacyPaymentSchema
+>;
+export type LegacyPaymentResponseType = z.infer<
+  typeof LegacyPaymentResponseSchema
+>;
+export type CreateLegacyCallbackType = z.infer<
+  typeof CreateLegacyCallbackSchema
+>;
 export type PaymentGatewayType = z.infer<typeof PaymentGatewaySchema>;
 export type PaymentStatusType = z.infer<typeof PaymentStatusSchema>;

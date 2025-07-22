@@ -20,12 +20,7 @@ import { LocalStrategy } from './local.strategy';
     CacheModule,
   ],
   controllers: [AuthController, ProfileController],
-  providers: [
-    LocalStrategy,
-    LocalAuthGuard,
-    CookieSerializer,
-    AuthService,
-  ],
+  providers: [LocalStrategy, LocalAuthGuard, CookieSerializer, AuthService],
   exports: [AuthService],
 })
 export class AuthModule {}

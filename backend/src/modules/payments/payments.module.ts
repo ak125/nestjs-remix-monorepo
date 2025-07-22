@@ -6,14 +6,7 @@ import { SupabaseRestService } from '../../database/supabase-rest.service';
 
 @Module({
   controllers: [PaymentsController],
-  providers: [
-    PaymentService,
-    PaymentAuditService,
-    SupabaseRestService,
-  ],
-  exports: [
-    PaymentService,
-    PaymentAuditService,
-  ],
+  providers: [PaymentService, PaymentAuditService, SupabaseRestService],
+  exports: [PaymentService, PaymentAuditService],
 })
 export class PaymentsModule {}

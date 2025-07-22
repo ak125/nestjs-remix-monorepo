@@ -2,18 +2,17 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Body,
   Req,
   Res,
-  UseGuards,
-  HttpStatus,
+  // Param, Put, UseGuards, HttpStatus - imports temporairement non utilisés
 } from '@nestjs/common';
 import { Response } from 'express';
 import { Request as ExpressRequest } from 'express';
 import { AuthService } from '../auth/auth.service';
 
 // Guard simple pour vérifier si l'utilisateur est authentifié
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const AuthenticatedGuard = (req: ExpressRequest, res: Response, next: any) => {
   if (req.isAuthenticated()) {
     return next();
@@ -57,7 +56,8 @@ export class ProfileController {
 
   @Post('update')
   async updateProfile(
-    @Body() body: {
+    @Body()
+    body: {
       firstName?: string;
       lastName?: string;
       email?: string;
@@ -68,7 +68,7 @@ export class ProfileController {
       country?: string;
     },
     @Req() req: ExpressRequest,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     try {
       // Vérifier si l'utilisateur est connecté
@@ -81,7 +81,10 @@ export class ProfileController {
       console.log('Update data:', body);
 
       // Mettre à jour le profil
-      const updatedUser = await this.authService.updateUserProfile(user.id, body);
+      const updatedUser = await this.authService.updateUserProfile(
+        user.id,
+        body,
+      );
 
       if (updatedUser) {
         // Mettre à jour les informations dans la session
@@ -98,13 +101,14 @@ export class ProfileController {
 
   @Post('change-password')
   async changePassword(
-    @Body() body: {
+    @Body()
+    body: {
       currentPassword: string;
       newPassword: string;
       confirmPassword: string;
     },
     @Req() req: ExpressRequest,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     try {
       // Vérifier si l'utilisateur est connecté
@@ -131,7 +135,7 @@ export class ProfileController {
       const result = await this.authService.changePassword(
         user.id,
         currentPassword,
-        newPassword
+        newPassword,
       );
 
       if (result.success) {

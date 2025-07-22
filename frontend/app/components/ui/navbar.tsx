@@ -7,7 +7,6 @@ import { Link, useLocation } from "@remix-run/react";
 import { 
   Package, 
   User, 
-  Settings, 
   LogOut, 
   Home,
   ShoppingCart,
@@ -15,9 +14,8 @@ import {
   BarChart3,
   Shield
 } from "lucide-react";
-import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 
 interface NavbarProps {
   user: {
@@ -43,7 +41,8 @@ export default function Navbar({ user }: NavbarProps) {
   // - Administrateurs (___config_admin) : level 7-9 pour accès admin
   const isAdmin = user?.level && user.level >= 7; // Administrateurs commerciaux
   const isSuperAdmin = user?.level && user.level >= 9; // Super-administrateurs
-  const isProClient = user?.isPro === true; // Client professionnel
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isProClient = user?.isPro === true; // Client professionnel - TODO: implémenter fonctionnalités pro
 
   return (
     <nav className="bg-white shadow-sm border-b">

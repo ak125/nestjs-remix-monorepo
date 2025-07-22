@@ -4,9 +4,9 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { 
-  OrderStatus, 
-  PaymentStatus, 
+import {
+  OrderStatus,
+  PaymentStatus,
   DeliveryMethod,
   // Types inférés automatiquement de Zod
   DeliveryAddress,

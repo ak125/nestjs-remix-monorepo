@@ -1,49 +1,46 @@
 /**
  * DTOs pour les commandes automobiles dans le monorepo NestJS Remix
- * Adapté pour les vraies données de commandes depuis SupabaseRestService
+ * Adapté pour les vraies tables: Order, OrderLine avec schéma Prisma
  * Compatible avec les tables legacy: ___xtr_order, ___xtr_order_line
  */
 
 import { z } from 'zod';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// Types personnalisés pour remplacer les types Prisma
+// Types personnalisés pour remplacer Prisma
 export enum OrderStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
-  PROCESSING = 'PROCESSING',
   SHIPPED = 'SHIPPED',
   DELIVERED = 'DELIVERED',
   CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
 }
 
 export enum PaymentMethod {
-  STRIPE = 'STRIPE',
-  CYBERPLUS = 'CYBERPLUS',
+  CARTE_BANCAIRE = 'CARTE_BANCAIRE',
   PAYPAL = 'PAYPAL',
-  BANK_TRANSFER = 'BANK_TRANSFER',
-  CASH = 'CASH'
+  VIREMENT = 'VIREMENT',
+  CHEQUE = 'CHEQUE',
 }
 
 export enum PaymentStatus {
   PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  SUCCEEDED = 'SUCCEEDED',
+  PAID = 'PAID',
   FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-  REFUNDED = 'REFUNDED'
+  REFUNDED = 'REFUNDED',
 }
 
 // Schémas de validation pour les données véhicule
 const vehicleRegistrationSchema = z.object({
-  registrationNumber: z.string().min(1, 'Numéro d\'immatriculation requis'),
+  registrationNumber: z.string().min(1, "Numéro d'immatriculation requis"),
   country: z.string().length(2).default('FR'),
   format: z.enum(['old', 'new', 'custom']).optional(),
 });
 
 const vehicleVINSchema = z.object({
-  vinNumber: z.string().length(17, 'Le VIN doit contenir exactement 17 caractères'),
+  vinNumber: z
+    .string()
+    .length(17, 'Le VIN doit contenir exactement 17 caractères'),
   manufacturer: z.string().optional(),
   model: z.string().optional(),
   year: z.number().int().min(1900).max(2030).optional(),
@@ -60,18 +57,20 @@ const vehicleDataSchema = z.object({
   registration: vehicleRegistrationSchema.optional(),
   vin: vehicleVINSchema.optional(),
   oemReferences: z.array(oemReferenceSchema).default([]),
-  additionalInfo: z.object({
-    engineCode: z.string().optional(),
-    transmissionType: z.enum(['manual', 'automatic', 'cvt']).optional(),
-    fuelType: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
-    engineSize: z.number().positive().optional(),
-    horsePower: z.number().positive().optional(),
-    year: z.number().int().min(1900).max(2030).optional(),
-    bodyType: z.string().optional(),
-    doors: z.number().int().min(2).max(5).optional(),
-    color: z.string().optional(),
-    notes: z.string().optional(),
-  }).optional(),
+  additionalInfo: z
+    .object({
+      engineCode: z.string().optional(),
+      transmissionType: z.enum(['manual', 'automatic', 'cvt']).optional(),
+      fuelType: z.enum(['petrol', 'diesel', 'electric', 'hybrid']).optional(),
+      engineSize: z.number().positive().optional(),
+      horsePower: z.number().positive().optional(),
+      year: z.number().int().min(1900).max(2030).optional(),
+      bodyType: z.string().optional(),
+      doors: z.number().int().min(2).max(5).optional(),
+      color: z.string().optional(),
+      notes: z.string().optional(),
+    })
+    .optional(),
 });
 
 // Extension de OrderLine pour inclure les données automobiles
@@ -83,21 +82,23 @@ const automotiveOrderLineSchema = z.object({
   quantity: z.number().int().min(1, 'Quantité doit être positive'),
   unitPrice: z.number().min(0, 'Prix unitaire doit être positif'),
   totalPrice: z.number().min(0, 'Prix total doit être positif'),
-  
+
   // Extensions automobiles
   vehicleData: vehicleDataSchema.optional(),
   oemReferences: z.array(oemReferenceSchema).optional(),
   fitmentNotes: z.string().optional(),
   compatibilityWarnings: z.array(z.string()).optional(),
-  
+
   // Métadonnées pour l'intégration avec tables legacy
-  legacyFields: z.object({
-    cartimmat: z.string().optional(), // Correspondance avec PHP legacy
-    cartvin: z.string().optional(),
-    oemcom: z.string().optional(),
-    infossup: z.string().optional(),
-    equiv: z.string().optional(),
-  }).optional(),
+  legacyFields: z
+    .object({
+      cartimmat: z.string().optional(), // Correspondance avec PHP legacy
+      cartvin: z.string().optional(),
+      oemcom: z.string().optional(),
+      infossup: z.string().optional(),
+      equiv: z.string().optional(),
+    })
+    .optional(),
 });
 
 // Extension d'Order pour inclure les spécificités automobiles
@@ -105,7 +106,7 @@ const automotiveOrderSchema = z.object({
   // Données de base Order (compatible Prisma)
   customerId: z.string().min(1, 'ID client requis'),
   paymentMethod: z.nativeEnum(PaymentMethod),
-  
+
   // Adresses (format JSON Prisma)
   billingAddress: z.object({
     firstName: z.string().min(1),
@@ -118,7 +119,7 @@ const automotiveOrderSchema = z.object({
     phone: z.string().optional(),
     email: z.string().email().optional(),
   }),
-  
+
   deliveryAddress: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -130,46 +131,58 @@ const automotiveOrderSchema = z.object({
     phone: z.string().optional(),
     instructions: z.string().optional(),
   }),
-  
+
   // Extensions automobiles
-  orderLines: z.array(automotiveOrderLineSchema).min(1, 'Au moins une ligne de commande requise'),
-  
+  orderLines: z
+    .array(automotiveOrderLineSchema)
+    .min(1, 'Au moins une ligne de commande requise'),
+
   // Calculs automatiques automobiles
   shippingCalculation: z.object({
     cartWeight: z.number().positive('Poids du panier requis'),
-    zipCodeDeliveryIdentificator: z.string().min(1, 'Code postal de livraison requis'),
+    zipCodeDeliveryIdentificator: z
+      .string()
+      .min(1, 'Code postal de livraison requis'),
     shippingMethodOverride: z.string().optional(),
     urgentDelivery: z.boolean().default(false),
     deliveryInstructions: z.string().optional(),
   }),
-  
+
   // Informations client étendues
-  customerData: z.object({
-    isProClient: z.boolean().default(false),
-    vatNumber: z.string().optional(),
-    businessSector: z.string().optional(),
-    discountLevel: z.number().min(0).max(100).default(0),
-  }).optional(),
-  
+  customerData: z
+    .object({
+      isProClient: z.boolean().default(false),
+      vatNumber: z.string().optional(),
+      businessSector: z.string().optional(),
+      discountLevel: z.number().min(0).max(100).default(0),
+    })
+    .optional(),
+
   // Métadonnées de commande
-  orderInfo: z.object({
-    source: z.enum(['website', 'phone', 'email', 'sales_rep']).default('website'),
-    urgencyLevel: z.enum(['normal', 'urgent', 'express']).default('normal'),
-    notes: z.string().optional(),
-    internalNotes: z.string().optional(),
-    salesRepId: z.string().optional(),
-  }).optional(),
-  
+  orderInfo: z
+    .object({
+      source: z
+        .enum(['website', 'phone', 'email', 'sales_rep'])
+        .default('website'),
+      urgencyLevel: z.enum(['normal', 'urgent', 'express']).default('normal'),
+      notes: z.string().optional(),
+      internalNotes: z.string().optional(),
+      salesRepId: z.string().optional(),
+    })
+    .optional(),
+
   // Notes et instructions
   customerNotes: z.string().optional(),
   internalNotes: z.string().optional(),
-  
+
   // Correspondance avec tables legacy
-  legacyMapping: z.object({
-    originalOrderId: z.string().optional(), // ___xtr_order.ord_id
-    customerLegacyId: z.string().optional(), // ___xtr_customer.cst_id
-    statusLegacyId: z.string().optional(), // ___xtr_order_status.ords_id
-  }).optional(),
+  legacyMapping: z
+    .object({
+      originalOrderId: z.string().optional(), // ___xtr_order.ord_id
+      customerLegacyId: z.string().optional(), // ___xtr_customer.cst_id
+      statusLegacyId: z.string().optional(), // ___xtr_order_status.ords_id
+    })
+    .optional(),
 });
 
 // Types TypeScript inférés
@@ -185,7 +198,9 @@ export const validateVehicleData = (data: unknown): VehicleData => {
   return vehicleDataSchema.parse(data);
 };
 
-export const validateAutomotiveOrderLine = (data: unknown): AutomotiveOrderLine => {
+export const validateAutomotiveOrderLine = (
+  data: unknown,
+): AutomotiveOrderLine => {
   return automotiveOrderLineSchema.parse(data);
 };
 

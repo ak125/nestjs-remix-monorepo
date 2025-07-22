@@ -17,18 +17,18 @@ export class ValidationUtils {
       return schema.parse(data);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const errorMessages = error.issues.map(err => {
+        const errorMessages = error.issues.map((err) => {
           const path = err.path.join('.');
           return `${path}: ${err.message}`;
         });
-        
+
         throw new BadRequestException({
           message: 'Erreur de validation',
           errors: errorMessages,
           statusCode: 400,
         });
       }
-      
+
       throw error;
     }
   }
@@ -39,13 +39,16 @@ export class ValidationUtils {
    * @param data Données à valider
    * @returns Objet avec success et data ou error
    */
-  static safeParse<T>(schema: z.ZodSchema<T>, data: unknown): {
+  static safeParse<T>(
+    schema: z.ZodSchema<T>,
+    data: unknown,
+  ): {
     success: boolean;
     data?: T;
     error?: z.ZodError;
   } {
     const result = schema.safeParse(data);
-    
+
     if (result.success) {
       return { success: true, data: result.data };
     } else {
@@ -60,18 +63,18 @@ export class ValidationUtils {
    */
   static validateMetadata(metadata: unknown): Record<string, any> | undefined {
     if (!metadata) return undefined;
-    
+
     try {
       // Si c'est déjà un objet, on le retourne
       if (typeof metadata === 'object' && metadata !== null) {
         return metadata as Record<string, any>;
       }
-      
+
       // Si c'est une string, on essaie de la parser
       if (typeof metadata === 'string') {
         return JSON.parse(metadata);
       }
-      
+
       return undefined;
     } catch {
       return undefined;
@@ -87,15 +90,15 @@ export class ValidationUtils {
   static validateAmount(amount: number, currency = 'EUR'): boolean {
     // Montant positif
     if (amount <= 0) return false;
-    
+
     // Maximum raisonnable (100k EUR par défaut)
     const maxAmount = currency === 'EUR' ? 100000 : 100000;
     if (amount > maxAmount) return false;
-    
+
     // Vérifier le nombre de décimales (max 2 pour la plupart des devises)
     const decimals = (amount.toString().split('.')[1] || '').length;
     if (decimals > 2) return false;
-    
+
     return true;
   }
 
@@ -106,13 +109,13 @@ export class ValidationUtils {
    */
   static normalizePhone(phone?: string): string | null {
     if (!phone) return null;
-    
+
     // Supprimer tous les espaces, tirets, points
     const cleaned = phone.replace(/[\s\-\.]/g, '');
-    
+
     // Schéma de validation pour téléphone français
     const phoneRegex = /^(?:\+33|0)[1-9](?:[0-9]{8})$/;
-    
+
     if (phoneRegex.test(cleaned)) {
       // Convertir en format international
       if (cleaned.startsWith('0')) {
@@ -120,7 +123,7 @@ export class ValidationUtils {
       }
       return cleaned;
     }
-    
+
     return null;
   }
 
@@ -131,10 +134,10 @@ export class ValidationUtils {
    */
   static validateEmail(email?: string): string | null {
     if (!email) return null;
-    
+
     const emailSchema = z.string().email();
     const result = emailSchema.safeParse(email.toLowerCase().trim());
-    
+
     return result.success ? result.data : null;
   }
 
@@ -155,7 +158,7 @@ export class ValidationUtils {
    */
   static validateUrl(url?: string): string | null {
     if (!url) return null;
-    
+
     try {
       const urlObj = new URL(url);
       // Seuls HTTP et HTTPS autorisés
@@ -174,7 +177,9 @@ export class ValidationUtils {
    */
   static generatePaymentId(): string {
     const timestamp = Date.now().toString();
-    const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const random = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, '0');
     return `pay_${timestamp}_${random}`;
   }
 
@@ -185,13 +190,16 @@ export class ValidationUtils {
   static generateTransactionId(): string {
     // Format: YYYYMMDDHHMMSS + 6 chiffres aléatoires
     const now = new Date();
-    const timestamp = now.toISOString()
+    const timestamp = now
+      .toISOString()
       .replace(/[-:T]/g, '')
       .replace(/\.\d{3}Z$/, '')
       .substring(0, 14);
-    
-    const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-    
+
+    const random = Math.floor(Math.random() * 1000000)
+      .toString()
+      .padStart(6, '0');
+
     return `${timestamp}${random}`;
   }
 

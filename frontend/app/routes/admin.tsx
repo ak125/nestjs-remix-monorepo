@@ -3,7 +3,7 @@
  * Intègre la navigation et la structure basée sur l'analyse legacy
  */
 
-import type { MetaFunction } from "@remix-run/node";
+import  { type MetaFunction } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import Navigation from "~/components/Navigation";
 

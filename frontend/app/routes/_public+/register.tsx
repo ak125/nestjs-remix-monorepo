@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { useSearchParams, Link } from "@remix-run/react";
 import { getOptionalUser } from "~/server/auth.server";
-import { useSearchParams } from "@remix-run/react";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const user = await getOptionalUser({ context });
@@ -35,7 +35,7 @@ export default function Register() {
                     {error === "user_exists" && (
                         <>
                             ⚠️ <strong>Utilisateur existant :</strong> Un compte avec cette adresse email existe déjà. 
-                            <a href="/login" className="underline ml-2">Se connecter</a>
+                            <Link to="/login" className="underline ml-2">Se connecter</Link>
                         </>
                     )}
                     {error === "creation_failed" && (

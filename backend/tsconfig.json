@@ -9,10 +9,5 @@
     "noEmit": false,
     "lib": ["DOM", "ES2023"]
   },
-  "include": ["src/**/*.ts", "src/exports.js"],
-  "exclude": [
-    "**/*-disabled/**",
-    "src/modules/orders/services-disabled/**",
-    "src/modules/orders/controllers-disabled/**"
-  ]
+  "include": ["src/**/*.ts", "src/exports.js"]
 }

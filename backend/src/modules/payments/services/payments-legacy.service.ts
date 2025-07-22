@@ -1,11 +1,27 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseRestService, Order, PaymentCallback } from '../../../database/supabase-rest.service';
-import { CreateLegacyPaymentDto, InitiateLegacyPaymentDto, LegacyPaymentResponseDto } from '../dto/payment-request.dto';
+import {
+  SupabaseRestService,
+  Order,
+  PaymentCallback,
+} from '../../../database/supabase-rest.service';
+import {
+  CreateLegacyPaymentDto,
+  InitiateLegacyPaymentDto,
+  LegacyPaymentResponseDto,
+} from '../dto/payment-request.dto';
 import { PaymentCallbackDto } from '../dto/payment-callback.dto';
 import { PaymentAuditService } from './payment-audit.service';
 import { ValidationUtils } from '../utils/validation.utils';
-import { CreateLegacyPaymentSchema, InitiateLegacyPaymentSchema } from '../dto/payment-request.dto';
+import {
+  CreateLegacyPaymentSchema,
+  InitiateLegacyPaymentSchema,
+} from '../dto/payment-request.dto';
 
 @Injectable()
 export class PaymentService {
@@ -20,14 +36,19 @@ export class PaymentService {
   /**
    * Créer un nouveau paiement avec les vraies tables legacy (___xtr_order)
    */
-  async createPayment(createPaymentDto: CreateLegacyPaymentDto): Promise<Order> {
+  async createPayment(
+    createPaymentDto: CreateLegacyPaymentDto,
+  ): Promise<Order> {
     try {
       // Validation avec Zod
-      const validatedDto = ValidationUtils.validate(CreateLegacyPaymentSchema, createPaymentDto);
-      
+      const validatedDto = ValidationUtils.validate(
+        CreateLegacyPaymentSchema,
+        createPaymentDto,
+      );
+
       // Générer un ord_id unique (format: timestamp + random)
       const ordId = ValidationUtils.generateOrderId();
-      
+
       // Préparer les données pour ___xtr_order
       const orderData: Partial<Order> = {
         ord_id: ordId, // IMPORTANT: Générer l'ID manuellement
@@ -43,14 +64,16 @@ export class PaymentService {
           callback_url: validatedDto.callback_url,
           payment_metadata: validatedDto.payment_metadata || {},
           currency: validatedDto.ord_currency || 'EUR',
-          transaction_id: ValidationUtils.generateTransactionId()
-        })
+          transaction_id: ValidationUtils.generateTransactionId(),
+        }),
       };
 
       const payment = await this.supabaseService.createLegacyPayment(orderData);
-      
+
       if (!payment) {
-        throw new BadRequestException('Impossible de créer le paiement dans ___xtr_order');
+        throw new BadRequestException(
+          'Impossible de créer le paiement dans ___xtr_order',
+        );
       }
 
       // Log de création dans ic_postback - Utilisation directe de string
@@ -71,10 +94,16 @@ export class PaymentService {
   /**
    * Initier un paiement
    */
-  async initiatePayment(orderId: string, initiatePaymentDto: InitiateLegacyPaymentDto): Promise<LegacyPaymentResponseDto> {
+  async initiatePayment(
+    orderId: string,
+    initiatePaymentDto: InitiateLegacyPaymentDto,
+  ): Promise<LegacyPaymentResponseDto> {
     try {
       // Validation avec Zod
-      const validatedDto = ValidationUtils.validate(InitiateLegacyPaymentSchema, initiatePaymentDto);
+      const validatedDto = ValidationUtils.validate(
+        InitiateLegacyPaymentSchema,
+        initiatePaymentDto,
+      );
 
       // Récupérer la commande existante
       const order = await this.supabaseService.getLegacyPaymentById(orderId);
@@ -87,9 +116,13 @@ export class PaymentService {
       try {
         orderInfo = order.ord_info ? JSON.parse(order.ord_info) : {};
       } catch (error) {
-        this.logger.warn(`Impossible de parser ord_info pour order ${orderId}, utilisation d'un objet vide`, error);
+        this.logger.warn(
+          `Impossible de parser ord_info pour order ${orderId}, utilisation d'un objet vide`,
+          error,
+        );
         orderInfo = {};
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const updatedInfo = {
         ...orderInfo,
         payment_gateway: validatedDto.payment_gateway || 'CYBERPLUS',
@@ -97,12 +130,15 @@ export class PaymentService {
         cancel_url: validatedDto.cancel_url,
         callback_url: validatedDto.callback_url,
         payment_metadata: validatedDto.payment_metadata || {},
-        initiated_at: new Date().toISOString()
+        initiated_at: new Date().toISOString(),
       };
 
       // Mettre à jour la commande
-      const updatedOrder = await this.supabaseService.updateLegacyPaymentStatus(orderId, 'PENDING');
-      
+      const updatedOrder = await this.supabaseService.updateLegacyPaymentStatus(
+        orderId,
+        'PENDING',
+      );
+
       // Log d'initiation
       await this.auditService.logPaymentAction(
         orderId,
@@ -110,19 +146,24 @@ export class PaymentService {
         validatedDto,
       );
 
-      const response = LegacyPaymentResponseDto.fromSupabaseOrder(updatedOrder || order);
+      const response = LegacyPaymentResponseDto.fromSupabaseOrder(
+        updatedOrder || order,
+      );
       this.logger.log(`Paiement initié: ${orderId}`);
       return response;
     } catch (error) {
-      this.logger.error('Erreur lors de l\'initiation du paiement:', error);
-      throw new BadRequestException('Erreur lors de l\'initiation du paiement');
+      this.logger.error("Erreur lors de l'initiation du paiement:", error);
+      throw new BadRequestException("Erreur lors de l'initiation du paiement");
     }
   }
 
   /**
    * Traiter un callback de paiement
    */
-  async handlePaymentCallback(gateway: string, callbackData: PaymentCallbackDto): Promise<void> {
+  async handlePaymentCallback(
+    gateway: string,
+    callbackData: PaymentCallbackDto,
+  ): Promise<void> {
     try {
       // Créer l'entrée de callback dans ic_postback
       const callback: Partial<PaymentCallback> = {
@@ -133,7 +174,7 @@ export class PaymentService {
         amount: callbackData.amount,
         currency: callbackData.currency || 'EUR',
         action_type: 'PAYMENT_CALLBACK',
-        verified: false
+        verified: false,
       };
 
       await this.supabaseService.createPaymentCallback(callback);
@@ -141,11 +182,16 @@ export class PaymentService {
       // Si le callback indique un paiement réussi, mettre à jour la commande
       if (callbackData.status === 'SUCCESS' || callbackData.status === 'PAID') {
         if (callbackData.orderId) {
-          await this.supabaseService.updateLegacyPaymentStatus(callbackData.orderId, 'PAID');
+          await this.supabaseService.updateLegacyPaymentStatus(
+            callbackData.orderId,
+            'PAID',
+          );
         }
       }
 
-      this.logger.log(`Callback traité pour ${gateway}: ${callbackData.transactionId}`);
+      this.logger.log(
+        `Callback traité pour ${gateway}: ${callbackData.transactionId}`,
+      );
     } catch (error) {
       this.logger.error('Erreur lors du traitement du callback:', error);
       throw new BadRequestException('Erreur lors du traitement du callback');
@@ -155,7 +201,9 @@ export class PaymentService {
   /**
    * Récupérer le statut d'un paiement
    */
-  async getPaymentStatus(orderId: string): Promise<LegacyPaymentResponseDto | null> {
+  async getPaymentStatus(
+    orderId: string,
+  ): Promise<LegacyPaymentResponseDto | null> {
     const order = await this.supabaseService.getLegacyPaymentById(orderId);
     return order ? LegacyPaymentResponseDto.fromSupabaseOrder(order) : null;
   }
@@ -163,7 +211,9 @@ export class PaymentService {
   /**
    * Récupérer un paiement par ID de transaction
    */
-  async getPaymentByTransactionId(transactionId: string): Promise<Order | null> {
+  async getPaymentByTransactionId(
+    transactionId: string,
+  ): Promise<Order | null> {
     return this.supabaseService.getLegacyPaymentByTransactionId(transactionId);
   }
 
@@ -174,8 +224,12 @@ export class PaymentService {
     try {
       // Statistiques basées sur ___xtr_order
       const totalOrders = await this.supabaseService.getOrders();
-      const paidOrders = totalOrders.filter((order: any) => order.ord_is_pay === '1');
-      const pendingOrders = totalOrders.filter((order: any) => order.ord_is_pay === '0');
+      const paidOrders = totalOrders.filter(
+        (order: any) => order.ord_is_pay === '1',
+      );
+      const pendingOrders = totalOrders.filter(
+        (order: any) => order.ord_is_pay === '0',
+      );
 
       const totalAmount = paidOrders.reduce((sum: number, order: any) => {
         return sum + parseFloat(order.ord_total_ttc || '0');
@@ -186,11 +240,16 @@ export class PaymentService {
         paid_orders: paidOrders.length,
         pending_orders: pendingOrders.length,
         total_amount: totalAmount,
-        currency: 'EUR'
+        currency: 'EUR',
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des statistiques:', error);
-      throw new BadRequestException('Erreur lors de la récupération des statistiques');
+      this.logger.error(
+        'Erreur lors de la récupération des statistiques:',
+        error,
+      );
+      throw new BadRequestException(
+        'Erreur lors de la récupération des statistiques',
+      );
     }
   }
 

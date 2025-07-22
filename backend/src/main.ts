@@ -1,6 +1,5 @@
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -14,11 +13,14 @@ const redisStoreFactory = RedisStore(session);
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    const app = await NestFactory.create(AppModule, {
       bodyParser: false,
     });
 
-    await startDevServer(app);
+    // Cast pour éviter les conflits de types entre les dépendances
+    const expressApp = app as any;
+
+    await startDevServer(expressApp);
     console.log('Serveur de développement démarré.');
 
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
@@ -47,7 +49,7 @@ async function bootstrap() {
     );
     console.log('Middleware de session initialisé.');
 
-    app.useStaticAssets(getPublicDir(), {
+    expressApp.useStaticAssets(getPublicDir(), {
       immutable: true,
       maxAge: '1y',
       index: false,
@@ -58,14 +60,14 @@ async function bootstrap() {
 
     app.use(passport.initialize());
     app.use(passport.session());
-    
+
     // Middleware body-parser global
     app.use(urlencoded({ extended: true }));
     app.use(json());
-    
+
     console.log('Passport initialisé.');
 
-    app.set('trust proxy', 1);
+    expressApp.set('trust proxy', 1);
 
     const selectedPort = process.env.PORT || 3000;
     console.log(`Démarrage du serveur sur le port ${selectedPort}...`);

@@ -16,7 +16,7 @@ export class RemixService {
   public readonly getUser = async ({ userId }: { userId: string }) => {
     console.log('--- Début de getUser (RemixService) ---');
     console.log('Recherche utilisateur avec ID:', userId);
-    
+
     try {
       // D'abord essayer de récupérer depuis le cache
       let cachedUser = null;
@@ -25,7 +25,7 @@ export class RemixService {
       } catch (error) {
         console.log('Erreur cache lors de la récupération:', error);
       }
-      
+
       if (cachedUser) {
         console.log('Utilisateur trouvé dans le cache:', cachedUser);
         return cachedUser;
@@ -33,10 +33,10 @@ export class RemixService {
 
       // Sinon, chercher dans la base de données
       const user = await this.supabaseRestService.getUserById(userId);
-      
+
       if (user) {
         console.log('Utilisateur trouvé dans RemixService:', user);
-        
+
         // Retourner les données dans le format attendu par le frontend
         const userResponse = {
           id: user.cst_id,
@@ -64,9 +64,9 @@ export class RemixService {
 
         return userResponse;
       }
-      
+
       console.log('Utilisateur non trouvé dans RemixService');
-      
+
       // Fallback : si l'utilisateur n'est pas trouvé dans la DB mais qu'il est authentifié,
       // on peut renvoyer des données minimales
       console.log('Tentative de fallback pour utilisateur authentifié');
@@ -76,12 +76,11 @@ export class RemixService {
         firstName: 'Utilisateur',
         lastName: 'Connecté',
         isPro: false,
-        isActive: true
+        isActive: true,
       };
-      
     } catch (error) {
       console.error('Erreur dans getUser (RemixService):', error);
-      
+
       // En cas d'erreur, retourner des données minimales pour éviter le crash
       return {
         id: userId,
@@ -89,7 +88,7 @@ export class RemixService {
         firstName: 'Utilisateur',
         lastName: 'Connecté',
         isPro: false,
-        isActive: true
+        isActive: true,
       };
     }
   };
@@ -102,7 +101,7 @@ export class RemixService {
   }) => {
     console.log('--- Début de createUser (RemixService) ---');
     console.log('Données utilisateur:', userData);
-    
+
     try {
       const newUser = await this.auth.createUser({
         email: userData.email,
@@ -110,7 +109,7 @@ export class RemixService {
         lastName: userData.lastName,
         password: userData.password,
       });
-      
+
       console.log('Résultat createUser:', newUser);
       return newUser;
     } catch (error) {
@@ -118,7 +117,7 @@ export class RemixService {
       return null;
     }
   };
-  
+
   public readonly updateProfile = async (data: {
     userId: string;
     firstName?: string;
@@ -132,7 +131,7 @@ export class RemixService {
   }) => {
     console.log('--- Début de updateProfile (RemixService) ---');
     console.log('Données reçues:', data);
-    
+
     try {
       const result = await this.auth.updateUserProfile(data.userId, {
         firstName: data.firstName,
@@ -142,37 +141,37 @@ export class RemixService {
         address: data.address,
         city: data.city,
         zipCode: data.zipCode,
-        country: data.country
+        country: data.country,
       });
-      
+
       // Invalider le cache utilisateur
       try {
         await this.cacheService.invalidateUser(data.userId);
       } catch (error) {
         console.log('Erreur invalidation cache:', error);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Erreur dans updateProfile (RemixService):', error);
       throw error;
     }
   };
-  
+
   public readonly changePassword = async (data: {
     userId: string;
     currentPassword: string;
     newPassword: string;
   }) => {
     console.log('--- Début de changePassword (RemixService) ---');
-    
+
     try {
       const result = await this.auth.changePassword(
         data.userId,
         data.currentPassword,
-        data.newPassword
+        data.newPassword,
       );
-      
+
       return result;
     } catch (error) {
       console.error('Erreur dans changePassword (RemixService):', error);
@@ -192,7 +191,7 @@ export class RemixService {
   }) => {
     console.log('--- Début de getOrders (RemixService) ---');
     console.log('Paramètres:', params);
-    
+
     try {
       const result = await this.integration.getOrdersForRemix(params);
       console.log('Résultat getOrders:', result.total, 'commandes trouvées');

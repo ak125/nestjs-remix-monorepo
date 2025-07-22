@@ -1,35 +1,26 @@
 import { json, type ActionFunction, redirect } from "@remix-run/node";
-import { Form, useActionData, useSearchParams } from "@remix-run/react";
+import { Form, useActionData, useSearchParams, Link } from "@remix-run/react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 
 export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
   const email = formData.get("email");
 
-  if (!email || typeof email !== 'string') {
+  if (!email) {
     return json({ error: "Email is required" }, { status: 400 });
   }
 
-  // ✅ Approche intégrée : appel direct au service via Remix
-  if (!context.remixService?.integration) {
-    return json({ error: "Service d'intégration non disponible" }, { status: 500 });
-  }
+  // Utiliser l'intégration directe pour la demande de réinitialisation
+  const result = await context.remixService.integration.forgotPasswordForRemix(email.toString());
 
-  try {
-    const result = await context.remixService.integration.sendForgotPasswordForRemix(email);
-
-    if (result.success) {
-      return redirect("/forgot-password?status=sent");
-    } else {
-      return json({ error: result.error || "Une erreur est survenue" }, { status: 500 });
-    }
-  } catch (error) {
-    console.error('❌ Erreur forgot password:', error);
-    return json({ error: "Erreur lors de l'envoi" }, { status: 500 });
+  if (result.success) {
+    return redirect("/forgot-password?status=sent");
+  } else {
+    return json({ error: result.error || "Une erreur est survenue" }, { status: 500 });
   }
 };
 
@@ -85,9 +76,9 @@ export default function ForgotPassword() {
           </Form>
 
           <div className="mt-4 text-center">
-            <a href="/login" className="text-sm text-blue-600 hover:underline">
+            <Link to="/login" className="text-sm text-blue-600 hover:underline">
               Retour à la connexion
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

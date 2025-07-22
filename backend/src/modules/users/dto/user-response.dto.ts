@@ -1,20 +1,22 @@
 import { z } from 'zod';
 
-export const UserResponseSchema = z.object({
-  id: z.string(),
-  email: z.string().email(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  tel: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  zipCode: z.string().optional(),
-  country: z.string().optional(),
-  isPro: z.boolean(),
-  isActive: z.boolean(),
-  createdAt: z.date().optional(),
-  updatedAt: z.date().optional(),
-}).strict();
+export const UserResponseSchema = z
+  .object({
+    id: z.string(),
+    email: z.string().email(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    tel: z.string().optional(),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    zipCode: z.string().optional(),
+    country: z.string().optional(),
+    isPro: z.boolean(),
+    isActive: z.boolean(),
+    createdAt: z.date().optional(),
+    updatedAt: z.date().optional(),
+  })
+  .strict();
 
 export type UserResponseDto = z.infer<typeof UserResponseSchema>;
 

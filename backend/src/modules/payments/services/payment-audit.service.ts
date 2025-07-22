@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseRestService, PaymentLogAction } from '../../../database/supabase-rest.service';
+import {
+  SupabaseRestService,
+  PaymentLogAction,
+} from '../../../database/supabase-rest.service';
 
 @Injectable()
 export class PaymentAuditService {
@@ -35,11 +38,15 @@ export class PaymentAuditService {
         log_user_agent: userAgent,
       });
 
-      this.logger.debug(`Action loggée: ${action} pour paiement ${paymentId || 'N/A'}`);
-      
+      this.logger.debug(
+        `Action loggée: ${action} pour paiement ${paymentId || 'N/A'}`,
+      );
     } catch (error: any) {
       // Ne pas faire échouer la transaction principale si le log échoue
-      this.logger.error(`Erreur lors du logging de l'action ${action}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors du logging de l'action ${action}: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -52,7 +59,10 @@ export class PaymentAuditService {
     try {
       return await this.supabaseService.getPaymentLogs(paymentId);
     } catch (error: any) {
-      this.logger.error(`Erreur lors de la récupération de l'audit trail: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors de la récupération de l'audit trail: ${error.message}`,
+        error.stack,
+      );
       return [];
     }
   }
@@ -63,11 +73,20 @@ export class PaymentAuditService {
    * @param minutes Période en minutes
    * @returns Nombre de tentatives
    */
-  async countPaymentAttemptsByIP(ipAddress: string, minutes = 60): Promise<number> {
+  async countPaymentAttemptsByIP(
+    ipAddress: string,
+    minutes = 60,
+  ): Promise<number> {
     try {
-      return await this.supabaseService.countPaymentAttemptsByIP(ipAddress, minutes);
+      return await this.supabaseService.countPaymentAttemptsByIP(
+        ipAddress,
+        minutes,
+      );
     } catch (error: any) {
-      this.logger.error(`Erreur lors du comptage des tentatives: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors du comptage des tentatives: ${error.message}`,
+        error.stack,
+      );
       return 0;
     }
   }
@@ -82,53 +101,56 @@ export class PaymentAuditService {
     reasons: string[];
   }> {
     const reasons: string[] = [];
-    
+
     try {
       const logs = await this.getPaymentAuditTrail(paymentId);
-      
+
       // Vérifier les tentatives multiples de validation
-      const validationAttempts = logs.filter(log => 
-        log.log_action === PaymentLogAction.SIGNATURE_VALIDATION
+      const validationAttempts = logs.filter(
+        (log) => log.log_action === PaymentLogAction.SIGNATURE_VALIDATION,
       ).length;
-      
+
       if (validationAttempts > 5) {
         reasons.push('Tentatives de validation excessive de signature');
       }
 
       // Vérifier les callbacks multiples
-      const callbackAttempts = logs.filter(log => 
-        log.log_action === PaymentLogAction.CALLBACK_RECEIVED
+      const callbackAttempts = logs.filter(
+        (log) => log.log_action === PaymentLogAction.CALLBACK_RECEIVED,
       ).length;
-      
+
       if (callbackAttempts > 3) {
         reasons.push('Callbacks multiples reçus');
       }
 
       // Vérifier les changements de statut rapides
-      const statusChanges = logs.filter(log => 
-        [PaymentLogAction.PAYMENT_SUCCESS, PaymentLogAction.PAYMENT_FAILED].includes(log.log_action as PaymentLogAction)
+      const statusChanges = logs.filter((log) =>
+        [
+          PaymentLogAction.PAYMENT_SUCCESS,
+          PaymentLogAction.PAYMENT_FAILED,
+        ].includes(log.log_action as PaymentLogAction),
       );
-      
+
       if (statusChanges.length > 2) {
         reasons.push('Changements de statut multiples');
       }
 
       // Log si activité suspecte détectée
       if (reasons.length > 0) {
-        await this.logPaymentAction(
-          paymentId,
-          PaymentLogAction.BANK_RESPONSE,
-          { suspicious_activity: reasons },
-        );
+        await this.logPaymentAction(paymentId, PaymentLogAction.BANK_RESPONSE, {
+          suspicious_activity: reasons,
+        });
       }
 
       return {
         isSuspicious: reasons.length > 0,
         reasons,
       };
-      
     } catch (error: any) {
-      this.logger.error(`Erreur lors de la détection d'activité suspecte: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors de la détection d'activité suspecte: ${error.message}`,
+        error.stack,
+      );
       return { isSuspicious: false, reasons: [] };
     }
   }
@@ -144,7 +166,7 @@ export class PaymentAuditService {
       // Récupérer les statistiques de paiement pour la période
       const stats = await this.supabaseService.getPaymentStats(
         startDate.toISOString(),
-        endDate.toISOString()
+        endDate.toISOString(),
       );
 
       return {
@@ -159,9 +181,11 @@ export class PaymentAuditService {
           suspiciousActivities: 0, // À implémenter avec une requête spécifique
         },
       };
-      
     } catch (error: any) {
-      this.logger.error(`Erreur lors de la génération du rapport d'audit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors de la génération du rapport d'audit: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -172,7 +196,10 @@ export class PaymentAuditService {
    * @param action Action à vérifier
    * @returns true si la limite est dépassée
    */
-  async isRateLimitExceeded(ipAddress: string, action: PaymentLogAction): Promise<boolean> {
+  async isRateLimitExceeded(
+    ipAddress: string,
+    action: PaymentLogAction,
+  ): Promise<boolean> {
     try {
       const limits: Record<string, { max: number; window: number }> = {
         [PaymentLogAction.PAYMENT_INITIATED]: { max: 10, window: 60 }, // 10 tentatives par heure
@@ -182,11 +209,15 @@ export class PaymentAuditService {
       const limit = limits[action as string];
       if (!limit) return false;
 
-      const attempts = await this.countPaymentAttemptsByIP(ipAddress, limit.window);
+      const attempts = await this.countPaymentAttemptsByIP(
+        ipAddress,
+        limit.window,
+      );
       return attempts >= limit.max;
-      
     } catch (error: any) {
-      this.logger.error(`Erreur lors de la vérification du rate limiting: ${error.message}`);
+      this.logger.error(
+        `Erreur lors de la vérification du rate limiting: ${error.message}`,
+      );
       return false;
     }
   }
@@ -198,15 +229,22 @@ export class PaymentAuditService {
    */
   async cleanupOldLogs(retentionDays = 365): Promise<number> {
     try {
-      const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-      
+      const cutoffDate = new Date(
+        Date.now() - retentionDays * 24 * 60 * 60 * 1000,
+      );
+
       // Note: Supabase REST API ne permet pas facilement les suppressions en masse
       // Il faudrait implémenter cela avec une fonction stored procedure
-      this.logger.log(`Nettoyage simulé pour les logs antérieurs au ${cutoffDate.toISOString()}`);
-      
+      this.logger.log(
+        `Nettoyage simulé pour les logs antérieurs au ${cutoffDate.toISOString()}`,
+      );
+
       return 0; // Retour simulé
     } catch (error: any) {
-      this.logger.error(`Erreur lors du nettoyage des logs: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors du nettoyage des logs: ${error.message}`,
+        error.stack,
+      );
       return 0;
     }
   }
