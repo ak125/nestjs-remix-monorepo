@@ -11,7 +11,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
       console.log('✅ Utilisation du service d\'intégration direct');
       const result = await context.remixService.integration.getOrdersForRemix({
         page: 1,
-        limit: 50
+        limit: 20 // Limite réduite pour de meilleures performances
       });
       
       if (result.success) {

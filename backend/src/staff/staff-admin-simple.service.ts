@@ -1,6 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { CacheService } from '../cache/cache.service';
-import * as bcrypt from 'bcryptjs';
+/**
+ * 📋 SERVICE STAFF ADMIN - SUPPRIMÉ
+ * 
+ * Ce service a été migré vers le module admin moderne
+ * Utiliser AdminStaffService dans modules/admin/services/admin-staff.service.ts
+ */
+
+// Ce fichier est désormais vide - utiliser le nouveau module admin
+
+import { Injectable, Logger } from '@nestjs/common';
+import { AdminStaffService } from '../modules/admin/services/admin-staff.service';
+import {
+  LegacyAdminStaff,
+  CreateLegacyStaff,
+  UpdateLegacyStaff,
+  LegacyStaffQuery,
+  convertLegacyToModern,
+} from '../modules/admin/schemas/legacy-staff.schemas';
 
 // Interface pour la table ___config_admin basée sur l'analyse PHP
 export interface AdminStaff {
@@ -39,211 +54,117 @@ export interface UpdateStaffDto {
   phone?: string;
 }
 
+/**
+ * @deprecated Utiliser AdminStaffService du module admin à la place
+ * Ce service est conservé pour la compatibilité mais redirige vers le nouveau service
+ */
 @Injectable()
 export class StaffAdminService {
-  constructor(private readonly cacheService: CacheService) {}
+  private readonly logger = new Logger(StaffAdminService.name);
+
+  constructor(
+    private readonly adminStaffService: AdminStaffService,
+  ) {
+    this.logger.warn('⚠️ StaffAdminService deprecated - Utiliser AdminStaffService du module admin');
+  }
 
   /**
-   * Récupère tous les staff selon le niveau d'autorisation
+   * @deprecated Utiliser adminStaffService.getAllStaff()
    */
   async findAllStaff(currentUserLevel: number): Promise<AdminStaff[]> {
-    console.log(
-      '🔍 StaffAdminService.findAllStaff pour niveau:',
-      currentUserLevel,
-    );
+    this.logger.warn('🔄 Redirection vers AdminStaffService.getAllStaff');
+    
+    const query: LegacyStaffQuery = {
+      page: 1,
+      limit: 100,
+    };
 
-    try {
-      // Simuler des données d'admin basées sur l'analyse PHP
-      const mockStaff: AdminStaff[] = [
-        {
-          cnfa_id: 1,
-          cnfa_login: 'admin_commercial',
-          cnfa_pswd: '$2a$10$...',
-          cnfa_mail: 'commercial@example.com',
-          cnfa_keylog: 'ADMIN_COMMERCIAL_KEY',
-          cnfa_level: 7,
-          cnfa_job: 'Commercial Admin',
-          cnfa_name: 'Martin',
-          cnfa_fname: 'Jean',
-          cnfa_tel: '0123456789',
-          cnfa_activ: '1',
-          s_id: 'dept_1',
-        },
-      ];
-
-      // Filtrer selon le niveau d'autorisation
-      const accessibleStaff = mockStaff.filter(
-        (staff) => staff.cnfa_level < currentUserLevel,
-      );
-
-      return accessibleStaff;
-    } catch (error) {
-      console.error('❌ Erreur findAllStaff:', error);
-      throw error;
-    }
+    const result = await this.adminStaffService.getAllStaff(query, 'legacy-compat');
+    return result.staff;
   }
 
   /**
-   * Récupère un staff par ID
+   * @deprecated Utiliser adminStaffService.getStaffById()
    */
-  async findStaffById(
-    id: number,
-    currentUserLevel: number,
-  ): Promise<AdminStaff | null> {
-    console.log(
-      '🔍 StaffAdminService.findStaffById:',
-      id,
-      'niveau:',
-      currentUserLevel,
-    );
-
-    try {
-      // Simuler la récupération d'un admin spécifique
-      const mockStaff: AdminStaff = {
-        cnfa_id: id,
-        cnfa_login: `admin_${id}`,
-        cnfa_pswd: '$2a$10$...',
-        cnfa_mail: `admin${id}@example.com`,
-        cnfa_keylog: `ADMIN_${id}_KEY`,
-        cnfa_level: 7,
-        cnfa_job: 'Commercial Admin',
-        cnfa_name: 'Martin',
-        cnfa_fname: 'Jean',
-        cnfa_tel: '0123456789',
-        cnfa_activ: '1',
-        s_id: 'dept_1',
-      };
-
-      // Vérifier l'autorisation
-      if (mockStaff.cnfa_level >= currentUserLevel) {
-        return null;
-      }
-
-      return mockStaff;
-    } catch (error) {
-      console.error('❌ Erreur findStaffById:', error);
-      throw error;
-    }
+  async findStaffById(id: number, currentUserLevel: number): Promise<AdminStaff | null> {
+    this.logger.warn(`🔄 Redirection vers AdminStaffService.getStaffById(${id})`);
+    return this.adminStaffService.getStaffById(id.toString());
   }
 
   /**
-   * Crée un nouvel administrateur
+   * @deprecated Utiliser adminStaffService.createStaff()
    */
   async createStaff(staffData: CreateStaffDto): Promise<AdminStaff> {
-    console.log('🔧 StaffAdminService.createStaff:', staffData);
+    this.logger.warn('� Redirection vers AdminStaffService.createStaff');
+    
+    const createData: CreateLegacyStaff = {
+      login: staffData.login,
+      password: staffData.password,
+      email: staffData.email,
+      level: staffData.level,
+      job: staffData.job,
+      firstName: staffData.firstName,
+      lastName: staffData.lastName,
+      phone: staffData.phone,
+    };
 
-    try {
-      const hashedPassword = await bcrypt.hash(
-        staffData.password || 'TempPassword123!',
-        10,
-      );
-      const keylog = `STAFF_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      // Simuler la création d'un admin
-      const newStaff: AdminStaff = {
-        cnfa_id: Date.now(),
-        cnfa_login: staffData.login,
-        cnfa_pswd: hashedPassword,
-        cnfa_mail: staffData.email,
-        cnfa_keylog: keylog,
-        cnfa_level: staffData.level,
-        cnfa_job: staffData.job,
-        cnfa_name: staffData.lastName,
-        cnfa_fname: staffData.firstName,
-        cnfa_tel: staffData.phone,
-        cnfa_activ: '1',
-        s_id: 'dept_1',
-      };
-
-      console.log('✅ Admin créé:', newStaff);
-      return newStaff;
-    } catch (error) {
-      console.error('❌ Erreur createStaff:', error);
-      throw error;
-    }
+    return this.adminStaffService.createStaff(createData, 'legacy-compat');
   }
 
   /**
-   * Met à jour un administrateur
+   * @deprecated Utiliser adminStaffService.updateStaff()
    */
   async updateStaff(
     id: number,
     staffData: UpdateStaffDto,
     currentUserLevel: number,
   ): Promise<AdminStaff> {
-    console.log('🔧 StaffAdminService.updateStaff:', id, staffData);
+    this.logger.warn(`🔄 Redirection vers AdminStaffService.updateStaff(${id})`);
+    
+    const updateData: UpdateLegacyStaff = {
+      id,
+      login: staffData.login,
+      email: staffData.email,
+      level: staffData.level,
+      job: staffData.job,
+      firstName: staffData.firstName,
+      lastName: staffData.lastName,
+      phone: staffData.phone,
+    };
 
-    try {
-      // Vérifier que l'admin existe et est accessible
-      const existingStaff = await this.findStaffById(id, currentUserLevel);
-      if (!existingStaff) {
-        throw new Error('Admin non trouvé');
-      }
-
-      // Simuler la mise à jour
-      const updatedStaff: AdminStaff = {
-        ...existingStaff,
-        cnfa_login: staffData.login || existingStaff.cnfa_login,
-        cnfa_mail: staffData.email || existingStaff.cnfa_mail,
-        cnfa_level: staffData.level || existingStaff.cnfa_level,
-        cnfa_job: staffData.job || existingStaff.cnfa_job,
-        cnfa_name: staffData.lastName || existingStaff.cnfa_name,
-        cnfa_fname: staffData.firstName || existingStaff.cnfa_fname,
-        cnfa_tel: staffData.phone || existingStaff.cnfa_tel,
-      };
-
-      console.log('✅ Admin mis à jour:', updatedStaff);
-      return updatedStaff;
-    } catch (error) {
-      console.error('❌ Erreur updateStaff:', error);
-      throw error;
-    }
+    return this.adminStaffService.updateStaff(updateData, 'legacy-compat');
   }
 
   /**
-   * Active un administrateur
+   * @deprecated Utiliser adminStaffService.toggleStaffStatus()
    */
   async enableStaff(id: number, currentUserLevel: number): Promise<boolean> {
-    console.log('🔧 StaffAdminService.enableStaff:', id);
-
+    this.logger.warn(`� Redirection vers AdminStaffService.toggleStaffStatus(${id}, true)`);
+    
     try {
-      const staff = await this.findStaffById(id, currentUserLevel);
-      if (!staff) {
-        throw new Error('Admin non trouvé');
-      }
-
-      // Simuler l'activation
-      console.log('✅ Admin activé:', id);
+      await this.adminStaffService.toggleStaffStatus(id.toString(), true, 'legacy-compat');
       return true;
     } catch (error) {
-      console.error('❌ Erreur enableStaff:', error);
-      throw error;
+      return false;
     }
   }
 
   /**
-   * Désactive un administrateur
+   * @deprecated Utiliser adminStaffService.toggleStaffStatus()
    */
   async disableStaff(id: number, currentUserLevel: number): Promise<boolean> {
-    console.log('🔧 StaffAdminService.disableStaff:', id);
-
+    this.logger.warn(`� Redirection vers AdminStaffService.toggleStaffStatus(${id}, false)`);
+    
     try {
-      const staff = await this.findStaffById(id, currentUserLevel);
-      if (!staff) {
-        throw new Error('Admin non trouvé');
-      }
-
-      // Simuler la désactivation
-      console.log('✅ Admin désactivé:', id);
+      await this.adminStaffService.toggleStaffStatus(id.toString(), false, 'legacy-compat');
       return true;
     } catch (error) {
-      console.error('❌ Erreur disableStaff:', error);
-      throw error;
+      return false;
     }
   }
 
   /**
-   * Statistiques des administrateurs
+   * @deprecated Utiliser adminStaffService.getStaffStats()
    */
   async getStaffStats(currentUserLevel: number): Promise<{
     total: number;
@@ -251,100 +172,49 @@ export class StaffAdminService {
     inactive: number;
     byLevel: Record<number, number>;
   }> {
-    console.log('📊 StaffAdminService.getStaffStats niveau:', currentUserLevel);
+    this.logger.warn('� Redirection vers AdminStaffService.getStaffStats');
+    
+    const stats = await this.adminStaffService.getStaffStats();
+    
+    // Convertir le format
+    const byLevel: Record<number, number> = {};
+    Object.entries(stats.byLevel).forEach(([level, count]) => {
+      byLevel[parseInt(level)] = count;
+    });
 
-    try {
-      const allStaff = await this.findAllStaff(currentUserLevel);
-
-      const stats = {
-        total: allStaff.length,
-        active: allStaff.filter((s) => s.cnfa_activ === '1').length,
-        inactive: allStaff.filter((s) => s.cnfa_activ === '0').length,
-        byLevel: allStaff.reduce(
-          (acc, staff) => {
-            acc[staff.cnfa_level] = (acc[staff.cnfa_level] || 0) + 1;
-            return acc;
-          },
-          {} as Record<number, number>,
-        ),
-      };
-
-      console.log('📊 Statistiques:', stats);
-      return stats;
-    } catch (error) {
-      console.error('❌ Erreur getStaffStats:', error);
-      throw error;
-    }
+    return {
+      total: stats.total,
+      active: stats.active,
+      inactive: stats.inactive,
+      byLevel,
+    };
   }
 
   /**
-   * Récupère les permissions pour un niveau donné
+   * @deprecated Utiliser adminStaffService.getPermissions()
    */
   async getPermissions(level: number): Promise<string[]> {
-    console.log('🔐 StaffAdminService.getPermissions niveau:', level);
-
-    // Basé sur l'analyse PHP
-    const permissions: Record<number, string[]> = {
-      7: ['view_orders', 'manage_customers', 'view_stats'],
-      8: [
-        'view_orders',
-        'manage_customers',
-        'view_stats',
-        'manage_staff_level_7',
-        'advanced_settings',
-      ],
-      9: [
-        'view_orders',
-        'manage_customers',
-        'view_stats',
-        'manage_staff_level_7',
-        'manage_staff_level_8',
-        'advanced_settings',
-        'super_admin_tools',
-        'payment_management',
-      ],
-    };
-
-    return permissions[level] || [];
+    this.logger.warn(`� Redirection vers AdminStaffService.getPermissions(${level})`);
+    return this.adminStaffService.getPermissions(level);
   }
 
   /**
-   * Vérifie si un utilisateur peut gérer un staff d'un niveau donné
+   * @deprecated Utiliser adminStaffService.canManageStaff()
    */
   canManageStaff(currentUserLevel: number, staffLevel: number): boolean {
-    return currentUserLevel > staffLevel;
+    return this.adminStaffService.canManageStaff(currentUserLevel, staffLevel);
   }
 
   /**
-   * Récupère les permissions pour un niveau donné (alias pour getPermissions)
+   * @deprecated Utiliser adminStaffService.getPermissions()
    */
   getStaffPermissions(level: number): string[] {
-    const permissions: Record<number, string[]> = {
-      7: ['view_orders', 'manage_customers', 'view_stats'],
-      8: [
-        'view_orders',
-        'manage_customers',
-        'view_stats',
-        'manage_staff_level_7',
-        'advanced_settings',
-      ],
-      9: [
-        'view_orders',
-        'manage_customers',
-        'view_stats',
-        'manage_staff_level_7',
-        'manage_staff_level_8',
-        'advanced_settings',
-        'super_admin_tools',
-        'payment_management',
-      ],
-    };
-
-    return permissions[level] || [];
+    this.logger.warn(`🔄 Redirection vers AdminStaffService.getPermissions(${level})`);
+    return this.adminStaffService.getPermissions(level);
   }
 
   /**
-   * Crée un super-admin niveau 9
+   * @deprecated Utiliser adminStaffService.createSuperAdmin()
    */
   async createSuperAdmin(superAdminData: {
     login: string;
@@ -353,32 +223,7 @@ export class StaffAdminService {
     lastName: string;
     phone: string;
   }): Promise<AdminStaff> {
-    console.log('🔧 StaffAdminService.createSuperAdmin:', superAdminData);
-
-    try {
-      const hashedPassword = await bcrypt.hash('SuperAdmin123!', 10);
-      const keylog = `SUPER_ADMIN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-      const superAdmin: AdminStaff = {
-        cnfa_id: Date.now(),
-        cnfa_login: superAdminData.login,
-        cnfa_pswd: hashedPassword,
-        cnfa_mail: superAdminData.email,
-        cnfa_keylog: keylog,
-        cnfa_level: 9,
-        cnfa_job: 'Super Administrator',
-        cnfa_name: superAdminData.lastName,
-        cnfa_fname: superAdminData.firstName,
-        cnfa_tel: superAdminData.phone,
-        cnfa_activ: '1',
-        s_id: 'super_admin_dept',
-      };
-
-      console.log('✅ Super-Admin créé:', superAdmin);
-      return superAdmin;
-    } catch (error) {
-      console.error('❌ Erreur createSuperAdmin:', error);
-      throw error;
-    }
+    this.logger.warn('🔄 Redirection vers AdminStaffService.createSuperAdmin');
+    return this.adminStaffService.createSuperAdmin(superAdminData);
   }
 }

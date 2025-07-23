@@ -3,10 +3,14 @@ import { All, Controller, Next, Req, Res } from '@nestjs/common';
 import { createRequestHandler } from '@remix-run/express';
 import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
+import { RemixIntegrationService } from './remix-integration.service';
 
 @Controller()
 export class RemixController {
-  constructor(private remixService: RemixService) {}
+  constructor(
+    private remixService: RemixService,
+    private remixIntegrationService: RemixIntegrationService
+  ) {}
 
   @All('*')
   async handler(
@@ -37,6 +41,7 @@ export class RemixController {
       getLoadContext: () => ({
         user: request.user,
         remixService: this.remixService,
+        remixIntegration: this.remixIntegrationService,
         // Passer le body parsé par Express
         parsedBody: request.body,
       }),

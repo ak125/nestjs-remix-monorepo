@@ -289,8 +289,8 @@ export class SupabaseRestService {
   private readonly baseUrl: string;
 
   constructor(private configService: ConfigService) {
-    // Debug de la configuration
-    debugConfiguration(configService);
+    // Debug de la configuration - TEMPORAIREMENT DÉSACTIVÉ
+    // debugConfiguration(configService);
 
     this.supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
     this.supabaseServiceKey =

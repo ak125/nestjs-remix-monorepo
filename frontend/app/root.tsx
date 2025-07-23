@@ -2,7 +2,7 @@ import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
 import { Footer } from "./components/Footer";
-import Navbar from "./components/ui/navbar";
+import { Navbar } from "./components/Navbar";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -52,7 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full bg-gray-100">
         <div className="min-h-screen flex flex-col">
-          <Navbar user={user} />
+          <Navbar logo={logo} />
           <main className="flex-grow flex flex-col">
             <div className="flex-grow">
               {children}

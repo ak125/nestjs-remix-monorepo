@@ -19,6 +19,9 @@ export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState<string[]>([]);
 
+  // Debug
+  console.log('📍 Navigation render:', { location: location.pathname, mobileMenuOpen });
+
   const toggleSubmenu = (name: string) => {
     setOpenSubmenus(prev => 
       prev.includes(name) 
@@ -217,11 +220,11 @@ export default function Navigation() {
 
   return (
     <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile menu button - visible sur mobile uniquement */}
+      <div className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-md shadow-lg">
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="inline-flex items-center justify-center p-2 rounded-md text-blue-400 hover:text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+          className="inline-flex items-center justify-center p-2 rounded-md text-blue-600 hover:text-blue-800 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {mobileMenuOpen ? (
@@ -233,26 +236,29 @@ export default function Navigation() {
         </button>
       </div>
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 w-64 bg-blue-800 transform transition-transform lg:translate-x-0 ${
-        mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      {/* Sidebar - version simplifiée et robuste */}
+      <aside 
+        className={`fixed inset-y-0 left-0 w-64 bg-blue-800 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{ zIndex: 40 }}
+      >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-center h-16 px-4 bg-blue-900">
-            <h1 className="text-xl font-bold text-white">🚗 AutoParts Admin</h1>
+          {/* Logo section */}
+          <div className="flex items-center justify-center h-16 px-4 bg-blue-900 shadow-lg">
+            <h1 className="text-lg font-bold text-white">🚗 AutoParts Admin</h1>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          {/* Navigation principale */}
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-600 scrollbar-track-blue-800">
             {navigation.map((item) => (
               <NavItem key={item.name} item={item} />
             ))}
           </nav>
 
-          {/* User info */}
-          <div className="border-t border-blue-700 p-4">
-            <div className="flex items-center">
+          {/* Section utilisateur en bas */}
+          <div className="border-t border-blue-700 p-4 bg-blue-900">
+            <div className="flex items-center mb-3">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-white">A</span>
@@ -263,22 +269,22 @@ export default function Navigation() {
                 <div className="text-xs text-blue-300">admin@autoparts.com</div>
               </div>
             </div>
-            <div className="mt-3">
-              <Link
-                to="/logout"
+            <form method="POST" action="/auth/logout" className="w-full">
+              <button
+                type="submit"
                 className="w-full flex items-center px-3 py-2 text-sm text-blue-300 hover:text-white hover:bg-blue-700 rounded-md transition-colors"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Déconnexion
-              </Link>
-            </div>
+              </button>
+            </form>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile overlay */}
+      {/* Overlay mobile - ferme le menu quand on clique à côté */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"

@@ -6,6 +6,7 @@ import { UsersModule } from '../modules/users/users.module';
 import { OrdersModule } from '../modules/orders/orders.module';
 import { PaymentsModule } from '../modules/payments/payments.module';
 import { CartModule } from '../modules/cart/cart.module';
+import { AdminModule } from '../modules/admin/admin.module';
 import { RemixService } from './remix.service';
 import { RemixIntegrationService } from './remix-integration.service';
 
@@ -18,8 +19,9 @@ import { RemixIntegrationService } from './remix-integration.service';
     OrdersModule,
     PaymentsModule,
     CartModule,
+    AdminModule,
   ],
   providers: [RemixService, RemixIntegrationService],
-  exports: [RemixService],
+  exports: [RemixService, RemixIntegrationService],
 })
 export class RemixModule {}

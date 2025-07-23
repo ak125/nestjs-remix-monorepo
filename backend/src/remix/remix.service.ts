@@ -194,7 +194,7 @@ export class RemixService {
 
     try {
       const result = await this.integration.getOrdersForRemix(params);
-      console.log('Résultat getOrders:', result.total, 'commandes trouvées');
+      console.log('Résultat getOrders:', (result as any)?.total || 0, 'commandes trouvées');
       return result;
     } catch (error) {
       console.error('Erreur dans getOrders (RemixService):', error);

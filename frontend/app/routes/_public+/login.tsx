@@ -23,6 +23,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 export default function Login() {
     const [searchParams] = useSearchParams();
     const defaultEmail = searchParams.get("email") || "";
+    const returnTo = searchParams.get("returnTo") || "";
     const registerSuccess = searchParams.get("register") === "success";
     const error = searchParams.get("error");
     const errorMessage = searchParams.get("message");
@@ -108,9 +109,16 @@ export default function Login() {
 
             <form
                 method='POST'
-                action='/auth/login'
+                action='/authenticate'
                 className='flex flex-col gap-4'
             >
+                {returnTo && (
+                    <input
+                        type="hidden"
+                        name="returnTo"
+                        value={returnTo}
+                    />
+                )}
                 <div>
                     <label htmlFor="email">Adresse e-mail</label>
                     <input
