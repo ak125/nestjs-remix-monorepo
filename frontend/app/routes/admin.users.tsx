@@ -2,14 +2,13 @@
  * Page Utilisateurs - Gestion des utilisateurs avec vraies données
  */
 
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
 import { useLoaderData, useNavigate, useSearchParams } from "@remix-run/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import { Users, UserPlus, Search, Filter, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const meta: MetaFunction = () => {
   return [

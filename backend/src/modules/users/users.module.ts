@@ -9,7 +9,7 @@ import { CacheModule } from '../../cache/cache.module';
   imports: [DatabaseModule, CacheModule],
   controllers: [
     // UsersController,      // Désactivé pour éviter les conflits de routes
-    UsersApiController,   // Nouveau contrôleur API fonctionnel
+    UsersApiController, // Nouveau contrôleur API fonctionnel
   ],
   providers: [UsersService],
   exports: [UsersService],

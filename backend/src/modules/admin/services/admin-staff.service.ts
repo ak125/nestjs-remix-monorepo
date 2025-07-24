@@ -1,6 +1,6 @@
 /**
  * 📋 SERVICE STAFF ADMIN
- * 
+ *
  * Service de gestion du staff admin
  * Cohérent avec les modules Users/Orders (utilise SupabaseRestService)
  */
@@ -28,14 +28,15 @@ export class AdminStaffService {
   private readonly logger = new Logger(AdminStaffService.name);
   private readonly tableName = '___config_admin';
 
-  constructor(
-    private readonly supabaseService: SupabaseRestService,
-  ) {}
+  constructor(private readonly supabaseService: SupabaseRestService) {}
 
   /**
    * Récupère tous les staff selon le niveau d'autorisation
    */
-  async getAllStaff(query: LegacyStaffQuery, currentUserId: string): Promise<{
+  async getAllStaff(
+    query: LegacyStaffQuery,
+    _currentUserId: string,
+  ): Promise<{
     staff: LegacyAdminStaff[];
     pagination: {
       page: number;
@@ -52,7 +53,7 @@ export class AdminStaffService {
 
       // Construction de l'URL comme dans OrdersCompleteService
       let queryUrl = `${this.supabaseService['baseUrl']}/___config_admin?select=*`;
-      
+
       // Appliquer les filtres
       if (validatedQuery.search) {
         const searchFilter = `or=(cnfa_login.ilike.*${validatedQuery.search}*,cnfa_mail.ilike.*${validatedQuery.search}*,cnfa_fname.ilike.*${validatedQuery.search}*,cnfa_name.ilike.*${validatedQuery.search}*)`;
@@ -81,7 +82,11 @@ export class AdminStaffService {
       });
 
       if (!response.ok) {
-        console.error('Erreur Supabase Staff:', response.status, response.statusText);
+        console.error(
+          'Erreur Supabase Staff:',
+          response.status,
+          response.statusText,
+        );
         throw new Error(`Erreur API: ${response.status}`);
       }
 
@@ -107,14 +112,18 @@ export class AdminStaffService {
         method: 'GET',
         headers: {
           ...this.supabaseService['headers'],
-          'Prefer': 'count=exact'
+          Prefer: 'count=exact',
         },
       });
 
-      const totalItems = countResponse.ok ? 
-        parseInt(countResponse.headers.get('content-range')?.split('/')[1] || '0') : 0;
+      const totalItems = countResponse.ok
+        ? parseInt(
+            countResponse.headers.get('content-range')?.split('/')[1] || '0',
+          )
+        : 0;
 
-      const validatedStaff = staff?.map((s: any) => LegacyAdminStaffSchema.parse(s)) || [];
+      const validatedStaff =
+        staff?.map((s: any) => LegacyAdminStaffSchema.parse(s)) || [];
       const totalPages = Math.ceil(totalItems / validatedQuery.limit);
 
       return {
@@ -125,10 +134,9 @@ export class AdminStaffService {
           totalItems,
         },
       };
-
     } catch (error) {
       this.logger.error('Erreur getAllStaff:', error);
-      
+
       // Fallback avec données mock
       const mockStaff: LegacyAdminStaff[] = [
         {
@@ -197,7 +205,6 @@ export class AdminStaffService {
       }
 
       return LegacyAdminStaffSchema.parse(data[0]);
-
     } catch (error) {
       this.logger.error(`Erreur getStaffById ${id}:`, error);
       return null;
@@ -207,7 +214,10 @@ export class AdminStaffService {
   /**
    * Crée un nouvel administrateur
    */
-  async createStaff(staffData: CreateLegacyStaff, currentUserId: string): Promise<LegacyAdminStaff> {
+  async createStaff(
+    staffData: CreateLegacyStaff,
+    _currentUserId: string,
+  ): Promise<LegacyAdminStaff> {
     this.logger.log(`Création staff: ${staffData.login}`);
 
     try {
@@ -231,14 +241,17 @@ export class AdminStaffService {
         s_id: validatedData.departmentId || 'default_dept',
       };
 
-      const response = await fetch(`${this.supabaseService['baseUrl']}/___config_admin`, {
-        method: 'POST',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'return=representation',
+      const response = await fetch(
+        `${this.supabaseService['baseUrl']}/___config_admin`,
+        {
+          method: 'POST',
+          headers: {
+            ...this.supabaseService['headers'],
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify(insertData),
         },
-        body: JSON.stringify(insertData),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur création: ${response.status}`);
@@ -249,7 +262,6 @@ export class AdminStaffService {
       this.logger.log(`✅ Staff créé: ${newStaff.cnfa_id}`);
 
       return newStaff;
-
     } catch (error) {
       this.logger.error('Erreur createStaff:', error);
       throw error;
@@ -259,30 +271,38 @@ export class AdminStaffService {
   /**
    * Met à jour un administrateur
    */
-  async updateStaff(updateData: UpdateLegacyStaff, currentUserId: string): Promise<LegacyAdminStaff> {
+  async updateStaff(
+    updateData: UpdateLegacyStaff,
+    _currentUserId: string,
+  ): Promise<LegacyAdminStaff> {
     this.logger.log(`Mise à jour staff: ${updateData.id}`);
 
     try {
       const validatedData = UpdateLegacyStaffSchema.parse(updateData);
 
       const updateFields: any = {};
-      
+
       if (validatedData.login) updateFields.cnfa_login = validatedData.login;
       if (validatedData.email) updateFields.cnfa_mail = validatedData.email;
       if (validatedData.level) updateFields.cnfa_level = validatedData.level;
       if (validatedData.job) updateFields.cnfa_job = validatedData.job;
-      if (validatedData.firstName) updateFields.cnfa_fname = validatedData.firstName;
-      if (validatedData.lastName) updateFields.cnfa_name = validatedData.lastName;
+      if (validatedData.firstName)
+        updateFields.cnfa_fname = validatedData.firstName;
+      if (validatedData.lastName)
+        updateFields.cnfa_name = validatedData.lastName;
       if (validatedData.phone) updateFields.cnfa_tel = validatedData.phone;
 
-      const response = await fetch(`${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${validatedData.id}`, {
-        method: 'PATCH',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'return=representation',
+      const response = await fetch(
+        `${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${validatedData.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            ...this.supabaseService['headers'],
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify(updateFields),
         },
-        body: JSON.stringify(updateFields),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur mise à jour: ${response.status}`);
@@ -293,7 +313,6 @@ export class AdminStaffService {
       this.logger.log(`✅ Staff mis à jour: ${updatedStaff.cnfa_id}`);
 
       return updatedStaff;
-
     } catch (error) {
       this.logger.error('Erreur updateStaff:', error);
       throw error;
@@ -303,18 +322,25 @@ export class AdminStaffService {
   /**
    * Active/Désactive un administrateur
    */
-  async toggleStaffStatus(id: string, isActive: boolean, currentUserId: string): Promise<LegacyAdminStaff> {
+  async toggleStaffStatus(
+    id: string,
+    isActive: boolean,
+    _currentUserId: string,
+  ): Promise<LegacyAdminStaff> {
     this.logger.log(`Toggle status staff ${id}: ${isActive}`);
 
     try {
-      const response = await fetch(`${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${parseInt(id)}`, {
-        method: 'PATCH',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'return=representation',
+      const response = await fetch(
+        `${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${parseInt(id)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            ...this.supabaseService['headers'],
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({ cnfa_activ: isActive ? '1' : '0' }),
         },
-        body: JSON.stringify({ cnfa_activ: isActive ? '1' : '0' }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur changement statut: ${response.status}`);
@@ -325,7 +351,6 @@ export class AdminStaffService {
       this.logger.log(`✅ Status staff changé: ${updatedStaff.cnfa_id}`);
 
       return updatedStaff;
-
     } catch (error) {
       this.logger.error('Erreur toggleStaffStatus:', error);
       throw error;
@@ -339,10 +364,13 @@ export class AdminStaffService {
     this.logger.log('Récupération statistiques staff');
 
     try {
-      const response = await fetch(`${this.supabaseService['baseUrl']}/___config_admin?select=cnfa_level,cnfa_activ`, {
-        method: 'GET',
-        headers: this.supabaseService['headers'],
-      });
+      const response = await fetch(
+        `${this.supabaseService['baseUrl']}/___config_admin?select=cnfa_level,cnfa_activ`,
+        {
+          method: 'GET',
+          headers: this.supabaseService['headers'],
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur statistiques: ${response.status}`);
@@ -351,14 +379,19 @@ export class AdminStaffService {
       const allStaff = await response.json();
 
       const total = allStaff?.length || 0;
-      const active = allStaff?.filter((s: any) => s.cnfa_activ === '1').length || 0;
+      const active =
+        allStaff?.filter((s: any) => s.cnfa_activ === '1').length || 0;
       const inactive = total - active;
 
-      const byLevel = allStaff?.reduce((acc: any, staff: any) => {
-        const level = staff.cnfa_level.toString();
-        acc[level] = (acc[level] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
+      const byLevel =
+        allStaff?.reduce(
+          (acc: any, staff: any) => {
+            const level = staff.cnfa_level.toString();
+            acc[level] = (acc[level] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>,
+        ) || {};
 
       return {
         total,
@@ -366,10 +399,9 @@ export class AdminStaffService {
         inactive,
         byLevel,
       };
-
     } catch (error) {
       this.logger.error('Erreur getStaffStats:', error);
-      
+
       return {
         total: 2,
         active: 2,
@@ -396,7 +428,9 @@ export class AdminStaffService {
   /**
    * Crée un super-admin niveau 9
    */
-  async createSuperAdmin(superAdminData: SuperAdminCreation): Promise<LegacyAdminStaff> {
+  async createSuperAdmin(
+    superAdminData: SuperAdminCreation,
+  ): Promise<LegacyAdminStaff> {
     this.logger.log('🔧 Création Super-Admin:', superAdminData.login);
 
     const staffData: CreateLegacyStaff = {
@@ -439,15 +473,22 @@ export class AdminStaffService {
   /**
    * Change le mot de passe d'un staff
    */
-  async changePassword(staffId: string, newPassword: string, currentUserId: string): Promise<boolean> {
+  async changePassword(
+    staffId: string,
+    newPassword: string,
+    _currentUserId: string,
+  ): Promise<boolean> {
     try {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
-      
-      const response = await fetch(`${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${parseInt(staffId)}`, {
-        method: 'PATCH',
-        headers: this.supabaseService['headers'],
-        body: JSON.stringify({ cnfa_pswd: hashedPassword }),
-      });
+
+      const response = await fetch(
+        `${this.supabaseService['baseUrl']}/___config_admin?cnfa_id=eq.${parseInt(staffId)}`,
+        {
+          method: 'PATCH',
+          headers: this.supabaseService['headers'],
+          body: JSON.stringify({ cnfa_pswd: hashedPassword }),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`Erreur changement mot de passe: ${response.status}`);
@@ -455,7 +496,6 @@ export class AdminStaffService {
 
       this.logger.log(`✅ Mot de passe changé pour staff: ${staffId}`);
       return true;
-
     } catch (error) {
       this.logger.error('Erreur changePassword:', error);
       return false;

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
-import { debugConfiguration } from '../debug-config';
 
 export interface User {
   cst_id: string;

@@ -1,6 +1,6 @@
 /**
  * 📋 SCHÉMAS ZOD STAFF LEGACY - Module Admin
- * 
+ *
  * Schemas pour la table ___config_admin (legacy PHP)
  * Migration des interfaces existantes vers Zod
  */
@@ -96,7 +96,12 @@ export const convertLegacyToModern = (legacy: LegacyAdminStaff) => ({
   email: legacy.cnfa_mail,
   firstName: legacy.cnfa_fname,
   lastName: legacy.cnfa_name,
-  role: legacy.cnfa_level >= 9 ? 'ADMIN' : legacy.cnfa_level >= 8 ? 'MANAGER' : 'STAFF',
+  role:
+    legacy.cnfa_level >= 9
+      ? 'ADMIN'
+      : legacy.cnfa_level >= 8
+        ? 'MANAGER'
+        : 'STAFF',
   level: legacy.cnfa_level,
   isActive: legacy.cnfa_activ === '1',
   departmentId: legacy.s_id,
@@ -113,11 +118,50 @@ export const STAFF_PERMISSIONS_MAP: Record<number, string[]> = {
   2: ['view_basic', 'view_orders'],
   3: ['view_basic', 'view_orders', 'manage_customers'],
   4: ['view_basic', 'view_orders', 'manage_customers', 'view_stats'],
-  5: ['view_basic', 'view_orders', 'manage_customers', 'view_stats', 'manage_products'],
-  6: ['view_basic', 'view_orders', 'manage_customers', 'view_stats', 'manage_products', 'manage_inventory'],
-  7: ['view_orders', 'manage_customers', 'view_stats', 'manage_products', 'manage_inventory'],
-  8: ['view_orders', 'manage_customers', 'view_stats', 'manage_products', 'manage_inventory', 'manage_staff_level_7', 'advanced_settings'],
-  9: ['view_orders', 'manage_customers', 'view_stats', 'manage_products', 'manage_inventory', 'manage_staff_level_7', 'manage_staff_level_8', 'advanced_settings', 'super_admin_tools', 'payment_management', 'system_settings'],
+  5: [
+    'view_basic',
+    'view_orders',
+    'manage_customers',
+    'view_stats',
+    'manage_products',
+  ],
+  6: [
+    'view_basic',
+    'view_orders',
+    'manage_customers',
+    'view_stats',
+    'manage_products',
+    'manage_inventory',
+  ],
+  7: [
+    'view_orders',
+    'manage_customers',
+    'view_stats',
+    'manage_products',
+    'manage_inventory',
+  ],
+  8: [
+    'view_orders',
+    'manage_customers',
+    'view_stats',
+    'manage_products',
+    'manage_inventory',
+    'manage_staff_level_7',
+    'advanced_settings',
+  ],
+  9: [
+    'view_orders',
+    'manage_customers',
+    'view_stats',
+    'manage_products',
+    'manage_inventory',
+    'manage_staff_level_7',
+    'manage_staff_level_8',
+    'advanced_settings',
+    'super_admin_tools',
+    'payment_management',
+    'system_settings',
+  ],
 };
 
 /**

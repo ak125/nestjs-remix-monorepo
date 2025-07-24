@@ -3,9 +3,9 @@
  * Ce fichier ne doit être importé que dans les loaders et actions de Remix.
  */
 import "reflect-metadata";
+import  { type AppLoadContext } from "@remix-run/node";
 import { bootstrapNest } from "../../../backend/src/main.server";
 import { RemixIntegrationService } from "../../../backend/src/remix/remix-integration.service";
-import type { AppLoadContext } from "@remix-run/node";
 
 /**
  * Récupère une instance du service d'intégration Remix.

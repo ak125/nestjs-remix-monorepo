@@ -10,19 +10,25 @@ export const userBaseSchema = z.object({
   email: z.string().email('Email invalide'),
   firstName: z.string().min(1, 'Prénom requis').optional(),
   lastName: z.string().min(1, 'Nom requis').optional(),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Téléphone invalide').optional(),
+  phone: z
+    .string()
+    .regex(/^\+?[1-9]\d{1,14}$/, 'Téléphone invalide')
+    .optional(),
 });
 
 // Schéma d'inscription
-export const registerSchema = userBaseSchema.extend({
-  password: z.string()
-    .min(8, 'Mot de passe trop court')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
+export const registerSchema = userBaseSchema
+  .extend({
+    password: z
+      .string()
+      .min(8, 'Mot de passe trop court')
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas',
+    path: ['confirmPassword'],
+  });
 
 // Schéma de connexion
 export const loginSchema = z.object({
@@ -34,7 +40,8 @@ export const loginSchema = z.object({
 // Schéma de mise à jour profil
 export const updateProfileSchema = userBaseSchema.partial().extend({
   currentPassword: z.string().optional(),
-  newPassword: z.string()
+  newPassword: z
+    .string()
     .min(8, 'Mot de passe trop court')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple')
     .optional(),
@@ -66,16 +73,19 @@ export const resetPasswordSchema = z.object({
   email: z.string().email('Email invalide'),
 });
 
-export const confirmResetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token requis'),
-  password: z.string()
-    .min(8, 'Mot de passe trop court')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-});
+export const confirmResetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Token requis'),
+    password: z
+      .string()
+      .min(8, 'Mot de passe trop court')
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas',
+    path: ['confirmPassword'],
+  });
 
 // Schéma de recherche utilisateurs (Admin)
 export const searchUsersSchema = z.object({
@@ -84,7 +94,9 @@ export const searchUsersSchema = z.object({
   emailVerified: z.boolean().optional(),
   page: z.number().min(1).optional(),
   limit: z.number().min(1).max(100).optional(),
-  sortBy: z.enum(['email', 'firstName', 'lastName', 'createdAt', 'registrationDate']).optional(),
+  sortBy: z
+    .enum(['email', 'firstName', 'lastName', 'createdAt', 'registrationDate'])
+    .optional(),
   sortOrder: z.enum(['ASC', 'DESC']).optional(),
 });
 
@@ -95,5 +107,7 @@ export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
 export type UpdateAddressDto = z.infer<typeof updateAddressSchema>;
 export type UserMessageDto = z.infer<typeof userMessageSchema>;
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
-export type ConfirmResetPasswordDto = z.infer<typeof confirmResetPasswordSchema>;
+export type ConfirmResetPasswordDto = z.infer<
+  typeof confirmResetPasswordSchema
+>;
 export type SearchUsersDto = z.infer<typeof searchUsersSchema>;

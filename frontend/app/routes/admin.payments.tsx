@@ -2,13 +2,12 @@
  * Page Paiements - Gestion des paiements avec vraies données
  */
 
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type LoaderFunction , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import { CreditCard, TrendingUp, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const loader: LoaderFunction = async () => {
   try {

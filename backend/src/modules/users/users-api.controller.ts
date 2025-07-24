@@ -2,7 +2,14 @@
  * Contrôleur API Users - Version complète avec fonctionnalités étendues
  */
 
-import { Controller, Get, Query, HttpException, HttpStatus, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  HttpException,
+  HttpStatus,
+  Param,
+} from '@nestjs/common';
 
 @Controller('api/users')
 export class UsersApiController {
@@ -14,10 +21,12 @@ export class UsersApiController {
   async getUsers(
     @Query('limit') limit?: string,
     @Query('page') page?: string,
-    @Query('search') search?: string
+    @Query('search') search?: string,
   ) {
-    console.log(`📡 API Users: GET /api/users?limit=${limit}&page=${page}&search=${search}`);
-    
+    console.log(
+      `📡 API Users: GET /api/users?limit=${limit}&page=${page}&search=${search}`,
+    );
+
     try {
       const users = [
         {
@@ -33,7 +42,7 @@ export class UsersApiController {
           lastLoginDate: new Date().toISOString(),
           city: 'AutoParts City',
           country: 'France',
-          level: 8
+          level: 8,
         },
         {
           id: 'user-001',
@@ -48,7 +57,7 @@ export class UsersApiController {
           lastLoginDate: '2025-07-20T09:45:00Z',
           city: 'Lyon',
           country: 'France',
-          level: 2
+          level: 2,
         },
         {
           id: 'user-002',
@@ -63,7 +72,7 @@ export class UsersApiController {
           lastLoginDate: '2025-07-22T18:30:00Z',
           city: 'Marseille',
           country: 'France',
-          level: 6
+          level: 6,
         },
         {
           id: 'user-003',
@@ -78,7 +87,7 @@ export class UsersApiController {
           lastLoginDate: '2025-06-15T12:00:00Z',
           city: 'Toulouse',
           country: 'France',
-          level: 2
+          level: 2,
         },
         {
           id: 'user-004',
@@ -93,8 +102,8 @@ export class UsersApiController {
           lastLoginDate: '2025-07-23T07:15:00Z',
           city: 'Nice',
           country: 'France',
-          level: 9
-        }
+          level: 9,
+        },
       ];
 
       let filteredUsers = users;
@@ -102,11 +111,12 @@ export class UsersApiController {
       // Filtrage par recherche
       if (search && search.trim()) {
         const searchTerm = search.toLowerCase();
-        filteredUsers = users.filter(user => 
-          user.email.toLowerCase().includes(searchTerm) ||
-          user.firstName.toLowerCase().includes(searchTerm) ||
-          user.lastName.toLowerCase().includes(searchTerm) ||
-          user.city.toLowerCase().includes(searchTerm)
+        filteredUsers = users.filter(
+          (user) =>
+            user.email.toLowerCase().includes(searchTerm) ||
+            user.firstName.toLowerCase().includes(searchTerm) ||
+            user.lastName.toLowerCase().includes(searchTerm) ||
+            user.city.toLowerCase().includes(searchTerm),
         );
       }
 
@@ -115,10 +125,12 @@ export class UsersApiController {
       const pageNum = page ? parseInt(page, 10) : 1;
       const startIndex = (pageNum - 1) * limitNum;
       const endIndex = startIndex + limitNum;
-      
+
       const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
-      console.log(`✅ API Users - ${paginatedUsers.length}/${filteredUsers.length} utilisateurs retournés (page ${pageNum})`);
+      console.log(
+        `✅ API Users - ${paginatedUsers.length}/${filteredUsers.length} utilisateurs retournés (page ${pageNum})`,
+      );
 
       return {
         users: paginatedUsers,
@@ -126,13 +138,13 @@ export class UsersApiController {
         currentPage: pageNum,
         totalPages: Math.ceil(filteredUsers.length / limitNum),
         hasNextPage: endIndex < filteredUsers.length,
-        hasPrevPage: pageNum > 1
+        hasPrevPage: pageNum > 1,
       };
     } catch (error: any) {
       console.error('❌ Erreur API Users:', error);
       throw new HttpException(
         'Erreur lors de la récupération des utilisateurs',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -144,11 +156,11 @@ export class UsersApiController {
   @Get(':id')
   async getUserById(@Param('id') id: string) {
     console.log(`📡 API Users: GET /api/users/${id}`);
-    
+
     try {
       const users = await this.getUsers(); // Récupérer tous les users
       const user = users.users.find((u: any) => u.id === id);
-      
+
       if (!user) {
         throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
       }
@@ -156,13 +168,16 @@ export class UsersApiController {
       console.log(`✅ Utilisateur trouvé: ${user.email}`);
       return { user };
     } catch (error: any) {
-      console.error('❌ Erreur lors de la récupération de l\'utilisateur:', error);
+      console.error(
+        "❌ Erreur lors de la récupération de l'utilisateur:",
+        error,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
       throw new HttpException(
-        'Erreur lors de la récupération de l\'utilisateur',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        "Erreur lors de la récupération de l'utilisateur",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -174,7 +189,7 @@ export class UsersApiController {
   @Get('stats/summary')
   async getUserStats() {
     console.log('📊 API Users: GET /api/users/stats/summary');
-    
+
     try {
       const usersData = await this.getUsers('1000'); // Récupérer tous les users
       const users = usersData.users;
@@ -196,7 +211,7 @@ export class UsersApiController {
           const lastLogin = new Date(u.lastLoginDate);
           const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
           return lastLogin > oneDayAgo;
-        }).length
+        }).length,
       };
 
       console.log('✅ Statistiques calculées:', stats);
@@ -205,7 +220,7 @@ export class UsersApiController {
       console.error('❌ Erreur lors du calcul des statistiques:', error);
       throw new HttpException(
         'Erreur lors du calcul des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

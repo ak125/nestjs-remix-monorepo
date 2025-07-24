@@ -2,10 +2,8 @@
  * Dashboard Admin - Page d'accueil d'administration
  */
 
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { 
   Users, 
   ShoppingCart, 
@@ -15,6 +13,7 @@ import {
   CheckCircle,
   RefreshCw 
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const meta: MetaFunction = () => {
   return [

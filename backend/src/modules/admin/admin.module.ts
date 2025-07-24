@@ -1,15 +1,15 @@
 /**
  * 📋 MODULE ADMIN - NestJS-Remix Monorepo
- * 
+ *
  * Module d'administration complet pour la gestion back-office
  * Basé sur la fiche technique: admin_FICHE_TECHNIQUE.md
- * 
+ *
  * Migration des fonctionnalités PHP:
  * ✅ Gestion des stocks (core/_commercial/stock.*)
  * ✅ Administration des utilisateurs staff (core/_staff/*)
  * ✅ Configuration système (___CONFIG_ADMIN)
  * ✅ Outils de maintenance et monitoring
- * 
+ *
  * Architecture: NestJS + Zod + Supabase
  * Phase de migration: Phase 2 - Criticité HAUTE
  */
@@ -36,15 +36,7 @@ import { AdminStaffService } from './services/admin-staff.service';
     AdminSuppliersController,
     AdminStaffController,
   ],
-  providers: [
-    AdminDashboardService,
-    AdminSuppliersService,
-    AdminStaffService,
-  ],
-  exports: [
-    AdminDashboardService,
-    AdminSuppliersService,
-    AdminStaffService,
-  ],
+  providers: [AdminDashboardService, AdminSuppliersService, AdminStaffService],
+  exports: [AdminDashboardService, AdminSuppliersService, AdminStaffService],
 })
 export class AdminModule {}

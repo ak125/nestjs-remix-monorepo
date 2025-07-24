@@ -1,6 +1,6 @@
 /**
  * 📋 SCHÉMAS ZOD ADMIN - NestJS-Remix Monorepo
- * 
+ *
  * Validation pour toutes les opérations admin
  * Compatible avec l'architecture Zod existante
  */
@@ -167,7 +167,9 @@ export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
 
 // ===== SCHÉMAS DE RÉPONSE =====
 
-export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
+  itemSchema: T,
+) =>
   z.object({
     data: z.array(itemSchema),
     total: z.number().int().min(0),

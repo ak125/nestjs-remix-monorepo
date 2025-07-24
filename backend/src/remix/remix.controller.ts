@@ -9,7 +9,7 @@ import { RemixIntegrationService } from './remix-integration.service';
 export class RemixController {
   constructor(
     private remixService: RemixService,
-    private remixIntegrationService: RemixIntegrationService
+    private remixIntegrationService: RemixIntegrationService,
   ) {}
 
   @All('*')

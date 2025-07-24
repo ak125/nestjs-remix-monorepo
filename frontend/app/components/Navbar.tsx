@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { Bell, ReceiptEuro, UserRound, Package, ShoppingCart, Settings } from 'lucide-react';
-import { useOptionalUser } from "~/root";
 import { Badge } from "~/components/ui/badge";
+import { useOptionalUser } from "~/root";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();

@@ -1,6 +1,6 @@
 /**
  * 📋 SERVICE FOURNISSEURS ADMIN
- * 
+ *
  * Gestion complète des fournisseurs AutoParts
  * Tables: ___xtr_supplier, am_2022_suppliers, ___xtr_supplier_link_pm
  */
@@ -25,28 +25,32 @@ export class AdminSuppliersService {
   private readonly logger = new Logger(AdminSuppliersService.name);
   private readonly tableName = '___xtr_supplier';
 
-  constructor(
-    private readonly supabaseService: SupabaseRestService,
-  ) {}
+  constructor(private readonly supabaseService: SupabaseRestService) {}
 
   /**
    * Récupérer tous les fournisseurs avec pagination
    */
-  async getAllSuppliers(query: SupplierQuery, currentUserId: string): Promise<PaginatedResponse<Supplier>> {
+  async getAllSuppliers(
+    query: SupplierQuery,
+    _currentUserId: string,
+  ): Promise<PaginatedResponse<Supplier>> {
     try {
       const validatedQuery = SupplierQuerySchema.parse(query);
-      const { page, limit, search, country, isActive, sortBy, sortOrder } = validatedQuery;
+      const { page, limit, search, country, isActive, sortBy, sortOrder } =
+        validatedQuery;
 
-      this.logger.log(`Récupération fournisseurs - Page ${page}, Limite ${limit}`);
+      this.logger.log(
+        `Récupération fournisseurs - Page ${page}, Limite ${limit}`,
+      );
 
       let url = `${this.supabaseService['baseUrl']}/${this.tableName}?select=*`;
-      
+
       // Filtres
       if (isActive !== undefined) {
         // Assuming a column exists for active status
         url += `&is_active=eq.${isActive}`;
       }
-      
+
       if (country) {
         url += `&country=ilike.%${country}%`;
       }
@@ -73,7 +77,9 @@ export class AdminSuppliersService {
       }
 
       const suppliers = await response.json();
-      const total = parseInt(response.headers.get('content-range')?.split('/')[1] || '0');
+      const total = parseInt(
+        response.headers.get('content-range')?.split('/')[1] || '0',
+      );
 
       // Transformation des données legacy vers notre format
       const transformedSuppliers: Supplier[] = suppliers.map((s: any) => ({
@@ -101,9 +107,11 @@ export class AdminSuppliersService {
         limit,
         totalPages: Math.ceil(total / limit),
       };
-
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des fournisseurs:', error);
+      this.logger.error(
+        'Erreur lors de la récupération des fournisseurs:',
+        error,
+      );
       throw error;
     }
   }
@@ -128,7 +136,7 @@ export class AdminSuppliersService {
       }
 
       const suppliers = await response.json();
-      
+
       if (suppliers.length === 0) {
         throw new NotFoundException(`Fournisseur ${id} non trouvé`);
       }
@@ -151,9 +159,11 @@ export class AdminSuppliersService {
         createdAt: new Date(s.created_at),
         updatedAt: new Date(s.updated_at),
       };
-
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération du fournisseur ${id}:`, error);
+      this.logger.error(
+        `Erreur lors de la récupération du fournisseur ${id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -161,11 +171,16 @@ export class AdminSuppliersService {
   /**
    * Créer un nouveau fournisseur
    */
-  async createSupplier(data: CreateSupplier, currentUserId: string): Promise<Supplier> {
+  async createSupplier(
+    data: CreateSupplier,
+    _currentUserId: string,
+  ): Promise<Supplier> {
     try {
       const validatedData = CreateSupplierSchema.parse(data);
-      
-      this.logger.log(`Création fournisseur: ${validatedData.name} par ${currentUserId}`);
+
+      this.logger.log(
+        `Création fournisseur: ${validatedData.name} par ${_currentUserId}`,
+      );
 
       const supplierData = {
         name: validatedData.name,
@@ -190,7 +205,7 @@ export class AdminSuppliersService {
           method: 'POST',
           headers: {
             ...this.supabaseService['headers'],
-            'Prefer': 'return=representation',
+            Prefer: 'return=representation',
           },
           body: JSON.stringify(supplierData),
         },
@@ -202,7 +217,6 @@ export class AdminSuppliersService {
 
       const [createdSupplier] = await response.json();
       return this.getSupplierById(createdSupplier.id);
-
     } catch (error) {
       this.logger.error('Erreur lors de la création du fournisseur:', error);
       throw error;
@@ -212,11 +226,16 @@ export class AdminSuppliersService {
   /**
    * Mettre à jour un fournisseur
    */
-  async updateSupplier(data: UpdateSupplier, currentUserId: string): Promise<Supplier> {
+  async updateSupplier(
+    data: UpdateSupplier,
+    _currentUserId: string,
+  ): Promise<Supplier> {
     try {
       const validatedData = UpdateSupplierSchema.parse(data);
-      
-      this.logger.log(`Mise à jour fournisseur ${validatedData.id} par ${currentUserId}`);
+
+      this.logger.log(
+        `Mise à jour fournisseur ${validatedData.id} par ${_currentUserId}`,
+      );
 
       // Vérifier que le fournisseur existe
       await this.getSupplierById(validatedData.id);
@@ -234,8 +253,10 @@ export class AdminSuppliersService {
       if (validatedData.city) updateData.city = validatedData.city;
       if (validatedData.country) updateData.country = validatedData.country;
       if (validatedData.website) updateData.website = validatedData.website;
-      if (validatedData.paymentTerms) updateData.payment_terms = validatedData.paymentTerms;
-      if (validatedData.deliveryTime !== undefined) updateData.delivery_time = validatedData.deliveryTime;
+      if (validatedData.paymentTerms)
+        updateData.payment_terms = validatedData.paymentTerms;
+      if (validatedData.deliveryTime !== undefined)
+        updateData.delivery_time = validatedData.deliveryTime;
       if (validatedData.rating) updateData.rating = validatedData.rating;
 
       const response = await fetch(
@@ -244,7 +265,7 @@ export class AdminSuppliersService {
           method: 'PATCH',
           headers: {
             ...this.supabaseService['headers'],
-            'Prefer': 'return=representation',
+            Prefer: 'return=representation',
           },
           body: JSON.stringify(updateData),
         },
@@ -255,7 +276,6 @@ export class AdminSuppliersService {
       }
 
       return this.getSupplierById(validatedData.id);
-
     } catch (error) {
       this.logger.error('Erreur lors de la mise à jour du fournisseur:', error);
       throw error;
@@ -276,12 +296,14 @@ export class AdminSuppliersService {
           method: 'GET',
           headers: {
             ...this.supabaseService['headers'],
-            'Prefer': 'count=exact',
+            Prefer: 'count=exact',
           },
         },
       );
 
-      const totalSuppliers = parseInt(totalResponse.headers.get('content-range')?.split('/')[1] || '0');
+      const totalSuppliers = parseInt(
+        totalResponse.headers.get('content-range')?.split('/')[1] || '0',
+      );
 
       // Données simulées pour les autres métriques (à améliorer avec de vraies requêtes)
       const stats: SupplierStats = {
@@ -296,23 +318,25 @@ export class AdminSuppliersService {
             id: '1',
             name: 'Fournisseur Principal Auto',
             orderCount: 89,
-            totalSpent: 45678.90,
-            rating: 5
+            totalSpent: 45678.9,
+            rating: 5,
           },
           {
-            id: '2', 
+            id: '2',
             name: 'Pièces Express SARL',
             orderCount: 67,
             totalSpent: 34567.89,
-            rating: 4
-          }
-        ]
+            rating: 4,
+          },
+        ],
       };
 
       return SupplierStatsSchema.parse(stats);
-
     } catch (error) {
-      this.logger.error('Erreur lors de la génération des stats fournisseurs:', error);
+      this.logger.error(
+        'Erreur lors de la génération des stats fournisseurs:',
+        error,
+      );
       throw error;
     }
   }
@@ -320,9 +344,15 @@ export class AdminSuppliersService {
   /**
    * Activer/Désactiver un fournisseur
    */
-  async toggleSupplierStatus(id: string, isActive: boolean, currentUserId: string): Promise<Supplier> {
+  async toggleSupplierStatus(
+    id: string,
+    isActive: boolean,
+    _currentUserId: string,
+  ): Promise<Supplier> {
     try {
-      this.logger.log(`${isActive ? 'Activation' : 'Désactivation'} fournisseur ${id} par ${currentUserId}`);
+      this.logger.log(
+        `${isActive ? 'Activation' : 'Désactivation'} fournisseur ${id} par ${_currentUserId}`,
+      );
 
       const response = await fetch(
         `${this.supabaseService['baseUrl']}/${this.tableName}?id=eq.${id}`,
@@ -330,23 +360,27 @@ export class AdminSuppliersService {
           method: 'PATCH',
           headers: {
             ...this.supabaseService['headers'],
-            'Prefer': 'return=representation',
+            Prefer: 'return=representation',
           },
           body: JSON.stringify({
             is_active: isActive,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }),
         },
       );
 
       if (!response.ok) {
-        throw new Error(`Erreur changement statut fournisseur: ${response.status}`);
+        throw new Error(
+          `Erreur changement statut fournisseur: ${response.status}`,
+        );
       }
 
       return this.getSupplierById(id);
-
     } catch (error) {
-      this.logger.error('Erreur lors du changement de statut du fournisseur:', error);
+      this.logger.error(
+        'Erreur lors du changement de statut du fournisseur:',
+        error,
+      );
       throw error;
     }
   }

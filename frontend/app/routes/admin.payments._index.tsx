@@ -1,13 +1,13 @@
 import  { type LoaderFunctionArgs , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { CreditCard, Clock, CheckCircle, DollarSign, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import  { type LegacyPayment, type PaymentStats , getPaymentStats } from "~/utils/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Alert, AlertDescription } from "~/components/ui/alert";
-import { CreditCard, Clock, CheckCircle, DollarSign, AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import  { type LegacyPayment, type PaymentStats , getPaymentStats } from "~/utils/api";
 
 /**
  * Interface étendue pour les données du loader

@@ -11,7 +11,7 @@ import {
   UserMessageDto,
   ResetPasswordDto,
   ConfirmResetPasswordDto,
-  SearchUsersDto
+  SearchUsersDto,
 } from '../schemas/users.schemas';
 
 // Import du bon UserResponseDto avec toutes les propriétés
@@ -28,7 +28,7 @@ export {
   ConfirmResetPasswordDto,
   SearchUsersDto,
   UserResponseDto,
-  transformUserToResponse
+  transformUserToResponse,
 };
 
 export interface AddressDto {

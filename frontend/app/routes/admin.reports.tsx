@@ -2,13 +2,12 @@
  * Page Rapports - Analyses et rapports
  */
 
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type LoaderFunction , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
-import { Badge } from "~/components/ui/badge";
 import { BarChart3, TrendingUp, Download, Eye, Calendar, PieChart } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const loader: LoaderFunction = async () => {
   // Simulation de données rapports

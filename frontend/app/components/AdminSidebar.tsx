@@ -1,8 +1,4 @@
-import * as React from "react"
 import { Link, useLocation } from "@remix-run/react"
-import { cn } from "~/lib/utils"
-import { Button } from "./ui/button"
-import { Card } from "./ui/card"
 import { 
   Home, 
   Users, 
@@ -15,6 +11,10 @@ import {
   LogOut,
   Shield
 } from "lucide-react"
+import * as React from "react"
+import { cn } from "~/lib/utils"
+import { Button } from "./ui/button"
+import { Card } from "./ui/card"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string

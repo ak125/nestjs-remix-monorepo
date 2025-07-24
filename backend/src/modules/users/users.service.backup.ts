@@ -27,7 +27,7 @@ import {
   LoginResponseDto,
   PaginatedUsersResponseDto,
   CreateUserDto,
-  UpdateUserDto
+  UpdateUserDto,
 } from './dto/users.dto';
 
 @Injectable()
@@ -44,7 +44,7 @@ export class UsersService {
    */
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
     console.log('🔐 UsersService.register:', registerDto.email);
-    
+
     try {
       // Vérifier si l'utilisateur existe déjà
       const existingUser = await this.findByEmail(registerDto.email);
@@ -71,8 +71,9 @@ export class UsersService {
     } catch (error) {
       console.error('❌ Erreur création utilisateur:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la création de l\'utilisateur',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          "Erreur lors de la création de l'utilisateur",
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -82,7 +83,7 @@ export class UsersService {
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     console.log('🔐 UsersService.login:', loginDto.email);
-    
+
     try {
       // Trouver l'utilisateur
       const user = await this.findByEmail(loginDto.email);
@@ -112,7 +113,7 @@ export class UsersService {
       console.error('❌ Erreur connexion:', error);
       throw new HttpException(
         (error as any)?.message || 'Erreur lors de la connexion',
-        (error as any)?.status || HttpStatus.UNAUTHORIZED
+        (error as any)?.status || HttpStatus.UNAUTHORIZED,
       );
     }
   }
@@ -124,12 +125,12 @@ export class UsersService {
    */
   async getProfile(userId: string): Promise<UserResponseDto> {
     console.log('👤 UsersService.getProfile:', userId);
-    
+
     try {
       // Simulation de récupération utilisateur
       const mockUsers = await this.getMockUsers();
-      const user = mockUsers.find(u => u.id === userId);
-      
+      const user = mockUsers.find((u) => u.id === userId);
+
       if (!user) {
         throw new NotFoundException('Utilisateur non trouvé');
       }
@@ -140,7 +141,7 @@ export class UsersService {
       console.error('❌ Erreur récupération profil:', error);
       throw new HttpException(
         (error as any)?.message || 'Erreur lors de la récupération du profil',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -148,12 +149,15 @@ export class UsersService {
   /**
    * Mettre à jour le profil
    */
-  async updateProfile(userId: string, updateDto: UpdateProfileDto): Promise<UserResponseDto> {
+  async updateProfile(
+    userId: string,
+    updateDto: UpdateProfileDto,
+  ): Promise<UserResponseDto> {
     console.log('📝 UsersService.updateProfile:', userId);
-    
+
     try {
       const user = await this.getProfile(userId);
-      
+
       // Mettre à jour les champs
       const updatedUser: UserResponseDto = {
         ...user,
@@ -168,7 +172,7 @@ export class UsersService {
       console.error('❌ Erreur mise à jour profil:', error);
       throw new HttpException(
         (error as any)?.message || 'Erreur lors de la mise à jour du profil',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -176,12 +180,15 @@ export class UsersService {
   /**
    * Mettre à jour les adresses
    */
-  async updateAddresses(userId: string, addressDto: UpdateAddressDto): Promise<UserResponseDto> {
+  async updateAddresses(
+    userId: string,
+    addressDto: UpdateAddressDto,
+  ): Promise<UserResponseDto> {
     console.log('🏠 UsersService.updateAddresses:', userId);
-    
+
     try {
       const user = await this.getProfile(userId);
-      
+
       const updatedUser: UserResponseDto = {
         ...user,
         address: addressDto.billingAddress?.street || user.address,
@@ -194,7 +201,7 @@ export class UsersService {
       console.error('❌ Erreur mise à jour adresses:', error);
       throw new HttpException(
         (error as any)?.message || 'Erreur lors de la mise à jour des adresses',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -204,9 +211,12 @@ export class UsersService {
   /**
    * Créer un message utilisateur
    */
-  async createMessage(userId: string, messageDto: UserMessageDto): Promise<void> {
+  async createMessage(
+    userId: string,
+    messageDto: UserMessageDto,
+  ): Promise<void> {
     console.log('💌 UsersService.createMessage:', userId);
-    
+
     try {
       // Simuler la création de message
       console.log('Message créé:', messageDto.subject);
@@ -214,7 +224,7 @@ export class UsersService {
       console.error('❌ Erreur création message:', error);
       throw new HttpException(
         (error as any)?.message || 'Erreur lors de la création du message',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -224,7 +234,7 @@ export class UsersService {
    */
   async getUserMessages(userId: string): Promise<any[]> {
     console.log('📨 UsersService.getUserMessages:', userId);
-    
+
     try {
       // Simuler la récupération de messages
       return [
@@ -233,14 +243,15 @@ export class UsersService {
           subject: 'Message test',
           content: 'Contenu du message test',
           createdAt: new Date(),
-          read: false
-        }
+          read: false,
+        },
       ];
     } catch (error) {
       console.error('❌ Erreur récupération messages:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la récupération des messages',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          'Erreur lors de la récupération des messages',
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -252,7 +263,7 @@ export class UsersService {
    */
   async requestPasswordReset(resetDto: ResetPasswordDto): Promise<void> {
     console.log('🔑 UsersService.requestPasswordReset:', resetDto.email);
-    
+
     try {
       const user = await this.findByEmail(resetDto.email);
       if (!user) {
@@ -266,8 +277,9 @@ export class UsersService {
     } catch (error) {
       console.error('❌ Erreur demande reset:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la demande de réinitialisation',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          'Erreur lors de la demande de réinitialisation',
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -275,17 +287,20 @@ export class UsersService {
   /**
    * Confirmer la réinitialisation de mot de passe
    */
-  async confirmPasswordReset(confirmDto: ConfirmResetPasswordDto): Promise<void> {
+  async confirmPasswordReset(
+    _confirmDto: ConfirmResetPasswordDto,
+  ): Promise<void> {
     console.log('🔐 UsersService.confirmPasswordReset');
-    
+
     try {
       // Simuler la validation du token et la mise à jour du mot de passe
       console.log('Mot de passe réinitialisé');
     } catch (error) {
       console.error('❌ Erreur confirmation reset:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la confirmation de réinitialisation',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          'Erreur lors de la confirmation de réinitialisation',
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -295,25 +310,28 @@ export class UsersService {
   /**
    * Rechercher des utilisateurs (Admin)
    */
-  async searchUsers(searchDto: SearchUsersDto): Promise<PaginatedUsersResponseDto> {
+  async searchUsers(
+    searchDto: SearchUsersDto,
+  ): Promise<PaginatedUsersResponseDto> {
     console.log('🔍 UsersService.searchUsers:', searchDto);
-    
+
     try {
       let users = await this.getMockUsers();
-      
+
       // Filtrage par recherche
       if (searchDto.search) {
         const search = searchDto.search.toLowerCase();
-        users = users.filter(user => 
-          user.email.toLowerCase().includes(search) ||
-          (user.firstName && user.firstName.toLowerCase().includes(search)) ||
-          (user.lastName && user.lastName.toLowerCase().includes(search))
+        users = users.filter(
+          (user) =>
+            user.email.toLowerCase().includes(search) ||
+            (user.firstName && user.firstName.toLowerCase().includes(search)) ||
+            (user.lastName && user.lastName.toLowerCase().includes(search)),
         );
       }
 
       // Filtrage par statut actif
       if (searchDto.isActive !== undefined) {
-        users = users.filter(user => user.isActive === searchDto.isActive);
+        users = users.filter((user) => user.isActive === searchDto.isActive);
       }
 
       // Tri
@@ -321,9 +339,9 @@ export class UsersService {
         users.sort((a, b) => {
           const aValue = a[searchDto.sortBy as keyof UserResponseDto];
           const bValue = b[searchDto.sortBy as keyof UserResponseDto];
-          
+
           if (aValue === undefined || bValue === undefined) return 0;
-          
+
           if (searchDto.sortOrder === 'DESC') {
             return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
           } else {
@@ -338,7 +356,7 @@ export class UsersService {
       const currentPage = searchDto.page || 1;
       const startIndex = ((searchDto.page || 1) - 1) * (searchDto.limit || 10);
       const endIndex = startIndex + (searchDto.limit || 10);
-      
+
       const paginatedUsers = users.slice(startIndex, endIndex);
 
       const result: PaginatedUsersResponseDto = {
@@ -357,8 +375,9 @@ export class UsersService {
     } catch (error) {
       console.error('❌ Erreur recherche utilisateurs:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la recherche des utilisateurs',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          'Erreur lors de la recherche des utilisateurs',
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -368,15 +387,16 @@ export class UsersService {
    */
   async deactivateUser(userId: string): Promise<void> {
     console.log('🚫 UsersService.deactivateUser:', userId);
-    
+
     try {
       const user = await this.getProfile(userId);
       console.log('✅ Utilisateur désactivé:', user.email);
     } catch (error) {
       console.error('❌ Erreur désactivation utilisateur:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la désactivation de l\'utilisateur',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          "Erreur lors de la désactivation de l'utilisateur",
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -386,15 +406,16 @@ export class UsersService {
    */
   async deleteUser(userId: string): Promise<void> {
     console.log('🗑️ UsersService.deleteUser:', userId);
-    
+
     try {
       const user = await this.getProfile(userId);
       console.log('✅ Utilisateur supprimé:', user.email);
     } catch (error) {
       console.error('❌ Erreur suppression utilisateur:', error);
       throw new HttpException(
-        (error as any)?.message || 'Erreur lors de la suppression de l\'utilisateur',
-        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR
+        (error as any)?.message ||
+          "Erreur lors de la suppression de l'utilisateur",
+        (error as any)?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -406,10 +427,10 @@ export class UsersService {
    */
   async findByEmail(email: string): Promise<UserResponseDto | null> {
     console.log('📧 UsersService.findByEmail:', email);
-    
+
     try {
       const users = await this.getMockUsers();
-      const user = users.find(u => u.email === email);
+      const user = users.find((u) => u.email === email);
       return user || null;
     } catch (error) {
       console.error('❌ Erreur recherche par email:', error);
@@ -475,7 +496,7 @@ export class UsersService {
         isActive: true,
         createdAt: new Date('2024-04-05'),
         updatedAt: new Date(),
-      }
+      },
     ];
   }
 
@@ -496,7 +517,10 @@ export class UsersService {
     return this.register(registerDto);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserResponseDto> {
     const updateDto: UpdateProfileDto = {
       firstName: updateUserDto.name?.split(' ')[0],
       lastName: updateUserDto.name?.split(' ').slice(1).join(' '),

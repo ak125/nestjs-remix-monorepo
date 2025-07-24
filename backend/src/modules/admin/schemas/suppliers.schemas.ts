@@ -1,6 +1,6 @@
 /**
  * 📋 SCHÉMAS FOURNISSEURS - Migration vers NestJS-Remix
- * 
+ *
  * Gestion complète des fournisseurs AutoParts
  * Tables: ___xtr_supplier, am_2022_suppliers, ___xtr_supplier_link_pm
  */
@@ -103,11 +103,15 @@ export const CreateSupplierOrderSchema = z.object({
   orderNumber: z.string(),
   expectedDeliveryDate: z.date().optional(),
   notes: z.string().optional(),
-  items: z.array(z.object({
-    productId: z.string(),
-    quantity: z.number().int().min(1),
-    unitCost: z.number().min(0),
-  })).min(1),
+  items: z
+    .array(
+      z.object({
+        productId: z.string(),
+        quantity: z.number().int().min(1),
+        unitCost: z.number().min(0),
+      }),
+    )
+    .min(1),
 });
 
 // ===== TYPES TYPESCRIPT =====
@@ -118,7 +122,9 @@ export type UpdateSupplier = z.infer<typeof UpdateSupplierSchema>;
 export type SupplierQuery = z.infer<typeof SupplierQuerySchema>;
 
 export type SupplierProductLink = z.infer<typeof SupplierProductLinkSchema>;
-export type CreateSupplierProductLink = z.infer<typeof CreateSupplierProductLinkSchema>;
+export type CreateSupplierProductLink = z.infer<
+  typeof CreateSupplierProductLinkSchema
+>;
 
 export type SupplierOrder = z.infer<typeof SupplierOrderSchema>;
 export type CreateSupplierOrder = z.infer<typeof CreateSupplierOrderSchema>;
@@ -132,13 +138,17 @@ export const SupplierStatsSchema = z.object({
   pendingOrders: z.number().int().min(0),
   totalSpent: z.number().min(0),
   averageDeliveryTime: z.number().min(0),
-  topSuppliers: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    orderCount: z.number().int().min(0),
-    totalSpent: z.number().min(0),
-    rating: z.number().min(1).max(5).optional(),
-  })).max(10),
+  topSuppliers: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        orderCount: z.number().int().min(0),
+        totalSpent: z.number().min(0),
+        rating: z.number().min(1).max(5).optional(),
+      }),
+    )
+    .max(10),
 });
 
 export type SupplierStats = z.infer<typeof SupplierStatsSchema>;

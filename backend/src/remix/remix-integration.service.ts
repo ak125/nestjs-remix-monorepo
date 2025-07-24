@@ -38,7 +38,7 @@ export class RemixIntegrationService {
   private async getCachedUser(userId: string) {
     const cacheKey = `user:${userId}`;
     const now = Date.now();
-    
+
     // Vérifier le cache en mémoire (plus rapide que Redis pour les requêtes répétées)
     if (this.userCache.has(userId)) {
       const expiry = this.userCacheExpiry.get(userId) || 0;
@@ -69,11 +69,11 @@ export class RemixIntegrationService {
   private async setCachedUser(userId: string, userData: any) {
     const cacheKey = `user:${userId}`;
     const now = Date.now();
-    
+
     // Cache en mémoire
     this.userCache.set(userId, userData);
     this.userCacheExpiry.set(userId, now + 300000); // 5 minutes
-    
+
     // Cache Redis (plus persistant)
     await this.cacheService.set(cacheKey, userData, 600); // 10 minutes
   }
@@ -102,7 +102,7 @@ export class RemixIntegrationService {
 
       // Cache key basé sur les paramètres
       const cacheKey = `orders:${page}:${maxLimit}:${status || 'all'}:${search || 'all'}`;
-      
+
       // Vérifier le cache (TTL: 5 minutes pour les données admin)
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
@@ -122,18 +122,27 @@ export class RemixIntegrationService {
 
       // Pré-charger les utilisateurs en batch pour éviter les requêtes N+1
       if (result.orders && result.orders.length > 0) {
-        const userIds = [...new Set(result.orders.map(order => order.ord_cst_id).filter(Boolean))];
-        console.log(`🔄 Pré-chargement de ${userIds.length} utilisateurs uniques...`);
-        
+        const userIds = [
+          ...new Set(
+            result.orders.map((order) => order.ord_cst_id).filter(Boolean),
+          ),
+        ];
+        console.log(
+          `🔄 Pré-chargement de ${userIds.length} utilisateurs uniques...`,
+        );
+
         // Traiter les utilisateurs par batch pour éviter la surcharge
         for (const userId of userIds) {
-          if (!await this.getCachedUser(userId)) {
+          if (!(await this.getCachedUser(userId))) {
             try {
               // TODO: Remplacer par le vrai service utilisateur quand disponible
               const userData = { id: userId, name: `User ${userId}` };
               await this.setCachedUser(userId, userData);
             } catch (error) {
-              console.warn(`⚠️ Erreur lors du pré-chargement utilisateur ${userId}:`, error);
+              console.warn(
+                `⚠️ Erreur lors du pré-chargement utilisateur ${userId}:`,
+                error,
+              );
             }
           }
         }
@@ -150,7 +159,7 @@ export class RemixIntegrationService {
 
       // Mettre en cache pour 5 minutes
       await this.cacheService.set(cacheKey, response, 300);
-      
+
       return response;
     } catch (error) {
       console.error('Erreur dans getOrdersForRemix:', error);
@@ -184,7 +193,7 @@ export class RemixIntegrationService {
 
       // TODO: Implement proper user retrieval when UsersService.getAllUsers is available
       // const result = await this.usersService.getAllUsers(page, limit);
-      
+
       // Temporary fallback - return empty result
       const result = {
         users: [],
@@ -217,11 +226,13 @@ export class RemixIntegrationService {
   async getDashboardStats() {
     try {
       const cacheKey = 'dashboard_stats';
-      
+
       // Vérifier le cache (TTL: 2 minutes pour les stats dashboard)
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
-        console.log('📦 Cache hit - Retour des stats dashboard depuis le cache');
+        console.log(
+          '📦 Cache hit - Retour des stats dashboard depuis le cache',
+        );
         return cached;
       }
 
@@ -243,7 +254,7 @@ export class RemixIntegrationService {
 
       // Mettre en cache pour 2 minutes
       await this.cacheService.set(cacheKey, response, 120);
-      
+
       return response;
     } catch (error) {
       console.error('Erreur dans getDashboardStats:', error);
@@ -270,11 +281,13 @@ export class RemixIntegrationService {
   async getPaymentStatsForRemix() {
     try {
       const cacheKey = 'payment_stats';
-      
+
       // Vérifier le cache (TTL: 3 minutes pour les stats)
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
-        console.log('📦 Cache hit - Retour des stats paiements depuis le cache');
+        console.log(
+          '📦 Cache hit - Retour des stats paiements depuis le cache',
+        );
         return cached;
       }
 
@@ -286,7 +299,7 @@ export class RemixIntegrationService {
 
       // Mettre en cache pour 3 minutes
       await this.cacheService.set(cacheKey, response, 180);
-      
+
       return response;
     } catch (error) {
       console.error('Erreur dans getPaymentStatsForRemix:', error);
@@ -356,11 +369,11 @@ export class RemixIntegrationService {
     search?: string;
   }) {
     try {
-      const { 
-        page = 1, 
-        limit = 20, // Limite par défaut réduite 
-        status, 
-        search 
+      const {
+        page = 1,
+        limit = 20, // Limite par défaut réduite
+        status,
+        search,
       } = params;
 
       // Limiter la limite maximum pour éviter les surcharges
@@ -368,7 +381,7 @@ export class RemixIntegrationService {
 
       // Cache key basé sur les paramètres
       const cacheKey = `payments:${page}:${maxLimit}:${status || 'all'}:${search || 'all'}`;
-      
+
       // Vérifier le cache (TTL: 5 minutes pour les données admin)
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
@@ -388,18 +401,27 @@ export class RemixIntegrationService {
 
       // Pré-charger les utilisateurs en batch pour éviter les requêtes N+1
       if (result.orders && result.orders.length > 0) {
-        const userIds = [...new Set(result.orders.map(order => order.ord_cst_id).filter(Boolean))];
-        console.log(`🔄 Pré-chargement utilisateurs pour paiements: ${userIds.length} uniques...`);
-        
+        const userIds = [
+          ...new Set(
+            result.orders.map((order) => order.ord_cst_id).filter(Boolean),
+          ),
+        ];
+        console.log(
+          `🔄 Pré-chargement utilisateurs pour paiements: ${userIds.length} uniques...`,
+        );
+
         // Traiter les utilisateurs par batch
         for (const userId of userIds) {
-          if (!await this.getCachedUser(userId)) {
+          if (!(await this.getCachedUser(userId))) {
             try {
               // TODO: Remplacer par le vrai service utilisateur quand disponible
               const userData = { id: userId, name: `User ${userId}` };
               await this.setCachedUser(userId, userData);
             } catch (error) {
-              console.warn(`⚠️ Erreur lors du pré-chargement paiements utilisateur ${userId}:`, error);
+              console.warn(
+                `⚠️ Erreur lors du pré-chargement paiements utilisateur ${userId}:`,
+                error,
+              );
             }
           }
         }
@@ -431,7 +453,7 @@ export class RemixIntegrationService {
 
       // Mettre en cache pour 5 minutes
       await this.cacheService.set(cacheKey, response, 300);
-      
+
       return response;
     } catch (error) {
       console.error('Erreur dans getPaymentsForRemix:', error);
@@ -764,17 +786,11 @@ export class RemixIntegrationService {
     isActive?: boolean;
   }) {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        search,
-        country,
-        isActive,
-      } = params;
+      const { page = 1, limit = 10, search, country, isActive } = params;
 
       // Cache key basé sur les paramètres
       const cacheKey = `suppliers:${page}:${limit}:${search || 'all'}:${country || 'all'}:${isActive ?? 'all'}`;
-      
+
       // Vérifier le cache (TTL: 10 minutes pour les fournisseurs - données moins volatiles)
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
@@ -805,7 +821,7 @@ export class RemixIntegrationService {
 
       // Mettre en cache pour 10 minutes (fournisseurs moins volatiles)
       await this.cacheService.set(cacheKey, response, 600);
-      
+
       return response;
     } catch (error) {
       console.error('Erreur dans getSuppliersForRemix:', error);

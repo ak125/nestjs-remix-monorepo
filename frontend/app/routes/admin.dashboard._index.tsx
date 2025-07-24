@@ -1,8 +1,9 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { requireUser } from "~/server/auth.server";
 import { BarChart, Users, Package, TrendingUp, DollarSign, Calendar, Activity } from "lucide-react";
+import { requireUser } from "~/server/auth.server";
+
+import { getRemixIntegrationService } from "~/server/remix-integration.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,8 +11,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Tableau de bord administrateur avec statistiques temps réel" },
   ];
 };
-
-import { getRemixIntegrationService } from "~/server/remix-integration.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });

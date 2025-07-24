@@ -1,6 +1,6 @@
 import {
   Controller,
-  Get,
+  // Get,
   Next,
   Post,
   Redirect,
@@ -26,7 +26,7 @@ export class AuthController {
   ) {
     console.log('--- POST /auth/logout DÉBUT ---');
     console.log('User avant logout:', request.user);
-    
+
     // this will ensure that re-using the old session id
     // does not have a logged in user
     request.logOut(function (err) {
@@ -35,7 +35,7 @@ export class AuthController {
         return next(err);
       }
       console.log('LogOut réussi, user après:', request.user);
-      
+
       // Ensure the session is destroyed and the user is redirected.
       request.session.destroy(() => {
         response.clearCookie('connect.sid'); // The name of the cookie where express/connect stores its session_id
