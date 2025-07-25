@@ -1,5 +1,5 @@
 /**
- * Page Commandes - Gestion des commandes avec vraies données
+ * Page Commandes - Gestion des commandes avec Context7
  */
 
 import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
@@ -19,6 +19,8 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { requireUser } from "~/server/auth.server";
+import { getRemixIntegrationService } from "~/server/remix-integration.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -27,55 +29,56 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request, context }) => {
+  const user = await requireUser({ context });
+  
+  // Vérifier les permissions admin
+  const userLevel = parseInt(user.level?.toString() || '0', 10);
+  if (!user.level || userLevel < 7) {
+    throw new Response("Accès non autorisé", { status: 403 });
+  }
+
   try {
-    console.log('🛒 Chargement des commandes depuis l\'API...');
+    console.log('🛒 Chargement des commandes via Context7...');
     
     // Récupérer les paramètres de recherche depuis l'URL
     const url = new URL(request.url);
     const search = url.searchParams.get('search') || '';
-    const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '50';
+    const page = parseInt(url.searchParams.get('page') || '1', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '50', 10);
     const status = url.searchParams.get('status') || '';
     
-    // Construire l'URL de l'API avec les paramètres
-    const apiUrl = new URL('http://localhost:3000/api/orders');
-    apiUrl.searchParams.set('limit', limit);
-    apiUrl.searchParams.set('page', page);
-    if (search) apiUrl.searchParams.set('search', search);
-    if (status) apiUrl.searchParams.set('status', status);
+    const remixService = await getRemixIntegrationService(context);
     
-    const ordersResponse = await fetch(apiUrl.toString(), {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+    // Utiliser Context7 pour récupérer les commandes
+    const ordersResult = await remixService.getOrdersForRemix({
+      page,
+      limit,
+      search,
+      status
     });
-
+    
     let orders: any[] = [];
     let totalOrders = 0;
     let pagination = {
-      currentPage: 1,
+      currentPage: page,
       totalPages: 1,
       hasNextPage: false,
       hasPrevPage: false
     };
     
-    if (ordersResponse.ok) {
-      const data = await ordersResponse.json();
-      console.log('✅ Réponse API orders:', data);
+    if (ordersResult.success && ordersResult.orders?.length > 0) {
+      console.log('✅ Commandes récupérées via Context7:', ordersResult.orders.length);
       
-      orders = data.orders || [];
-      totalOrders = data.total || orders.length;
+      orders = ordersResult.orders;
+      totalOrders = ordersResult.total || orders.length;
       
       // Calculer la pagination
-      const limitNum = parseInt(limit, 10);
-      const pageNum = parseInt(page, 10);
       pagination = {
-        currentPage: pageNum,
-        totalPages: Math.ceil(totalOrders / limitNum),
-        hasNextPage: (pageNum * limitNum) < totalOrders,
-        hasPrevPage: pageNum > 1
+        currentPage: page,
+        totalPages: Math.ceil(totalOrders / limit),
+        hasNextPage: (page * limit) < totalOrders,
+        hasPrevPage: page > 1
       };
       
       // Transformer pour l'affichage
@@ -113,10 +116,9 @@ export const loader: LoaderFunction = async ({ request }) => {
         totalQuantity: order.totalQuantity || 0
       }));
       
-      console.log(`✅ ${orders.length} commandes chargées depuis l'API (page ${pagination.currentPage}/${pagination.totalPages})`);
+      console.log(`✅ ${orders.length} commandes chargées via Context7 (page ${pagination.currentPage}/${pagination.totalPages})`);
     } else {
-      console.error('❌ Erreur API orders:', ordersResponse.status, ordersResponse.statusText);
-      console.log('🔄 Fallback vers les données de test...');
+      console.warn('❌ Aucune commande trouvée via Context7, utilisation des données de fallback');
       
       orders = [
         { 
@@ -147,7 +149,17 @@ export const loader: LoaderFunction = async ({ request }) => {
       totalOrders = orders.length;
     }
 
-    return json({ orders, totalOrders, pagination, searchTerm: search, statusFilter: status });
+    return json({ 
+      orders, 
+      totalOrders, 
+      pagination, 
+      searchTerm: search, 
+      statusFilter: status,
+      context7: {
+        servicesAvailable: ordersResult.success,
+        fallbackMode: !ordersResult.success || orders.length <= 2
+      }
+    });
   } catch (error) {
     console.error('❌ Erreur lors du chargement des commandes:', error);
     return json({ 
@@ -156,13 +168,18 @@ export const loader: LoaderFunction = async ({ request }) => {
       pagination: { currentPage: 1, totalPages: 1, hasNextPage: false, hasPrevPage: false },
       searchTerm: '',
       statusFilter: '',
-      error: 'Erreur de connexion à l\'API des commandes'
+      error: 'Erreur de connexion aux services de commandes',
+      context7: {
+        servicesAvailable: false,
+        fallbackMode: true,
+        errorMode: true
+      }
     });
   }
 };
 
 export default function AdminOrders() {
-  const { orders, totalOrders, pagination, searchTerm, statusFilter, error } = useLoaderData<typeof loader>();
+  const { orders, totalOrders, pagination, searchTerm, statusFilter, error, context7 } = useLoaderData<typeof loader>();
 
   const getStatusBadge = (status: string) => {
     switch (status) {

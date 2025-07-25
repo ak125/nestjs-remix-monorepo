@@ -16,11 +16,14 @@
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
+import { OrdersModule } from '../orders/orders.module';
 
 // Controllers
 import { AdminDashboardController } from './controllers/admin-dashboard.controller';
 import { AdminSuppliersController } from './controllers/admin-suppliers.controller';
 import { AdminStaffController } from './controllers/admin-staff.controller';
+import { AdminOrdersController } from './controllers/admin-orders.controller';
+import { AdminRootController } from './controllers/admin-root.controller';
 
 // Services
 import { AdminDashboardService } from './services/admin-dashboard.service';
@@ -30,13 +33,20 @@ import { AdminStaffService } from './services/admin-staff.service';
 @Module({
   imports: [
     DatabaseModule, // Pour SupabaseRestService
+    OrdersModule,   // Import du module Orders pour accéder à ses services
   ],
   controllers: [
+    AdminRootController,
     AdminDashboardController,
     AdminSuppliersController,
     AdminStaffController,
+    AdminOrdersController,
   ],
-  providers: [AdminDashboardService, AdminSuppliersService, AdminStaffService],
+  providers: [
+    AdminDashboardService, 
+    AdminSuppliersService, 
+    AdminStaffService,
+  ],
   exports: [AdminDashboardService, AdminSuppliersService, AdminStaffService],
 })
 export class AdminModule {}

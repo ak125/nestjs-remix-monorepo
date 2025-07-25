@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SupabaseRestService } from './supabase-rest.service';
 
 @Module({
   imports: [ConfigModule],
-  providers: [SupabaseRestService],
+  providers: [
+    {
+      provide: SupabaseRestService,
+      useFactory: (configService?: ConfigService) => {
+        return new SupabaseRestService(configService);
+      },
+      inject: [ConfigService],
+    },
+  ],
   exports: [SupabaseRestService],
 })
 export class DatabaseModule {}

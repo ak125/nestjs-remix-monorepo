@@ -15,25 +15,33 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  // Pour maintenant, on simule un utilisateur admin connecté
-  // TODO: Implémenter l'authentification réelle quand le système d'auth sera complet
-  const mockAdminUser = {
-    id: 'autoparts-admin-001',
-    email: 'admin.autoparts@example.com',
-    firstName: 'Admin',
-    lastName: 'AutoParts',
-    level: 8, // Niveau admin
-    isPro: true,
-    isActive: true
-  };
+  try {
+    // Récupérer l'utilisateur depuis la session
+    const response = await fetch('http://localhost:3000/auth/me', {
+      headers: {
+        'Cookie': request.headers.get('Cookie') || '',
+      },
+    });
 
-  // Vérifier si l'utilisateur a les droits admin (level >= 5)
-  if (!mockAdminUser || mockAdminUser.level < 5) {
-    throw redirect('/unauthorized');
+    if (!response.ok) {
+      // Si pas d'utilisateur connecté, rediriger vers login
+      throw redirect('/login');
+    }
+
+    const userData = await response.json();
+    const user = userData.user;
+
+    // Vérifier si l'utilisateur a les droits admin (level >= 5)
+    if (!user || !user.level || user.level < 5) {
+      throw redirect('/unauthorized');
+    }
+
+    return { user };
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'utilisateur admin:', error);
+    throw redirect('/login');
   }
-
-  return { user: mockAdminUser };
-}
+};
 
 export default function AdminLayout() {
   const { user } = useLoaderData<typeof loader>();

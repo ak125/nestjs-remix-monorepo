@@ -28,7 +28,7 @@ export interface AdminStaff {
   cnfa_fname: string;
   cnfa_tel: string;
   cnfa_activ: '0' | '1';
-  s_id: string;
+  s_id?: string | null; // Peut être string, null ou undefined depuis Supabase
 }
 
 export interface CreateStaffDto {

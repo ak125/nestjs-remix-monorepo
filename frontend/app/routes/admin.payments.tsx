@@ -1,5 +1,5 @@
 /**
- * Page Paiements - Gestion des paiements avec vraies données
+ * Page Paiements - Gestion des paiements avec Context7
  */
 
 import  { type LoaderFunction , json } from "@remix-run/node";
@@ -8,26 +8,33 @@ import { CreditCard, TrendingUp, AlertTriangle, CheckCircle, RefreshCw } from "l
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { requireUser } from "~/server/auth.server";
+import { getRemixIntegrationService } from "~/server/remix-integration.server";
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request, context }) => {
+  const user = await requireUser({ context });
+  
+  // Vérifier les permissions admin
+  const userLevel = parseInt(user.level?.toString() || '0', 10);
+  if (!user.level || userLevel < 7) {
+    throw new Response("Accès non autorisé", { status: 403 });
+  }
+
   try {
-    // Récupération des commandes qui contiennent les infos de paiement
-    const ordersResponse = await fetch('http://localhost:3000/api/orders?limit=50', {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+    const remixService = await getRemixIntegrationService(context);
+    
+    // Utiliser Context7 pour récupérer les commandes avec paiements
+    const ordersResult = await remixService.getOrdersForRemix({
+      page: 1,
+      limit: 50
     });
 
     let payments: any[] = [];
     let totalRevenue = 0;
     
-    if (ordersResponse.ok) {
-      const data = await ordersResponse.json();
-      const orders = data.orders || data || [];
-      
-      // Convertir les orders en format payments
-      payments = orders.map((order: any) => {
+    if (ordersResult.success && ordersResult.orders?.length > 0) {
+      // Convertir les commandes en format paiements
+      payments = ordersResult.orders.map((order: any) => {
         const amount = parseFloat(order.ord_total_ttc || order.ord_amount_ttc || '0');
         const isPaid = order.ord_is_pay === "1";
         const customerName = order.customer ? 
@@ -68,7 +75,7 @@ export const loader: LoaderFunction = async () => {
         .reduce((sum, p) => sum + p.amount, 0);
         
     } else {
-      console.warn('Impossible de récupérer les commandes, utilisation de données de test');
+      console.warn('Aucune commande trouvée via Context7, utilisation de données de fallback');
       payments = [
         { id: 1, orderId: "ORD-001", amount: 299.99, method: "card", status: "completed", date: "2025-01-21", customer: "Client Test" },
         { id: 2, orderId: "ORD-002", amount: 159.50, method: "paypal", status: "pending", date: "2025-01-21", customer: "Client Test 2" },
@@ -76,19 +83,31 @@ export const loader: LoaderFunction = async () => {
       totalRevenue = 299.99;
     }
     
-    return json({ payments, totalRevenue });
+    return json({ 
+      payments, 
+      totalRevenue,
+      context7: {
+        servicesAvailable: ordersResult.success,
+        fallbackMode: !ordersResult.success || payments.length <= 2
+      }
+    });
   } catch (error) {
     console.error('Erreur lors du chargement des paiements:', error);
     return json({ 
       payments: [], 
       totalRevenue: 0,
-      error: 'Erreur de connexion à la base de données'
+      error: 'Erreur de connexion aux services de paiement',
+      context7: {
+        servicesAvailable: false,
+        fallbackMode: true,
+        errorMode: true
+      }
     });
   }
 };
 
 export default function AdminPayments() {
-  const { payments, totalRevenue, error } = useLoaderData<typeof loader>();
+  const { payments, totalRevenue, error, context7 } = useLoaderData<typeof loader>();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -129,9 +148,17 @@ export default function AdminPayments() {
             <CreditCard className="h-8 w-8 text-primary" />
             Gestion des Paiements
           </h1>
-          <p className="text-muted-foreground">
-            Suivez et gérez tous les paiements de votre plateforme
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-muted-foreground">
+              Suivez et gérez tous les paiements de votre plateforme
+            </p>
+            {context7 && (
+              <Badge variant={context7.servicesAvailable ? "default" : "secondary"} className="flex items-center gap-1">
+                {context7.servicesAvailable ? <CheckCircle className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+                {context7.servicesAvailable ? "Context7 Actif" : "Mode Fallback"}
+              </Badge>
+            )}
+          </div>
         </div>
         <Button className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />

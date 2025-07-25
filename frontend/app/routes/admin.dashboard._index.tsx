@@ -15,10 +15,14 @@ export const meta: MetaFunction = () => {
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });
   
-  // Vérifier les permissions admin
-  if (!user.level || user.level < 7) {
+  // Vérifier les permissions admin avec conversion string vers number
+  const userLevel = parseInt(user.level?.toString() || '0', 10);
+  if (!user.level || userLevel < 7) {
+    console.error(`❌ Accès refusé pour utilisateur niveau ${userLevel} (requis: ≥7)`, { user: user.id, level: user.level });
     throw new Response("Accès non autorisé", { status: 403 });
   }
+
+  console.log(`✅ Accès autorisé pour super admin niveau ${userLevel}`);
 
   try {
     const remixService = await getRemixIntegrationService(context);
@@ -64,6 +68,21 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
 export default function AdminDashboard() {
   const { user, dashboard, metrics, isApiConnected } = useLoaderData<typeof loader>();
+
+  // Context7 resilience - Valeurs par défaut pour éviter les erreurs
+  const safeStats = {
+    totalUsers: dashboard?.totalUsers || 0,
+    activeUsers: dashboard?.activeUsers || 0,
+    totalOrders: dashboard?.totalOrders || 0,
+    pendingOrders: dashboard?.pendingOrders || 0,
+    totalRevenue: dashboard?.totalRevenue || 0,
+    weeklyRevenue: dashboard?.weeklyRevenue || 0,
+    averageOrderValue: dashboard?.averageOrderValue || 0,
+    conversionRate: dashboard?.conversionRate || 0,
+    lowStockItems: dashboard?.lowStockItems || 0,
+  };
+
+  console.log('🎯 Dashboard stats:', safeStats);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,8 +154,8 @@ export default function AdminDashboard() {
               <Users className="h-5 w-5 text-gray-400" />
             </div>
             <div className="mt-2">
-              <div className="text-3xl font-bold text-gray-900">{dashboard.totalUsers.toLocaleString()}</div>
-              <p className="text-sm text-green-600">{dashboard.activeUsers.toLocaleString()} actifs</p>
+              <div className="text-3xl font-bold text-gray-900">{safeStats.totalUsers.toLocaleString()}</div>
+              <p className="text-sm text-green-600">{safeStats.activeUsers.toLocaleString()} actifs</p>
             </div>
           </div>
 
@@ -146,8 +165,8 @@ export default function AdminDashboard() {
               <Package className="h-5 w-5 text-gray-400" />
             </div>
             <div className="mt-2">
-              <div className="text-3xl font-bold text-gray-900">{dashboard.totalOrders.toLocaleString()}</div>
-              <p className="text-sm text-orange-600">{dashboard.pendingOrders} en attente</p>
+              <div className="text-3xl font-bold text-gray-900">{safeStats.totalOrders.toLocaleString()}</div>
+              <p className="text-sm text-orange-600">{safeStats.pendingOrders} en attente</p>
             </div>
           </div>
 
@@ -157,7 +176,7 @@ export default function AdminDashboard() {
               <DollarSign className="h-5 w-5 text-gray-400" />
             </div>
             <div className="mt-2">
-              <div className="text-3xl font-bold text-gray-900">{dashboard.totalRevenue.toLocaleString()}€</div>
+              <div className="text-3xl font-bold text-gray-900">{safeStats.totalRevenue.toLocaleString()}€</div>
               <p className="text-sm text-green-600">Total TTC</p>
             </div>
           </div>
@@ -168,7 +187,7 @@ export default function AdminDashboard() {
               <BarChart className="h-5 w-5 text-gray-400" />
             </div>
             <div className="mt-2">
-              <div className="text-3xl font-bold text-gray-900">{dashboard.lowStockItems.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-gray-900">{safeStats.lowStockItems.toLocaleString()}</div>
               <p className="text-sm text-red-600">Pièces à réapprovisionner</p>
             </div>
           </div>

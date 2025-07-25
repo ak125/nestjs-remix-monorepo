@@ -75,7 +75,10 @@ export const loader: LoaderFunction = async ({ request }) => {
         lastLoginDate: user.lastLoginDate,
         city: user.city || 'Non renseigné',
         country: user.country || 'France',
-        level: user.level || 2
+        level: user.level || 2,
+        // ✅ Inclure les adresses dans les données transformées
+        billingAddress: user.billingAddress,
+        deliveryAddress: user.deliveryAddress,
       }));
       
       console.log(`✅ ${users.length} utilisateurs chargés depuis la nouvelle API (page ${pagination.currentPage}/${pagination.totalPages})`);
@@ -298,10 +301,29 @@ export default function AdminUsers() {
                         {user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
                       </span>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium">{user.name}</p>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
                       <p className="text-xs text-muted-foreground">{user.city}, {user.country}</p>
+                      
+                      {/* ✅ Affichage des adresses */}
+                      {user.billingAddress && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                          <p className="text-xs font-medium text-blue-800">📍 Adresse de facturation:</p>
+                          <p className="text-xs text-blue-600">
+                            {user.billingAddress.address}, {user.billingAddress.zipCode} {user.billingAddress.city}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {user.deliveryAddress && (
+                        <div className="mt-1 p-2 bg-green-50 rounded-md">
+                          <p className="text-xs font-medium text-green-800">🚚 Adresse de livraison:</p>
+                          <p className="text-xs text-green-600">
+                            {user.deliveryAddress.address}, {user.deliveryAddress.zipCode} {user.deliveryAddress.city}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                   
@@ -312,9 +334,14 @@ export default function AdminUsers() {
                     <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
                       {user.status}  
                     </Badge>
-                    <p className="text-xs text-muted-foreground">
-                      Tel: {user.phone}
-                    </p>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground">
+                        Tel: {user.phone}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Niveau: {user.level}
+                      </p>
+                    </div>
                     <Button variant="outline" size="sm">
                       Modifier
                     </Button>

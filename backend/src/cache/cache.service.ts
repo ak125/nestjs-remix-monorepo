@@ -1,20 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import { getAppConfig } from '../config/app.config';
 
 @Injectable()
 export class CacheService {
   private redisClient: Redis | null = null;
   private readonly defaultTTL = 3600; // 1 heure
 
-  constructor(private configService: ConfigService) {
-    this.initializeRedis();
+  constructor(@Optional() private configService?: ConfigService) {
+    // Context7 : Différer l'initialisation pour éviter les problèmes d'injection
+    setImmediate(() => this.initializeRedis());
   }
 
   private async initializeRedis() {
     try {
-      const redisUrl =
-        this.configService.get<string>('REDIS_URL') || 'redis://localhost:6379';
+      // Context7 : Resilient configuration loading
+      const appConfig = getAppConfig();
+      let redisUrl: string;
+
+      if (this.configService) {
+        console.log('🔧 CacheService: Utilisation ConfigService');
+        redisUrl = this.configService.get<string>('REDIS_URL') || 
+                  `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
+      } else {
+        console.log('🔧 CacheService: Utilisation AppConfig (fallback Context7)');
+        redisUrl = appConfig.redis.url || `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
+      }
+
+      console.log('🔧 Initialisation Redis avec URL:', redisUrl);
 
       this.redisClient = new Redis(redisUrl);
 

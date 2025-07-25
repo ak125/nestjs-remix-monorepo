@@ -23,7 +23,51 @@ export class AuthService {
     console.log('Mot de passe extrait :', password);
     console.log('withPassword :', withPassword);
 
-    // Vérifie si l'utilisateur existe dans la base via l'API REST
+    // Vérifie d'abord si c'est un admin dans ___config_admin
+    const existingAdmin = await this.supabaseRestService.findAdminByEmail(email);
+    
+    if (existingAdmin) {
+      console.log('Admin trouvé:', existingAdmin);
+      
+      // Si withPassword est false, on ne vérifie que l'existence de l'email
+      if (!withPassword) {
+        console.log('Vérification uniquement email admin - utilisateur existe');
+        return {
+          id: existingAdmin.cnfa_id,
+          email: existingAdmin.cnfa_mail,
+          firstName: existingAdmin.cnfa_fname,
+          lastName: existingAdmin.cnfa_name,
+          isAdmin: true,
+          level: existingAdmin.cnfa_level,
+        };
+      }
+
+      // Vérifie le mot de passe admin
+      const isPasswordValid = await this.supabaseRestService.validatePassword(
+        password,
+        existingAdmin.cnfa_pswd,
+      );
+
+      if (!isPasswordValid) {
+        console.log('Mot de passe admin invalide');
+        return {
+          message: 'Le mot de passe est invalide',
+          error: true,
+        };
+      }
+
+      console.log('Authentification admin réussie');
+      return {
+        id: existingAdmin.cnfa_id,
+        email: existingAdmin.cnfa_mail,
+        firstName: existingAdmin.cnfa_fname,
+        lastName: existingAdmin.cnfa_name,
+        isAdmin: true,
+        level: existingAdmin.cnfa_level,
+      };
+    }
+
+    // Si pas d'admin trouvé, vérifie dans la table client
     const existingUser = await this.supabaseRestService.findUserByEmail(email);
 
     if (!existingUser) {

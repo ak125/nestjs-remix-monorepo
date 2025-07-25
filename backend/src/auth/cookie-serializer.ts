@@ -11,10 +11,10 @@ export class CookieSerializer extends PassportSerializer {
   serializeUser(user: any, done: (err: any, user?: any) => void) {
     console.log('serializeUser', { user });
 
-    // Vérifier si user est défini avant de le sérialiser
-    if (!user) {
-      console.log('⚠️  User is undefined, skipping serialization');
-      return done(null, false);
+    // Si user est undefined, false ou null, ne pas créer de session
+    if (!user || user === false || user === null) {
+      console.log('⚠️  User is undefined/false/null, no session created');
+      return done(null, null);
     }
 
     done(null, user);

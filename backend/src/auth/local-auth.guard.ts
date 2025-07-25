@@ -23,6 +23,18 @@ export class LocalAuthGuard extends AuthGuard('local') {
       const request = context.switchToHttp().getRequest();
       const response = context.switchToHttp().getResponse();
 
+      // Cas spécial : Missing credentials = utilisateur non connecté
+      if (info?.message === 'Missing credentials') {
+        response.status(401).json({
+          statusCode: 401,
+          error: 'Unauthorized',
+          message: 'Authentification requise',
+          errorType: 'authentication_required',
+          details: 'Vous devez être connecté pour accéder à cette ressource.',
+        });
+        return false;
+      }
+
       // Déterminer le type d'erreur avec des messages plus clairs
       let errorType = 'invalid_credentials';
       let errorMessage =
@@ -79,7 +91,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
       // Si c'est une requête web, rediriger vers login avec erreur
       const email = request.body?.email || '';
       return response.redirect(
-        `/login?error=${errorType}&message=${encodeURIComponent(errorMessage)}&email=${encodeURIComponent(email)}`,
+        `/auth/login?error=${errorType}&message=${encodeURIComponent(errorMessage)}&email=${encodeURIComponent(email)}`,
       );
     }
 

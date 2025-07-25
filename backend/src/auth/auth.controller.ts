@@ -1,6 +1,6 @@
 import {
   Controller,
-  // Get,
+  Get,
   Next,
   Post,
   Redirect,
@@ -13,10 +13,58 @@ import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller()
 export class AuthController {
+  /**
+   * GET /auth/me
+   * Récupérer l'utilisateur connecté
+   */
+  @Get('auth/me')
+  async getCurrentUser(@Req() request: Express.Request) {
+    if (request.user) {
+      return {
+        success: true,
+        user: request.user,
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Utilisateur non connecté',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
   @UseGuards(LocalAuthGuard)
   @Post('/authenticate')
-  @Redirect('/')
-  login() {}
+  login(@Req() request: Express.Request, @Res() response: Response) {
+    console.log('--- POST /authenticate - Redirection conditionnelle ---');
+    console.log('User connecté:', request.user);
+    
+    if (!request.user) {
+      console.log('Aucun utilisateur, redirection vers /');
+      return response.redirect('/');
+    }
+    
+    const user = request.user as any;
+    
+    // Convertir le niveau en nombre pour la comparaison
+    const userLevel = parseInt(user.level) || 0;
+    
+    // Redirection selon le type et niveau d'utilisateur
+    if (user.isAdmin && userLevel >= 7) {
+      console.log(`Admin niveau ${userLevel} détecté, redirection vers dashboard admin simple`);
+      return response.redirect('/admin/simple');
+    } else if (user.isAdmin && userLevel >= 4) {
+      console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);
+      return response.redirect('/admin');
+    } else if (user.isPro) {
+      console.log('Utilisateur pro détecté, redirection vers dashboard pro');
+      return response.redirect('/pro/dashboard');
+    } else {
+      console.log('Utilisateur standard, redirection vers mes commandes');
+      return response.redirect('/my-orders');
+    }
+  }
 
   @Post('auth/logout')
   async logout(

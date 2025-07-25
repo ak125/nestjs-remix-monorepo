@@ -3,14 +3,15 @@
  * Permet aux utilisateurs de voir uniquement leurs propres commandes
  */
 
-import { json, type LoaderFunction } from "@remix-run/node";
+import { json, type LoaderFunction, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Package, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { getOptionalUser } from "~/server/auth.server";
+import { requireUser } from "~/server/auth.server";
+import { getRemixIntegrationService } from "~/server/remix-integration.server";
 
 interface Order {
   id: string;
@@ -39,25 +40,60 @@ interface LoaderData {
 }
 
 export const loader: LoaderFunction = async ({ request, context }) => {
-  const user = await getOptionalUser({ context });
+  const user = await requireUser({ context });
   
-  if (!user) {
-    // Rediriger vers la page de connexion si non authentifié
-    throw new Response("Unauthorized", { status: 401 });
+  // Rediriger les admins vers leur interface dédiée
+  const userLevel = parseInt(user.level?.toString() || '0', 10);
+  if (user.isAdmin && userLevel >= 7) {
+    return redirect('/admin/orders');
   }
 
   try {
-    // Utiliser l'intégration directe pour récupérer les commandes de l'utilisateur
-    const result = await context.remixService.integration.getUserOrdersForRemix(user.id, {
+    console.log('🛒 Chargement des commandes utilisateur via Context7...');
+    
+    const remixService = await getRemixIntegrationService(context);
+    
+    // Récupérer les commandes de l'utilisateur connecté
+    const ordersResult = await remixService.getOrdersForRemix({
+      page: 1,
       limit: 100
     });
     
-    if (!result.success) {
-      console.error('Error fetching user orders:', result.error);
-      return json<LoaderData>({ orders: [], user });
+    let userOrders: Order[] = [];
+    
+    if (ordersResult.success && ordersResult.orders?.length > 0) {
+      // Filtrer les commandes pour ne garder que celles de l'utilisateur
+      // En attendant d'avoir un vrai système de filtrage côté API
+      userOrders = ordersResult.orders
+        .filter((order: any) => order.ord_cst_id === user.id)
+        .map((order: any) => ({
+          id: order.ord_id,
+          orderNumber: `ORD-${order.ord_id}`,
+          status: order.ord_is_pay === "1" ? 'delivered' : 'pending',
+          paymentStatus: order.ord_is_pay === "1" ? 'paid' : 'pending',
+          totalPrice: parseFloat(order.ord_total_ttc || order.ord_amount_ttc || '0'),
+          createdAt: order.ord_date || new Date().toISOString(),
+          customerId: order.ord_cst_id,
+          items: [
+            {
+              productName: "Produit commande",
+              quantity: 1,
+              unitPrice: parseFloat(order.ord_total_ttc || order.ord_amount_ttc || '0')
+            }
+          ],
+          deliveryAddress: {
+            street: "Adresse non spécifiée",
+            city: "Ville",
+            postalCode: "00000",
+            country: "France"
+          }
+        }));
+    } else {
+      // Données de fallback pour l'utilisateur
+      userOrders = [];
     }
 
-    return json<LoaderData>({ orders: result.orders || [], user });
+    return json<LoaderData>({ orders: userOrders, user });
   } catch (error) {
     console.error('Error fetching user orders:', error);
     return json<LoaderData>({ orders: [], user });

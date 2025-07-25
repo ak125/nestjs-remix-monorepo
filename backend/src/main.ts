@@ -1,5 +1,6 @@
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
+import { RequestMethod } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -16,6 +17,9 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
     });
+
+    // Suppression temporaire du préfixe global pour éviter les conflits
+    // app.setGlobalPrefix('api', { exclude: [...] });
 
     // Cast pour éviter les conflits de types entre les dépendances
     const expressApp = app as any;

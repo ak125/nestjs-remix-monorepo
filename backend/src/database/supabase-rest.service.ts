@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
+import { getAppConfig } from '../config/app.config';
 
 export interface User {
   cst_id: string;
@@ -22,6 +23,21 @@ export interface User {
   cst_activ: string;
   cst_level?: number;
   cst_is_cpy?: string;
+}
+
+// Interface pour la table ___config_admin
+export interface Admin {
+  cnfa_id: string;
+  cnfa_login: string;
+  cnfa_pswd: string;
+  cnfa_mail: string;
+  cnfa_keylog: string;
+  cnfa_level: string;
+  cnfa_job: string;
+  cnfa_name: string;
+  cnfa_fname: string;
+  cnfa_tel: string;
+  cnfa_activ: string;
 }
 
 // Interface pour la table ___xtr_order (structure complète) - VRAIE TABLE LEGACY
@@ -287,13 +303,29 @@ export class SupabaseRestService {
   private readonly supabaseServiceKey: string;
   private readonly baseUrl: string;
 
-  constructor(private configService: ConfigService) {
-    // Debug de la configuration - TEMPORAIREMENT DÉSACTIVÉ
-    // debugConfiguration(configService);
-
-    this.supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
-    this.supabaseServiceKey =
-      this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+  constructor(@Optional() private configService?: ConfigService) {
+    // Context7 : Resilient configuration loading
+    const appConfig = getAppConfig();
+    
+    // Essayer d'utiliser ConfigService en premier, sinon utiliser la config centralisée
+    if (configService) {
+      console.log('🔧 Initialisation avec ConfigService');
+      this.supabaseUrl = configService.get<string>('SUPABASE_URL') || appConfig.supabase.url;
+      this.supabaseServiceKey = configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || appConfig.supabase.serviceKey;
+    } else {
+      console.log('🔧 Initialisation avec AppConfig (fallback Context7)');
+      this.supabaseUrl = appConfig.supabase.url;
+      this.supabaseServiceKey = appConfig.supabase.serviceKey;
+    }
+    
+    if (!this.supabaseUrl) {
+      throw new Error('SUPABASE_URL not found in environment variables');
+    }
+    
+    if (!this.supabaseServiceKey) {
+      throw new Error('SUPABASE_SERVICE_ROLE_KEY not found in environment variables');
+    }
+    
     this.baseUrl = `${this.supabaseUrl}/rest/v1`;
 
     console.log('🔧 Configuration Supabase :');
@@ -339,6 +371,35 @@ export class SupabaseRestService {
       return users.length > 0 ? users[0] : null;
     } catch (error) {
       console.error('Erreur lors de la recherche utilisateur:', error);
+      return null;
+    }
+  }
+
+  async findAdminByEmail(email: string): Promise<Admin | null> {
+    try {
+      console.log(`🔍 findAdminByEmail: ${email}`);
+      const url = `${this.baseUrl}/___config_admin?cnfa_mail=eq.${email}&select=*&order=cnfa_id.desc&limit=1`;
+      console.log(`📡 Admin URL: ${url}`);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      console.log(`📈 Admin response status: ${response.status}`);
+
+      if (!response.ok) {
+        console.error('Erreur Supabase Admin:', response.status, response.statusText);
+        return null;
+      }
+
+      const admins = await response.json();
+      console.log(`👤 Admins found: ${admins.length}`);
+      console.log(`📄 Admin data:`, admins);
+
+      return admins.length > 0 ? admins[0] : null;
+    } catch (error) {
+      console.error('Erreur lors de la recherche admin:', error);
       return null;
     }
   }
@@ -525,6 +586,76 @@ export class SupabaseRestService {
     } catch (error) {
       console.error('Erreur lors de la récupération utilisateur:', error);
       return null;
+    }
+  }
+
+  /**
+   * Récupérer tous les utilisateurs avec pagination
+   */
+  async getAllUsers(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    level?: number
+  ): Promise<{ users: User[]; total: number }> {
+    try {
+      console.log(`🔍 getAllUsers: page=${page}, limit=${limit}, search=${search}, level=${level}`);
+
+      const offset = (page - 1) * limit;
+      
+      // Construire la requête avec filtres
+      let query = `${this.baseUrl}/___xtr_customer?select=*`;
+
+      if (search) {
+        query += `&or=(cst_firstname.ilike.*${search}*,cst_lastname.ilike.*${search}*,cst_email.ilike.*${search}*)`;
+      }
+      
+      if (level !== undefined) {
+        query += `&cst_level=eq.${level}`;
+      }
+
+      query += `&order=cst_id.desc&offset=${offset}&limit=${limit}`;
+
+      console.log(`📡 Users Query: ${query}`);
+
+      const response = await fetch(query, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      if (!response.ok) {
+        console.error('Erreur récupération utilisateurs:', response.status);
+        return { users: [], total: 0 };
+      }
+
+      const users = await response.json();
+
+      // Compter le total
+      let countQuery = `${this.baseUrl}/___xtr_customer?select=count`;
+      if (search) {
+        countQuery += `&or=(cst_firstname.ilike.*${search}*,cst_lastname.ilike.*${search}*,cst_email.ilike.*${search}*)`;
+      }
+      if (level !== undefined) {
+        countQuery += `&cst_level=eq.${level}`;
+      }
+
+      const countResponse = await fetch(countQuery, {
+        method: 'GET',
+        headers: this.headers,
+      });
+
+      const countResult = await countResponse.json();
+      const total = countResult[0]?.count || 0;
+
+      console.log(`✅ Users retrieved: ${users.length}/${total}`);
+      
+      return {
+        users: users || [],
+        total: total,
+      };
+    } catch (error) {
+      console.error('Erreur lors de la récupération des utilisateurs:', error);
+      return { users: [], total: 0 };
     }
   }
 
@@ -802,10 +933,18 @@ export class SupabaseRestService {
   ): Promise<CustomerBillingAddress | null> {
     try {
       const url = `${this.baseUrl}/___xtr_customer_billing_address?cba_id=eq.${addressId}&select=*`;
+      
+      // Créer un contrôleur d'abort pour timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: this.headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.error(
@@ -817,11 +956,21 @@ export class SupabaseRestService {
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
-    } catch (error) {
-      console.error(
-        "Erreur lors de la récupération de l'adresse de facturation:",
-        error,
-      );
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.warn(
+          `⏱️ Timeout lors de la récupération de l'adresse de facturation ${addressId}`,
+        );
+      } else if (error.code === 'ETIMEDOUT' || error.errno === 'ETIMEDOUT') {
+        console.warn(
+          `🌐 Timeout réseau pour l'adresse de facturation ${addressId}`,
+        );
+      } else {
+        console.error(
+          "Erreur lors de la récupération de l'adresse de facturation:",
+          error.message || error,
+        );
+      }
       return null;
     }
   }
@@ -831,10 +980,18 @@ export class SupabaseRestService {
   ): Promise<CustomerDeliveryAddress | null> {
     try {
       const url = `${this.baseUrl}/___xtr_customer_delivery_address?cda_id=eq.${addressId}&select=*`;
+      
+      // Créer un contrôleur d'abort pour timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+      
       const response = await fetch(url, {
         method: 'GET',
         headers: this.headers,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.error(
@@ -846,11 +1003,113 @@ export class SupabaseRestService {
 
       const addresses = await response.json();
       return addresses.length > 0 ? addresses[0] : null;
-    } catch (error) {
-      console.error(
-        "Erreur lors de la récupération de l'adresse de livraison:",
-        error,
-      );
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.warn(
+          `⏱️ Timeout lors de la récupération de l'adresse de livraison ${addressId}`,
+        );
+      } else if (error.code === 'ETIMEDOUT' || error.errno === 'ETIMEDOUT') {
+        console.warn(
+          `🌐 Timeout réseau pour l'adresse de livraison ${addressId}`,
+        );
+      } else {
+        console.error(
+          "Erreur lors de la récupération de l'adresse de livraison:",
+          error.message || error,
+        );
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Récupérer l'adresse de facturation d'un client par customer ID
+   */
+  async getCustomerBillingAddressByCustomerId(
+    customerId: string,
+  ): Promise<any | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_customer_billing_address?cba_cst_id=eq.${customerId}&select=*`;
+      
+      // Créer un contrôleur d'abort pour timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.error(
+          `Erreur récupération adresse facturation client ${customerId}:`,
+          response.status,
+        );
+        return null;
+      }
+
+      const addresses = await response.json();
+      return addresses.length > 0 ? addresses[0] : null;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.warn(
+          `⏱️ Timeout lors de la récupération de l'adresse de facturation client ${customerId}`,
+        );
+      } else {
+        console.error(
+          "Erreur lors de la récupération de l'adresse de facturation client:",
+          error.message || error,
+        );
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Récupérer l'adresse de livraison d'un client par customer ID
+   */
+  async getCustomerDeliveryAddressByCustomerId(
+    customerId: string,
+  ): Promise<any | null> {
+    try {
+      const url = `${this.baseUrl}/___xtr_customer_delivery_address?cda_cst_id=eq.${customerId}&select=*`;
+      
+      // Créer un contrôleur d'abort pour timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.error(
+          `Erreur récupération adresse livraison client ${customerId}:`,
+          response.status,
+        );
+        return null;
+      }
+
+      const addresses = await response.json();
+      return addresses.length > 0 ? addresses[0] : null;
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.warn(
+          `⏱️ Timeout lors de la récupération de l'adresse de livraison client ${customerId}`,
+        );
+      } else {
+        console.error(
+          "Erreur lors de la récupération de l'adresse de livraison client:",
+          error.message || error,
+        );
+      }
       return null;
     }
   }

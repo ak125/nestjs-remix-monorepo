@@ -17,7 +17,7 @@ const AuthenticatedGuard = (req: ExpressRequest, res: Response, next: any) => {
   if (req.isAuthenticated()) {
     return next();
   }
-  return res.redirect('/login');
+  return res.redirect('/auth/login');
 };
 
 @Controller('profile')
@@ -29,7 +29,7 @@ export class ProfileController {
     try {
       // Vérifier si l'utilisateur est connecté
       if (!req.isAuthenticated() || !req.user) {
-        return res.redirect('/login');
+        return res.redirect('/auth/login');
       }
 
       const user = req.user as any;
@@ -43,7 +43,7 @@ export class ProfileController {
       });
 
       if (!fullUser || fullUser.error) {
-        return res.redirect('/login');
+        return res.redirect('/auth/login');
       }
 
       // Rediriger vers une page de profil (à créer dans le frontend)

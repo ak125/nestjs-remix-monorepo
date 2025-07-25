@@ -8,6 +8,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { SupabaseRestService } from '../../../database/supabase-rest.service';
+import { z } from 'zod';
 import {
   LegacyAdminStaff,
   CreateLegacyStaff,
@@ -90,7 +91,10 @@ export class AdminStaffService {
         throw new Error(`Erreur API: ${response.status}`);
       }
 
-      const staff = await response.json();
+      const staffData = await response.json();
+
+      // Validation Zod des données reçues
+      const validatedStaff = z.array(LegacyAdminStaffSchema).parse(staffData);
 
       // Compter le total
       let countUrl = `${this.supabaseService['baseUrl']}/___config_admin?select=count`;
@@ -116,67 +120,20 @@ export class AdminStaffService {
         },
       });
 
-      const totalItems = countResponse.ok
-        ? parseInt(
-            countResponse.headers.get('content-range')?.split('/')[1] || '0',
-          )
-        : 0;
-
-      const validatedStaff =
-        staff?.map((s: any) => LegacyAdminStaffSchema.parse(s)) || [];
-      const totalPages = Math.ceil(totalItems / validatedQuery.limit);
+      const countData = await countResponse.json();
+      const totalItems = countData[0]?.count ?? 0;
 
       return {
         staff: validatedStaff,
         pagination: {
           page: validatedQuery.page,
-          totalPages,
+          totalPages: Math.ceil(totalItems / validatedQuery.limit),
           totalItems,
         },
       };
     } catch (error) {
       this.logger.error('Erreur getAllStaff:', error);
-
-      // Fallback avec données mock
-      const mockStaff: LegacyAdminStaff[] = [
-        {
-          cnfa_id: 1,
-          cnfa_login: 'admin_commercial',
-          cnfa_pswd: '$2a$10$...',
-          cnfa_mail: 'commercial@example.com',
-          cnfa_keylog: 'ADMIN_COMMERCIAL_KEY',
-          cnfa_level: 7,
-          cnfa_job: 'Commercial Admin',
-          cnfa_name: 'Martin',
-          cnfa_fname: 'Jean',
-          cnfa_tel: '0123456789',
-          cnfa_activ: '1',
-          s_id: 'dept_1',
-        },
-        {
-          cnfa_id: 2,
-          cnfa_login: 'super_admin',
-          cnfa_pswd: '$2a$10$...',
-          cnfa_mail: 'admin@example.com',
-          cnfa_keylog: 'SUPER_ADMIN_KEY',
-          cnfa_level: 9,
-          cnfa_job: 'Super Administrator',
-          cnfa_name: 'Dupont',
-          cnfa_fname: 'Marie',
-          cnfa_tel: '0987654321',
-          cnfa_activ: '1',
-          s_id: 'super_admin_dept',
-        },
-      ];
-
-      return {
-        staff: mockStaff,
-        pagination: {
-          page: 1,
-          totalPages: 1,
-          totalItems: mockStaff.length,
-        },
-      };
+      throw new Error('Impossible de récupérer le staff');
     }
   }
 

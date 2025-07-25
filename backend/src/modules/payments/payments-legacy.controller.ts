@@ -27,8 +27,8 @@ import { PaymentService } from './services/payments-legacy.service';
 
 @ApiTags('Paiements Legacy')
 @Controller('api/payments')
-export class PaymentsController {
-  private readonly logger = new Logger(PaymentsController.name);
+export class PaymentsLegacyController {
+  private readonly logger = new Logger(PaymentsLegacyController.name);
 
   constructor(private readonly paymentService: PaymentService) {}
 

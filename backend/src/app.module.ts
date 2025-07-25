@@ -9,11 +9,14 @@ import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { MessagesModule } from './modules/messages/messages.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
+      expandVariables: true,
     }),
     DatabaseModule,
     AuthModule,
@@ -22,8 +25,9 @@ import { AdminModule } from './modules/admin/admin.module';
     OrdersModule,
     PaymentsModule,
     AdminModule,
+    MessagesModule,
   ],
-  controllers: [AuthController, RemixController],
+  controllers: [AuthController, RemixController], // RemixController en dernier pour catch-all
   providers: [],
 })
 export class AppModule {}

@@ -52,7 +52,7 @@ export class RemixService {
           gsm: user.cst_gsm,
           isPro: user.cst_is_pro,
           isActive: user.cst_activ,
-          level: user.cst_level,
+          level: parseInt(user.cst_level, 10) || 0, // ✅ Convertir en nombre
         };
 
         // Mettre en cache pour les prochaines requêtes

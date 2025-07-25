@@ -1,227 +1,433 @@
 /**
- * Page Staff - Gestion du personnel
+ * Page Staff - Gestion du personnel administratif
+ * Utilise les vraies données et inclut la gestion des messages
  */
 
-import  { type LoaderFunction , json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { Shield, UserPlus, Users, Crown, Settings } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
+import { requireUser } from "~/server/auth.server";
+import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
 
-export const loader: LoaderFunction = async () => {
+// Interface pour les données staff basée sur les vraies données users
+interface StaffMember {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  level: number;
+  isActive: boolean;
+  department?: string;
+  phone?: string;
+  lastLogin?: string;
+  role: string;
+}
+
+interface StaffData {
+  staff: StaffMember[];
+  total: number;
+  error?: string;
+  fallbackMode?: boolean;
+  messagesEnabled?: boolean;
+}
+
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const user = await requireUser({ context });
+  
+  // Vérifier les permissions admin
+  if (!user.level || user.level < 7) {
+    throw new Response("Accès non autorisé", { status: 403 });
+  }
+
   try {
-    // Récupération des vraies données staff depuis l'API
-    const staffResponse = await fetch('http://localhost:3000/api/staff', {
+    console.log('🔄 Chargement du staff depuis l\'API users...');
+    
+    // ✅ Utiliser l'API users pour récupérer le staff (niveau >= 7)
+    const apiUrl = new URL('http://localhost:3000/api/users');
+    apiUrl.searchParams.set('limit', '100');
+    apiUrl.searchParams.set('page', '1');
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(apiUrl.toString(), {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
     });
 
-    let staff: any[] = [];
-    
-    if (staffResponse.ok) {
-      const data = await staffResponse.json();
-      staff = data.staff || data || [];
-    } else {
-      console.warn('Impossible de récupérer le staff, utilisation de données de test');
-      // Données de fallback basées sur les vraies tables utilisateurs avec rôles admin
-      const usersResponse = await fetch('http://localhost:3000/api/users?role=admin', {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Données utilisateurs récupérées:', data.totalUsers, 'utilisateurs');
       
-      if (usersResponse.ok) {
-        const userData = await usersResponse.json();
-        staff = (userData.users || userData || []).map((user: any) => ({
-          id: user.id || user.usr_id,
-          name: user.name || user.usr_name || `${user.usr_prenom} ${user.usr_nom}` || 'Utilisateur inconnu',
-          email: user.email || user.usr_email || 'email@inconnu.com',
-          role: user.role || user.usr_role || 'admin',
-          department: user.department || 'Administration',
-          permissions: user.permissions || ['admin'],
-          status: user.status || user.usr_statut || 'active',
-          joinDate: user.joinDate || user.usr_date_creation || user.created_at || '2024-01-01'
+      // Filtrer pour ne garder que le staff (niveau >= 7)
+      const staffMembers = data.users
+        .filter((u: any) => u.level >= 7)
+        .map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          firstName: u.firstName,
+          lastName: u.lastName,
+          level: u.level,
+          isActive: u.isActive,
+          department: 'Administration',
+          phone: u.phone,
+          lastLogin: u.lastLoginDate,
+          role: u.level >= 9 ? 'Super Admin' : u.level >= 8 ? 'Admin' : 'Modérateur',
         }));
-      } else {
-        // Fallback complet avec données de test
-        staff = [
-          { id: 1, name: "Admin Principal", email: "admin@automobile.com", role: "super_admin", department: "IT", permissions: ["all"], status: "active", joinDate: "2024-01-15" },
-          { id: 2, name: "Manager Ventes", email: "manager@automobile.com", role: "manager", department: "Sales", permissions: ["orders", "users"], status: "active", joinDate: "2024-03-20" },
-        ];
-      }
+      
+      console.log(`✅ ${staffMembers.length} membres du staff trouvés (niveau >= 7)`);
+      
+      return json({
+        staff: staffMembers,
+        total: staffMembers.length,
+        fallbackMode: false,
+        messagesEnabled: true, // Table ___xtr_msg disponible
+      } as StaffData);
+    } else {
+      console.error('❌ Erreur API users:', response.status);
+      
+      // Mode fallback avec utilisateur connecté
+      return json({
+        staff: [{
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          level: parseInt(user.level || '9'),
+          isActive: true,
+          department: 'Administration',
+          phone: '',
+          role: 'Super Admin',
+        }],
+        total: 1,
+        error: `Erreur API (${response.status})`,
+        fallbackMode: true,
+        messagesEnabled: false,
+      } as StaffData);
     }
+  } catch (error: any) {
+    console.error('❌ Erreur lors du chargement du staff:', error);
     
-    return json({ staff });
-  } catch (error) {
-    console.error('Erreur lors du chargement du staff:', error);
-    return json({ 
-      staff: [
-        { id: 1, name: "Admin Principal", email: "admin@automobile.com", role: "super_admin", department: "IT", permissions: ["all"], status: "active", joinDate: "2024-01-15" }
-      ],
-      error: 'Erreur de connexion à la base de données'
-    });
+    // Mode fallback d'urgence
+    return json({
+      staff: [{
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        level: parseInt(user.level || '9'),
+        isActive: true,
+        department: 'Administration',
+        phone: '',
+        role: 'Super Admin',
+      }],
+      total: 1,
+      error: 'Erreur de connexion à l\'API',
+      fallbackMode: true,
+      messagesEnabled: false,
+    } as StaffData);
   }
-};
+}
 
 export default function AdminStaff() {
-  const { staff, error } = useLoaderData<typeof loader>();
+  const { staff, total, error, fallbackMode, messagesEnabled } = useLoaderData<StaffData>();
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'super_admin': return 'default';
-      case 'manager': return 'secondary';
-      case 'support': return 'outline';
-      case 'analyst': return 'outline';
-      default: return 'secondary';
-    }
+  const getRoleColor = (level: number) => {
+    if (level >= 9) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    if (level >= 8) return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (level >= 7) return 'bg-green-100 text-green-800 border-green-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'super_admin': return <Crown className="h-4 w-4" />;
-      case 'manager': return <Shield className="h-4 w-4" />;
-      case 'support': return <Users className="h-4 w-4" />;
-      case 'analyst': return <Settings className="h-4 w-4" />;
-      default: return <Users className="h-4 w-4" />;
-    }
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="h-8 w-8 text-primary" />
-            Gestion du Personnel
-          </h1>
-          <p className="text-muted-foreground">
-            Gérez les membres de votre équipe et leurs permissions
-          </p>
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <Shield className="h-8 w-8 text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-900">Gestion du Personnel</h1>
+            </div>
+            <p className="text-gray-600">
+              Personnel administratif depuis les vraies données utilisateur (niveau ≥ 7)
+            </p>
+            {messagesEnabled && (
+              <p className="text-sm text-green-600 mt-1">
+                ✅ Système de messagerie activé (table ___xtr_msg)
+              </p>
+            )}
+          </div>
+          <div className="flex gap-3">
+            {messagesEnabled && (
+              <Link 
+                to="/admin/messages" 
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Messages
+              </Link>
+            )}
+            <Link 
+              to="/admin/users" 
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <Users className="h-4 w-4" />
+              Voir tous les utilisateurs
+            </Link>
+          </div>
         </div>
-        <Button className="flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          Nouveau Membre
-        </Button>
       </div>
 
-      {/* Alerte en cas d'erreur */}
+      {/* Indicateur de source */}
+      <div className={`mb-6 p-4 rounded-lg border-l-4 ${
+        fallbackMode ? 'border-yellow-400 bg-yellow-50' : 'border-green-400 bg-green-50'
+      }`}>
+        <div className="flex items-center gap-2">
+          {fallbackMode ? (
+            <AlertCircle className="h-5 w-5 text-yellow-600" />
+          ) : (
+            <Shield className="h-5 w-5 text-green-600" />
+          )}
+          <span className="font-medium">
+            {fallbackMode 
+              ? 'Mode fallback - Données limitées' 
+              : 'Données en temps réel depuis table ___xtr_customer (staff filtré niveau ≥ 7)'}
+          </span>
+        </div>
+      </div>
+
+      {/* Erreur */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-800">
-              <Settings className="h-4 w-4" />
-              <p className="text-sm font-medium">{error}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 text-red-700">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">{error}</span>
+          </div>
+        </div>
       )}
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{staff.length}</div>
-            <p className="text-xs text-muted-foreground">Depuis les vraies données</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Super Admins</CardTitle>
-            <Crown className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{staff.filter(s => s.role === 'super_admin').length}</div>
-            <p className="text-xs text-muted-foreground">Accès complet</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Total Staff</p>
+              <p className="text-2xl font-bold text-gray-900">{total}</p>
+              <p className="text-xs text-gray-500">Niveau ≥ 7</p>
+            </div>
+            <Users className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Managers</CardTitle>
-            <Shield className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{staff.filter(s => s.role === 'manager').length}</div>
-            <p className="text-xs text-muted-foreground">Supervision</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Super Admins</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {staff.filter(s => s.level >= 9).length}
+              </p>
+              <p className="text-xs text-gray-500">Niveau ≥ 9</p>
+            </div>
+            <Crown className="h-8 w-8 text-yellow-500" />
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Départements</CardTitle>
-            <Settings className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{new Set(staff.map(s => s.department)).size}</div>
-            <p className="text-xs text-muted-foreground">Différents services</p>
-          </CardContent>
-        </Card>
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Actifs</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {staff.filter(s => s.isActive).length}
+              </p>
+              <p className="text-xs text-gray-500">Connectés</p>
+            </div>
+            <Settings className="h-8 w-8 text-green-500" />
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg border shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Admins</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {staff.filter(s => s.level >= 8 && s.level < 9).length}
+              </p>
+              <p className="text-xs text-gray-500">Niveau 8</p>
+            </div>
+            <Shield className="h-8 w-8 text-blue-500" />
+          </div>
+        </div>
       </div>
 
-      {/* Liste du personnel */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Membres de l'Équipe</CardTitle>
-          <CardDescription>
-            Tous les membres du personnel avec leurs rôles et permissions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {staff.map((member: any) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    {getRoleIcon(member.role)}
-                  </div>
-                  <div>
-                    <p className="font-medium">{member.name}</p>
-                    <p className="text-sm text-muted-foreground">{member.email}</p>
-                    <p className="text-xs text-muted-foreground">{member.department}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <Badge variant={getRoleColor(member.role)} className="flex items-center gap-1 mb-1">
-                      {getRoleIcon(member.role)}
-                      {member.role.replace('_', ' ')}
-                    </Badge>
-                    <div className="flex gap-1">
-                      {member.permissions.map((perm: string) => (
-                        <Badge key={perm} variant="outline" className="text-xs">
-                          {perm}
-                        </Badge>
-                      ))}
+      {/* Liste du staff */}
+      <div className="bg-white rounded-lg border shadow-sm">
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Membres de l'Équipe Administrative
+              </h2>
+              <p className="text-gray-600">
+                Personnel depuis les vraies données client (filtré niveau ≥ 7)
+              </p>
+            </div>
+            {messagesEnabled && (
+              <div className="flex items-center gap-2 text-green-600">
+                <Mail className="h-4 w-4" />
+                <span className="text-sm">Messagerie activée</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Membre
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rôle
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Statut
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {staff.map((member) => (
+                <tr key={member.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 flex-shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <span className="text-sm font-medium text-blue-600">
+                            {member.firstName?.[0]}{member.lastName?.[0]}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {member.firstName} {member.lastName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          ID: {member.id}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                      {member.status}
-                    </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Depuis: {member.joinDate}
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Modifier
-                  </Button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{member.email}</div>
+                    {member.phone && (
+                      <div className="text-sm text-gray-500">{member.phone}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getRoleColor(member.level)}`}>
+                      {member.role} (Niv. {member.level})
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full border ${getStatusColor(member.isActive)}`}>
+                      {member.isActive ? 'Actif' : 'Inactif'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/admin/users/${member.id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Détails
+                      </Link>
+                      {messagesEnabled && (
+                        <Link
+                          to={`/admin/messages?staff=${member.id}`}
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Messages
+                        </Link>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {staff.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Aucun staff trouvé</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Aucun utilisateur avec un niveau ≥ 7 n'a été trouvé.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Information sur la table des messages */}
+      {messagesEnabled && (
+        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-start gap-3">
+            <MessageSquare className="h-6 w-6 text-blue-600 mt-1" />
+            <div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                Système de Messagerie Intégré
+              </h3>
+              <p className="text-blue-800 mb-4">
+                La table <code className="bg-blue-100 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-2">Fonctionnalités disponibles :</h4>
+                  <ul className="space-y-1 text-blue-700">
+                    <li>• Messages client ↔ staff (msg_cst_id ↔ msg_cnfa_id)</li>
+                    <li>• Suivi des commandes (msg_ord_id, msg_orl_id)</li>
+                    <li>• Fils de discussion (msg_parent_id)</li>
+                    <li>• Statuts ouvert/fermé (msg_open, msg_close)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-2">Structure des données :</h4>
+                  <ul className="space-y-1 text-blue-700">
+                    <li>• <code>msg_cnfa_id</code> : Lien vers ce staff admin</li>
+                    <li>• <code>msg_cst_id</code> : Lien vers client (___xtr_customer)</li>
+                    <li>• <code>msg_subject</code> : Sujet du message</li>
+                    <li>• <code>msg_content</code> : Contenu complet</li>
+                  </ul>
                 </div>
               </div>
-            ))}
+              <div className="mt-4">
+                <Link 
+                  to="/admin/messages" 
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Accéder à la messagerie
+                </Link>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }

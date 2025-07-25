@@ -21,9 +21,15 @@ export class RemixController {
     console.log('--- RemixController handler ---');
     console.log('Request URL:', request.url);
 
-    // Ne pas capturer les routes /api/*
-    if (request.url.startsWith('/api/')) {
-      console.log('🔀 Skipping API route, calling next()');
+    // Ne pas capturer les routes qui sont déjà gérées par d'autres contrôleurs backend
+    // Attention: les routes /admin/* doivent être gérées par Remix pour le frontend admin
+    if (
+      request.url.startsWith('/api/') || 
+      request.url.startsWith('/authenticate') ||
+      request.url.startsWith('/auth/') ||
+      request.url.startsWith('/profile/')
+    ) {
+      console.log('🔀 Skipping API/Auth/Profile route, calling next()');
       return next();
     }
 
@@ -36,15 +42,28 @@ export class RemixController {
       console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
     }
 
-    return createRequestHandler({
-      build: await getServerBuild(),
-      getLoadContext: () => ({
-        user: request.user,
-        remixService: this.remixService,
-        remixIntegration: this.remixIntegrationService,
-        // Passer le body parsé par Express
-        parsedBody: request.body,
-      }),
-    })(request, response, next);
+    try {
+      const build = await getServerBuild();
+      console.log('✅ Server build loaded successfully');
+      
+      return createRequestHandler({
+        build,
+        getLoadContext: () => ({
+          user: request.user,
+          remixService: this.remixService,
+          remixIntegration: this.remixIntegrationService,
+          // Passer le body parsé par Express
+          parsedBody: request.body,
+        }),
+      })(request, response, next);
+    } catch (error) {
+      console.error('❌ Error loading server build:', error);
+      response.status(500).json({
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'Frontend build not available',
+        details: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 }

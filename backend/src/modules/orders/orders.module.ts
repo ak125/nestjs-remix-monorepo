@@ -23,7 +23,6 @@
  */
 
 import { Module } from '@nestjs/common';
-import { OrdersController } from './orders.controller';
 import { OrdersApiController } from './orders-api.controller';
 import { OrdersService } from './orders.service';
 import { OrdersCompleteService } from './orders-complete.service';
@@ -31,7 +30,7 @@ import { SupabaseRestService } from '../../database/supabase-rest.service';
 
 @Module({
   imports: [],
-  controllers: [OrdersController, OrdersApiController],
+  controllers: [OrdersApiController],
   providers: [OrdersService, OrdersCompleteService, SupabaseRestService],
   exports: [OrdersService, OrdersCompleteService, SupabaseRestService],
 })
