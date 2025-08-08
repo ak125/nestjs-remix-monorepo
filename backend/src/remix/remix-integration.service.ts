@@ -12,7 +12,7 @@ import { CartService } from '../modules/cart/cart.service';
 import { AuthService } from '../auth/auth.service';
 import { AdminSuppliersService } from '../modules/admin/services/admin-suppliers.service';
 import { CacheService } from '../cache/cache.service';
-import { SupabaseRestService } from '../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../database/supabase-service-facade';
 
 @Injectable()
 export class RemixIntegrationService {
@@ -25,17 +25,33 @@ export class RemixIntegrationService {
     @Optional() private readonly authService?: AuthService,
     @Optional() private readonly suppliersService?: AdminSuppliersService,
     @Optional() private readonly cacheService?: CacheService,
-    @Optional() private readonly supabaseService?: SupabaseRestService,
+    @Optional() private readonly supabaseService?: SupabaseServiceFacade,
   ) {
     console.log('🔧 RemixIntegrationService - Context7 initialization');
-    console.log(`  - CacheService available: ${this.cacheService ? 'YES' : 'NO'}`);
-    console.log(`  - OrdersCompleteService available: ${this.ordersCompleteService ? 'YES' : 'NO'}`);
-    console.log(`  - OrdersService available: ${this.ordersService ? 'YES' : 'NO'}`);
-    console.log(`  - UsersService available: ${this.usersService ? 'YES' : 'NO'}`);
-    console.log(`  - PaymentsService available: ${this.paymentsService ? 'YES' : 'NO'}`);
-    console.log(`  - CartService available: ${this.cartService ? 'YES' : 'NO'}`);
-    console.log(`  - AuthService available: ${this.authService ? 'YES' : 'NO'}`);
-    console.log(`  - SuppliersService available: ${this.suppliersService ? 'YES' : 'NO'}`);
+    console.log(
+      `  - CacheService available: ${this.cacheService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - OrdersCompleteService available: ${this.ordersCompleteService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - OrdersService available: ${this.ordersService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - UsersService available: ${this.usersService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - PaymentsService available: ${this.paymentsService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - CartService available: ${this.cartService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - AuthService available: ${this.authService ? 'YES' : 'NO'}`,
+    );
+    console.log(
+      `  - SuppliersService available: ${this.suppliersService ? 'YES' : 'NO'}`,
+    );
   }
 
   /**
@@ -44,7 +60,9 @@ export class RemixIntegrationService {
   private async safeGetCache(key: string): Promise<any> {
     try {
       if (!this.cacheService) {
-        console.log(`🔄 Cache service unavailable - fallback mode for key: ${key}`);
+        console.log(
+          `🔄 Cache service unavailable - fallback mode for key: ${key}`,
+        );
         return null;
       }
       return await this.cacheService.get(key);
@@ -54,10 +72,16 @@ export class RemixIntegrationService {
     }
   }
 
-  private async safeSetCache(key: string, value: any, ttl: number): Promise<void> {
+  private async safeSetCache(
+    key: string,
+    value: any,
+    ttl: number,
+  ): Promise<void> {
     try {
       if (!this.cacheService) {
-        console.log(`🔄 Cache service unavailable - skipping set for key: ${key}`);
+        console.log(
+          `🔄 Cache service unavailable - skipping set for key: ${key}`,
+        );
         return;
       }
       await this.cacheService.set(key, value, ttl);
@@ -71,7 +95,7 @@ export class RemixIntegrationService {
    */
   private async safeOrdersCompleteCall<T>(
     operation: (service: OrdersCompleteService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.ordersCompleteService) {
@@ -87,7 +111,7 @@ export class RemixIntegrationService {
 
   private async safePaymentsCall<T>(
     operation: (service: PaymentService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.paymentsService) {
@@ -103,7 +127,7 @@ export class RemixIntegrationService {
 
   private async safeCartCall<T>(
     operation: (service: CartService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.cartService) {
@@ -119,7 +143,7 @@ export class RemixIntegrationService {
 
   private async safeOrdersCall<T>(
     operation: (service: OrdersService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.ordersService) {
@@ -135,7 +159,7 @@ export class RemixIntegrationService {
 
   private async safeAuthCall<T>(
     operation: (service: AuthService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.authService) {
@@ -151,7 +175,7 @@ export class RemixIntegrationService {
 
   private async safeSuppliersCall<T>(
     operation: (service: AdminSuppliersService) => Promise<T>,
-    fallback: T
+    fallback: T,
   ): Promise<T> {
     try {
       if (!this.suppliersService) {
@@ -251,15 +275,23 @@ export class RemixIntegrationService {
 
       // Utiliser directement le service orders avec limite optimisée
       const result = await this.safeOrdersCompleteCall(
-        (service) => service.getOrdersWithAllRelations(
-          page,
-          maxLimit,
-          {
+        (service) =>
+          service.getOrdersWithAllRelations({
+            page,
+            limit: maxLimit,
             status,
-            ...(search && { customerId: search }),
-          },
-        ),
-        { success: false, orders: [], total: 0, page, limit: maxLimit, error: 'Service unavailable' }
+            search,
+          }),
+        {
+          orders: [],
+          total: 0,
+          page,
+          limit: maxLimit,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          _error: true,
+        },
       );
 
       // Pré-charger les utilisateurs en batch pour éviter les requêtes N+1
@@ -278,11 +310,11 @@ export class RemixIntegrationService {
           if (!(await this.getCachedUser(userId))) {
             try {
               // Créer des données utilisateur par défaut pour éviter les erreurs 403
-              const userData = { 
-                id: userId, 
+              const userData = {
+                id: userId,
                 name: `User ${userId}`,
                 email: `user${userId}@system.local`,
-                isPlaceholder: true
+                isPlaceholder: true,
               };
               await this.setCachedUser(userId, userData);
             } catch (error) {
@@ -291,12 +323,12 @@ export class RemixIntegrationService {
                 error,
               );
               // Fallback même en cas d'erreur 403
-              const fallbackData = { 
-                id: userId, 
+              const fallbackData = {
+                id: userId,
                 name: `User ${userId}`,
                 email: `user${userId}@system.local`,
                 isPlaceholder: true,
-                error: 'Service non disponible'
+                error: 'Service non disponible',
               };
               await this.setCachedUser(userId, fallbackData);
             }
@@ -340,57 +372,108 @@ export class RemixIntegrationService {
     level?: number;
   }) {
     try {
-      const {
-        page = 1,
-        limit = 10,
-        search,
-        level,
-      } = params;
+      const { page = 1, limit = 10, search, level } = params;
 
-      console.log(`🔍 getUsersForRemix: page=${page}, limit=${limit}, search=${search}, level=${level}`);
+      console.log(
+        `🔍 getUsersForRemix: page=${page}, limit=${limit}, search=${search}, level=${level}`,
+      );
 
-      // Vérifier que le service est disponible
-      if (!this.supabaseService) {
-        console.error('❌ SupabaseRestService non disponible');
+      // ✅ SOLUTION ULTRA-RAPIDE : Utiliser directement l'API HTTP interne
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/users?page=${page}&limit=${limit}${search ? `&search=${search}` : ''}${level ? `&level=${level}` : ''}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Internal-Call': 'true',
+            },
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        // Transformer les données pour Remix
+        const users =
+          result.users?.map((user: any) => ({
+            id: user.cst_id,
+            email: user.cst_email,
+            firstName: user.cst_firstname || '',
+            lastName: user.cst_lastname || '',
+            phone: user.cst_phone || '',
+            level: user.cst_level || 0,
+            isActive: user.cst_is_active !== '0',
+            isPro: user.cst_level >= 3,
+            emailVerified: user.cst_email_verified === '1',
+            createdAt: user.cst_date_crea || new Date().toISOString(),
+            lastLogin: user.cst_last_login,
+            totalOrders: 0,
+            totalSpent: 0,
+          })) || [];
+
+        console.log(
+          `✅ getUsersForRemix: ${users.length} utilisateurs récupérés via API interne`,
+        );
+
         return {
-          success: false,
-          users: [],
-          total: 0,
-          page: 1,
-          totalPages: 0,
-          error: 'Service utilisateurs non disponible',
+          success: true,
+          users,
+          total: result.total || 0,
+          page,
+          totalPages: Math.ceil((result.total || 0) / limit),
         };
+      } catch (apiError) {
+        console.error('❌ Erreur API interne users:', apiError);
+
+        // Fallback vers service direct si disponible
+        if (this.supabaseService) {
+          try {
+            const result = await this.supabaseService.getAllUsers(
+              page,
+              limit,
+              search,
+              level,
+            );
+
+            const users = result.users.map((user: any) => ({
+              id: user.cst_id,
+              email: user.cst_email,
+              firstName: user.cst_firstname || '',
+              lastName: user.cst_lastname || '',
+              phone: user.cst_phone || '',
+              level: user.cst_level || 0,
+              isActive: user.cst_is_active !== '0',
+              isPro: user.cst_level >= 3,
+              emailVerified: user.cst_email_verified === '1',
+              createdAt: user.cst_date_crea || new Date().toISOString(),
+              lastLogin: user.cst_last_login,
+              totalOrders: 0,
+              totalSpent: 0,
+            }));
+
+            console.log(
+              `✅ getUsersForRemix: ${users.length} utilisateurs récupérés via service direct`,
+            );
+
+            return {
+              success: true,
+              users,
+              total: result.total || 0,
+              page,
+              totalPages: Math.ceil((result.total || 0) / limit),
+            };
+          } catch (serviceError) {
+            console.error('❌ Erreur service direct aussi:', serviceError);
+          }
+        }
+
+        // Si tout échoue
+        throw apiError;
       }
-
-      // ✅ UTILISE Context7 - SupabaseRestService pour récupérer les vraies données
-      const result = await this.supabaseService.getAllUsers(page, limit, search, level);
-
-      // Transformer les données pour Remix
-      const users = result.users.map((user: any) => ({
-        id: user.cst_id,
-        email: user.cst_email,
-        firstName: user.cst_firstname || '',
-        lastName: user.cst_lastname || '',
-        phone: user.cst_phone || '',
-        level: user.cst_level || 0,
-        isActive: user.cst_is_active !== '0',
-        isPro: user.cst_level >= 3,
-        emailVerified: user.cst_email_verified === '1',
-        createdAt: user.cst_date_crea || new Date().toISOString(),
-        lastLogin: user.cst_last_login,
-        totalOrders: 0, // À calculer si nécessaire
-        totalSpent: 0, // À calculer si nécessaire
-      }));
-
-      console.log(`✅ getUsersForRemix: ${users.length} utilisateurs récupérés`);
-
-      return {
-        success: true,
-        users,
-        total: result.total || 0,
-        page,
-        totalPages: Math.ceil((result.total || 0) / limit),
-      };
     } catch (error) {
       console.error('Erreur dans getUsersForRemix:', error);
       return {
@@ -426,19 +509,29 @@ export class RemixIntegrationService {
       let totalOrders = 0;
       if (this.ordersCompleteService) {
         try {
-          console.log('📊 Service OrdersComplete disponible - récupération des données');
+          console.log(
+            '📊 Service OrdersComplete disponible - récupération des données',
+          );
           const [ordersResult] = await Promise.all([
-            this.ordersCompleteService.getOrdersWithAllRelations(1, 1, {}),
+            this.ordersCompleteService.getOrdersWithAllRelations({
+              page: 1,
+              limit: 1,
+            }),
             // TODO: Add back users when UsersService.getAllUsers is available
             // this.usersService.getAllUsers(1, 1),
           ]);
           totalOrders = ordersResult.total || 0;
         } catch (error) {
-          console.error('❌ Erreur lors de la récupération des commandes:', error);
+          console.error(
+            '❌ Erreur lors de la récupération des commandes:',
+            error,
+          );
           totalOrders = 0;
         }
       } else {
-        console.log('⚠️ Service OrdersComplete non disponible - utilisation des valeurs par défaut');
+        console.log(
+          '⚠️ Service OrdersComplete non disponible - utilisation des valeurs par défaut',
+        );
       }
 
       const response = {
@@ -458,14 +551,16 @@ export class RemixIntegrationService {
             payments: !!this.paymentsService,
             cache: !!this.cacheService,
           },
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
 
       // Mettre en cache pour 2 minutes avec Context7 resilience
       await this.safeSetCache(cacheKey, response, 120);
 
-      console.log(`✅ Stats dashboard calculées: ${response.stats.totalOrders} commandes`);
+      console.log(
+        `✅ Stats dashboard calculées: ${response.stats.totalOrders} commandes`,
+      );
       return response;
     } catch (error) {
       console.error('Erreur dans getDashboardStats:', error);
@@ -487,8 +582,8 @@ export class RemixIntegrationService {
             payments: !!this.paymentsService,
             cache: !!this.cacheService,
           },
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       };
     }
   }
@@ -517,7 +612,12 @@ export class RemixIntegrationService {
 
       const stats = await this.safePaymentsCall(
         (service) => service.getPaymentStats(),
-        { totalPayments: 0, successfulPayments: 0, pendingPayments: 0, failedPayments: 0 }
+        {
+          totalPayments: 0,
+          successfulPayments: 0,
+          pendingPayments: 0,
+          failedPayments: 0,
+        },
       );
       const response = {
         success: true,
@@ -545,49 +645,31 @@ export class RemixIntegrationService {
   }
 
   /**
-   * Créer un paiement pour Remix
+   * Créer un paiement pour Remix - DÉSACTIVÉ TEMPORAIREMENT
    */
   async createPaymentForRemix(paymentData: any) {
-    try {
-      const payment = await this.safePaymentsCall(
-        (service) => service.createPayment(paymentData),
-        null
-      );
-      return {
-        success: true,
-        payment,
-      };
-    } catch (error) {
-      console.error('Erreur dans createPaymentForRemix:', error);
-      return {
-        success: false,
-        payment: null,
-        error: error instanceof Error ? error.message : 'Erreur inconnue',
-      };
-    }
+    console.log(
+      '⚠️ createPaymentForRemix temporairement désactivé - migration en cours',
+    );
+    return {
+      success: false,
+      payment: null,
+      error: 'Méthode temporairement désactivée durant la migration',
+    };
   }
 
   /**
-   * Récupérer le statut d'un paiement pour Remix
+   * Récupérer le statut d'un paiement pour Remix - DÉSACTIVÉ TEMPORAIREMENT
    */
   async getPaymentStatusForRemix(orderId: string | number) {
-    try {
-      const payment = await this.safePaymentsCall(
-        (service) => service.getPaymentStatus(orderId.toString()),
-        null
-      );
-      return {
-        success: true,
-        payment,
-      };
-    } catch (error) {
-      console.error('Erreur dans getPaymentStatusForRemix:', error);
-      return {
-        success: false,
-        payment: null,
-        error: error instanceof Error ? error.message : 'Erreur inconnue',
-      };
-    }
+    console.log(
+      '⚠️ getPaymentStatusForRemix temporairement désactivé - migration en cours',
+    );
+    return {
+      success: false,
+      payment: null,
+      error: 'Méthode temporairement désactivée durant la migration',
+    };
   }
 
   /**
@@ -622,15 +704,23 @@ export class RemixIntegrationService {
 
       // Récupérer les commandes qui servent de base aux paiements avec limite optimisée
       const result = await this.safeOrdersCompleteCall(
-        (service) => service.getOrdersWithAllRelations(
-          page,
-          maxLimit,
-          {
+        (service) =>
+          service.getOrdersWithAllRelations({
+            page,
+            limit: maxLimit,
             status,
-            ...(search && { customerId: search }),
-          },
-        ),
-        { success: false, orders: [], total: 0, page, limit: maxLimit, error: 'Service unavailable' }
+            search,
+          }),
+        {
+          orders: [],
+          total: 0,
+          page,
+          limit: maxLimit,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+          _error: true,
+        },
       );
 
       // Pré-charger les utilisateurs en batch pour éviter les requêtes N+1
@@ -649,11 +739,11 @@ export class RemixIntegrationService {
           if (!(await this.getCachedUser(userId))) {
             try {
               // Créer des données utilisateur par défaut pour éviter les erreurs 403
-              const userData = { 
-                id: userId, 
+              const userData = {
+                id: userId,
                 name: `User ${userId}`,
                 email: `user${userId}@system.local`,
-                isPlaceholder: true
+                isPlaceholder: true,
               };
               await this.setCachedUser(userId, userData);
             } catch (error) {
@@ -662,12 +752,12 @@ export class RemixIntegrationService {
                 error,
               );
               // Fallback même en cas d'erreur
-              const fallbackData = { 
-                id: userId, 
+              const fallbackData = {
+                id: userId,
                 name: `User ${userId}`,
                 email: `user${userId}@system.local`,
                 isPlaceholder: true,
-                error: 'Service non disponible'
+                error: 'Service non disponible',
               };
               await this.setCachedUser(userId, fallbackData);
             }
@@ -677,20 +767,38 @@ export class RemixIntegrationService {
 
       // Transformer les commandes en format paiement legacy
       const payments =
-        result.orders?.map((order) => ({
-          id: order.ord_id,
-          orderId: order.ord_id,
-          customerId: order.ord_cst_id,
-          montantTotal: parseFloat(order.ord_total_ttc?.toString() || '0'),
-          devise: (order as any).ord_currency || 'EUR',
-          statutPaiement: order.ord_is_pay?.toString() || '0',
-          methodePaiement: typeof (order as any).ord_info === 'object' ? 
-            (order as any).ord_info?.payment_gateway || 'Non définie' : 'Non définie',
-          referenceTransaction: typeof (order as any).ord_info === 'object' ? 
-            (order as any).ord_info?.transaction_id : undefined,
-          dateCreation: order.ord_date || new Date().toISOString(),
-          datePaiement: order.ord_date_pay,
-        })) || [];
+        result.orders?.map((order) => {
+          // Utiliser les données client enrichies si disponibles
+          const customer = (order as any).customer || null;
+
+          return {
+            id: order.ord_id,
+            orderId: order.ord_id,
+            customerId: order.ord_cst_id,
+            // Enrichir avec les vraies données client
+            customerName: customer
+              ? `${customer.cst_fname || ''} ${customer.cst_name || ''}`.trim()
+              : 'Client non trouvé',
+            customerEmail: customer
+              ? customer.cst_mail || 'Email non disponible'
+              : 'Email non disponible',
+            customerCity: customer ? customer.cst_city || '' : '',
+            customerActive: customer ? customer.cst_activ === '1' : false,
+            montantTotal: parseFloat(order.ord_total_ttc?.toString() || '0'),
+            devise: (order as any).ord_currency || 'EUR',
+            statutPaiement: order.ord_is_pay?.toString() || '0',
+            methodePaiement:
+              typeof (order as any).ord_info === 'object'
+                ? (order as any).ord_info?.payment_gateway || 'Non définie'
+                : 'Non définie',
+            referenceTransaction:
+              typeof (order as any).ord_info === 'object'
+                ? (order as any).ord_info?.transaction_id
+                : undefined,
+            dateCreation: order.ord_date || new Date().toISOString(),
+            datePaiement: order.ord_date_pay,
+          };
+        }) || [];
 
       const response = {
         success: true,
@@ -726,7 +834,13 @@ export class RemixIntegrationService {
       // Utiliser directement le service cart
       const summary = await this.safeCartCall(
         (service) => service.getCartSummary(userId || 'anonymous'),
-        { total_items: 0, total_quantity: 0, subtotal: 0, total: 0, currency: 'EUR' }
+        {
+          total_items: 0,
+          total_quantity: 0,
+          subtotal: 0,
+          total: 0,
+          currency: 'EUR',
+        },
       );
       return {
         success: true,
@@ -758,11 +872,12 @@ export class RemixIntegrationService {
   }) {
     try {
       const result = await this.safeCartCall(
-        (service) => service.addToCart(
-          data.userId || 'anonymous',
-          { product_id: data.productId, quantity: data.quantity },
-        ),
-        null
+        (service) =>
+          service.addToCart(data.userId || 'anonymous', {
+            product_id: data.productId,
+            quantity: data.quantity,
+          }),
+        null,
       );
       return {
         success: true,
@@ -785,11 +900,17 @@ export class RemixIntegrationService {
     try {
       const items = await this.safeCartCall(
         (service) => service.getCartItems(userId || 'anonymous'),
-        []
+        [],
       );
       const summary = await this.safeCartCall(
         (service) => service.getCartSummary(userId || 'anonymous'),
-        { total_items: 0, total_quantity: 0, subtotal: 0, total: 0, currency: 'EUR' }
+        {
+          total_items: 0,
+          total_quantity: 0,
+          subtotal: 0,
+          total: 0,
+          currency: 'EUR',
+        },
       );
       return {
         success: true,
@@ -824,12 +945,11 @@ export class RemixIntegrationService {
   }) {
     try {
       const result = await this.safeCartCall(
-        (service) => service.updateCartItem(
-          data.userId || 'anonymous',
-          data.itemId,
-          { quantity: data.quantity },
-        ),
-        null
+        (service) =>
+          service.updateCartItem(data.userId || 'anonymous', data.itemId, {
+            quantity: data.quantity,
+          }),
+        null,
       );
       return {
         success: true,
@@ -851,11 +971,9 @@ export class RemixIntegrationService {
   async removeCartItemForRemix(data: { itemId: number; userId?: string }) {
     try {
       await this.safeCartCall(
-        (service) => service.removeFromCart(
-          data.userId || 'anonymous',
-          data.itemId,
-        ),
-        null
+        (service) =>
+          service.removeFromCart(data.userId || 'anonymous', data.itemId),
+        null,
       );
       return {
         success: true,
@@ -877,7 +995,7 @@ export class RemixIntegrationService {
     try {
       const order = await this.safeOrdersCompleteCall(
         (service) => service.getCompleteOrderById(orderId),
-        null
+        null,
       );
 
       if (!order) {
@@ -909,7 +1027,7 @@ export class RemixIntegrationService {
     try {
       const newOrder = await this.safeOrdersCall(
         (service) => service.createOrder(orderData),
-        null
+        null,
       );
 
       if (!newOrder) {
@@ -977,7 +1095,7 @@ export class RemixIntegrationService {
     try {
       const resetToken = await this.safeAuthCall(
         (service) => service.generatePasswordResetToken(email),
-        null
+        null,
       );
 
       if (!resetToken) {
@@ -1008,7 +1126,7 @@ export class RemixIntegrationService {
     try {
       const result = await this.safeAuthCall(
         (service) => service.resetPasswordWithToken(token, newPassword),
-        { success: false, error: 'Service indisponible' }
+        { success: false, error: 'Service indisponible' },
       );
 
       return {
@@ -1034,7 +1152,7 @@ export class RemixIntegrationService {
     try {
       await this.safeCartCall(
         (service) => service.clearCart(userId || 'anonymous'),
-        null
+        null,
       );
       return {
         success: true,
@@ -1073,19 +1191,20 @@ export class RemixIntegrationService {
       }
 
       const result = await this.safeSuppliersCall(
-        (service) => service.getAllSuppliers(
-          {
-            page,
-            limit,
-            search,
-            country,
-            isActive,
-            sortBy: 'name',
-            sortOrder: 'asc',
-          },
-          'system', // userId pour les logs admin
-        ),
-        { data: [], total: 0, page: 1, limit: 10, totalPages: 0 }
+        (service) =>
+          service.getAllSuppliers(
+            {
+              page,
+              limit,
+              search,
+              country,
+              isActive,
+              sortBy: 'name',
+              sortOrder: 'asc',
+            },
+            'system', // userId pour les logs admin
+          ),
+        { data: [], total: 0, page: 1, limit: 10, totalPages: 0 },
       );
 
       const response = {

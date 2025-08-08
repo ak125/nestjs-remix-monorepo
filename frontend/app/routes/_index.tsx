@@ -1,8 +1,8 @@
-import { type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
+import { json, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams } from "@remix-run/react";
 import { Package, Search, Star, Shield, Clock, Phone } from 'lucide-react';
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export const meta: MetaFunction = () => {
   return [
@@ -11,7 +11,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+export const loader = async () => {
   return json({
     timestamp: new Date().toISOString()
   });

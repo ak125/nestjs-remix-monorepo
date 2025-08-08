@@ -11,7 +11,7 @@ import { Button } from "~/components/ui/button";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { requireUser } from "~/server/auth.server";
-import { getRemixIntegrationService } from "~/server/remix-integration.server";
+import { getRemixApiService } from "~/server/remix-api.server";
 
 interface Order {
   id: string;
@@ -51,10 +51,10 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   try {
     console.log('🛒 Chargement des commandes utilisateur via Context7...');
     
-    const remixService = await getRemixIntegrationService(context);
+    const remixService = await getRemixApiService(context);
     
     // Récupérer les commandes de l'utilisateur connecté
-    const ordersResult = await remixService.getOrdersForRemix({
+  const ordersResult: any = await remixService.getOrdersForRemix({
       page: 1,
       limit: 100
     });

@@ -16,37 +16,39 @@
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
+import { CacheModule } from '../../cache/cache.module';
 import { OrdersModule } from '../orders/orders.module';
 
 // Controllers
 import { AdminDashboardController } from './controllers/admin-dashboard.controller';
 import { AdminSuppliersController } from './controllers/admin-suppliers.controller';
-import { AdminStaffController } from './controllers/admin-staff.controller';
+// import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminOrdersController } from './controllers/admin-orders.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
 
 // Services
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminSuppliersService } from './services/admin-suppliers.service';
-import { AdminStaffService } from './services/admin-staff.service';
+// import { AdminStaffService } from './services/admin-staff.service';
 
 @Module({
   imports: [
-    DatabaseModule, // Pour SupabaseRestService
-    OrdersModule,   // Import du module Orders pour accéder à ses services
+    DatabaseModule, // Pour SupabaseServiceFacade
+    CacheModule, // Cache Redis pour les stats du dashboard
+    OrdersModule, // Import du module Orders pour accéder à ses services
   ],
   controllers: [
     AdminRootController,
     AdminDashboardController,
     AdminSuppliersController,
-    AdminStaffController,
+    // AdminStaffController, // Temporairement désactivé
     AdminOrdersController,
   ],
   providers: [
-    AdminDashboardService, 
-    AdminSuppliersService, 
-    AdminStaffService,
+    AdminDashboardService,
+    AdminSuppliersService,
+    // AdminStaffService, // Temporairement désactivé
   ],
-  exports: [AdminDashboardService, AdminSuppliersService, AdminStaffService],
+  exports: [AdminDashboardService],
 })
 export class AdminModule {}

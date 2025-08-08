@@ -3,13 +3,13 @@ import { All, Controller, Next, Req, Res } from '@nestjs/common';
 import { createRequestHandler } from '@remix-run/express';
 import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
-import { RemixIntegrationService } from './remix-integration.service';
+import { RemixApiService } from './remix-api.service';
 
 @Controller()
 export class RemixController {
   constructor(
     private remixService: RemixService,
-    private remixIntegrationService: RemixIntegrationService,
+    private remixApiService: RemixApiService,
   ) {}
 
   @All('*')
@@ -24,7 +24,7 @@ export class RemixController {
     // Ne pas capturer les routes qui sont déjà gérées par d'autres contrôleurs backend
     // Attention: les routes /admin/* doivent être gérées par Remix pour le frontend admin
     if (
-      request.url.startsWith('/api/') || 
+      request.url.startsWith('/api/') ||
       request.url.startsWith('/authenticate') ||
       request.url.startsWith('/auth/') ||
       request.url.startsWith('/profile/')
@@ -45,13 +45,13 @@ export class RemixController {
     try {
       const build = await getServerBuild();
       console.log('✅ Server build loaded successfully');
-      
+
       return createRequestHandler({
         build,
         getLoadContext: () => ({
           user: request.user,
           remixService: this.remixService,
-          remixIntegration: this.remixIntegrationService,
+          remixIntegration: this.remixApiService,
           // Passer le body parsé par Express
           parsedBody: request.body,
         }),

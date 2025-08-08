@@ -6,7 +6,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseRestService } from '../../../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../../../database/supabase-service-facade';
+import { CacheService } from '../../../cache/cache.service';
 import {
   DashboardStatsSchema,
   type DashboardStats,
@@ -16,7 +17,10 @@ import {
 export class AdminDashboardService {
   private readonly logger = new Logger(AdminDashboardService.name);
 
-  constructor(private readonly supabaseService: SupabaseRestService) {}
+  constructor(
+    private readonly supabaseService: SupabaseServiceFacade,
+    private readonly cache: CacheService,
+  ) {}
 
   /**
    * Récupérer les statistiques complètes du dashboard admin
@@ -24,7 +28,19 @@ export class AdminDashboardService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      this.logger.log('Génération des statistiques dashboard admin...');
+      const cacheKey = 'admin:dashboard:stats';
+      const ttlSeconds = 60;
+
+      // 1) Tentative de retour depuis le cache
+      const cached = await this.cache.get<DashboardStats>(cacheKey);
+      if (cached) {
+        this.logger.log('Stats dashboard retournées depuis le cache.');
+        return cached;
+      }
+
+      this.logger.log(
+        'Aucune entrée de cache. Génération des statistiques dashboard admin...',
+      );
 
       // Paralléliser les requêtes pour de meilleures performances
       const [
@@ -53,6 +69,9 @@ export class AdminDashboardService {
 
       // Validation avec Zod
       const validatedStats = DashboardStatsSchema.parse(stats);
+
+      // 3) Mise en cache (meilleure réactivité du dashboard)
+      await this.cache.set(cacheKey, validatedStats, ttlSeconds);
 
       this.logger.log(
         `Stats générées: ${validatedStats.totalUsers} users, ${validatedStats.totalOrders} orders`,

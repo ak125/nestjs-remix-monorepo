@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { ProfileController } from './profile.controller';
 import { CookieSerializer } from './cookie-serializer';
+import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
 
@@ -20,7 +21,13 @@ import { LocalStrategy } from './local.strategy';
     CacheModule,
   ],
   controllers: [AuthController, ProfileController],
-  providers: [LocalStrategy, LocalAuthGuard, CookieSerializer, AuthService],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    LocalAuthGuard,
+    CookieSerializer,
+    IsAdminGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

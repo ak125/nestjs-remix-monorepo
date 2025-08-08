@@ -14,7 +14,7 @@ export default defineConfig({
 	},
 	build: {
 		cssMinify: MODE === 'production',
-		sourcemap: true,
+		sourcemap: MODE !== 'production',
 		commonjsOptions: {
 			include: [/frontend/, /backend/, /node_modules/],
 		},

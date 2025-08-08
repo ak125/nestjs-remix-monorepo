@@ -25,7 +25,7 @@ import {
   SupplierQuery,
 } from '../schemas/suppliers.schemas';
 
-@Controller('admin/suppliers')
+@Controller('api/admin/suppliers')
 @UseGuards(LocalAuthGuard)
 export class AdminSuppliersController {
   private readonly logger = new Logger(AdminSuppliersController.name);
@@ -168,6 +168,7 @@ export class AdminSuppliersController {
 
       const updateData: UpdateSupplier = { ...data, id };
       const supplier = await this.suppliersService.updateSupplier(
+        id,
         updateData,
         currentUserId,
       );
@@ -207,7 +208,6 @@ export class AdminSuppliersController {
 
       const supplier = await this.suppliersService.toggleSupplierStatus(
         id,
-        isActive,
         currentUserId,
       );
 

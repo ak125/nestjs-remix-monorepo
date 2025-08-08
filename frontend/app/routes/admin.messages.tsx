@@ -5,8 +5,6 @@
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
-import { requireUser } from "~/server/auth.server";
 import { 
   MessageSquare, 
   Users, 
@@ -22,6 +20,8 @@ import {
   AlertCircle,
   ArrowLeft
 } from "lucide-react";
+import { useState } from "react";
+import { requireUser } from "~/server/auth.server";
 
 // Interfaces pour les messages
 interface Message {
@@ -195,7 +195,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 export default function AdminMessages() {
   const { messages, total, page, totalPages, stats, error, fallbackMode } = useLoaderData<MessageData>();
-  const navigation = useNavigation();
+  const _navigation = useNavigation();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 

@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { SupabaseRestService } from '../../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../../database/supabase-service-facade';
 
 export interface Message {
   msg_id: string;
@@ -35,17 +35,21 @@ export interface MessageWithDetails extends Message {
 
 @Injectable()
 export class MessagesService {
-  constructor(private readonly supabaseService: SupabaseRestService) {}
+  constructor(private readonly supabaseService: SupabaseServiceFacade) {}
 
   /**
    * Récupérer tous les messages avec pagination simple
    */
-  async getAllMessages(page = 1, limit = 20, filters?: {
-    staffId?: string;
-    customerId?: string;
-    orderId?: string;
-    status?: 'open' | 'closed' | 'all';
-  }): Promise<{
+  async getAllMessages(
+    page = 1,
+    limit = 20,
+    filters?: {
+      staffId?: string;
+      customerId?: string;
+      orderId?: string;
+      status?: 'open' | 'closed' | 'all';
+    },
+  ): Promise<{
     messages: MessageWithDetails[];
     total: number;
     page: number;
@@ -53,65 +57,22 @@ export class MessagesService {
   }> {
     try {
       console.log(`📧 Récupération messages page ${page}, limit ${limit}`);
-      
-      // Construction de l'URL avec filtres REST API
-      const baseUrl = `${this.supabaseService['baseUrl']}/___xtr_msg?select=*`;
-      let url = baseUrl;
-      
-      // Ajout des filtres
-      const queryParams: string[] = [];
-      
-      if (filters?.staffId) {
-        queryParams.push(`msg_cnfa_id=eq.${filters.staffId}`);
-      }
-      
-      if (filters?.customerId) {
-        queryParams.push(`msg_cst_id=eq.${filters.customerId}`);
-      }
-      
-      if (filters?.orderId) {
-        queryParams.push(`msg_ord_id=eq.${filters.orderId}`);
-      }
-      
-      if (filters?.status === 'open') {
-        queryParams.push(`msg_open=eq.1`);
-      } else if (filters?.status === 'closed') {
-        queryParams.push(`msg_close=eq.1`);
-      }
-      
-      if (queryParams.length > 0) {
-        url += `&${queryParams.join('&')}`;
-      }
-      
-      // Pagination
-      const offset = (page - 1) * limit;
-      url += `&order=msg_date.desc&limit=${limit}&offset=${offset}`;
-      
-      console.log(`� URL Messages: ${url}`);
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: this.supabaseService['headers'],
-      });
-      
-      if (!response.ok) {
-        console.error('Erreur récupération messages:', response.status);
-        throw new Error(`Erreur API: ${response.status}`);
-      }
-      
-      const messages = await response.json();
-      console.log(`✅ ${messages.length} messages récupérés`);
-      
+      const { messages, total: totalCount } =
+        await this.supabaseService.listMessages({ page, limit, filters });
+      console.log(`✅ ${messages?.length || 0} messages récupérés`);
+
       // Enrichir avec les données client/staff
       const messagesWithDetails = await Promise.all(
-        messages.map(async (msg: Message) => {
+        (messages || []).map(async (msg: Message) => {
           let customer = null;
           let staff = null;
-          
+
           // Récupérer les infos client
           if (msg.msg_cst_id) {
             try {
-              const customerData = await this.supabaseService.getUserById(msg.msg_cst_id);
+              const customerData = await this.supabaseService.getUserById(
+                msg.msg_cst_id,
+              );
               if (customerData) {
                 customer = {
                   cst_name: customerData.cst_name || '',
@@ -119,15 +80,17 @@ export class MessagesService {
                   cst_mail: customerData.cst_mail || '',
                 };
               }
-            } catch (error) {
+            } catch (_err) {
               console.warn(`⚠️ Client ${msg.msg_cst_id} non trouvé`);
             }
           }
-          
+
           // Récupérer les infos staff
           if (msg.msg_cnfa_id) {
             try {
-              const staffData = await this.supabaseService.getUserById(msg.msg_cnfa_id);
+              const staffData = await this.supabaseService.getUserById(
+                msg.msg_cnfa_id,
+              );
               if (staffData) {
                 staff = {
                   firstName: staffData.cst_fname || 'Staff',
@@ -135,23 +98,22 @@ export class MessagesService {
                   email: staffData.cst_mail || '',
                 };
               }
-            } catch (error) {
+            } catch (_err) {
               console.warn(`⚠️ Staff ${msg.msg_cnfa_id} non trouvé`);
             }
           }
-          
+
           return {
             ...msg,
             customer,
             staff,
           };
-        })
+        }),
       );
-      
-      // Compter le total (approximation simple)
-      const total = messages.length < limit ? messages.length : limit * page + 1;
+
+      const total = totalCount || 0;
       const totalPages = Math.ceil(total / limit);
-      
+
       return {
         messages: messagesWithDetails,
         total,
@@ -169,32 +131,18 @@ export class MessagesService {
    */
   async getMessageById(messageId: string): Promise<MessageWithDetails | null> {
     try {
-      const url = `${this.supabaseService['baseUrl']}/___xtr_msg?msg_id=eq.${messageId}&select=*&limit=1`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: this.supabaseService['headers'],
-      });
-      
-      if (!response.ok || response.status === 404) {
-        return null;
-      }
-      
-      const messages = await response.json();
-      
-      if (!messages || messages.length === 0) {
-        return null;
-      }
-      
-      const msg = messages[0];
-      
+      const msg = await this.supabaseService.fetchMessageById(messageId);
+      if (!msg) return null;
+
       // Enrichir avec les données client/staff
-      let customer = null;
-      let staff = null;
-      
+      let customer: MessageWithDetails['customer'] = undefined;
+      let staff: MessageWithDetails['staff'] = undefined;
+
       if (msg.msg_cst_id) {
         try {
-          const customerData = await this.supabaseService.getUserById(msg.msg_cst_id);
+          const customerData = await this.supabaseService.getUserById(
+            msg.msg_cst_id,
+          );
           if (customerData) {
             customer = {
               cst_name: customerData.cst_name || '',
@@ -206,10 +154,12 @@ export class MessagesService {
           console.warn(`⚠️ Client ${msg.msg_cst_id} non trouvé`);
         }
       }
-      
+
       if (msg.msg_cnfa_id) {
         try {
-          const staffData = await this.supabaseService.getUserById(msg.msg_cnfa_id);
+          const staffData = await this.supabaseService.getUserById(
+            msg.msg_cnfa_id,
+          );
           if (staffData) {
             staff = {
               firstName: staffData.cst_fname || 'Staff',
@@ -221,7 +171,7 @@ export class MessagesService {
           console.warn(`⚠️ Staff ${msg.msg_cnfa_id} non trouvé`);
         }
       }
-      
+
       return {
         ...msg,
         customer,
@@ -248,7 +198,7 @@ export class MessagesService {
     try {
       const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const now = new Date().toISOString();
-      
+
       const newMessage: Message = {
         msg_id: messageId,
         msg_cst_id: messageData.customerId,
@@ -262,23 +212,8 @@ export class MessagesService {
         msg_open: '1',
         msg_close: '0',
       };
-      
-      const url = `${this.supabaseService['baseUrl']}/___xtr_msg`;
-      
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify(newMessage),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Erreur création: ${response.status}`);
-      }
-      
+      await this.supabaseService.createMessageRecord(newMessage);
+
       console.log(`✅ Message ${messageId} créé avec succès`);
       return newMessage;
     } catch (error: any) {
@@ -292,25 +227,8 @@ export class MessagesService {
    */
   async closeMessage(messageId: string): Promise<boolean> {
     try {
-      const url = `${this.supabaseService['baseUrl']}/___xtr_msg?msg_id=eq.${messageId}`;
-      
-      const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({
-          msg_close: '1',
-          msg_open: '0',
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Erreur fermeture: ${response.status}`);
-      }
-      
+      await this.supabaseService.closeMessageRecord(messageId);
+
       console.log(`✅ Message ${messageId} fermé`);
       return true;
     } catch (error: any) {
@@ -330,41 +248,9 @@ export class MessagesService {
     recent: number;
   }> {
     try {
-      // Total des messages
-      const totalUrl = `${this.supabaseService['baseUrl']}/___xtr_msg?select=count`;
-      const totalResponse = await fetch(totalUrl, {
-        method: 'GET',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'count=exact',
-        },
-      });
-      
-      // Messages ouverts
-      const openUrl = `${this.supabaseService['baseUrl']}/___xtr_msg?msg_open=eq.1&select=count`;
-      const openResponse = await fetch(openUrl, {
-        method: 'GET',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'count=exact',
-        },
-      });
-      
-      // Messages fermés
-      const closedUrl = `${this.supabaseService['baseUrl']}/___xtr_msg?msg_close=eq.1&select=count`;
-      const closedResponse = await fetch(closedUrl, {
-        method: 'GET',
-        headers: {
-          ...this.supabaseService['headers'],
-          'Prefer': 'count=exact',
-        },
-      });
-      
-      // Extraction des counts depuis les headers
-      const total = parseInt(totalResponse.headers.get('Content-Range')?.split('/')[1] || '0');
-      const open = parseInt(openResponse.headers.get('Content-Range')?.split('/')[1] || '0');
-      const closed = parseInt(closedResponse.headers.get('Content-Range')?.split('/')[1] || '0');
-      
+      const { total, open, closed } =
+        await this.supabaseService.getMessageStats();
+
       return {
         total,
         open,

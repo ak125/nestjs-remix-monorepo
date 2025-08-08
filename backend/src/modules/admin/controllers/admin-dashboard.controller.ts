@@ -9,7 +9,7 @@ import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import { AdminDashboardService } from '../services/admin-dashboard.service';
 import { LocalAuthGuard } from '../../../auth/local-auth.guard';
 
-@Controller('admin/dashboard')
+@Controller('api/admin/dashboard')
 @UseGuards(LocalAuthGuard)
 export class AdminDashboardController {
   private readonly logger = new Logger(AdminDashboardController.name);

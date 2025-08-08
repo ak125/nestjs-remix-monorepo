@@ -39,6 +39,11 @@ export interface LegacyPayment {
   id: number;                    // ord_id de ___xtr_order
   orderId: number;              // ord_id 
   customerId: number;           // ord_cst_id (référence ___xtr_customer)
+  // Nouvelles propriétés enrichies depuis ___xtr_customer
+  customerName?: string;        // cst_fname + cst_name combinés
+  customerEmail?: string;       // cst_mail
+  customerCity?: string;        // cst_city
+  customerActive?: boolean;     // cst_activ === '1'
   montantTotal: number;         // ord_total_ttc
   devise: string;               // stocké dans ord_info
   statutPaiement: string;       // ord_is_pay ('0'=EN_ATTENTE, '1'=PAYE)
@@ -162,5 +167,20 @@ export async function getPaymentStatus(orderId: string | number, context?: any):
   } catch (error) {
     console.error('❌ Erreur lors de la récupération du statut de paiement:', error);
     throw error;
+  }
+}
+
+/**
+ * Parse JSON de manière sécurisée
+ * Retourne l'objet parsé ou un objet avec le texte brut en cas d'erreur
+ */
+export function safeJsonParse(jsonString: string | null | undefined): any {
+  if (!jsonString) return null;
+  
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    // Si ce n'est pas du JSON, retourner le texte brut
+    return { rawText: jsonString };
   }
 }

@@ -1,38 +1,28 @@
-import { Outlet, Link } from "@remix-run/react";
+import { type LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Outlet, useLoaderData } from "@remix-run/react";
+import { AdminSidebar } from "~/components/AdminSidebar";
+import { getOptionalUser } from "~/server/auth.server";
 
-const adminLinks = [
-  { to: "/admin/dashboard", name: "Dashboard" },
-  { to: "/admin/staff", name: "Personnel" },
-  { to: "/admin/suppliers", name: "Fournisseurs" },
-  { to: "/admin/customers", name: "Clients" },
-  { to: "/admin/orders", name: "Commandes" },
-  { to: "/admin/payments", name: "Paiements" },
-  { to: "/admin/reports", name: "Rapports" },
-];
+export async function loader({ context }: LoaderFunctionArgs) {
+  const user = await getOptionalUser({ context });
+  if (!user) throw redirect("/login");
+  if (!user.level || user.level < 5) throw redirect("/unauthorized");
+  return { user };
+}
 
 export default function AdminLayout() {
+  const { user } = useLoaderData<typeof loader>();
   return (
-    <div className="flex h-screen bg-gray-100">
-      <aside className="w-64 bg-gray-800 text-white p-4">
-        <h1 className="text-2xl font-bold mb-4">Admin</h1>
-        <nav>
-          <ul>
-            {adminLinks.map((link) => (
-              <li key={link.to} className="mb-2">
-                <Link
-                  to={link.to}
-                  className="block p-2 rounded hover:bg-gray-700"
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-      <main className="flex-1 p-8 overflow-y-auto">
-        <Outlet />
-      </main>
+    <div className="min-h-screen bg-background">
+      <AdminSidebar />
+      <div className="lg:pl-64">
+        <main className="min-h-screen p-6">
+          <div className="mb-4 text-sm text-gray-600">
+            Connecté en tant que: {user.firstName} {user.lastName} ({user.email})
+          </div>
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

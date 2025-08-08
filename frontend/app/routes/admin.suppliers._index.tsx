@@ -7,9 +7,9 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { requireUser } from "~/server/auth.server";
-import { getRemixIntegrationService } from "~/server/remix-integration.server";
+import { getRemixApiService } from "~/server/remix-api.server";
 
 // Types pour la gestion des fournisseurs
 interface Supplier {
@@ -34,7 +34,7 @@ interface SupplierStats {
   topCategories: Array<{ category: string; count: number }>;
 }
 
-interface SuppliersData {
+interface _SuppliersData {
   suppliers: Supplier[];
   stats: SupplierStats;
   pagination: {
@@ -63,7 +63,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
                    url.searchParams.get('status') === 'inactive' ? false : undefined;
 
   try {
-    const remixService = await getRemixIntegrationService(context);
+    const remixService = await getRemixApiService(context);
     const suppliersResult = await remixService.getSuppliersForRemix({
       page,
       limit: 10,
@@ -105,7 +105,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats,
       pagination: {
         page,
-        totalPages: suppliersResult.totalPages,
+        totalPages: suppliersResult.pagination?.totalPages ?? suppliersResult.totalPages ?? 1,
         totalItems: suppliersResult.total,
       },
       fallbackMode: false,
@@ -136,7 +136,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export default function AdminSuppliers() {
   const data = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [_selectedSupplier, _setSelectedSupplier] = useState<Supplier | null>(null);
   
   const isLoading = navigation.state === "loading";
 
@@ -458,7 +458,7 @@ export default function AdminSuppliers() {
                           Éditer
                         </Link>
                         <button
-                          onClick={() => setSelectedSupplier(supplier as Supplier)}
+                          onClick={() => _setSelectedSupplier(supplier as Supplier)}
                           className={`${
                             supplier.is_active 
                               ? 'text-red-600 hover:text-red-900' 

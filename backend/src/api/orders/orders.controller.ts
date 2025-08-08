@@ -9,8 +9,18 @@ export class OrdersController {
 
   @Get()
   @ApiOperation({ summary: 'Récupérer les commandes avec pagination' })
-  @ApiQuery({ name: 'page', required: false, description: 'Numéro de page', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, description: 'Nombre d\'éléments par page', example: 50 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Numéro de page',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: "Nombre d'éléments par page",
+    example: 50,
+  })
   async getOrders(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 50,
@@ -18,7 +28,7 @@ export class OrdersController {
     try {
       const pageNum = parseInt(page.toString(), 10) || 1;
       const limitNum = parseInt(limit.toString(), 10) || 50;
-      
+
       const result = await this.ordersService.findAll({
         page: pageNum,
         limit: limitNum,
@@ -31,12 +41,12 @@ export class OrdersController {
           page: pageNum,
           limit: limitNum,
           total: result.total || 0,
-          totalPages: Math.ceil((result.total || 0) / limitNum)
-        }
+          totalPages: Math.ceil((result.total || 0) / limitNum),
+        },
       };
     } catch (error) {
       console.error('Erreur lors de la récupération des commandes:', error);
-      
+
       // Fallback avec données de test
       return {
         success: false,
@@ -48,12 +58,12 @@ export class OrdersController {
             ord_date: new Date().toISOString(),
             ord_info: JSON.stringify({
               payment_gateway: 'stripe',
-              transaction_id: 'txn_test_001'
+              transaction_id: 'txn_test_001',
             }),
             customer: {
               cst_fname: 'Client',
-              cst_name: 'Test'
-            }
+              cst_name: 'Test',
+            },
           },
           {
             ord_id: '2',
@@ -62,21 +72,21 @@ export class OrdersController {
             ord_date: new Date().toISOString(),
             ord_info: JSON.stringify({
               payment_gateway: 'paypal',
-              transaction_id: 'txn_test_002'
+              transaction_id: 'txn_test_002',
             }),
             customer: {
               cst_fname: 'Client',
-              cst_name: 'Test 2'
-            }
-          }
+              cst_name: 'Test 2',
+            },
+          },
         ],
         pagination: {
           page: 1,
           limit: 50,
           total: 2,
-          totalPages: 1
+          totalPages: 1,
         },
-        message: 'Données de test - service en cours de configuration'
+        message: 'Données de test - service en cours de configuration',
       };
     }
   }
@@ -88,7 +98,7 @@ export class OrdersController {
       const stats = await this.ordersService.getStats();
       return {
         success: true,
-        stats
+        stats,
       };
     } catch (error) {
       console.error('Erreur lors de la récupération des stats:', error);
@@ -98,9 +108,9 @@ export class OrdersController {
           totalOrders: 0,
           completedOrders: 0,
           pendingOrders: 0,
-          totalRevenue: 0
+          totalRevenue: 0,
         },
-        message: 'Stats par défaut - service en cours de configuration'
+        message: 'Stats par défaut - service en cours de configuration',
       };
     }
   }

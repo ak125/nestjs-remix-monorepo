@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseRestService } from '../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../database/supabase-service-facade';
 import { CacheService } from '../cache/cache.service';
 import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private supabaseRestService: SupabaseRestService,
+    private supabaseService: SupabaseServiceFacade,
     private cacheService: CacheService,
   ) {}
 
@@ -24,11 +24,11 @@ export class AuthService {
     console.log('withPassword :', withPassword);
 
     // Vérifie d'abord si c'est un admin dans ___config_admin
-    const existingAdmin = await this.supabaseRestService.findAdminByEmail(email);
-    
+    const existingAdmin = await this.supabaseService.findAdminByEmail(email);
+
     if (existingAdmin) {
       console.log('Admin trouvé:', existingAdmin);
-      
+
       // Si withPassword est false, on ne vérifie que l'existence de l'email
       if (!withPassword) {
         console.log('Vérification uniquement email admin - utilisateur existe');
@@ -43,7 +43,7 @@ export class AuthService {
       }
 
       // Vérifie le mot de passe admin
-      const isPasswordValid = await this.supabaseRestService.validatePassword(
+      const isPasswordValid = await this.supabaseService.validatePassword(
         password,
         existingAdmin.cnfa_pswd,
       );
@@ -68,7 +68,7 @@ export class AuthService {
     }
 
     // Si pas d'admin trouvé, vérifie dans la table client
-    const existingUser = await this.supabaseRestService.findUserByEmail(email);
+    const existingUser = await this.supabaseService.findUserByEmail(email);
 
     if (!existingUser) {
       console.log('Utilisateur non trouvé');
@@ -94,7 +94,7 @@ export class AuthService {
     }
 
     // Vérifie le mot de passe seulement si withPassword est true
-    const isPasswordValid = await this.supabaseRestService.validatePassword(
+    const isPasswordValid = await this.supabaseService.validatePassword(
       password,
       existingUser.cst_pswd,
     );
@@ -128,7 +128,7 @@ export class AuthService {
     console.log('[AuthService] Données utilisateur reçues:', userData);
 
     // Vérifie si l'utilisateur existe déjà
-    const existingUser = await this.supabaseRestService.findUserByEmail(
+    const existingUser = await this.supabaseService.findUserByEmail(
       userData.email,
     );
 
@@ -140,7 +140,7 @@ export class AuthService {
     // Crée l'utilisateur
     let newUser;
     try {
-      newUser = await this.supabaseRestService.createUser(userData);
+      newUser = await this.supabaseService.createUser(userData);
       console.log('[AuthService] Utilisateur créé:', newUser);
     } catch (err) {
       console.error('[AuthService] Erreur lors de la création:', err);
@@ -215,7 +215,7 @@ export class AuthService {
   }
 
   async testConnection(): Promise<boolean> {
-    return await this.supabaseRestService.testConnection();
+    return await this.supabaseService.testConnection();
   }
 
   async generatePasswordResetToken(email: string): Promise<string | null> {
@@ -278,8 +278,8 @@ export class AuthService {
 
       // Mettre à jour le mot de passe
       const hashedPassword =
-        await this.supabaseRestService.hashPassword(newPassword);
-      const updateResult = await this.supabaseRestService.updateUserPassword(
+        await this.supabaseService.hashPassword(newPassword);
+      const updateResult = await this.supabaseService.updateUserPassword(
         tokenData.email,
         hashedPassword,
       );
@@ -321,7 +321,7 @@ export class AuthService {
       console.log('User ID:', userId);
       console.log('Updates:', updates);
 
-      const result = await this.supabaseRestService.updateUserProfile(
+      const result = await this.supabaseService.updateUserProfile(
         userId,
         updates,
       );
@@ -369,14 +369,14 @@ export class AuthService {
       console.log('User ID:', userId);
 
       // Récupérer l'utilisateur
-      const user = await this.supabaseRestService.findUserById(userId);
+      const user = await this.supabaseService.findUserById(userId);
       if (!user) {
         return { success: false, error: 'user_not_found' };
       }
 
       // Vérifier le mot de passe actuel
       const isCurrentPasswordValid =
-        await this.supabaseRestService.validatePassword(
+        await this.supabaseService.validatePassword(
           currentPassword,
           user.cst_pswd,
         );
@@ -387,8 +387,8 @@ export class AuthService {
 
       // Changer le mot de passe
       const hashedPassword =
-        await this.supabaseRestService.hashPassword(newPassword);
-      const updateResult = await this.supabaseRestService.updateUserPassword(
+        await this.supabaseService.hashPassword(newPassword);
+      const updateResult = await this.supabaseService.updateUserPassword(
         user.cst_mail,
         hashedPassword,
       );

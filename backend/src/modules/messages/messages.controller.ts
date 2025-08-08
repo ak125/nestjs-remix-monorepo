@@ -38,7 +38,7 @@ export class MessagesController {
     try {
       const pageNum = parseInt(page || '1', 10);
       const limitNum = parseInt(limit || '20', 10);
-      
+
       const filters: any = {};
       if (staffId) filters.staffId = staffId;
       if (customerId) filters.customerId = customerId;
@@ -53,7 +53,9 @@ export class MessagesController {
         filters,
       );
 
-      console.log(`✅ API Messages - ${result.messages.length}/${result.total} messages retournés`);
+      console.log(
+        `✅ API Messages - ${result.messages.length}/${result.total} messages retournés`,
+      );
       return result;
     } catch (error: any) {
       console.error(`❌ API Messages Error: ${error.message || error}`);
@@ -74,7 +76,7 @@ export class MessagesController {
 
     try {
       const message = await this.messagesService.getMessageById(id);
-      
+
       if (!message) {
         console.log(`❌ API Messages: Message ${id} non trouvé`);
         throw new HttpException('Message non trouvé', HttpStatus.NOT_FOUND);
@@ -100,7 +102,8 @@ export class MessagesController {
    */
   @Post()
   async createMessage(
-    @Body() messageData: {
+    @Body()
+    messageData: {
       customerId: string;
       staffId: string;
       orderId?: string;
@@ -154,7 +157,7 @@ export class MessagesController {
 
     try {
       const success = await this.messagesService.closeMessage(id);
-      
+
       if (!success) {
         throw new HttpException(
           'Impossible de fermer le message',

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
-import { SupabaseRestService } from '../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../database/supabase-service-facade';
 import { CacheService } from '../cache/cache.service';
-import { RemixIntegrationService } from './remix-integration.service';
+import { RemixApiService } from './remix-api.service';
 
 @Injectable()
 export class RemixService {
   constructor(
-    public readonly supabaseRestService: SupabaseRestService,
+    public readonly supabaseService: SupabaseServiceFacade,
     public readonly auth: AuthService,
     private readonly cacheService: CacheService,
-    public readonly integration: RemixIntegrationService,
+    public readonly integration: RemixApiService,
   ) {}
 
   public readonly getUser = async ({ userId }: { userId: string }) => {
@@ -32,7 +32,7 @@ export class RemixService {
       }
 
       // Sinon, chercher dans la base de données
-      const user = await this.supabaseRestService.getUserById(userId);
+      const user = await this.supabaseService.getUserById(userId);
 
       if (user) {
         console.log('Utilisateur trouvé dans RemixService:', user);
@@ -52,7 +52,7 @@ export class RemixService {
           gsm: user.cst_gsm,
           isPro: user.cst_is_pro,
           isActive: user.cst_activ,
-          level: parseInt(user.cst_level, 10) || 0, // ✅ Convertir en nombre
+          level: parseInt(user.cst_level?.toString() || '0', 10) || 0, // ✅ Convertir en nombre avec gestion undefined
         };
 
         // Mettre en cache pour les prochaines requêtes

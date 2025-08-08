@@ -26,12 +26,21 @@ import { Module } from '@nestjs/common';
 import { OrdersApiController } from './orders-api.controller';
 import { OrdersService } from './orders.service';
 import { OrdersCompleteService } from './orders-complete.service';
-import { SupabaseRestService } from '../../database/supabase-rest.service';
+import { DatabaseModule } from '../../database/database.module';
+import { PerformanceOptimizationService } from '../../common/services/performance-optimization.service';
 
 @Module({
-  imports: [],
+  imports: [DatabaseModule], // Import du nouveau module optimisé
   controllers: [OrdersApiController],
-  providers: [OrdersService, OrdersCompleteService, SupabaseRestService],
-  exports: [OrdersService, OrdersCompleteService, SupabaseRestService],
+  providers: [
+    OrdersService,
+    OrdersCompleteService,
+    PerformanceOptimizationService,
+  ],
+  exports: [
+    OrdersService,
+    OrdersCompleteService,
+    PerformanceOptimizationService,
+  ],
 })
 export class OrdersModule {}

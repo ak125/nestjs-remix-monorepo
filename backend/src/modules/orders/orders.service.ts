@@ -6,7 +6,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseRestService } from '../../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../../database/supabase-service-facade';
 import { OrdersCompleteService } from './orders-complete.service';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
 
   constructor(
-    private readonly supabaseService: SupabaseRestService,
+    private readonly supabaseService: SupabaseServiceFacade,
     private readonly ordersCompleteService: OrdersCompleteService,
   ) {}
 

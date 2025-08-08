@@ -74,21 +74,13 @@ const navigationItems = [
 export function AdminSidebar({ className, ...props }: SidebarProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = React.useState(false)
-  const [isMounted, setIsMounted] = React.useState(false)
-
-  // Éviter les problèmes d'hydratation
-  React.useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   // Fermer le menu mobile lors du changement de route
   React.useEffect(() => {
     setIsOpen(false)
   }, [location.pathname])
 
-  if (!isMounted) {
-    return null
-  }
+  // Rendu direct en SSR pour éviter l'absence temporaire de la sidebar
 
   return (
     <>

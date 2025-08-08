@@ -8,7 +8,7 @@ import { PaymentsModule } from '../modules/payments/payments.module';
 import { CartModule } from '../modules/cart/cart.module';
 import { AdminModule } from '../modules/admin/admin.module';
 import { RemixService } from './remix.service';
-import { RemixIntegrationService } from './remix-integration.service';
+import { RemixApiService } from './remix-api.service';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { RemixIntegrationService } from './remix-integration.service';
     CartModule,
     AdminModule,
   ],
-  providers: [RemixService, RemixIntegrationService],
-  exports: [RemixService, RemixIntegrationService],
+  providers: [RemixService, RemixApiService],
+  exports: [RemixService, RemixApiService],
 })
 export class RemixModule {}

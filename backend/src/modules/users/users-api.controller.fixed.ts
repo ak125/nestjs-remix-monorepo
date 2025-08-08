@@ -10,11 +10,11 @@ import {
   HttpStatus,
   Param,
 } from '@nestjs/common';
-import { SupabaseRestService } from '../../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../../database/supabase-service-facade';
 
 @Controller('api/users')
 export class UsersApiController {
-  constructor(private readonly supabaseService: SupabaseRestService) {}
+  constructor(private readonly supabaseService: SupabaseServiceFacade) {}
 
   /**
    * Récupérer la liste des utilisateurs avec pagination
@@ -34,7 +34,7 @@ export class UsersApiController {
       // Paramètres avec valeurs par défaut
       const pageNum = parseInt(page || '1', 10);
       const limitNum = parseInt(limit || '10', 10);
-      
+
       // ✅ Utiliser les vraies données depuis Supabase
       const result = await this.supabaseService.getAllUsers(
         pageNum,
@@ -43,64 +43,78 @@ export class UsersApiController {
       );
 
       // Mapper les données de la vraie table vers le format de l'API
-      const mappedUsers = await Promise.all(result.users.map(async (user: any) => {
-        // Récupérer les adresses pour chaque utilisateur
-        let billingAddress = null;
-        let deliveryAddress = null;
-        
-        try {
-          billingAddress = await this.supabaseService.getCustomerBillingAddressByCustomerId(user.cst_id);
-          deliveryAddress = await this.supabaseService.getCustomerDeliveryAddressByCustomerId(user.cst_id);
-        } catch (error) {
-          console.log(`⚠️ Impossible de récupérer les adresses pour l'utilisateur ${user.cst_id}`);
-        }
+      const mappedUsers = await Promise.all(
+        result.users.map(async (user: any) => {
+          // Récupérer les adresses pour chaque utilisateur
+          let billingAddress: any | null = null;
+          let deliveryAddress: any | null = null;
 
-        return {
-          id: user.cst_id || `user-${Date.now()}`,
-          email: user.cst_mail || 'non-defini@example.com',
-          firstName: user.cst_fname || 'Prénom',
-          lastName: user.cst_name || 'Nom',
-          phone: user.cst_tel || user.cst_gsm || 'Non défini',
-          isActive: user.cst_activ === '1',
-          isPro: user.cst_is_pro === '1' || user.cst_is_cpy === '1',
-          emailVerified: user.cst_activ === '1',
-          registrationDate: new Date().toISOString(), // Pas de champ date dans la table
-          lastLoginDate: new Date().toISOString(), // Pas de champ last_login dans la table
-          city: user.cst_city || 'Non définie',
-          country: user.cst_country || 'France',
-          level: parseInt(user.cst_level?.toString() || '1', 10),
-          address: user.cst_address || 'Non définie',
-          zipCode: user.cst_zip_code || 'Non défini',
-          civility: user.cst_civility || 'M.',
-          companyName: user.cst_rs || '',
-          siret: user.cst_siret || '',
-          // ✅ Adresses enrichies
-          billingAddress: billingAddress ? {
-            id: billingAddress.cba_id,
-            email: billingAddress.cba_mail,
-            civility: billingAddress.cba_civility,
-            firstName: billingAddress.cba_fname,
-            lastName: billingAddress.cba_name,
-            address: billingAddress.cba_address,
-            zipCode: billingAddress.cba_zip_code,
-            city: billingAddress.cba_city,
-            country: billingAddress.cba_country,
-            phone: billingAddress.cba_tel || billingAddress.cba_gsm,
-          } : null,
-          deliveryAddress: deliveryAddress ? {
-            id: deliveryAddress.cda_id,
-            email: deliveryAddress.cda_mail,
-            civility: deliveryAddress.cda_civility,
-            firstName: deliveryAddress.cda_fname,
-            lastName: deliveryAddress.cda_name,
-            address: deliveryAddress.cda_address,
-            zipCode: deliveryAddress.cda_zip_code,
-            city: deliveryAddress.cda_city,
-            country: deliveryAddress.cda_country,
-            phone: deliveryAddress.cda_tel || deliveryAddress.cda_gsm,
-          } : null,
-        };
-      }));
+          try {
+            billingAddress =
+              await this.supabaseService.getCustomerBillingAddressByCustomerId(
+                user.cst_id,
+              );
+            deliveryAddress =
+              await this.supabaseService.getCustomerDeliveryAddressByCustomerId(
+                user.cst_id,
+              );
+          } catch (error) {
+            console.log(
+              `⚠️ Impossible de récupérer les adresses pour l'utilisateur ${user.cst_id}`,
+            );
+          }
+
+          return {
+            id: user.cst_id || `user-${Date.now()}`,
+            email: user.cst_mail || 'non-defini@example.com',
+            firstName: user.cst_fname || 'Prénom',
+            lastName: user.cst_name || 'Nom',
+            phone: user.cst_tel || user.cst_gsm || 'Non défini',
+            isActive: user.cst_activ === '1',
+            isPro: user.cst_is_pro === '1' || user.cst_is_cpy === '1',
+            emailVerified: user.cst_activ === '1',
+            registrationDate: new Date().toISOString(), // Pas de champ date dans la table
+            lastLoginDate: new Date().toISOString(), // Pas de champ last_login dans la table
+            city: user.cst_city || 'Non définie',
+            country: user.cst_country || 'France',
+            level: parseInt(user.cst_level?.toString() || '1', 10),
+            address: user.cst_address || 'Non définie',
+            zipCode: user.cst_zip_code || 'Non défini',
+            civility: user.cst_civility || 'M.',
+            companyName: user.cst_rs || '',
+            siret: user.cst_siret || '',
+            // ✅ Adresses enrichies
+            billingAddress: billingAddress
+              ? {
+                  id: billingAddress.cba_id,
+                  email: billingAddress.cba_mail,
+                  civility: billingAddress.cba_civility,
+                  firstName: billingAddress.cba_fname,
+                  lastName: billingAddress.cba_name,
+                  address: billingAddress.cba_address,
+                  zipCode: billingAddress.cba_zip_code,
+                  city: billingAddress.cba_city,
+                  country: billingAddress.cba_country,
+                  phone: billingAddress.cba_tel || billingAddress.cba_gsm,
+                }
+              : null,
+            deliveryAddress: deliveryAddress
+              ? {
+                  id: deliveryAddress.cda_id,
+                  email: deliveryAddress.cda_mail,
+                  civility: deliveryAddress.cda_civility,
+                  firstName: deliveryAddress.cda_fname,
+                  lastName: deliveryAddress.cda_name,
+                  address: deliveryAddress.cda_address,
+                  zipCode: deliveryAddress.cda_zip_code,
+                  city: deliveryAddress.cda_city,
+                  country: deliveryAddress.cda_country,
+                  phone: deliveryAddress.cda_tel || deliveryAddress.cda_gsm,
+                }
+              : null,
+          };
+        }),
+      );
 
       const totalPages = Math.ceil(result.total / limitNum);
 
@@ -113,7 +127,9 @@ export class UsersApiController {
         hasPrevPage: pageNum > 1,
       };
 
-      console.log(`✅ API Users - ${mappedUsers.length}/${result.total} utilisateurs retournés (page ${pageNum})`);
+      console.log(
+        `✅ API Users - ${mappedUsers.length}/${result.total} utilisateurs retournés (page ${pageNum})`,
+      );
       return response;
     } catch (error: any) {
       console.error(`❌ API Users Error: ${error.message || error}`);
@@ -135,21 +151,29 @@ export class UsersApiController {
     try {
       // ✅ Utiliser les vraies données depuis Supabase
       const user = await this.supabaseService.getUserById(id);
-      
+
       if (!user) {
         console.log(`❌ API Users: Utilisateur ${id} non trouvé`);
         throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
       }
 
       // Récupérer les adresses
-      let billingAddress = null;
-      let deliveryAddress = null;
-      
+      let billingAddress: any | null = null;
+      let deliveryAddress: any | null = null;
+
       try {
-        billingAddress = await this.supabaseService.getCustomerBillingAddressByCustomerId(user.cst_id);
-        deliveryAddress = await this.supabaseService.getCustomerDeliveryAddressByCustomerId(user.cst_id);
+        billingAddress =
+          await this.supabaseService.getCustomerBillingAddressByCustomerId(
+            user.cst_id,
+          );
+        deliveryAddress =
+          await this.supabaseService.getCustomerDeliveryAddressByCustomerId(
+            user.cst_id,
+          );
       } catch (error) {
-        console.log(`⚠️ Impossible de récupérer les adresses pour l'utilisateur ${user.cst_id}`);
+        console.log(
+          `⚠️ Impossible de récupérer les adresses pour l'utilisateur ${user.cst_id}`,
+        );
       }
 
       // Mapper les données vers le format de l'API
@@ -173,30 +197,34 @@ export class UsersApiController {
         companyName: user.cst_rs || '',
         siret: user.cst_siret || '',
         // ✅ Adresses enrichies
-        billingAddress: billingAddress ? {
-          id: billingAddress.cba_id,
-          email: billingAddress.cba_mail,
-          civility: billingAddress.cba_civility,
-          firstName: billingAddress.cba_fname,
-          lastName: billingAddress.cba_name,
-          address: billingAddress.cba_address,
-          zipCode: billingAddress.cba_zip_code,
-          city: billingAddress.cba_city,
-          country: billingAddress.cba_country,
-          phone: billingAddress.cba_tel || billingAddress.cba_gsm,
-        } : null,
-        deliveryAddress: deliveryAddress ? {
-          id: deliveryAddress.cda_id,
-          email: deliveryAddress.cda_mail,
-          civility: deliveryAddress.cda_civility,
-          firstName: deliveryAddress.cda_fname,
-          lastName: deliveryAddress.cda_name,
-          address: deliveryAddress.cda_address,
-          zipCode: deliveryAddress.cda_zip_code,
-          city: deliveryAddress.cda_city,
-          country: deliveryAddress.cda_country,
-          phone: deliveryAddress.cda_tel || deliveryAddress.cda_gsm,
-        } : null,
+        billingAddress: billingAddress
+          ? {
+              id: billingAddress.cba_id,
+              email: billingAddress.cba_mail,
+              civility: billingAddress.cba_civility,
+              firstName: billingAddress.cba_fname,
+              lastName: billingAddress.cba_name,
+              address: billingAddress.cba_address,
+              zipCode: billingAddress.cba_zip_code,
+              city: billingAddress.cba_city,
+              country: billingAddress.cba_country,
+              phone: billingAddress.cba_tel || billingAddress.cba_gsm,
+            }
+          : null,
+        deliveryAddress: deliveryAddress
+          ? {
+              id: deliveryAddress.cda_id,
+              email: deliveryAddress.cda_mail,
+              civility: deliveryAddress.cda_civility,
+              firstName: deliveryAddress.cda_fname,
+              lastName: deliveryAddress.cda_name,
+              address: deliveryAddress.cda_address,
+              zipCode: deliveryAddress.cda_zip_code,
+              city: deliveryAddress.cda_city,
+              country: deliveryAddress.cda_country,
+              phone: deliveryAddress.cda_tel || deliveryAddress.cda_gsm,
+            }
+          : null,
       };
 
       console.log(`✅ API Users: Utilisateur ${id} trouvé`);
@@ -207,7 +235,7 @@ export class UsersApiController {
       }
       console.error(`❌ API Users Error: ${error.message || error}`);
       throw new HttpException(
-        'Erreur serveur lors de la récupération de l\'utilisateur',
+        "Erreur serveur lors de la récupération de l'utilisateur",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -224,12 +252,18 @@ export class UsersApiController {
     try {
       // ✅ Utiliser les vraies données depuis Supabase pour calculer les stats
       const allUsers = await this.supabaseService.getAllUsers(1, 1000); // Récupérer un échantillon large
-      
+
       const stats = {
         totalUsers: allUsers.total,
-        activeUsers: allUsers.users.filter((user: any) => user.cst_activ === '1' || user.cst_active === true).length,
-        proUsers: allUsers.users.filter((user: any) => user.cst_is_pro === '1' || user.cst_is_cpy === '1').length,
-        verifiedUsers: allUsers.users.filter((user: any) => user.cst_activ === '1').length,
+        activeUsers: allUsers.users.filter(
+          (user: any) => user.cst_activ === '1' || user.cst_active === true,
+        ).length,
+        proUsers: allUsers.users.filter(
+          (user: any) => user.cst_is_pro === '1' || user.cst_is_cpy === '1',
+        ).length,
+        verifiedUsers: allUsers.users.filter(
+          (user: any) => user.cst_activ === '1',
+        ).length,
         byLevel: allUsers.users.reduce((acc: any, user: any) => {
           const level = user.cst_level || '1';
           acc[level] = (acc[level] || 0) + 1;

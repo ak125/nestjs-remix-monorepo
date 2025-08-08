@@ -11,8 +11,6 @@ import {
   TrendingUp, 
   Users, 
   ShoppingCart, 
-  CreditCard,
-  Calendar,
   AlertTriangle,
   CheckCircle
 } from "lucide-react";

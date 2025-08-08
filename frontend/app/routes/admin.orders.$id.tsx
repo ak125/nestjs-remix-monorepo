@@ -89,8 +89,19 @@ export const loader: LoaderFunction = async ({ params, context }) => {
   }
 
   try {
-    // Utiliser l'intégration directe pour récupérer la commande
-    const result = await context.remixService.integration.getOrderByIdForRemix(orderId);
+  // Utiliser l'intégration directe pour récupérer la commande
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+    let result = await integration.getOrderByIdForRemix?.(orderId);
+    if (!result) {
+      // Fallback HTTP direct
+      const { getRemixApiService } = await import("~/server/remix-api.server");
+      const api: any = await getRemixApiService(context);
+      result = await api.makeApiCall?.(`/api/orders/${orderId}`);
+      if (result && !result.success) {
+        result = { success: true, order: result };
+      }
+    }
     
     if (!result.success) {
       return json<LoaderData>({ 

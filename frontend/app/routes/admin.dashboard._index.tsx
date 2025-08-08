@@ -1,6 +1,6 @@
 import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { BarChart, Users, Package, TrendingUp, DollarSign, Calendar, Activity } from "lucide-react";
+import { BarChart, Users, Package, TrendingUp, DollarSign, Activity } from "lucide-react";
 import { requireUser } from "~/server/auth.server";
 
 import { getRemixIntegrationService } from "~/server/remix-integration.server";
@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   console.log(`✅ Accès autorisé pour super admin niveau ${userLevel}`);
 
   try {
-    const remixService = await getRemixIntegrationService(context);
+  const remixService = await getRemixIntegrationService(context);
     const dashboardResult = await remixService.getDashboardStats();
 
     if (!dashboardResult.success) {

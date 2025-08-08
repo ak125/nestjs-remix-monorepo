@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseRestService } from '../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../database/supabase-service-facade';
 import { CacheService } from '../cache/cache.service';
 
 export interface StaffMember {
@@ -41,7 +41,7 @@ export interface UpdateStaffDto {
 @Injectable()
 export class StaffService {
   constructor(
-    private readonly supabaseRestService: SupabaseRestService,
+    private readonly supabaseService: SupabaseServiceFacade,
     private readonly cacheService: CacheService,
   ) {}
 

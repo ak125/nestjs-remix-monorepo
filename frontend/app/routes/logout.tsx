@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs, redirect } from "@remix-run/node";
 
-export const action = async ({ request, context }: ActionFunctionArgs) => {
+export const action = async ({ request, context: _context }: ActionFunctionArgs) => {
   console.log('--- Remix Logout Action ---');
   
   try {

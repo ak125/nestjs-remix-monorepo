@@ -39,7 +39,10 @@ export class OrdersCompleteServiceFixed {
         limit,
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des commandes complètes:', error);
+      console.error(
+        'Erreur lors de la récupération des commandes complètes:',
+        error,
+      );
       return {
         success: false,
         orders: [],
@@ -61,19 +64,24 @@ export class OrdersCompleteServiceFixed {
 
       // Récupérer toutes les commandes et filtrer localement
       // TODO: Améliorer quand une méthode getOrderById sera disponible dans SupabaseRestService
-      const result = await this.supabaseService.getOrdersWithAllRelations(1, 100);
-      
+      const result = await this.supabaseService.getOrdersWithAllRelations(
+        1,
+        100,
+      );
+
       if (!result.orders || result.orders.length === 0) {
         return null;
       }
 
       // Filtrer par ID côté application
-      const order = result.orders.find(o => o.ord_id === orderId);
-      
+      const order = result.orders.find((o) => o.ord_id === orderId);
+
       return order || null;
     } catch (error) {
-      console.error('Erreur lors de la récupération de la commande complète:', 
-        error instanceof Error ? error.message : String(error));
+      console.error(
+        'Erreur lors de la récupération de la commande complète:',
+        error instanceof Error ? error.message : String(error),
+      );
       return null;
     }
   }
@@ -83,30 +91,42 @@ export class OrdersCompleteServiceFixed {
    */
   private async getCustomerBillingAddress(addressId: string): Promise<any> {
     try {
-      const address = await this.supabaseService.getCustomerBillingAddress(addressId);
+      const address =
+        await this.supabaseService.getCustomerBillingAddress(addressId);
       return address;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de facturation:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de facturation:",
+        error,
+      );
       return null;
     }
   }
 
   private async getCustomerDeliveryAddress(addressId: string): Promise<any> {
     try {
-      const address = await this.supabaseService.getCustomerDeliveryAddress(addressId);
+      const address =
+        await this.supabaseService.getCustomerDeliveryAddress(addressId);
       return address;
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'adresse de livraison:', error);
+      console.error(
+        "Erreur lors de la récupération de l'adresse de livraison:",
+        error,
+      );
       return null;
     }
   }
 
   private async getOrderLinesWithStatus(orderId: string): Promise<any[]> {
     try {
-      const orderLines = await this.supabaseService.getOrderLinesWithStatus(orderId);
+      const orderLines =
+        await this.supabaseService.getOrderLinesWithStatus(orderId);
       return orderLines || [];
     } catch (error) {
-      console.error('Erreur lors de la récupération des lignes de commande:', error);
+      console.error(
+        'Erreur lors de la récupération des lignes de commande:',
+        error,
+      );
       return [];
     }
   }

@@ -99,7 +99,9 @@ export const action: ActionFunction = async ({ request, context }) => {
     }
 
     // Utiliser l'intégration directe pour créer la commande
-    const result = await context.remixService.integration.createOrderForRemix(orderData);
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.createOrderForRemix?.(orderData);
 
     if (!result.success) {
       return json<ActionData>({ 

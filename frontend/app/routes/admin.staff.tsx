@@ -5,8 +5,8 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { requireUser } from "~/server/auth.server";
 import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
+import { requireUser } from "~/server/auth.server";
 
 // Interface pour les données staff basée sur les vraies données users
 interface StaffMember {
@@ -47,7 +47,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     apiUrl.searchParams.set('page', '1');
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // ✅ Augmenté à 10 secondes
     
     const response = await fetch(apiUrl.toString(), {
       headers: {

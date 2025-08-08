@@ -21,11 +21,16 @@ export class CacheService {
 
       if (this.configService) {
         console.log('🔧 CacheService: Utilisation ConfigService');
-        redisUrl = this.configService.get<string>('REDIS_URL') || 
-                  `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
+        redisUrl =
+          this.configService.get<string>('REDIS_URL') ||
+          `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
       } else {
-        console.log('🔧 CacheService: Utilisation AppConfig (fallback Context7)');
-        redisUrl = appConfig.redis.url || `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
+        console.log(
+          '🔧 CacheService: Utilisation AppConfig (fallback Context7)',
+        );
+        redisUrl =
+          appConfig.redis.url ||
+          `redis://${appConfig.redis.host}:${appConfig.redis.port}`;
       }
 
       console.log('🔧 Initialisation Redis avec URL:', redisUrl);

@@ -40,7 +40,9 @@ export const action: ActionFunction = async ({ params, request, context }) => {
   }
 
   // Utiliser l'intégration directe pour réinitialiser le mot de passe
-  const result = await context.remixService.integration.resetPasswordForRemix(token, password.toString());
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.resetPasswordForRemix?.(token, password.toString());
 
   if (result.success) {
     return redirect("/login?reset=success");

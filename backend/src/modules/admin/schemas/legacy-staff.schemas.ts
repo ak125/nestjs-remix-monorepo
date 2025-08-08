@@ -10,12 +10,18 @@ import { z } from 'zod';
 // ===== SCHÉMA LEGACY TABLE ___config_admin =====
 
 export const LegacyAdminStaffSchema = z.object({
-  cnfa_id: z.preprocess((val) => (typeof val === 'string' ? parseInt(val, 10) : val), z.number().int().positive()),
+  cnfa_id: z.preprocess(
+    (val) => (typeof val === 'string' ? parseInt(val, 10) : val),
+    z.number().int().positive(),
+  ),
   cnfa_login: z.string().min(3).max(50),
   cnfa_pswd: z.string(), // Hash bcrypt
   cnfa_mail: z.string().email(),
   cnfa_keylog: z.string(),
-  cnfa_level: z.preprocess((val) => (typeof val === 'string' ? parseInt(val, 10) : val), z.number().int().min(1).max(9)),
+  cnfa_level: z.preprocess(
+    (val) => (typeof val === 'string' ? parseInt(val, 10) : val),
+    z.number().int().min(1).max(9),
+  ),
   cnfa_job: z.string().max(100),
   cnfa_name: z.string().max(50), // Nom de famille
   cnfa_fname: z.string().max(50), // Prénom

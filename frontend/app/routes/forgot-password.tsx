@@ -15,7 +15,9 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   // Utiliser l'intégration directe pour la demande de réinitialisation
-  const result = await context.remixService.integration.forgotPasswordForRemix(email.toString());
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.forgotPasswordForRemix?.(email.toString());
 
   if (result.success) {
     return redirect("/forgot-password?status=sent");

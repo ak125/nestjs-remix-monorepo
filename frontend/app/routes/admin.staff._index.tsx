@@ -9,7 +9,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 import { requireUser } from "~/server/auth.server";
-import { getRemixIntegrationService } from "~/server/remix-integration.server";
+import { getRemixApiService } from "~/server/remix-api.server";
 
 // Types pour la gestion du staff
 interface LegacyAdminStaff {
@@ -32,7 +32,7 @@ interface StaffStats {
   byLevel: Record<string, number>;
 }
 
-interface StaffData {
+interface _StaffData {
   staff: LegacyAdminStaff[];
   stats: StaffStats;
   pagination: {
@@ -62,7 +62,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const level = url.searchParams.get('level') ? parseInt(url.searchParams.get('level')!) : undefined;
 
   try {
-    const remixService = await getRemixIntegrationService(context);
+    const remixService = await getRemixApiService(context);
     const usersResult = await remixService.getUsersForRemix({
       page,
       limit: 10,
@@ -105,7 +105,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats,
       pagination: {
         page,
-        totalPages: usersResult.totalPages,
+        totalPages: (usersResult.pagination?.totalPages ?? usersResult.totalPages ?? 1),
         totalItems: usersResult.total,
       },
       fallbackMode: false,
@@ -124,10 +124,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         inactive: 0,
         byLevel: {},
       },
-      pagination: { page: 1, totalPages: 1, totalItems: 0 },
+  pagination: { page: 1, totalPages: 1, totalItems: 0 },
       error: 'Erreur lors du chargement du staff',
       fallbackMode: true,
-      timestamp: new Date().toISOString(),
     });
   }
 }
@@ -136,7 +135,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export default function AdminStaff() {
   const data = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [selectedStaff, setSelectedStaff] = useState<LegacyAdminStaff | null>(null);
+  const [_selectedStaff, _setSelectedStaff] = useState<LegacyAdminStaff | null>(null);
   
   const isLoading = navigation.state === "loading";
 
@@ -431,7 +430,7 @@ export default function AdminStaff() {
                           Éditer
                         </Link>
                         <button
-                          onClick={() => setSelectedStaff(staff)}
+                          onClick={() => _setSelectedStaff(staff)}
                           className={`${
                             staff.cnfa_activ === '1'
                               ? 'text-red-600 hover:text-red-900' 
@@ -524,7 +523,7 @@ export default function AdminStaff() {
 
       {/* Informations de mise à jour */}
       <div className="mt-6 text-sm text-gray-500 text-center">
-        Dernière mise à jour: {formatDate(data.timestamp)}
+  Dernière mise à jour: {data && (data as any).timestamp ? formatDate((data as any).timestamp) : '-'}
       </div>
     </div>
   );

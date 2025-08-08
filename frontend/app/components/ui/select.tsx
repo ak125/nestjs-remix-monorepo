@@ -37,5 +37,7 @@ function SelectItem({ children, ...props }: SelectItemProps) {
 
 export { Select, SelectItem };
 export const SelectContent = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-export const SelectTrigger = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+export const SelectTrigger = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={className}>{children}</div>
+);
 export const SelectValue = ({ placeholder }: { placeholder?: string }) => <>{placeholder}</>;

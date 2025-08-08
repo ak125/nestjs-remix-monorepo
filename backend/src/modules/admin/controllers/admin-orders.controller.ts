@@ -23,7 +23,7 @@ import { OrdersService } from '../../orders/orders.service';
 import { OrdersCompleteService } from '../../orders/orders-complete.service';
 import { LocalAuthGuard } from '../../../auth/local-auth.guard';
 
-@Controller('admin/orders')
+@Controller('api/admin/orders')
 @UseGuards(LocalAuthGuard)
 export class AdminOrdersController {
   private readonly logger = new Logger(AdminOrdersController.name);
@@ -180,7 +180,8 @@ export class AdminOrdersController {
   async getOrdersByCustomer(@Param('customerId') customerId: string) {
     try {
       this.logger.log(`Requête commandes client: ${customerId}`);
-      const orders = await this.ordersService.findOrdersByCustomerId(customerId);
+      const orders =
+        await this.ordersService.findOrdersByCustomerId(customerId);
 
       return {
         success: true,

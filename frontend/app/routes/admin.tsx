@@ -5,7 +5,8 @@
 
 import { type LoaderFunctionArgs, type MetaFunction, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import AdminSidebar from "~/components/AdminSidebar";
+import { AdminSidebar } from "~/components/AdminSidebar";
+import { getOptionalUser } from "~/server/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,34 +15,12 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    // Récupérer l'utilisateur depuis la session
-    const response = await fetch('http://localhost:3000/auth/me', {
-      headers: {
-        'Cookie': request.headers.get('Cookie') || '',
-      },
-    });
-
-    if (!response.ok) {
-      // Si pas d'utilisateur connecté, rediriger vers login
-      throw redirect('/login');
-    }
-
-    const userData = await response.json();
-    const user = userData.user;
-
-    // Vérifier si l'utilisateur a les droits admin (level >= 5)
-    if (!user || !user.level || user.level < 5) {
-      throw redirect('/unauthorized');
-    }
-
-    return { user };
-  } catch (error) {
-    console.error('Erreur lors de la récupération de l\'utilisateur admin:', error);
-    throw redirect('/login');
-  }
-};
+export async function loader({ context }: LoaderFunctionArgs) {
+  const user = await getOptionalUser({ context });
+  if (!user) throw redirect('/login');
+  if (!user.level || user.level < 5) throw redirect('/unauthorized');
+  return { user };
+}
 
 export default function AdminLayout() {
   const { user } = useLoaderData<typeof loader>();

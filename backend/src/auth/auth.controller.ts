@@ -3,7 +3,6 @@ import {
   Get,
   Next,
   Post,
-  Redirect,
   Req,
   Res,
   UseGuards,
@@ -13,6 +12,22 @@ import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller()
 export class AuthController {
+  /**
+   * GET /auth/login
+   * Redirige vers la page de login Remix (/login) en conservant la query string
+   */
+  @Get('auth/login')
+  redirectAuthLogin(
+    @Req() request: Express.Request,
+    @Res() response: Response,
+  ) {
+    // Conserver les paramètres de requête (error, message, email, ...)
+    const originalUrl = (request as any).originalUrl || '/auth/login';
+    const queryIndex = originalUrl.indexOf('?');
+    const query = queryIndex >= 0 ? originalUrl.slice(queryIndex) : '';
+    const target = `/login${query}`;
+    return response.redirect(target);
+  }
   /**
    * GET /auth/me
    * Récupérer l'utilisateur connecté
@@ -39,20 +54,22 @@ export class AuthController {
   login(@Req() request: Express.Request, @Res() response: Response) {
     console.log('--- POST /authenticate - Redirection conditionnelle ---');
     console.log('User connecté:', request.user);
-    
+
     if (!request.user) {
       console.log('Aucun utilisateur, redirection vers /');
       return response.redirect('/');
     }
-    
+
     const user = request.user as any;
-    
+
     // Convertir le niveau en nombre pour la comparaison
     const userLevel = parseInt(user.level) || 0;
-    
+
     // Redirection selon le type et niveau d'utilisateur
     if (user.isAdmin && userLevel >= 7) {
-      console.log(`Admin niveau ${userLevel} détecté, redirection vers dashboard admin simple`);
+      console.log(
+        `Admin niveau ${userLevel} détecté, redirection vers dashboard admin simple`,
+      );
       return response.redirect('/admin/simple');
     } else if (user.isAdmin && userLevel >= 4) {
       console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);

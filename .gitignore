@@ -58,3 +58,10 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 out/
+
+# Redis snapshots (ne jamais versionner)
+dump.rdb
+cache/dump.rdb
+
+# Vite timestamped config artifacts (ne jamais versionner)
+frontend/vite.config.ts.timestamp-*

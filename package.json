@@ -26,6 +26,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -34,6 +35,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@nestjs/platform-express": "^11.1.5",
     "@nestjs/swagger": "^11.2.0",
     "@remix-run/dev": "^2.15.0",
     "@remix-run/express": "^2.15.0",

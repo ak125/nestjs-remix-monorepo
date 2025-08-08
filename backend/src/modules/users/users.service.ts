@@ -12,7 +12,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { SupabaseRestService } from '../../database/supabase-rest.service';
+import { SupabaseServiceFacade } from '../../database/supabase-service-facade';
 import { CacheService } from '../../cache/cache.service';
 import {
   RegisterDto,
@@ -37,7 +37,7 @@ import { UserProfileDto } from './dto/user-profile.dto';
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly supabaseService: SupabaseRestService,
+    private readonly supabaseService: SupabaseServiceFacade,
     private readonly cacheService: CacheService,
   ) {}
 

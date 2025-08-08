@@ -9,7 +9,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { requireUser } from "~/server/auth.server";
-import { getRemixIntegrationService } from "~/server/remix-integration.server";
+import { getRemixApiService } from "~/server/remix-api.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });
@@ -23,10 +23,10 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   try {
     console.log('📊 Chargement des rapports via Context7...');
     
-    const remixService = await getRemixIntegrationService(context);
+    const remixService = await getRemixApiService(context);
     
     // Récupérer les statistiques pour générer les rapports
-    const ordersResult = await remixService.getOrdersForRemix({ page: 1, limit: 10 });
+  const ordersResult: any = await remixService.getOrdersForRemix({ page: 1, limit: 10 });
     
     // Génération des rapports basée sur les vraies données
     const reports = [
@@ -39,18 +39,18 @@ export const loader: LoaderFunction = async ({ request, context }) => {
         generated: "2025-01-21",
         size: "2.3 MB",
         format: "PDF",
-        dataCount: ordersResult.success ? ordersResult.orders?.length || 0 : 0
+  dataCount: ordersResult?.success ? ordersResult?.orders?.length || 0 : 0
       },
       { 
         id: 2, 
         name: "Analyse Commandes", 
         type: "orders", 
         period: "Décembre 2024", 
-        status: ordersResult.success ? "ready" : "generating", 
-        generated: ordersResult.success ? "2025-01-21" : "En cours...",
-        size: ordersResult.success ? "1.8 MB" : "~1.8 MB",
+  status: ordersResult?.success ? "ready" : "generating",
+  generated: ordersResult?.success ? "2025-01-21" : "En cours...",
+  size: ordersResult?.success ? "1.8 MB" : "~1.8 MB",
         format: "Excel",
-        dataCount: ordersResult.success ? ordersResult.total || 0 : 0
+  dataCount: ordersResult?.success ? ordersResult?.total || 0 : 0
       },
       { 
         id: 3, 
@@ -87,8 +87,8 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       reports, 
       analytics,
       context7: {
-        servicesAvailable: ordersResult.success,
-        fallbackMode: !ordersResult.success
+  servicesAvailable: !!ordersResult?.success,
+  fallbackMode: !ordersResult?.success
       }
     });
   } catch (error) {

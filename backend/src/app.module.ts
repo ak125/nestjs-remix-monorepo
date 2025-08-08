@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { RemixController } from './remix/remix.controller';
 import { AuthController } from './auth/auth.controller';
@@ -18,6 +20,17 @@ import { MessagesModule } from './modules/messages/messages.module';
       envFilePath: '.env',
       expandVariables: true,
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60, // default, secondes
+        limit: 100,
+      },
+      {
+        name: 'admin',
+        ttl: 60,
+        limit: 6,
+      },
+    ]),
     DatabaseModule,
     AuthModule,
     RemixModule,
@@ -28,6 +41,9 @@ import { MessagesModule } from './modules/messages/messages.module';
     MessagesModule,
   ],
   controllers: [AuthController, RemixController], // RemixController en dernier pour catch-all
-  providers: [],
+  providers: [
+    // Activer le ThrottlerGuard globalement (peut être surchargé localement)
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

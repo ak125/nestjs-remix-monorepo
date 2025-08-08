@@ -53,7 +53,9 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     const userId = url.searchParams.get('userId') || 'anonymous';
 
     // ✅ APPROCHE OPTIMISÉE : Intégration directe via RemixIntegrationService
-    const result = await context.remixService.integration.getCartForRemix(userId);
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.getCartForRemix?.(userId);
 
     if (!result.success) {
       return json<LoaderData>({
@@ -92,7 +94,9 @@ export async function action({ context, request }: ActionFunctionArgs) {
         const quantity = Number(formData.get('quantity'));
 
         // ✅ APPROCHE OPTIMISÉE : Intégration directe
-        const result = await context.remixService.integration.addToCartForRemix({
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.addToCartForRemix?.({
           productId,
           quantity,
           userId
@@ -106,7 +110,9 @@ export async function action({ context, request }: ActionFunctionArgs) {
         const quantity = Number(formData.get('quantity'));
 
         // ✅ APPROCHE OPTIMISÉE : Intégration directe
-        const result = await context.remixService.integration.updateCartItemForRemix({
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.updateCartItemForRemix?.({
           itemId,
           quantity,
           userId
@@ -119,7 +125,9 @@ export async function action({ context, request }: ActionFunctionArgs) {
         const itemId = Number(formData.get('item_id'));
 
         // ✅ APPROCHE OPTIMISÉE : Intégration directe
-        const result = await context.remixService.integration.removeCartItemForRemix({
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.removeCartItemForRemix?.({
           itemId,
           userId
         });
@@ -129,7 +137,9 @@ export async function action({ context, request }: ActionFunctionArgs) {
 
       case 'clear': {
         // ✅ APPROCHE OPTIMISÉE : Intégration directe
-        const result = await context.remixService.integration.clearCartForRemix(userId);
+  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
+  const integration: any = await getRemixIntegrationService(context);
+  const result = await integration.clearCartForRemix?.(userId);
 
         return json<ActionData>(result);
       }

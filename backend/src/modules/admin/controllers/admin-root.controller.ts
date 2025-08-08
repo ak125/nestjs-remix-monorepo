@@ -5,13 +5,7 @@
  * Fournit l'index des fonctionnalités administratives
  */
 
-import {
-  Controller,
-  Get,
-  UseGuards,
-  Logger,
-  Redirect,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards, Logger, Redirect } from '@nestjs/common';
 import { LocalAuthGuard } from '../../../auth/local-auth.guard';
 
 @Controller('admin')
@@ -26,7 +20,9 @@ export class AdminRootController {
   @Get()
   @Redirect('/admin/dashboard', 302)
   async getAdminRoot() {
-    this.logger.log('Accès à la route racine admin - redirection vers dashboard');
+    this.logger.log(
+      'Accès à la route racine admin - redirection vers dashboard',
+    );
     return;
   }
 
@@ -42,29 +38,29 @@ export class AdminRootController {
       return {
         success: true,
         data: {
-          title: "Administration",
+          title: 'Administration',
           sections: [
             {
-              name: "Dashboard",
-              path: "/admin/dashboard",
-              description: "Statistiques et métriques générales"
+              name: 'Dashboard',
+              path: '/admin/dashboard',
+              description: 'Statistiques et métriques générales',
             },
             {
-              name: "Commandes",
-              path: "/admin/orders",
-              description: "Gestion des commandes clients"
+              name: 'Commandes',
+              path: '/admin/orders',
+              description: 'Gestion des commandes clients',
             },
             {
-              name: "Staff",
-              path: "/admin/staff",
-              description: "Administration du personnel"
+              name: 'Staff',
+              path: '/admin/staff',
+              description: 'Administration du personnel',
             },
             {
-              name: "Fournisseurs",
-              path: "/admin/suppliers",
-              description: "Gestion des fournisseurs"
-            }
-          ]
+              name: 'Fournisseurs',
+              path: '/admin/suppliers',
+              description: 'Gestion des fournisseurs',
+            },
+          ],
         },
         timestamp: new Date().toISOString(),
       };

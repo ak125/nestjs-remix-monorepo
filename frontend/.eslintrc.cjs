@@ -6,7 +6,6 @@ module.exports = {
 		'@remix-run/eslint-config',
 		'@remix-run/eslint-config/node',
 		// 'plugin:tailwindcss/recommended',
-		'plugin:remix-react-routes/recommended',
 	],
 	settings: {
 		// tailwindcss: {
@@ -16,7 +15,20 @@ module.exports = {
 			node: {
 				extensions: ['.js', '.jsx', '.ts', '.tsx'],
 			},
+			typescript: {
+				project: ['./tsconfig.json'],
+			},
 		},
+	},
+
+		rules: {
+			'@typescript-eslint/no-unused-vars': ['warn', {
+				argsIgnorePattern: '^_|^(?:request|context|index)$',
+				varsIgnorePattern: '^_',
+				caughtErrorsIgnorePattern: '^_',
+			}],
+		'import/order': 'warn',
+		'jsx-a11y/anchor-has-content': 'off',
 	},
 
 	overrides: [

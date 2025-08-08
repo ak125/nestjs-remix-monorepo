@@ -1,6 +1,5 @@
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
-import { RequestMethod } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -9,6 +8,7 @@ import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
 import { HttpExceptionFilter } from './auth/exception.filter';
+import cors from 'cors';
 
 const redisStoreFactory = RedisStore(session);
 
@@ -18,14 +18,19 @@ async function bootstrap() {
       bodyParser: false,
     });
 
-    // Suppression temporaire du préfixe global pour éviter les conflits
-    // app.setGlobalPrefix('api', { exclude: [...] });
+    // Les contrôleurs définissent déjà leurs préfixes individuellement
+    // (ex: @Controller('api/users'), @Controller('admin/suppliers'))
+    // Pas besoin de préfixe global qui casserait les routes existantes
 
     // Cast pour éviter les conflits de types entre les dépendances
     const expressApp = app as any;
+    const isProd = process.env.NODE_ENV === 'production';
 
-    await startDevServer(expressApp);
-    console.log('Serveur de développement démarré.');
+    // Démarrage du serveur Remix uniquement en dev
+    if (!isProd) {
+      await startDevServer(expressApp);
+      console.log('Serveur de développement démarré.');
+    }
 
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     const redisClient = new Redis(redisUrl);
@@ -38,6 +43,11 @@ async function bootstrap() {
       ttl: 86400 * 30,
     });
 
+    // Sécurité de session et cookies selon l'environnement
+    if (isProd && !process.env.SESSION_SECRET) {
+      throw new Error('SESSION_SECRET requis en production');
+    }
+
     app.use(
       session({
         store: redisStore,
@@ -46,8 +56,8 @@ async function bootstrap() {
         secret: process.env.SESSION_SECRET || '123',
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30,
-          sameSite: 'lax',
-          secure: false,
+          sameSite: isProd ? 'strict' : 'lax',
+          secure: isProd,
         },
       }),
     );
@@ -71,7 +81,27 @@ async function bootstrap() {
 
     console.log('Passport initialisé.');
 
+    // Sécurité HTTP
     expressApp.set('trust proxy', 1);
+    try {
+      // Import dynamique pour éviter d alourdir le build si non nécessaire
+      const helmet = (await import('helmet')).default;
+      const compression = (await import('compression')).default;
+      app.use(helmet());
+      app.use(compression());
+    } catch (e) {
+      console.warn('Helmet/compression non chargés:', e);
+    }
+
+    // CORS basique (à restreindre si cross-origin)
+    const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());
+    app.use(
+      cors({
+        origin: corsOrigin && corsOrigin.length > 0 ? corsOrigin : true,
+        credentials: true,
+      }),
+    );
+    expressApp.disable('x-powered-by');
 
     const selectedPort = process.env.PORT || 3000;
     console.log(`Démarrage du serveur sur le port ${selectedPort}...`);

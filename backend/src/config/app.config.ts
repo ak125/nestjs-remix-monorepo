@@ -22,7 +22,8 @@ export function createAppConfig(): AppConfig {
   // Priorité Context7 : variables d'environnement direct d'abord
   const config: AppConfig = {
     supabase: {
-      url: process.env.SUPABASE_URL || 'https://rwmlhfjqdlmggpvhytqf.supabase.co',
+      url:
+        process.env.SUPABASE_URL || 'https://rwmlhfjqdlmggpvhytqf.supabase.co',
       serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     },
     redis: {

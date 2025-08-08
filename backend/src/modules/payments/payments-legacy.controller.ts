@@ -4,10 +4,11 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Logger,
   NotFoundException,
   BadRequestException,
-  // Query, HttpStatus - temporairement non utilisés
+  // HttpStatus - temporairement non utilisé
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -24,6 +25,9 @@ import {
 } from './dto/payment-request.dto';
 import { PaymentCallbackDto } from './dto/payment-callback.dto';
 import { PaymentService } from './services/payments-legacy.service';
+import { UseGuards } from '@nestjs/common';
+import { LocalAuthGuard } from '../../auth/local-auth.guard';
+import { IsAdminGuard } from '../../auth/is-admin.guard';
 
 @ApiTags('Paiements Legacy')
 @Controller('api/payments')
@@ -32,90 +36,29 @@ export class PaymentsLegacyController {
 
   constructor(private readonly paymentService: PaymentService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Créer un nouveau paiement dans ___xtr_order' })
-  @ApiBody({ type: CreateLegacyPaymentDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Paiement créé avec succès',
-    type: LegacyPaymentResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Données invalides' })
-  async createPayment(
-    @Body() createPaymentDto: CreateLegacyPaymentDto,
-  ): Promise<LegacyPaymentResponseDto> {
-    const payment = await this.paymentService.createPayment(createPaymentDto);
-    return LegacyPaymentResponseDto.fromSupabaseOrder(payment);
-  }
-
-  @Post(':orderId/initiate')
-  @ApiOperation({ summary: 'Initier un paiement pour une commande existante' })
-  @ApiParam({
-    name: 'orderId',
-    description: 'ID de la commande (___xtr_order.ord_id)',
-  })
-  @ApiBody({ type: InitiateLegacyPaymentDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Paiement initié avec succès',
-    type: LegacyPaymentResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Données invalides' })
-  @ApiResponse({ status: 404, description: 'Commande non trouvée' })
-  async initiatePayment(
-    @Param('orderId') orderId: string,
-    @Body() initiatePaymentDto: InitiateLegacyPaymentDto,
-  ): Promise<LegacyPaymentResponseDto> {
-    return this.paymentService.initiatePayment(orderId, initiatePaymentDto);
-  }
-
-  @Get(':orderId/status')
-  @ApiOperation({ summary: "Obtenir le statut d'un paiement/commande" })
-  @ApiParam({
-    name: 'orderId',
-    description: 'ID de la commande (___xtr_order.ord_id)',
-  })
+  @Get()
+  @ApiOperation({ summary: 'Obtenir la liste des paiements avec pagination' })
   @ApiResponse({
     status: 200,
-    description: 'Statut du paiement',
-    type: LegacyPaymentResponseDto,
+    description: 'Liste des paiements avec données client enrichies',
   })
-  @ApiResponse({ status: 404, description: 'Commande non trouvée' })
-  async getPaymentStatus(
-    @Param('orderId') orderId: string,
-  ): Promise<LegacyPaymentResponseDto> {
-    const payment = await this.paymentService.getPaymentStatus(orderId);
-    if (!payment) {
-      throw new NotFoundException(`Commande non trouvée: ${orderId}`);
-    }
-    return payment;
-  }
+  async getPayments(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('status') status?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ): Promise<any> {
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 10;
 
-  @Post('callback/:gateway')
-  @ApiOperation({
-    summary: 'Recevoir un callback de paiement depuis une gateway',
-  })
-  @ApiParam({
-    name: 'gateway',
-    description: 'Nom de la gateway (stripe, paypal, cyberplus)',
-  })
-  @ApiBody({ type: PaymentCallbackDto })
-  @ApiResponse({ status: 200, description: 'Callback traité avec succès' })
-  @ApiResponse({ status: 400, description: 'Callback invalide' })
-  async handlePaymentCallback(
-    @Param('gateway') gateway: string,
-    @Body() callbackData: PaymentCallbackDto,
-  ): Promise<{ status: string; message: string }> {
-    try {
-      await this.paymentService.handlePaymentCallback(gateway, callbackData);
-      return {
-        status: 'success',
-        message: `Callback ${gateway} traité avec succès`,
-      };
-    } catch (error) {
-      this.logger.error(`Erreur callback ${gateway}:`, error);
-      throw new BadRequestException('Erreur lors du traitement du callback');
-    }
+    return this.paymentService.getPaymentsWithCustomers({
+      page: pageNum,
+      limit: limitNum,
+      status,
+      from,
+      to,
+    });
   }
 
   @Get('stats')
@@ -127,42 +70,56 @@ export class PaymentsLegacyController {
     return this.paymentService.getPaymentStats();
   }
 
-  @Get(':orderId/callbacks')
+  @Get('test-real-table')
   @ApiOperation({
-    summary: "Obtenir l'historique des callbacks pour une commande",
+    summary: "TEST: Vérifier l'accès à la vraie table de paiements ic_postback",
   })
-  @ApiParam({
-    name: 'orderId',
-    description: 'ID de la commande (___xtr_order.ord_id)',
+  @ApiResponse({ status: 200, description: "Résultat du test d'accès" })
+  async testRealPaymentsTable(): Promise<any> {
+    return this.paymentService.testRealPaymentsTable();
+  }
+
+  @Post('admin/cache/invalidate')
+  @ApiOperation({
+    summary:
+      "Admin: invalider le cache mémoire et Redis (paiements/commandes) d'un coup",
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Liste des callbacks depuis ic_postback',
-  })
-  async getPaymentCallbacks(@Param('orderId') orderId: string): Promise<any[]> {
-    return this.paymentService.getPaymentCallbacks(orderId);
+  @ApiResponse({ status: 200, description: 'Caches invalidés' })
+  @UseGuards(LocalAuthGuard, IsAdminGuard)
+  async invalidateCaches(): Promise<any> {
+    return this.paymentService.invalidateCaches();
+  }
+
+  // TODO: Réimplémenter les autres méthodes avec le nouveau service facade
+  /*
+  @Post()
+  async createPayment(@Body() createPaymentDto: CreateLegacyPaymentDto) {
+    throw new BadRequestException('Méthode temporairement désactivée');
+  }
+
+  @Post(':orderId/initiate')
+  async initiatePayment(@Param('orderId') orderId: string, @Body() initiatePaymentDto: InitiateLegacyPaymentDto) {
+    throw new BadRequestException('Méthode temporairement désactivée');
+  }
+
+  @Get(':orderId/status')
+  async getPaymentStatus(@Param('orderId') orderId: string) {
+    throw new BadRequestException('Méthode temporairement désactivée');
+  }
+
+  @Post('callback/:gateway')
+  async handlePaymentCallback(@Param('gateway') gateway: string, @Body() callbackData: PaymentCallbackDto) {
+    throw new BadRequestException('Méthode temporairement désactivée');
+  }
+
+  @Get(':orderId/callbacks')
+  async getPaymentCallbacks(@Param('orderId') orderId: string) {
+    throw new BadRequestException('Méthode temporairement désactivée');
   }
 
   @Get('transaction/:transactionId')
-  @ApiOperation({ summary: 'Rechercher un paiement par ID de transaction' })
-  @ApiParam({
-    name: 'transactionId',
-    description: 'ID de transaction stocké dans ord_info',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Paiement trouvé',
-    type: LegacyPaymentResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Transaction non trouvée' })
-  async getPaymentByTransactionId(
-    @Param('transactionId') transactionId: string,
-  ): Promise<LegacyPaymentResponseDto> {
-    const order =
-      await this.paymentService.getPaymentByTransactionId(transactionId);
-    if (!order) {
-      throw new NotFoundException(`Transaction non trouvée: ${transactionId}`);
-    }
-    return LegacyPaymentResponseDto.fromSupabaseOrder(order);
+  async getPaymentByTransactionId(@Param('transactionId') transactionId: string) {
+    throw new BadRequestException('Méthode temporairement désactivée');
   }
+  */
 }

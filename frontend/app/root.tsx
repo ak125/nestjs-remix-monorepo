@@ -3,6 +3,7 @@ import { type LinksFunction, type LoaderFunctionArgs, json } from "@remix-run/no
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
+import { NotificationContainer } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -13,7 +14,7 @@ export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
 ];
 
-export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+export const loader = async ({ context }: LoaderFunctionArgs) => {
   const user = await getOptionalUser({ context });
   return json({ 
     user
@@ -33,14 +34,15 @@ export const useOptionalUser = () => {
 
 declare module "@remix-run/node" {
   interface AppLoadContext {
-    remixService: RemixService; // Changed from 'any' to 'RemixService'
-    user: unknown
+    remixService: RemixService;
+    remixIntegration?: any; // injection côté Nest: RemixApiService
+    parsedBody?: any;
+    user: unknown;
   }
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData("root") as { user: any } | undefined;
-  const user = data?.user || null;
+  const _data = useRouteLoaderData("root") as { user: any } | undefined;
   
   return (
     <html lang="fr" className="h-full">
@@ -60,6 +62,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
            </main>
         </div>
         <Footer />
+        <NotificationContainer />
         <ScrollRestoration />
         <Scripts />
       </body>

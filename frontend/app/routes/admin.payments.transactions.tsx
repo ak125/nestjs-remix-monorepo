@@ -54,20 +54,22 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   const status = url.searchParams.get('status') || '';
 
   try {
-    // Utiliser l'intégration directe pour récupérer les transactions
-    const result = await context.remixService.integration.getPaymentsForRemix({
+    // Utiliser l'API Remix simplifiée (fallback HTTP si nécessaire)
+    const { getRemixApiService } = await import("~/server/remix-api.server");
+    const remixService: any = await getRemixApiService(context);
+    const result: any = await remixService.getPayments?.({
       page,
       limit: 20,
       search,
       status,
     });
 
-    if (!result.success) {
-      throw new Error(result.error || 'Erreur lors du chargement des transactions');
+    if (!result || result.success === false) {
+      throw new Error((result && result.error) || 'Erreur lors du chargement des transactions');
     }
 
     // Simuler des stats et transformer les données pour l'instant
-    const transformedTransactions = (result.payments || []).map((payment: any) => ({
+  const transformedTransactions = ((result && result.payments) || []).map((payment: any) => ({
       id: payment.id || payment.pmt_id || 'N/A',
       orderId: payment.orderId || payment.ord_id || 'N/A',
       customerEmail: payment.customerEmail || payment.customer?.email || 'N/A',
@@ -89,9 +91,9 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
     return json<LoaderData>({
       transactions: transformedTransactions,
-      total: result.total || 0,
+  total: (result && result.total) || 0,
       page,
-      totalPages: result.totalPages || 1,
+  totalPages: (result && result.totalPages) || 1,
       stats,
     });
   } catch (error) {
