@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
+import { CacheService } from '../../common/cache.service';
 
 export interface LegacyOrder {
   id: string;
@@ -25,6 +26,8 @@ export interface LegacyOrder {
 
 @Injectable()
 export class LegacyOrderService extends SupabaseBaseService {
+  private cacheService = new CacheService();
+
   constructor(configService?: ConfigService) {
     super(configService);
     this.logger.log('LegacyOrderService initialized');
@@ -242,14 +245,30 @@ export class LegacyOrderService extends SupabaseBaseService {
    * Compte le nombre total de commandes
    */
   async getTotalOrdersCount(): Promise<number> {
+    const cacheKey = 'total_orders_count';
+    
+    // Essayer d'abord le cache (TTL: 2 minutes)
+    const cached = this.cacheService.get<number>(cacheKey);
+    if (cached !== null) {
+      this.logger.debug('📊 Using cached total orders count:', cached);
+      return cached;
+    }
+
     try {
+      this.logger.debug('📊 Fetching total orders count from database');
+      
       const { count, error } = await this.supabase
         .from('___xtr_order')
         .select('*', { count: 'exact', head: true });
 
       if (error) throw error;
 
-      return count || 0;
+      const totalCount = count || 0;
+      
+      // Cache pour 2 minutes (les stats changent moins souvent)
+      this.cacheService.set(cacheKey, totalCount, 2 * 60 * 1000);
+      
+      return totalCount;
     } catch (error) {
       this.logger.error('Failed to count total orders:', error);
       throw error;
