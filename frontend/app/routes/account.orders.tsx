@@ -6,7 +6,7 @@ import { OrderSummaryWidget } from "../components/orders/OrderSummaryWidget";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { requireAuth } from "../lib/auth.server";
+import { requireAuth } from "../auth/unified.server";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
 

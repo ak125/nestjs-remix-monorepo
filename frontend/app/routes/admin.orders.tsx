@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // Utilisation de requireAdmin qui gère déjà les vérifications

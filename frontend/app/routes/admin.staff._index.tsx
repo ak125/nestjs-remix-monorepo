@@ -8,7 +8,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 import { getRemixApiService } from "../server/remix-api.server";
 
 // Types supprimés car inutilisés

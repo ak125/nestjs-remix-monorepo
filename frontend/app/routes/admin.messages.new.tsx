@@ -11,7 +11,7 @@ import {
   Mail,
   MessageSquare
 } from "lucide-react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 interface NewMessageData {
   customers: Array<{

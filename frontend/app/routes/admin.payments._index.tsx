@@ -1,5 +1,5 @@
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 /**
  * Route par défaut pour /admin/payments

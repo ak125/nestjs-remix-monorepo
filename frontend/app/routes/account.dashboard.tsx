@@ -15,7 +15,7 @@ import {
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireAuth } from "../lib/auth.server";
+import { requireAuth } from "../auth/unified.server";
 import { cn } from "../lib/utils";
 
 type User = {

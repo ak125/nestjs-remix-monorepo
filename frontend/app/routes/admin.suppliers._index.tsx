@@ -9,7 +9,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {
   return [

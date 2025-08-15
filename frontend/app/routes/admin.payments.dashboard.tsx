@@ -12,7 +12,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useState } from "react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 import { getAdminPayments, getPaymentStats } from "../services/payment-admin.server";
 import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment";
 

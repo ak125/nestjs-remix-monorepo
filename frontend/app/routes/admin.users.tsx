@@ -8,7 +8,7 @@ import { Users, UserPlus, Search, Filter, ChevronLeft, ChevronRight } from "luci
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { requireAdmin } from "~/server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {
   return [

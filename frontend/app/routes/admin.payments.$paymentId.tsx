@@ -15,7 +15,7 @@ import {
   Download
 } from "lucide-react";
 import { useState } from "react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 import { getPaymentById, processRefund } from "../services/payment-admin.server";
 import { type Payment, PaymentStatus } from "../types/payment";
 
