@@ -1,54 +1,68 @@
 /**
- * 📋 MODULE ADMIN - NestJS-Remix Monorepo
+ * AdminModule - Module d'administration
  *
- * Module d'administration complet pour la gestion back-office
- * Basé sur la fiche technique: admin_FICHE_TECHNIQUE.md
+ * Module aligné sur l'approche des modules orders, cart, user, payment :
+ * - Structure modulaire claire avec séparation des responsabilités
+ * - Controllers spécialisés par domaine fonctionnel
+ * - Services métier spécialisés et réutilisables
+ * - Imports cohérents (DatabaseModule, CacheModule)
+ * - Exports sélectifs des services pour réutilisation
  *
- * Migration des fonctionnalités PHP:
- * ✅ Gestion des stocks (core/_commercial/stock.*)
- * ✅ Administration des utilisateurs staff (core/_staff/*)
- * ✅ Configuration système (___CONFIG_ADMIN)
- * ✅ Outils de maintenance et monitoring
- *
- * Architecture: NestJS + Zod + Supabase
- * Phase de migration: Phase 2 - Criticité HAUTE
+ * Phase 1 : Configuration de base ✅
+ * Phase 2 : Stock Management 🚧
+ * Phase 3 : Orders Administration
+ * Phase 4 : Reporting & Analytics
  */
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
-import { OrdersModule } from '../orders/orders.module';
 
 // Controllers
-import { AdminDashboardController } from './controllers/admin-dashboard.controller';
-import { AdminSuppliersController } from './controllers/admin-suppliers.controller';
-// import { AdminStaffController } from './controllers/admin-staff.controller';
+import { ConfigurationController } from './controllers/configuration.controller';
+import { StockController } from './controllers/stock.controller';
 import { AdminOrdersController } from './controllers/admin-orders.controller';
+import { AdminController } from './controllers/admin.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
+import { ReportingController } from './controllers/reporting.controller';
+import { UserManagementController } from './controllers/user-management.controller';
+import { AdminStaffController } from './controllers/admin-staff.controller';
 
 // Services
-import { AdminDashboardService } from './services/admin-dashboard.service';
-import { AdminSuppliersService } from './services/admin-suppliers.service';
-// import { AdminStaffService } from './services/admin-staff.service';
+import { ConfigurationService } from './services/configuration.service';
+import { StockManagementService } from './services/stock-management.service';
+import { ReportingService } from './services/reporting.service';
+import { UserManagementService } from './services/user-management.service';
+import { StaffService } from '../staff/staff.service';
+
+// Import du module Orders pour les services
+import { OrdersModule } from '../orders/orders.module';
+import { StaffModule } from '../staff/staff.module';
 
 @Module({
-  imports: [
-    DatabaseModule, // Pour SupabaseServiceFacade
-    CacheModule, // Cache Redis pour les stats du dashboard
-    OrdersModule, // Import du module Orders pour accéder à ses services
-  ],
+  imports: [DatabaseModule, CacheModule, OrdersModule, StaffModule],
   controllers: [
-    AdminRootController,
-    AdminDashboardController,
-    AdminSuppliersController,
-    // AdminStaffController, // Temporairement désactivé
+    ConfigurationController,
+    StockController,
     AdminOrdersController,
+    AdminController,
+    AdminRootController,
+    ReportingController,
+    UserManagementController,
+    AdminStaffController,
   ],
   providers: [
-    AdminDashboardService,
-    AdminSuppliersService,
-    // AdminStaffService, // Temporairement désactivé
+    ConfigurationService,
+    StockManagementService,
+    ReportingService,
+    UserManagementService,
+    StaffService,
   ],
-  exports: [AdminDashboardService],
+  exports: [
+    ConfigurationService,
+    StockManagementService,
+    ReportingService,
+    UserManagementService,
+  ],
 })
 export class AdminModule {}

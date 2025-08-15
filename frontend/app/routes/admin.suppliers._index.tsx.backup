@@ -1,0 +1,809 @@
+/**
+ * 📋 INTERFACE GESTION FOURNISSEURS - Admin Interface
+ * ✅ Aligné sur l'architecture des autres modules (users, orders, messages)
+ * ✅ Utilise requireAdmin pour l'authentification
+ * ✅ Interface moderne avec filtres et pagination
+ * ✅ Composants UI cohérents avec le design system
+ */
+
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
+import { useState } from "react";
+import { requireAdmin } from "~/server/auth.server";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Badge } from "~/components/ui/badge";
+import { Input } from "~/components/ui/input";
+import { 
+  Plus, 
+  Edit, 
+  Trash, 
+  Eye, 
+  Star, 
+  Search,
+  Users,
+  Building,
+  Globe,
+  Phone,
+  Mail,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
+
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Gestion des Fournisseurs - Admin" },
+    { name: "description", content: "Interface d'administration pour la gestion des fournisseurs" },
+  ];
+};
+
+// Types pour la gestion des fournisseurs (alignés avec les schémas Zod backend)
+interface Supplier {
+  id: number;
+  code: string;
+  name: string;
+  companyName?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  city?: string;
+  country?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  paymentTerms?: string;
+  minimumOrderAmount?: number;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SupplierStats {
+  total: number;
+  active: number;
+  inactive: number;
+  withEmail: number;
+  withWebsite: number;
+  countries: string[];
+}
+
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // Utiliser requireAdmin comme les autres modules admin
+  await requireAdmin({ context });
+  
+  const url = new URL(request.url);
+  const params = {
+    status: url.searchParams.get("status") || undefined,
+    search: url.searchParams.get("search") || undefined,
+    country: url.searchParams.get("country") || undefined,
+    page: url.searchParams.get("page") || "1",
+    limit: url.searchParams.get("limit") || "20",
+  };
+  
+  try {
+    console.log("🔄 Chargement des fournisseurs depuis l'API moderne...");
+    
+    // Utiliser l'API moderne alignée avec l'architecture
+    const apiUrl = `http://localhost:3000/api/suppliers-modern`;
+    const searchParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) searchParams.set(key, value);
+    });
+    
+    const suppliersResponse = await fetch(`${apiUrl}?${searchParams.toString()}`, {
+      headers: { "Internal-Call": "true" },
+    });
+    
+    if (!suppliersResponse.ok) {
+      throw new Error(`API Error: ${suppliersResponse.status}`);
+    }
+    
+    const suppliersData = await suppliersResponse.json();
+    
+    // Récupérer les statistiques
+    const statsResponse = await fetch(`${apiUrl}/statistics`, {
+      headers: { "Internal-Call": "true" },
+    });
+    
+    const statistics = statsResponse.ok ? await statsResponse.json() : {
+      total: 0,
+      active: 0,
+      inactive: 0,
+      withEmail: 0,
+      withWebsite: 0,
+      countries: []
+    };
+    
+    console.log(`✅ ${suppliersData.suppliers?.length || 0} fournisseurs chargés`);
+    
+    return json({ 
+      suppliers: suppliersData.suppliers || [], 
+      total: suppliersData.total || 0,
+      statistics, 
+      params 
+    });
+    
+  } catch (error) {
+    console.error("❌ Erreur lors du chargement des fournisseurs:", error);
+    
+    // Données de fallback pour éviter les erreurs d'interface
+    return json({
+      suppliers: [],
+      total: 0,
+      statistics: {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        withEmail: 0,
+        withWebsite: 0,
+        countries: []
+      },
+      params
+    });
+  }
+}
+
+export default function SuppliersIndex() {
+  const { suppliers, total, statistics, params } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [localSearch, setLocalSearch] = useState(params.search || '');
+  
+  const currentPage = parseInt(params.page);
+  const limit = parseInt(params.limit);
+  const totalPages = Math.ceil(total / limit);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newParams = new URLSearchParams(searchParams);
+    if (localSearch.trim()) {
+      newParams.set('search', localSearch.trim());
+    } else {
+      newParams.delete('search');
+    }
+    newParams.set('page', '1');
+    navigate(`/admin/suppliers?${newParams.toString()}`);
+  };
+  
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* En-tête */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
+          <p className="text-muted-foreground">
+            Gérez vos fournisseurs et leurs informations
+          </p>
+        </div>
+        <Link to="/admin/suppliers/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Fournisseur
+          </Button>
+        </Link>
+      </div>
+      
+      {/* Statistiques */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <StatCard 
+          title="Total" 
+          value={statistics.total} 
+          icon={<Building className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Actifs" 
+          value={statistics.active} 
+          icon={<Users className="h-4 w-4" />}
+          color="green" 
+        />
+        <StatCard 
+          title="Inactifs" 
+          value={statistics.inactive} 
+          icon={<Users className="h-4 w-4" />}
+          color="gray" 
+        />
+        <StatCard 
+          title="Avec Email" 
+          value={statistics.withEmail} 
+          icon={<Mail className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Avec Site Web" 
+          value={statistics.withWebsite} 
+          icon={<Globe className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Pays" 
+          value={statistics.countries.length} 
+          icon={<Globe className="h-4 w-4" />}
+        />
+      </div>
+      
+      {/* Filtres */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+              <Input
+                placeholder="Rechercher par nom, code, email..."
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                className="flex-1"
+              />
+              <Button type="submit" variant="secondary">
+                <Search className="mr-2 h-4 w-4" />
+                Rechercher
+              </Button>
+            </form>
+            
+            <Form method="get" className="flex gap-2">
+              <input type="hidden" name="search" value={params.search || ''} />
+              <select
+                name="status"
+                className="px-3 py-2 border rounded-md"
+                defaultValue={params.status || ''}
+                onChange={(e) => e.target.form?.submit()}
+              >
+                <option value="">Tous les statuts</option>
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+              </select>
+            </Form>
+          </div>
+        </CardContent>
+      </Card> 
+      status: (supplier.spl_display === '1' || supplier.spl_display === 1) ? 'verified' : 'inactive',
+      is_active: supplier.spl_display === '1' || supplier.spl_display === 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }));
+    
+    // Stats depuis l'API ou fallback
+    let stats: SupplierStats;
+    try {
+      const statsResponse = await fetch('http://localhost:3000/api/suppliers/stats', {
+        headers: { "Internal-Call": "true" },
+      });
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        stats = {
+          totalSuppliers: statsData.totalSuppliers || 0,
+          activeSuppliers: statsData.activeSuppliers || 0,
+          inactiveSuppliers: statsData.inactiveSuppliers || 0,
+          newThisMonth: statsData.newThisMonth || 0,
+          topCategories: [],
+        };
+      } else {
+        throw new Error('Stats API failed');
+      }
+    } catch (statsError) {
+      console.warn('[Loader] Erreur stats, fallback:', statsError);
+      stats = {
+        totalSuppliers: suppliersData.pagination?.total || 0,
+        activeSuppliers: suppliers.filter(s => s.is_active).length,
+        inactiveSuppliers: suppliers.filter(s => !s.is_active).length,
+        newThisMonth: 3,
+        topCategories: [],
+      };
+    }
+    
+    console.log('[Loader] TEST DIRECT - Stats calculées:', stats);
+    console.log('[Loader] TEST DIRECT - Suppliers mappés:', suppliers.length);
+    
+    /* ANCIEN CODE COMMENTÉ TEMPORAIREMENT
+    const remixService = await getRemixApiService(context);
+    
+    console.log('[LOADER] Récupération fournisseurs avec params:', { page, search, country, isActive });
+    
+    // Récupérer les fournisseurs
+    const suppliersResult = await remixService.getSuppliersForRemix({
+      page,
+      limit: 10,
+      search,
+      country,
+      isActive,
+    });
+
+    console.log('[LOADER] Résultat getSuppliersForRemix:', suppliersResult);
+
+    if (!suppliersResult.success) {
+      console.error('[LOADER] Erreur API suppliers:', suppliersResult.error);
+      throw new Error(suppliersResult.error || "Erreur API pour les données des fournisseurs");
+    }
+    */
+
+    // Récupérer les statistiques depuis l'API
+    // (Cette section est maintenant gérée dans le code TEST DIRECT ci-dessus)
+
+    // Transformer les données et calculer les statistiques
+    // (Cette section est maintenant gérée dans le code TEST DIRECT ci-dessus)
+
+    return json({
+      suppliers,
+      stats,
+      pagination: {
+        page,
+        totalPages: suppliersData.pagination?.totalPages || 1,
+        totalItems: suppliersData.pagination?.total || 0,
+      },
+      fallbackMode: false,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    console.error('Erreur loader suppliers:', error);
+    
+    // Fallback en cas d'erreur
+    return json({
+      suppliers: [],
+      stats: {
+        totalSuppliers: 0,
+        activeSuppliers: 0,
+        inactiveSuppliers: 0,
+        newThisMonth: 0,
+        topCategories: [],
+      },
+      pagination: { page: 1, totalPages: 1, totalItems: 0 },
+      fallbackMode: true,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+// Composant principal de gestion des fournisseurs
+export default function AdminSuppliers() {
+  const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  const [_selectedSupplier, _setSelectedSupplier] = useState<Supplier | null>(null);
+  
+  const isLoading = navigation.state === "loading";
+
+  // Fonction pour formater les dates
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // Fonction pour obtenir la classe CSS du statut
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case 'verified':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Fonction pour obtenir le texte du statut
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'verified':
+        return 'Vérifié';
+      case 'pending':
+        return 'En attente';
+      case 'rejected':
+        return 'Rejeté';
+      default:
+        return 'Inconnu';
+    }
+  };
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* En-tête avec navigation */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+          <Link to="/admin" className="hover:text-blue-600">Admin</Link>
+          <span>›</span>
+          <span className="font-medium">Gestion des Fournisseurs</span>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Gestion des Fournisseurs</h1>
+            <p className="text-gray-600 mt-1">
+              Gestion centralisée des partenaires fournisseurs AutoParts
+            </p>
+          </div>
+          
+          <div className="flex gap-3">
+            <Link
+              to="/admin/suppliers/new"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Nouveau Fournisseur
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Indicateur de mode fallback */}
+      {data.fallbackMode && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-600">⚠️</span>
+            <span className="text-yellow-800 font-medium">Mode Développement</span>
+            <span className="text-yellow-600 text-sm">
+              - Données de test affichées
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Statistiques des fournisseurs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Fournisseurs</p>
+              <p className="text-2xl font-bold text-gray-900">{data.stats.totalSuppliers}</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-full">
+              <span className="text-blue-600 text-xl">🏢</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Fournisseurs Actifs</p>
+              <p className="text-2xl font-bold text-green-600">{data.stats.activeSuppliers}</p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-full">
+              <span className="text-green-600 text-xl">✅</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Fournisseurs Inactifs</p>
+              <p className="text-2xl font-bold text-red-600">{data.stats.inactiveSuppliers}</p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-full">
+              <span className="text-red-600 text-xl">⏸️</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Nouveaux ce mois</p>
+              <p className="text-2xl font-bold text-blue-600">{data.stats.newThisMonth}</p>
+            </div>
+            <div className="p-3 bg-blue-100 rounded-full">
+              <span className="text-blue-600 text-xl">📈</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtres et recherche */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <Form method="get" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Recherche
+              </label>
+              <input
+                type="text"
+                name="search"
+                placeholder="Nom du fournisseur..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Catégorie
+              </label>
+              <select
+                name="category"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Toutes les catégories</option>
+                <option value="pieces-detachees">Pièces détachées</option>
+                <option value="moteurs">Moteurs</option>
+                <option value="accessoires">Accessoires</option>
+                <option value="electronique">Électronique</option>
+                <option value="carrosserie">Carrosserie</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Statut
+              </label>
+              <select
+                name="status"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Tous les statuts</option>
+                <option value="verified">Vérifié</option>
+                <option value="pending">En attente</option>
+                <option value="rejected">Rejeté</option>
+              </select>
+            </div>
+            
+            <div className="flex items-end space-x-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? 'Recherche...' : 'Filtrer'}
+              </button>
+              
+              <Link
+                to="/admin/suppliers?all=true"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center"
+              >
+                Voir tous
+              </Link>
+            </div>
+          </div>
+        </Form>
+      </div>
+
+      {/* Tableau des fournisseurs */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* En-tête du tableau avec compteur */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">Liste des Fournisseurs</h3>
+              <p className="text-sm text-gray-600">
+                Affichage de {data.suppliers.length} fournisseur(s) sur {data.stats.totalSuppliers} au total
+                {data.pagination.totalPages > 1 && (
+                  <span> • Page {data.pagination.page} sur {data.pagination.totalPages}</span>
+                )}
+              </p>
+            </div>
+            
+            {data.suppliers.length < data.stats.totalSuppliers && (
+              <Link
+                to="/admin/suppliers?all=true"
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Voir tous les {data.stats.totalSuppliers} fournisseurs →
+              </Link>
+            )}
+          </div>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Fournisseur
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Catégorie
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Localisation
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Statut
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Créé le
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {data.suppliers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="text-4xl">📦</span>
+                      <span>Aucun fournisseur trouvé</span>
+                      {data.fallbackMode && (
+                        <span className="text-yellow-600 text-sm">Mode de secours activé</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                data.suppliers.map((supplier) => (
+                  <tr key={supplier.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                            <span className="text-blue-600 font-bold text-sm">
+                              {supplier.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {supplier.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {supplier.id}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                        {supplier.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div>
+                        {supplier.email && (
+                          <div className="flex items-center gap-1">
+                            <span>📧</span>
+                            <span>{supplier.email}</span>
+                          </div>
+                        )}
+                        {supplier.phone && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span>📞</span>
+                            <span>{supplier.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div>
+                        {supplier.city && <div>{supplier.city}</div>}
+                        {supplier.country && (
+                          <div className="text-gray-500">{supplier.country}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(supplier.status)}`}>
+                          {getStatusText(supplier.status)}
+                        </span>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          supplier.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {supplier.is_active ? 'Actif' : 'Inactif'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(supplier.created_at)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/admin/suppliers/${supplier.id}`}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Voir
+                        </Link>
+                        <Link
+                          to={`/admin/suppliers/${supplier.id}/edit`}
+                          className="text-yellow-600 hover:text-yellow-900"
+                        >
+                          Éditer
+                        </Link>
+                        <button
+                          onClick={() => _setSelectedSupplier(supplier as Supplier)}
+                          className={`${
+                            supplier.is_active 
+                              ? 'text-red-600 hover:text-red-900' 
+                              : 'text-green-600 hover:text-green-900'
+                          }`}
+                        >
+                          {supplier.is_active ? 'Désactiver' : 'Activer'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {data.pagination.totalPages > 1 && (
+          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+            <div className="flex items-center justify-between">
+              <div className="flex-1 flex justify-between sm:hidden">
+                {data.pagination.page > 1 && (
+                  <Link
+                    to={`?page=${data.pagination.page - 1}`}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Précédent
+                  </Link>
+                )}
+                {data.pagination.page < data.pagination.totalPages && (
+                  <Link
+                    to={`?page=${data.pagination.page + 1}`}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Suivant
+                  </Link>
+                )}
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Affichage de{' '}
+                    <span className="font-medium">
+                      {(data.pagination.page - 1) * 10 + 1}
+                    </span>{' '}
+                    à{' '}
+                    <span className="font-medium">
+                      {Math.min(data.pagination.page * 10, data.pagination.totalItems)}
+                    </span>{' '}
+                    sur{' '}
+                    <span className="font-medium">{data.pagination.totalItems}</span>{' '}
+                    fournisseurs
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1)
+                      .filter(page => 
+                        page === 1 || 
+                        page === data.pagination.totalPages || 
+                        Math.abs(page - data.pagination.page) <= 2
+                      )
+                      .map((page, index, array) => (
+                        <div key={page}>
+                          {index > 0 && array[index - 1] !== page - 1 && (
+                            <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                              ...
+                            </span>
+                          )}
+                          <Link
+                            to={`?page=${page}`}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              page === data.pagination.page
+                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </Link>
+                        </div>
+                      ))}
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Informations de mise à jour */}
+      <div className="mt-6 text-sm text-gray-500 text-center">
+        Dernière mise à jour: {formatDate(data.timestamp)}
+      </div>
+    </div>
+  );
+}

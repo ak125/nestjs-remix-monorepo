@@ -6,12 +6,61 @@ import {
   Req,
   Res,
   UseGuards,
+  Body,
 } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
+import { UsersService } from '../modules/users/users.service';
+import { AuthService } from './auth.service';
 
 @Controller()
 export class AuthController {
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+  ) {}
+
+  /**
+   * POST /auth/register
+   * Créer un nouveau compte utilisateur
+   */
+  @Post('auth/register')
+  async register(@Body() userData: any, @Req() request: Express.Request) {
+    try {
+      // Créer l'utilisateur via UsersService
+      await this.usersService.createUser(userData);
+
+      // Authentifier automatiquement l'utilisateur
+      const loginResult = await this.authService.login(
+        userData.email,
+        userData.password,
+        (request as any).ip,
+      );
+
+      return {
+        success: true,
+        message: 'Compte créé avec succès',
+        user: loginResult.user,
+        sessionToken: loginResult.access_token,
+      };
+    } catch (error: any) {
+      if (error.message?.includes('déjà utilisé')) {
+        return {
+          success: false,
+          message: 'Cet email est déjà utilisé',
+          status: 409,
+        };
+      }
+
+      return {
+        success: false,
+        message: 'Erreur lors de la création du compte',
+        status: 500,
+        debug:
+          process.env.NODE_ENV === 'development' ? error.message : undefined,
+      };
+    }
+  }
   /**
    * GET /auth/login
    * Redirige vers la page de login Remix (/login) en conservant la query string
@@ -68,9 +117,9 @@ export class AuthController {
     // Redirection selon le type et niveau d'utilisateur
     if (user.isAdmin && userLevel >= 7) {
       console.log(
-        `Admin niveau ${userLevel} détecté, redirection vers dashboard admin simple`,
+        `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
       );
-      return response.redirect('/admin/simple');
+      return response.redirect('/admin');
     } else if (user.isAdmin && userLevel >= 4) {
       console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);
       return response.redirect('/admin');
@@ -78,8 +127,8 @@ export class AuthController {
       console.log('Utilisateur pro détecté, redirection vers dashboard pro');
       return response.redirect('/pro/dashboard');
     } else {
-      console.log('Utilisateur standard, redirection vers mes commandes');
-      return response.redirect('/my-orders');
+      console.log('Utilisateur standard, redirection vers accueil');
+      return response.redirect('/');
     }
   }
 

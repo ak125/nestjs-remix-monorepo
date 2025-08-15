@@ -1,6 +1,7 @@
 /**
  * Page de détails d'une commande
- * Affiche toutes les informations d'une commande spécifique
+ * Affiche toutes les informa      result = await api.makeApiCall?.(`/api/legacy-orders/${orderId}`);
+      if (result && !result.success) {ons d'une commande spécifique
  */
 
 import { json, type LoaderFunction } from "@remix-run/node";
@@ -65,7 +66,7 @@ export const loader: LoaderFunction = async ({ params, context }) => {
     if (!result) {
       const { getRemixApiService } = await import("~/server/remix-api.server");
       const api: any = await getRemixApiService(context);
-      result = await api.makeApiCall?.(`/api/orders/${orderId}`);
+      result = await api.makeApiCall?.(`/api/legacy-orders/${orderId}`);
       if (result && !result.success) {
         result = { success: true, order: result };
       }

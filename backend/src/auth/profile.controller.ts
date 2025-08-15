@@ -38,8 +38,6 @@ export class ProfileController {
       // Récupérer les informations complètes de l'utilisateur
       const fullUser = await this.authService.checkIfUserExists({
         email: user.email,
-        withPassword: false,
-        password: '',
       });
 
       if (!fullUser || fullUser.error) {
@@ -141,7 +139,7 @@ export class ProfileController {
       if (result.success) {
         return res.redirect('/profile?password=success');
       } else {
-        return res.redirect(`/profile?error=${result.error}`);
+        return res.redirect(`/profile?error=${result.message || 'Erreur lors du changement de mot de passe'}`);
       }
     } catch (error) {
       console.error('Change password error:', error);

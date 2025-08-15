@@ -68,7 +68,7 @@ export function getDefaultRedirectUrl(user: User | null): string {
   if (isAdmin(user)) {
     return '/admin/orders';
   }
-  return '/my-orders';
+  return '/';
 }
 
 /**
@@ -83,7 +83,7 @@ export function getAuthorizedRoutes(user: User | null): string[] {
   
   const userRoutes = [
     ...baseRoutes,
-    '/my-orders',
+    '/account/orders',
     '/orders/new',
     '/profile',
     '/logout'
@@ -124,13 +124,13 @@ export function checkRoutePermission(
   // Routes admin
   if (route.startsWith('/admin/')) {
     if (!isAdmin(user)) {
-      return { allowed: false, redirectTo: '/my-orders' };
+      return { allowed: false, redirectTo: '/' };
     }
     return { allowed: true };
   }
   
   // Routes utilisateur
-  if (route.startsWith('/my-orders') || route.startsWith('/orders/new')) {
+  if (route.startsWith('/account/orders') || route.startsWith('/orders/new')) {
     return { allowed: true };
   }
   
@@ -139,7 +139,7 @@ export function checkRoutePermission(
     if (isAdmin(user)) {
       return { allowed: true, redirectTo: '/admin/orders' };
     } else {
-      return { allowed: true, redirectTo: '/my-orders' };
+      return { allowed: true, redirectTo: '/account/orders' };
     }
   }
   

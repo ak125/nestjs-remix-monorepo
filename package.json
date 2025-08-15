@@ -27,6 +27,7 @@
   ],
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "depcheck": "^1.4.7",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -42,7 +43,9 @@
     "@remix-run/node": "^2.15.0",
     "@remix-run/react": "^2.15.0",
     "@remix-run/serve": "^2.15.0",
+    "@supabase/supabase-js": "^2.55.0",
     "autoprefixer": "^10.4.14",
+    "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "nestjs-zod": "^4.3.1",
     "postcss": "^8.4.24",

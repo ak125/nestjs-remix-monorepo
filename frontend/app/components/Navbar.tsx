@@ -1,13 +1,10 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound, Package, ShoppingCart, Settings } from 'lucide-react';
-import { Badge } from "~/components/ui/badge";
-import { useOptionalUser } from "~/root";
+import { Bell, ReceiptEuro, UserRound, Package, Settings } from 'lucide-react';
+import { useOptionalUser } from "../root";
+import { CartIcon } from "./cart/CartIcon";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
-  
-  // TODO: Récupérer le nombre d'articles du panier depuis le contexte
-  const cartCount = 0; // Placeholder - à connecter avec le state du panier
   
   return (
     <nav className="px-3 py-2 bg-blue-600 text-white flex justify-between items-center" aria-label="Navigation principale">
@@ -37,22 +34,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
       <div className='flex gap-4 items-center'>
         {user && <span className="text-sm">{user.firstName} {user.lastName}</span>}
 
-        {/* Panier avec compteur */}
-        <Link 
-          to={user ? '/cart' : '/login?returnTo=/cart'} 
-          className="hover:text-blue-200 transition-colors relative"
-          aria-label="Panier"
-        >
-          <ShoppingCart className="flex-shrink-0" />
-          {cartCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
-            >
-              {cartCount}
-            </Badge>
-          )}
-        </Link>
+        {/* Panier avec compteur dynamique */}
+        <CartIcon />
 
         <Link 
           to='/orders' 
@@ -90,9 +73,9 @@ export const Navbar = ({ logo }: { logo: string }) => {
         )}
 
         <Link 
-          to={user ? '/profile' : '/login'} 
+          to={user ? '/account/dashboard' : '/login'} 
           className="hover:text-blue-200 transition-colors"
-          aria-label={user ? "Profil" : "Connexion"}
+          aria-label={user ? "Mon compte" : "Connexion"}
         >
           <UserRound className="flex-shrink-0" />
         </Link>

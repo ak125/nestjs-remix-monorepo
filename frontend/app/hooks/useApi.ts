@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import  { type z } from 'zod';
 import { useNotifications } from '~/components/notifications/NotificationContainer';
-import { useAdminStore } from '~/lib/stores/admin-store';
 
 interface ApiOptions {
   showLoading?: boolean;
@@ -24,7 +23,6 @@ export const useApi = <T extends z.ZodSchema>(
     isLoading: false,
   });
 
-  const setIsLoading = useAdminStore(state => state.setIsLoading);
   const { showError, showSuccess } = useNotifications();
 
   const makeRequest = useCallback(async (
@@ -35,7 +33,6 @@ export const useApi = <T extends z.ZodSchema>(
 
     try {
       if (showLoading) {
-        setIsLoading(true);
         setResponse(prev => ({ ...prev, isLoading: true, error: null }));
       }
 
@@ -95,10 +92,10 @@ export const useApi = <T extends z.ZodSchema>(
       throw error;
     } finally {
       if (showLoading) {
-        setIsLoading(false);
+        setResponse(prev => ({ ...prev, isLoading: false }));
       }
     }
-  }, [responseSchema, setIsLoading, showError, showSuccess]);
+  }, [responseSchema, showError, showSuccess]);
 
   const get = useCallback((url: string, options: ApiOptions = {}) => {
     return makeRequest(url, { ...options, method: 'GET' });

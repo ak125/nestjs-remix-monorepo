@@ -14,7 +14,7 @@ export default defineConfig({
 	},
 	build: {
 		cssMinify: MODE === 'production',
-		sourcemap: MODE !== 'production',
+		sourcemap: false, // Désactivé pour réduire la taille du bundle
 		commonjsOptions: {
 			include: [/frontend/, /backend/, /node_modules/],
 		},

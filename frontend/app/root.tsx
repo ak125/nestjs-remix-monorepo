@@ -1,9 +1,9 @@
 import { type RemixService } from "@fafa/backend";
-import { type LinksFunction, type LoaderFunctionArgs, json } from "@remix-run/node";
+import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
-import { NotificationContainer } from "./components/notifications/NotificationContainer";
+import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -12,6 +12,12 @@ import { getOptionalUser } from "./server/auth.server";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
+];
+
+export const meta: MetaFunction = () => [
+  { charset: "utf-8" },
+  { title: "E-Commerce Platform" },
+  { viewport: "width=device-width,initial-scale=1" },
 ];
 
 export const loader = async ({ context }: LoaderFunctionArgs) => {
@@ -42,7 +48,8 @@ declare module "@remix-run/node" {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const _data = useRouteLoaderData("root") as { user: any } | undefined;
+  const data = useRouteLoaderData("root") as { user: any } | undefined;
+  const user = data?.user;
   
   return (
     <html lang="fr" className="h-full">
@@ -53,16 +60,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full bg-gray-100">
-        <div className="min-h-screen flex flex-col">
-          <Navbar logo={logo} />
-          <main className="flex-grow flex flex-col">
-            <div className="flex-grow">
-              {children}
-            </div>
-           </main>
-        </div>
-        <Footer />
-        <NotificationContainer />
+        <NotificationProvider>
+          <div className="min-h-screen flex flex-col">
+            {/* Header avec informations utilisateur */}
+            {user && (
+              <div className="bg-white shadow-sm border-b">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between items-center h-12">
+                    <div className="text-sm text-gray-700">
+                      Bonjour {user.firstName || user.name} {user.lastName || ''}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {user.email}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <Navbar logo={logo} />
+            <main className="flex-grow flex flex-col">
+              <div className="flex-grow">
+                {children}
+              </div>
+             </main>
+          </div>
+          <Footer />
+          <NotificationContainer />
+        </NotificationProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

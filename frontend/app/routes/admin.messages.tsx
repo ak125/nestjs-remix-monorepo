@@ -21,7 +21,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
-import { requireUser } from "~/server/auth.server";
+import { requireAdmin } from "../server/auth.server";
 
 // Interfaces pour les messages
 interface Message {
@@ -63,7 +63,7 @@ interface MessageData {
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
-  const user = await requireUser({ context });
+  const user = await requireAdmin({ context });
   
   if (!user.level || user.level < 7) {
     throw new Response("Accès non autorisé", { status: 403 });
@@ -97,7 +97,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireUser({ context });
+  const user = await requireAdmin({ context });
   
   // Vérifier les permissions admin
   if (!user.level || user.level < 7) {

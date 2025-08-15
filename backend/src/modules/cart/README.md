@@ -1,53 +1,187 @@
-# Module Cart - API de Gestion du Panier avec Validation Zod
+# 🛒 Module Cart - Architecture Moderne
 
 ## 📋 Vue d'ensemble
 
-Le module Cart fournit une API complète pour la gestion du panier d'achats dans le monorepo NestJS/Remix. Il utilise **Zod** pour la validation robuste des données, Supabase comme service de base de données et s'interface avec la table PostgreSQL `cart_items`.
+Le module Cart a été complètement réarchitecturé pour suivre l'approche commune des modules Order, User et Payment, avec une architecture moderne basée sur NestJS et Supabase.
 
-## 🛡️ Validation avec Zod
+## 🏗️ Architecture
 
-### Pourquoi Zod ?
+### **Structure alignée sur l'approche commune :**
 
-- **Validation runtime** : Contrairement à TypeScript (compile-time), Zod valide les données au moment de l'exécution
-- **Messages d'erreur clairs** : Erreurs détaillées et compréhensibles pour le développement et le débogage
-- **Inférence de types** : Génération automatique des types TypeScript à partir des schémas
-- **Extensibilité** : Schémas complexes, transformations et validations personnalisées
-
-### Schémas de Validation Principaux
-
-#### AddToCartSchema
 ```typescript
-const AddToCartSchema = z.object({
-  product_id: z.number().int().positive(),
-  quantity: z.number().int().positive().max(99),
-  metadata: z.record(z.string(), z.any()).optional()
-});
+@Module({
+  imports: [
+    DatabaseModule,     // ✅ Accès Supabase/PostgREST
+    CacheModule,        // ✅ Redis cache et sessions
+    ShippingModule,     // ✅ Services de livraison
+  ],
+  controllers: [
+    CartController,     // ✅ Controller principal moderne
+  ],
+  providers: [
+    CartDataService,           // ✅ Service données existant (compatibilité)
+    CartService,               // ✅ Service principal moderne (nouveau)
+    CartCalculationService,    // ✅ Service de calculs
+    CartValidationService,     // ✅ Service de validation
+    PromoService,              // ✅ Service promotions
+  ],
+  exports: [
+    CartDataService,           // ✅ Compatibilité backward
+    CartService,               // ✅ Service principal
+    CartCalculationService,    // ✅ Disponible pour autres modules
+    CartValidationService,     // ✅ Disponible pour autres modules
+    PromoService,              // ✅ Disponible pour autres modules
+  ],
+})
 ```
 
-#### UpdateCartItemSchema  
+## 🔧 Services
+
+### **CartService** - Service principal
+- Hérite de `SupabaseBaseService` (approche commune)
+- Gestion complète du panier (CRUD)
+- Intégration cache Redis
+- Support sessions et utilisateurs connectés
+
+### **CartCalculationService** - Calculs
+- Calculs de prix et totaux
+- TVA et taxes
+- Frais de livraison
+- Remises et promotions
+
+### **CartValidationService** - Validation
+- Validation des stocks
+- Validation des prix
+- Validation des règles métier
+- Validation des codes promo
+
+### **CartDataService** - Données (existant)
+- Service optimisé existant
+- Maintenu pour compatibilité
+
+### **PromoService** - Promotions (existant)
+- Gestion des codes promo
+- Calcul des remises
+
+## 🎯 Fonctionnalités
+
+### **Gestion du panier :**
+- ✅ Récupération du panier complet
+- ✅ Ajout de produits
+- ✅ Modification des quantités
+- ✅ Suppression d'articles
+- ✅ Vidage du panier
+- ✅ Application de codes promo
+
+### **Calculs automatiques :**
+- ✅ Sous-total HT
+- ✅ TVA (20%)
+- ✅ Frais de livraison (gratuit > 50€)
+- ✅ Total TTC
+- ✅ Poids total
+- ✅ Nombre d'articles
+
+### **Validation complète :**
+- ✅ Vérification des stocks
+- ✅ Validation des prix
+- ✅ Contrôle des quantités
+- ✅ Validation des codes promo
+
+### **Performance :**
+- ✅ Cache Redis (5 minutes)
+- ✅ Invalidation automatique
+- ✅ Requêtes optimisées Supabase
+
+## 📱 Utilisation
+
+### **Injection dans un autre service :**
+
 ```typescript
-const UpdateCartItemSchema = z.object({
-  quantity: z.number().int().positive().max(99)
-});
+import { CartService } from './modules/cart/services/cart.service';
+
+@Injectable()
+export class OrderService {
+  constructor(
+    private readonly cartService: CartService,
+  ) {}
+
+  async createOrderFromCart(sessionId: string, userId?: string) {
+    const cart = await this.cartService.getCart(sessionId, userId);
+    // Traitement de la commande...
+  }
+}
 ```
 
-#### CartItemMetadataSchema
+### **Utilisation du service de calcul :**
+
 ```typescript
-const CartItemMetadataSchema = z.object({
-  source: z.enum(['web', 'mobile', 'api']).optional(),
-  session_id: z.string().optional(),
-  referrer: z.string().url().optional(),
-  promo_code: z.string().optional(),
-  notes: z.string().max(500).optional(),
-  custom_options: z.record(z.string(), z.any()).optional()
-});
+import { CartCalculationService } from './modules/cart/services/cart-calculation.service';
+
+@Injectable()
+export class PricingService {
+  constructor(
+    private readonly cartCalculation: CartCalculationService,
+  ) {}
+
+  async calculateCartTotals(items: CartItem[]) {
+    return await this.cartCalculation.calculateCart(items);
+  }
+}
 ```
 
-### Exemples de Validation
+## 🔄 Migration depuis l'ancien système
 
-#### ✅ Données Valides
-```json
-{
+### **Compatibilité backward :**
+- ✅ `CartDataService` maintenu
+- ✅ Interfaces existantes préservées
+- ✅ APIs existantes fonctionnelles
+
+### **Migration progressive :**
+1. Utiliser `CartService` pour nouveaux développements
+2. Migrer progressivement vers `CartService`
+3. Déprécier `CartDataService` quand tout est migré
+
+## 🎨 Approche commune respectée
+
+### **✅ Header documenté :**
+```typescript
+/**
+ * 🛒 MODULE CART COMPLET - Architecture alignée
+ * 
+ * Fonctionnalités et objectifs clairement définis
+ */
+```
+
+### **✅ Imports organisés :**
+```typescript
+// Controllers
+import { CartController } from './cart-simple.controller';
+
+// Services
+import { CartService } from './services/cart.service';
+```
+
+### **✅ Modules standards :**
+- `DatabaseModule` pour Supabase
+- `CacheModule` pour Redis
+- Modules métier spécifiques
+
+### **✅ Exports sélectifs :**
+- Services principaux exportés
+- Compatibilité assurée
+- Réutilisabilité maximale
+
+## 🚀 Avantages
+
+1. **Architecture cohérente** avec les autres modules
+2. **Performance optimisée** avec cache Redis
+3. **Validation robuste** des données
+4. **Calculs automatisés** et précis
+5. **Extensibilité** pour futures fonctionnalités
+6. **Compatibilité** avec l'existant
+7. **Documentation** complète et claire
+
+Cette architecture moderne permet une maintenance facilitée et une évolutivité maximale du module Cart ! 🎉
   "product_id": 123,
   "quantity": 2,
   "metadata": {

@@ -30,10 +30,10 @@ export const loader: LoaderFunction = async () => {
     console.log('📊 Chargement des données pour les rapports...');
     
     // Récupérer les données depuis les différentes APIs
-    const [usersResponse, ordersResponse, usersStatsResponse] = await Promise.all([
-      fetch('http://localhost:3000/api/users?limit=1000'),
-      fetch('http://localhost:3000/api/orders?limit=1000'),
-      fetch('http://localhost:3000/api/users/stats/summary').catch(() => null)
+    const [usersResponse, ordersResponse, ordersStatsResponse] = await Promise.all([
+      fetch('http://localhost:3000/api/legacy-users?limit=1000'),
+      fetch('http://localhost:3000/api/legacy-orders?limit=1000'),
+      fetch('http://localhost:3000/api/legacy-orders/stats').catch(() => null)
     ]);
 
     let reportData = {
@@ -66,36 +66,36 @@ export const loader: LoaderFunction = async () => {
     // Traiter les données users
     if (usersResponse.ok) {
       const usersData = await usersResponse.json();
-      const users = usersData.users || [];
+      const users = usersData.data || usersData.users || [];
       reportData.users.total = users.length;
       reportData.users.active = users.filter((u: any) => u.isActive).length;
       reportData.users.professional = users.filter((u: any) => u.isPro).length;
       reportData.users.verified = users.filter((u: any) => u.emailVerified).length;
     }
 
-    // Traiter les statistiques users avancées
-    if (usersStatsResponse && usersStatsResponse.ok) {
-      const statsData = await usersStatsResponse.json();
+    // Traiter les statistiques commandes avancées
+    if (ordersStatsResponse && ordersStatsResponse.ok) {
+      const statsData = await ordersStatsResponse.json();
       // Utiliser les stats avancées si disponibles
-      if (statsData.stats) {
-        reportData.users = {
-          ...reportData.users,
-          ...statsData.stats
-        };
+      if (statsData.data) {
+        reportData.orders.revenue = statsData.data.totalRevenue || 0;
+        reportData.orders.completed = statsData.data.paidCount || 0;
+        reportData.orders.total = statsData.data.totalCount || reportData.orders.total;
+        reportData.orders.pending = reportData.orders.total - reportData.orders.completed;
       }
     }
 
     // Traiter les données orders
     if (ordersResponse.ok) {
       const ordersData = await ordersResponse.json();
-      const orders = ordersData.orders || [];
+      const orders = ordersData.data || ordersData.orders || [];
       reportData.orders.total = orders.length;
-      reportData.orders.completed = orders.filter((o: any) => o.ord_is_pay === "1").length;
-      reportData.orders.pending = orders.filter((o: any) => o.ord_is_pay !== "1").length;
+      reportData.orders.completed = orders.filter((o: any) => o.isPaid === true || o.ord_is_pay === "1").length;
+      reportData.orders.pending = orders.filter((o: any) => o.isPaid === false || o.ord_is_pay !== "1").length;
       
-      const paidOrders = orders.filter((o: any) => o.ord_is_pay === "1");
+      const paidOrders = orders.filter((o: any) => o.isPaid === true || o.ord_is_pay === "1");
       reportData.orders.revenue = paidOrders.reduce((sum: number, o: any) => 
-        sum + parseFloat(o.ord_total_ttc || 0), 0
+        sum + parseFloat(o.totalTtc || o.ord_total_ttc || o.total || 0), 0
       );
       reportData.orders.avgOrderValue = reportData.orders.completed > 0 ? 
         reportData.orders.revenue / reportData.orders.completed : 0;

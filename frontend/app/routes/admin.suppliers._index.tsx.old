@@ -1,0 +1,461 @@
+/**
+ * 📋 INTERFACE GESTION FOURNISSEURS - Admin Interface
+ * ✅ Aligné sur l'architecture des autres modules (users, orders, messages)
+ * ✅ Utilise requireAdmin pour l'authentification
+ * ✅ Interface moderne avec filtres et pagination
+ * ✅ Composants UI cohérents avec le design system
+ */
+
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
+import { useState } from "react";
+import { requireAdmin } from "../server/auth.server";
+
+// Types pour la gestion des fournisseurs (alignés avec les schémas Zod backend)
+interface Supplier {
+  id: number;
+  code: string;
+  name: string;
+  companyName?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  city?: string;
+  country?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  paymentTerms?: string;
+  minimumOrderAmount?: number;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SupplierStats {
+  total: number;
+  active: number;
+  inactive: number;
+  withEmail: number;
+  withWebsite: number;
+  countries: string[];
+}
+
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // Utiliser requireAdmin comme les autres modules admin
+  await requireAdmin({ context });
+  
+  const url = new URL(request.url);
+  const params = {
+    status: url.searchParams.get("status") || undefined,
+    search: url.searchParams.get("search") || undefined,
+    country: url.searchParams.get("country") || undefined,
+    page: url.searchParams.get("page") || "1",
+    limit: url.searchParams.get("limit") || "20",
+  };
+  
+  try {
+    console.log("🔄 Chargement des fournisseurs depuis l'API moderne...");
+    
+    // Utiliser l'API moderne alignée avec l'architecture
+    const apiUrl = `http://localhost:3000/api/suppliers-modern`;
+    const searchParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) searchParams.set(key, value);
+    });
+    
+    const suppliersResponse = await fetch(`${apiUrl}?${searchParams.toString()}`, {
+      headers: { "Internal-Call": "true" },
+    });
+    
+    if (!suppliersResponse.ok) {
+      throw new Error(`API Error: ${suppliersResponse.status}`);
+    }
+    
+    const suppliersData = await suppliersResponse.json();
+    
+    // Récupérer les statistiques
+    const statsResponse = await fetch(`${apiUrl}/statistics`, {
+      headers: { "Internal-Call": "true" },
+    });
+    
+    const statistics = statsResponse.ok ? await statsResponse.json() : {
+      total: 0,
+      active: 0,
+      inactive: 0,
+      withEmail: 0,
+      withWebsite: 0,
+      countries: []
+    };
+    
+    console.log(`✅ ${suppliersData.suppliers?.length || 0} fournisseurs chargés`);
+    
+    return json({ 
+      suppliers: suppliersData.suppliers || [], 
+      total: suppliersData.total || 0,
+      statistics, 
+      params 
+    });
+    
+  } catch (error) {
+    console.error("❌ Erreur lors du chargement des fournisseurs:", error);
+    
+    // Données de fallback pour éviter les erreurs d'interface
+    return json({
+      suppliers: [],
+      total: 0,
+      statistics: {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        withEmail: 0,
+        withWebsite: 0,
+        countries: []
+      },
+      params
+    });
+  }
+}
+
+export default function SuppliersIndex() {
+  const { suppliers, total, statistics, params } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [localSearch, setLocalSearch] = useState(params.search || '');
+  
+  const currentPage = parseInt(params.page);
+  const limit = parseInt(params.limit);
+  const totalPages = Math.ceil(total / limit);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newParams = new URLSearchParams(searchParams);
+    if (localSearch.trim()) {
+      newParams.set('search', localSearch.trim());
+    } else {
+      newParams.delete('search');
+    }
+    newParams.set('page', '1');
+    navigate(`/admin/suppliers?${newParams.toString()}`);
+  };
+  
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      {/* En-tête */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gestion des Fournisseurs</h1>
+          <p className="text-muted-foreground">
+            Gérez vos fournisseurs et leurs informations
+          </p>
+        </div>
+        <Link to="/admin/suppliers/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Fournisseur
+          </Button>
+        </Link>
+      </div>
+      
+      {/* Statistiques */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <StatCard 
+          title="Total" 
+          value={statistics.total} 
+          icon={<Building className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Actifs" 
+          value={statistics.active} 
+          icon={<Users className="h-4 w-4" />}
+          color="green" 
+        />
+        <StatCard 
+          title="Inactifs" 
+          value={statistics.inactive} 
+          icon={<Users className="h-4 w-4" />}
+          color="gray" 
+        />
+        <StatCard 
+          title="Avec Email" 
+          value={statistics.withEmail} 
+          icon={<Mail className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Avec Site Web" 
+          value={statistics.withWebsite} 
+          icon={<Globe className="h-4 w-4" />}
+        />
+        <StatCard 
+          title="Pays" 
+          value={statistics.countries.length} 
+          icon={<Globe className="h-4 w-4" />}
+        />
+      </div>
+      
+      {/* Filtres */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+              <Input
+                placeholder="Rechercher par nom, code, email..."
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
+                className="flex-1"
+              />
+              <Button type="submit" variant="secondary">
+                <Search className="mr-2 h-4 w-4" />
+                Rechercher
+              </Button>
+            </form>
+            
+            <Form method="get" className="flex gap-2">
+              <input type="hidden" name="search" value={params.search || ''} />
+              <select
+                name="status"
+                className="px-3 py-2 border rounded-md"
+                defaultValue={params.status || ''}
+                onChange={(e) => e.target.form?.submit()}
+              >
+                <option value="">Tous les statuts</option>
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+              </select>
+            </Form>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Liste des fournisseurs */}
+      <div className="space-y-4">
+        {suppliers.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <Building className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Aucun fournisseur trouvé</h3>
+                <p className="text-muted-foreground mb-4">
+                  {params.search ? 
+                    `Aucun résultat pour "${params.search}"` : 
+                    "Aucun fournisseur dans votre base de données"
+                  }
+                </p>
+                <Link to="/admin/suppliers/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Ajouter le premier fournisseur
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {suppliers.map((supplier) => (
+              <SupplierCard 
+                key={supplier.id} 
+                supplier={supplier} 
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <PaginationControls 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          searchParams={searchParams}
+        />
+      )}
+    </div>
+  );
+}
+
+// Composant Carte Statistique
+function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  color = "blue" 
+}: { 
+  title: string; 
+  value: number; 
+  icon: React.ReactNode; 
+  color?: "blue" | "green" | "yellow" | "red" | "gray"; 
+}) {
+  const colorClasses = {
+    blue: "text-blue-600 bg-blue-50",
+    green: "text-green-600 bg-green-50",
+    yellow: "text-yellow-600 bg-yellow-50",
+    red: "text-red-600 bg-red-50",
+    gray: "text-gray-600 bg-gray-50",
+  };
+
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center">
+          <div className={`rounded-lg p-2 ${colorClasses[color]}`}>
+            {icon}
+          </div>
+          <div className="ml-4">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold">{value.toLocaleString()}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Composant Carte Fournisseur
+function SupplierCard({ supplier }: { supplier: Supplier }) {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-lg font-semibold">{supplier.name}</h3>
+              <Badge variant={supplier.isActive ? "default" : "secondary"}>
+                {supplier.isActive ? "Actif" : "Inactif"}
+              </Badge>
+              {supplier.code && (
+                <Badge variant="outline">
+                  {supplier.code}
+                </Badge>
+              )}
+            </div>
+            
+            {supplier.companyName && (
+              <p className="text-sm text-muted-foreground mb-2">
+                <Building className="inline h-4 w-4 mr-1" />
+                {supplier.companyName}
+              </p>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+              {supplier.email && (
+                <div className="flex items-center text-muted-foreground">
+                  <Mail className="h-4 w-4 mr-1" />
+                  {supplier.email}
+                </div>
+              )}
+              {supplier.phone && (
+                <div className="flex items-center text-muted-foreground">
+                  <Phone className="h-4 w-4 mr-1" />
+                  {supplier.phone}
+                </div>
+              )}
+              {supplier.city && (
+                <div className="flex items-center text-muted-foreground">
+                  <Globe className="h-4 w-4 mr-1" />
+                  {supplier.city}, {supplier.country}
+                </div>
+              )}
+            </div>
+            
+            {supplier.contactName && (
+              <div className="mt-2 text-sm">
+                <span className="text-muted-foreground">Contact:</span>
+                <span className="ml-1 font-medium">{supplier.contactName}</span>
+                {supplier.contactEmail && (
+                  <span className="text-muted-foreground ml-2">({supplier.contactEmail})</span>
+                )}
+              </div>
+            )}
+            
+            {supplier.minimumOrderAmount && (
+              <div className="mt-2 text-sm">
+                <span className="text-muted-foreground">Commande minimum:</span>
+                <span className="ml-1 font-medium">{supplier.minimumOrderAmount}€</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex gap-2">
+            <Link to={`/admin/suppliers/${supplier.id}`}>
+              <Button variant="outline" size="sm">
+                <Eye className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link to={`/admin/suppliers/${supplier.id}/edit`}>
+              <Button variant="outline" size="sm">
+                <Edit className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+              <Trash className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Composant Contrôles de Pagination
+function PaginationControls({ 
+  currentPage, 
+  totalPages, 
+  searchParams 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  searchParams: URLSearchParams; 
+}) {
+  const createPageUrl = (page: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', page.toString());
+    return `/admin/suppliers?${newParams.toString()}`;
+  };
+
+  return (
+    <div className="flex justify-between items-center">
+      <div className="text-sm text-muted-foreground">
+        Page {currentPage} sur {totalPages}
+      </div>
+      
+      <div className="flex gap-2">
+        {currentPage > 1 && (
+          <Link to={createPageUrl(currentPage - 1)}>
+            <Button variant="outline" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Précédent
+            </Button>
+          </Link>
+        )}
+        
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          const page = Math.max(1, currentPage - 2) + i;
+          if (page > totalPages) return null;
+          
+          return (
+            <Link key={page} to={createPageUrl(page)}>
+              <Button 
+                variant={page === currentPage ? "default" : "outline"} 
+                size="sm"
+              >
+                {page}
+              </Button>
+            </Link>
+          );
+        })}
+        
+        {currentPage < totalPages && (
+          <Link to={createPageUrl(currentPage + 1)}>
+            <Button variant="outline" size="sm">
+              Suivant
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}

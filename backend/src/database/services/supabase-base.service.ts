@@ -1,14 +1,17 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getAppConfig } from '../../config/app.config';
 
 @Injectable()
 export abstract class SupabaseBaseService {
+  protected readonly logger = new Logger(SupabaseBaseService.name);
+  protected readonly supabase: SupabaseClient;
   protected readonly supabaseUrl: string;
   protected readonly supabaseServiceKey: string;
   protected readonly baseUrl: string;
 
-  constructor(@Optional() protected configService?: ConfigService) {
+  constructor(protected configService?: ConfigService) {
     // Context7 : Resilient configuration loading
     const appConfig = getAppConfig();
 
@@ -35,6 +38,23 @@ export abstract class SupabaseBaseService {
     }
 
     this.baseUrl = `${this.supabaseUrl}/rest/v1`;
+
+    // Créer le client Supabase
+    this.supabase = createClient(this.supabaseUrl, this.supabaseServiceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    this.logger.log('SupabaseBaseService initialized');
+  }
+
+  /**
+   * Expose le client Supabase pour les classes héritées
+   */
+  get client(): SupabaseClient {
+    return this.supabase;
   }
 
   protected get headers() {

@@ -57,6 +57,7 @@ export class UserService extends SupabaseBaseService {
    */
   async getUserById(userId: string): Promise<User | null> {
     try {
+      // 1. Essayer d'abord dans la table des customers
       const response = await fetch(
         `${this.baseUrl}/___xtr_customer?select=*&cst_id=eq.${userId}`,
         {
@@ -65,13 +66,43 @@ export class UserService extends SupabaseBaseService {
         },
       );
 
-      if (!response.ok) {
-        console.error('Erreur HTTP:', response.status, response.statusText);
-        return null;
+      if (response.ok) {
+        const users = await response.json();
+        if (users && users.length > 0) {
+          return users[0];
+        }
       }
 
-      const users = await response.json();
-      return users && users.length > 0 ? users[0] : null;
+      // 2. Si non trouvé, essayer dans la table des admins
+      const adminResponse = await fetch(
+        `${this.baseUrl}/___config_admin?select=*&cnfa_id=eq.${userId}`,
+        {
+          method: 'GET',
+          headers: this.headers,
+        },
+      );
+
+      if (adminResponse.ok) {
+        const admins = await adminResponse.json();
+        if (admins && admins.length > 0) {
+          const admin = admins[0];
+          // Convertir les données admin vers le format User
+          return {
+            cst_id: admin.cnfa_id,
+            cst_mail: admin.cnfa_mail,
+            cst_pswd: admin.cnfa_pswd,
+            cst_fname: admin.cnfa_fname,
+            cst_name: admin.cnfa_name,
+            cst_tel: admin.cnfa_tel,
+            cst_activ: admin.cnfa_activ,
+            cst_level: parseInt(admin.cnfa_level) || 9,
+            cst_is_pro: '1', // Les admins sont considérés comme des pros
+          };
+        }
+      }
+
+      console.error('User not found in both tables:', userId);
+      return null;
     } catch (error) {
       console.error('Erreur lors de la récupération utilisateur:', error);
       return null;

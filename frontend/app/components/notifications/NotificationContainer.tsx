@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useAdminStore } from '~/lib/stores/admin-store';
+import React, { useEffect, createContext, useContext, useState, useCallback } from 'react';
 
 interface NotificationProps {
   id: string;
@@ -8,8 +7,54 @@ interface NotificationProps {
   timestamp: number;
 }
 
+interface NotificationContextType {
+  notifications: NotificationProps[];
+  addNotification: (type: NotificationProps['type'], message: string) => void;
+  removeNotification: (id: string) => void;
+  clearNotifications: () => void;
+}
+
+const NotificationContext = createContext<NotificationContextType | null>(null);
+
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [notifications, setNotifications] = useState<NotificationProps[]>([]);
+
+  const addNotification = useCallback((type: NotificationProps['type'], message: string) => {
+    const id = Date.now().toString();
+    const notification: NotificationProps = {
+      id,
+      type,
+      message,
+      timestamp: Date.now(),
+    };
+    setNotifications(prev => [...prev, notification]);
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
+  return (
+    <NotificationContext.Provider value={{
+      notifications,
+      addNotification,
+      removeNotification,
+      clearNotifications,
+    }}>
+      {children}
+    </NotificationContext.Provider>
+  );
+};
+
 const NotificationItem: React.FC<NotificationProps> = ({ id, type, message }) => {
-  const removeNotification = useAdminStore(state => state.removeNotification);
+  const context = useContext(NotificationContext);
+  if (!context) throw new Error('NotificationItem must be used within NotificationProvider');
+  
+  const { removeNotification } = context;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,7 +114,10 @@ const NotificationItem: React.FC<NotificationProps> = ({ id, type, message }) =>
 };
 
 export const NotificationContainer: React.FC = () => {
-  const notifications = useAdminStore(state => state.notifications);
+  const context = useContext(NotificationContext);
+  if (!context) throw new Error('NotificationContainer must be used within NotificationProvider');
+  
+  const { notifications } = context;
 
   if (notifications.length === 0) return null;
 
@@ -84,8 +132,10 @@ export const NotificationContainer: React.FC = () => {
 
 // Hook pour faciliter l'utilisation des notifications
 export const useNotifications = () => {
-  const addNotification = useAdminStore(state => state.addNotification);
-  const clearNotifications = useAdminStore(state => state.clearNotifications);
+  const context = useContext(NotificationContext);
+  if (!context) throw new Error('useNotifications must be used within NotificationProvider');
+  
+  const { addNotification, clearNotifications } = context;
 
   return {
     showSuccess: (message: string) => addNotification('success', message),

@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+// Enum pour la civilité
+export const CivilityEnum = z.enum(['M', 'Mme', 'Autre'], {
+  message: 'La civilité doit être M, Mme ou Autre',
+});
+
+export type Civility = z.infer<typeof CivilityEnum>;
+
 export const CreateUserSchema = z
   .object({
     email: z
@@ -25,6 +32,8 @@ export const CreateUserSchema = z
       .string()
       .min(1, 'Le nom est obligatoire')
       .max(50, 'Le nom ne peut pas dépasser 50 caractères'),
+
+    civility: CivilityEnum.optional(),
 
     tel: z
       .string()
@@ -57,7 +66,26 @@ export const CreateUserSchema = z
     isPro: z.boolean().default(false),
 
     isActive: z.boolean().default(true),
+
+    isNewsletterSubscribed: z.boolean().default(false),
+
+    lastLoginAt: z.date().optional(),
   })
   .strict();
 
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
+
+// Schema pour mise à jour utilisateur
+export const UpdateUserSchema = z.object({
+  firstName: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  civility: CivilityEnum.optional(),
+  isNewsletterSubscribed: z.boolean().optional(),
+  marketingConsent: z.boolean().optional(),
+  profileCompleteness: z.number().min(0).max(100).optional(),
+});
+
+export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;

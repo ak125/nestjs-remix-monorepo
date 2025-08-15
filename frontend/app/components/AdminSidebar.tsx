@@ -23,7 +23,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 const navigationItems = [
   {
     name: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/admin",
     icon: Home,
     description: "Vue d'ensemble",
     badge: null,

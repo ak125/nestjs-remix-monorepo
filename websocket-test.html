@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket Messages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔌 Test WebSocket Messages</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <h3>Connexion WebSocket</h3>
+            <input type="text" id="userId" placeholder="User ID" value="usr_1752842636126_j88bat3bh">
+            <input type="text" id="token" placeholder="JWT Token (optionnel)" value="test-token">
+            <button id="connectBtn">Se connecter</button>
+            <button id="disconnectBtn" disabled>Se déconnecter</button>
+            
+            <div id="status" class="status disconnected">
+                ❌ Déconnecté
+            </div>
+            
+            <h4>Actions</h4>
+            <button id="markReadBtn" disabled>Marquer message comme lu</button>
+            <input type="text" id="messageIdInput" placeholder="ID du message">
+            
+            <h4>Indicateur de frappe</h4>
+            <input type="text" id="recipientId" placeholder="ID du destinataire">
+            <button id="startTypingBtn" disabled>Commencer à taper</button>
+            <button id="stopTypingBtn" disabled>Arrêter de taper</button>
+        </div>
+        
+        <div class="panel">
+            <h3>Journal des événements</h3>
+            <button id="clearLogBtn">Effacer le journal</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
+    <script>
+        let socket = null;
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const userIdInput = document.getElementById('userId');
+        const tokenInput = document.getElementById('token');
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            log.textContent += logEntry;
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            if (connected) {
+                status.className = 'status connected';
+                status.textContent = '✅ Connecté';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                document.getElementById('markReadBtn').disabled = false;
+                document.getElementById('startTypingBtn').disabled = false;
+                document.getElementById('stopTypingBtn').disabled = false;
+            } else {
+                status.className = 'status disconnected';
+                status.textContent = '❌ Déconnecté';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                document.getElementById('markReadBtn').disabled = true;
+                document.getElementById('startTypingBtn').disabled = true;
+                document.getElementById('stopTypingBtn').disabled = true;
+            }
+        }
+        
+        function connect() {
+            const userId = userIdInput.value;
+            const token = tokenInput.value;
+            
+            if (!userId) {
+                alert('Veuillez saisir un User ID');
+                return;
+            }
+            
+            addLog(`Tentative de connexion WebSocket pour l'utilisateur: ${userId}`);
+            
+            // Connexion au namespace /messaging
+            socket = io('http://localhost:3000/messaging', {
+                query: {
+                    userId: userId,
+                    token: token
+                },
+                auth: {
+                    token: token
+                }
+            });
+            
+            // Événements de connexion
+            socket.on('connect', () => {
+                addLog('Connexion WebSocket établie', 'success');
+                updateStatus(true);
+            });
+            
+            socket.on('disconnect', (reason) => {
+                addLog(`Déconnexion WebSocket: ${reason}`, 'warning');
+                updateStatus(false);
+            });
+            
+            socket.on('connect_error', (error) => {
+                addLog(`Erreur de connexion: ${error.message}`, 'error');
+                updateStatus(false);
+            });
+            
+            // Événements personnalisés
+            socket.on('connected', (data) => {
+                addLog(`Authentification réussie: ${JSON.stringify(data)}`, 'success');
+            });
+            
+            socket.on('newMessage', (data) => {
+                addLog(`📨 Nouveau message reçu: ${JSON.stringify(data)}`, 'message');
+            });
+            
+            socket.on('messageSent', (data) => {
+                addLog(`📤 Message envoyé confirmé: ${JSON.stringify(data)}`, 'message');
+            });
+            
+            socket.on('messageRead', (data) => {
+                addLog(`👁️ Message lu: ${JSON.stringify(data)}`, 'message');
+            });
+            
+            socket.on('messageClosed', (data) => {
+                addLog(`🔒 Message fermé: ${JSON.stringify(data)}`, 'message');
+            });
+            
+            socket.on('userTyping', (data) => {
+                addLog(`⌨️ Utilisateur en train de taper: ${JSON.stringify(data)}`, 'typing');
+            });
+            
+            socket.on('readConfirmation', (data) => {
+                addLog(`✅ Confirmation de lecture: ${JSON.stringify(data)}`, 'message');
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                updateStatus(false);
+                addLog('Déconnexion manuelle', 'info');
+            }
+        }
+        
+        function markAsRead() {
+            const messageId = document.getElementById('messageIdInput').value;
+            if (!messageId) {
+                alert('Veuillez saisir un ID de message');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('markAsRead', { messageId });
+                addLog(`Marquage du message ${messageId} comme lu`, 'action');
+            }
+        }
+        
+        function startTyping() {
+            const recipientId = document.getElementById('recipientId').value;
+            if (!recipientId) {
+                alert('Veuillez saisir un ID de destinataire');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('typing', { recipientId, isTyping: true });
+                addLog(`Début de frappe vers ${recipientId}`, 'action');
+            }
+        }
+        
+        function stopTyping() {
+            const recipientId = document.getElementById('recipientId').value;
+            if (!recipientId) {
+                alert('Veuillez saisir un ID de destinataire');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('typing', { recipientId, isTyping: false });
+                addLog(`Fin de frappe vers ${recipientId}`, 'action');
+            }
+        }
+        
+        function clearLog() {
+            log.textContent = '';
+        }
+        
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        disconnectBtn.addEventListener('click', disconnect);
+        document.getElementById('markReadBtn').addEventListener('click', markAsRead);
+        document.getElementById('startTypingBtn').addEventListener('click', startTyping);
+        document.getElementById('stopTypingBtn').addEventListener('click', stopTyping);
+        document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+        
+        // Log initial
+        addLog('Client de test WebSocket initialisé');
+        addLog('Remplissez les champs et cliquez sur "Se connecter"');
+    </script>
+</body>
+</html>

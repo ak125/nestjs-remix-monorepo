@@ -2,13 +2,13 @@
  * Page Utilisateurs - Gestion des utilisateurs avec vraies données
  */
 
-import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigate, useSearchParams } from "@remix-run/react";
-import { Users, UserPlus, Search, Filter, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, UserPlus, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { requireAdmin } from "~/server/auth.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,101 +17,56 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
+  
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "50");
+  const search = url.searchParams.get("search") || "";
+
   try {
-    console.log('🔄 Chargement des utilisateurs depuis la nouvelle API...');
+    console.log("🔄 Chargement des utilisateurs depuis l'API...");
     
-    // Récupérer les paramètres de recherche depuis l'URL
-    const url = new URL(request.url);
-    const search = url.searchParams.get('search') || '';
-    const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '50';
+    // Utiliser l'endpoint legacy users qui fonctionne avec les vraies données
+    const apiUrl = `http://localhost:3000/api/legacy-users?page=${page}&limit=${limit}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
     
-    // Construire l'URL de l'API avec les paramètres
-    const apiUrl = new URL('http://localhost:3000/api/users');
-    apiUrl.searchParams.set('limit', limit);
-    apiUrl.searchParams.set('page', page);
-    if (search) apiUrl.searchParams.set('search', search);
+    const response = await fetch(apiUrl);
     
-    const usersResponse = await fetch(apiUrl.toString(), {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-
-    let users: any[] = [];
-    let totalUsers = 0;
-    let pagination = {
-      currentPage: 1,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false
-    };
-    
-    if (usersResponse.ok) {
-      const data = await usersResponse.json();
-      console.log('✅ Réponse API users:', data);
-      
-      users = data.users || [];
-      totalUsers = data.totalUsers || users.length;
-      pagination = {
-        currentPage: data.currentPage || 1,
-        totalPages: data.totalPages || 1,
-        hasNextPage: data.hasNextPage || false,
-        hasPrevPage: data.hasPrevPage || false
-      };
-      
-      // Transformer pour l'affichage
-      users = users.map((user: any) => ({
-        id: user.id,
-        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Utilisateur inconnu',
-        email: user.email || 'email@inconnu.com',
-        role: user.isPro ? 'professional' : 'customer',
-        status: user.isActive ? 'active' : 'inactive',
-        phone: user.phone || 'Non renseigné',
-        registrationDate: user.registrationDate,
-        emailVerified: user.emailVerified,
-        lastLoginDate: user.lastLoginDate,
-        city: user.city || 'Non renseigné',
-        country: user.country || 'France',
-        level: user.level || 2,
-        // ✅ Inclure les adresses dans les données transformées
-        billingAddress: user.billingAddress,
-        deliveryAddress: user.deliveryAddress,
-      }));
-      
-      console.log(`✅ ${users.length} utilisateurs chargés depuis la nouvelle API (page ${pagination.currentPage}/${pagination.totalPages})`);
-    } else {
-      console.error('❌ Erreur API users:', usersResponse.status, usersResponse.statusText);
-      console.log('🔄 Fallback vers les données de test...');
-      
-      users = [
-        { id: 1, name: "Admin System", email: "admin@automecanik.com", role: "admin", status: "active", phone: "+33123456789", city: "Paris", country: "France", level: 8 },
-        { id: 2, name: "Jean Dupont", email: "client@test.com", role: "customer", status: "active", phone: "+33987654321", city: "Lyon", country: "France", level: 2 },
-        { id: 3, name: "Marie Martin", email: "pro@garage.com", role: "professional", status: "active", phone: "+33555666777", city: "Marseille", country: "France", level: 6 },
-      ];
-      totalUsers = users.length;
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
     }
-
-    return json({ users, totalUsers, pagination, searchTerm: search });
+    
+    const result = await response.json();
+    
+    console.log(`✅ ${result.data?.length || 0} utilisateurs chargés (total: ${result.pagination?.total || result.total || 0})`);
+    
+    return json({
+      users: result.data || [],
+      total: result.pagination?.total || result.total || 0,
+      page,
+      limit,
+      search
+    });
   } catch (error) {
-    console.error('❌ Erreur lors du chargement des utilisateurs:', error);
-    return json({ 
-      users: [], 
-      totalUsers: 0,
-      pagination: { currentPage: 1, totalPages: 1, hasNextPage: false, hasPrevPage: false },
-      searchTerm: '',
-      error: 'Erreur de connexion à la nouvelle API utilisateurs'
+    console.error("❌ Erreur lors du chargement des utilisateurs:", error);
+    
+    // Retourner des données vides en cas d'erreur
+    return json({
+      users: [],
+      total: 0,
+      page,
+      limit,
+      search
     });
   }
-};
+}
 
 export default function AdminUsers() {
-  const { users, totalUsers, pagination, searchTerm, error } = useLoaderData<typeof loader>();
+  const { users, total, page, limit, search } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [localSearch, setLocalSearch] = useState(searchTerm || '');
+  const [localSearch, setLocalSearch] = useState(search || '');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,18 +105,6 @@ export default function AdminUsers() {
         </Button>
       </div>
 
-      {/* Alerte en cas d'erreur */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-800">
-              <AlertTriangle className="h-4 w-4" />
-              <p className="text-sm font-medium">{error}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -170,7 +113,7 @@ export default function AdminUsers() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers}</div>
+            <div className="text-2xl font-bold">{total}</div>
             <p className="text-xs text-muted-foreground">Depuis les vraies données</p>
           </CardContent>
         </Card>
@@ -222,7 +165,7 @@ export default function AdminUsers() {
           <Button type="submit" size="sm">
             Rechercher
           </Button>
-          {searchTerm && (
+          {search && (
             <Button 
               type="button" 
               variant="outline" 
@@ -249,31 +192,31 @@ export default function AdminUsers() {
             <div>
               <CardTitle>Liste des Utilisateurs</CardTitle>
               <CardDescription>
-                {searchTerm ? 
-                  `Résultats pour "${searchTerm}" - ${totalUsers} utilisateur(s) trouvé(s)` :
-                  `Tous les comptes utilisateurs depuis la base de données - ${totalUsers} utilisateurs`
+                {search ? 
+                  `Résultats pour "${search}" - ${total} utilisateur(s) trouvé(s)` :
+                  `Tous les comptes utilisateurs depuis la base de données - ${total} utilisateurs`
                 }
               </CardDescription>
             </div>
-            {pagination.totalPages > 1 && (
+            {Math.ceil(total / limit) > 1 && (
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={!pagination.hasPrevPage}
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 1}
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Précédent
                 </Button>
                 <span className="text-sm text-muted-foreground">
-                  Page {pagination.currentPage} sur {pagination.totalPages}
+                  Page {page} sur {Math.ceil(total / limit)}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={!pagination.hasNextPage}
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page * limit >= total}
                 >
                   Suivant
                   <ChevronRight className="h-4 w-4" />
@@ -293,61 +236,72 @@ export default function AdminUsers() {
             </div>
           ) : (
             <div className="space-y-4">
-              {users.map((user: any) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-sm font-medium text-primary">
-                        {user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium">{user.name}</p>
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                      <p className="text-xs text-muted-foreground">{user.city}, {user.country}</p>
-                      
-                      {/* ✅ Affichage des adresses */}
-                      {user.billingAddress && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded-md">
-                          <p className="text-xs font-medium text-blue-800">📍 Adresse de facturation:</p>
-                          <p className="text-xs text-blue-600">
-                            {user.billingAddress.address}, {user.billingAddress.zipCode} {user.billingAddress.city}
-                          </p>
+              {/* Liste des utilisateurs */}
+              <div className="space-y-2">
+                {users.map((user: any) => (
+                  <div key={user.id} className="border rounded-lg p-4 bg-white hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold">
+                            {user.firstName?.[0] || user.email[0]}
+                          </span>
                         </div>
-                      )}
-                      
-                      {user.deliveryAddress && (
-                        <div className="mt-1 p-2 bg-green-50 rounded-md">
-                          <p className="text-xs font-medium text-green-800">🚚 Adresse de livraison:</p>
-                          <p className="text-xs text-green-600">
-                            {user.deliveryAddress.address}, {user.deliveryAddress.zipCode} {user.deliveryAddress.city}
-                          </p>
+                        <div>
+                          <h3 className="font-medium">
+                            {user.firstName} {user.lastName || user.name}
+                          </h3>
+                          <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
-                      )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.isActive ? 'Actif' : 'Inactif'}
+                        </span>
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          user.level >= 7 ? 'bg-purple-100 text-purple-800' : 
+                          user.isPro ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          Niveau {user.level || 1}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <Badge variant={user.role === 'professional' ? 'default' : 'secondary'}>
-                      {user.role}
-                    </Badge>
-                    <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                      {user.status}  
-                    </Badge>
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">
-                        Tel: {user.phone}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Niveau: {user.level}
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Modifier
-                    </Button>
+                ))}
+              </div>
+              
+              {/* Pagination simple */}
+              {total > limit && (
+                <div className="flex justify-between items-center mt-6">
+                  <div className="text-sm text-gray-500">
+                    Affichage de {((page - 1) * limit) + 1} à {Math.min(page * limit, total)} sur {total} utilisateurs
+                  </div>
+                  <div className="flex space-x-2">
+                    {page > 1 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/users?page=${page - 1}&limit=${limit}&search=${search}`)}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Précédent
+                      </Button>
+                    )}
+                    {page * limit < total && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/admin/users?page=${page + 1}&limit=${limit}&search=${search}`)}
+                      >
+                        Suivant
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </CardContent>

@@ -1,46 +1,86 @@
-/**
- * Module Orders - Gestion complète des commandes
- *
- * Généré automatiquement depuis l'analyse de 50 fichiers PHP
- * Entités analysées: 16 entités, 18 opérations métier
- *
- * Fonctionnalités principales:
- * - Gestion complète du cycle de vie des commandes
- * - Calcul automatique des frais de livraison
- * - Gestion des statuts et transitions
- * - Audit trail complet
- * - Intégration avec système de facturation
- * - Gestion du panier
- * - Notifications email
- * - Cache pour les performances
- *
- * Architecture basée sur l'analyse PHP:
- * - shopping_cart.class.php → CartService
- * - class_order.php → OrdersService
- * - class_order_line.php → OrderLine management
- * - class_delivery_agent.php → ShippingService
- * - class_invoice.php → InvoiceService
- */
-
-import { Module } from '@nestjs/common';
-import { OrdersApiController } from './orders-api.controller';
-import { OrdersService } from './orders.service';
-import { OrdersCompleteService } from './orders-complete.service';
+import { Module, forwardRef } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { PerformanceOptimizationService } from '../../common/services/performance-optimization.service';
+import { ShippingModule } from '../shipping/shipping.module';
 
+// Controller minimal
+import { AutomotiveOrdersController } from './controllers/automotive-orders.controller';
+
+// Controller Fusion - Version Complète (NOUVEAU)
+import { OrdersFusionController } from './controllers/orders-fusion.controller';
+
+// Controller Simple - Version Test Tables Legacy (NOUVEAU)
+import { OrdersSimpleController } from './controllers/orders-simple.controller';
+
+// Controller Customer - Version dédiée aux clients (NOUVEAU)
+import { CustomerOrdersController } from './controllers/customer-orders.controller';
+
+// Controller Admin - Version dédiée aux administrateurs (NOUVEAU)
+import { AdminOrdersController } from './controllers/admin-orders.controller';
+
+// Services minimaux fonctionnels
+import { OrderCalculationService } from './services/order-calculation.service';
+import { OrdersServiceEnhanced } from './services/orders-enhanced-minimal.service';
+import { OrderArchiveService } from './services/order-archive-minimal.service';
+
+// Service Fusion - Version Complète (NOUVEAU)
+import { OrdersService } from './services/orders-fusion.service';
+
+// Service Simple - Version Test Tables Legacy (NOUVEAU)
+import { OrdersSimpleService } from './services/orders-simple.service';
+
+// Service de gestion des statuts (NOUVEAU)
+import { OrderStatusService } from './services/order-status.service';
+
+// Contrôleur de test des statuts (NOUVEAU)
+import { OrderStatusController } from './controllers/order-status.controller';
+
+// Contrôleur d'archivage complet (NOUVEAU)
+import { OrderArchiveController } from './controllers/order-archive.controller';
+
+// Service d'archivage complet (NOUVEAU)
+import { OrderArchiveCompleteService } from './services/order-archive-complete.service';
+
+// Service tickets avancés (NOUVEAU)
+import { TicketsAdvancedService } from './services/tickets-advanced.service';
+import { TicketsController } from './controllers/tickets.controller';
+
+/**
+ * Module Orders - Version avec Service Tickets Avancés
+ * ✅ Service minimal conservé pour compatibilité
+ * ✅ Service tickets avancés avec Supabase direct
+ * ✅ TicketEquivalentService obsolète retiré
+ */
 @Module({
-  imports: [DatabaseModule], // Import du nouveau module optimisé
-  controllers: [OrdersApiController],
+  imports: [forwardRef(() => DatabaseModule), ShippingModule],
+  controllers: [
+    AutomotiveOrdersController,
+    OrdersFusionController, // Controller fusion NOUVEAU
+    OrdersSimpleController, // Controller simple NOUVEAU - ACTIVÉ
+    CustomerOrdersController, // Controller client dédié NOUVEAU
+    AdminOrdersController, // Controller admin dédié NOUVEAU
+    OrderStatusController, // Controller statuts NOUVEAU
+    OrderArchiveController, // Controller archivage NOUVEAU
+    TicketsController, // Controller tickets avancés NOUVEAU
+  ],
   providers: [
-    OrdersService,
-    OrdersCompleteService,
-    PerformanceOptimizationService,
+    OrderCalculationService,
+    OrdersServiceEnhanced, // Service minimal existant
+    OrderArchiveService,
+    OrdersService, // Service fusion NOUVEAU
+    OrdersSimpleService, // Service simple NOUVEAU
+    OrderStatusService, // Service statuts NOUVEAU
+    OrderArchiveCompleteService, // Service archivage complet NOUVEAU
+    TicketsAdvancedService, // Service tickets avancés NOUVEAU
   ],
   exports: [
-    OrdersService,
-    OrdersCompleteService,
-    PerformanceOptimizationService,
+    OrderCalculationService,
+    OrdersServiceEnhanced,
+    OrderArchiveService,
+    OrdersService, // Disponible pour injection
+    OrdersSimpleService, // Disponible pour injection
+    OrderStatusService, // Disponible pour injection
+    OrderArchiveCompleteService, // Disponible pour injection
+    TicketsAdvancedService, // Disponible pour injection
   ],
 })
 export class OrdersModule {}

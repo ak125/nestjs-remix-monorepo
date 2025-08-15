@@ -5,7 +5,7 @@
  * Fournit l'index des fonctionnalités administratives
  */
 
-import { Controller, Get, UseGuards, Logger, Redirect } from '@nestjs/common';
+import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import { LocalAuthGuard } from '../../../auth/local-auth.guard';
 
 @Controller('admin')
@@ -15,16 +15,18 @@ export class AdminRootController {
 
   /**
    * GET /admin
-   * Route racine admin - redirige vers le dashboard
+   * Route racine admin - désactivée pour laisser Remix gérer
    */
+  /*
   @Get()
-  @Redirect('/admin/dashboard', 302)
   async getAdminRoot() {
     this.logger.log(
-      'Accès à la route racine admin - redirection vers dashboard',
+      'Accès à la route racine admin - gérée par Remix',
     );
-    return;
+    // Route gérée par Remix, ne pas intercepter
+    return null;
   }
+  */
 
   /**
    * GET /admin/menu
@@ -42,7 +44,7 @@ export class AdminRootController {
           sections: [
             {
               name: 'Dashboard',
-              path: '/admin/dashboard',
+              path: '/admin',
               description: 'Statistiques et métriques générales',
             },
             {
@@ -73,4 +75,43 @@ export class AdminRootController {
       };
     }
   }
+
+  /**
+   * GET /admin/simple
+   * Page d'administration simple sans authentification (dev/test)
+   */
+  @Get('simple')
+  async getAdminSimple() {
+    try {
+      this.logger.log('Accès page admin simple');
+
+      return {
+        success: true,
+        message: 'Page admin simple',
+        data: {
+          title: 'Administration Simple',
+          timestamp: new Date().toISOString(),
+          staff: {
+            available: true,
+            endpoint: '/api/admin/staff',
+            methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+          },
+          orders: {
+            available: true,
+            endpoint: '/api/admin/orders',
+            methods: ['GET', 'PATCH'],
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.error('Erreur page admin simple:', error);
+      return {
+        success: false,
+        error: 'Erreur lors de la récupération de la page simple',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  // Route /admin/dashboard supprimée - maintenant gérée par Remix (admin._index.tsx)
 }

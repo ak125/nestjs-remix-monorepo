@@ -97,7 +97,7 @@ export const loader: LoaderFunction = async ({ params, context }) => {
       // Fallback HTTP direct
       const { getRemixApiService } = await import("~/server/remix-api.server");
       const api: any = await getRemixApiService(context);
-      result = await api.makeApiCall?.(`/api/orders/${orderId}`);
+      result = await api.makeApiCall?.(`/api/legacy-orders/${orderId}`);
       if (result && !result.success) {
         result = { success: true, order: result };
       }

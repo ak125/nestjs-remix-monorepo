@@ -39,15 +39,44 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 
   try {
-    console.log('🔄 Chargement du staff depuis l\'API users...');
+    console.log('🔄 Chargement du staff depuis l\'endpoint test-staff...');
     
-    // ✅ Utiliser l'API users pour récupérer le staff (niveau >= 7)
-    const apiUrl = new URL('http://localhost:3000/api/users');
+    // ✅ Utiliser l'endpoint test-staff (public, sans auth)
+    const baseUrl = 'http://localhost:3000';
+    
+    // 1. Utiliser l'endpoint test-staff qui ne nécessite pas d'authentification
+    try {
+      const staffResponse = await fetch(`${baseUrl}/api/legacy-users/test-staff?page=1&limit=100`);
+
+      if (staffResponse.ok) {
+        const staffData = await staffResponse.json();
+
+        if (staffData.success && staffData.data) {
+          console.log(`✅ Endpoint test-staff utilisé avec succès - ${staffData.total} membres trouvés`);
+          
+          // Les données sont déjà dans le bon format
+          const staffMembers = staffData.data;
+
+          return json({
+            staff: staffMembers,
+            total: staffData.total,
+            fallbackMode: false,
+            messagesEnabled: true,
+            apiSource: 'test-staff-endpoint',
+          } as StaffData);
+        }
+      }
+    } catch (staffApiError) {
+      console.log('ℹ️ Endpoint test-staff non disponible, fallback vers API users:', staffApiError);
+    }
+
+    // 2. Fallback vers l'API users existante (si test-staff échoue)
+    const apiUrl = new URL(`${baseUrl}/api/legacy-users`);
     apiUrl.searchParams.set('limit', '100');
     apiUrl.searchParams.set('page', '1');
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // ✅ Augmenté à 10 secondes
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     const response = await fetch(apiUrl.toString(), {
       headers: {
@@ -61,52 +90,51 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('✅ Données utilisateurs récupérées:', data.totalUsers, 'utilisateurs');
+      console.log('📊 Réponse API users reçue:', JSON.stringify(data, null, 2));
+      
+      // Valider la structure des données users
+      let allUsers: any[] = [];
+      
+      if (data && Array.isArray(data.users)) {
+        allUsers = data.users;
+      } else if (data && Array.isArray(data.data)) {
+        allUsers = data.data;
+      } else if (data && Array.isArray(data)) {
+        allUsers = data;
+      } else {
+        console.warn('⚠️ Structure de données inattendue, utilisation mode minimal');
+        return json({
+          staff: [],
+          total: 0,
+          fallbackMode: true,
+          messagesEnabled: false,
+          apiSource: 'minimal-fallback',
+        } as StaffData);
+      }
       
       // Filtrer pour ne garder que le staff (niveau >= 7)
-      const staffMembers = data.users
-        .filter((u: any) => u.level >= 7)
-        .map((u: any) => ({
-          id: u.id,
-          email: u.email,
-          firstName: u.firstName,
-          lastName: u.lastName,
-          level: u.level,
-          isActive: u.isActive,
-          department: 'Administration',
-          phone: u.phone,
-          lastLogin: u.lastLoginDate,
-          role: u.level >= 9 ? 'Super Admin' : u.level >= 8 ? 'Admin' : 'Modérateur',
-        }));
+      const staffMembers = allUsers.filter((member: any) => {
+        return member && member.level && Number(member.level) >= 7;
+      });
       
-      console.log(`✅ ${staffMembers.length} membres du staff trouvés (niveau >= 7)`);
+      console.log(`✅ ${staffMembers.length} membres du staff trouvés sur ${allUsers.length} utilisateurs`);
       
       return json({
         staff: staffMembers,
         total: staffMembers.length,
-        fallbackMode: false,
-        messagesEnabled: true, // Table ___xtr_msg disponible
-      } as StaffData);
-    } else {
-      console.error('❌ Erreur API users:', response.status);
-      
-      // Mode fallback avec utilisateur connecté
-      return json({
-        staff: [{
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          level: parseInt(user.level || '9'),
-          isActive: true,
-          department: 'Administration',
-          phone: '',
-          role: 'Super Admin',
-        }],
-        total: 1,
-        error: `Erreur API (${response.status})`,
         fallbackMode: true,
         messagesEnabled: false,
+        apiSource: 'users-api',
+      } as StaffData);
+    } else {
+      console.error('❌ Erreur API:', response.status, response.statusText);
+      
+      return json({
+        staff: [],
+        total: 0,
+        fallbackMode: true,
+        messagesEnabled: false,
+        apiSource: 'error-fallback',
       } as StaffData);
     }
   } catch (error: any) {

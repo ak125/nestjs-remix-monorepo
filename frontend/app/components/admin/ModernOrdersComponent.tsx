@@ -3,12 +3,11 @@
  * Ce composant démontre l'utilisation des nouvelles fonctionnalités
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { z } from 'zod';
 import { useNotifications } from '~/components/notifications/NotificationContainer';
 import { useCrud } from '~/hooks/useApi';
 import { OrderSearchSchema, useZodValidation, type OrderSearchData } from '~/lib/schemas/validation';
-import { useAdminStore } from '~/lib/stores/admin-store';
 
 // Schéma de réponse pour les commandes
 const OrderResponseSchema = z.object({
@@ -32,8 +31,9 @@ export const ModernOrdersComponent: React.FC = () => {
     offset: 0,
   });
 
-  // Zustand store
-  const { currentPage, setCurrentPage, ordersCache, setOrdersCache } = useAdminStore();
+  // Local state pour remplacer le store
+  const [currentPage] = useState(1);
+  const [ordersCache, setOrdersCache] = useState<any[]>([]);
   
   // Notifications
   const { showSuccess, showError, showInfo } = useNotifications();
@@ -61,11 +61,6 @@ export const ModernOrdersComponent: React.FC = () => {
       showError('Erreur lors du chargement des commandes');
     }
   };
-
-  // Mettre à jour la page actuelle dans le store
-  useEffect(() => {
-    setCurrentPage('orders');
-  }, [setCurrentPage]);
 
   const handleSearchChange = (field: keyof OrderSearchData, value: any) => {
     setSearchForm(prev => ({

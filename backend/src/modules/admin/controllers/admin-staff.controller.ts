@@ -1,8 +1,12 @@
 /**
- * 📋 CONTRÔLEUR STAFF ADMIN - Module Admin
+ * 👥 CONTRÔLEUR ADMIN STAFF - Module Admin
  *
- * API REST pour la gestion du staff administratif
- * Migration et intégration avec la table ___config_admin
+ * API REST pour l'administration du personnel :
+ * - CRUD staff complet avec pagination
+ * - Statistiques et rapports
+ * - Gestion des rôles et permissions
+ * - Sécurisation admin avec guards
+ * - Réutilisation du StaffService
  */
 
 import {
@@ -10,62 +14,53 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
   UseGuards,
   Logger,
-  Request,
-  BadRequestException,
-  NotFoundException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { AdminStaffService } from '../services/admin-staff.service';
-import { LocalAuthGuard } from '../../../auth/local-auth.guard';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
-  CreateLegacyStaff,
-  UpdateLegacyStaff,
-  LegacyStaffQuery,
-  SuperAdminCreation,
-  CreateLegacyStaffSchema,
-  UpdateLegacyStaffSchema,
-  LegacyStaffQuerySchema,
-  SuperAdminCreationSchema,
-} from '../schemas/legacy-staff.schemas';
+  StaffService,
+  CreateStaffDto,
+  UpdateStaffDto,
+} from '../../staff/staff.service';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
-@Controller('admin/staff')
-@UseGuards(LocalAuthGuard)
+@ApiTags('Admin Staff')
+@Controller('api/admin/staff')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminStaffController {
   private readonly logger = new Logger(AdminStaffController.name);
 
-  constructor(private readonly staffService: AdminStaffService) {}
+  constructor(private readonly staffService: StaffService) {}
 
   /**
-   * GET /admin/staff
-   * Récupérer tous les staff avec pagination et filtres
+   * GET /api/admin/staff
+   * Récupérer tous les membres du staff avec filtres
    */
   @Get()
-  async getAllStaff(@Query() query: any, @Request() _req: any) {
+  @ApiOperation({ summary: 'Récupérer tous les membres du staff' })
+  @ApiResponse({ status: 200, description: 'Liste du staff récupérée' })
+  async getAllStaff(@Query() query: any) {
     try {
-      this.logger.log('Requête liste staff');
+      this.logger.log('GET /api/admin/staff - Liste staff');
 
-      // Parser et valider la query
-      const parsedQuery: LegacyStaffQuery = {
-        page: parseInt(query.page) || 1,
-        limit: parseInt(query.limit) || 20,
-        search: query.search,
-        level: query.level ? parseInt(query.level) : undefined,
-        isActive:
-          query.isActive !== undefined ? query.isActive === 'true' : undefined,
+      const page = parseInt(query.page) || 1;
+      const limit = parseInt(query.limit) || 10;
+      const filters = {
+        role: query.role,
         department: query.department,
+        isActive: query.isActive !== undefined ? query.isActive === 'true' : undefined,
+        search: query.search,
       };
 
-      const validatedQuery = LegacyStaffQuerySchema.parse(parsedQuery);
-      const currentUserId = _req.user?.id || 'system';
-
-      const result = await this.staffService.getAllStaff(
-        validatedQuery,
-        currentUserId,
-      );
+      const result = await this.staffService.findAll(page, limit, filters);
 
       return {
         success: true,
@@ -73,24 +68,26 @@ export class AdminStaffController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération du staff:', error);
-      return {
-        success: false,
-        error: 'Erreur lors de la récupération du staff',
-        timestamp: new Date().toISOString(),
-      };
+      this.logger.error('Erreur récupération staff:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération du staff',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   /**
-   * GET /admin/staff/stats
+   * GET /api/admin/staff/stats
    * Récupérer les statistiques du staff
    */
   @Get('stats')
+  @ApiOperation({ summary: 'Statistiques du staff' })
+  @ApiResponse({ status: 200, description: 'Statistiques récupérées' })
   async getStaffStats() {
     try {
-      this.logger.log('Requête statistiques staff');
-      const stats = await this.staffService.getStaffStats();
+      this.logger.log('GET /api/admin/staff/stats - Statistiques');
+
+      const stats = await this.staffService.getStats();
 
       return {
         success: true,
@@ -98,70 +95,27 @@ export class AdminStaffController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(
-        'Erreur lors de la récupération des stats staff:',
-        error,
+      this.logger.error('Erreur statistiques staff:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      return {
-        success: false,
-        error: 'Erreur lors de la récupération des statistiques',
-        timestamp: new Date().toISOString(),
-      };
     }
   }
 
   /**
-   * GET /admin/staff/permissions/:level
-   * Récupérer les permissions pour un niveau donné
-   */
-  @Get('permissions/:level')
-  async getPermissions(@Param('level') level: string) {
-    try {
-      this.logger.log(`Requête permissions niveau: ${level}`);
-      const levelNum = parseInt(level);
-
-      if (isNaN(levelNum) || levelNum < 1 || levelNum > 9) {
-        throw new BadRequestException('Niveau invalide (1-9)');
-      }
-
-      const permissions = this.staffService.getPermissions(levelNum);
-      const description = this.staffService.getLevelDescription(levelNum);
-
-      return {
-        success: true,
-        data: {
-          level: levelNum,
-          description,
-          permissions,
-        },
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la récupération des permissions ${level}:`,
-        error,
-      );
-      return {
-        success: false,
-        error: 'Erreur lors de la récupération des permissions',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * GET /admin/staff/:id
-   * Récupérer un staff par ID
+   * GET /api/admin/staff/:id
+   * Récupérer un membre du staff par ID
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Récupérer un membre du staff' })
+  @ApiResponse({ status: 200, description: 'Membre du staff trouvé' })
+  @ApiResponse({ status: 404, description: 'Membre introuvable' })
   async getStaffById(@Param('id') id: string) {
     try {
-      this.logger.log(`Requête staff ID: ${id}`);
-      const staff = await this.staffService.getStaffById(id);
+      this.logger.log(`GET /api/admin/staff/${id}`);
 
-      if (!staff) {
-        throw new NotFoundException('Staff non trouvé');
-      }
+      const staff = await this.staffService.findById(id);
 
       return {
         success: true,
@@ -169,255 +123,120 @@ export class AdminStaffController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(
-        `Erreur lors de la récupération du staff ${id}:`,
-        error,
+      this.logger.error(`Erreur récupération staff ${id}:`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Erreur lors de la récupération du membre',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      return {
-        success: false,
-        error:
-          error instanceof NotFoundException
-            ? 'Staff non trouvé'
-            : 'Erreur lors de la récupération du staff',
-        timestamp: new Date().toISOString(),
-      };
     }
   }
 
   /**
-   * POST /admin/staff
-   * Créer un nouveau staff
+   * POST /api/admin/staff
+   * Créer un nouveau membre du staff
    */
   @Post()
-  async createStaff(@Body() data: CreateLegacyStaff, @Request() _req: any) {
+  @ApiOperation({ summary: 'Créer un membre du staff' })
+  @ApiResponse({ status: 201, description: 'Membre créé avec succès' })
+  @ApiResponse({ status: 400, description: 'Données invalides' })
+  async createStaff(@Body() createStaffDto: CreateStaffDto) {
     try {
-      this.logger.log(`Création staff: ${data.login}`);
+      this.logger.log(`POST /api/admin/staff - ${createStaffDto.email}`);
 
-      // Validation des données
-      const validatedData = CreateLegacyStaffSchema.parse(data);
-      const currentUserId = _req.user?.id || 'system';
-
-      const staff = await this.staffService.createStaff(
-        validatedData,
-        currentUserId,
-      );
+      const staff = await this.staffService.create(createStaffDto);
 
       return {
         success: true,
         data: staff,
-        message: 'Staff créé avec succès',
+        message: 'Membre du staff créé avec succès',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la création du staff:', error);
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erreur lors de la création du staff',
-        timestamp: new Date().toISOString(),
-      };
+      this.logger.error('Erreur création staff:', error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Erreur lors de la création',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   /**
-   * POST /admin/staff/super-admin
-   * Créer un super-administrateur niveau 9
-   */
-  @Post('super-admin')
-  async createSuperAdmin(
-    @Body() data: SuperAdminCreation,
-    @Request() _req: any,
-  ) {
-    try {
-      this.logger.log(`Création super-admin: ${data.login}`);
-
-      // Validation des données
-      const validatedData = SuperAdminCreationSchema.parse(data);
-
-      const superAdmin =
-        await this.staffService.createSuperAdmin(validatedData);
-
-      return {
-        success: true,
-        data: superAdmin,
-        message: 'Super-administrateur créé avec succès',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Erreur lors de la création du super-admin:', error);
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erreur lors de la création du super-admin',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * PATCH /admin/staff/:id
-   * Mettre à jour un staff
+   * PATCH /api/admin/staff/:id
+   * Mettre à jour un membre du staff
    */
   @Patch(':id')
+  @ApiOperation({ summary: 'Mettre à jour un membre du staff' })
+  @ApiResponse({ status: 200, description: 'Membre mis à jour' })
+  @ApiResponse({ status: 404, description: 'Membre introuvable' })
   async updateStaff(
     @Param('id') id: string,
-    @Body() data: Partial<UpdateLegacyStaff>,
-    @Request() _req: any,
+    @Body() updateStaffDto: UpdateStaffDto,
   ) {
     try {
-      this.logger.log(`Mise à jour staff: ${id}`);
+      this.logger.log(`PATCH /api/admin/staff/${id}`);
 
-      const updateData: UpdateLegacyStaff = { ...data, id: parseInt(id) };
-      const validatedData = UpdateLegacyStaffSchema.parse(updateData);
-      const currentUserId = _req.user?.id || 'system';
-
-      const staff = await this.staffService.updateStaff(
-        validatedData,
-        currentUserId,
-      );
+      const staff = await this.staffService.update(id, updateStaffDto);
 
       return {
         success: true,
         data: staff,
-        message: 'Staff mis à jour avec succès',
+        message: 'Membre du staff mis à jour',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour du staff ${id}:`, error);
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erreur lors de la mise à jour du staff',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * PATCH /admin/staff/:id/toggle-status
-   * Activer/Désactiver un staff
-   */
-  @Patch(':id/toggle-status')
-  async toggleStaffStatus(
-    @Param('id') id: string,
-    @Body() { isActive }: { isActive: boolean },
-    @Request() _req: any,
-  ) {
-    try {
-      this.logger.log(`Changement statut staff ${id}: ${isActive}`);
-      const currentUserId = _req.user?.id || 'system';
-
-      const staff = await this.staffService.toggleStaffStatus(
-        id,
-        isActive,
-        currentUserId,
-      );
-
-      return {
-        success: true,
-        data: staff,
-        message: `Staff ${isActive ? 'activé' : 'désactivé'} avec succès`,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors du changement de statut du staff ${id}:`,
-        error,
-      );
-      return {
-        success: false,
-        error: 'Erreur lors du changement de statut',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * PATCH /admin/staff/:id/change-password
-   * Changer le mot de passe d'un staff
-   */
-  @Patch(':id/change-password')
-  async changePassword(
-    @Param('id') id: string,
-    @Body() { newPassword }: { newPassword: string },
-    @Request() _req: any,
-  ) {
-    try {
-      this.logger.log(`Changement mot de passe staff: ${id}`);
-
-      if (!newPassword || newPassword.length < 6) {
-        throw new BadRequestException(
-          'Le mot de passe doit contenir au moins 6 caractères',
-        );
+      this.logger.error(`Erreur mise à jour staff ${id}:`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
       }
-
-      const currentUserId = _req.user?.id || 'system';
-      const success = await this.staffService.changePassword(
-        id,
-        newPassword,
-        currentUserId,
+      
+      throw new HttpException(
+        'Erreur lors de la mise à jour',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
-
-      if (!success) {
-        throw new Error('Échec du changement de mot de passe');
-      }
-
-      return {
-        success: true,
-        message: 'Mot de passe changé avec succès',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors du changement de mot de passe ${id}:`,
-        error,
-      );
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erreur lors du changement de mot de passe',
-        timestamp: new Date().toISOString(),
-      };
     }
   }
 
   /**
-   * POST /admin/staff/:id/validate-password
-   * Valider le mot de passe d'un staff
+   * DELETE /api/admin/staff/:id
+   * Désactiver un membre du staff
    */
-  @Post(':id/validate-password')
-  async validatePassword(
-    @Param('id') id: string,
-    @Body() { password }: { password: string },
-  ) {
+  @Delete(':id')
+  @ApiOperation({ summary: 'Désactiver un membre du staff' })
+  @ApiResponse({ status: 200, description: 'Membre désactivé' })
+  @ApiResponse({ status: 404, description: 'Membre introuvable' })
+  async deleteStaff(@Param('id') id: string) {
     try {
-      this.logger.log(`Validation mot de passe staff: ${id}`);
+      this.logger.log(`DELETE /api/admin/staff/${id}`);
 
-      const isValid = await this.staffService.validatePassword(id, password);
+      const result = await this.staffService.delete(id);
 
       return {
         success: true,
-        data: { isValid },
+        data: result,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(
-        `Erreur lors de la validation du mot de passe ${id}:`,
-        error,
+      this.logger.error(`Erreur suppression staff ${id}:`, error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException(
+        'Erreur lors de la suppression',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
-      return {
-        success: false,
-        error: 'Erreur lors de la validation du mot de passe',
-        timestamp: new Date().toISOString(),
-      };
     }
   }
 }

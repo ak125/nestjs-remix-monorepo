@@ -12,7 +12,11 @@ import {
   ShoppingCart,
   Users,
   BarChart3,
-  Shield
+  Shield,
+  CreditCard,
+  Truck,
+  UserCog,
+  FileText
 } from "lucide-react";
 import { Badge } from "./badge";
 import { Button } from "./button";
@@ -35,10 +39,9 @@ export default function Navbar({ user }: NavbarProps) {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Logique d'accès basée sur l'analyse du système PHP legacy
-  // Système dual : 
-  // - Clients (___xtr_customer) : level 0-1, isPro pour fonctionnalités étendues
-  // - Administrateurs (___config_admin) : level 7-9 pour accès admin
+  // Organisation des niveaux d'accès
+  // Niveau 7+ (Admin) : Dashboard, Commandes, Utilisateurs, Rapports
+  // Niveau 9 (Super-Admin) : + Staff, Paiements, Fournisseur
   const isAdmin = user?.level && user.level >= 7; // Administrateurs commerciaux
   const isSuperAdmin = user?.level && user.level >= 9; // Super-administrateurs
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,9 +89,9 @@ export default function Navbar({ user }: NavbarProps) {
                 <div className="h-6 w-px bg-gray-300"></div>
                 
                 <Link
-                  to="/my-orders"
+                  to="/account/orders"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/my-orders')
+                    isActive('/account/orders')
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -111,57 +114,73 @@ export default function Navbar({ user }: NavbarProps) {
               </>
             )}
 
-            {/* Section ADMINISTRATEURS */}
+            {/* Section ADMINISTRATEURS - Niveau 7+ */}
             {isAdmin && (
               <>
                 {/* Séparateur visuel avec label */}
                 <div className="flex items-center space-x-2">
                   <div className="h-6 w-px bg-gray-300"></div>
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    ADMINISTRATION
+                  <span className="text-xs font-medium text-white bg-blue-600 px-2 py-1 rounded">
+                    ADMIN (Niveau {user?.level})
                   </span>
                   <div className="h-6 w-px bg-gray-300"></div>
                 </div>
                 
+                {/* Dashboard */}
+                <Link
+                  to="/admin"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/admin') && location.pathname === '/admin'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                
+                {/* Commandes */}
                 <Link
                   to="/admin/orders"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/admin/orders')
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
                   <Package className="w-4 h-4" />
-                  <span>Gestion commandes</span>
+                  <span>Commandes</span>
                 </Link>
                 
+                {/* Utilisateurs */}
                 <Link
-                  to="/admin/customers"
+                  to="/admin/users"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/admin/customers')
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                    isActive('/admin/users')
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
                   <Users className="w-4 h-4" />
-                  <span>Clients</span>
+                  <span>Utilisateurs</span>
                 </Link>
                 
+                {/* Rapports */}
                 <Link
                   to="/admin/reports"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/admin/reports')
-                      ? 'bg-red-100 text-red-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   <span>Rapports</span>
                 </Link>
               </>
             )}
 
-            {/* Section SUPER-ADMINISTRATEURS */}
+            {/* Section SUPER-ADMINISTRATEURS - Niveau 9 */}
             {isSuperAdmin && (
               <>
                 {/* Séparateur visuel avec label */}
@@ -173,6 +192,7 @@ export default function Navbar({ user }: NavbarProps) {
                   <div className="h-6 w-px bg-gray-300"></div>
                 </div>
                 
+                {/* Staff */}
                 <Link
                   to="/admin/staff"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -181,10 +201,11 @@ export default function Navbar({ user }: NavbarProps) {
                       : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
                   }`}
                 >
-                  <Users className="w-4 h-4" />
-                  <span>Gestion Staff</span>
+                  <UserCog className="w-4 h-4" />
+                  <span>Staff</span>
                 </Link>
                 
+                {/* Paiements */}
                 <Link
                   to="/admin/payments"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -193,8 +214,21 @@ export default function Navbar({ user }: NavbarProps) {
                       : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
                   }`}
                 >
-                  <Package className="w-4 h-4" />
-                  <span>Gestion Paiements</span>
+                  <CreditCard className="w-4 h-4" />
+                  <span>Paiements</span>
+                </Link>
+                
+                {/* Fournisseurs */}
+                <Link
+                  to="/admin/suppliers"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/admin/suppliers')
+                      ? 'bg-red-100 text-red-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                  }`}
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Fournisseurs</span>
                 </Link>
               </>
             )}
@@ -211,9 +245,9 @@ export default function Navbar({ user }: NavbarProps) {
                 
                 <div className="flex items-center space-x-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link to="/profile">
+                    <Link to="/account/dashboard">
                       <User className="w-4 h-4 mr-1" />
-                      Profil
+                      Mon Compte
                     </Link>
                   </Button>
                   
@@ -256,9 +290,9 @@ export default function Navbar({ user }: NavbarProps) {
             {!isAdmin && (
               <>
                 <Link
-                  to="/my-orders"
+                  to="/account/orders"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/my-orders')
+                    isActive('/account/orders')
                       ? 'bg-blue-100 text-blue-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
@@ -281,30 +315,50 @@ export default function Navbar({ user }: NavbarProps) {
               </>
             )}
 
+            {/* Navigation mobile - Section Admin */}
             {isAdmin && (
               <>
+                {/* Badge Admin */}
+                <div className="w-full">
+                  <span className="text-xs font-medium text-white bg-blue-600 px-2 py-1 rounded">
+                    ADMIN (Niveau {user?.level})
+                  </span>
+                </div>
+                
+                <Link
+                  to="/admin"
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/admin') && location.pathname === '/admin'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
+                  }`}
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                
                 <Link
                   to="/admin/orders"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/admin/orders')
                       ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
                   <Package className="w-4 h-4" />
-                  <span>Gestion</span>
+                  <span>Commandes</span>
                 </Link>
                 
                 <Link
-                  to="/admin/customers"
+                  to="/admin/users"
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/admin/customers')
+                    isActive('/admin/users')
                       ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
                   <Users className="w-4 h-4" />
-                  <span>Clients</span>
+                  <span>Utilisateurs</span>
                 </Link>
                 
                 <Link
@@ -312,12 +366,59 @@ export default function Navbar({ user }: NavbarProps) {
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive('/admin/reports')
                       ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-blue-50'
                   }`}
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   <span>Rapports</span>
                 </Link>
+                
+                {/* Section Super-Admin mobile */}
+                {isSuperAdmin && (
+                  <>
+                    <div className="w-full">
+                      <span className="text-xs font-medium text-white bg-red-600 px-2 py-1 rounded">
+                        SUPER-ADMIN
+                      </span>
+                    </div>
+                    
+                    <Link
+                      to="/admin/staff"
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin/staff')
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                      }`}
+                    >
+                      <UserCog className="w-4 h-4" />
+                      <span>Staff</span>
+                    </Link>
+                    
+                    <Link
+                      to="/admin/payments"
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin/payments')
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                      }`}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      <span>Paiements</span>
+                    </Link>
+                    
+                    <Link
+                      to="/admin/suppliers"
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin/suppliers')
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-red-50'
+                      }`}
+                    >
+                      <Truck className="w-4 h-4" />
+                      <span>Fournisseurs</span>
+                    </Link>
+                  </>
+                )}
               </>
             )}
           </div>

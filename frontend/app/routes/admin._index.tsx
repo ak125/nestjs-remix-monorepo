@@ -1,5 +1,13 @@
 /**
- * Dashboard Admin - Page d'accueil d'administration
+ * Dashboard Admin - Page d'accu    const stats = {
+      totalUsers: 0,
+      totalOrders: 0,
+      totalRevenue: 0,
+      activeUsers: 0,
+      pendingOrders: 0,
+      completedOrders: 0,
+      totalSuppliers: 0
+    };ministration
  */
 
 import  { type LoaderFunction, type MetaFunction , json } from "@remix-run/node";
@@ -11,9 +19,10 @@ import {
   TrendingUp, 
   AlertTriangle,
   CheckCircle,
-  RefreshCw 
+  RefreshCw,
+  Truck
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
 export const meta: MetaFunction = () => {
   return [
@@ -26,10 +35,11 @@ export const loader: LoaderFunction = async () => {
   try {
     console.log('📊 Chargement des statistiques du dashboard...');
     
-    // Récupérer les stats depuis les différentes APIs
-    const [usersResponse, ordersResponse] = await Promise.all([
-      fetch('http://localhost:3000/api/users?limit=1000'),
-      fetch('http://localhost:3000/api/orders?limit=1000')
+    // Récupérer les données des différentes APIs
+    const [usersResponse, ordersResponse, suppliersResponse] = await Promise.all([
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/users/test`),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/orders`),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/suppliers`)
     ]);
 
     let stats = {
@@ -38,7 +48,8 @@ export const loader: LoaderFunction = async () => {
       totalRevenue: 0,
       activeUsers: 0,
       pendingOrders: 0,
-      completedOrders: 0
+      completedOrders: 0,
+      totalSuppliers: 0
     };
 
     // Traiter les données users
@@ -60,6 +71,12 @@ export const loader: LoaderFunction = async () => {
         .reduce((sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || 0), 0);
     }
 
+    // Traiter les données suppliers
+    if (suppliersResponse.ok) {
+      const suppliersData = await suppliersResponse.json();
+      stats.totalSuppliers = suppliersData.suppliers?.length || 0;
+    }
+
     console.log('✅ Stats du dashboard chargées:', stats);
 
     return json({ stats });
@@ -72,7 +89,8 @@ export const loader: LoaderFunction = async () => {
         totalRevenue: 0,
         activeUsers: 0,
         pendingOrders: 0,
-        completedOrders: 0
+        completedOrders: 0,
+        totalSuppliers: 0
       },
       error: 'Erreur de connexion aux APIs'
     });
@@ -156,6 +174,21 @@ export default function AdminDashboard() {
             <div className="text-2xl font-bold">{stats.pendingOrders}</div>
             <p className="text-xs text-muted-foreground">
               Commandes à traiter
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Fournisseurs</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalSuppliers || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              <a href="/admin/suppliers" className="text-blue-600 hover:underline">
+                Gérer les fournisseurs →
+              </a>
             </p>
           </CardContent>
         </Card>

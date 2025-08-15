@@ -38,12 +38,20 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
+# dotenv environment variable files - NEVER commit these
 .env
-.env.development.local
-.env.test.local
-.env.production.local
 .env.local
+.env.*.local
+!.env.example
+!.env.test.example
+
+# Secrets and credentials
+*.pem
+*.key
+*.cert
+*.p12
+*-credentials.json
+*-serviceaccount.json
 
 # temp directory
 .temp

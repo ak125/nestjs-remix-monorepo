@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '../database/database.module';
 import { CacheModule } from '../cache/cache.module';
+import { UsersModule } from '../modules/users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { ProfileController } from './profile.controller';
@@ -17,8 +19,13 @@ import { LocalStrategy } from './local.strategy';
       property: 'user',
       session: true,
     }),
+    JwtModule.register({
+      secret: process.env.SESSION_SECRET || 'default-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
     DatabaseModule,
     CacheModule,
+    UsersModule,
   ],
   controllers: [AuthController, ProfileController],
   providers: [

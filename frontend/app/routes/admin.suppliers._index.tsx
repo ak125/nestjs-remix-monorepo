@@ -1,558 +1,521 @@
 /**
  * 📋 INTERFACE GESTION FOURNISSEURS - Admin Interface
- * 
- * Interface de gestion des fournisseurs AutoParts
- * Migration des fonctionnalités PHP legacy vers Remix
+ * ✅ Aligné sur l'architecture des autres modules (users, orders, messages)
+ * ✅ Utilise requireAdmin pour l'authentification
+ * ✅ Interface moderne avec filtres et pagination
+ * ✅ Style cohérent avec les autres composants admin
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
-import { requireUser } from "~/server/auth.server";
-import { getRemixApiService } from "~/server/remix-api.server";
+import { requireAdmin } from "../server/auth.server";
 
-// Types pour la gestion des fournisseurs
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Gestion des Fournisseurs - Admin" },
+    { name: "description", content: "Interface d'administration pour la gestion des fournisseurs" },
+  ];
+};
+
+// Types pour la gestion des fournisseurs (alignés avec les schémas Zod backend)
 interface Supplier {
-  id: string;
+  id: number;
+  code: string;
   name: string;
-  category: string;
+  companyName?: string;
   email?: string;
   phone?: string;
+  address1?: string;
   city?: string;
   country?: string;
-  status: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  paymentTerms?: string;
+  minimumOrderAmount?: number;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-interface SupplierStats {
-  totalSuppliers: number;
-  activeSuppliers: number;
-  inactiveSuppliers: number;
-  newThisMonth: number;
-  topCategories: Array<{ category: string; count: number }>;
-}
-
-interface _SuppliersData {
-  suppliers: Supplier[];
-  stats: SupplierStats;
-  pagination: {
-    page: number;
-    totalPages: number;
-    totalItems: number;
-  };
-}
-
-// Fonction loader pour récupérer les données des fournisseurs
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireUser({ context });
+  // Utiliser requireAdmin comme les autres modules admin
+  await requireAdmin({ context });
   
-  // Vérifier les permissions admin
-  if (!user.level || user.level < 7) {
-    throw new Response("Accès non autorisé", { status: 403 });
-  }
-
   const url = new URL(request.url);
+  const params = {
+    status: url.searchParams.get("status") || undefined,
+    search: url.searchParams.get("search") || undefined,
+    country: url.searchParams.get("country") || undefined,
+    page: url.searchParams.get("page") || "1",
+    limit: url.searchParams.get("limit") || "20",
+  };
   
-  // Paramètres de requête pour la pagination et les filtres
-  const page = parseInt(url.searchParams.get('page') || '1');
-  const search = url.searchParams.get('search') || '';
-  const country = url.searchParams.get('country') || '';
-  const isActive = url.searchParams.get('status') === 'active' ? true : 
-                   url.searchParams.get('status') === 'inactive' ? false : undefined;
-
   try {
-    const remixService = await getRemixApiService(context);
-    const suppliersResult = await remixService.getSuppliersForRemix({
-      page,
-      limit: 10,
-      search,
-      country,
-      isActive,
+    console.log("🔄 Chargement des fournisseurs depuis l'API...");
+    
+    // Utiliser l'API suppliers existante
+    const apiUrl = `http://localhost:3000/api/suppliers`;
+    
+    const suppliersResponse = await fetch(apiUrl, {
+      headers: { "Internal-Call": "true" },
     });
-
-    if (!suppliersResult.success) {
-      throw new Error(suppliersResult.error || "Erreur API pour les données des fournisseurs");
+    
+    if (!suppliersResponse.ok) {
+      throw new Error(`API Error: ${suppliersResponse.status}`);
     }
-
-    // Transformer les données et calculer les statistiques
-    const suppliers = suppliersResult.suppliers.map((supplier: any) => ({
-      id: supplier.id,
-      name: supplier.name,
-      category: supplier.category || 'Non définie',
-      email: supplier.email,
-      phone: supplier.phone,
-      city: supplier.address?.city || supplier.city,
-      country: supplier.country,
-      status: supplier.isActive ? 'verified' : 'inactive',
-      is_active: supplier.isActive,
-      created_at: supplier.createdAt || new Date().toISOString(),
-      updated_at: supplier.updatedAt || new Date().toISOString(),
-    }));
-
-    // Calculer les statistiques basiques
-    const stats: SupplierStats = {
-      totalSuppliers: suppliersResult.total,
-      activeSuppliers: suppliers.filter(s => s.is_active).length,
-      inactiveSuppliers: suppliers.filter(s => !s.is_active).length,
-      newThisMonth: 0, // À implémenter selon les besoins
-      topCategories: [], // À implémenter selon les besoins
+    
+    const suppliersData = await suppliersResponse.json();
+    const suppliers = suppliersData.suppliers || [];
+    
+    // Appliquer les filtres côté client pour l'instant
+    let filteredSuppliers = suppliers;
+    
+    if (params.search) {
+      const search = params.search.toLowerCase();
+      filteredSuppliers = suppliers.filter((supplier: any) =>
+        supplier.name?.toLowerCase().includes(search) ||
+        supplier.companyName?.toLowerCase().includes(search) ||
+        supplier.code?.toLowerCase().includes(search)
+      );
+    }
+    
+    if (params.status) {
+      const isActive = params.status === "active";
+      filteredSuppliers = filteredSuppliers.filter((supplier: any) => 
+        supplier.isActive === isActive
+      );
+    }
+    
+    // Pagination côté client
+    const page = parseInt(params.page);
+    const limit = parseInt(params.limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedSuppliers = filteredSuppliers.slice(startIndex, endIndex);
+    
+    // Calculer les statistiques
+    const statistics = {
+      total: suppliers.length,
+      active: suppliers.filter((s: any) => s.isActive).length,
+      inactive: suppliers.filter((s: any) => !s.isActive).length,
+      withEmail: suppliers.filter((s: any) => s.email).length,
+      withWebsite: 0, // Pas de champ website dans l'API actuelle
+      countries: [...new Set(suppliers.map((s: any) => s.country).filter(Boolean))]
     };
+    
+    console.log(`✅ ${paginatedSuppliers.length} fournisseurs chargés (${filteredSuppliers.length} total après filtre)`);
 
     return json({
-      suppliers,
-      stats,
-      pagination: {
-        page,
-        totalPages: suppliersResult.pagination?.totalPages ?? suppliersResult.totalPages ?? 1,
-        totalItems: suppliersResult.total,
-      },
-      fallbackMode: false,
-      timestamp: new Date().toISOString(),
+      suppliers: paginatedSuppliers,
+      totalSuppliers: filteredSuppliers.length,
+      totalPages: Math.ceil(filteredSuppliers.length / limit),
+      currentPage: page,
+      statistics,
+      params,
     });
-
-  } catch (error) {
-    console.error('Erreur loader suppliers:', error);
     
-    // Fallback en cas d'erreur
+  } catch (error) {
+    console.error("❌ Erreur lors du chargement des fournisseurs:", error);
+    
+    // Données de fallback pour éviter les erreurs d'interface
     return json({
       suppliers: [],
-      stats: {
-        totalSuppliers: 0,
-        activeSuppliers: 0,
-        inactiveSuppliers: 0,
-        newThisMonth: 0,
-        topCategories: [],
+      totalSuppliers: 0,
+      totalPages: 0,
+      currentPage: 1,
+      statistics: {
+        total: 0,
+        active: 0,
+        inactive: 0,
+        withEmail: 0,
+        withWebsite: 0,
+        countries: []
       },
-      pagination: { page: 1, totalPages: 1, totalItems: 0 },
-      fallbackMode: true,
-      timestamp: new Date().toISOString(),
+      params
     });
   }
 }
 
-// Composant principal de gestion des fournisseurs
-export default function AdminSuppliers() {
-  const data = useLoaderData<typeof loader>();
-  const navigation = useNavigation();
-  const [_selectedSupplier, _setSelectedSupplier] = useState<Supplier | null>(null);
+export default function SuppliersIndex() {
+  const { suppliers, totalSuppliers, totalPages, currentPage, statistics, params } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [localSearch, setLocalSearch] = useState(params.search || '');
   
-  const isLoading = navigation.state === "loading";
+  const limit = parseInt(params.limit);
 
-  // Fonction pour formater les dates
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  // Fonction pour obtenir la classe CSS du statut
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newParams = new URLSearchParams(searchParams);
+    if (localSearch.trim()) {
+      newParams.set('search', localSearch.trim());
+    } else {
+      newParams.delete('search');
     }
+    newParams.set('page', '1');
+    navigate(`/admin/suppliers?${newParams.toString()}`);
   };
-
-  // Fonction pour obtenir le texte du statut
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'verified':
-        return 'Vérifié';
-      case 'pending':
-        return 'En attente';
-      case 'rejected':
-        return 'Rejeté';
-      default:
-        return 'Inconnu';
-    }
-  };
-
+  
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* En-tête avec navigation */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          <Link to="/admin" className="hover:text-blue-600">Admin</Link>
-          <span>›</span>
-          <span className="font-medium">Gestion des Fournisseurs</span>
+    <div className="container mx-auto p-6 space-y-6">
+      {/* En-tête */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Gestion des Fournisseurs
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Gérez vos fournisseurs et leurs informations
+          </p>
         </div>
-        
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestion des Fournisseurs</h1>
-            <p className="text-gray-600 mt-1">
-              Gestion centralisée des partenaires fournisseurs AutoParts
-            </p>
-          </div>
-          
-          <div className="flex gap-3">
-            <Link
-              to="/admin/suppliers/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Nouveau Fournisseur
-            </Link>
+        <div className="flex gap-3">
+          <Link
+            to="/admin/suppliers/import"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            📤 Importer
+          </Link>
+          <Link
+            to="/admin/suppliers/new"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm bg-blue-600 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            ➕ Nouveau Fournisseur
+          </Link>
+        </div>
+      </div>
+      
+      {/* Statistiques */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <StatCard 
+          title="Total" 
+          value={statistics.total} 
+          icon="🏢"
+        />
+        <StatCard 
+          title="Actifs" 
+          value={statistics.active} 
+          icon="✅"
+          color="green" 
+        />
+        <StatCard 
+          title="Inactifs" 
+          value={statistics.inactive} 
+          icon="❌"
+          color="gray" 
+        />
+        <StatCard 
+          title="Avec Email" 
+          value={statistics.withEmail} 
+          icon="📧"
+        />
+        <StatCard 
+          title="Avec Site Web" 
+          value={statistics.withWebsite} 
+          icon="🌐"
+        />
+        <StatCard 
+          title="Pays" 
+          value={statistics.countries.length} 
+          icon="🌍"
+        />
+      </div>
+      
+      {/* Filtres */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0 sm:space-x-4">
+            {/* Barre de recherche */}
+            <div className="flex-1 min-w-0">
+              <form onSubmit={handleSearch} className="relative">
+                <input
+                  type="text"
+                  placeholder="Rechercher par nom, code, email..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  className="block w-full pr-10 border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+                <button
+                  type="submit"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  🔍
+                </button>
+              </form>
+            </div>
+            
+            {/* Filtres */}
+            <div className="flex items-center space-x-3">
+              <Form method="get" className="flex items-center space-x-2">
+                <input type="hidden" name="search" value={params.search || ''} />
+                <select 
+                  name="status"
+                  className="border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+                  defaultValue={params.status || ''}
+                  onChange={(e) => e.target.form?.submit()}
+                >
+                  <option value="">Tous les statuts</option>
+                  <option value="true">Actif</option>
+                  <option value="false">Inactif</option>
+                </select>
+              </Form>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Indicateur de mode fallback */}
-      {data.fallbackMode && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-600">⚠️</span>
-            <span className="text-yellow-800 font-medium">Mode Développement</span>
-            <span className="text-yellow-600 text-sm">
-              - Données de test affichées
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Statistiques des fournisseurs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Fournisseurs</p>
-              <p className="text-2xl font-bold text-gray-900">{data.stats.totalSuppliers}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <span className="text-blue-600 text-xl">🏢</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Fournisseurs Actifs</p>
-              <p className="text-2xl font-bold text-green-600">{data.stats.activeSuppliers}</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <span className="text-green-600 text-xl">✅</span>
+      
+      {/* Liste des fournisseurs */}
+      <div className="space-y-4">
+        {suppliers.length === 0 ? (
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="text-center py-8">
+                <div className="mx-auto h-12 w-12 text-gray-400 text-4xl">
+                  🏢
+                </div>
+                <h3 className="mt-2 text-lg font-medium text-gray-900">
+                  Aucun fournisseur trouvé
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {params.search ? 
+                    `Aucun résultat pour "${params.search}"` : 
+                    "Aucun fournisseur dans votre base de données"
+                  }
+                </p>
+                <div className="mt-6">
+                  <Link
+                    to="/admin/suppliers/new"
+                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  >
+                    ➕ Ajouter le premier fournisseur
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Fournisseurs Inactifs</p>
-              <p className="text-2xl font-bold text-red-600">{data.stats.inactiveSuppliers}</p>
-            </div>
-            <div className="p-3 bg-red-100 rounded-full">
-              <span className="text-red-600 text-xl">⏸️</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Nouveaux ce mois</p>
-              <p className="text-2xl font-bold text-blue-600">{data.stats.newThisMonth}</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <span className="text-blue-600 text-xl">📈</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filtres et recherche */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <Form method="get" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recherche
-              </label>
-              <input
-                type="text"
-                name="search"
-                placeholder="Nom du fournisseur..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        ) : (
+          <div className="grid gap-4">
+            {suppliers.map((supplier) => (
+              <SupplierCard 
+                key={supplier.id} 
+                supplier={supplier} 
               />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Catégorie
-              </label>
-              <select
-                name="category"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Toutes les catégories</option>
-                <option value="pieces-detachees">Pièces détachées</option>
-                <option value="moteurs">Moteurs</option>
-                <option value="accessoires">Accessoires</option>
-                <option value="electronique">Électronique</option>
-                <option value="carrosserie">Carrosserie</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Statut
-              </label>
-              <select
-                name="status"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tous les statuts</option>
-                <option value="verified">Vérifié</option>
-                <option value="pending">En attente</option>
-                <option value="rejected">Rejeté</option>
-              </select>
-            </div>
-            
-            <div className="flex items-end">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Recherche...' : 'Filtrer'}
-              </button>
-            </div>
-          </div>
-        </Form>
-      </div>
-
-      {/* Tableau des fournisseurs */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fournisseur
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Catégorie
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Localisation
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Statut
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Créé le
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {data.suppliers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    <div className="flex flex-col items-center gap-3">
-                      <span className="text-4xl">📦</span>
-                      <span>Aucun fournisseur trouvé</span>
-                      {data.fallbackMode && (
-                        <span className="text-yellow-600 text-sm">Mode de secours activé</span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                data.suppliers.map((supplier) => (
-                  <tr key={supplier.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-blue-600 font-bold text-sm">
-                              {supplier.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {supplier.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            ID: {supplier.id}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                        {supplier.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        {supplier.email && (
-                          <div className="flex items-center gap-1">
-                            <span>📧</span>
-                            <span>{supplier.email}</span>
-                          </div>
-                        )}
-                        {supplier.phone && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <span>📞</span>
-                            <span>{supplier.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>
-                        {supplier.city && <div>{supplier.city}</div>}
-                        {supplier.country && (
-                          <div className="text-gray-500">{supplier.country}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-1">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusClass(supplier.status)}`}>
-                          {getStatusText(supplier.status)}
-                        </span>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          supplier.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {supplier.is_active ? 'Actif' : 'Inactif'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(supplier.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end gap-2">
-                        <Link
-                          to={`/admin/suppliers/${supplier.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Voir
-                        </Link>
-                        <Link
-                          to={`/admin/suppliers/${supplier.id}/edit`}
-                          className="text-yellow-600 hover:text-yellow-900"
-                        >
-                          Éditer
-                        </Link>
-                        <button
-                          onClick={() => _setSelectedSupplier(supplier as Supplier)}
-                          className={`${
-                            supplier.is_active 
-                              ? 'text-red-600 hover:text-red-900' 
-                              : 'text-green-600 hover:text-green-900'
-                          }`}
-                        >
-                          {supplier.is_active ? 'Désactiver' : 'Activer'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {data.pagination.totalPages > 1 && (
-          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 flex justify-between sm:hidden">
-                {data.pagination.page > 1 && (
-                  <Link
-                    to={`?page=${data.pagination.page - 1}`}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Précédent
-                  </Link>
-                )}
-                {data.pagination.page < data.pagination.totalPages && (
-                  <Link
-                    to={`?page=${data.pagination.page + 1}`}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Suivant
-                  </Link>
-                )}
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Affichage de{' '}
-                    <span className="font-medium">
-                      {(data.pagination.page - 1) * 10 + 1}
-                    </span>{' '}
-                    à{' '}
-                    <span className="font-medium">
-                      {Math.min(data.pagination.page * 10, data.pagination.totalItems)}
-                    </span>{' '}
-                    sur{' '}
-                    <span className="font-medium">{data.pagination.totalItems}</span>{' '}
-                    fournisseurs
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1)
-                      .filter(page => 
-                        page === 1 || 
-                        page === data.pagination.totalPages || 
-                        Math.abs(page - data.pagination.page) <= 2
-                      )
-                      .map((page, index, array) => (
-                        <div key={page}>
-                          {index > 0 && array[index - 1] !== page - 1 && (
-                            <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                              ...
-                            </span>
-                          )}
-                          <Link
-                            to={`?page=${page}`}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              page === data.pagination.page
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                            }`}
-                          >
-                            {page}
-                          </Link>
-                        </div>
-                      ))}
-                  </nav>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         )}
       </div>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <PaginationControls 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          searchParams={searchParams}
+        />
+      )}
+    </div>
+  );
+}
 
-      {/* Informations de mise à jour */}
-      <div className="mt-6 text-sm text-gray-500 text-center">
-        Dernière mise à jour: {formatDate(data.timestamp)}
+// Composant Carte Statistique
+function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  color = "blue" 
+}: { 
+  title: string; 
+  value: number; 
+  icon: string;
+  color?: "blue" | "green" | "yellow" | "red" | "gray"; 
+}) {
+  const colorClasses = {
+    blue: "text-blue-600 bg-blue-50",
+    green: "text-green-600 bg-green-50",
+    yellow: "text-yellow-600 bg-yellow-50",
+    red: "text-red-600 bg-red-50",
+    gray: "text-gray-600 bg-gray-50",
+  };
+
+  return (
+    <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="p-5">
+        <div className="flex items-center">
+          <div className={`flex-shrink-0 rounded-lg p-2 ${colorClasses[color]}`}>
+            <div className="text-2xl">{icon}</div>
+          </div>
+          <div className="ml-4 w-0 flex-1">
+            <dl>
+              <dt className="text-sm font-medium text-gray-500 truncate">
+                {title}
+              </dt>
+              <dd className="text-lg font-medium text-gray-900">
+                {value.toLocaleString()}
+              </dd>
+            </dl>
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+// Composant Carte Fournisseur
+function SupplierCard({ supplier }: { supplier: Supplier }) {
+  return (
+    <div className="bg-white overflow-hidden shadow rounded-lg">
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900">{supplier.name}</h3>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                supplier.isActive 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {supplier.isActive ? "Actif" : "Inactif"}
+              </span>
+              {supplier.code && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {supplier.code}
+                </span>
+              )}
+            </div>
+            
+            {supplier.companyName && (
+              <p className="text-sm text-gray-600 mb-2">
+                🏢 {supplier.companyName}
+              </p>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+              {supplier.email && (
+                <div className="flex items-center text-gray-600">
+                  📧 {supplier.email}
+                </div>
+              )}
+              {supplier.phone && (
+                <div className="flex items-center text-gray-600">
+                  📞 {supplier.phone}
+                </div>
+              )}
+              {supplier.city && (
+                <div className="flex items-center text-gray-600">
+                  🌍 {supplier.city}, {supplier.country}
+                </div>
+              )}
+            </div>
+            
+            {supplier.contactName && (
+              <div className="mt-2 text-sm">
+                <span className="text-gray-500">Contact:</span>
+                <span className="ml-1 font-medium text-gray-900">{supplier.contactName}</span>
+                {supplier.contactEmail && (
+                  <span className="text-gray-500 ml-2">({supplier.contactEmail})</span>
+                )}
+              </div>
+            )}
+            
+            {supplier.minimumOrderAmount && (
+              <div className="mt-2 text-sm">
+                <span className="text-gray-500">Commande minimum:</span>
+                <span className="ml-1 font-medium text-gray-900">{supplier.minimumOrderAmount}€</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex gap-2 ml-4">
+            <Link 
+              to={`/admin/suppliers/${supplier.id}`}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              👁️ Voir
+            </Link>
+            <Link 
+              to={`/admin/suppliers/${supplier.id}/edit`}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              ✏️ Modifier
+            </Link>
+            <button 
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+            >
+              🗑️ Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Composant Contrôles de Pagination
+function PaginationControls({ 
+  currentPage, 
+  totalPages, 
+  searchParams 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  searchParams: URLSearchParams; 
+}) {
+  const createPageUrl = (page: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', page.toString());
+    return `/admin/suppliers?${newParams.toString()}`;
+  };
+
+  return (
+    <nav className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
+      <div className="hidden sm:block">
+        <p className="text-sm text-gray-700">
+          Page <span className="font-medium">{currentPage}</span> sur{' '}
+          <span className="font-medium">{totalPages}</span>
+        </p>
+      </div>
+      <div className="flex-1 flex justify-between sm:justify-end">
+        {currentPage > 1 && (
+          <Link
+            to={createPageUrl(currentPage - 1)}
+            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            ← Précédent
+          </Link>
+        )}
+        
+        <div className="hidden sm:flex space-x-1 mx-4">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            const page = Math.max(1, currentPage - 2) + i;
+            if (page > totalPages) return null;
+            
+            return (
+              <Link 
+                key={page} 
+                to={createPageUrl(page)}
+                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md ${
+                  page === currentPage
+                    ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {page}
+              </Link>
+            );
+          })}
+        </div>
+        
+        {currentPage < totalPages && (
+          <Link
+            to={createPageUrl(currentPage + 1)}
+            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Suivant →
+          </Link>
+        )}
+      </div>
+    </nav>
   );
 }

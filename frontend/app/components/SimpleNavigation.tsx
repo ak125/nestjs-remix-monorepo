@@ -22,7 +22,7 @@ export default function SimpleNavigation() {
   }, []);
 
   const navigationItems = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
+    { name: 'Dashboard', href: '/admin', icon: '📊' },
     { name: 'Utilisateurs', href: '/admin/users', icon: '👥' },
     { name: 'Commandes', href: '/admin/orders', icon: '📦' },
     { name: 'Paiements', href: '/admin/payments', icon: '💳' },

@@ -4,7 +4,7 @@ import { SupabaseBaseService } from './supabase-base.service';
 
 @Injectable()
 export class RedisCacheService extends SupabaseBaseService {
-  private readonly logger = new Logger(RedisCacheService.name);
+  protected readonly logger = new Logger(RedisCacheService.name);
   private redis: Redis;
 
   constructor() {
@@ -295,6 +295,11 @@ export class RedisCacheService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error(`❌ Erreur Redis DEL ${key}:`, error);
     }
+  }
+
+  // Alias pour compatibilité
+  async delete(key: string): Promise<void> {
+    return this.del(key);
   }
 
   async delPattern(pattern: string): Promise<void> {

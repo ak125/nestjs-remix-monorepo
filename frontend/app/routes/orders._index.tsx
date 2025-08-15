@@ -21,7 +21,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   }
   
   // Si utilisateur normal, rediriger vers interface utilisateur
-  return redirect('/my-orders');
+  return redirect('/account/orders');
 };
 
 export default function OrdersRedirect() {

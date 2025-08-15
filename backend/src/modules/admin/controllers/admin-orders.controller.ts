@@ -8,7 +8,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Body,
   Param,
@@ -19,19 +18,18 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { OrdersService } from '../../orders/orders.service';
-import { OrdersCompleteService } from '../../orders/orders-complete.service';
-import { LocalAuthGuard } from '../../../auth/local-auth.guard';
+import { ApiTags } from '@nestjs/swagger';
+import { OrdersSimpleService } from '../../orders/services/orders-simple.service';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
+@ApiTags('Admin Orders')
 @Controller('api/admin/orders')
-@UseGuards(LocalAuthGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminOrdersController {
   private readonly logger = new Logger(AdminOrdersController.name);
 
-  constructor(
-    private readonly ordersService: OrdersService,
-    private readonly ordersCompleteService: OrdersCompleteService,
-  ) {}
+  constructor(private readonly ordersService: OrdersSimpleService) {}
 
   /**
    * GET /admin/orders
@@ -45,13 +43,13 @@ export class AdminOrdersController {
       const page = parseInt(query.page) || 1;
       const limit = parseInt(query.limit) || 20;
       const status = query.status;
-      const automotive = query.automotive === 'true';
 
-      // Utiliser le service standard avec pagination
-      const result = await this.ordersService.findOrdersWithPagination(
+      // Utiliser le service standard avec les filtres
+      const result = await this.ordersService.listOrders({
         page,
         limit,
-      );
+        status: status ? parseInt(status) : undefined,
+      });
 
       return {
         success: true,
@@ -76,7 +74,7 @@ export class AdminOrdersController {
   async getOrdersStats() {
     try {
       this.logger.log('Requête statistiques commandes');
-      const stats = await this.ordersService.getOrderStatsByStatus();
+      const stats = await this.ordersService.getSimpleStats();
 
       return {
         success: true,
@@ -104,7 +102,7 @@ export class AdminOrdersController {
   async getOrderById(@Param('id') id: string) {
     try {
       this.logger.log(`Requête commande ID: ${id}`);
-      const order = await this.ordersService.findOrderById(id);
+      const order = await this.ordersService.getOrderById(id);
 
       if (!order) {
         throw new NotFoundException('Commande non trouvée');
@@ -180,8 +178,7 @@ export class AdminOrdersController {
   async getOrdersByCustomer(@Param('customerId') customerId: string) {
     try {
       this.logger.log(`Requête commandes client: ${customerId}`);
-      const orders =
-        await this.ordersService.findOrdersByCustomerId(customerId);
+      const orders = await this.ordersService.getOrdersByCustomer(customerId);
 
       return {
         success: true,

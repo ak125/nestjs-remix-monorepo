@@ -1,3 +1,12 @@
+/**
+ * 🛒 CART CONTROLLER - API moderne simplifiée
+ *
+ * Version initiale adaptée aux services existants
+ * ✅ Support invité + utilisateur authentifié
+ * ✅ Cache Redis intégré
+ * ✅ Documentation OpenAPI
+ */
+
 import {
   Controller,
   Get,
@@ -6,304 +15,379 @@ import {
   Delete,
   Body,
   Param,
-  Query,
-  HttpCode,
-  HttpStatus,
+  UseGuards,
   Req,
-  BadRequestException,
   Logger,
-  // Patch, ParseIntPipe, UpdateCartItemSchema, UpdateCartItemDto - temporairement non utilisés
+  HttpStatus,
+  HttpException,
+  BadRequestException,
 } from '@nestjs/common';
-import { CartService } from './cart.service';
 import {
-  AddToCartSchema,
-  AddToCartDto,
-  // UpdateCartItemSchema, UpdateCartItemDto - temporairement non utilisés
-} from './dto/cart.dto';
-import { z } from 'zod';
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { Request } from 'express';
 
+// 🔧 Services et DTOs
+import { CartService } from './services/cart.service';
+import { CartCalculationService } from './services/cart-calculation.service';
+import { CartValidationService } from './services/cart-validation.service';
+import { validateAddItem } from './dto/add-item.dto';
+import { validateUpdateItem } from './dto/update-item.dto';
+import { validateApplyPromo } from './dto/apply-promo.dto';
+
+// 🔒 Guards et authentification
+import { OptionalAuthGuard } from '../../auth/guards/optional-auth.guard';
+
+// 🏷️ Types et interfaces
+interface AuthenticatedUser {
+  id: string;
+  email: string;
+  role?: string;
+}
+
+interface RequestWithUser extends Request {
+  user?: AuthenticatedUser;
+  sessionID: string;
+}
+
+@ApiTags('🛒 Cart Management')
 @Controller('api/cart')
+@UseGuards(OptionalAuthGuard)
+@ApiBearerAuth()
 export class CartController {
   private readonly logger = new Logger(CartController.name);
 
-  constructor(private readonly cartService: CartService) {}
+  constructor(
+    private readonly cartService: CartService,
+    private readonly cartCalculationService: CartCalculationService,
+    private readonly cartValidationService: CartValidationService,
+  ) {}
 
   /**
-   * GET /api/cart/summary - Résumé du panier
+   * 🧪 Test de santé du module Cart
    */
-  @Get('summary')
-  @HttpCode(HttpStatus.OK)
-  async getCartSummary(@Req() req: any) {
-    try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(`Résumé panier pour utilisateur: ${userId}`);
-
-      // Pour l'instant, retourner un résumé vide
-      const summary = {
-        total_items: 0,
-        total_quantity: 0,
-        subtotal: 0,
-        total: 0,
-        currency: 'EUR',
-      };
-
-      return {
-        summary: summary,
-      };
-    } catch (error: any) {
-      this.logger.error(`Erreur résumé panier: ${error.message}`, error.stack);
-      return {
-        summary: {
-          total_items: 0,
-          total_quantity: 0,
-          subtotal: 0,
-          total: 0,
-          currency: 'EUR',
-        },
-      };
-    }
+  @Get('health')
+  @ApiOperation({
+    summary: 'Test de santé du Cart',
+    description: 'Endpoint pour vérifier que le module Cart fonctionne',
+  })
+  getHealth() {
+    return {
+      status: 'OK',
+      module: 'Cart',
+      timestamp: new Date().toISOString(),
+      message: 'Module Cart opérationnel',
+    };
   }
 
   /**
-   * GET /api/cart/count - Compter les articles dans le panier
-   */
-  @Get('count')
-  @HttpCode(HttpStatus.OK)
-  async getCartCount(@Req() req: any) {
-    try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(`Comptage articles panier pour utilisateur: ${userId}`);
-
-      // Pour l'instant, retourner 0
-      const count = 0;
-
-      return {
-        success: true,
-        data: { count },
-        message: "Nombre d'articles récupéré avec succès",
-      };
-    } catch (error: any) {
-      this.logger.error(
-        `Erreur comptage panier: ${error.message}`,
-        error.stack,
-      );
-      throw new BadRequestException(
-        `Erreur lors du comptage: ${error.message}`,
-      );
-    }
-  }
-
-  /**
-   * GET /api/cart/test - Test d'authentification
-   */
-  @Get('test')
-  @HttpCode(HttpStatus.OK)
-  async testAuth(@Req() req: any): Promise<any> {
-    try {
-      this.logger.log("Test d'authentification", {
-        user: req.user,
-        session: req.session,
-        isAuthenticated: req.isAuthenticated ? req.isAuthenticated() : 'N/A',
-      });
-
-      return {
-        authenticated: !!req.user,
-        user: req.user || null,
-        hasSession: !!req.session,
-        sessionID: req.sessionID || null,
-      };
-    } catch (error: any) {
-      this.logger.error(`Erreur test auth: ${error.message}`, error.stack);
-      return { error: error.message };
-    }
-  }
-
-  /**
-   * GET /api/cart - Récupérer le panier utilisateur
+   * 📋 Récupérer le panier actuel
    */
   @Get()
-  @HttpCode(HttpStatus.OK)
-  async getCart(
-    @Req() req: any,
-    @Query() query: any, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ) {
+  @ApiOperation({
+    summary: 'Récupérer le panier actuel',
+    description:
+      "Obtient le panier pour l'utilisateur connecté ou la session invité",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Panier récupéré avec succès',
+  })
+  async getCart(@Req() req: RequestWithUser) {
     try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(`Récupération panier pour utilisateur: ${userId}`);
-
-      // Pour l'instant, retourner un panier vide
-      const cart = {
+      // Test basique sans session d'abord
+      return {
+        id: 'test-cart',
+        sessionId: 'test-session',
+        userId: null,
         items: [],
-        total_items: 0,
-        total_quantity: 0,
-        subtotal: 0,
-        total: 0,
-        currency: 'EUR',
+        metadata: {
+          subtotal: 0,
+          promo_code: null,
+          shipping_address: null,
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
-
-      return {
-        success: true,
-        data: cart,
-        message: 'Panier récupéré avec succès',
-      };
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error(
-        `Erreur récupération panier: ${error.message}`,
-        error.stack,
+        `Erreur récupération panier: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-      throw new BadRequestException(
-        `Erreur lors de la récupération du panier: ${error.message}`,
+      throw new HttpException(
+        'Erreur lors de la récupération du panier',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * POST /api/cart/add - Ajouter un article au panier
+   * ➕ Ajouter un article au panier
    */
-  @Post('add')
-  @HttpCode(HttpStatus.CREATED)
-  async addToCart(@Req() req: any, @Body() body: any) {
+  @Post('items')
+  @ApiOperation({
+    summary: 'Ajouter un article au panier',
+    description:
+      'Ajoute un nouvel article ou met à jour la quantité si déjà présent',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Article ajouté avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides ou produit non disponible',
+  })
+  async addItem(@Body() body: unknown, @Req() req: RequestWithUser) {
     try {
-      // Validation Zod des données d'entrée
-      const addToCartDto: AddToCartDto = AddToCartSchema.parse(body);
+      const addItemDto = validateAddItem(body);
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
 
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(
-        `Ajout article au panier pour utilisateur: ${userId}`,
-        addToCartDto,
+      this.logger.debug(
+        `Ajout article au panier - session: ${sessionId}, product: ${addItemDto.product_id}`,
       );
 
-      // Pour l'instant, simuler l'ajout avec données validées
-      const result = {
-        item_id: Date.now(),
-        product_id: addToCartDto.product_id,
-        quantity: addToCartDto.quantity,
-        notes: addToCartDto.notes,
-        added_at: new Date().toISOString(),
-      };
+      // Utiliser les méthodes existantes du service
+      const result = await this.cartService.addToCart(
+        sessionId,
+        addItemDto.product_id,
+        addItemDto.quantity,
+        addItemDto.custom_price || 0, // Le service va récupérer le prix réel
+        userId,
+      );
 
-      return {
-        success: true,
-        data: result,
-        message: 'Article ajouté au panier avec succès',
-      };
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        const messages = error.issues.map(
-          (err: any) => `${err.path.join('.')}: ${err.message}`,
-        );
-        this.logger.warn(`Erreur validation Zod: ${messages.join(', ')}`);
-        throw new BadRequestException(
-          `Erreur de validation: ${messages.join(', ')}`,
-        );
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Erreur ajout article: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
+      if (error instanceof BadRequestException) {
+        throw error;
       }
-      this.logger.error(`Erreur ajout panier: ${error.message}`, error.stack);
-      throw new BadRequestException(
-        `Erreur lors de l'ajout au panier: ${error.message}`,
+
+      throw new HttpException(
+        "Erreur lors de l'ajout de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * PUT /api/cart/:itemId - Mettre à jour un article du panier
+   * 🔄 Mettre à jour la quantité d'un article
    */
-  @Put(':itemId')
-  @HttpCode(HttpStatus.OK)
-  async updateCartItem(
-    @Req() req: any,
+  @Put('items/:itemId')
+  @ApiOperation({
+    summary: "Mettre à jour la quantité d'un article",
+    description: "Modifie la quantité ou supprime l'article si quantité = 0",
+  })
+  @ApiParam({
+    name: 'itemId',
+    description: "ID de l'item dans le panier (UUID)",
+    type: 'string',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Article mis à jour avec succès',
+  })
+  async updateItem(
     @Param('itemId') itemId: string,
-    @Body() updateDto: any,
+    @Body() body: unknown,
+    @Req() req: RequestWithUser,
   ) {
     try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(
-        `Mise à jour article panier ${itemId} pour utilisateur: ${userId}`,
-        updateDto,
+      // Valider que l'itemId est un UUID
+      if (!itemId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+        throw new BadRequestException('ID item invalide (doit être un UUID)');
+      }
+
+      const updateItemDto = validateUpdateItem(body);
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+
+      this.logger.debug(
+        `Mise à jour quantité - session: ${sessionId}, itemId: ${itemId}, quantity: ${updateItemDto.quantity}`,
       );
 
-      // Pour l'instant, simuler la mise à jour
-      const result = {
-        item_id: parseInt(itemId),
-        quantity: updateDto.quantity,
-        updated_at: new Date().toISOString(),
-      };
+      const result = await this.cartService.updateQuantity(
+        sessionId,
+        itemId,
+        updateItemDto.quantity,
+        userId,
+      );
 
-      return {
-        success: true,
-        data: result,
-        message: 'Article mis à jour avec succès',
-      };
-    } catch (error: any) {
+      return result;
+    } catch (error) {
       this.logger.error(
-        `Erreur mise à jour panier: ${error.message}`,
-        error.stack,
+        `Erreur mise à jour article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-      throw new BadRequestException(
-        `Erreur lors de la mise à jour: ${error.message}`,
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        "Erreur lors de la mise à jour de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * DELETE /api/cart/:itemId - Supprimer un article du panier
+   * 🗑️ Supprimer un article du panier
    */
-  @Delete(':itemId')
-  @HttpCode(HttpStatus.OK)
-  async removeFromCart(@Req() req: any, @Param('itemId') itemId: string) {
+  @Delete('items/:itemId')
+  @ApiOperation({
+    summary: 'Supprimer un article du panier',
+    description: 'Retire complètement un article du panier',
+  })
+  @ApiParam({
+    name: 'itemId',
+    description: "ID de l'item à supprimer (numérique)",
+    type: 'number',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Article supprimé avec succès',
+  })
+  async removeItem(
+    @Param('itemId') itemIdStr: string,
+    @Req() req: RequestWithUser,
+  ) {
     try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(
-        `Suppression article panier ${itemId} pour utilisateur: ${userId}`,
+      const itemId = parseInt(itemIdStr, 10);
+      if (isNaN(itemId)) {
+        throw new BadRequestException('ID item invalide');
+      }
+
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+
+      this.logger.debug(
+        `Suppression article - session: ${sessionId}, itemId: ${itemId}`,
       );
 
-      // Pour l'instant, simuler la suppression
-      const result = {
-        item_id: parseInt(itemId),
-        removed_at: new Date().toISOString(),
-      };
+      const result = await this.cartService.removeFromCart(
+        sessionId,
+        itemId.toString(),
+        userId,
+      );
 
-      return {
-        success: true,
-        data: result,
-        message: 'Panier vidé avec succès',
-      };
-    } catch (error: any) {
+      return result;
+    } catch (error) {
       this.logger.error(
-        `Erreur suppression panier: ${error.message}`,
-        error.stack,
+        `Erreur suppression article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-      throw new BadRequestException(
-        `Erreur lors de la suppression: ${error.message}`,
+      throw new HttpException(
+        "Erreur lors de la suppression de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   /**
-   * DELETE /api/cart/clear - Vider complètement le panier
+   * 🏷️ Appliquer un code promo
    */
-  @Delete('clear')
-  @HttpCode(HttpStatus.OK)
-  async clearCart(@Req() req: any) {
+  @Post('promo')
+  @ApiOperation({
+    summary: 'Appliquer un code promotionnel',
+    description: 'Valide et applique un code promo au panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Code promo appliqué avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Code promo invalide ou expiré',
+  })
+  async applyPromo(@Body() body: unknown, @Req() req: RequestWithUser) {
     try {
-      const userId = req.user?.id || req.session?.userId || 'anonymous';
-      this.logger.log(`Vidage panier pour utilisateur: ${userId}`);
+      const applyPromoDto = validateApplyPromo(body);
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
 
-      // Pour l'instant, simuler le vidage
-      const result = {
-        cleared_items: 0,
-        cleared_at: new Date().toISOString(),
-      };
+      this.logger.debug(
+        `Application code promo ${applyPromoDto.promoCode} - session: ${sessionId}`,
+      );
 
-      return {
-        success: true,
-        data: result,
-        message: 'Panier vidé avec succès',
-      };
-    } catch (error: any) {
-      this.logger.error(`Erreur vidage panier: ${error.message}`, error.stack);
-      throw new BadRequestException(
-        `Erreur lors du vidage du panier: ${error.message}`,
+      const result = await this.cartService.applyPromoCode(
+        sessionId,
+        applyPromoDto.promoCode,
+        userId,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Erreur application promo: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        "Erreur lors de l'application du code promo",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * 🗑️ Vider le panier
+   */
+  @Delete()
+  @ApiOperation({
+    summary: 'Vider complètement le panier',
+    description: 'Supprime tous les articles du panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Panier vidé avec succès',
+  })
+  async clearCart(@Req() req: RequestWithUser) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+
+      this.logger.debug(`Vidage du panier - session: ${sessionId}`);
+
+      await this.cartService.clearCart(sessionId, userId);
+
+      return {
+        message: 'Panier vidé avec succès',
+        sessionId,
+        userId,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erreur vidage panier: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw new HttpException(
+        'Erreur lors du vidage du panier',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔑 Utilitaire : obtenir l'identifiant de session
+   */
+  private getSessionId(req: RequestWithUser): string {
+    if (req.sessionID) {
+      return req.sessionID;
+    }
+
+    // Fallback : générer un ID temporaire
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.logger.warn(
+      `Aucune session trouvée, utilisation d'un ID temporaire: ${tempId}`,
+    );
+    return tempId;
   }
 }

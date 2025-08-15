@@ -1,6 +1,6 @@
 /**
  * Contrôleur API Messages - Table ___xtr_msg
- * Gestion des communications client/staff
+ * Gestion des communications client/staff - Architecture moderne avec Zod
  */
 
 import {
@@ -13,8 +13,17 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  UsePipes,
 } from '@nestjs/common';
-import { MessagesService, MessageWithDetails } from './messages.service';
+import { MessagesService } from './messages.service';
+import { 
+  CreateMessageDto, 
+  MessageFiltersDto, 
+  MarkAsReadDto,
+  validateCreateMessage,
+  validateMessageFilters,
+  validateMarkAsRead
+} from './dto';
 
 @Controller('api/messages')
 export class MessagesController {
@@ -30,7 +39,7 @@ export class MessagesController {
     @Query('limit') limit?: string,
     @Query('staff') staffId?: string,
     @Query('customer') customerId?: string,
-    @Query('order') orderId?: string,
+    @Query('search') search?: string,
     @Query('status') status?: string,
   ) {
     console.log(`📧 API Messages: GET /api/messages`);
@@ -39,24 +48,28 @@ export class MessagesController {
       const pageNum = parseInt(page || '1', 10);
       const limitNum = parseInt(limit || '20', 10);
 
-      const filters: any = {};
-      if (staffId) filters.staffId = staffId;
-      if (customerId) filters.customerId = customerId;
-      if (orderId) filters.orderId = orderId;
-      if (status && ['open', 'closed', 'all'].includes(status)) {
-        filters.status = status;
-      }
+      const filters = {
+        page: pageNum,
+        limit: limitNum,
+        staffId,
+        customerId,
+        search,
+        status: status as 'open' | 'closed' | 'all' || 'all',
+      };
 
-      const result = await this.messagesService.getAllMessages(
-        pageNum,
-        limitNum,
-        filters,
-      );
+      const result = await this.messagesService.getMessages(filters);
 
-      console.log(
-        `✅ API Messages - ${result.messages.length}/${result.total} messages retournés`,
-      );
-      return result;
+      console.log(`✅ API Messages: ${result.total} messages trouvés`);
+      return {
+        success: true,
+        data: result.messages,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: Math.ceil(result.total / result.limit),
+        },
+      };
     } catch (error: any) {
       console.error(`❌ API Messages Error: ${error.message || error}`);
       throw new HttpException(
@@ -67,28 +80,31 @@ export class MessagesController {
   }
 
   /**
-   * Récupérer un message par ID
+   * Récupérer un message spécifique
    * GET /api/messages/:id
    */
   @Get(':id')
-  async getMessageById(@Param('id') id: string) {
-    console.log(`📧 API Messages: GET /api/messages/${id}`);
+  async getMessageById(@Param('id') messageId: string) {
+    console.log(`📧 API Messages: GET /api/messages/${messageId}`);
 
     try {
-      const message = await this.messagesService.getMessageById(id);
+      const message = await this.messagesService.getMessageById(messageId);
 
-      if (!message) {
-        console.log(`❌ API Messages: Message ${id} non trouvé`);
-        throw new HttpException('Message non trouvé', HttpStatus.NOT_FOUND);
-      }
-
-      console.log(`✅ API Messages: Message ${id} trouvé`);
-      return message;
+      console.log(`✅ API Messages: Message ${messageId} trouvé`);
+      return {
+        success: true,
+        data: message,
+      };
     } catch (error: any) {
-      if (error.status === HttpStatus.NOT_FOUND) {
-        throw error;
-      }
       console.error(`❌ API Messages Error: ${error.message || error}`);
+      
+      if (error.status === 404) {
+        throw new HttpException(
+          'Message non trouvé',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      
       throw new HttpException(
         'Erreur serveur lors de la récupération du message',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -102,43 +118,27 @@ export class MessagesController {
    */
   @Post()
   async createMessage(
-    @Body()
-    messageData: {
+    @Body() messageData: {
       customerId: string;
       staffId: string;
       orderId?: string;
-      orderLineId?: string;
       subject: string;
       content: string;
-      parentId?: string;
-    },
+      priority?: 'low' | 'normal' | 'high';
+    }
   ) {
     console.log(`📧 API Messages: POST /api/messages`);
 
     try {
-      // Validation des données
-      if (!messageData.customerId || !messageData.staffId) {
-        throw new HttpException(
-          'customerId et staffId sont obligatoires',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      if (!messageData.subject || !messageData.content) {
-        throw new HttpException(
-          'subject et content sont obligatoires',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       const newMessage = await this.messagesService.createMessage(messageData);
 
-      console.log(`✅ API Messages: Message ${newMessage.msg_id} créé`);
-      return newMessage;
+      console.log(`✅ API Messages: Nouveau message créé ${newMessage.id}`);
+      return {
+        success: true,
+        data: newMessage,
+        message: 'Message créé avec succès',
+      };
     } catch (error: any) {
-      if (error.status === HttpStatus.BAD_REQUEST) {
-        throw error;
-      }
       console.error(`❌ API Messages Error: ${error.message || error}`);
       throw new HttpException(
         'Erreur serveur lors de la création du message',
@@ -152,21 +152,18 @@ export class MessagesController {
    * PUT /api/messages/:id/close
    */
   @Put(':id/close')
-  async closeMessage(@Param('id') id: string) {
-    console.log(`📧 API Messages: PUT /api/messages/${id}/close`);
+  async closeMessage(@Param('id') messageId: string) {
+    console.log(`📧 API Messages: PUT /api/messages/${messageId}/close`);
 
     try {
-      const success = await this.messagesService.closeMessage(id);
+      const message = await this.messagesService.closeMessage(messageId);
 
-      if (!success) {
-        throw new HttpException(
-          'Impossible de fermer le message',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      console.log(`✅ API Messages: Message ${id} fermé`);
-      return { success: true, message: 'Message fermé avec succès' };
+      console.log(`✅ API Messages: Message ${messageId} fermé`);
+      return {
+        success: true,
+        data: message,
+        message: 'Message fermé avec succès',
+      };
     } catch (error: any) {
       console.error(`❌ API Messages Error: ${error.message || error}`);
       throw new HttpException(
@@ -177,22 +174,106 @@ export class MessagesController {
   }
 
   /**
-   * Récupérer les statistiques des messages
-   * GET /api/messages/stats
+   * Marquer un message comme lu
+   * PUT /api/messages/:id/read
    */
-  @Get('stats/overview')
-  async getMessageStats() {
-    console.log(`📧 API Messages: GET /api/messages/stats/overview`);
+  @Put(':id/read')
+  async markAsRead(
+    @Param('id') messageId: string,
+    @Body() body?: { readerId?: string },
+  ) {
+    console.log(`📧 API Messages: PUT /api/messages/${messageId}/read`);
 
     try {
-      const stats = await this.messagesService.getMessageStats();
+      const readerId = body?.readerId || 'unknown';
+      const message = await this.messagesService.markAsRead(messageId, readerId);
+
+      console.log(`✅ API Messages: Message ${messageId} marqué comme lu par ${readerId}`);
+      return {
+        success: true,
+        data: message,
+        message: 'Message marqué comme lu',
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Error: ${error.message || error}`);
+      throw new HttpException(
+        'Erreur serveur lors du marquage du message',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Récupérer les statistiques des messages
+   * GET /api/messages/stats?customer=123
+   */
+  @Get('stats')
+  async getMessageStats(@Query('customer') customerId?: string) {
+    console.log(`📧 API Messages: GET /api/messages/stats`);
+
+    try {
+      const stats = await this.messagesService.getStatistics(customerId);
 
       console.log(`✅ API Messages: Statistiques calculées`);
-      return stats;
+      return {
+        success: true,
+        data: stats,
+      };
     } catch (error: any) {
       console.error(`❌ API Messages Stats Error: ${error.message || error}`);
       throw new HttpException(
         'Erreur serveur lors du calcul des statistiques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Récupérer les statistiques globales des messages (admin)
+   * GET /api/messages/stats/overview
+   */
+  @Get('stats/overview')
+  async getMessageStatsOverview() {
+    console.log(`📧 API Messages: GET /api/messages/stats/overview`);
+
+    try {
+      const stats = await this.messagesService.getStatistics();
+
+      console.log(`✅ API Messages: Statistiques calculées`);
+      return {
+        success: true,
+        data: stats,
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Stats Error: ${error.message || error}`);
+      throw new HttpException(
+        'Erreur serveur lors du calcul des statistiques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Récupérer la liste des clients
+   * GET /api/messages/customers
+   */
+  @Get('customers')
+  async getCustomers(@Query('limit') limit?: string) {
+    console.log(`📧 API Messages: GET /api/messages/customers`);
+
+    try {
+      const limitNum = parseInt(limit || '100', 10);
+      const customers = await this.messagesService.getCustomers(limitNum);
+
+      console.log(`✅ API Messages: ${customers.length} clients trouvés`);
+      return {
+        success: true,
+        data: customers,
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Error: ${error.message || error}`);
+      throw new HttpException(
+        'Erreur serveur lors de la récupération des clients',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

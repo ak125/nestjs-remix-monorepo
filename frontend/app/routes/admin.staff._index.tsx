@@ -2,16 +2,18 @@
  * 📋 INTERFACE GESTION STAFF - Admin Interface
  * 
  * Interface de gestion du staff administratif
- * Module admin moderne avec API REST
+ * Module admin moderne avec API REST et nouveau StaffService
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { requireUser } from "~/server/auth.server";
-import { getRemixApiService } from "~/server/remix-api.server";
+import { requireAdmin } from "../server/auth.server";
+import { getRemixApiService } from "../server/remix-api.server";
 
-// Types pour la gestion du staff
+// Types supprimés car inutilisés
+
+// Type pour compatibility avec les données legacy
 interface LegacyAdminStaff {
   cnfa_id: number;
   cnfa_login: string;
@@ -21,7 +23,7 @@ interface LegacyAdminStaff {
   cnfa_name: string;
   cnfa_fname: string;
   cnfa_tel: string;
-  cnfa_activ: '0' | '1';
+  cnfa_activ: string;
   s_id: string;
 }
 
@@ -29,25 +31,16 @@ interface StaffStats {
   total: number;
   active: number;
   inactive: number;
+  byRole: Record<string, number>;
+  byDepartment: Record<string, number>;
   byLevel: Record<string, number>;
 }
 
-interface _StaffData {
-  staff: LegacyAdminStaff[];
-  stats: StaffStats;
-  pagination: {
-    page: number;
-    totalPages: number;
-    totalItems: number;
-  };
-  error?: string;
-  fallbackMode?: boolean;
-  timestamp?: string;
-}
+// Interface supprimée car inutilisée
 
 // Fonction loader pour récupérer les données du staff
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireUser({ context });
+  const user = await requireAdmin({ context });
   
   // Vérifier les permissions admin
   if (!user.level || user.level < 7) {
@@ -96,6 +89,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       byLevel: staff.reduce((acc, s) => {
         const level = s.cnfa_level.toString();
         acc[level] = (acc[level] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      byRole: staff.reduce((acc, s) => {
+        const role = s.cnfa_job;
+        acc[role] = (acc[role] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      byDepartment: staff.reduce((acc, s) => {
+        const dept = s.s_id;
+        acc[dept] = (acc[dept] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
     };

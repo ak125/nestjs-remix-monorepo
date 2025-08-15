@@ -2,17 +2,24 @@ import { Module } from '@nestjs/common';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { RemixController } from './remix/remix.controller';
-import { AuthController } from './auth/auth.controller';
-import { AuthModule } from './auth/auth.module';
-import { RemixModule } from './remix/remix.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from './database/database.module';
-import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
-import { PaymentsModule } from './modules/payments/payments.module';
-import { AdminModule } from './modules/admin/admin.module';
+import { HealthModule } from './modules/health/health.module';
+import { CartModule } from './modules/cart/cart.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 import { MessagesModule } from './modules/messages/messages.module';
+import { RemixModule } from './remix/remix.module'; // ✅ RÉACTIVÉ !
+import { SuppliersModule } from './modules/suppliers/suppliers.module'; // ✅ NOUVEAU !
+import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Module admin aligné !
+import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 
+/**
+ * AppModule - Architecture Modulaire Restaurée
+ * ✅ RemixModule réactivé pour la vraie page d'accueil
+ * ✅ Tous les modules essentiels fonctionnels
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,28 +29,37 @@ import { MessagesModule } from './modules/messages/messages.module';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 60, // default, secondes
+        ttl: 60,
         limit: 100,
       },
-      {
-        name: 'admin',
-        ttl: 60,
-        limit: 6,
-      },
     ]),
+
+    // Event Emitter global
+    EventEmitterModule.forRoot(),
+
+    // Modules core fonctionnels
     DatabaseModule,
-    AuthModule,
-    RemixModule,
-    UsersModule,
     OrdersModule,
-    PaymentsModule,
-    AdminModule,
+    HealthModule,
+    CartModule,
+    AuthModule,
+    UsersModule,
     MessagesModule,
+    RemixModule, // ✅ RÉACTIVÉ - Votre vraie page d'accueil !
+    SuppliersModule, // ✅ NOUVEAU - Gestion avancée des fournisseurs !
+    AdminModule, // ✅ NOUVEAU - Module admin aligné sur l'architecture !
+    ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
+
+    // TODO: Réactiver progressivement
+    // PaymentsModule,
+    // SupplierModule,
   ],
-  controllers: [AuthController, RemixController], // RemixController en dernier pour catch-all
+  controllers: [], // Plus besoin du controller temporaire
   providers: [
-    // Activer le ThrottlerGuard globalement (peut être surchargé localement)
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
