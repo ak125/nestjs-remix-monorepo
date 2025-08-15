@@ -5,7 +5,7 @@
 
 import { redirect, type LoaderFunction } from "@remix-run/node";
 import { isAdmin } from "~/lib/auth";
-import { getOptionalUser } from "~/server/auth.server";
+import { getOptionalUser } from "../auth/unified.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await getOptionalUser({ context });

@@ -1,5 +1,5 @@
 import { json, type ActionFunction, type LoaderFunction } from "@remix-run/node";
-import { requireUser } from "~/server/auth.server";
+import { requireUser } from "../auth/unified.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });

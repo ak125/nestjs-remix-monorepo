@@ -7,10 +7,14 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { LegacyUserService } from '../database/services/legacy-user.service';
+import { LegacyOrderService } from '../database/services/legacy-order.service';
 
 @Controller('api/legacy-users')
 export class UsersController {
-  constructor(private readonly legacyUserService: LegacyUserService) {}
+  constructor(
+    private readonly legacyUserService: LegacyUserService,
+    private readonly legacyOrderService: LegacyOrderService,
+  ) {}
 
   /**
    * GET /api/users
@@ -83,6 +87,38 @@ export class UsersController {
 
       throw new HttpException(
         'Erreur lors de la recherche',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/legacy-users/dashboard
+   * Récupère les statistiques pour le dashboard
+   */
+  @Get('dashboard')
+  async getDashboardStats() {
+    try {
+      console.log(`📊 Récupération des statistiques dashboard`);
+
+      const totalUsers = await this.legacyUserService.getTotalActiveUsersCount();
+      const totalOrders = await this.legacyOrderService.getTotalOrdersCount();
+      const activeUsers = await this.legacyUserService.getTotalActiveUsersCount();
+
+      return {
+        success: true,
+        data: {
+          totalUsers,
+          totalOrders,
+          activeUsers,
+        },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      console.error(`❌ Erreur récupération stats dashboard:`, error);
+      
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

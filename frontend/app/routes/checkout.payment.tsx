@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation, useActionData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
-import { requireAuth } from "../lib/auth.server";
+import { requireAuth } from "../auth/unified.server";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
 

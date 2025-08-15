@@ -7,7 +7,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { requireUserWithRedirect } from "../server/auth.server";
+import { requireUserWithRedirect } from "../auth/unified.server";
 import { formatRelativeTime } from "../utils/date";
 
 // Interface pour les messages (basée sur l'API backend)

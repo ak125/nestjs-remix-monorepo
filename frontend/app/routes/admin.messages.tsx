@@ -21,7 +21,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
-import { requireAdmin } from "../server/auth.server";
+import { requireAdmin } from "../auth/unified.server";
 
 // Interfaces pour les messages
 interface Message {

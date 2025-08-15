@@ -4,7 +4,7 @@ import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireAuth } from "../lib/auth.server";
+import { requireAuth } from "../auth/unified.server";
 
 type SecurityData = {
   password: {

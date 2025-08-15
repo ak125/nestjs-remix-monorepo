@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '../database/database.module';
 
 // Services
 import { LegacyUserService } from '../database/services/legacy-user.service';
@@ -10,7 +11,7 @@ import { UsersController } from '../controllers/users.controller';
 import { OrdersController } from '../controllers/orders.controller';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, DatabaseModule],
   providers: [LegacyUserService, LegacyOrderService],
   controllers: [UsersController, OrdersController],
   exports: [LegacyUserService, LegacyOrderService],

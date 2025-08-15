@@ -6,7 +6,7 @@
 import { type LoaderFunctionArgs, type MetaFunction, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { AdminSidebar } from "~/components/AdminSidebar";
-import { getOptionalUser } from "~/server/auth.server";
+import { getOptionalUser } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {
   return [

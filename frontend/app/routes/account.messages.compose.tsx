@@ -6,7 +6,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { requireUserWithRedirect } from "../server/auth.server";
+import { requireUserWithRedirect } from "../auth/unified.server";
 
 interface LoaderData {
   user: any;

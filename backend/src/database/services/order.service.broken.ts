@@ -24,10 +24,10 @@ export interface LegacyOrder {
 }
 
 @Injectable()
-export class LegacyOrderService extends SupabaseBaseService {
-  constructor(configService?: ConfigService) {
-    super(configService);
-    this.logger.log('LegacyOrderService initialized');
+export class OrderService extends SupabaseBaseService {
+  constructor(databaseModule: DatabaseModule) {
+    super(databaseModule);
+    this.logger.log('OrderService initialized');
   }
 
   /**

@@ -17,7 +17,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
-import { requireUser } from "~/server/auth.server";
+import { requireUser } from "../auth/unified.server";
 import { getRemixApiService } from "~/server/remix-api.server";
 
 export const meta: MetaFunction = () => {

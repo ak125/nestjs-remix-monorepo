@@ -3,7 +3,7 @@ import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { MapPin, Save, ArrowLeft, Home, Building } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireAuth } from "../lib/auth.server";
+import { requireAuth } from "../auth/unified.server";
 
 type ActionData = {
   success?: boolean;

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { requireUser } from "~/server/auth.server";
+import { requireUser } from "../auth/unified.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });

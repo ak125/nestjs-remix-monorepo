@@ -6,7 +6,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
-import { requireUser } from "~/server/auth.server";
+import { requireUser } from "../auth/unified.server";
 
 // Interface pour les données staff basée sur les vraies données users
 interface StaffMember {

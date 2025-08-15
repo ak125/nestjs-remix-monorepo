@@ -23,10 +23,10 @@ export interface LegacyUser {
 }
 
 @Injectable()
-export class LegacyUserService extends SupabaseBaseService {
-  constructor(configService?: ConfigService) {
-    super(configService);
-    this.logger.log('LegacyUserService initialized');
+export class UserService extends SupabaseBaseService {
+  constructor(databaseModule: DatabaseModule) {
+    super(databaseModule);
+    this.logger.log('UserService initialized');
   }
 
   /**

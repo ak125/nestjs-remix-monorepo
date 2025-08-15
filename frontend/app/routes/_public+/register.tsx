@@ -6,7 +6,7 @@ import {
 } from "@remix-run/node";
 import { Form, useActionData, Link } from "@remix-run/react";
 import { z } from "zod";
-import { getOptionalUser } from "~/server/auth.server";
+import { getOptionalUser } from "../../auth/unified.server";
 
 const RegisterSchema = z.object({
   email: z.string().email("Email invalide"),

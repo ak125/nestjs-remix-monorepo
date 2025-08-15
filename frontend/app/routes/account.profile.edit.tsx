@@ -4,7 +4,7 @@ import { User, Save, ArrowLeft } from "lucide-react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireUser } from "../server/auth.server";
+import { requireUser } from "../auth/unified.server";
 
 type User = {
   id: string;

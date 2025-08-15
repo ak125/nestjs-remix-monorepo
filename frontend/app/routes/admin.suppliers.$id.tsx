@@ -7,7 +7,7 @@
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
-import { requireUser } from "~/server/auth.server";
+import { requireUser } from "../auth/unified.server";
 
 // Types pour les données du fournisseur
 interface SupplierDetail {

@@ -1,7 +1,7 @@
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, useActionData, useSearchParams, Link } from "@remix-run/react";
 import { z } from "zod";
-import { getOptionalUser } from "../../server/auth.server";
+import { getOptionalUser } from "../../auth/unified.server";
 
 // Schema de validation Zod
 const LoginSchema = z.object({
