@@ -21,6 +21,13 @@ import { CacheModule } from '../../cache/cache.module';
 // Controllers
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller';
+import { StockEnhancedController } from './controllers/stock-enhanced.controller';
+import { StockTestController } from './controllers/stock-test.controller';
+import { RealStockService } from './services/real-stock.service';
+import { RealStockController } from './controllers/real-stock.controller';
+import { SimpleStockController } from './controllers/simple-stock.controller';
+import { WorkingStockService } from './services/working-stock.service';
+import { WorkingStockController } from './controllers/working-stock.controller';
 import { AdminOrdersController } from './controllers/admin-orders.controller';
 import { AdminController } from './controllers/admin.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
@@ -44,6 +51,11 @@ import { StaffModule } from '../staff/staff.module';
   controllers: [
     ConfigurationController,
     StockController,
+    StockEnhancedController,
+    StockTestController,
+    RealStockController,
+    SimpleStockController,
+    WorkingStockController,
     AdminOrdersController,
     AdminController,
     AdminRootController,
@@ -54,6 +66,8 @@ import { StaffModule } from '../staff/staff.module';
   providers: [
     ConfigurationService,
     StockManagementService,
+    RealStockService,
+    WorkingStockService,
     ReportingService,
     UserManagementService,
     StaffService,

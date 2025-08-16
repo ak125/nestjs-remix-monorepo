@@ -155,12 +155,12 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Récupérer un fournisseur par ID
    */
-  async getSupplierById(id: number) {
+  async getSupplierById(id: string | number) {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_supplier')
         .select('*')
-        .eq('spl_id', id)
+        .eq('spl_id', id.toString())
         .single();
 
       if (error) throw error;
@@ -467,29 +467,445 @@ export class SuppliersService extends SupabaseBaseService {
   // ===== MÉTHODES DE TEST =====
 
   /**
-   * Tester la connexion et les fonctionnalités du service
+   * Générer un bon de commande fournisseur
    */
-  async testSuppliersService() {
+  async generatePurchaseOrder(supplierId: number, items: any[]): Promise<any> {
+    this.logger.log(`Génération bon de commande pour fournisseur ${supplierId}`);
+
     try {
-      // Test de connexion et récupération des données de base
-      const { data: suppliers, error, count } = await this.supabase
-        .from('___xtr_supplier')
-        .select('*', { count: 'exact' })
-        .limit(5);
+      const supplier = await this.getSupplierById(supplierId);
+
+      const purchaseOrder = {
+        supplier,
+        items,
+        subtotal: 0,
+        discount: 0,
+        total: 0,
+        generatedAt: new Date(),
+        reference: `PO-${supplier.code}-${Date.now()}`,
+      };
+
+      // Calculer les totaux
+      items.forEach(item => {
+        const lineTotal = item.quantity * (item.purchasePrice || 0);
+        purchaseOrder.subtotal += lineTotal;
+      });
+
+      // Appliquer la remise si configurée
+      if (supplier.discount_rate && supplier.discount_rate > 0) {
+        purchaseOrder.discount = purchaseOrder.subtotal * (supplier.discount_rate / 100);
+      }
+
+      purchaseOrder.total = purchaseOrder.subtotal - purchaseOrder.discount;
+
+      this.logger.log(`Bon de commande généré: ${purchaseOrder.reference} - Total: ${purchaseOrder.total}€`);
+      
+      return purchaseOrder;
+    } catch (error) {
+      this.logger.error('Erreur génération bon de commande:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtenir les fournisseurs d'un produit avec scoring
+   */
+  async getProductSuppliers(productId: string): Promise<any[]> {
+    this.logger.log(`Recherche fournisseurs pour produit ${productId}`);
+
+    try {
+      const { data, error } = await this.supabase
+        .from('___xtr_supplier_link_pm')
+        .select(`
+          *,
+          supplier:___xtr_supplier!inner(*)
+        `)
+        .eq('product_id', productId)
+        .eq('is_active', true)
+        .order('is_preferred', { ascending: false });
 
       if (error) throw error;
 
-      const connection = true;
-      const totalSuppliers = count || 0;
+      return (data || []).map(link => ({
+        ...this.transformSupplierData(link.supplier),
+        linkInfo: {
+          isPreferred: link.is_preferred,
+          deliveryDelay: link.delivery_delay,
+          discountRate: link.discount_rate,
+        }
+      }));
+    } catch (error) {
+      this.logger.error('Erreur récupération fournisseurs produit:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Désactiver un fournisseur et ses liaisons
+   */
+  async deactivateSupplier(id: number): Promise<void> {
+    this.logger.log(`Désactivation fournisseur ${id}`);
+
+    try {
+      // Désactiver le fournisseur
+      const { error: supplierError } = await this.supabase
+        .from('___xtr_supplier')
+        .update({ 
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('spl_id', id);
+
+      if (supplierError) throw supplierError;
+
+      // Désactiver ses liaisons
+      const { error: linkError } = await this.supabase
+        .from('___xtr_supplier_link_pm')
+        .update({ 
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('supplier_id', id);
+
+      if (linkError) throw linkError;
+
+      this.logger.log(`Fournisseur ${id} désactivé avec succès`);
+    } catch (error) {
+      this.logger.error('Erreur désactivation fournisseur:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtenir les liens (marques/articles) d'un fournisseur
+   */
+  async getSupplierLinks(supplierId: string | number) {
+    this.logger.log(`Récupération des liens pour fournisseur ${supplierId}`);
+
+    try {
+      // D'abord récupérer les liens
+      const { data: linksData, error: linksError } = await this.supabase
+        .from('___xtr_supplier_link_pm')
+        .select('*')
+        .eq('slpm_spl_id', supplierId.toString())
+        .limit(50);
+
+      if (linksError) {
+        this.logger.error('Erreur accès table liens:', linksError);
+        return [];
+      }
+
+      if (!linksData || linksData.length === 0) {
+        return [];
+      }
+
+      // Récupérer les informations des produits pour chaque lien
+      const enrichedLinks = await Promise.all(
+        linksData.map(async (link) => {
+          // Récupérer les info du produit depuis la table pieces
+          const { data: pieceData } = await this.supabase
+            .from('pieces')
+            .select('piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id')
+            .eq('piece_id', parseInt(link.slpm_pm_id))
+            .single();
+
+          // Si on a une pièce et un piece_pg_id, essayer de récupérer la gamme/marque
+          let brandName = 'À déterminer';
+          if (pieceData && pieceData.piece_pg_id) {
+            const { data: gammeData } = await this.supabase
+              .from('pieces_gamme')
+              .select('pg_name')
+              .eq('pg_id', pieceData.piece_pg_id)
+              .single();
+            
+            if (gammeData) {
+              brandName = gammeData.pg_name || 'À déterminer';
+            }
+          }
+
+          return {
+            id: link.slpm_id,
+            supplierId: link.slpm_spl_id,
+            pieceMarketId: link.slpm_pm_id,
+            display: link.slpm_display,
+            isActive: link.slpm_display === '1',
+            type: 'piece',
+            // Ajouter les informations du produit
+            productInfo: pieceData ? {
+              id: pieceData.piece_id,
+              designation: pieceData.piece_des || pieceData.piece_name || 'Produit sans nom',
+              reference: pieceData.piece_ref || '',
+              brand: brandName,
+              isActive: pieceData.piece_display === '1',
+            } : {
+              id: link.slpm_pm_id,
+              designation: `Produit #${link.slpm_pm_id}`,
+              reference: '',
+              brand: 'Marque inconnue',
+              isActive: true,
+            },
+          };
+        })
+      );
+
+      this.logger.log(`Trouvé ${enrichedLinks.length} liens enrichis pour fournisseur ${supplierId}`);
+      return enrichedLinks;
+
+    } catch (error) {
+      this.logger.error('Erreur récupération liens fournisseur:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Obtenir les statistiques d'un fournisseur avec marques enrichies
+   */
+  async getSupplierStatistics(supplierId: string | number) {
+    this.logger.log(`Calcul statistiques fournisseur ${supplierId}`);
+
+    try {
+      // Utiliser les liens enrichis pour calculer les vraies statistiques
+      const links = await this.getSupplierLinks(supplierId);
       
+      // Compter les marques uniques (en excluant les marques génériques)
+      const uniqueBrands = new Set(
+        links
+          .filter(link => link.productInfo?.brand && 
+                         link.productInfo.brand !== 'À déterminer' && 
+                         link.productInfo.brand !== 'Marque inconnue')
+          .map(link => link.productInfo.brand)
+      );
+
+      const totalBrands = uniqueBrands.size;
+      const totalPieces = links.length; // Tous les liens sont des pièces dans cette table
+      const totalLinks = links.length;
+      const activeLinks = links.filter(link => link.isActive).length;
+
       return {
-        connection,
-        totalSuppliers,
-        sampleSupplier: suppliers?.[0] || null,
-        tableStructure: suppliers?.[0] ? Object.keys(suppliers[0]) : []
+        totalBrands,
+        totalPieces,
+        totalLinks,
+        activeLinks,
       };
     } catch (error) {
-      this.logger.error('Erreur test service fournisseurs:', error);
+      this.logger.error('Erreur calcul statistiques fournisseur:', error);
+      return {
+        totalBrands: 0,
+        totalPieces: 0,
+        totalLinks: 0,
+        activeLinks: 0,
+      };
+    }
+  }
+
+  /**
+   * Test de la table pieces_gamme pour debug
+   */
+  async testPiecesGammeTable() {
+    try {
+      // Tester la table pieces_gamme
+      const { data: gammes, error } = await this.supabase
+        .from('pieces_gamme')
+        .select('*')
+        .limit(5);
+
+      if (error) {
+        return {
+          accessible: false,
+          error: error.message,
+          sampleData: [],
+        };
+      }
+
+      const columns = gammes && gammes.length > 0 ? Object.keys(gammes[0]) : [];
+
+      return {
+        accessible: true,
+        sampleData: gammes || [],
+        columns,
+        totalSamples: gammes?.length || 0,
+      };
+    } catch (error) {
+      this.logger.error('Erreur test table pieces_gamme:', error);
+      return {
+        accessible: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        sampleData: [],
+        columns: [],
+      };
+    }
+  }
+  async testPiecesMarqueTable() {
+    try {
+      // Tester la table pieces_marque
+      const { data: marques, error } = await this.supabase
+        .from('pieces_marque')
+        .select('*')
+        .limit(5);
+
+      if (error) {
+        return {
+          accessible: false,
+          error: error.message,
+          sampleData: [],
+        };
+      }
+
+      const columns = marques && marques.length > 0 ? Object.keys(marques[0]) : [];
+
+      return {
+        accessible: true,
+        sampleData: marques || [],
+        columns,
+        totalSamples: marques?.length || 0,
+      };
+    } catch (error) {
+      this.logger.error('Erreur test table pieces_marque:', error);
+      return {
+        accessible: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        sampleData: [],
+        columns: [],
+      };
+    }
+  }
+  async testPiecesTable() {
+    try {
+      // D'abord tester l'accès à la table sans spécifier de colonnes
+      const { data: sampleData, error: sampleError } = await this.supabase
+        .from('pieces')
+        .select('*')
+        .limit(1);
+
+      if (sampleError) {
+        return {
+          accessible: false,
+          error: sampleError.message,
+          sampleData: [],
+          columns: [],
+          specificTests: [],
+        };
+      }
+
+      // Récupérer les colonnes disponibles
+      const columns = sampleData && sampleData.length > 0 ? Object.keys(sampleData[0]) : [];
+
+      // Tester avec quelques échantillons
+      const { data: pieces, error } = await this.supabase
+        .from('pieces')
+        .select('*')
+        .limit(5);
+
+      if (error) {
+        return {
+          accessible: false,
+          error: error.message,
+          sampleData: [],
+          columns,
+          specificTests: [],
+        };
+      }
+
+      return {
+        accessible: true,
+        sampleData: pieces || [],
+        columns,
+        totalSamples: pieces?.length || 0,
+      };
+    } catch (error) {
+      this.logger.error('Erreur test table pieces:', error);
+      return {
+        accessible: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        sampleData: [],
+        columns: [],
+      };
+    }
+  }
+
+  /**
+   * Test de la table liens pour debug
+   */
+  async testSupplierLinksTable() {
+    this.logger.log('Test de la table ___xtr_supplier_link_pm');
+
+    try {
+      // Vérifier la structure et les données de la table
+      const { data: sampleData, error: sampleError, count } = await this.supabase
+        .from('___xtr_supplier_link_pm')
+        .select('*', { count: 'exact' })
+        .limit(10);
+
+      if (sampleError) {
+        return {
+          tableExists: false,
+          error: sampleError.message,
+          totalRows: 0,
+          sampleData: [],
+        };
+      }
+
+      // Tester avec quelques fournisseurs
+      const testSuppliers = ['1', '2', '3'];
+      const supplierTests = await Promise.all(
+        testSuppliers.map(async (supplierId) => {
+          const links = await this.getSupplierLinks(supplierId);
+          const stats = await this.getSupplierStatistics(supplierId);
+          return {
+            supplierId,
+            linksFound: links.length,
+            stats,
+          };
+        })
+      );
+
+      return {
+        tableExists: true,
+        totalRows: count || 0,
+        sampleData: sampleData?.slice(0, 3) || [],
+        supplierTests,
+      };
+    } catch (error) {
+      this.logger.error('Erreur test table liens:', error);
+      return {
+        tableExists: false,
+        error: (error as Error).message,
+        totalRows: 0,
+        sampleData: [],
+      };
+    }
+  }
+
+  /**
+   * Test complet du service fournisseurs
+   */
+  async testSuppliersService() {
+    this.logger.log('=== TEST GLOBAL SUPPLIERS SERVICE ===');
+
+    try {
+      // Test de connexion
+      const { data: connectionTest } = await this.supabase
+        .from('___xtr_supplier')
+        .select('count', { count: 'exact', head: true });
+
+      const totalSuppliers = connectionTest || 0;
+      this.logger.log(`✅ Connexion OK - ${totalSuppliers} fournisseurs trouvés`);
+
+      // Échantillon de données
+      const { data: sampleData } = await this.supabase
+        .from('___xtr_supplier')
+        .select('*')
+        .limit(1)
+        .single();
+
+      return {
+        connection: true,
+        totalSuppliers,
+        sampleSupplier: sampleData,
+        tableStructure: sampleData ? Object.keys(sampleData) : []
+      };
+    } catch (error) {
+      this.logger.error('Erreur test service:', error);
       throw error;
     }
   }

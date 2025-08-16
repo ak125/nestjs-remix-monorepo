@@ -8,6 +8,29 @@ export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
   /**
+   * Obtenir toutes les expéditions avec tracking
+   */
+  @Get('tracking/all')
+  async getAllShipmentsTracking() {
+    try {
+      const trackingData = await this.shippingService.getAllShipmentsWithTracking();
+      return {
+        success: true,
+        data: trackingData,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error getting all shipments tracking:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        data: [],
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
    * Calculer les frais de port pour une commande
    */
   @Post('calculate/:orderId')

@@ -22,6 +22,7 @@ import { MailService } from '../../services/mail.service';
 import { UsersController } from './users.controller';
 import { PasswordController } from './controllers/password.controller';
 import { AddressesController } from './controllers/addresses.controller';
+import { UserShipmentController } from './controllers/user-shipment.controller';
 // import { AddressesSimpleController } from './controllers/addresses-simple.controller';
 // import { UserAddressController } from './controllers/user-address.controller';
 
@@ -30,6 +31,7 @@ import { UsersService } from './users.service';
 import { UsersExtendedService } from './services/users-extended.service';
 import { PasswordService } from './services/password.service';
 import { AddressesService } from './services/addresses.service';
+import { UserShipmentService } from './services/user-shipment.service';
 // Services modernes en cours de migration (this.db -> this.client)
 // import { AddressModernService } from './services/address-modern.service';
 // import { MessageModernService } from './services/message-modern.service';
@@ -50,6 +52,7 @@ import { AddressesService } from './services/addresses.service';
     UsersController,
     PasswordController, // ✅ API REST pour gestion des mots de passe
     AddressesController, // ✅ Service d'adresses réactivé
+    UserShipmentController, // ✅ API pour les expéditions utilisateur
     // AddressesTestController, // ✅ Test contrôleur adresses - validation architecture (temporairement désactivé)
     // UserAddressController temporairement désactivé - incompatibilité des méthodes
   ],
@@ -59,6 +62,7 @@ import { AddressesService } from './services/addresses.service';
     UsersExtendedService,
     PasswordService, // ✅ Service moderne de gestion des mots de passe
     AddressesService, // ✅ Service moderne de gestion des adresses
+    UserShipmentService, // ✅ Service de suivi des expéditions utilisateur
 
     // Services modernes spécialisés (temporairement désactivés - migration this.db vers this.client)
     // TODO: Migrer AddressModernService, MessageModernService
@@ -77,6 +81,7 @@ import { AddressesService } from './services/addresses.service';
     UsersExtendedService,
     PasswordService, // ✅ Service de mots de passe exporté
     AddressesService, // ✅ Service d'adresses exporté
+    UserShipmentService, // ✅ Service de suivi des expéditions exporté
     // Services modernes temporairement désactivés
     // AddressModernService,
     // MessageModernService,

@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { ApiModule } from '../api.module';
 
 // Controller minimal
 import { AutomotiveOrdersController } from './controllers/automotive-orders.controller';
@@ -22,7 +23,7 @@ import { OrderCalculationService } from './services/order-calculation.service';
 import { OrdersServiceEnhanced } from './services/orders-enhanced-minimal.service';
 import { OrderArchiveService } from './services/order-archive-minimal.service';
 
-// Service Fusion - Version Complète (NOUVEAU)
+// Service Fusion - Version Complète (RESTAURÉ)
 import { OrdersService } from './services/orders-fusion.service';
 
 // Service Simple - Version Test Tables Legacy (NOUVEAU)
@@ -44,6 +45,9 @@ import { OrderArchiveCompleteService } from './services/order-archive-complete.s
 import { TicketsAdvancedService } from './services/tickets-advanced.service';
 import { TicketsController } from './controllers/tickets.controller';
 
+// Controller Legacy Orders Enrichi (NOUVEAU)
+import { LegacyOrdersController } from './controllers/legacy-orders.controller';
+
 /**
  * Module Orders - Version avec Service Tickets Avancés
  * ✅ Service minimal conservé pour compatibilité
@@ -51,7 +55,11 @@ import { TicketsController } from './controllers/tickets.controller';
  * ✅ TicketEquivalentService obsolète retiré
  */
 @Module({
-  imports: [forwardRef(() => DatabaseModule), ShippingModule],
+  imports: [
+    forwardRef(() => DatabaseModule),
+    ShippingModule,
+    ApiModule, // Pour accéder au LegacyOrderService
+  ],
   controllers: [
     AutomotiveOrdersController,
     OrdersFusionController, // Controller fusion NOUVEAU
@@ -61,6 +69,7 @@ import { TicketsController } from './controllers/tickets.controller';
     OrderStatusController, // Controller statuts NOUVEAU
     OrderArchiveController, // Controller archivage NOUVEAU
     TicketsController, // Controller tickets avancés NOUVEAU
+    LegacyOrdersController, // Controller legacy orders enrichi NOUVEAU
   ],
   providers: [
     OrderCalculationService,

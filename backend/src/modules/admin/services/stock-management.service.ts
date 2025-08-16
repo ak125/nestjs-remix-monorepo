@@ -112,8 +112,12 @@ export class StockManagementService extends SupabaseBaseService {
         throw new Error(`Erreur récupération stock: ${error.message}`);
       }
 
-      // Calculer les statistiques
-      const stats = await this.getStockStatistics();
+      // Calculer les statistiques basiques
+      const stats = {
+        totalProducts: items?.length || 0,
+        lowStock: items?.filter(item => item.available <= (item.min_stock || 0)).length || 0,
+        outOfStock: items?.filter(item => item.available <= 0).length || 0,
+      };
 
       const result = {
         success: true,
@@ -665,7 +669,7 @@ export class StockManagementService extends SupabaseBaseService {
   async healthCheck() {
     try {
       // Test simple de connectivité à la base
-      const { data, error } = await this.supabase
+      const { error } = await this.supabase
         .from('products')
         .select('id')
         .limit(1);
@@ -689,6 +693,464 @@ export class StockManagementService extends SupabaseBaseService {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       };
+    }
+  }
+
+  /**
+   * =====================================================
+   * NOUVELLES MÉTHODES ENRICHIES - INSPIRÉES DU SERVICE FOURNI
+   * =====================================================
+   */
+
+  /**
+   * Obtenir l'état du stock avec filtres avancés
+   */
+  async getStockWithAdvancedFilters(filters?: {
+    search?: string;
+    location?: string;
+    lowStock?: boolean;
+    outOfStock?: boolean;
+    page?: number;
+    limit?: number;
+    warehouseId?: string;
+    isActive?: boolean;
+  }): Promise<{ items: StockItem[]; total: number; stats: any }> {
+    try {
+      this.logger.debug('Récupération stock avec filtres avancés', { filters });
+
+      // Construire la requête
+      let query = this.client.from('stock').select(
+        `
+          *,
+          pieces!inner(
+            id,
+            reference,
+            name,
+            description,
+            is_active
+          )
+        `,
+        { count: 'exact' },
+      );
+
+      // Appliquer les filtres
+      if (filters?.search) {
+        query = query.or(
+          `pieces.reference.ilike.%${filters.search}%,pieces.name.ilike.%${filters.search}%`,
+        );
+      }
+
+      if (filters?.location) {
+        query = query.eq('location', filters.location);
+      }
+
+      if (filters?.lowStock) {
+        query = query.lte('available', 'min_stock');
+      }
+
+      if (filters?.outOfStock) {
+        query = query.lte('available', 0);
+      }
+
+      if (filters?.isActive !== undefined) {
+        query = query.eq('pieces.is_active', filters.isActive);
+      }
+
+      // Pagination
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 50;
+      const from = (page - 1) * limit;
+      const to = from + limit - 1;
+
+      query = query
+        .range(from, to)
+        .order('available', { ascending: true });
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        throw new Error(`Erreur récupération stock: ${error.message}`);
+      }
+
+      // Calculer les statistiques
+      const stats = await this.getStockStatistics();
+
+      return {
+        items: data || [],
+        total: count || 0,
+        stats,
+      };
+    } catch (error) {
+      this.logger.error('Erreur récupération stock avancée', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enregistrer un mouvement de stock avec validation
+   */
+  async recordStockMovement(movement: {
+    productId: string;
+    movementType: 'IN' | 'OUT' | 'ADJUSTMENT' | 'RETURN';
+    quantity: number;
+    referenceType?: string;
+    referenceId?: string;
+    unitCost?: number;
+    reason?: string;
+    notes?: string;
+    userId: string;
+  }): Promise<void> {
+    try {
+      this.logger.debug('Enregistrement mouvement de stock', movement);
+
+      // Vérifier que le produit existe
+      const { data: product, error: productError } = await this.client
+        .from('pieces')
+        .select('id, reference, name')
+        .eq('id', movement.productId)
+        .single();
+
+      if (productError || !product) {
+        throw new BadRequestException('Produit non trouvé');
+      }
+
+      // Créer le mouvement
+      const { error: movementError } = await this.client
+        .from('stock_movements')
+        .insert({
+          product_id: movement.productId,
+          type: movement.movementType,
+          quantity: movement.quantity,
+          reference_type: movement.referenceType,
+          reference_id: movement.referenceId,
+          unit_cost: movement.unitCost,
+          reason: movement.reason || 'Mouvement de stock',
+          notes: movement.notes,
+          user_id: movement.userId,
+          created_at: new Date().toISOString(),
+        });
+
+      if (movementError) {
+        throw new Error(`Erreur enregistrement mouvement: ${movementError.message}`);
+      }
+
+      // Mettre à jour le stock si nécessaire
+      await this.updateStockAfterMovement(movement.productId, movement.movementType, movement.quantity);
+
+      // Vérifier les alertes
+      const { data: currentStock } = await this.client
+        .from('stock')
+        .select('*')
+        .eq('product_id', movement.productId)
+        .single();
+
+      if (currentStock) {
+        await this.checkStockAlerts(currentStock);
+      }
+
+      // Invalider le cache
+      await this.invalidateStockCache(movement.productId);
+
+      this.logger.log('Mouvement de stock enregistré', {
+        productId: movement.productId,
+        type: movement.movementType,
+        quantity: movement.quantity,
+      });
+
+    } catch (error) {
+      this.logger.error('Erreur enregistrement mouvement', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Ajustement d'inventaire complet
+   */
+  async performInventoryAdjustment(
+    productId: string,
+    actualQuantity: number,
+    reason: string,
+    userId: string,
+    notes?: string
+  ): Promise<{ success: boolean; difference: number; message: string }> {
+    try {
+      this.logger.debug('Ajustement d\'inventaire', {
+        productId,
+        actualQuantity,
+        reason,
+      });
+
+      // Récupérer le stock actuel
+      const { data: currentStock, error: stockError } = await this.client
+        .from('stock')
+        .select('quantity, available, reserved')
+        .eq('product_id', productId)
+        .single();
+
+      if (stockError || !currentStock) {
+        throw new BadRequestException('Stock non trouvé pour ce produit');
+      }
+
+      const difference = actualQuantity - currentStock.quantity;
+
+      if (difference !== 0) {
+        // Enregistrer le mouvement d'ajustement
+        await this.recordStockMovement({
+          productId,
+          movementType: 'ADJUSTMENT',
+          quantity: Math.abs(difference),
+          reason,
+          notes: `Ajustement d'inventaire: ${difference > 0 ? '+' : ''}${difference}. ${notes || ''}`,
+          userId,
+        });
+
+        this.logger.log('Ajustement d\'inventaire effectué', {
+          productId,
+          oldQuantity: currentStock.quantity,
+          newQuantity: actualQuantity,
+          difference,
+        });
+
+        return {
+          success: true,
+          difference,
+          message: `Ajustement effectué: ${difference > 0 ? '+' : ''}${difference} unités`,
+        };
+      } else {
+        return {
+          success: true,
+          difference: 0,
+          message: 'Aucun ajustement nécessaire',
+        };
+      }
+    } catch (error) {
+      this.logger.error('Erreur ajustement inventaire', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Générer un rapport de stock complet
+   */
+  async generateComprehensiveStockReport(): Promise<{
+    summary: {
+      totalProducts: number;
+      totalValue: number;
+      lowStockItems: number;
+      outOfStockItems: number;
+      overstockItems: number;
+    };
+    lowStockDetails: any[];
+    outOfStockDetails: any[];
+    overstockDetails: any[];
+    movements: any[];
+  }> {
+    try {
+      this.logger.debug('Génération rapport de stock complet');
+
+      // Récupérer tous les stocks avec détails produits
+      const { data: stocks, error: stocksError } = await this.client
+        .from('stock')
+        .select(`
+          *,
+          pieces!inner(
+            id,
+            reference,
+            name,
+            description,
+            average_cost
+          )
+        `)
+        .order('pieces.reference');
+
+      if (stocksError) {
+        throw new Error(`Erreur récupération stocks: ${stocksError.message}`);
+      }
+
+      // Récupérer les mouvements récents (7 derniers jours)
+      const { data: recentMovements } = await this.client
+        .from('stock_movements')
+        .select(`
+          *,
+          pieces!inner(reference, name)
+        `)
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      // Calculer les statistiques
+      const summary = {
+        totalProducts: stocks?.length || 0,
+        totalValue: 0,
+        lowStockItems: 0,
+        outOfStockItems: 0,
+        overstockItems: 0,
+      };
+
+      const lowStockDetails: any[] = [];
+      const outOfStockDetails: any[] = [];
+      const overstockDetails: any[] = [];
+
+      stocks?.forEach(stock => {
+        const avgCost = parseFloat(stock.pieces?.average_cost || '0');
+        const value = stock.available * avgCost;
+        summary.totalValue += value;
+
+        if (stock.available === 0) {
+          summary.outOfStockItems++;
+          outOfStockDetails.push({
+            ...stock,
+            productName: stock.pieces?.name,
+            productReference: stock.pieces?.reference,
+            value,
+          });
+        } else if (stock.available <= stock.min_stock) {
+          summary.lowStockItems++;
+          lowStockDetails.push({
+            ...stock,
+            productName: stock.pieces?.name,
+            productReference: stock.pieces?.reference,
+            value,
+          });
+        } else if (stock.available >= stock.max_stock) {
+          summary.overstockItems++;
+          overstockDetails.push({
+            ...stock,
+            productName: stock.pieces?.name,
+            productReference: stock.pieces?.reference,
+            value,
+          });
+        }
+      });
+
+      return {
+        summary,
+        lowStockDetails,
+        outOfStockDetails,
+        overstockDetails,
+        movements: recentMovements || [],
+      };
+    } catch (error) {
+      this.logger.error('Erreur génération rapport', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtenir l'historique des mouvements avec filtres
+   */
+  async getMovementHistory(
+    productId?: string,
+    filters?: {
+      movementType?: string;
+      dateFrom?: Date;
+      dateTo?: Date;
+      limit?: number;
+      userId?: string;
+    }
+  ): Promise<any[]> {
+    try {
+      this.logger.debug('Récupération historique mouvements', { productId, filters });
+
+      let query = this.client
+        .from('stock_movements')
+        .select(`
+          *,
+          pieces!inner(reference, name)
+        `);
+
+      if (productId) {
+        query = query.eq('product_id', productId);
+      }
+
+      if (filters?.movementType) {
+        query = query.eq('type', filters.movementType);
+      }
+
+      if (filters?.userId) {
+        query = query.eq('user_id', filters.userId);
+      }
+
+      if (filters?.dateFrom) {
+        query = query.gte('created_at', filters.dateFrom.toISOString());
+      }
+
+      if (filters?.dateTo) {
+        query = query.lte('created_at', filters.dateTo.toISOString());
+      }
+
+      query = query
+        .order('created_at', { ascending: false })
+        .limit(filters?.limit || 100);
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Erreur récupération historique: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('Erreur récupération historique', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Méthodes privées supplémentaires
+   */
+
+  private async updateStockAfterMovement(
+    productId: string,
+    movementType: string,
+    quantity: number
+  ): Promise<void> {
+    try {
+      // Cette logique peut être gérée par des triggers en base
+      // ou ici selon l'architecture choisie
+      
+      // Récupérer le stock actuel
+      const { data: currentStock } = await this.client
+        .from('stock')
+        .select('quantity, reserved')
+        .eq('product_id', productId)
+        .single();
+
+      if (!currentStock) return;
+
+      let newQuantity = currentStock.quantity;
+
+      switch (movementType) {
+        case 'IN':
+          newQuantity += quantity;
+          break;
+        case 'OUT':
+          newQuantity -= quantity;
+          break;
+        case 'ADJUSTMENT':
+          // Pour les ajustements, la quantité est déjà la nouvelle valeur
+          // Cette logique dépend de l'implémentation choisie
+          break;
+        case 'RETURN':
+          newQuantity += quantity;
+          break;
+      }
+
+      // Mettre à jour le stock
+      const { error } = await this.client
+        .from('stock')
+        .update({
+          quantity: newQuantity,
+          available: newQuantity - currentStock.reserved,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('product_id', productId);
+
+      if (error) {
+        this.logger.error('Erreur mise à jour stock après mouvement', error);
+      }
+    } catch (error) {
+      this.logger.error('Erreur updateStockAfterMovement', error);
     }
   }
 }

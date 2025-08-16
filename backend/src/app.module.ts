@@ -14,6 +14,8 @@ import { RemixModule } from './remix/remix.module'; // ✅ RÉACTIVÉ !
 import { SuppliersModule } from './modules/suppliers/suppliers.module'; // ✅ NOUVEAU !
 import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Module admin aligné !
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
+import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
+import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -49,6 +51,8 @@ import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy di
     SuppliersModule, // ✅ NOUVEAU - Gestion avancée des fournisseurs !
     AdminModule, // ✅ NOUVEAU - Module admin aligné sur l'architecture !
     ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
+    DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
+    CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
 
     // TODO: Réactiver progressivement
     // PaymentsModule,

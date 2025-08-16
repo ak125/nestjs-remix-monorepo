@@ -455,7 +455,7 @@ Le module utilise `SupabaseRestService` pour toutes les opérations de base de d
 
 ```bash
 # ✅ Ajout valide
-curl -X POST http://localhost:3001/cart/add \
+curl -X POST http://localhost:3000/cart/add \
   -H "x-user-id: test-user-123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -468,7 +468,7 @@ curl -X POST http://localhost:3001/cart/add \
   }'
 
 # ❌ Test validation product_id invalide
-curl -X POST http://localhost:3001/cart/add \
+curl -X POST http://localhost:3000/cart/add \
   -H "x-user-id: test-user-123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -478,7 +478,7 @@ curl -X POST http://localhost:3001/cart/add \
 # Réponse: 400 Bad Request - "Expected number, received string"
 
 # ❌ Test validation quantity négative
-curl -X POST http://localhost:3001/cart/add \
+curl -X POST http://localhost:3000/cart/add \
   -H "x-user-id: test-user-123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -488,7 +488,7 @@ curl -X POST http://localhost:3001/cart/add \
 # Réponse: 400 Bad Request - "Number must be greater than 0"
 
 # ❌ Test validation quantity trop élevée
-curl -X POST http://localhost:3001/cart/add \
+curl -X POST http://localhost:3000/cart/add \
   -H "x-user-id: test-user-123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -498,7 +498,7 @@ curl -X POST http://localhost:3001/cart/add \
 # Réponse: 400 Bad Request - "Number must be less than or equal to 99"
 
 # ✅ Mise à jour valide
-curl -X PUT http://localhost:3001/cart/items/1 \
+curl -X PUT http://localhost:3000/cart/items/1 \
   -H "x-user-id: test-user-123" \
   -H "Content-Type: application/json" \
   -d '{
@@ -506,7 +506,7 @@ curl -X PUT http://localhost:3001/cart/items/1 \
   }'
 
 # ❌ Test validation header manquant
-curl -X GET http://localhost:3001/cart
+curl -X GET http://localhost:3000/cart
 # Réponse: 400 Bad Request - "Header x-user-id requis et non vide"
 ```
 

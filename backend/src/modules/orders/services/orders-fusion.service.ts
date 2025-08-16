@@ -136,18 +136,10 @@ export class OrdersService extends SupabaseBaseService {
       const limit = filters.limit || 20;
       const offset = (page - 1) * limit;
 
-      // Construction de la requête avec Supabase
+      // Construction de la requête avec Supabase (sans JOIN pour éviter l'erreur de relation)
       let query = this.supabase
         .from('___xtr_order')
-        .select(`
-          *,
-          ___xtr_customer!customer_id (
-            cst_fname,
-            cst_name,
-            cst_email
-          )
-        `)
-        .is('deleted_at', null);
+        .select('*');
 
       // Appliquer les filtres
       if (filters.customerId) {
@@ -179,8 +171,7 @@ export class OrdersService extends SupabaseBaseService {
       // Compter le total pour pagination
       let countQuery = this.supabase
         .from('___xtr_order')
-        .select('id', { count: 'exact', head: true })
-        .is('deleted_at', null);
+        .select('id', { count: 'exact', head: true });
 
       if (filters.customerId) {
         countQuery = countQuery.eq('customer_id', filters.customerId);
@@ -242,7 +233,6 @@ export class OrdersService extends SupabaseBaseService {
         .from('___xtr_order')
         .select('*')
         .eq('id', orderId)
-        .is('deleted_at', null)
         .single();
 
       if (fetchError || !order) {

@@ -19,7 +19,7 @@ interface AuthenticatedSocket extends Socket {
 
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3001', 'http://localhost:5173'], // Frontend URLs
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // Frontend URLs
     credentials: true,
   },
   namespace: '/messaging',

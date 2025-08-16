@@ -54,6 +54,80 @@ export class SuppliersController {
   }
 
   /**
+   * Générer un bon de commande fournisseur
+   */
+  @Post(':id/purchase-order')
+  async generatePurchaseOrder(
+    @Param('id') supplierId: string,
+    @Body() { items }: { items: any[] }
+  ) {
+    try {
+      const purchaseOrder = await this.suppliersService.generatePurchaseOrder(
+        parseInt(supplierId),
+        items
+      );
+      return {
+        success: true,
+        data: purchaseOrder,
+        message: 'Bon de commande généré avec succès',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error generating purchase order:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Obtenir les fournisseurs d'un produit
+   */
+  @Get('product/:productId')
+  async getProductSuppliers(@Param('productId') productId: string) {
+    try {
+      const suppliers = await this.suppliersService.getProductSuppliers(productId);
+      return {
+        success: true,
+        data: suppliers,
+        message: 'Fournisseurs du produit récupérés avec succès',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error getting product suppliers:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Désactiver un fournisseur
+   */
+  @Post(':id/deactivate')
+  async deactivateSupplier(@Param('id') supplierId: string) {
+    try {
+      await this.suppliersService.deactivateSupplier(parseInt(supplierId));
+      return {
+        success: true,
+        message: 'Fournisseur désactivé avec succès',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error deactivating supplier:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
    * Créer un nouveau fournisseur
    */
   @Post('create')
@@ -68,6 +142,49 @@ export class SuppliersController {
       };
     } catch (error) {
       this.logger.error('Error creating supplier:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+    /**
+   * Désactiver un fournisseur
+   */
+
+  /**
+   * Obtenir un fournisseur avec ses articles et marques (version détaillée)
+   */
+  @Get(':id/details')
+  async getSupplierDetails(@Param('id') id: string) {
+    try {
+      const supplier = await this.suppliersService.getSupplierById(parseInt(id));
+      const links = await this.suppliersService.getSupplierLinks(parseInt(id));
+      
+      // Grouper par type (marques vs articles)
+      const brands = links.filter(link => link.type === 'brand');
+      const articles = links.filter(link => link.type === 'article');
+      
+      return {
+        success: true,
+        data: {
+          supplier,
+          brands,
+          articles,
+          statistics: {
+            totalBrands: brands.length,
+            activeBrands: brands.filter((b) => b.isActive).length,
+            totalArticles: articles.length,
+            activeArticles: articles.filter((a) => a.isActive).length,
+          },
+        },
+        message: 'Détails du fournisseur récupérés avec succès',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error getting supplier details:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -145,15 +262,162 @@ export class SuppliersController {
   }
 
   /**
-   * Récupérer un fournisseur par ID
+   * Tester les liens d'un fournisseur
+   */
+  @Get('test-links/:id')
+  async testSupplierLinks(@Param('id') id: string) {
+    try {
+      const links = await this.suppliersService.getSupplierLinks(id);
+      
+      return {
+        success: true,
+        data: {
+          supplierId: id,
+          linksCount: links.length,
+          links: links.slice(0, 3), // Juste les 3 premiers pour test
+        },
+        message: 'Liens du fournisseur récupérés',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting supplier links ${id}:`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Test des liens pour debug
+   */
+  @Get('test-links')
+  async testSupplierLinks() {
+    try {
+      const testResult = await this.suppliersService.testSupplierLinksTable();
+      
+      return {
+        success: true,
+        data: testResult,
+        message: 'Test de la table liens terminé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error testing supplier links:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Test de la table pieces_gamme pour debug
+   */
+  @Get('test-gammes')
+  async testGammes() {
+    try {
+      const testResult = await this.suppliersService.testPiecesGammeTable();
+      
+      return {
+        success: true,
+        data: testResult,
+        message: 'Test de la table pieces_gamme terminé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error testing pieces_gamme:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+  @Get('test-marques')
+  async testMarques() {
+    try {
+      const testResult = await this.suppliersService.testPiecesMarqueTable();
+      
+      return {
+        success: true,
+        data: testResult,
+        message: 'Test de la table pieces_marque terminé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error testing pieces_marque:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+  @Get('test-pieces')
+  async testPieces() {
+    try {
+      const testResult = await this.suppliersService.testPiecesTable();
+      
+      return {
+        success: true,
+        data: testResult,
+        message: 'Test de la table pieces terminé',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error testing pieces:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Récupérer un fournisseur par ID (simple)
+   */
+  @Get('simple/:id')
+  async getSupplierSimple(@Param('id') id: string) {
+    try {
+      const supplier = await this.suppliersService.getSupplierById(id);
+      
+      return {
+        success: true,
+        data: supplier,
+        message: 'Fournisseur récupéré avec succès',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`Error getting supplier ${id}:`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Récupérer un fournisseur par ID avec ses liens
    */
   @Get('details/:id')
   async getSupplierById(@Param('id') id: string) {
     try {
-      const supplier = await this.suppliersService.getSupplierById(parseInt(id));
+      const supplier = await this.suppliersService.getSupplierById(id);
+      const links = await this.suppliersService.getSupplierLinks(id);
+      const stats = await this.suppliersService.getSupplierStatistics(id);
+      
       return {
         success: true,
-        data: supplier,
+        data: {
+          ...supplier,
+          links,
+          statistics: stats,
+        },
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
