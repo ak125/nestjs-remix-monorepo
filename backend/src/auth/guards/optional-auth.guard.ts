@@ -25,9 +25,9 @@ export class OptionalAuthGuard implements CanActivate {
       // Vérifier s'il y a une session active
       if (request.isAuthenticated && request.isAuthenticated()) {
         // L'utilisateur est déjà authentifié via passport session
-        this.logger.debug(
-          `Optional auth: User authenticated via session - ${request.user?.email}`,
-        );
+        // this.logger.debug(
+        //   `Optional auth: User authenticated via session - ${request.user?.email}`,
+        // );
         return true;
       }
 
@@ -39,16 +39,16 @@ export class OptionalAuthGuard implements CanActivate {
         try {
           // Ici on pourrait ajouter la validation JWT si nécessaire
           // Pour l'instant, on laisse passer
-          this.logger.debug('Optional auth: Bearer token detected');
+          // this.logger.debug('Optional auth: Bearer token detected');
         } catch (_error) {
           this.logger.warn('Optional auth: Invalid bearer token');
         }
       }
 
       // Pas d'authentification trouvée, mais on laisse passer quand même
-      this.logger.debug(
-        'Optional auth: No authentication found, proceeding without user',
-      );
+      // this.logger.debug(
+      //   'Optional auth: No authentication found, proceeding without user',
+      // );
       return true;
     } catch (error) {
       this.logger.warn(

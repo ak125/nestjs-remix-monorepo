@@ -5,8 +5,8 @@
 
 import { type LoaderFunctionArgs, type MetaFunction, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { AdminSidebar } from "~/components/AdminSidebar";
 import { getOptionalUser } from "../auth/unified.server";
+import { AdminSidebar } from "../components/AdminSidebar";
 
 export const meta: MetaFunction = () => {
   return [
@@ -19,15 +19,49 @@ export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
   if (!user) throw redirect('/login');
   if (!user.level || user.level < 5) throw redirect('/unauthorized');
-  return { user };
+  
+  // Charger les statistiques pour la sidebar
+  let stats = {
+    totalUsers: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    activeUsers: 0,
+    pendingOrders: 0,
+    completedOrders: 0,
+    totalSuppliers: 0,
+    totalStock: 409687 // Valeur par défaut du stock
+  };
+
+  try {
+    // Récupérer les données depuis la nouvelle API Dashboard
+    const dashboardResponse = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/stats`);
+
+    if (dashboardResponse.ok) {
+      const dashboardData = await dashboardResponse.json();
+      stats = {
+        totalUsers: dashboardData.totalUsers || 0,
+        totalOrders: dashboardData.totalOrders || 0,
+        totalRevenue: dashboardData.totalRevenue || 0,
+        activeUsers: dashboardData.activeUsers || 0,
+        pendingOrders: dashboardData.pendingOrders || 0,
+        completedOrders: dashboardData.completedOrders || 0,
+        totalSuppliers: dashboardData.totalSuppliers || 0,
+        totalStock: 409687 // Valeur par défaut du stock
+      };
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement des stats sidebar:', error);
+  }
+
+  return { user, stats };
 }
 
 export default function AdminLayout() {
-  const { user } = useLoaderData<typeof loader>();
+  const { user, stats } = useLoaderData<typeof loader>();
 
   return (
     <div className="min-h-screen bg-background">
-      <AdminSidebar />
+      <AdminSidebar stats={stats} />
       
       {/* Main content */}
       <div className="lg:pl-64">

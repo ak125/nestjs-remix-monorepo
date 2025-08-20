@@ -12,10 +12,11 @@ import {
   Package
 } from "lucide-react";
 
+import { requireAuth } from "../auth/unified.server";
+import { UserShipments } from "../components/shipping/UserShipments";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireAuth } from "../auth/unified.server";
 import { cn } from "../lib/utils";
 
 type User = {
@@ -505,7 +506,7 @@ export default function AccountDashboard() {
         </div>
 
         {/* Menu principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {menuItems.map((item, index) => (
             <MenuCard
               key={index}
@@ -518,6 +519,13 @@ export default function AccountDashboard() {
             />
           ))}
         </div>
+
+        {/* Section des expéditions utilisateur */}
+        {user.id && (
+          <div className="mb-8">
+            <UserShipments userId={user.id} />
+          </div>
+        )}
       </div>
     </div>
   );

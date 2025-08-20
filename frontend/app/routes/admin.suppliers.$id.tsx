@@ -19,6 +19,25 @@ interface SupplierDetail {
   status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
+  // Nouvelles propriétés enrichies
+  statistics?: {
+    totalBrands: number;
+    totalPieces: number;
+    totalLinks: number;
+    activeLinks: number;
+  };
+  links?: Array<{
+    id: any;
+    type: string;
+    isActive: boolean;
+    productInfo?: { 
+      id: any; 
+      designation: string; 
+      reference: string; 
+      brand: string; 
+      isActive: boolean; 
+    };
+  }>;
 }
 
 interface SupplierDetailData {
@@ -75,6 +94,14 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
       status: (supplier_raw.spl_display === '1' || supplier_raw.spl_display === 1) ? 'active' : 'inactive',
       created_at: supplier_raw.created_at || new Date().toISOString(),
       updated_at: supplier_raw.updated_at || new Date().toISOString(),
+      // Ajouter les données enrichies
+      statistics: supplier_raw.statistics || {
+        totalBrands: 0,
+        totalPieces: 0,
+        totalLinks: 0,
+        activeLinks: 0,
+      },
+      links: supplier_raw.links || [],
     };
 
     return json<SupplierDetailData>({ supplier });
@@ -302,7 +329,20 @@ export default function SupplierDetail() {
           <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
             <div className="text-2xl text-blue-600 mb-2">📦</div>
             <div className="text-lg font-semibold text-gray-900">Produits</div>
-            <div className="text-sm text-gray-600">À implémenter</div>
+            <div className="text-sm text-gray-600">
+              <div className="flex justify-between items-center mt-2">
+                <span>Articles:</span>
+                <span className="font-semibold text-blue-600">{supplier.statistics?.totalPieces || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Marques:</span>
+                <span className="font-semibold text-blue-600">{supplier.statistics?.totalBrands || 0}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>Actifs:</span>
+                <span className="font-semibold text-green-600">{supplier.statistics?.activeLinks || 0}</span>
+              </div>
+            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
@@ -317,6 +357,82 @@ export default function SupplierDetail() {
             <div className="text-sm text-gray-600">À implémenter</div>
           </div>
         </div>
+
+        {/* Section détaillée des produits */}
+        {supplier.links && supplier.links.length > 0 && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Liste des Produits ({supplier.links.length})
+              </h3>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Produit
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Référence
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Marque/Gamme
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Statut
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {supplier.links.slice(0, 20).map((link, index) => (
+                    <tr key={link.id || index} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="mr-2">📦</span>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {link.productInfo?.designation || 'Produit sans nom'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              ID: {link.productInfo?.id || link.id}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {link.productInfo?.reference || 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {link.productInfo?.brand || 'À déterminer'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          link.isActive
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {link.isActive ? 'Actif' : 'Inactif'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              {supplier.links.length > 20 && (
+                <div className="mt-4 text-center text-sm text-gray-500">
+                  ... et {supplier.links.length - 20} autres produits
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

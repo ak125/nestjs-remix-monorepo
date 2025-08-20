@@ -15,7 +15,12 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module'; // ✅ N
 import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Module admin aligné !
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
-import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
+import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
+import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 NOUVEAU - Module véhicules !
+import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
+import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
+import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
+// import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -52,7 +57,12 @@ import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU
     AdminModule, // ✅ NOUVEAU - Module admin aligné sur l'architecture !
     ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
-    CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
+    ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
+    VehiclesModule, // 🚗 NOUVEAU - Module véhicules avec recherche avancée !
+    VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
+    ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
+    InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
+    // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
 
     // TODO: Réactiver progressivement
     // PaymentsModule,

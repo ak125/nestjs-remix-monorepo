@@ -9,7 +9,11 @@ import {
   Menu, 
   X,
   LogOut,
-  Shield
+  Shield,
+  Package,
+  Truck,
+  Store,
+  Send
 } from "lucide-react"
 import * as React from "react"
 import { cn } from "~/lib/utils"
@@ -18,61 +22,106 @@ import { Card } from "./ui/card"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
+  stats?: {
+    totalUsers: number;
+    totalOrders: number;
+    totalRevenue: number;
+    activeUsers: number;
+    pendingOrders: number;
+    completedOrders: number;
+    totalSuppliers: number;
+    totalStock?: number;
+  }
 }
 
-const navigationItems = [
-  {
-    name: "Dashboard",
-    href: "/admin",
-    icon: Home,
-    description: "Vue d'ensemble",
-    badge: null,
-    notification: false
-  },
-  {
-    name: "Utilisateurs",
-    href: "/admin/users", 
-    icon: Users,
-    description: "Gestion des utilisateurs",
-    badge: { count: 50, color: "bg-blue-500" },
-    notification: false
-  },
-  {
-    name: "Commandes",
-    href: "/admin/orders",
-    icon: ShoppingCart,
-    description: "Gestion des commandes",
-    badge: { count: 1440, color: "bg-green-500" },
-    notification: true
-  },
-  {
-    name: "Paiements",
-    href: "/admin/payments",
-    icon: CreditCard,
-    description: "Gestion des paiements",
-    badge: { count: 50, color: "bg-yellow-500" },
-    notification: true
-  },
-  {
-    name: "Staff",
-    href: "/admin/staff",
-    icon: Shield,
-    description: "Gestion du personnel",
-    badge: { count: 4, color: "bg-purple-500" },
-    notification: false
-  },
-  {
-    name: "Rapports",
-    href: "/admin/reports",
-    icon: BarChart3,
-    description: "Analyses et rapports",
-    badge: { count: 2, color: "bg-orange-500" },
-    notification: true
-  },
-]
-
-export function AdminSidebar({ className, ...props }: SidebarProps) {
+export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
   const location = useLocation()
+  
+  // Créer les éléments de navigation avec les statistiques dynamiques
+  const getNavigationItems = () => [
+    {
+      name: "Dashboard",
+      href: "/admin",
+      icon: Home,
+      description: "Vue d'ensemble",
+      badge: null,
+      notification: false
+    },
+    {
+      name: "Utilisateurs",
+      href: "/admin/users", 
+      icon: Users,
+      description: "Gestion des utilisateurs",
+      badge: stats ? { count: stats.totalUsers, color: "bg-blue-500" } : { count: 0, color: "bg-gray-400" },
+      notification: false
+    },
+    {
+      name: "Commandes",
+      href: "/admin/orders",
+      icon: ShoppingCart,
+      description: "Gestion des commandes",
+      badge: stats ? { count: stats.totalOrders, color: "bg-green-500" } : { count: 0, color: "bg-gray-400" },
+      notification: stats ? stats.pendingOrders > 0 : false
+    },
+    {
+      name: "Stock",
+      href: "/admin/stock/working/main",
+      icon: Package,
+      description: "Gestion des stocks",
+      badge: stats ? { count: stats.totalStock || 409687, color: "bg-emerald-500" } : { count: 409687, color: "bg-emerald-500" },
+      notification: false
+    },
+    {
+      name: "Commercial",
+      href: "/commercial",
+      icon: Store,
+      description: "Interface commerciale",
+      badge: { count: 'PRO', color: "bg-blue-600" },
+      notification: false
+    },
+    {
+      name: "Expéditions",
+      href: "/commercial/shipping",
+      icon: Send,
+      description: "Gestion des expéditions",
+      badge: { count: 10, color: "bg-purple-600" },
+      notification: true
+    },
+    {
+      name: "Fournisseurs",
+      href: "/admin/suppliers",
+      icon: Truck,
+      description: "Gestion des fournisseurs",
+      badge: stats ? { count: stats.totalSuppliers, color: "bg-indigo-500" } : { count: 70, color: "bg-indigo-500" },
+      notification: false
+    },
+    {
+      name: "Paiements",
+      href: "/admin/payments",
+      icon: CreditCard,
+      description: "Gestion des paiements",
+      badge: { count: 50, color: "bg-yellow-500" },
+      notification: true
+    },
+    {
+      name: "Staff",
+      href: "/admin/staff",
+      icon: Shield,
+      description: "Gestion du personnel",
+      badge: { count: 4, color: "bg-purple-500" },
+      notification: false
+    },
+    {
+      name: "Rapports",
+      href: "/admin/reports",
+      icon: BarChart3,
+      description: "Analyses et rapports",
+      badge: { count: 2, color: "bg-orange-500" },
+      notification: false
+    }
+  ];
+
+  const navigationItems = getNavigationItems();
   const [isOpen, setIsOpen] = React.useState(false)
 
   // Fermer le menu mobile lors du changement de route
@@ -184,7 +233,9 @@ export function AdminSidebar({ className, ...props }: SidebarProps) {
             <Card className="p-3 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-600/30">
               <div className="flex items-center gap-2 text-yellow-300">
                 <div className="h-2 w-2 bg-yellow-400 rounded-full animate-pulse" />
-                <p className="text-xs font-medium">1440 commandes totales</p>
+                <p className="text-xs font-medium">
+                  {stats ? `${stats.totalOrders} commandes totales` : '0 commandes totales'}
+                </p>
               </div>
               <div className="flex items-center gap-2 text-orange-300 mt-1">
                 <div className="h-2 w-2 bg-orange-400 rounded-full" />

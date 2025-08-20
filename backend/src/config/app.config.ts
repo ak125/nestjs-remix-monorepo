@@ -23,7 +23,7 @@ export function createAppConfig(): AppConfig {
   const config: AppConfig = {
     supabase: {
       url:
-        process.env.SUPABASE_URL || 'https://rwmlhfjqdlmggpvhytqf.supabase.co',
+        process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co',
       serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     },
     redis: {
@@ -49,8 +49,18 @@ export function createAppConfig(): AppConfig {
 let appConfigInstance: AppConfig | null = null;
 
 export function getAppConfig(): AppConfig {
+  // Force refresh si l'URL a changé (Context7 fix)
+  if (appConfigInstance && 
+      appConfigInstance.supabase.url !== (process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co')) {
+    appConfigInstance = null;
+  }
+  
   if (!appConfigInstance) {
     appConfigInstance = createAppConfig();
   }
   return appConfigInstance;
+}
+
+export function resetAppConfig(): void {
+  appConfigInstance = null;
 }

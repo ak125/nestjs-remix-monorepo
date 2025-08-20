@@ -18,8 +18,8 @@ export class RemixController {
     @Res() response: Response,
     @Next() next: NextFunction,
   ) {
-    console.log('--- RemixController handler ---');
-    console.log('Request URL:', request.url);
+    // console.log('--- RemixController handler ---');
+    // console.log('Request URL:', request.url);
 
     // Ne pas capturer les routes qui sont déjà gérées par d'autres contrôleurs backend
     // Attention: les routes /admin/* doivent être gérées par Remix pour le frontend admin
@@ -29,22 +29,22 @@ export class RemixController {
       request.url.startsWith('/auth/') ||
       request.url.startsWith('/profile/')
     ) {
-      console.log('🔀 Skipping API/Auth/Profile route, calling next()');
+      // console.log('🔀 Skipping API/Auth/Profile route, calling next()');
       return next();
     }
 
-    console.log('Request user:', request.user);
-    console.log('Request session:', request.session);
+    // console.log('Request user:', request.user);
+    // console.log('Request session:', request.session);
 
     // Debug: Vérifier si le body est disponible
     if (request.method === 'POST') {
-      console.log('🔍 DEBUG: POST request body:', request.body);
-      console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
+      // console.log('🔍 DEBUG: POST request body:', request.body);
+      // console.log('🔍 DEBUG: POST request.body type:', typeof request.body);
     }
 
     try {
       const build = await getServerBuild();
-      console.log('✅ Server build loaded successfully');
+      // console.log('✅ Server build loaded successfully');
 
       return createRequestHandler({
         build,

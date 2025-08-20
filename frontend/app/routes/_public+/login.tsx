@@ -28,7 +28,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       if (user.isAdmin && userLevel >= 7) {
         return redirect("/admin");
       } else if (user.isPro) {
-        return redirect("/pro/dashboard");
+        return redirect("/commercial");
       } else {
         return redirect("/account");
       }
@@ -69,7 +69,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         'Cookie': request.headers.get('Cookie') || ''
       },
       body: new URLSearchParams({
-        email: validated.email,  // Utiliser 'email' au lieu de 'username'
+        username: validated.email,  // Utiliser 'username' pour correspondre au guard
         password: validated.password,
       }),
       redirect: 'manual' // Important pour capturer la redirection

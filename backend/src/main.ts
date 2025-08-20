@@ -16,6 +16,10 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
+      logger:
+        process.env.NODE_ENV === 'production'
+          ? ['error', 'warn']
+          : ['error', 'warn', 'log'], // Réduire les logs DEBUG
     });
 
     // Les contrôleurs définissent déjà leurs préfixes individuellement
@@ -81,13 +85,37 @@ async function bootstrap() {
 
     console.log('Passport initialisé.');
 
-    // Sécurité HTTP
+    // Sécurité HTTP avec CSP personnalisée pour Supabase
     expressApp.set('trust proxy', 1);
     try {
       // Import dynamique pour éviter d alourdir le build si non nécessaire
       const helmet = (await import('helmet')).default;
       const compression = (await import('compression')).default;
-      app.use(helmet());
+
+      // Configuration Helmet avec CSP personnalisée pour autoriser Supabase
+      app.use(
+        helmet({
+          contentSecurityPolicy: {
+            directives: {
+              defaultSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"], // Pour Tailwind CSS
+              scriptSrc: ["'self'", "'unsafe-inline'"], // Pour les scripts Remix
+              imgSrc: [
+                "'self'",
+                'data:',
+                'blob:',
+                'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
+              ],
+              connectSrc: ["'self'", 'ws:', 'wss:'], // Pour les WebSockets de dev
+              fontSrc: ["'self'", 'data:'],
+              objectSrc: ["'none'"],
+              mediaSrc: ["'self'"],
+              frameSrc: ["'none'"],
+            },
+          },
+        }),
+      );
+
       app.use(compression());
     } catch (e) {
       console.warn('Helmet/compression non chargés:', e);

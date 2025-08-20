@@ -147,9 +147,9 @@ export class CartController {
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
 
-      this.logger.debug(
-        `Ajout article au panier - session: ${sessionId}, product: ${addItemDto.product_id}`,
-      );
+      // this.logger.debug(
+      //   `Ajout article au panier - session: ${sessionId}, product: ${addItemDto.product_id}`,
+      // );
 
       // Utiliser les méthodes existantes du service
       const result = await this.cartService.addToCart(

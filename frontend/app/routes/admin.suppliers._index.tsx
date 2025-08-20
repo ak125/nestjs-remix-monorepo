@@ -38,6 +38,26 @@ interface Supplier {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  // Nouvelles propriétés ajoutées
+  statistics?: {
+    totalBrands: number;
+    totalPieces: number;
+    totalLinks: number;
+  };
+  links?: Array<{
+    id: any;
+    type: string;
+    isActive: boolean;
+    brand?: { id: any; name: string; };
+    piece?: { id: any; reference: string; };
+    productInfo?: { 
+      id: any; 
+      designation: string; 
+      reference: string; 
+      brand: string; 
+      isActive: boolean; 
+    };
+  }>;
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -70,12 +90,55 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const suppliersData = await suppliersResponse.json();
     const suppliers = suppliersData.suppliers || [];
     
+    // Enrichir chaque fournisseur avec ses statistiques (pour les premiers 20)
+    const enrichedSuppliers = await Promise.all(
+      suppliers.slice(0, 20).map(async (supplier: any) => {
+        try {
+          const detailsResponse = await fetch(
+            `http://localhost:3000/api/suppliers/details/${supplier.id}`,
+            { headers: { "Internal-Call": "true" } }
+          );
+          
+          if (detailsResponse.ok) {
+            const detailsData = await detailsResponse.json();
+            return {
+              ...supplier,
+              statistics: detailsData.data?.statistics || {
+                totalBrands: 0,
+                totalPieces: 0,
+                totalLinks: 0
+              },
+              links: detailsData.data?.links || []
+            };
+          } else {
+            // Erreur HTTP - utiliser les statistiques par défaut
+            return {
+              ...supplier,
+              statistics: { totalBrands: 0, totalPieces: 0, totalLinks: 0 },
+              links: []
+            };
+          }
+        } catch (error) {
+          console.warn(`Erreur enrichissement fournisseur ${supplier.id}:`, error);
+          // Retourner le fournisseur avec des statistiques par défaut SEULEMENT en cas d'erreur
+          return {
+            ...supplier,
+            statistics: { totalBrands: 0, totalPieces: 0, totalLinks: 0 },
+            links: []
+          };
+        }
+      })
+    );
+    
+    // Utiliser les données enrichies pour les calculs
+    const suppliersToProcess = enrichedSuppliers.length > 0 ? enrichedSuppliers : suppliers;
+    
     // Appliquer les filtres côté client pour l'instant
-    let filteredSuppliers = suppliers;
+    let filteredSuppliers = suppliersToProcess;
     
     if (params.search) {
       const search = params.search.toLowerCase();
-      filteredSuppliers = suppliers.filter((supplier: any) =>
+      filteredSuppliers = suppliersToProcess.filter((supplier: any) =>
         supplier.name?.toLowerCase().includes(search) ||
         supplier.companyName?.toLowerCase().includes(search) ||
         supplier.code?.toLowerCase().includes(search)
@@ -423,6 +486,78 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               <div className="mt-2 text-sm">
                 <span className="text-gray-500">Commande minimum:</span>
                 <span className="ml-1 font-medium text-gray-900">{supplier.minimumOrderAmount}€</span>
+              </div>
+            )}
+
+            {/* Nouvelles statistiques articles/marques */}
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-blue-600">
+                    {supplier.statistics?.totalBrands ?? 0}
+                  </div>
+                  <div className="text-gray-500">Marques</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-green-600">
+                    {supplier.statistics?.totalPieces ?? 0}
+                  </div>
+                  <div className="text-gray-500">Articles</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-purple-600">
+                    {supplier.statistics?.totalLinks ?? 0}
+                  </div>
+                  <div className="text-gray-500">Total Liens</div>
+                </div>
+              </div>
+              
+              {/* Message informatif si pas de liens */}
+              {(!supplier.statistics?.totalLinks || supplier.statistics.totalLinks === 0) && (
+                <div className="mt-2 text-xs text-gray-400 text-center">
+                  Aucune liaison configurée pour ce fournisseur
+                </div>
+              )}
+            </div>
+
+            {/* Aperçu des liens récents */}
+            {supplier.links && supplier.links.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="text-sm">
+                  <div className="text-gray-500 font-medium mb-2">
+                    Derniers liens ({supplier.links.length} total):
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {supplier.links.slice(0, 10).map((link, index) => (
+                      <span
+                        key={index}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          link.type === 'brand' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                        title={link.productInfo ? `${link.productInfo.designation} - ${link.productInfo.brand} (Ref: ${link.productInfo.reference})` : ''}
+                      >
+                        {link.type === 'brand' ? '🏷️' : '📦'} 
+                        <span className="truncate max-w-24">
+                          {link.productInfo?.designation || link.brand?.name || link.piece?.reference || 'N/A'}
+                        </span>
+                        {link.productInfo?.brand && 
+                         link.productInfo.brand !== 'À déterminer' && 
+                         link.productInfo.brand !== link.productInfo.designation && (
+                          <span className="ml-1 text-xs opacity-70 font-normal">
+                            ({link.productInfo.brand.substring(0, 8)}{link.productInfo.brand.length > 8 ? '...' : ''})
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                    {supplier.links.length > 10 && (
+                      <span className="text-xs text-gray-500">
+                        +{supplier.links.length - 10} autres...
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>

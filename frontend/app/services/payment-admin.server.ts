@@ -4,7 +4,7 @@ import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment
  * Obtenir l'URL du backend à partir des variables d'environnement
  */
 function getBackendUrl(): string {
-  return process.env.BACKEND_URL || 'http://localhost:3001';
+  return process.env.BACKEND_URL || 'http://localhost:3000';
 }
 
 /**

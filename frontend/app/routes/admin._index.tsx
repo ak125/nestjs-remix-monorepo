@@ -35,13 +35,7 @@ export const loader: LoaderFunction = async () => {
   try {
     console.log('📊 Chargement des statistiques du dashboard...');
     
-    // Récupérer les données des différentes APIs
-    const [usersResponse, ordersResponse, suppliersResponse] = await Promise.all([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/users/test`),
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/orders`),
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/suppliers`)
-    ]);
-
+    // Initialiser les stats par défaut
     let stats = {
       totalUsers: 0,
       totalOrders: 0,
@@ -51,30 +45,21 @@ export const loader: LoaderFunction = async () => {
       completedOrders: 0,
       totalSuppliers: 0
     };
+    
+    // Récupérer les données depuis la nouvelle API Dashboard unifiée
+    const dashboardResponse = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/stats`);
 
-    // Traiter les données users
-    if (usersResponse.ok) {
-      const usersData = await usersResponse.json();
-      stats.totalUsers = usersData.totalUsers || 0;
-      stats.activeUsers = usersData.users?.filter((u: any) => u.isActive)?.length || 0;
-    }
-
-    // Traiter les données orders
-    if (ordersResponse.ok) {
-      const ordersData = await ordersResponse.json();
-      const orders = ordersData.orders || [];
-      stats.totalOrders = orders.length;
-      stats.completedOrders = orders.filter((o: any) => o.ord_is_pay === "1").length;
-      stats.pendingOrders = orders.filter((o: any) => o.ord_is_pay !== "1").length;
-      stats.totalRevenue = orders
-        .filter((o: any) => o.ord_is_pay === "1")
-        .reduce((sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || 0), 0);
-    }
-
-    // Traiter les données suppliers
-    if (suppliersResponse.ok) {
-      const suppliersData = await suppliersResponse.json();
-      stats.totalSuppliers = suppliersData.suppliers?.length || 0;
+    if (dashboardResponse.ok) {
+      const dashboardData = await dashboardResponse.json();
+      stats = {
+        totalUsers: dashboardData.totalUsers || 0,
+        totalOrders: dashboardData.totalOrders || 0,
+        totalRevenue: dashboardData.totalRevenue || 0,
+        activeUsers: dashboardData.activeUsers || 0,
+        pendingOrders: dashboardData.pendingOrders || 0,
+        completedOrders: dashboardData.completedOrders || 0,
+        totalSuppliers: dashboardData.totalSuppliers || 0
+      };
     }
 
     console.log('✅ Stats du dashboard chargées:', stats);

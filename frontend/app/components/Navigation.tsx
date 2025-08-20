@@ -42,6 +42,21 @@ export default function Navigation() {
       ),
     },
     {
+      name: 'Commercial',
+      href: '/commercial',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      submenu: [
+        { name: 'Tableau de bord', href: '/commercial', icon: null },
+        { name: 'Commandes', href: '/commercial/orders', icon: null },
+        { name: 'Stock', href: '/commercial/stock', icon: null },
+        { name: 'Fournisseurs', href: '/admin/suppliers', icon: null },
+      ],
+    },
+    {
       name: 'Utilisateurs',
       href: '/admin/users',
       icon: (
@@ -97,7 +112,7 @@ export default function Navigation() {
       submenu: [
         { name: 'Catalogue', href: '/admin/products', icon: null },
         { name: 'Gammes auto', href: '/admin/products/automotive', icon: null },
-        { name: 'Stock', href: '/admin/products/stock', icon: null },
+        { name: 'Stock', href: '/admin/stock', icon: null },
         { name: 'Pièces équivalentes', href: '/admin/products/equivalent', icon: null },
       ],
     },

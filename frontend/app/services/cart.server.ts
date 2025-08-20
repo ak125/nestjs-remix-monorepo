@@ -55,7 +55,7 @@ class CartServerService {
       // Récupérer les cookies de session depuis la requête
       const cookie = request.headers.get('Cookie') || '';
       
-      console.log("🔄 [CartServer] Appel backend:", `${backendUrl}/api/cart`);
+      // console.log("🔄 [CartServer] Appel backend:", `${backendUrl}/api/cart`);
       
       const response = await fetch(`${backendUrl}/api/cart`, {
         method: 'GET',
@@ -68,7 +68,7 @@ class CartServerService {
 
       if (response.ok) {
         const backendData = await response.json();
-        console.log("✅ [CartServer] Données backend reçues:", backendData);
+        // console.log("✅ [CartServer] Données backend reçues:", backendData);
         
         // Normaliser les données du backend vers notre format
         return this.normalizeBackendData(backendData);
@@ -81,7 +81,7 @@ class CartServerService {
     }
 
     // Fallback : simulation avec données de démo
-    console.log("🔄 [CartServer] Utilisation des données de démo");
+    // console.log("🔄 [CartServer] Utilisation des données de démo");
     
     return {
       items: [

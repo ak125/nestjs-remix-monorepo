@@ -98,8 +98,16 @@ export class AuthController {
     }
   }
 
+  /**
+   * GET /authenticate - Redirige vers la page de login
+   */
+  @Get('authenticate')
+  authenticateGet(@Res() response: Response) {
+    return response.redirect('/auth/login');
+  }
+
   @UseGuards(LocalAuthGuard)
-  @Post('/authenticate')
+  @Post('authenticate')
   login(@Req() request: Express.Request, @Res() response: Response) {
     console.log('--- POST /authenticate - Redirection conditionnelle ---');
     console.log('User connecté:', request.user);

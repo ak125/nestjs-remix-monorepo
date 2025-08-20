@@ -48,6 +48,8 @@ export abstract class SupabaseBaseService {
     });
 
     this.logger.log('SupabaseBaseService initialized');
+    this.logger.log(`URL: ${this.supabaseUrl}`);
+    this.logger.log(`Service key present: ${this.supabaseServiceKey ? 'Yes' : 'No'}`);
   }
 
   /**
