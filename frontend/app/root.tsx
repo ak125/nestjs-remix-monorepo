@@ -1,6 +1,8 @@
 import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
+import { getOptionalUser } from "./auth/unified.server";
+import { CommandPalette } from "./components/CommandPalette";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
@@ -8,7 +10,6 @@ import { NotificationContainer, NotificationProvider } from "./components/notifi
 import stylesheet from "./global.css?url";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
-import { getOptionalUser } from "./auth/unified.server";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -87,6 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <Footer />
           <NotificationContainer />
+          <CommandPalette />
         </NotificationProvider>
         <ScrollRestoration />
         <Scripts />

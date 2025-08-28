@@ -13,6 +13,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -84,7 +85,9 @@ export class AuthService {
             cst_is_pro: '1', // Les admins sont considérés comme des pros
           };
           isAdmin = true;
-          this.logger.debug(`Admin user found: ${email} with level ${admin.cnfa_level}`);
+          this.logger.debug(
+            `Admin user found: ${email} with level ${admin.cnfa_level}`,
+          );
         }
       }
 
@@ -109,7 +112,9 @@ export class AuthService {
         throw new UnauthorizedException('Compte désactivé');
       }
 
-      this.logger.log(`Authentication successful for ${email} (admin: ${isAdmin})`);
+      this.logger.log(
+        `Authentication successful for ${email} (admin: ${isAdmin})`,
+      );
       return this.formatUserResponse(user);
     } catch (error) {
       this.logger.error(`Authentication failed for ${email}:`, error);
@@ -241,7 +246,10 @@ export class AuthService {
       }
 
       // Format MD5 simple (32 caractères) - utilisé dans ___config_admin
-      if (hashedPassword.length === 32 && /^[a-f0-9]{32}$/i.test(hashedPassword)) {
+      if (
+        hashedPassword.length === 32 &&
+        /^[a-f0-9]{32}$/i.test(hashedPassword)
+      ) {
         const md5Hash = crypto
           .createHash('md5')
           .update(plainPassword)
@@ -554,7 +562,7 @@ export class AuthService {
 
       // TODO: Implémenter la validation JWT si utilisé
       // Pour le moment, on utilise les sessions
-      
+
       // Extraire l'ID utilisateur du token (simulation)
       const userId = this.extractUserIdFromToken(token);
       if (!userId) {
@@ -602,5 +610,210 @@ export class AuthService {
       this.logger.error('Error verifying password hash:', error);
       return false;
     }
+  }
+
+  // ==========================================
+  // NOUVELLES FONCTIONNALITÉS MODULAIRES
+  // ==========================================
+
+  /**
+   * Vérifier l'accès à un module (remplace get.access.php)
+   * Version progressive intégrée au système existant
+   */
+  async checkModuleAccess(
+    userId: string,
+    module: string,
+    action: string = 'read',
+  ): Promise<{
+    hasAccess: boolean;
+    reason?: string;
+    requiredRole?: string;
+  }> {
+    try {
+      // Récupérer l'utilisateur via le service existant
+      const user = await this.userService.getUserById(userId);
+
+      if (!user || user.cst_activ !== '1') {
+        return { hasAccess: false, reason: 'User inactive or not found' };
+      }
+
+      // Logique de permissions basée sur le niveau utilisateur existant
+      const userLevel = parseInt(user.cst_level) || 0;
+
+      const modulePermissions = {
+        commercial: { read: 1, write: 3 },
+        admin: { read: 7, write: 9 },
+        seo: { read: 3, write: 5 },
+        expedition: { read: 2, write: 4 },
+        inventory: { read: 2, write: 4 },
+        finance: { read: 5, write: 7 },
+        reports: { read: 1, write: 5 },
+      };
+
+      const requiredLevel = modulePermissions[module]?.[action] || 9;
+      const hasAccess = userLevel >= requiredLevel;
+
+      this.logger.debug(
+        `Module access check: user ${userId}, module ${module}, action ${action}, userLevel ${userLevel}, required ${requiredLevel}, access ${hasAccess}`,
+      );
+
+      return {
+        hasAccess,
+        reason: hasAccess ? 'Access granted' : 'Insufficient privileges',
+        requiredRole: `Level ${requiredLevel} required`,
+      };
+    } catch (error) {
+      this.logger.error(`Error checking module access: ${error}`);
+      return {
+        hasAccess: false,
+        reason: 'Access check failed',
+      };
+    }
+  }
+
+  /**
+   * Gérer la réponse en cas de non-privilège
+   * (remplace get.access.response.no.privilege.php)
+   */
+  handleNoPrivilege(module: string, requiredRole?: string): never {
+    const errorDetails = {
+      statusCode: 403,
+      message: 'Access denied',
+      error: 'Forbidden',
+      details: {
+        module,
+        requiredRole,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    this.logger.warn(`Access denied for module ${module}: ${requiredRole}`);
+    throw new ForbiddenException(errorDetails);
+  }
+
+  /**
+   * Gérer la déconnexion moderne (remplace get.out.php)
+   * Intégré avec le système de cache existant
+   */
+  async modernLogout(sessionId: string, userId?: string): Promise<void> {
+    try {
+      // Logger la déconnexion
+      if (userId) {
+        this.logger.log(
+          `Logout initiated for user ${userId}, session ${sessionId}`,
+        );
+
+        // Utiliser le cache Redis existant pour tracker les déconnexions
+        await this.cacheService.set(
+          `logout:${userId}:${sessionId}`,
+          {
+            timestamp: new Date().toISOString(),
+            action: 'logout',
+          },
+          60 * 15, // 15 minutes
+        );
+      }
+
+      // Nettoyer les sessions en cache
+      if (sessionId) {
+        await this.cacheService.del(`session:${sessionId}`);
+        await this.cacheService.del(`user:${userId}`);
+        await this.cacheService.del(`auth_attempts:${userId}`);
+      }
+
+      this.logger.log(`Modern logout completed successfully`);
+    } catch (error) {
+      this.logger.error(`Modern logout error: ${error}`);
+      // Ne pas faire échouer le logout pour des erreurs de logging
+    }
+  }
+
+  /**
+   * Obtenir les informations de session depuis la requête
+   * Compatible avec le système JWT existant
+   */
+  async getSessionFromRequest(request: any): Promise<{
+    user: AuthUser;
+    token: string;
+    sessionId: string;
+  } | null> {
+    const token = this.extractTokenFromHeader(request);
+
+    if (!token) {
+      return null;
+    }
+
+    try {
+      // Utiliser le JWT service existant
+      const decoded = this.jwtService.verify(token);
+
+      // Récupérer l'utilisateur via le service existant
+      const user = await this.userService.findUserById(decoded.sub);
+      if (!user || user.cst_activ !== '1') {
+        return null;
+      }
+
+      return {
+        user: this.formatUserResponse(user),
+        token,
+        sessionId:
+          request.sessionID || (request.headers['x-session-id'] as string),
+      };
+    } catch (error) {
+      this.logger.debug(`Invalid token in session request: ${error.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Vérifier si un utilisateur peut accéder à un module spécifique
+   * Méthode utilitaire pour les guards
+   */
+  async canAccessModule(
+    userId: string,
+    module: string,
+    action: string = 'read',
+  ): Promise<boolean> {
+    const result = await this.checkModuleAccess(userId, module, action);
+    return result.hasAccess;
+  }
+
+  /**
+   * Obtenir la liste des modules accessibles pour un utilisateur
+   */
+  async getUserAccessibleModules(userId: string): Promise<string[]> {
+    const modules = [
+      'commercial',
+      'seo',
+      'expedition',
+      'inventory',
+      'finance',
+      'reports',
+      'admin',
+    ];
+    const accessibleModules: string[] = [];
+
+    for (const module of modules) {
+      const canAccess = await this.canAccessModule(userId, module, 'read');
+      if (canAccess) {
+        accessibleModules.push(module);
+      }
+    }
+
+    this.logger.debug(
+      `User ${userId} has access to modules: ${accessibleModules.join(', ')}`,
+    );
+    return accessibleModules;
+  }
+
+  /**
+   * Extraire le token du header (méthode privée réutilisable)
+   */
+  private extractTokenFromHeader(request: any): string | null {
+    const authHeader = request.headers?.authorization;
+    if (!authHeader) return null;
+
+    const [type, token] = authHeader.split(' ');
+    return type === 'Bearer' ? token : null;
   }
 }

@@ -50,11 +50,14 @@ let appConfigInstance: AppConfig | null = null;
 
 export function getAppConfig(): AppConfig {
   // Force refresh si l'URL a changé (Context7 fix)
-  if (appConfigInstance && 
-      appConfigInstance.supabase.url !== (process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co')) {
+  if (
+    appConfigInstance &&
+    appConfigInstance.supabase.url !==
+      (process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co')
+  ) {
     appConfigInstance = null;
   }
-  
+
   if (!appConfigInstance) {
     appConfigInstance = createAppConfig();
   }

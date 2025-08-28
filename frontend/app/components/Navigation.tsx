@@ -1,10 +1,12 @@
 /**
  * Composant Navigation - Menu principal de l'application
  * Inclut toutes les fonctionnalités migrées du PHP legacy
+ * Enhanced avec NavigationEnhancer Phase 2
  */
 
 import { Link, useLocation } from '@remix-run/react';
 import React, { useState } from 'react';
+import { NavigationEnhancer } from './NavigationEnhancer';
 
 interface NavigationItem {
   name: string;
@@ -234,7 +236,7 @@ export default function Navigation() {
   };
 
   return (
-    <>
+    <NavigationEnhancer>
       {/* Mobile menu button - visible sur mobile uniquement */}
       <div className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-md shadow-lg">
         <button
@@ -306,6 +308,6 @@ export default function Navigation() {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
-    </>
+    </NavigationEnhancer>
   );
 }

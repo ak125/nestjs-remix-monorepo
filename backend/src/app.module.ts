@@ -3,6 +3,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+// import { ScheduleModule } from '@nestjs/schedule'; // Temporairement désactivé
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
@@ -20,6 +21,10 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 NOU
 import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
+import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
+import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
+import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
+import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
@@ -44,6 +49,9 @@ import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOU
     // Event Emitter global
     EventEmitterModule.forRoot(),
 
+    // Scheduler pour les tâches CRON (temporairement désactivé)
+    // ScheduleModule.forRoot(),
+
     // Modules core fonctionnels
     DatabaseModule,
     OrdersModule,
@@ -62,13 +70,18 @@ import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOU
     VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
     ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
+    SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
+    SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
+    SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
     // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
 
     // TODO: Réactiver progressivement
     // PaymentsModule,
     // SupplierModule,
   ],
-  controllers: [], // Plus besoin du controller temporaire
+  controllers: [
+    AnalyticsController, // 📊 Analytics avancées
+  ], // Plus besoin du controller temporaire
   providers: [
     {
       provide: APP_GUARD,

@@ -26,7 +26,10 @@ export class UsersController {
     @Query('limit') limit: string = '20',
   ) {
     try {
-      console.log('[UsersController] � NEW CONTROLLER CALLED - getAllUsers with:', { page, limit });
+      console.log(
+        '[UsersController] � NEW CONTROLLER CALLED - getAllUsers with:',
+        { page, limit },
+      );
       console.log('�📋 Récupération des utilisateurs...');
 
       const users = await this.legacyUserService.getAllUsers({
@@ -35,9 +38,16 @@ export class UsersController {
       });
 
       // Récupérer le total d'utilisateurs actifs
-      const totalCount = await this.legacyUserService.getTotalActiveUsersCount();
+      const totalCount =
+        await this.legacyUserService.getTotalActiveUsersCount();
 
-      console.log('[UsersController] 🔥 Service returned:', users.length, 'users out of', totalCount, 'total');
+      console.log(
+        '[UsersController] 🔥 Service returned:',
+        users.length,
+        'users out of',
+        totalCount,
+        'total',
+      );
 
       return {
         success: true,
@@ -49,7 +59,10 @@ export class UsersController {
         },
       };
     } catch (error) {
-      console.error('[UsersController] ❌ Erreur récupération utilisateurs:', error);
+      console.error(
+        '[UsersController] ❌ Erreur récupération utilisateurs:',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des utilisateurs',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -101,9 +114,11 @@ export class UsersController {
     try {
       console.log(`📊 Récupération des statistiques dashboard`);
 
-      const totalUsers = await this.legacyUserService.getTotalActiveUsersCount();
+      const totalUsers =
+        await this.legacyUserService.getTotalActiveUsersCount();
       const totalOrders = await this.legacyOrderService.getTotalOrdersCount();
-      const activeUsers = await this.legacyUserService.getTotalActiveUsersCount();
+      const activeUsers =
+        await this.legacyUserService.getTotalActiveUsersCount();
 
       return {
         success: true,
@@ -116,7 +131,7 @@ export class UsersController {
       };
     } catch (error) {
       console.error(`❌ Erreur récupération stats dashboard:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,

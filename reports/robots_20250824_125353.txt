@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://automecanik.com/sitemap.xml
+Sitemap: https://automecanik.com/sitemap-constructeurs.xml
+Sitemap: https://automecanik.com/sitemap-products.xml
+Sitemap: https://automecanik.com/sitemap-blog.xml
+
+# Restrictions
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: *.pdf$
+
+# Crawl-delay
+Crawl-delay: 1

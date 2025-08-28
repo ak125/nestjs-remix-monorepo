@@ -139,7 +139,9 @@ export class ProfileController {
       if (result.success) {
         return res.redirect('/profile?password=success');
       } else {
-        return res.redirect(`/profile?error=${result.message || 'Erreur lors du changement de mot de passe'}`);
+        return res.redirect(
+          `/profile?error=${result.message || 'Erreur lors du changement de mot de passe'}`,
+        );
       }
     } catch (error) {
       console.error('Change password error:', error);

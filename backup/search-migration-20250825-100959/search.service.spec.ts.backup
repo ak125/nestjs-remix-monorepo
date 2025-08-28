@@ -1,0 +1,114 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { SearchService } from './search.service';
+import { MeilisearchService } from './meilisearch.service';
+import { ProductSheetService } from './product-sheet.service';
+import { SearchCacheService } from './search-cache.service';
+import { SearchAnalyticsService } from './search-analytics.service';
+
+describe('SearchService', () => {
+  let service: SearchService;
+  let meilisearchService: jest.Mocked<MeilisearchService>;
+
+  beforeEach(async () => {
+    const mockMeilisearchService = {
+      searchVehicles: jest.fn(),
+      searchProducts: jest.fn(),
+      getSuggestions: jest.fn(),
+      getIndexStats: jest.fn(),
+    };
+
+    const mockProductSheetService = {
+      getProductSheet: jest.fn(),
+    };
+
+    const mockCacheService = {
+      generateKey: jest.fn(),
+      get: jest.fn(),
+      set: jest.fn(),
+      getStats: jest.fn(),
+    };
+
+    const mockAnalyticsService = {
+      recordSearch: jest.fn(),
+      recordError: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        SearchService,
+        { provide: MeilisearchService, useValue: mockMeilisearchService },
+        { provide: ProductSheetService, useValue: mockProductSheetService },
+        { provide: SearchCacheService, useValue: mockCacheService },
+        { provide: SearchAnalyticsService, useValue: mockAnalyticsService },
+      ],
+    }).compile();
+
+    service = module.get<SearchService>(SearchService);
+    meilisearchService = module.get(MeilisearchService);
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('simpleSearch', () => {
+    it('should perform a simple search and return items', async () => {
+      // Mock des résultats Meilisearch
+      meilisearchService.searchVehicles.mockResolvedValue({
+        hits: [
+          { id: '1', brand: 'BMW', model: 'X3', year: 2023 },
+          { id: '2', brand: 'Audi', model: 'Q5', year: 2022 },
+        ],
+        estimatedTotalHits: 2,
+        processingTimeMs: 25,
+      });
+
+      meilisearchService.searchProducts.mockResolvedValue({
+        hits: [
+          { id: '3', title: 'Filtre à huile BMW', category: 'entretien' },
+        ],
+        estimatedTotalHits: 1,
+        processingTimeMs: 30,
+      });
+
+      const result = await service.simpleSearch('BMW', 10);
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+      expect(meilisearchService.searchVehicles).toHaveBeenCalledWith(
+        'BMW',
+        expect.objectContaining({
+          limit: 10,
+          offset: 0,
+          attributesToHighlight: ['brand', 'model', 'description'],
+        })
+      );
+    });
+  });
+
+  describe('searchByMine', () => {
+    it('should search by MINE code', async () => {
+      const mockResult = {
+        items: [{ id: '1', brand: 'Peugeot', model: '308' }],
+        total: 1,
+        page: 1,
+        limit: 20,
+      };
+
+      // Mock la méthode search
+      jest.spyOn(service, 'search').mockResolvedValue(mockResult);
+
+      const result = await service.searchByMine('ABC123', 'user-1');
+
+      expect(service.search).toHaveBeenCalledWith(
+        {
+          query: 'ABC123',
+          type: 'mine',
+          options: { facets: true },
+        },
+        'user-1'
+      );
+      expect(result).toEqual(mockResult);
+    });
+  });
+});

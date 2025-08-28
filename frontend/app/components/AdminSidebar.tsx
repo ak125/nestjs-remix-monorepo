@@ -13,12 +13,21 @@ import {
   Package,
   Truck,
   Store,
-  Send
+  Send,
+  Search,
+  TrendingUp,
+  Globe,
+  FileText,
+  Monitor
 } from "lucide-react"
 import * as React from "react"
-import { cn } from "~/lib/utils"
 import { Button } from "./ui/button"
 import { Card } from "./ui/card"
+
+// Fonction utilitaire pour combiner les classes CSS
+function cn(...classes: (string | undefined | false | null)[]): string {
+  return classes.filter(Boolean).join(' ')
+}
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -31,6 +40,12 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     completedOrders: number;
     totalSuppliers: number;
     totalStock?: number;
+    seoStats?: {
+      totalPages: number;
+      pagesWithSeo: number;
+      sitemapEntries: number;
+      completionRate: number;
+    };
   }
 }
 
@@ -112,17 +127,62 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       notification: false
     },
     {
+      name: "SEO Enterprise",
+      href: "/admin/seo",
+      icon: Search,
+      description: "Optimisation référencement",
+      badge: stats?.seoStats ? { 
+        count: `${(stats.seoStats.completionRate || 95.2).toFixed(1)}%`, 
+        color: "bg-green-600" 
+      } : { 
+        count: "95.2%", 
+        color: "bg-green-600" 
+      },
+      notification: false,
+      subItems: [
+        {
+          name: "Analytics SEO",
+          href: "/admin/seo",
+          icon: TrendingUp,
+          description: `${stats?.seoStats?.sitemapEntries?.toLocaleString() || "714K+"} pages indexées`
+        },
+        {
+          name: "Sitemaps",
+          href: "/admin/seo?tab=tools", 
+          icon: Globe,
+          description: "Génération automatique"
+        },
+        {
+          name: "Métadonnées",
+          href: "/admin/seo?tab=batch-update",
+          icon: FileText,
+          description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`
+        }
+      ]
+    },
+    {
       name: "Rapports",
       href: "/admin/reports",
       icon: BarChart3,
       description: "Analyses et rapports",
       badge: { count: 2, color: "bg-orange-500" },
       notification: false
+    },
+    {
+      name: "Système",
+      href: "/admin/system",
+      icon: Monitor,
+      description: "Monitoring serveur",
+      badge: { count: 'OK', color: "bg-green-500" },
+      notification: false
     }
   ];
 
   const navigationItems = getNavigationItems();
   const [isOpen, setIsOpen] = React.useState(false)
+  const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({
+    "SEO Enterprise": location.pathname.startsWith("/admin/seo")
+  })
 
   // Fermer le menu mobile lors du changement de route
   React.useEffect(() => {
@@ -181,48 +241,102 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
             </div>
           </div>
 
-          {/* Navigation avec indicateurs */}
-          <nav className="flex-1 space-y-1 p-4">
+          {/* Navigation avec indicateurs et sous-menus SEO */}
+          <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
             {navigationItems.map((item) => {
               const isActive = location.pathname === item.href
               const Icon = item.icon
+              const isExpanded = expandedMenus[item.name] || false
               
               return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center space-x-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 relative group",
-                    "hover:bg-slate-700/50 hover:shadow-md hover:scale-[1.02]",
-                    isActive
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
-                      : "text-slate-300 hover:text-white"
-                  )}
-                >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium flex items-center justify-between">
-                      <span>{item.name}</span>
-                      {/* Badge avec compteur amélioré */}
-                      {item.badge && (
-                        <span className={cn(
-                          "text-xs text-white px-2 py-1 rounded-full min-w-[1.5rem] h-5 flex items-center justify-center font-semibold shadow-sm",
-                          item.badge.color,
-                          "group-hover:scale-110 transition-transform"
+                <div key={item.name} className="space-y-1">
+                  <Link
+                    to={item.href}
+                    className={cn(
+                      "flex items-center space-x-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 relative group",
+                      "hover:bg-slate-700/50 hover:shadow-md hover:scale-[1.02]",
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
+                        : "text-slate-300 hover:text-white"
+                    )}
+                    onClick={() => {
+                      if (item.name === "SEO Enterprise" && (item as any).subItems) {
+                        // Permettre la navigation vers /admin/seo ET l'expansion du menu
+                        setExpandedMenus(prev => ({
+                          ...prev,
+                          [item.name]: !prev[item.name]
+                        }))
+                        // Ne pas empêcher la navigation - laisser le lien fonctionner
+                      }
+                    }}
+                  >
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium flex items-center justify-between">
+                        <span>{item.name}</span>
+                        {/* Badge avec compteur amélioré */}
+                        {item.badge && (
+                          <span className={cn(
+                            "text-xs text-white px-2 py-1 rounded-full min-w-[1.5rem] h-5 flex items-center justify-center font-semibold shadow-sm",
+                            item.badge.color,
+                            "group-hover:scale-110 transition-transform"
+                          )}>
+                            {item.badge.count}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs opacity-75 truncate">
+                        {item.description}
+                      </div>
+                    </div>
+                    {/* Indicateur de notification amélioré */}
+                    {item.notification && (
+                      <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-gradient-to-r from-red-400 to-pink-500 rounded-full animate-pulse shadow-sm" />
+                    )}
+                    {/* Indicateur d'expansion pour SEO */}
+                    {item.name === "SEO Enterprise" && (
+                      <div className="ml-2 flex-shrink-0">
+                        <div className={cn(
+                          "transition-transform duration-200",
+                          isExpanded ? "rotate-90" : "rotate-0"
                         )}>
-                          {item.badge.count}
-                        </span>
-                      )}
+                          ▶
+                        </div>
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* Sous-menu SEO */}
+                  {item.name === "SEO Enterprise" && (item as any).subItems && isExpanded && (
+                    <div className="ml-6 space-y-1 mt-1 border-l-2 border-slate-600 pl-3">
+                      {(item as any).subItems.map((subItem: any) => {
+                        const SubIcon = subItem.icon
+                        const isSubActive = location.pathname === subItem.href
+                        return (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className={cn(
+                              "flex items-center space-x-2 rounded-lg px-3 py-2 text-xs transition-all duration-200",
+                              "hover:bg-slate-700/30 hover:text-green-300",
+                              isSubActive
+                                ? "bg-green-600/20 text-green-300 border-l-2 border-green-400"
+                                : "text-slate-400 hover:text-slate-200"
+                            )}
+                          >
+                            <SubIcon className="h-3 w-3 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium">{subItem.name}</div>
+                              <div className="text-xs opacity-75 truncate">
+                                {subItem.description}
+                              </div>
+                            </div>
+                          </Link>
+                        )
+                      })}
                     </div>
-                    <div className="text-xs opacity-75 truncate">
-                      {item.description}
-                    </div>
-                  </div>
-                  {/* Indicateur de notification amélioré */}
-                  {item.notification && (
-                    <div className="absolute top-2 right-2 h-2.5 w-2.5 bg-gradient-to-r from-red-400 to-pink-500 rounded-full animate-pulse shadow-sm" />
                   )}
-                </Link>
+                </div>
               )
             })}
           </nav>

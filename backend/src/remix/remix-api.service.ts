@@ -1,6 +1,6 @@
 /**
  * Service API Remix - Version alignée avec l'architecture existante
- * 
+ *
  * 🎯 PRINCIPE : Interface unifiée pour tous les appels API
  * ✅ MODERNE : Utilise les vraies routes API existantes
  * 🔒 AUTHENTIFICATION : Gérée par le contexte Remix (pas besoin de cookies)
@@ -80,15 +80,12 @@ export class RemixApiService {
   /**
    * 👥 STAFF - Utilise l'endpoint test-staff qui fonctionne
    */
-  async getStaff(params?: {
-    status?: string;
-    department?: string;
-  }) {
+  async getStaff(params?: { status?: string; department?: string }) {
     // Utiliser l'endpoint qui fonctionne déjà
     const result = await this.makeApiCall<{ data: any[] }>(
       '/api/users/test-staff?page=1&limit=100',
     );
-    
+
     // Filtrer si nécessaire
     let staff = result.data || [];
     if (params?.status) {
@@ -97,7 +94,7 @@ export class RemixApiService {
     if (params?.department) {
       staff = staff.filter((s: any) => s.department === params.department);
     }
-    
+
     return staff;
   }
 
@@ -109,7 +106,7 @@ export class RemixApiService {
       '/api/users/test-staff?page=1&limit=100',
     );
     const staff = result.data || [];
-    
+
     return {
       total: staff.length,
       active: staff.filter((s: any) => s.status === 'active').length,
@@ -144,11 +141,11 @@ export class RemixApiService {
     try {
       // Appels parallèles pour les stats
       const [usersResult, ordersResult] = await Promise.all([
-        this.makeApiCall<{ total: number }>(
-          '/api/users?page=1&limit=1',
-        ).catch(() => ({
-          total: 0,
-        })),
+        this.makeApiCall<{ total: number }>('/api/users?page=1&limit=1').catch(
+          () => ({
+            total: 0,
+          }),
+        ),
         this.makeApiCall<{ total: number }>(
           '/api/admin/orders?page=1&limit=1',
         ).catch(() => ({

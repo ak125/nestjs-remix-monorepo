@@ -1,0 +1,585 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ElasticsearchService } from '@nestjs/elasticsearch';
+import { ConfigService } from '@nestjs/config';
+
+export interface IndexStats {
+  totalDocuments: number;
+  totalSize: string;
+  indices: {
+    name: string;
+    documents: number;
+    size: string;
+    lastUpdated: string;
+  }[];
+}
+
+export interface ReindexOptions {
+  index: string;
+  batchSize: number;
+  force: boolean;
+}
+
+export interface CleanupOptions {
+  indices?: string[];
+  olderThan: string;
+}
+
+/**
+ * 📊 SearchIndexService - Gestion des indices Elasticsearch
+ * 
+ * Service pour la gestion complète des indices :
+ * ✅ Création et configuration des indices
+ * ✅ Réindexation intelligente par batch
+ * ✅ Mapping automatique des schémas
+ * ✅ Synonymes et analyseurs personnalisés
+ * ✅ Monitoring et statistiques
+ * ✅ Nettoyage et optimisation
+ */
+@Injectable()
+export class SearchIndexService {
+  private readonly logger = new Logger(SearchIndexService.name);
+
+  constructor(
+    private readonly elasticsearch: ElasticsearchService,
+    private readonly config: ConfigService,
+  ) {}
+
+  /**
+   * 🚀 Initialisation de tous les indices
+   */
+  async initializeIndices(): Promise<void> {
+    this.logger.log('🚀 Initialisation des indices de recherche...');
+
+    const indices = ['vehicles', 'products', 'pages'];
+    
+    for (const index of indices) {
+      await this.createIndexIfNotExists(index);
+    }
+
+    this.logger.log('✅ Tous les indices sont initialisés');
+  }
+
+  /**
+   * 📊 Statistiques des indices
+   */
+  async getIndexStats(): Promise<IndexStats> {
+    try {
+      const response = await this.elasticsearch.cat.indices({
+        index: '*',
+        format: 'json',
+        h: 'index,docs.count,store.size,creation.date.string',
+      });
+
+      const indices = response.body
+        .filter((index: any) => !index.index.startsWith('.'))
+        .map((index: any) => ({
+          name: index.index,
+          documents: parseInt(index['docs.count'] || '0'),
+          size: index['store.size'] || '0b',
+          lastUpdated: index['creation.date.string'] || 'Unknown',
+        }));
+
+      const totalDocuments = indices.reduce(
+        (sum, index) => sum + index.documents,
+        0,
+      );
+
+      return {
+        totalDocuments,
+        totalSize: await this.getTotalSize(),
+        indices,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur récupération stats indices:', error);
+      return {
+        totalDocuments: 0,
+        totalSize: '0b',
+        indices: [],
+      };
+    }
+  }
+
+  /**
+   * 🔄 Réindexation intelligente
+   */
+  async reindexData(options: ReindexOptions): Promise<any> {
+    const { index, batchSize, force } = options;
+    
+    this.logger.log(`🔄 Réindexation ${index} (batch: ${batchSize})`);
+
+    try {
+      // Vérifier si l'indice existe
+      const exists = await this.elasticsearch.indices.exists({ index });
+      
+      if (!exists.body && !force) {
+        throw new Error(`L'indice ${index} n'existe pas`);
+      }
+
+      // Créer un nouvel indice temporaire
+      const tempIndex = `${index}_reindex_${Date.now()}`;
+      await this.createIndex(tempIndex, this.getIndexMapping(index));
+
+      // Réindexation par batch
+      let processed = 0;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await this.elasticsearch.reindex({
+          body: {
+            source: {
+              index,
+              size: batchSize,
+            },
+            dest: {
+              index: tempIndex,
+            },
+          },
+          waitForCompletion: true,
+        });
+
+        processed += response.body.created || 0;
+        hasMore = response.body.batches > 1;
+        
+        this.logger.log(`📊 Réindexé: ${processed} documents`);
+      }
+
+      // Swap des indices (alias)
+      await this.swapIndices(index, tempIndex);
+      
+      this.logger.log(`✅ Réindexation ${index} terminée: ${processed} documents`);
+      
+      return {
+        index,
+        documentsProcessed: processed,
+        success: true,
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ Erreur réindexation ${index}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🏗️ Création d'un indice avec mapping
+   */
+  async createIndexIfNotExists(indexName: string): Promise<void> {
+    try {
+      const exists = await this.elasticsearch.indices.exists({
+        index: indexName,
+      });
+
+      if (!exists.body) {
+        await this.createIndex(indexName, this.getIndexMapping(indexName));
+        this.logger.log(`✅ Indice créé: ${indexName}`);
+      } else {
+        this.logger.log(`ℹ️ Indice existe déjà: ${indexName}`);
+      }
+    } catch (error) {
+      this.logger.error(`❌ Erreur création indice ${indexName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🗺️ Configuration des mappings par type d'indice
+   */
+  private getIndexMapping(indexName: string): any {
+    const commonMapping = {
+      settings: {
+        analysis: {
+          analyzer: {
+            french_analyzer: {
+              tokenizer: 'standard',
+              filter: [
+                'lowercase',
+                'french_elision',
+                'french_stop',
+                'french_stemmer',
+                'asciifolding',
+              ],
+            },
+          },
+          filter: {
+            french_elision: {
+              type: 'elision',
+              articles: ['l', 'm', 't', 'qu', 'n', 's', 'j', 'd'],
+            },
+            french_stop: {
+              type: 'stop',
+              stopwords: '_french_',
+            },
+            french_stemmer: {
+              type: 'stemmer',
+              language: 'light_french',
+            },
+          },
+        },
+        'index.max_result_window': 50000,
+      },
+    };
+
+    switch (indexName) {
+      case 'vehicles':
+        return {
+          ...commonMapping,
+          mappings: {
+            properties: {
+              brand: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+                fields: {
+                  keyword: { type: 'keyword' },
+                },
+              },
+              model: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+                fields: {
+                  keyword: { type: 'keyword' },
+                },
+              },
+              full_name: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              description: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              year: { type: 'integer' },
+              price: { type: 'integer' },
+              mileage: { type: 'integer' },
+              fuel: {
+                type: 'text',
+                fields: { keyword: { type: 'keyword' } },
+              },
+              transmission: {
+                type: 'text',
+                fields: { keyword: { type: 'keyword' } },
+              },
+              body_type: {
+                type: 'text',
+                fields: { keyword: { type: 'keyword' } },
+              },
+              availability: {
+                type: 'keyword',
+              },
+              features: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              images: { type: 'keyword' },
+              dealer: {
+                type: 'object',
+                properties: {
+                  name: { type: 'text' },
+                  location: { type: 'geo_point' },
+                  rating: { type: 'float' },
+                },
+              },
+              created_at: { type: 'date' },
+              updated_at: { type: 'date' },
+            },
+          },
+        };
+
+      case 'products':
+        return {
+          ...commonMapping,
+          mappings: {
+            properties: {
+              title: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              description: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              category: {
+                type: 'text',
+                fields: { keyword: { type: 'keyword' } },
+              },
+              price: { type: 'float' },
+              brand: {
+                type: 'text',
+                fields: { keyword: { type: 'keyword' } },
+              },
+              sku: { type: 'keyword' },
+              availability: { type: 'boolean' },
+              tags: { type: 'keyword' },
+              created_at: { type: 'date' },
+            },
+          },
+        };
+
+      case 'pages':
+        return {
+          ...commonMapping,
+          mappings: {
+            properties: {
+              title: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+                boost: 2.0,
+              },
+              content: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              url: { type: 'keyword' },
+              meta_description: {
+                type: 'text',
+                analyzer: 'french_analyzer',
+              },
+              keywords: { type: 'keyword' },
+              category: { type: 'keyword' },
+              last_modified: { type: 'date' },
+              word_count: { type: 'integer' },
+            },
+          },
+        };
+
+      default:
+        return commonMapping;
+    }
+  }
+
+  /**
+   * 🔧 Gestion des synonymes
+   */
+  async getSynonyms(): Promise<string[]> {
+    try {
+      // Récupérer les synonymes depuis la configuration de l'analyzeur
+      const response = await this.elasticsearch.indices.getSettings({
+        index: 'vehicles',
+      });
+
+      // Extraire les synonymes si configurés
+      const settings = response.body.vehicles?.settings;
+      const synonyms = settings?.index?.analysis?.filter?.synonym_filter?.synonyms || [];
+      
+      return synonyms;
+    } catch (error) {
+      this.logger.error('❌ Erreur récupération synonymes:', error);
+      return [];
+    }
+  }
+
+  async updateSynonyms(synonyms: string[]): Promise<void> {
+    try {
+      this.logger.log('🔧 Mise à jour des synonymes...');
+
+      // Fermer l'indice pour modification
+      await this.elasticsearch.indices.close({ index: 'vehicles' });
+
+      // Mettre à jour les settings avec les nouveaux synonymes
+      await this.elasticsearch.indices.putSettings({
+        index: 'vehicles',
+        body: {
+          analysis: {
+            filter: {
+              synonym_filter: {
+                type: 'synonym',
+                synonyms,
+              },
+            },
+          },
+        },
+      });
+
+      // Rouvrir l'indice
+      await this.elasticsearch.indices.open({ index: 'vehicles' });
+
+      this.logger.log(`✅ Synonymes mis à jour: ${synonyms.length} entrées`);
+    } catch (error) {
+      this.logger.error('❌ Erreur mise à jour synonymes:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🧹 Nettoyage des anciens indices
+   */
+  async cleanupOldIndices(options: CleanupOptions): Promise<any> {
+    try {
+      this.logger.log('🧹 Nettoyage des anciens indices...');
+
+      const response = await this.elasticsearch.cat.indices({
+        format: 'json',
+        h: 'index,creation.date',
+      });
+
+      const cutoffDate = this.calculateCutoffDate(options.olderThan);
+      const indicesToDelete = response.body
+        .filter((index: any) => {
+          if (options.indices && !options.indices.includes(index.index)) {
+            return false;
+          }
+          
+          const creationDate = new Date(parseInt(index['creation.date']));
+          return creationDate < cutoffDate;
+        })
+        .map((index: any) => index.index);
+
+      let deletedCount = 0;
+      for (const index of indicesToDelete) {
+        try {
+          await this.elasticsearch.indices.delete({ index });
+          deletedCount++;
+          this.logger.log(`🗑️ Indice supprimé: ${index}`);
+        } catch (error) {
+          this.logger.warn(`⚠️ Impossible de supprimer ${index}:`, error.message);
+        }
+      }
+
+      return {
+        deletedIndices: indicesToDelete,
+        deletedCount,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur nettoyage indices:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🏥 Vérification de santé
+   */
+  async isHealthy(): Promise<boolean> {
+    try {
+      const response = await this.elasticsearch.cluster.health({
+        timeout: '5s',
+      });
+
+      return response.body.status === 'green' || response.body.status === 'yellow';
+    } catch (error) {
+      this.logger.error('❌ Health check ES failed:', error);
+      return false;
+    }
+  }
+
+  async checkIndicesHealth(): Promise<Record<string, boolean>> {
+    const indices = ['vehicles', 'products', 'pages'];
+    const health: Record<string, boolean> = {};
+
+    for (const index of indices) {
+      try {
+        const exists = await this.elasticsearch.indices.exists({ index });
+        health[index] = exists.body;
+      } catch (error) {
+        health[index] = false;
+      }
+    }
+
+    return health;
+  }
+
+  // Méthodes privées
+
+  private async createIndex(indexName: string, config: any): Promise<void> {
+    await this.elasticsearch.indices.create({
+      index: indexName,
+      body: config,
+    });
+  }
+
+  private async swapIndices(currentIndex: string, newIndex: string): Promise<void> {
+    const aliasName = `${currentIndex}_current`;
+    
+    try {
+      // Supprimer l'ancien alias s'il existe
+      await this.elasticsearch.indices.deleteAlias({
+        index: currentIndex,
+        name: aliasName,
+      }).catch(() => {
+        // Ignore si l'alias n'existe pas
+      });
+
+      // Créer le nouvel alias
+      await this.elasticsearch.indices.putAlias({
+        index: newIndex,
+        name: aliasName,
+      });
+
+      // Supprimer l'ancien indice après un délai de sécurité
+      setTimeout(async () => {
+        try {
+          await this.elasticsearch.indices.delete({ index: currentIndex });
+          this.logger.log(`🗑️ Ancien indice supprimé: ${currentIndex}`);
+        } catch (error) {
+          this.logger.warn(`⚠️ Impossible de supprimer l'ancien indice:`, error.message);
+        }
+      }, 60000); // 1 minute de délai
+
+    } catch (error) {
+      this.logger.error('❌ Erreur swap indices:', error);
+      throw error;
+    }
+  }
+
+  private async getTotalSize(): Promise<string> {
+    try {
+      const response = await this.elasticsearch.cat.allocation({
+        format: 'json',
+        h: 'disk.used',
+      });
+
+      const totalBytes = response.body.reduce(
+        (sum: number, node: any) => sum + this.parseSize(node['disk.used']),
+        0,
+      );
+
+      return this.formatBytes(totalBytes);
+    } catch (error) {
+      return '0b';
+    }
+  }
+
+  private parseSize(sizeStr: string): number {
+    // Parse tailles comme "1.2gb", "500mb", etc.
+    const units = { b: 1, kb: 1024, mb: 1024**2, gb: 1024**3, tb: 1024**4 };
+    const match = sizeStr.toLowerCase().match(/^(\d+\.?\d*)(b|kb|mb|gb|tb)$/);
+    
+    if (!match) return 0;
+    
+    const value = parseFloat(match[1]);
+    const unit = match[2] as keyof typeof units;
+    
+    return value * units[unit];
+  }
+
+  private formatBytes(bytes: number): string {
+    if (bytes === 0) return '0b';
+    
+    const k = 1024;
+    const sizes = ['b', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + sizes[i];
+  }
+
+  private calculateCutoffDate(olderThan: string): Date {
+    const now = new Date();
+    const match = olderThan.match(/^(\d+)(d|h|m)$/);
+    
+    if (!match) {
+      throw new Error('Format invalide pour olderThan (ex: 30d, 24h, 60m)');
+    }
+    
+    const value = parseInt(match[1]);
+    const unit = match[2];
+    
+    switch (unit) {
+      case 'd':
+        return new Date(now.getTime() - value * 24 * 60 * 60 * 1000);
+      case 'h':
+        return new Date(now.getTime() - value * 60 * 60 * 1000);
+      case 'm':
+        return new Date(now.getTime() - value * 60 * 1000);
+      default:
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days par défaut
+    }
+  }
+}

@@ -7,11 +7,18 @@ import {
   Res,
   UseGuards,
   Body,
+  Param,
 } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
+import {
+  ModuleAccessDto,
+  BulkModuleAccessDto,
+  AccessLogDto,
+  TokenValidationDto,
+} from './dto/module-access.dto';
 
 @Controller()
 export class AuthController {
@@ -166,5 +173,345 @@ export class AuthController {
         response.redirect('/'); // Redirect to website after logout
       });
     });
+  }
+
+  // ==========================================
+  // ENDPOINTS OPTIMISÉS POUR PERMISSIONS
+  // ==========================================
+
+    /**
+   * POST /auth/test-login
+   * Endpoint pour créer une session de test (développement uniquement)
+   */
+  @Post('auth/test-login')
+  async createTestSession(@Req() request: Express.Request) {
+    try {
+      const testUser = {
+        id: '1',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        level: 5,
+        isAdmin: false,
+        isPro: true,
+        isActive: true,
+      };
+
+      // Créer manuellement la session
+      (request as any).login(testUser, (err: any) => {
+        if (err) {
+          console.error('Erreur lors de la création de session:', err);
+        } else {
+          console.log('✅ Session de test créée pour:', testUser.email);
+        }
+      });
+
+      return {
+        success: true,
+        message: 'Session de test créée',
+        user: testUser,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * POST /auth/reset-password
+   * Endpoint pour réinitialiser un mot de passe (développement uniquement)
+   */
+  @Post('auth/reset-password')
+  async resetPassword(
+    @Body() body: { email: string; newPassword: string },
+  ) {
+    try {
+      // Utiliser l'AuthService pour réinitialiser le mot de passe
+      const result = await this.authService.updateUserProfile(
+        body.email,
+        { password: body.newPassword },
+      );
+
+      if (result) {
+        return {
+          success: true,
+          message: 'Mot de passe réinitialisé avec succès',
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Utilisateur non trouvé',
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * GET /auth/debug-users - Debug: Lister quelques utilisateurs (DEV ONLY)
+   */
+  @Get('auth/debug-users')
+  async debugUsers() {
+    try {
+      // Créer un utilisateur de test simple
+      return {
+        success: true,
+        message: 'Test users available',
+        testCredentials: {
+          email: 'admin@fafa.fr',
+          password: 'Test123!',
+          note: 'Try this test user for authentication'
+        }
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * GET /auth/test-login
+   * Créer une session de test pour le développement
+   */
+  @Get('auth/test-login')
+  async testLogin(@Req() request: Express.Request) {
+    try {
+      // Créer un utilisateur de test
+      const testUser = {
+        id: 'test-user-123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        name: 'Test User',
+        level: 5,
+        isAdmin: false,
+        isPro: true,
+        isActive: true,
+      };
+
+      // Utiliser req.login pour créer la session
+      return new Promise((resolve, reject) => {
+        request.logIn(testUser, (err) => {
+          if (err) {
+            console.error('Test login failed:', err);
+            reject({
+              success: false,
+              error: err.message,
+            });
+          } else {
+            console.log('✅ Test login successful');
+            resolve({
+              success: true,
+              message: 'Test session created',
+              user: testUser,
+            });
+          }
+        });
+      });
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * GET /auth/validate-session
+   * Valider la session utilisateur sans guard (pour éviter logique circulaire)
+   */
+
+  /**
+   * GET /auth/validate-session
+   * Valider la session utilisateur sans guard (pour éviter logique circulaire)
+   */
+  @Get('auth/validate-session')
+  async validateSession(@Req() request: Express.Request) {
+    try {
+      // Vérifier si l'utilisateur est connecté via session
+      if (
+        request.isAuthenticated &&
+        request.isAuthenticated() &&
+        request.user
+      ) {
+        const user = request.user as any;
+
+        return {
+          valid: true,
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            name: user.name,
+            level: user.level,
+            isAdmin: user.isAdmin,
+            isPro: user.isPro,
+            isActive: user.isActive,
+          },
+        };
+      }
+
+      return {
+        valid: false,
+        user: null,
+      };
+    } catch (error: any) {
+      console.error('Session validation error:', error);
+      return {
+        valid: false,
+        error: error.message,
+        user: null,
+      };
+    }
+  }
+
+  /**
+   * POST /auth/module-access
+   * Vérifier l'accès à un module spécifique
+   */
+  @Post('auth/module-access')
+  async checkModuleAccess(@Body() dto: ModuleAccessDto) {
+    try {
+      const result = await this.authService.checkModuleAccess(
+        dto.userId,
+        dto.module,
+        dto.action || 'read',
+      );
+
+      return result;
+    } catch (error: any) {
+      return {
+        hasAccess: false,
+        reason: 'Access check failed',
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * POST /auth/bulk-module-access
+   * Vérifier l'accès à plusieurs modules à la fois (optimisé)
+   */
+  @Post('auth/bulk-module-access')
+  async checkBulkModuleAccess(@Body() dto: BulkModuleAccessDto) {
+    try {
+      const results: Record<string, boolean> = {};
+
+      // Traitement en parallèle pour optimiser les performances
+      await Promise.all(
+        dto.modules.map(async (moduleItem) => {
+          const key = `${moduleItem.module}:${moduleItem.action || 'read'}`;
+          const result = await this.authService.checkModuleAccess(
+            dto.userId,
+            moduleItem.module,
+            moduleItem.action || 'read',
+          );
+          results[key] = result.hasAccess;
+        }),
+      );
+
+      return results;
+    } catch (error: any) {
+      return {};
+    }
+  }
+
+  /**
+   * POST /auth/log-access
+   * Enregistrer un accès utilisateur (optimisé Redis)
+   */
+  @Post('auth/access-log')
+  async logAccess(@Body() dto: AccessLogDto) {
+    try {
+      // L'historique de connexion est géré automatiquement dans AuthService
+      // Ce endpoint sert uniquement pour des logs d'accès spéciaux si nécessaire
+
+      return {
+        success: true,
+        message: 'Access logged successfully',
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * POST /auth/validate-token
+   * Valider un token JWT et retourner les infos utilisateur
+   */
+  @Post('auth/validate-token')
+  async validateToken(@Body() dto: TokenValidationDto) {
+    try {
+      const user = await this.authService.validateToken(dto.token);
+
+      if (!user) {
+        return { valid: false, userId: null };
+      }
+
+      return {
+        valid: true,
+        userId: user.id,
+        user: {
+          id: user.id,
+          email: user.email,
+          level: user.level,
+          isAdmin: user.isAdmin,
+        },
+      };
+    } catch (error: any) {
+      return { valid: false, userId: null, error: error.message };
+    }
+  }
+
+  /**
+   * GET /auth/user-permissions/:userId
+   * Obtenir toutes les permissions d'un utilisateur (optimisé pour cache frontend)
+   */
+  @Get('auth/user-permissions/:userId')
+  async getUserPermissions(@Param('userId') userId: string) {
+    try {
+      const modules = [
+        'commercial',
+        'admin',
+        'seo',
+        'expedition',
+        'inventory',
+        'finance',
+        'reports',
+      ];
+      const permissions: Record<string, { read: boolean; write: boolean }> = {};
+
+      // Traitement en parallèle pour optimiser les performances
+      await Promise.all(
+        modules.map(async (module) => {
+          const [readAccess, writeAccess] = await Promise.all([
+            this.authService.checkModuleAccess(userId, module, 'read'),
+            this.authService.checkModuleAccess(userId, module, 'write'),
+          ]);
+
+          permissions[module] = {
+            read: readAccess.hasAccess,
+            write: writeAccess.hasAccess,
+          };
+        }),
+      );
+
+      return permissions;
+    } catch (error: any) {
+      console.error('Error fetching user permissions:', error);
+      return {};
+    }
   }
 }

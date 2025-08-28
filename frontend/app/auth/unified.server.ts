@@ -69,8 +69,8 @@ export const getAuthUser = async (request: Request): Promise<AuthUser | null> =>
   try {
     const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
     
-    // Appel à l'endpoint profile avec les cookies de session
-    const response = await fetch(`${baseUrl}/api/users/profile`, {
+    // D'abord, essayer l'endpoint de validation de session (sans guard)
+    const validationResponse = await fetch(`${baseUrl}/auth/validate-session`, {
       method: 'GET',
       headers: { 
         'Accept': 'application/json',
@@ -78,19 +78,56 @@ export const getAuthUser = async (request: Request): Promise<AuthUser | null> =>
       },
     });
 
-    if (!response.ok) {
-      console.log('❌ [Unified Auth] Profile endpoint error:', response.status);
+    // Si validation réussit, utiliser ces données
+    if (validationResponse.ok) {
+      const sessionData = await validationResponse.json();
+      
+      if (sessionData.valid && sessionData.user) {
+        console.log('✅ [Unified Auth] Utilisateur trouvé via session validation');
+        
+        return {
+          id: sessionData.user.id,
+          email: sessionData.user.email || sessionData.user.cst_mail,
+          firstName: sessionData.user.firstName || sessionData.user.cst_prenom,
+          lastName: sessionData.user.lastName || sessionData.user.cst_nom,
+          name: sessionData.user.name,
+          level: sessionData.user.level || (sessionData.user.isPro ? 5 : 1),
+          isAdmin: sessionData.user.isAdmin || false,
+          isPro: sessionData.user.isPro || false,
+          isActive: sessionData.user.isActive !== false
+        };
+      }
+    }
+
+    // Si validation échoue, essayer l'endpoint profile (avec guard) pour compatibilité
+    console.log('❌ [Unified Auth] Session validation failed, trying profile endpoint');
+    
+    const profileResponse = await fetch(`${baseUrl}/api/users/profile`, {
+      method: 'GET',
+      headers: { 
+        'Accept': 'application/json',
+        'Cookie': request.headers.get('Cookie') || ''
+      },
+    });
+
+    // Gérer les erreurs 403/401 comme non-authentifié (pas une vraie erreur)
+    if (!profileResponse.ok) {
+      if (profileResponse.status === 403 || profileResponse.status === 401) {
+        console.log('❌ [Unified Auth] User not authenticated (403/401)');
+        return null;
+      }
+      console.log('❌ [Unified Auth] Profile endpoint error:', profileResponse.status);
       return null;
     }
 
-    const userData = await response.json();
+    const userData = await profileResponse.json();
     
     if (userData.error || !userData.id) {
       console.log('❌ [Unified Auth] Invalid user data:', userData);
       return null;
     }
 
-    console.log('✅ [Unified Auth] Utilisateur trouvé via API call');
+    console.log('✅ [Unified Auth] Utilisateur trouvé via profile endpoint');
     
     return {
       id: userData.id,
