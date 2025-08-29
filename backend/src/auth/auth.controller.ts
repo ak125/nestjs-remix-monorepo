@@ -179,7 +179,7 @@ export class AuthController {
   // ENDPOINTS OPTIMISÉS POUR PERMISSIONS
   // ==========================================
 
-    /**
+  /**
    * POST /auth/test-login
    * Endpoint pour créer une session de test (développement uniquement)
    */
@@ -224,15 +224,12 @@ export class AuthController {
    * Endpoint pour réinitialiser un mot de passe (développement uniquement)
    */
   @Post('auth/reset-password')
-  async resetPassword(
-    @Body() body: { email: string; newPassword: string },
-  ) {
+  async resetPassword(@Body() body: { email: string; newPassword: string }) {
     try {
       // Utiliser l'AuthService pour réinitialiser le mot de passe
-      const result = await this.authService.updateUserProfile(
-        body.email,
-        { password: body.newPassword },
-      );
+      const result = await this.authService.updateUserProfile(body.email, {
+        password: body.newPassword,
+      });
 
       if (result) {
         return {
@@ -266,8 +263,8 @@ export class AuthController {
         testCredentials: {
           email: 'admin@fafa.fr',
           password: 'Test123!',
-          note: 'Try this test user for authentication'
-        }
+          note: 'Try this test user for authentication',
+        },
       };
     } catch (error: any) {
       return {

@@ -24,6 +24,7 @@ import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOU
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
+import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
@@ -72,6 +73,7 @@ import { AnalyticsController } from './controllers/analytics.controller'; // �
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
+    BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
     // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
 

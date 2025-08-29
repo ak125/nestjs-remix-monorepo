@@ -79,6 +79,7 @@ import { DatabaseModule } from '../../database/database.module';
     MeilisearchService,
     SearchAnalyticsService,
     SearchCacheService,
+    SupabaseIndexationService, // Exporté pour BlogModule
   ],
 })
 export class SearchModule {}

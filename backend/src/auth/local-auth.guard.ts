@@ -13,7 +13,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
 
     try {
       const canBeActivated = (await super.canActivate(context)) as boolean;
-      
+
       // Ne faire logIn que si l'authentification a réussi
       if (canBeActivated && request.user) {
         await super.logIn(request);
@@ -22,7 +22,7 @@ export class LocalAuthGuard extends AuthGuard('local') {
           request.user.email || request.user.id,
         );
       }
-      
+
       return canBeActivated;
     } catch (error: any) {
       console.log('❌ Authentification échouée:', error?.message || error);
