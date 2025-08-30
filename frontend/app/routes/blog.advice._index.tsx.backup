@@ -1,0 +1,314 @@
+import React, { useState, useMemo } from 'react';
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
+
+interface AdviceArticle {
+  id: string;
+  type: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  h1: string;
+  h2: string;
+  keywords: string[];
+  tags: string[];
+  publishedAt: string;
+  updatedAt: string;
+  viewsCount: number;
+  readingTime: number;
+  sections: Array<{
+    level: number;
+    title: string;
+    content: string;
+    anchor: string;
+  }>;
+  legacy_id: number;
+  legacy_table: string;
+  seo_data: {
+    meta_title: string;
+    meta_description: string;
+    keywords: string[];
+  };
+}
+
+interface LoaderData {
+  articles: AdviceArticle[];
+  total: number;
+  page: number;
+  totalPages: number;
+  success: boolean;
+  search: string;
+  category: string;
+  categories: string[];
+  featuredArticles: AdviceArticle[];
+  popularTags: Array<{ name: string; count: number }>;
+  stats: {
+    totalViews: number;
+    avgReadingTime: number;
+    totalArticles: number;
+  };
+}
+
+// Composant Card simple
+const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`bg-white rounded-lg border shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const CardHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="p-6 pb-4">{children}</div>
+);
+
+const CardContent = ({ children }: { children: React.ReactNode }) => (
+  <div className="p-6 pt-0">{children}</div>
+);
+
+const Badge = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200 ${className}`}>
+    {children}
+  </span>
+);
+
+// Meta
+export const meta: MetaFunction<typeof loader> = () => [
+  { title: "Conseils Auto - Guides d'Experts" },
+  { name: "description", content: "Découvrez nos conseils d'experts automobile." },
+];
+
+// Loader simplifié
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  
+  console.log("🔄 Loader advice - Début");
+  
+  try {
+    // Puisque le loader s'exécute côté serveur (dans NestJS),
+    // nous pouvons faire un appel direct à l'API interne
+    const apiUrl = `http://localhost:3000/api/blog/advice?page=${page}&limit=12`;
+    
+    console.log("📡 Tentative de connexion:", apiUrl);
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      signal: AbortSignal.timeout(5000),
+    });
+
+    console.log("📊 Réponse status:", response.status);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Données reçues:", { 
+      success: data.success, 
+      articlesCount: data.data?.articles?.length,
+      total: data.data?.total 
+    });
+
+    if (data.success && data.data) {
+      return json({
+        articles: data.data.articles || [],
+        total: data.data.total || 0,
+        page: data.data.page || 1,
+        totalPages: data.data.totalPages || 0,
+        success: true,
+      } as LoaderData);
+    } else {
+      throw new Error("Données invalides reçues de l'API");
+    }
+
+  } catch (error) {
+    console.error("❌ Erreur loader:", error);
+    
+    return json({
+      articles: [],
+      total: 0,
+      page,
+      totalPages: 0,
+      success: false,
+      error: error instanceof Error ? error.message : "Erreur inconnue",
+    } as LoaderData);
+  }
+}
+
+// Composant principal simplifié
+export default function AdviceListPage() {
+  const data = useLoaderData<typeof loader>();
+
+  const formatReadingTime = (minutes: number) => {
+    return `${minutes} min`;
+  };
+
+  const formatViews = (views: number) => {
+    if (views > 1000) return `${(views / 1000).toFixed(1)}k`;
+    return `${views}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header simple */}
+      <section className="bg-blue-900 text-white py-12">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Wrench className="w-8 h-8 mr-3 text-orange-400" />
+            <h1 className="text-3xl font-bold">Conseils Auto</h1>
+          </div>
+          <p className="text-lg">Guides d'experts pour votre véhicule</p>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Debug info */}
+        <div className="mb-6 p-4 bg-gray-100 rounded-lg">
+          <h2 className="font-bold mb-2">État du loader:</h2>
+          <ul className="text-sm space-y-1">
+            <li>✅ <strong>Succès:</strong> {data.success ? "OUI" : "NON"}</li>
+            <li>📊 <strong>Articles:</strong> {data.articles.length}</li>
+            <li>🔢 <strong>Total:</strong> {data.total}</li>
+            <li>📄 <strong>Page:</strong> {data.page}/{data.totalPages}</li>
+            {data.error && <li className="text-red-600">❌ <strong>Erreur:</strong> {data.error}</li>}
+          </ul>
+        </div>
+
+        {/* Articles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data.articles.map((article) => (
+            <Card key={article.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-3">
+                  <Badge>
+                    <Wrench className="w-3 h-3 mr-1" />
+                    Conseil
+                  </Badge>
+                  {article.difficulty && (
+                    <Badge className="bg-green-100 text-green-800">
+                      {article.difficulty}
+                    </Badge>
+                  )}
+                </div>
+                <h3 className="text-lg font-bold line-clamp-2">{article.title}</h3>
+              </CardHeader>
+              
+              <CardContent>
+                <p className="text-gray-600 mb-4 line-clamp-3">{article.excerpt}</p>
+                
+                {/* Keywords */}
+                {article.keywords && article.keywords.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {article.keywords.slice(0, 3).map((keyword) => (
+                      <span 
+                        key={keyword}
+                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {formatReadingTime(article.readingTime)}
+                    </div>
+                    <div className="flex items-center">
+                      <Eye className="w-4 h-4 mr-1" />
+                      {formatViews(article.viewsCount)}
+                    </div>
+                  </div>
+                  {article.publishedAt && (
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {new Date(article.publishedAt).toLocaleDateString('fr-FR')}
+                    </div>
+                  )}
+                </div>
+                
+                <Link 
+                  to={`/blog/article/${article.slug}`}
+                  className="text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center"
+                >
+                  Lire le guide
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* État vide */}
+        {data.articles.length === 0 && data.success && (
+          <div className="text-center py-16">
+            <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-xl font-semibold mb-2">Aucun conseil trouvé</h3>
+            <p className="text-gray-600">Les conseils seront bientôt disponibles.</p>
+          </div>
+        )}
+
+        {/* Erreur */}
+        {!data.success && (
+          <div className="text-center py-16">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+              <h3 className="text-xl font-semibold mb-2 text-red-800">Erreur de connexion</h3>
+              <p className="text-red-600 mb-4">{data.error}</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pagination simple */}
+        {data.totalPages > 1 && (
+          <div className="mt-8 flex justify-center gap-2">
+            {data.page > 1 && (
+              <Link 
+                to={`?page=${data.page - 1}`}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Précédent
+              </Link>
+            )}
+            <span className="px-4 py-2 bg-blue-600 text-white rounded">
+              {data.page} / {data.totalPages}
+            </span>
+            {data.page < data.totalPages && (
+              <Link 
+                to={`?page=${data.page + 1}`}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Suivant
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
+      
+      <style>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+      `}</style>
+    </div>
+  );
+}

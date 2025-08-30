@@ -5,7 +5,7 @@ import { NavigationModule } from './navigation/navigation.module';
 import { CommercialModule } from './commercial/commercial.module';
 import { SystemModule } from './system/system.module';
 
-// Services
+// Services - Restored temporarily for compatibility
 import { LegacyUserService } from '../database/services/legacy-user.service';
 import { LegacyOrderService } from '../database/services/legacy-order.service';
 
@@ -21,8 +21,8 @@ import { OrdersController } from '../controllers/orders.controller';
     CommercialModule, // Module commercial avec archives
     SystemModule, // Nouveau module system avec monitoring
   ],
-  providers: [LegacyUserService, LegacyOrderService],
+  providers: [LegacyUserService, LegacyOrderService], // Restored temporarily for compatibility
   controllers: [UsersController, OrdersController],
-  exports: [LegacyUserService, LegacyOrderService],
+  exports: [LegacyUserService, LegacyOrderService], // Restored temporarily for compatibility
 })
 export class ApiModule {}

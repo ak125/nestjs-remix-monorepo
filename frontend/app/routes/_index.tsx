@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData } from "@remix-run/react";
-import { Package, Search, Star, Shield, Clock, Phone, Users, ShoppingCart, TrendingUp, Award } from 'lucide-react';
+import { Package, Search, Star, Shield, Clock, Phone, Users, ShoppingCart, TrendingUp, Award, BookOpen, FileText, Wrench } from 'lucide-react';
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
@@ -205,6 +205,74 @@ export default function Index() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Blog & Guides */}
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Blog & Guides Techniques</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Découvrez nos conseils d'experts, guides de réparation et actualités automobiles
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <Card className="text-center group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <BookOpen className="w-10 h-10 text-white" />
+                </div>
+                <CardTitle className="text-2xl text-gray-800 group-hover:text-green-600 transition-colors">Conseils d'expert</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed">
+                  Nos mécaniciens partagent leurs astuces et conseils pour l'entretien 
+                  et la réparation de votre véhicule.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Wrench className="w-10 h-10 text-white" />
+                </div>
+                <CardTitle className="text-2xl text-gray-800 group-hover:text-blue-600 transition-colors">Guides de réparation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed">
+                  Tutoriels détaillés étape par étape pour réaliser vos réparations 
+                  en toute sécurité et efficacité.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <FileText className="w-10 h-10 text-white" />
+                </div>
+                <CardTitle className="text-2xl text-gray-800 group-hover:text-purple-600 transition-colors">Actualités auto</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 leading-relaxed">
+                  Restez informé des dernières innovations, nouvelles réglementations 
+                  et tendances du secteur automobile.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <Link to="/blog">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-10 py-4 rounded-xl text-lg font-semibold transform hover:scale-105 transition-all shadow-lg text-white">
+                <BookOpen className="w-6 h-6 mr-3" />
+                Découvrir le blog
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

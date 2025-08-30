@@ -1,0 +1,74 @@
+Fichier: src/auth/debug-jwt.controller.ts
+Catégorie: Contrôleur de debug/test
+Raison de suppression: Utilisé uniquement pour le débogage, fonctionnalité intégrée ailleurs
+Date de sauvegarde: Sat Aug 30 19:15:48 UTC 2025
+Taille: 1769
+Checksum MD5: 08343d28fa33b674648c0121529ed02e  src/auth/debug-jwt.controller.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Controller, Post, Body, Get } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
+@Controller('debug-jwt')
+export class DebugJwtController {
+  constructor(private readonly jwtService: JwtService) {}
+
+  /**
+   * POST /debug-jwt/decode
+   * Décoder un token JWT pour debug
+   */
+  @Post('decode')
+  async decodeToken(@Body() dto: { token: string }) {
+    try {
+      // Décoder sans vérifier la signature
+      const decoded = this.jwtService.decode(dto.token);
+      
+      // Essayer de vérifier avec le service
+      let verified = null;
+      try {
+        verified = this.jwtService.verify(dto.token);
+      } catch (verifyError) {
+        return {
+          success: false,
+          decoded,
+          verified: null,
+          verifyError: verifyError.message,
+          jwtSecretExists: !!process.env.JWT_SECRET,
+          sessionSecretExists: !!process.env.SESSION_SECRET,
+        };
+      }
+
+      return {
+        success: true,
+        decoded,
+        verified,
+        jwtSecretExists: !!process.env.JWT_SECRET,
+        sessionSecretExists: !!process.env.SESSION_SECRET,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        jwtSecretExists: !!process.env.JWT_SECRET,
+        sessionSecretExists: !!process.env.SESSION_SECRET,
+      };
+    }
+  }
+
+  /**
+   * GET /debug-jwt/config
+   * Voir la configuration JWT actuelle
+   */
+  @Get('config')
+  async getConfig() {
+    return {
+      jwtSecretExists: !!process.env.JWT_SECRET,
+      sessionSecretExists: !!process.env.SESSION_SECRET,
+      jwtSecretLength: process.env.JWT_SECRET?.length || 0,
+      nodeEnv: process.env.NODE_ENV,
+      defaultSecretUsed: !process.env.JWT_SECRET && !process.env.SESSION_SECRET,
+    };
+  }
+}

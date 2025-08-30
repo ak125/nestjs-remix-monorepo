@@ -26,7 +26,7 @@ interface ABTestConfig {
   target_metric?: string
 }
 
-interface ABTest {
+interface _ABTest {
   id: string
   config: ABTestConfig
   variant: string
@@ -58,7 +58,7 @@ export function useAdvancedAnalytics() {
   const location = useLocation()
   const [sessionId] = useState(() => crypto.randomUUID())
   const [insights, setInsights] = useState<UserBehaviorInsights | null>(null)
-  const [performance, setPerformance] = useState<PerformanceMetrics | null>(null)
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null)
   const [isOptimizationMode, setIsOptimizationMode] = useState(false)
 
   // Queue d'événements pour batch processing
@@ -89,7 +89,7 @@ export function useAdvancedAnalytics() {
     setEventQueue(prev => [...prev, event])
 
     // Log en développement pour debugging
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       console.log(`📊 Analytics Event [${type}]:`, event)
     }
   }, [sessionId, location.pathname, getDeviceType])
@@ -123,7 +123,7 @@ export function useAdvancedAnalytics() {
         }
       }
     }
-  }, [trackEvent, performance])
+  }, [trackEvent])
 
   // A/B Testing automatisé
   const [abTestVariant, setAbTestVariant] = useState<'control' | 'variant_a' | 'variant_b'>('control')
@@ -230,19 +230,22 @@ export function useAdvancedAnalytics() {
 
   // Monitoring performance en temps réel
   const monitorPerformance = useCallback(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || typeof window.performance === 'undefined') return
 
-    // Memory usage (approximatif)
-    const memoryInfo = (performance as any).memory
-    const memoryUsage = memoryInfo ? memoryInfo.usedJSHeapSize / 1024 / 1024 : 0
+    // Memory usage (approximatif) - vérification robuste
+    const perfMemory = (window.performance as any).memory
+    const memoryUsage = perfMemory && typeof perfMemory.usedJSHeapSize === 'number' 
+      ? perfMemory.usedJSHeapSize / 1024 / 1024 
+      : 0
 
     // Temps de réponse réseau (simulation)
-    const networkTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+    const navigationEntries = window.performance.getEntriesByType('navigation')
+    const networkTiming = navigationEntries[0] as PerformanceNavigationTiming
     
-    setPerformance({
+    setPerformanceMetrics({
       commandPaletteRenderTime: Math.random() * 50 + 10, // Mock, mesurer vraie valeur
       searchResponseTime: Math.random() * 100 + 20,
-      navigationSpeed: networkTiming?.loadEventEnd - networkTiming?.navigationStart || 0,
+      navigationSpeed: networkTiming ? (networkTiming.loadEventEnd - networkTiming.fetchStart) : 0,
       memoryUsage,
       bundleSize: Math.random() * 500 + 1000 // Mock, calculer vraie taille bundle
     })
@@ -253,7 +256,7 @@ export function useAdvancedAnalytics() {
     const interval = setInterval(() => {
       if (eventQueue.length > 0) {
         // En production, envoyer à service analytics (Mixpanel, PostHog, etc.)
-        if (process.env.NODE_ENV === 'development') {
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
           console.log(`📊 Batch Analytics: ${eventQueue.length} events`)
         }
         
@@ -291,7 +294,12 @@ export function useAdvancedAnalytics() {
   const getOptimizationRecommendations = useCallback(() => {
     if (!insights) return []
 
-    const recommendations = []
+    const recommendations: Array<{
+      type: string;
+      priority: string;
+      message: string;
+      action: string;
+    }> = []
 
     // Si usage Command Palette faible, suggérer formation
     if (insights.productivityMetrics.commandPaletteUsage < 30) {
@@ -315,7 +323,7 @@ export function useAdvancedAnalytics() {
     }
 
     // Si performance dégradée, suggérer optimisations
-    if (performance && performance.commandPaletteRenderTime > 100) {
+    if (performanceMetrics && performanceMetrics.commandPaletteRenderTime > 100) {
       recommendations.push({
         type: 'performance',
         priority: 'high',
@@ -325,13 +333,13 @@ export function useAdvancedAnalytics() {
     }
 
     return recommendations
-  }, [insights, performance])
+  }, [insights, performanceMetrics])
 
   return {
     // Analytics core
     trackEvent,
     insights,
-    performance,
+    performanceMetrics,
     
     // A/B Testing
     abTestVariant,

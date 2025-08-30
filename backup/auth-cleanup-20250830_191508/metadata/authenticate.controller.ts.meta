@@ -1,0 +1,31 @@
+Fichier: src/auth/authenticate.controller.ts
+Catégorie: Contrôleur redondant
+Raison de suppression: Fonctionnalités dupliquées dans le contrôleur principal
+Date de sauvegarde: Sat Aug 30 19:15:08 UTC 2025
+Taille: 752
+Checksum MD5: 53e61efbf6e7ae490c6af52288e1c6ef  src/auth/authenticate.controller.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Response } from 'express';
+import { LocalAuthGuard } from './local-auth.guard';
+
+@Controller() // Pas de préfixe = route directe
+export class AuthenticateController {
+  @UseGuards(LocalAuthGuard)
+  @Post('authenticate')
+  login(@Req() request: Express.Request, @Res() response: Response) {
+    console.log('--- POST /authenticate - Redirection conditionnelle ---');
+    console.log('User connecté:', request.user);
+
+    if (!request.user) {
+      console.log('Aucun utilisateur, redirection vers /');
+      return response.redirect('/');
+    }
+
+    console.log('Utilisateur authentifié, redirection vers /dashboard');
+    return response.redirect('/dashboard');
+  }
+}

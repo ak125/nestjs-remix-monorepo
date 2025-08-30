@@ -1,0 +1,125 @@
+Fichier: src/auth/auth-clean.module.ts
+Catégorie: Module redondant
+Raison de suppression: Multiples modules d'authentification créent de la confusion
+Date de sauvegarde: Sat Aug 30 19:15:47 UTC 2025
+Taille: 3595
+Checksum MD5: 257121d16628dd7c42f4205e3ac3942e  src/auth/auth-clean.module.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Module, Global } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DatabaseModule } from '../database/database.module';
+import { CacheModule } from '../cache/cache.module';
+
+// Controllers essentiels
+// import { AuthController } from './auth.controller'; // TEMPORAIREMENT DÉSACTIVÉ (dépendances complexes)
+// import { ProfileController } from './profile.controller'; // TEMPORAIREMENT DÉSACTIVÉ
+import { AuthCleanTestController } from './auth-clean-test.controller';
+
+// Services essentiels
+import { AuthService } from './auth.service';
+
+// Strategies et Guards
+import { LocalStrategy } from './local.strategy';
+import { JwtCleanStrategy } from './jwt-clean.strategy';
+import { LocalAuthGuard } from './local-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { IsAdminGuard } from './is-admin.guard';
+
+// Utilitaires
+import { CookieSerializer } from './cookie-serializer';
+
+/**
+ * 🔐 AuthModule - Module d'authentification complet
+ * 
+ * ✅ STRATÉGIES SUPPORTÉES :
+ * - Local Strategy (email/password)
+ * - JWT Strategy (Bearer tokens)
+ * 
+ * ✅ GUARDS DISPONIBLES :
+ * - LocalAuthGuard (pour login)
+ * - JwtAuthGuard (pour endpoints protégés)
+ * - IsAdminGuard (pour accès admin)
+ * 
+ * ✅ CONFIGURATION :
+ * - JWT avec secret depuis .env
+ * - Session management
+ * - Cache Redis intégré
+ */
+@Global()
+@Module({
+  imports: [
+    // Configuration globale
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    
+    // Passport configuration
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+      session: false, // JWT est stateless
+    }),
+    
+    // JWT configuration avec secret depuis .env
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET') || 'fallback-secret-key';
+        console.log('🔑 AuthModule - JWT configuré avec:', secret ? 'JWT_SECRET depuis .env' : 'secret de fallback');
+        
+        return {
+          secret: secret,
+          signOptions: { 
+            expiresIn: '24h',
+            issuer: 'autoparts-backend',
+            audience: 'autoparts-frontend',
+          },
+        };
+      },
+    }),
+    
+    // Modules externes requis
+    DatabaseModule,
+    CacheModule,
+  ],
+  
+  controllers: [
+    // AuthController,     // Login, logout, register (DÉSACTIVÉ temporairement)
+    // ProfileController,  // Gestion du profil utilisateur (DÉSACTIVÉ temporairement)
+    AuthCleanTestController, // Contrôleur de test JWT propre
+  ],  providers: [
+    // Service principal d'authentification
+    AuthService,
+    
+    // Strategies Passport
+    LocalStrategy,      // Authentification email/password
+    JwtCleanStrategy,   // Authentification JWT
+    
+    // Guards d'authentification
+    LocalAuthGuard,     // Guard pour login
+    JwtAuthGuard,       // Guard pour endpoints protégés
+    IsAdminGuard,       // Guard pour accès admin
+    
+    // Utilitaires
+    CookieSerializer,   // Sérialisation des cookies de session
+  ],
+  
+  exports: [
+    // Services exportés pour utilisation dans autres modules
+    AuthService,
+    JwtAuthGuard,
+    IsAdminGuard,
+    JwtModule,          // Pour injection JwtService dans autres modules
+  ],
+})
+export class AuthModule {
+  constructor() {
+    console.log('🚀 AuthModule - Module d\'authentification initialisé');
+  }
+}

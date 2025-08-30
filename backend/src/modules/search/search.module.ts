@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { SearchController } from './controllers/search.controller';
 import { IndexationController } from './controllers/indexation.controller';
 import { PiecesController } from './controllers/pieces.controller';
-import { SearchEnhancedController } from './controllers/search-enhanced.controller'; // 🏭 Nouveau contrôleur
 // import { SearchAdminController } from './controllers/search-admin.controller'; // Temporairement désactivé
 
 // Core Services
@@ -52,7 +51,6 @@ import { DatabaseModule } from '../../database/database.module';
     SearchController, 
     IndexationController, 
     PiecesController,
-    SearchEnhancedController, // 🏭 Contrôleur de recherche enrichie
   ], // Contrôleurs de recherche et d'indexation
   providers: [
     // Core Services - v3.0 avec SearchOptimizedService prioritaire

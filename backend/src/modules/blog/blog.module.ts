@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { JwtModule } from '@nestjs/jwt';
 
 // Controllers - API endpoints pour chaque type de contenu blog
 import { BlogController } from './controllers/blog.controller';
 import { AdviceController } from './controllers/advice.controller';
 import { ContentController } from './controllers/content.controller';
+import { AdminController } from './controllers/admin.controller';
 
 // Services - Logique métier spécialisée pour chaque type
 import { BlogService } from './services/blog.service';
@@ -16,6 +18,7 @@ import { BlogCacheService } from './services/blog-cache.service';
 
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
+import { AuthModule } from '../../auth/auth.module';
 
 /**
  * 📰 BlogModule - Module de gestion complète du contenu blog
@@ -49,12 +52,19 @@ import { SearchModule } from '../search/search.module';
       max: 2000, // Augmenté pour plus d'articles
       isGlobal: false, // Cache spécifique au module blog
     }),
+    // JWT pour authentification des endpoints protégés
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
     SearchModule, // Services Meilisearch et Supabase intégrés
+    AuthModule, // Stratégies d'authentification Passport (JWT, Local)
   ],
   controllers: [
     BlogController, // API générale blog et recherche
     AdviceController, // Endpoints spécifiques conseils
     ContentController, // Endpoints guides, constructeurs, glossaire
+    AdminController, // Administration et performances
   ],
   providers: [
     // Services principaux

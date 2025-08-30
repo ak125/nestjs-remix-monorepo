@@ -1,0 +1,34 @@
+Fichier: src/auth/auth-minimal.module.ts
+Catégorie: Module redondant
+Raison de suppression: Multiples modules d'authentification créent de la confusion
+Date de sauvegarde: Sat Aug 30 19:15:47 UTC 2025
+Taille: 818
+Checksum MD5: 5d7ceac3097a44ce693da365b23c3acb  src/auth/auth-minimal.module.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { JwtMinimalStrategy } from './jwt-minimal.strategy';
+import { AuthMinimalController } from './auth-minimal.controller';
+import { CustomJwtGuard } from './custom-jwt.guard';
+
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
+  ],
+  controllers: [AuthMinimalController],
+  providers: [JwtMinimalStrategy, CustomJwtGuard],
+  exports: [JwtModule, JwtMinimalStrategy, CustomJwtGuard],
+})
+export class AuthMinimalModule {
+  constructor() {
+    console.log('✅ AuthMinimalModule - Module minimal initialisé');
+  }
+}

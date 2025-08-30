@@ -1,0 +1,29 @@
+Fichier: src/auth/simple-jwt.module.ts
+Catégorie: Module redondant
+Raison de suppression: Multiples modules d'authentification créent de la confusion
+Date de sauvegarde: Sat Aug 30 19:15:47 UTC 2025
+Taille: 627
+Checksum MD5: 3d8fd584385090327f98bde946cec4ec  src/auth/simple-jwt.module.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+import { SimpleJwtStrategy } from './simple-jwt.strategy';
+import { SimpleJwtController } from './simple-jwt.controller';
+
+@Module({
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'test-secret-key-123',
+      signOptions: { expiresIn: '1h' },
+    }),
+  ],
+  controllers: [SimpleJwtController],
+  providers: [SimpleJwtStrategy],
+  exports: [JwtModule, SimpleJwtStrategy],
+})
+export class SimpleJwtModule {}

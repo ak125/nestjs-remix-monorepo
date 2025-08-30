@@ -1,0 +1,176 @@
+import { Controller, Get, Post, Body, Headers, UseGuards, Request } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from './jwt-auth.guard';
+
+@Controller('jwt-fix')
+export class JwtFixController {
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly authService: AuthService,
+  ) {}
+
+  /**
+   * GET /jwt-fix/test-simple
+   * Test simple sans guard
+   */
+  @Get('test-simple')
+  async testSimple() {
+    return {
+      success: true,
+      message: 'Endpoint simple fonctionnel',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * GET /jwt-fix/test-with-passport
+   * Test avec le même guard que l'endpoint qui plante
+   */
+    // Test simple sans authentification
+  @Get('test-no-auth')
+  async testNoAuth() {
+    return {
+      success: true,
+      message: 'Endpoint sans authentification fonctionne',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('test-with-passport')
+  @UseGuards(JwtAuthGuard)
+  async testWithPassport(@Request() req: any) {
+    return {
+      success: true,
+      message: 'JWT authentication réussie avec Passport',
+      user: req.user,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  // Test avec AuthGuard direct
+  @Get('test-direct-authguard')
+  @UseGuards(AuthGuard('jwt'))
+  async testDirectAuthGuard(@Request() req: any) {
+    return {
+      success: true,
+      message: 'JWT authentication réussie avec AuthGuard direct',
+      user: req.user,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * POST /jwt-fix/manual-validate
+   * Validation manuelle du JWT sans utiliser le guard
+   */
+  @Post('manual-validate')
+  async manualValidate(
+    @Headers('authorization') authHeader: string,
+    @Body() dto?: { token?: string },
+  ) {
+    try {
+      // Extraire le token
+      let token = dto?.token;
+      if (!token && authHeader) {
+        token = authHeader.replace('Bearer ', '');
+      }
+
+      if (!token) {
+        return {
+          success: false,
+          error: 'Token manquant',
+        };
+      }
+
+      // Décoder le token
+      const decoded = this.jwtService.decode(token);
+      console.log('🔍 JWT Fix - Token décodé:', JSON.stringify(decoded, null, 2));
+
+      // Vérifier le token
+      const verified = this.jwtService.verify(token);
+      console.log('✅ JWT Fix - Token vérifié:', JSON.stringify(verified, null, 2));
+
+      // Si c'est un utilisateur test, retourner directement
+      if (verified.sub === 'test-user-123') {
+        console.log('✅ JWT Fix - Utilisateur test validé');
+        return {
+          success: true,
+          user: {
+            id: verified.sub,
+            email: verified.email,
+            firstName: verified.firstName,
+            lastName: verified.lastName,
+            level: verified.level,
+            isAdmin: verified.isAdmin,
+            isPro: verified.isPro,
+            isActive: verified.isActive,
+          },
+          message: 'Token valide pour utilisateur test',
+        };
+      }
+
+      // Pour les vrais utilisateurs, vérifier dans la base
+      const user = await this.authService.getUserById(verified.sub);
+      if (user) {
+        return {
+          success: true,
+          user,
+          message: 'Token valide pour utilisateur réel',
+        };
+      } else {
+        return {
+          success: false,
+          error: 'Utilisateur non trouvé',
+        };
+      }
+    } catch (error) {
+      console.error('❌ JWT Fix - Erreur:', error);
+      return {
+        success: false,
+        error: `Erreur de validation: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * POST /jwt-fix/create-working-token
+   * Créer un token qui fonctionne à coup sûr
+   */
+  @Post('create-working-token')
+  async createWorkingToken(@Body() dto?: { userId?: string }) {
+    try {
+      const payload = {
+        sub: dto?.userId || 'test-user-123',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        level: 5,
+        isAdmin: false,
+        isPro: true,
+        isActive: true,
+      };
+
+      const token = this.jwtService.sign(payload, { expiresIn: '1h' });
+      console.log('🔧 JWT Fix - Token créé:', token);
+
+      // Vérifier immédiatement le token
+      const verification = this.jwtService.verify(token);
+      console.log('✅ JWT Fix - Vérification immédiate:', JSON.stringify(verification, null, 2));
+
+      return {
+        success: true,
+        token,
+        payload,
+        verification,
+        usage: `curl -H "Authorization: Bearer ${token}" http://localhost:3000/jwt-fix/manual-validate`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+}

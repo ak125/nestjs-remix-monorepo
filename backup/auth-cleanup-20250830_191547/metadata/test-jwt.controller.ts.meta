@@ -1,0 +1,62 @@
+Fichier: src/auth/test-jwt.controller.ts
+Catégorie: Contrôleur de debug/test
+Raison de suppression: Utilisé uniquement pour le débogage, fonctionnalité intégrée ailleurs
+Date de sauvegarde: Sat Aug 30 19:15:48 UTC 2025
+Taille: 1385
+Checksum MD5: 715df997d435b845e31570fada8af8c5  src/auth/test-jwt.controller.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Controller, Get, Post, UseGuards, Request, Logger } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { JwtAuthGuard } from './jwt-auth.guard';
+
+@Controller('api/jwt-test')
+export class TestJwtController {
+  private readonly logger = new Logger(TestJwtController.name);
+
+  constructor(private jwtService: JwtService) {}
+
+  @Post('generate')
+  async generateToken() {
+    const payload = { 
+      sub: 'test-123', 
+      email: 'test@example.com',
+      role: 'admin' 
+    };
+    
+    const secret = process.env.JWT_SECRET || 'default-secret-key';
+    this.logger.log(`🔑 Generating token with secret: ${secret ? 'JWT_SECRET' : 'default'}`);
+    
+    const token = this.jwtService.sign(payload);
+    
+    return {
+      success: true,
+      token,
+      payload,
+      expiresIn: '24h'
+    };
+  }
+
+  @Get('protected')
+  @UseGuards(JwtAuthGuard)
+  async protectedRoute(@Request() req: any) {
+    this.logger.log(`✅ Protected route accessed by: ${JSON.stringify(req.user)}`);
+    return {
+      success: true,
+      message: 'JWT authentication successful!',
+      user: req.user
+    };
+  }
+
+  @Get('verify-config')
+  async verifyConfig() {
+    return {
+      JWT_SECRET_SET: !!process.env.JWT_SECRET,
+      JWT_SECRET_VALUE: process.env.JWT_SECRET ? 'Hidden' : 'Not set',
+      NODE_ENV: process.env.NODE_ENV,
+      MODULE_STATUS: 'Loaded'
+    };
+  }
+}

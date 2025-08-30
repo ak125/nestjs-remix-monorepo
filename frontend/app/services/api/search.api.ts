@@ -76,7 +76,7 @@ class SearchApiService {
     this.baseUrl = baseUrl || 
       (typeof window !== 'undefined' 
         ? window.ENV?.API_BASE_URL || '' 
-        : process.env.API_BASE_URL || '');
+        : 'http://localhost:3001'); // Valeur par défaut côté serveur
   }
 
   /**

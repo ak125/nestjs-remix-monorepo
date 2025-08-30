@@ -8,7 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
 import { CartModule } from './modules/cart/cart.module';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth/auth.module'; // ✅ MODULE AUTH ORIGINAL COMPLET
 import { UsersModule } from './modules/users/users.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { RemixModule } from './remix/remix.module'; // ✅ RÉACTIVÉ !
@@ -18,7 +18,7 @@ import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy di
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 NOUVEAU - Module véhicules !
-import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
+// import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
@@ -58,7 +58,9 @@ import { AnalyticsController } from './controllers/analytics.controller'; // �
     OrdersModule,
     HealthModule,
     CartModule,
-    AuthModule,
+    AuthModule, // ✅ RÉACTIVÉ - Module auth original corrigé
+    // AuthMinimalModule, // ❌ Désactivé - remplacé par AuthModule original
+    // SimpleJwtModule, // ✅ MODULE JWT SIMPLE FONCTIONNEL POUR TESTS
     UsersModule,
     MessagesModule,
     RemixModule, // ✅ RÉACTIVÉ - Votre vraie page d'accueil !
@@ -68,7 +70,7 @@ import { AnalyticsController } from './controllers/analytics.controller'; // �
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
     VehiclesModule, // 🚗 NOUVEAU - Module véhicules avec recherche avancée !
-    VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
+    // VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation ! (TEMPORAIREMENT DÉSACTIVÉ)
     ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !

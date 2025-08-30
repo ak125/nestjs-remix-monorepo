@@ -1,0 +1,126 @@
+Fichier: src/auth/auth-minimal.controller.ts
+Catégorie: Contrôleur redondant
+Raison de suppression: Fonctionnalités dupliquées dans le contrôleur principal
+Date de sauvegarde: Sat Aug 30 19:15:45 UTC 2025
+Taille: 3414
+Checksum MD5: 3408d1914778121a638d0c540820ff6f  src/auth/auth-minimal.controller.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Controller, Get, Post, UseGuards, Request, Logger, Body } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
+import { CustomJwtGuard } from './custom-jwt.guard';
+
+@Controller('api/auth-minimal')
+export class AuthMinimalController {
+  private readonly logger = new Logger(AuthMinimalController.name);
+
+  constructor(private jwtService: JwtService) {}
+
+  @Get('health')
+  async health() {
+    return {
+      status: 'OK',
+      service: 'AuthMinimalController',
+      jwtSecretSet: !!process.env.JWT_SECRET,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('generate-token')
+  async generateToken(@Body() body: { userId?: string; email?: string; role?: string }) {
+    const payload = { 
+      sub: body.userId || 'minimal-user-123', 
+      email: body.email || 'minimal@test.com',
+      role: body.role || 'admin' 
+    };
+    
+    this.logger.log('🔑 Génération token JWT minimal');
+    const token = this.jwtService.sign(payload);
+    
+    return {
+      success: true,
+      token,
+      payload,
+      message: 'Token généré par AuthMinimalController',
+      expiresIn: '24h',
+    };
+  }
+
+  @Get('protected')
+  @UseGuards(AuthGuard('jwt'))
+  async protectedEndpoint(@Request() req: any) {
+    this.logger.log('🎉 SUCCÈS! Endpoint protégé accessible via Passport JWT !');
+    console.log('🎉 ENDPOINT PROTÉGÉ ACCESSIBLE!');
+    console.log('👤 Utilisateur:', JSON.stringify(req.user, null, 2));
+    
+    return {
+      success: true,
+      message: '🎉 PASSPORT JWT AUTHENTICATION FONCTIONNE !',
+      user: req.user,
+      controller: 'AuthMinimalController',
+      timestamp: new Date().toISOString(),
+      celebration: '🚀 PROBLÈME JWT 401 RÉSOLU !',
+    };
+  }
+
+  @Get('user-info')
+  @UseGuards(AuthGuard('jwt'))
+  async getUserInfo(@Request() req: any) {
+    return {
+      user: req.user,
+      message: 'Informations utilisateur récupérées via JWT',
+      authenticated: true,
+    };
+  }
+
+  @Post('verify-token')
+  async verifyToken(@Body('token') token: string) {
+    try {
+      const decoded = this.jwtService.verify(token);
+      this.logger.log('✅ Token vérifié manuellement:', JSON.stringify(decoded, null, 2));
+      
+      return {
+        success: true,
+        message: 'Token valide (vérification manuelle)',
+        decoded,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Token invalide:', (error as Error).message);
+      return {
+        success: false,
+        message: 'Token invalide',
+        error: (error as Error).message,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  @Get('debug-passport')
+  async debugPassport() {
+    return {
+      message: 'Test de débogage Passport',
+      jwtSecretSet: !!process.env.JWT_SECRET,
+      jwtSecretLength: process.env.JWT_SECRET?.length || 0,
+      passportStrategies: 'Vérifier si jwt strategy est chargée',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('test-custom-guard')
+  @UseGuards(CustomJwtGuard)
+  async testCustomGuard(@Request() req: any) {
+    this.logger.log('🎉 SUCCÈS! CustomJwtGuard fonctionne parfaitement !');
+    
+    return {
+      success: true,
+      message: '🎉 CUSTOM JWT GUARD FONCTIONNE !',
+      method: 'CustomJwtGuard',
+      user: req.user,
+      timestamp: new Date().toISOString(),
+    };
+  }
+}

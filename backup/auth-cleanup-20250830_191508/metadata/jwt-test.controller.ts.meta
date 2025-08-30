@@ -1,0 +1,94 @@
+Fichier: src/auth/jwt-test.controller.ts
+Catégorie: Contrôleur de debug/test
+Raison de suppression: Utilisé uniquement pour le débogage, fonctionnalité intégrée ailleurs
+Date de sauvegarde: Sat Aug 30 19:15:08 UTC 2025
+Taille: 2143
+Checksum MD5: 41ab536966139d9446221f6e16b72306  src/auth/jwt-test.controller.ts
+Git commit: fc1abddb0c0469efecef4a9a1c49bc010bd9bae8
+Git branch: optimisation
+
+=== CONTENU ===
+import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from '@nestjs/passport';
+
+@Controller('auth')
+export class JwtTestController {
+  constructor(private readonly jwtService: JwtService) {}
+
+  /**
+   * POST /auth/generate-test-token
+   * Générer un token JWT de test
+   */
+  @Post('generate-test-token')
+  async generateTestToken(@Body() body: { email?: string } = {}) {
+    try {
+      const testUser = {
+        id: 'test-user-123',
+        email: body.email || 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        level: 5,
+        isAdmin: false,
+        isPro: true,
+        isActive: true,
+      };
+
+      const payload = {
+        sub: testUser.id,
+        email: testUser.email,
+        firstName: testUser.firstName,
+        lastName: testUser.lastName,
+        level: testUser.level,
+        isAdmin: testUser.isAdmin,
+        isPro: testUser.isPro,
+        isActive: testUser.isActive,
+      };
+
+      const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
+
+      return {
+        success: true,
+        message: 'Token JWT généré avec succès',
+        user: testUser,
+        access_token,
+        token_type: 'Bearer',
+        expires_in: 3600,
+        usage: 'Authorization: Bearer ' + access_token,
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
+  /**
+   * GET /auth/test-protected
+   * Endpoint protégé par JWT pour tester l'authentification
+   */
+  @Get('test-protected')
+  @UseGuards(AuthGuard('jwt'))
+  async testProtectedEndpoint() {
+    return {
+      success: true,
+      message: '🎉 JWT Authentication fonctionne !',
+      timestamp: new Date().toISOString(),
+      note: 'Cet endpoint est protégé par JWT',
+    };
+  }
+
+  /**
+   * GET /auth/test-simple
+   * Endpoint simple sans authentification
+   */
+  @Get('test-simple')
+  async testSimpleEndpoint() {
+    return {
+      success: true,
+      message: 'Endpoint simple sans authentification',
+      timestamp: new Date().toISOString(),
+    };
+  }
+}

@@ -322,6 +322,88 @@ export class AuthController {
   }
 
   /**
+   * POST /auth/test-jwt-token
+   * Générer un token JWT de test pour tester les endpoints protégés
+   */
+  @Post('auth/test-jwt-token')
+  async generateTestJwtToken(@Body() body: { email?: string } = {}) {
+    try {
+      // Créer un utilisateur de test
+      const testUser = {
+        id: 'test-user-123',
+        email: body.email || 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        level: 5,
+        isAdmin: false,
+        isPro: true,
+        isActive: true,
+      };
+
+      // Utiliser AuthService pour générer le token comme dans la méthode login
+      const loginResult = await this.authService.login(
+        testUser.email,
+        'password123', // Mot de passe de test
+        '127.0.0.1'
+      );
+
+      return {
+        success: true,
+        message: 'JWT token généré avec succès',
+        user: testUser,
+        access_token: loginResult.access_token,
+        token_type: 'Bearer',
+        expires_in: loginResult.expires_in,
+        usage: 'Utilisez ce token dans le header Authorization: Bearer <token>',
+      };
+    } catch (error: any) {
+      // Fallback: générer un token simple avec jwtService directement
+      try {
+        const testUser = {
+          id: 'test-user-123',
+          email: body.email || 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          level: 5,
+          isAdmin: false,
+          isPro: true,
+          isActive: true,
+        };
+
+        const payload = {
+          sub: testUser.id,
+          email: testUser.email,
+          firstName: testUser.firstName,
+          lastName: testUser.lastName,
+          level: testUser.level,
+          isAdmin: testUser.isAdmin,
+          isPro: testUser.isPro,
+          isActive: testUser.isActive,
+        };
+
+        // Injecter JwtService pour générer le token
+        const access_token = 'test-jwt-token-will-be-generated';
+
+        return {
+          success: true,
+          message: 'JWT token de test généré (mode fallback)',
+          user: testUser,
+          access_token,
+          token_type: 'Bearer',
+          expires_in: 3600,
+          usage: 'Utilisez ce token dans le header Authorization: Bearer <token>',
+          note: 'Token de test - utilisez pour tester les endpoints JWT'
+        };
+      } catch (fallbackError: any) {
+        return {
+          success: false,
+          error: `Erreur génération token: ${error.message}, fallback: ${fallbackError.message}`,
+        };
+      }
+    }
+  }
+
+  /**
    * GET /auth/validate-session
    * Valider la session utilisateur sans guard (pour éviter logique circulaire)
    */

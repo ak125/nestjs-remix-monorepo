@@ -27,6 +27,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return json({
       initialHealth: healthData,
       initialMetrics: metricsData,
+      nodeVersion: process.version,
+      environment: process.env.NODE_ENV || 'development',
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -34,6 +36,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return json({
       initialHealth: null,
       initialMetrics: null,
+      nodeVersion: process.version,
+      environment: process.env.NODE_ENV || 'development',
       error: 'Impossible de charger les données système',
       timestamp: new Date().toISOString()
     });
@@ -62,7 +66,7 @@ interface SystemHealth {
 
 export default function AdminSystem() {
   const loaderData = useLoaderData<typeof loader>();
-  const { initialHealth, initialMetrics, timestamp } = loaderData;
+  const { initialHealth, initialMetrics, nodeVersion, environment, timestamp } = loaderData;
   const error = 'error' in loaderData ? loaderData.error : null;
   
   const [health, setHealth] = useState<SystemHealth | null>(initialHealth);
@@ -243,8 +247,8 @@ export default function AdminSystem() {
           <div className="space-y-2">
             <h4 className="font-medium text-gray-700">Backend</h4>
             <div className="text-sm text-gray-600 space-y-1">
-              <div>Environment: <span className="font-mono bg-gray-100 px-1 rounded">{metrics?.data?.environment || 'N/A'}</span></div>
-              <div>Node.js: <span className="font-mono bg-gray-100 px-1 rounded">{process.version || 'N/A'}</span></div>
+              <div>Environment: <span className="font-mono bg-gray-100 px-1 rounded">{environment || 'N/A'}</span></div>
+              <div>Node.js: <span className="font-mono bg-gray-100 px-1 rounded">{nodeVersion || 'N/A'}</span></div>
               <div>Uptime: <span className="font-mono bg-gray-100 px-1 rounded">{health?.uptime ? formatUptime(health.uptime) : 'N/A'}</span></div>
             </div>
           </div>

@@ -11,6 +11,8 @@ import {
   HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { BlogService } from '../services/blog.service';
 import { AdviceService } from '../services/advice.service';
@@ -18,6 +20,7 @@ import { GuideService } from '../services/guide.service';
 import { ConstructeurService } from '../services/constructeur.service';
 import { GlossaryService } from '../services/glossary.service';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 
 /**
@@ -39,6 +42,8 @@ export class BlogController {
     private readonly guideService: GuideService,
     private readonly constructeurService: ConstructeurService,
     private readonly glossaryService: GlossaryService,
+    @Inject(forwardRef(() => JwtService))
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -442,6 +447,208 @@ export class BlogController {
     } catch (error) {
       this.logger.debug(`⚠️ Erreur articles similaires: ${(error as Error).message}`);
       return [];
+    }
+  }
+
+  // ========================================
+  // 📝 GESTION DES ARTICLES (CRUD)
+  // ========================================
+
+  /**
+   * 📝 Créer un nouvel article
+   * POST /api/blog/articles
+   */
+  @Post('articles')
+  @UseGuards(AuthGuard('jwt'))
+  async createArticle(@Body() articleData: any) {
+    try {
+      this.logger.log(`[BlogController] POST /api/blog/articles`);
+      
+      // Pour l'instant, on utilise un authorId par défaut
+      const authorId = articleData.authorId || '1';
+      
+      const article = await this.blogService.createArticle(
+        articleData,
+        authorId,
+      );
+      
+      return {
+        success: true,
+        data: article,
+        message: 'Article créé avec succès',
+      };
+    } catch (error) {
+      this.logger.error('[BlogController] Erreur création article:', error);
+      throw new HttpException(
+        "Erreur lors de la création de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * ✏️ Mettre à jour un article
+   * PUT /api/blog/articles/:id
+   */
+  @Post('articles/:id') // Utilise POST pour la compatibilité forme
+  @UseGuards(AuthGuard('jwt'))
+  async updateArticle(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updates: any
+  ) {
+    try {
+      this.logger.log(`[BlogController] PUT /api/blog/articles/${id}`);
+      
+      const article = await this.blogService.updateArticle(id, updates);
+      
+      return {
+        success: true,
+        data: article,
+        message: 'Article mis à jour avec succès',
+      };
+    } catch (error) {
+      this.logger.error('[BlogController] Erreur mise à jour article:', error);
+      throw new HttpException(
+        "Erreur lors de la mise à jour de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📄 Récupérer un article pour édition
+   * GET /api/blog/articles/:id/edit
+   */
+  @Get('articles/:id/edit')
+  @UseGuards(AuthGuard('jwt'))
+  async getArticleForEdit(@Param('id', ParseIntPipe) id: number) {
+    try {
+      this.logger.log(`[BlogController] GET /api/blog/articles/${id}/edit`);
+      
+      const article = await this.blogService.getArticleById(id);
+      
+      if (!article) {
+        throw new HttpException('Article non trouvé', HttpStatus.NOT_FOUND);
+      }
+      
+      return {
+        success: true,
+        data: article,
+      };
+    } catch (error) {
+      this.logger.error('[BlogController] Erreur récupération article:', error);
+      throw new HttpException(
+        "Erreur lors de la récupération de l'article",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📋 Lister tous les articles pour administration
+   * GET /api/blog/articles/admin
+   */
+  @Get('articles/admin')
+  @UseGuards(AuthGuard('jwt'))
+  async getArticlesForAdmin(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @Query('status') status?: string,
+    @Query('search') search?: string
+  ) {
+    try {
+      this.logger.log(`[BlogController] GET /api/blog/articles/admin`);
+      
+      const articles = await this.blogService.getArticlesForAdmin({
+        page,
+        limit,
+        status,
+        search
+      });
+      
+      return {
+        success: true,
+        data: articles
+      };
+    } catch (error) {
+      this.logger.error('[BlogController] Erreur liste articles admin:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des articles',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  // ===============================
+  // 🔐 ENDPOINTS JWT DE TEST
+  // ===============================
+
+  @Post('jwt/test-generate')
+  async generateTestToken() {
+    const payload = { 
+      sub: 'blog-test-user-123', 
+      email: 'test@blog.com',
+      role: 'admin' 
+    };
+    
+    this.logger.log('🔑 Génération d\'un token JWT de test depuis BlogController');
+    const token = this.jwtService.sign(payload);
+    
+    return {
+      success: true,
+      token,
+      payload,
+      message: 'Token JWT généré avec succès depuis BlogController',
+      usage: `curl -H "Authorization: Bearer ${token}" http://localhost:3000/api/blog/jwt/test-protected`,
+    };
+  }
+
+  @Get('jwt/test-protected')
+  @UseGuards(AuthGuard('jwt'))
+  async testProtectedEndpoint() {
+    this.logger.log('✅ Endpoint JWT protégé accessible depuis BlogController !');
+    
+    return {
+      success: true,
+      message: '🎉 JWT Authentication FONCTIONNE parfaitement !',
+      controller: 'BlogController',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('jwt/test-health')
+  async testJwtHealth() {
+    return {
+      status: 'JWT_READY',
+      controller: 'BlogController',
+      jwtSecretSet: !!process.env.JWT_SECRET,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('jwt/manual-verify')
+  async manualVerifyToken(@Body('token') token: string) {
+    try {
+      const decoded = this.jwtService.verify(token);
+      this.logger.log('✅ Token vérifié manuellement avec succès:', JSON.stringify(decoded, null, 2));
+      
+      return {
+        success: true,
+        message: 'Token vérifié avec succès par JwtService',
+        decoded,
+        method: 'Manual JwtService.verify()',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur vérification manuelle token:', (error as Error).message);
+      
+      return {
+        success: false,
+        message: 'Token invalide',
+        error: (error as Error).message,
+        method: 'Manual JwtService.verify()',
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 }

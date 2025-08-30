@@ -585,7 +585,7 @@ export class AdviceService {
     const wordsPerMinute = 200;
     const words = cleanText
       .split(/\s+/)
-      .filter((word) => word.length > 0).length;
+      .filter((word: string) => word.length > 0).length;
     return Math.max(1, Math.ceil(words / wordsPerMinute));
   }
 
