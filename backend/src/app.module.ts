@@ -26,6 +26,7 @@ import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU -
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
+import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
@@ -61,6 +62,7 @@ import { AnalyticsController } from './controllers/analytics.controller'; // �
     AuthModule,
     UsersModule,
     MessagesModule,
+    CacheModule, // ⚡ NOUVEAU - Module cache Redis pour performances !
     RemixModule, // ✅ RÉACTIVÉ - Votre vraie page d'accueil !
     SuppliersModule, // ✅ NOUVEAU - Gestion avancée des fournisseurs !
     AdminModule, // ✅ NOUVEAU - Module admin aligné sur l'architecture !

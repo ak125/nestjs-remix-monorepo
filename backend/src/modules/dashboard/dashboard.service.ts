@@ -1,17 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class DashboardService extends SupabaseBaseService {
   protected readonly logger = new Logger(DashboardService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly cacheService: CacheService,
+  ) {
     super(configService);
   }
 
   /**
-   * 📊 Statistiques complètes du dashboard avec intégration SEO
+   * 📊 Statistiques complètes du dashboard avec intégration SEO et cache Redis
    */
   async getAllStats(): Promise<{
     totalUsers: number;
@@ -28,36 +32,49 @@ export class DashboardService extends SupabaseBaseService {
       completionRate: number;
     };
   }> {
+    const startTime = Date.now();
     try {
-      this.logger.log('🚀 Fetching complete dashboard statistics with SEO');
+      this.logger.log('🔄 Starting getAllStats with cache integration');
 
-      // Récupérer toutes les statistiques en parallèle
-      const [
-        usersStats,
-        ordersStats,
-        suppliersStats,
-        seoStats,
-      ] = await Promise.all([
-        this.getUsersStats(),
-        this.getOrdersStats(),
-        this.getSuppliersStats(),
-        this.getSeoStats(),
-      ]);
+      // Utiliser le cache avec le pattern getOrSet
+      const cachedStats = await this.cacheService.getOrSet(
+        'dashboard:stats:all',
+        async () => {
+          this.logger.log('🚀 Cache MISS - Fetching fresh dashboard statistics with SEO');
 
-      const completeStats = {
-        ...usersStats,
-        ...ordersStats,
-        ...suppliersStats,
-        seoStats,
-      };
+          // Récupérer toutes les statistiques en parallèle
+          const [
+            usersStats,
+            ordersStats,
+            suppliersStats,
+            seoStats,
+          ] = await Promise.all([
+            this.getUsersStats(),
+            this.getOrdersStats(),
+            this.getSuppliersStats(),
+            this.getSeoStats(),
+          ]);
 
-      this.logger.log(
-        '✅ Complete dashboard statistics loaded:',
-        completeStats,
+          const completeStats = {
+            ...usersStats,
+            ...ordersStats,
+            ...suppliersStats,
+            seoStats,
+          };
+
+          this.logger.log('✅ Fresh statistics fetched and cached');
+          return completeStats;
+        }
       );
-      return completeStats;
+
+      const performanceTime = Date.now() - startTime;
+      this.logger.log(`✅ getAllStats completed in ${performanceTime}ms (cache hit: ${performanceTime < 100 ? 'YES' : 'NO'})`);
+
+      return cachedStats;
     } catch (error) {
-      this.logger.error('❌ Error in getAllStats:', error);
+      const performanceTime = Date.now() - startTime;
+      this.logger.error(`❌ Error in getAllStats after ${performanceTime}ms:`, error);
+      
       // Retourner des valeurs par défaut en cas d'erreur
       return {
         totalUsers: 0,
@@ -736,24 +753,38 @@ export class DashboardService extends SupabaseBaseService {
     success: boolean;
     message: string;
   }> {
+    const startTime = Date.now();
     try {
-      const [totalUsers, totalOrders, totalSuppliers, recentOrders] = await Promise.all([
-        this.getUserCountFixed(),
-        this.getOrderCountFixed(),
-        this.getSupplierCountFixed(),
-        this.getRecentOrdersCountFixed(),
-      ]);
+      const cachedStats = await this.cacheService.getOrSet(
+        'dashboard:stats:fixed',
+        async () => {
+          this.logger.log('🔄 Cache MISS - Fetching fresh fixed dashboard stats');
 
-      return {
-        totalUsers,
-        totalOrders,
-        totalSuppliers,
-        recentOrders,
-        success: true,
-        message: 'Statistiques dashboard récupérées avec succès (méthodes Fixed modernes)',
-      };
+          const [totalUsers, totalOrders, totalSuppliers, recentOrders] = await Promise.all([
+            this.getUserCountFixed(),
+            this.getOrderCountFixed(),
+            this.getSupplierCountFixed(),
+            this.getRecentOrdersCountFixed(),
+          ]);
+
+          return {
+            totalUsers,
+            totalOrders,
+            totalSuppliers,
+            recentOrders,
+            success: true,
+            message: 'Statistiques dashboard récupérées avec succès (méthodes Fixed modernes avec cache)',
+          };
+        }
+      );
+
+      const performanceTime = Date.now() - startTime;
+      this.logger.log(`✅ getDashboardStatsFixed completed in ${performanceTime}ms (cache hit: ${performanceTime < 50 ? 'YES' : 'NO'})`);
+
+      return cachedStats;
     } catch (error) {
-      this.logger.error('Erreur getDashboardStatsFixed:', error);
+      const performanceTime = Date.now() - startTime;
+      this.logger.error(`❌ Erreur getDashboardStatsFixed after ${performanceTime}ms:`, error);
       return {
         totalUsers: 0,
         totalOrders: 0,
