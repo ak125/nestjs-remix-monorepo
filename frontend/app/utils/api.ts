@@ -5,7 +5,9 @@
 
 // Configuration de l'API backend
 export const API_CONFIG = {
-  BASE_URL: process.env.API_BASE_URL || process.env.BACKEND_URL || "http://localhost:3000",
+  BASE_URL: typeof window !== 'undefined' && window.ENV?.API_BASE_URL 
+    ? window.ENV.API_BASE_URL 
+    : "http://localhost:3000",
   ENDPOINTS: {
     // Endpoints des paiements - alignés sur l'architecture legacy
     PAYMENTS: "/api/payments",

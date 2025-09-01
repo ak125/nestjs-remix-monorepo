@@ -18,7 +18,11 @@ import {
   TrendingUp,
   Globe,
   FileText,
-  Monitor
+  Monitor,
+  BookOpen,
+  Edit,
+  PenTool,
+  Eye
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
@@ -85,6 +89,34 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       description: "Gestion des stocks",
       badge: stats ? { count: stats.totalStock || 409687, color: "bg-emerald-500" } : { count: 409687, color: "bg-emerald-500" },
       notification: false
+    },
+    {
+      name: "Blog",
+      href: "/admin/blog",
+      icon: BookOpen,
+      description: "Gestion du blog",
+      badge: { count: 86, color: "bg-blue-500" },
+      notification: false,
+      subItems: [
+        {
+          name: "Dashboard Blog",
+          href: "/admin/blog",
+          icon: Eye,
+          description: "Vue d'ensemble du blog"
+        },
+        {
+          name: "Gestion Articles",
+          href: "/admin/articles",
+          icon: Edit,
+          description: "Créer et modifier les articles"
+        },
+        {
+          name: "Performances",
+          href: "/admin/performances",
+          icon: BarChart3,
+          description: "Analytics et optimisations"
+        }
+      ]
     },
     {
       name: "Commercial",
@@ -181,7 +213,8 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
   const navigationItems = getNavigationItems();
   const [isOpen, setIsOpen] = React.useState(false)
   const [expandedMenus, setExpandedMenus] = React.useState<Record<string, boolean>>({
-    "SEO Enterprise": location.pathname.startsWith("/admin/seo")
+    "SEO Enterprise": location.pathname.startsWith("/admin/seo"),
+    "Blog": location.pathname.startsWith("/admin/blog") || location.pathname.startsWith("/admin/articles") || location.pathname.startsWith("/admin/performances")
   })
 
   // Fermer le menu mobile lors du changement de route

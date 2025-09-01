@@ -60,11 +60,11 @@ export default function AdminLayout() {
   const { user, stats } = useLoaderData<typeof loader>();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       <AdminSidebar stats={stats} />
       
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="flex-1 lg:ml-0">
         <main className="min-h-screen p-6">
           <div className="mb-4 text-sm text-gray-600">
             Connecté en tant que: {user.firstName} {user.lastName} ({user.email})

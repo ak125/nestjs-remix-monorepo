@@ -280,7 +280,120 @@ export class BlogService {
   }
 
   /**
-   * 📊 Dashboard avec statistiques complètes
+   * � Récupérer un article par son ID
+   */
+  async getArticleById(id: number): Promise<BlogArticle | null> {
+    try {
+      this.logger.log(`🔍 Récupération article ID: ${id}`);
+
+      // Chercher d'abord dans la table moderne
+      const { data: modernArticle } = await this.supabaseService.client
+        .from('blog_articles')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (modernArticle) {
+        return modernArticle;
+      }
+
+      // Chercher dans les tables legacy
+      const { data: adviceData } = await this.supabaseService.client
+        .from('__blog_advice')
+        .select('*')
+        .eq('ba_id', id)
+        .single();
+
+      if (adviceData) {
+        return this.transformAdviceToArticle(adviceData);
+      }
+
+      // Chercher dans les guides
+      const { data: guideData } = await this.supabaseService.client
+        .from('__blog_guide')
+        .select('*')
+        .eq('bg_id', id)
+        .single();
+
+      if (guideData) {
+        return this.transformGuideToArticle(guideData);
+      }
+
+      return null;
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération article ID ${id}: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
+   * 📋 Récupérer les articles pour l'administration
+   */
+  async getArticlesForAdmin(options: {
+    page: number;
+    limit: number;
+    status?: string;
+    search?: string;
+  }): Promise<{
+    articles: BlogArticle[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    try {
+      this.logger.log(`📋 Récupération articles admin - Page: ${options.page}, Limite: ${options.limit}`);
+
+      const offset = (options.page - 1) * options.limit;
+
+      // Construction de la requête de base
+      let query = this.supabaseService.client
+        .from('__blog_advice')
+        .select('*', { count: 'exact' });
+
+      // Filtre par statut si spécifié
+      if (options.status) {
+        query = query.eq('ba_status', options.status);
+      }
+
+      // Filtre par recherche si spécifié
+      if (options.search) {
+        query = query.or(`ba_title.ilike.%${options.search}%,ba_content.ilike.%${options.search}%`);
+      }
+
+      // Pagination et tri
+      query = query
+        .order('ba_date', { ascending: false })
+        .range(offset, offset + options.limit - 1);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      const articles = data ? data.map(advice => this.transformAdviceToArticle(advice)) : [];
+      const total = count || 0;
+      const totalPages = Math.ceil(total / options.limit);
+
+      return {
+        articles,
+        total,
+        page: options.page,
+        totalPages
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération articles admin: ${(error as Error).message}`);
+      return {
+        articles: [],
+        total: 0,
+        page: options.page,
+        totalPages: 0
+      };
+    }
+  }
+
+  /**
+   * �📊 Dashboard avec statistiques complètes
    */
   async getBlogStats(): Promise<BlogDashboard> {
     try {
@@ -580,7 +693,7 @@ export class BlogService {
     const text = typeof content === 'string' ? content : JSON.stringify(content);
     const cleanText = BlogCacheService.decodeHtmlEntities(text).replace(/<[^>]*>/g, '');
     const wordsPerMinute = 200;
-    const words = cleanText.split(/\s+/).filter(word => word.length > 0).length;
+    const words = cleanText.split(/\s+/).filter((word: string) => word.length > 0).length;
     return Math.max(1, Math.ceil(words / wordsPerMinute));
   }
 

@@ -132,7 +132,9 @@ export const DEVELOPMENT_MONITORING_CONFIG: MonitoringConfig = {
 
 // Utilitaire pour obtenir la config selon l'environnement
 export function getMonitoringConfig(): MonitoringConfig {
-  const isDev = process.env.NODE_ENV === 'development'
+  const isDev = typeof window !== 'undefined' 
+    ? window.location.hostname === 'localhost' || window.location.hostname.includes('dev')
+    : false
   return isDev ? DEVELOPMENT_MONITORING_CONFIG : PRODUCTION_MONITORING_CONFIG
 }
 
