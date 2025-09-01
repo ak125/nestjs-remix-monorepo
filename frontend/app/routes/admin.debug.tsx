@@ -59,8 +59,8 @@ export default function AdminDebug() {
             <a href="/admin/orders" className="block text-blue-600 hover:underline">
               📦 /admin/orders (commandes complètes)
             </a>
-            <a href="/admin/orders-simple" className="block text-blue-600 hover:underline">
-              📦 /admin/orders-simple (test simple)
+            <a href="/admin/orders" className="block text-blue-600 hover:underline">
+              📦 /admin/orders (version consolidée)
             </a>
           </div>
         </div>
