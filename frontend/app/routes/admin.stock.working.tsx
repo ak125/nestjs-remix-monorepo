@@ -1,6 +1,9 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams, Form, Link } from '@remix-run/react';
-import { useState, useEffect } from 'react';
+import { useLoaderData, Link } from '@remix-run/react';
+import { OptimizedPagination } from '../components/ui/OptimizedPagination';
+import { OptimizedSearchBar } from '../components/ui/OptimizedSearchBar';
+import { PerformanceMetrics } from '../components/ui/PerformanceMetrics';
+import { useOptimizedTable } from '../hooks/useOptimizedTable';
 
 interface StockItem {
   pri_piece_id: string;
@@ -73,38 +76,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function AdminStockWorking() {
-  const { stats, items, totalItems, currentPage, limit } = useLoaderData<LoaderData>();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
+  const { stats, items, totalItems } = useLoaderData<LoaderData>();
 
-  // États pour les filtres
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
-  const [availabilityFilter, setAvailabilityFilter] = useState(searchParams.get('available') || '');
-  const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
-  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    const newParams = new URLSearchParams();
-    newParams.set('page', '1'); // Reset à la page 1 lors d'une recherche
-    if (searchQuery) newParams.set('search', searchQuery);
-    if (availabilityFilter) newParams.set('available', availabilityFilter);
-    if (minPrice) newParams.set('minPrice', minPrice);
-    if (maxPrice) newParams.set('maxPrice', maxPrice);
-    
-    setSearchParams(newParams);
-    setIsLoading(false);
-  };
-
-  const clearFilters = () => {
-    setSearchQuery('');
-    setAvailabilityFilter('');
-    setMinPrice('');
-    setMaxPrice('');
-    setSearchParams({});
-  };
+  // 🚀 HOOKS OPTIMISÉS POUR PERFORMANCE MAXIMALE
+  const optimizedTable = useOptimizedTable({
+    data: items,
+    itemsPerPage: 20,
+    searchFields: ['pri_ref', 'pri_des'],
+    sortField: 'pri_ref',
+    sortDirection: 'asc'
+  });
 
   const formatPrice = (price: string) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -178,116 +159,167 @@ export default function AdminStockWorking() {
           </div>
         </div>
 
-        {/* Filtres */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <Form onSubmit={handleSearch}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Recherche
-                </label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Référence ou description..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+        {/* 🚀 MÉTRIQUES DE PERFORMANCE TEMPS RÉEL */}
+        <PerformanceMetrics
+          loadTime={optimizedTable.loadTime}
+          totalItems={totalItems}
+          filteredItems={optimizedTable.filteredItems}
+          currentPage={optimizedTable.currentPage}
+          totalPages={optimizedTable.totalPages}
+          showDetailed={true}
+          className="mb-6"
+        />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Disponibilité
-                </label>
-                <select
-                  value={availabilityFilter}
-                  onChange={(e) => setAvailabilityFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Tous</option>
-                  <option value="true">Disponibles</option>
-                  <option value="false">Indisponibles</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prix min (€)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Prix max (€)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  placeholder="999.99"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+        {/* 🔍 RECHERCHE OPTIMISÉE AVEC DEBOUNCING */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔍 Recherche Intelligente
+              </label>
+              <OptimizedSearchBar
+                value={optimizedTable.searchTerm}
+                onChange={optimizedTable.setSearchTerm}
+                placeholder="Rechercher référence ou description..."
+                showResults={true}
+                resultCount={optimizedTable.filteredItems}
+                totalCount={totalItems}
+                className="w-full"
+              />
             </div>
 
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                {isLoading ? 'Recherche...' : 'Filtrer'}
-              </button>
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Effacer
-              </button>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Actions rapides
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => optimizedTable.setSearchTerm('CONDENSATEUR')}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm rounded-md transition-colors"
+                  >
+                    🔋 Condensateurs
+                  </button>
+                  <button
+                    onClick={() => optimizedTable.setSearchTerm('ECROU')}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-sm rounded-md transition-colors"
+                  >
+                    🔩 Vis & Écrous
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tri rapide
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => optimizedTable.handleSort('pri_vente_ttc')}
+                    className="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-sm rounded-md transition-colors"
+                  >
+                    � Prix TTC
+                  </button>
+                  <button
+                    onClick={() => optimizedTable.handleSort('pri_marge')}
+                    className="px-3 py-2 bg-green-100 hover:bg-green-200 text-sm rounded-md transition-colors"
+                  >
+                    � Marge
+                  </button>
+                </div>
+              </div>
             </div>
-          </Form>
+          </div>
         </div>
       </div>
 
-      {/* Tableau des articles */}
+      {/* 📊 TABLEAU OPTIMISÉ AVEC TRI INTELLIGENT */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-lg font-semibold text-gray-900">
-            Articles ({formatNumber(totalItems)} résultats)
+            📦 Articles ({formatNumber(optimizedTable.filteredItems)} résultats {optimizedTable.filteredItems !== totalItems && `sur ${formatNumber(totalItems)}`})
           </h2>
+          {optimizedTable.isLoading && (
+            <div className="flex items-center text-blue-600">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="text-sm">Optimisation en cours...</span>
+            </div>
+          )}
         </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Référence
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => optimizedTable.handleSort('pri_ref')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Référence</span>
+                    {optimizedTable.sortField === 'pri_ref' && (
+                      <span className="text-blue-500">
+                        {optimizedTable.sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => optimizedTable.handleSort('pri_des')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Description</span>
+                    {optimizedTable.sortField === 'pri_des' && (
+                      <span className="text-blue-500">
+                        {optimizedTable.sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Disponibilité
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prix HT
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => optimizedTable.handleSort('pri_vente_ht')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Prix HT</span>
+                    {optimizedTable.sortField === 'pri_vente_ht' && (
+                      <span className="text-blue-500">
+                        {optimizedTable.sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prix TTC
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => optimizedTable.handleSort('pri_vente_ttc')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Prix TTC</span>
+                    {optimizedTable.sortField === 'pri_vente_ttc' && (
+                      <span className="text-blue-500">
+                        {optimizedTable.sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Marge
+                <th 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => optimizedTable.handleSort('pri_marge')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Marge</span>
+                    {optimizedTable.sortField === 'pri_marge' && (
+                      <span className="text-blue-500">
+                        {optimizedTable.sortDirection === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </div>
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -295,9 +327,9 @@ export default function AdminStockWorking() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {items.length > 0 ? (
-                items.map((item) => (
-                  <tr key={item.pri_piece_id} className="hover:bg-gray-50">
+              {optimizedTable.displayedData.length > 0 ? (
+                optimizedTable.displayedData.map((item) => (
+                  <tr key={item.pri_piece_id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {item.pri_ref}
@@ -307,7 +339,7 @@ export default function AdminStockWorking() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                      <div className="text-sm text-gray-900 max-w-xs truncate" title={item.pri_des}>
                         {item.pri_des}
                       </div>
                     </td>
@@ -319,7 +351,7 @@ export default function AdminStockWorking() {
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {item.pri_dispo === '1' ? 'Disponible' : 'Indisponible'}
+                        {item.pri_dispo === '1' ? '✅ Disponible' : '❌ Indisponible'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -342,18 +374,18 @@ export default function AdminStockWorking() {
                         }`}
                       >
                         {parseFloat(item.pri_marge) < 20
-                          ? 'Faible'
+                          ? '⚠️ Faible'
                           : parseFloat(item.pri_marge) > 50
-                          ? 'Élevée'
-                          : 'Normale'}
+                          ? '🎯 Élevée'
+                          : '📊 Normale'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3">
-                        Détails
+                      <button className="text-blue-600 hover:text-blue-900 mr-3 transition-colors">
+                        👁️ Détails
                       </button>
-                      <button className="text-green-600 hover:text-green-900">
-                        Modifier
+                      <button className="text-green-600 hover:text-green-900 transition-colors">
+                        ✏️ Modifier
                       </button>
                     </td>
                   </tr>
@@ -361,7 +393,20 @@ export default function AdminStockWorking() {
               ) : (
                 <tr>
                   <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    Aucun article trouvé
+                    {optimizedTable.isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Chargement des données...
+                      </div>
+                    ) : (
+                      <div>
+                        🔍 Aucun article trouvé
+                        <p className="text-xs text-gray-400 mt-1">Essayez de modifier vos critères de recherche</p>
+                      </div>
+                    )}
                   </td>
                 </tr>
               )}
@@ -369,39 +414,19 @@ export default function AdminStockWorking() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {totalItems > limit && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
-              Affichage de {(currentPage - 1) * limit + 1} à{' '}
-              {Math.min(currentPage * limit, totalItems)} sur {formatNumber(totalItems)} résultats
-            </div>
-            
-            <div className="flex gap-2">
-              {currentPage > 1 && (
-                <Link
-                  to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams), page: (currentPage - 1).toString() })}`}
-                  className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Précédent
-                </Link>
-              )}
-              
-              <span className="px-3 py-1 bg-blue-600 text-white rounded-md">
-                {currentPage}
-              </span>
-              
-              {currentPage * limit < totalItems && (
-                <Link
-                  to={`?${new URLSearchParams({ ...Object.fromEntries(searchParams), page: (currentPage + 1).toString() })}`}
-                  className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Suivant
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        {/* 🚀 PAGINATION OPTIMISÉE */}
+        <OptimizedPagination
+          currentPage={optimizedTable.currentPage}
+          totalPages={optimizedTable.totalPages}
+          visiblePages={optimizedTable.visiblePages}
+          hasNextPage={optimizedTable.hasNextPage}
+          hasPrevPage={optimizedTable.hasPrevPage}
+          onPageChange={optimizedTable.goToPage}
+          onNext={optimizedTable.goToNext}
+          onPrev={optimizedTable.goToPrev}
+          className="px-6 py-4 border-t border-gray-200"
+          showInfo={true}
+        />
       </div>
     </div>
   );
