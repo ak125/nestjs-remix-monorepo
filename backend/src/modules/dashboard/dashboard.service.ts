@@ -377,9 +377,9 @@ export class DashboardService extends SupabaseBaseService {
 
       // Utiliser directement les comptages sur ___xtr_order
       const [pending, inProgress, shipped] = await Promise.all([
-        this.countOrdersByStatus([2]), // En attente
-        this.countOrdersByStatus([3, 4]), // En préparation, prêt
-        this.countOrdersByStatus([5]), // Expédié
+        this.countOrdersByStatus(['2']), // En attente
+        this.countOrdersByStatus(['3', '4']), // En préparation, prêt
+        this.countOrdersByStatus(['5']), // Expédié
       ]);
 
       return {
@@ -493,12 +493,12 @@ export class DashboardService extends SupabaseBaseService {
   /**
    * Helper method pour compter les commandes par statut
    */
-  private async countOrdersByStatus(statuses: number[]): Promise<number> {
+  private async countOrdersByStatus(statuses: string[]): Promise<number> {
     try {
       const { count } = await this.supabase
         .from('___xtr_order')
         .select('*', { count: 'exact', head: true })
-        .in('ord_status', statuses);
+        .in('ord_ords_id', statuses);
 
       return count || 0;
     } catch (error) {
@@ -528,16 +528,16 @@ export class DashboardService extends SupabaseBaseService {
 
   async getUserCountFixed(): Promise<number> {
     try {
-      const { data, error } = await this.supabase
+      const { count, error } = await this.supabase
         .from('___xtr_customer')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (error) {
         this.logger.error(`Erreur getUserCountFixed: ${error.message}`);
         throw new Error(`Impossible de récupérer le nombre d'utilisateurs: ${error.message}`);
       }
 
-      return data?.length || 0;
+      return count || 0;
     } catch (error) {
       this.logger.error('Erreur getUserCountFixed:', error);
       return 0;
@@ -546,16 +546,16 @@ export class DashboardService extends SupabaseBaseService {
 
   async getOrderCountFixed(): Promise<number> {
     try {
-      const { data, error } = await this.supabase
+      const { count, error } = await this.supabase
         .from('___xtr_order')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (error) {
         this.logger.error(`Erreur getOrderCountFixed: ${error.message}`);
         throw new Error(`Impossible de récupérer le nombre de commandes: ${error.message}`);
       }
 
-      return data?.length || 0;
+      return count || 0;
     } catch (error) {
       this.logger.error('Erreur getOrderCountFixed:', error);
       return 0;
@@ -564,16 +564,16 @@ export class DashboardService extends SupabaseBaseService {
 
   async getSupplierCountFixed(): Promise<number> {
     try {
-      const { data, error } = await this.supabase
+      const { count, error } = await this.supabase
         .from('___xtr_supplier_link_pm')
-        .select('id', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (error) {
         this.logger.error(`Erreur getSupplierCountFixed: ${error.message}`);
         throw new Error(`Impossible de récupérer le nombre de fournisseurs: ${error.message}`);
       }
 
-      return data?.length || 0;
+      return count || 0;
     } catch (error) {
       this.logger.error('Erreur getSupplierCountFixed:', error);
       return 0;
@@ -585,20 +585,146 @@ export class DashboardService extends SupabaseBaseService {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-      const { data, error } = await this.supabase
+      const { count, error } = await this.supabase
         .from('___xtr_order')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', oneWeekAgo.toISOString());
+        .select('*', { count: 'exact', head: true })
+        .gte('ord_date', oneWeekAgo.toISOString());
 
       if (error) {
         this.logger.error(`Erreur getRecentOrdersCountFixed: ${error.message}`);
         throw new Error(`Impossible de récupérer les commandes récentes: ${error.message}`);
       }
 
-      return data?.length || 0;
+      return count || 0;
     } catch (error) {
       this.logger.error('Erreur getRecentOrdersCountFixed:', error);
       return 0;
+    }
+  }
+
+  /**
+   * 📋 Récupérer les commandes récentes (méthode manquante)
+   */
+  async getRecentOrders(limit: number = 10): Promise<any[]> {
+    try {
+      this.logger.log(`Fetching ${limit} recent orders`);
+
+      const { data, error } = await this.supabase
+        .from('___xtr_order')
+        .select(`
+          ord_id,
+          ord_total_ttc,
+          ord_ords_id,
+          ord_is_pay,
+          ord_date,
+          ord_cst_id
+        `)
+        .order('ord_date', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('Error fetching recent orders:', error);
+        throw error;
+      }
+
+      // Transformer les données pour un format plus lisible
+      const transformedOrders = data?.map(order => ({
+        id: order.ord_id,
+        total: parseFloat(order.ord_total_ttc || '0'),
+        status: order.ord_ords_id,
+        isPaid: order.ord_is_pay === '1',
+        date: order.ord_date,
+        customerId: order.ord_cst_id,
+      })) || [];
+
+      this.logger.log(`Retrieved ${transformedOrders.length} recent orders`);
+      return transformedOrders;
+    } catch (error) {
+      this.logger.error('Error in getRecentOrders:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🚚 Récupérer les expéditions avec suivi (méthode manquante)
+   */
+  async getShipmentsWithTracking(): Promise<any[]> {
+    try {
+      this.logger.log('Fetching shipments with tracking');
+
+      const { data, error } = await this.supabase
+        .from('___xtr_order')
+        .select(`
+          ord_id,
+          ord_ords_id,
+          ord_date,
+          ord_cst_id,
+          ord_total_ttc
+        `)
+        .in('ord_ords_id', ['4', '5']) // Prêt et expédié
+        .order('ord_date', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        this.logger.error('Error fetching shipments:', error);
+        throw error;
+      }
+
+      // Transformer les données pour inclure des infos de suivi simulées
+      const shipments = data?.map(order => ({
+        id: order.ord_id,
+        orderId: order.ord_id,
+        status: order.ord_ords_id === '5' ? 'shipped' : 'ready',
+        trackingNumber: `TRK${order.ord_id}${Date.now().toString().slice(-4)}`,
+        date: order.ord_date,
+        customerId: order.ord_cst_id,
+        total: parseFloat(order.ord_total_ttc || '0'),
+      })) || [];
+
+      this.logger.log(`Retrieved ${shipments.length} shipments`);
+      return shipments;
+    } catch (error) {
+      this.logger.error('Error in getShipmentsWithTracking:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 📦 Récupérer les alertes de stock (méthode manquante)
+   */
+  async getStockAlerts(): Promise<{
+    success: boolean;
+    alerts: any[];
+    count: number;
+  }> {
+    try {
+      this.logger.log('Fetching stock alerts');
+
+      // Pour le moment, retourner des alertes simulées
+      // TODO: Implémenter avec les vraies tables de stock quand elles seront identifiées
+      const mockAlerts = [
+        {
+          id: 1,
+          productName: 'Produit exemple',
+          currentStock: 5,
+          minimumStock: 10,
+          status: 'low',
+          lastUpdate: new Date().toISOString(),
+        },
+      ];
+
+      return {
+        success: true,
+        alerts: mockAlerts,
+        count: mockAlerts.length,
+      };
+    } catch (error) {
+      this.logger.error('Error in getStockAlerts:', error);
+      return {
+        success: false,
+        alerts: [],
+        count: 0,
+      };
     }
   }
 
