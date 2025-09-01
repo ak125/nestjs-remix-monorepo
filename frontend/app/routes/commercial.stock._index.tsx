@@ -14,6 +14,10 @@ import {
   Package, AlertTriangle, TrendingDown, TrendingUp,
   History, FileText, Download, Search
 } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
 
 interface StockItem {
   pri_piece_id: string;
@@ -57,12 +61,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const maxPrice = url.searchParams.get('maxPrice') || '';
 
   try {
+    // Configuration API centralisée
+    const API_BASE = process.env.NODE_ENV === 'production' 
+      ? process.env.API_URL 
+      : 'http://127.0.0.1:3000';
+      
     // Réutiliser les APIs existantes qui fonctionnent
-    const statsResponse = await fetch('http://localhost:3000/api/admin/working-stock/stats');
+    const statsResponse = await fetch(`${API_BASE}/api/admin/working-stock/stats`);
     const statsData = await statsResponse.json();
 
     // Construire l'URL pour le dashboard avec filtres
-    const dashboardUrl = new URL('http://localhost:3000/api/admin/working-stock/dashboard');
+    const dashboardUrl = new URL(`${API_BASE}/api/admin/working-stock/dashboard`);
     dashboardUrl.searchParams.set('page', page.toString());
     dashboardUrl.searchParams.set('limit', limit.toString());
     if (search) dashboardUrl.searchParams.set('search', search);
@@ -354,12 +363,12 @@ export default function CommercialStockIndex() {
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-2">
                           <Link to={`/commercial/products/${item.pri_piece_id}`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="secondary" size="sm">
                               <FileText className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Link to={`/commercial/stock/${item.pri_piece_id}/history`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="secondary" size="sm">
                               <History className="h-4 w-4" />
                             </Button>
                           </Link>

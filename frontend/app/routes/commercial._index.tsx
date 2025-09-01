@@ -60,17 +60,26 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
   try {
     // Récupérer les données depuis l'API Dashboard unifiée
+    const API_BASE = process.env.API_URL || 'http://localhost:3000';
+    console.log('🔗 API_BASE:', API_BASE);
+    
     const [dashboardResponse, suppliersResponse, recentOrdersResponse] = await Promise.all([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/stats`, {
+      fetch(`${API_BASE}/api/dashboard/stats`, {
         headers: { 'internal-call': 'true' }
       }),
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/suppliers`, {
+      fetch(`${API_BASE}/api/suppliers`, {
         headers: { 'internal-call': 'true' }
       }),
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/orders/recent`, {
+      fetch(`${API_BASE}/api/dashboard/orders/recent`, {
         headers: { 'internal-call': 'true' }
       })
     ]);
+
+    console.log('📊 Response status:', {
+      dashboard: dashboardResponse.status,
+      suppliers: suppliersResponse.status, 
+      orders: recentOrdersResponse.status
+    });
 
     let dashboardData: DashboardData = {
       orders: {
