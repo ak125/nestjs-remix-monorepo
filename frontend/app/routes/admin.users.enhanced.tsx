@@ -45,8 +45,6 @@ interface LoaderData {
     status: string;
     userType: string;
     level: string;
-    sortBy: string;
-    sortOrder: string;
   };
   stats: {
     totalUsers: number;
@@ -67,8 +65,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const status = url.searchParams.get('status') || '';
   const userType = url.searchParams.get('userType') || '';
   const level = url.searchParams.get('level') || '';
-  const sortBy = url.searchParams.get('sortBy') || 'email';
-  const sortOrder = url.searchParams.get('sortOrder') || 'asc';
 
   try {
     // 🔥 API Call avec filtres
@@ -99,7 +95,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       total: totalUsers,
       currentPage: page,
       totalPages: Math.ceil(totalUsers / limit),
-      filters: { search, status, userType, level, sortBy, sortOrder },
+      filters: { search, status, userType, level },
       stats: {
         totalUsers,
         activeUsers: Math.round(activeUsers * totalUsers / (data.data?.length || 1)),
@@ -116,7 +112,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       total: 0,
       currentPage: 1,
       totalPages: 1,
-      filters: { search: '', status: '', userType: '', level: '', sortBy: 'email', sortOrder: 'asc' },
+      filters: { search: '', status: '', userType: '', level: '' },
       stats: {
         totalUsers: 0,
         activeUsers: 0,
@@ -219,19 +215,6 @@ export default function AdminUsersEnhanced() {
 
   const clearSelection = () => {
     setSelectedUsers([]);
-  };
-
-  // 📊 Fonction de tri des colonnes
-  const handleSort = (column: string) => {
-    const newSortOrder = filters.sortBy === column && filters.sortOrder === 'asc' ? 'desc' : 'asc';
-    applyFilters({ sortBy: column, sortOrder: newSortOrder });
-  };
-
-  const getSortIcon = (column: string) => {
-    if (filters.sortBy === column) {
-      return filters.sortOrder === 'asc' ? '↑' : '↓';
-    }
-    return '';
   };
 
   return (
@@ -417,12 +400,9 @@ export default function AdminUsersEnhanced() {
           </div>
           
           {(filters.search || filters.status || filters.userType || filters.level) && (
-            <div className="mt-4 flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {Object.values(filters).filter(Boolean).length} filtre(s) actif(s)
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => applyFilters({ search: '', status: '', userType: '', level: '', sortBy: 'email', sortOrder: 'asc' })}>
-                Effacer tous les filtres
+            <div className="mt-4">
+              <Button variant="outline" size="sm" onClick={() => applyFilters({ search: '', status: '', userType: '', level: '' })}>
+                Effacer les filtres
               </Button>
             </div>
           )}
@@ -487,40 +467,12 @@ export default function AdminUsersEnhanced() {
                     />
                   </th>
                   <th className="text-left p-3 font-medium">ID</th>
-                  <th className="text-left p-3 font-medium">
-                    <button 
-                      onClick={() => handleSort('email')}
-                      className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-                    >
-                      Email {getSortIcon('email')}
-                    </button>
-                  </th>
-                  <th className="text-left p-3 font-medium">
-                    <button 
-                      onClick={() => handleSort('name')}
-                      className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-                    >
-                      Nom {getSortIcon('name')}
-                    </button>
-                  </th>
+                  <th className="text-left p-3 font-medium">Email</th>
+                  <th className="text-left p-3 font-medium">Nom</th>
                   <th className="text-left p-3 font-medium">Type</th>
-                  <th className="text-left p-3 font-medium">
-                    <button 
-                      onClick={() => handleSort('level')}
-                      className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-                    >
-                      Niveau {getSortIcon('level')}
-                    </button>
-                  </th>
+                  <th className="text-left p-3 font-medium">Niveau</th>
                   <th className="text-left p-3 font-medium">Localisation</th>
-                  <th className="text-left p-3 font-medium">
-                    <button 
-                      onClick={() => handleSort('status')}
-                      className="flex items-center gap-1 hover:text-blue-600 transition-colors"
-                    >
-                      Statut {getSortIcon('status')}
-                    </button>
-                  </th>
+                  <th className="text-left p-3 font-medium">Statut</th>
                   <th className="text-left p-3 font-medium">Actions</th>
                 </tr>
               </thead>
@@ -547,14 +499,9 @@ export default function AdminUsersEnhanced() {
                       </div>
                     </td>
                     <td className="p-3">
-                      <Link 
-                        to={`/admin/users/${user.id}`} 
-                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                      >
-                        {user.firstName && user.lastName
-                          ? `${user.firstName} ${user.lastName}`
-                          : user.name || 'Non défini'}
-                      </Link>
+                      {user.firstName && user.lastName
+                        ? `${user.firstName} ${user.lastName}`
+                        : user.name || 'Non défini'}
                     </td>
                     <td className="p-3">
                       <div className="flex gap-1">
@@ -610,12 +557,12 @@ export default function AdminUsersEnhanced() {
                     </td>
                     <td className="p-3">
                       <div className="flex gap-1">
-                        <Button variant="outline" size="sm" asChild>
+                        <Button variant="ghost" size="sm" asChild>
                           <Link to={`${user.id}`}>
                             <Eye className="w-4 h-4" />
                           </Link>
                         </Button>
-                        <Button variant="outline" size="sm" asChild>
+                        <Button variant="ghost" size="sm" asChild>
                           <Link to={`${user.id}/edit`}>
                             <Edit className="w-4 h-4" />
                           </Link>
@@ -623,7 +570,7 @@ export default function AdminUsersEnhanced() {
                         <fetcher.Form method="post" className="inline">
                           <input type="hidden" name="_action" value="toggleStatus" />
                           <input type="hidden" name="userId" value={user.id} />
-                          <Button type="submit" variant="outline" size="sm">
+                          <Button type="submit" variant="ghost" size="sm">
                             {user.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                           </Button>
                         </fetcher.Form>

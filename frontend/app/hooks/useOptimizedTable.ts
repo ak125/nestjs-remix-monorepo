@@ -5,7 +5,7 @@
  * optimisée pour de gros volumes de données (409k+ items)
  */
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { usePagination } from '../hooks/usePagination';
 
 interface UseOptimizedTableProps<T> {
@@ -64,11 +64,23 @@ export function useOptimizedTable<T extends Record<string, any>>({
   const [isLoading, setIsLoading] = useState(false);
   const [loadTime, setLoadTime] = useState(0);
 
+  // Gérer l'état de chargement
+  useEffect(() => {
+    setIsLoading(true);
+    const startTime = performance.now();
+    
+    // Simuler un délai pour les grandes données
+    const timer = setTimeout(() => {
+      const endTime = performance.now();
+      setLoadTime(endTime - startTime);
+      setIsLoading(false);
+    }, data.length > 1000 ? 100 : 10);
+
+    return () => clearTimeout(timer);
+  }, [data, searchTerm, sortField, sortDirection]);
+
   // 🔍 Filtrage et tri optimisés avec memoization
   const processedData = useMemo(() => {
-    const startTime = performance.now();
-    setIsLoading(true);
-
     let filtered = [...data];
 
     // Filtrage par recherche
@@ -95,11 +107,7 @@ export function useOptimizedTable<T extends Record<string, any>>({
         return sortDirection === 'desc' ? -comparison : comparison;
       });
     }
-
-    const endTime = performance.now();
-    setLoadTime(endTime - startTime);
-    setIsLoading(false);
-
+    
     return filtered;
   }, [data, searchTerm, searchFields, sortField, sortDirection]);
 
