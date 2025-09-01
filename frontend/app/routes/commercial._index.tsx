@@ -147,7 +147,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 
 // Fonction helper pour les variants de badge
-function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
+function getStatusVariant(status: string | null | undefined): "default" | "secondary" | "destructive" | "outline" {
+  if (!status) return "default";
+  
   switch (status) {
     case "confirme":
       return "default";
@@ -274,22 +276,22 @@ export default function CommercialDashboard() {
                   >
                     <div className="flex items-center space-x-4">
                       <div>
-                        <div className="font-medium text-gray-900">{order.orderNumber}</div>
+                        <div className="font-medium text-gray-900">Commande #{order.id}</div>
                         <div className="text-sm text-gray-500">
-                          {order.customerName}
+                          Client #{order.customerId || 'N/A'}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
                       <Badge variant={getStatusVariant(order.status)}>
-                        {order.status.replace('_', ' ')}
+                        {order.status?.replace('_', ' ') || 'En attente'}
                       </Badge>
                       <div className="text-right">
                         <div className="font-medium text-gray-900">
-                          {order.totalAmount.toLocaleString('fr-FR')}€
+                          {(order.total || 0).toLocaleString('fr-FR')}€
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                          {order.date ? new Date(order.date).toLocaleDateString('fr-FR') : 'N/A'}
                         </div>
                       </div>
                     </div>

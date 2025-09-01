@@ -765,36 +765,4 @@ export class DashboardService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * 📋 Récupérer les commandes récentes avec détails
-   */
-  async getRecentOrders(limit: number = 10): Promise<any[]> {
-    try {
-      this.logger.log(`🔍 Fetching ${limit} recent orders`);
-
-      const { data, error } = await this.supabase
-        .from('___xtr_order')
-        .select(`
-          id,
-          created_at,
-          status,
-          total_amount,
-          user_id,
-          customer_name,
-          order_number
-        `)
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (error) {
-        this.logger.error(`Erreur getRecentOrders: ${error.message}`);
-        throw new Error(`Impossible de récupérer les commandes récentes: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      this.logger.error('Erreur getRecentOrders:', error);
-      return [];
-    }
-  }
 }
