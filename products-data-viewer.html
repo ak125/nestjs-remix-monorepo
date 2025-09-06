@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation Données Products - Système Automobile</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 8px; 
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px;
+        }
+        .stat-card { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            text-align: center;
+        }
+        .stat-number { 
+            font-size: 2em; 
+            font-weight: bold; 
+            display: block;
+        }
+        .section { 
+            margin: 30px 0;
+        }
+        .section h2 { 
+            color: #333; 
+            border-bottom: 3px solid #667eea; 
+            padding-bottom: 10px;
+        }
+        .data-list { 
+            max-height: 400px; 
+            overflow-y: auto; 
+            border: 1px solid #ddd; 
+            border-radius: 4px;
+        }
+        .item { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-between;
+        }
+        .item:nth-child(even) { 
+            background: #f9f9f9;
+        }
+        .item-name { 
+            font-weight: bold; 
+            color: #333;
+        }
+        .item-details { 
+            color: #666; 
+            font-size: 0.9em;
+        }
+        .loading { 
+            text-align: center; 
+            color: #667eea; 
+            font-style: italic;
+        }
+        .error { 
+            color: #e74c3c; 
+            background: #ffeaea; 
+            padding: 10px; 
+            border-radius: 4px;
+        }
+        button { 
+            background: #667eea; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { 
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Système Products - Données Réelles</h1>
+        <p><strong>Base de données :</strong> 4+ millions de pièces automobiles</p>
+        
+        <!-- Statistiques -->
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalProducts">4,036,045</span>
+                <div>Produits Totaux</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalCategories">9,266</span>
+                <div>Catégories/Gammes</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalBrands">--</span>
+                <div>Marques Auto</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">✅ LIVE</span>
+                <div>Connexion API</div>
+            </div>
+        </div>
+
+        <!-- Section Gammes -->
+        <div class="section">
+            <h2>🏷️ Gammes de Pièces (Échantillon)</h2>
+            <button onclick="loadGammes()">📥 Charger les Gammes</button>
+            <button onclick="loadAllGammes()">📋 Voir Plus de Gammes</button>
+            <div id="gammes-content" class="loading">Cliquez sur "Charger les Gammes" pour voir les données...</div>
+        </div>
+
+        <!-- Section Pièces -->
+        <div class="section">
+            <h2>🔧 Catalogue de Pièces (Échantillon)</h2>
+            <button onclick="loadPieces()">📥 Charger les Pièces</button>
+            <button onclick="loadMorePieces()">📋 Voir Plus de Pièces</button>
+            <div id="pieces-content" class="loading">Cliquez sur "Charger les Pièces" pour voir les données...</div>
+        </div>
+
+        <!-- Section Debug -->
+        <div class="section">
+            <h2>🔍 Informations Techniques</h2>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace;">
+                <strong>Backend API:</strong> http://localhost:3000<br>
+                <strong>Endpoints testés:</strong><br>
+                ✅ /api/products/stats → Statistiques globales<br>
+                ✅ /api/products/gammes → Liste des gammes<br>
+                ✅ /api/products/pieces-catalog → Catalogue de pièces<br>
+                <strong>Base de données:</strong> Supabase (tables: pieces, pieces_gamme)<br>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Charger les statistiques au démarrage
+        loadStats();
+
+        async function loadStats() {
+            try {
+                const response = await fetch('http://localhost:3000/api/products/stats', {
+                    headers: { 'internal-call': 'true' }
+                });
+                const data = await response.json();
+                
+                if (data.totalProducts) document.getElementById('totalProducts').textContent = data.totalProducts.toLocaleString();
+                if (data.totalCategories) document.getElementById('totalCategories').textContent = data.totalCategories.toLocaleString();
+                if (data.totalBrands) document.getElementById('totalBrands').textContent = data.totalBrands.toLocaleString();
+            } catch (error) {
+                console.error('Erreur chargement stats:', error);
+            }
+        }
+
+        async function loadGammes() {
+            const container = document.getElementById('gammes-content');
+            container.innerHTML = '<div class="loading">📥 Chargement des gammes...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/products/gammes', {
+                    headers: { 'internal-call': 'true' }
+                });
+                const gammes = await response.json();
+                
+                let html = `<div class="data-list">`;
+                html += `<div style="padding: 10px; background: #667eea; color: white; font-weight: bold;">
+                    📊 ${gammes.length} gammes trouvées (échantillon des 50 premières)
+                </div>`;
+                
+                gammes.slice(0, 50).forEach((gamme, index) => {
+                    html += `
+                        <div class="item">
+                            <div>
+                                <div class="item-name">${gamme.name}</div>
+                                <div class="item-details">ID: ${gamme.id} | Actif: ${gamme.is_active ? '✅' : '❌'} | Top: ${gamme.is_top ? '⭐' : '—'}</div>
+                            </div>
+                            <div style="text-align: right; color: #667eea; font-size: 0.8em;">
+                                #${index + 1}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.innerHTML = html;
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+
+        async function loadAllGammes() {
+            const container = document.getElementById('gammes-content');
+            container.innerHTML = '<div class="loading">📥 Chargement de TOUTES les gammes...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/products/gammes', {
+                    headers: { 'internal-call': 'true' }
+                });
+                const gammes = await response.json();
+                
+                let html = `<div class="data-list">`;
+                html += `<div style="padding: 10px; background: #667eea; color: white; font-weight: bold;">
+                    📊 TOUTES LES ${gammes.length} GAMMES TROUVÉES
+                </div>`;
+                
+                gammes.forEach((gamme, index) => {
+                    html += `
+                        <div class="item">
+                            <div>
+                                <div class="item-name">${gamme.name}</div>
+                                <div class="item-details">ID: ${gamme.id} | Actif: ${gamme.is_active ? '✅' : '❌'} | Top: ${gamme.is_top ? '⭐' : '—'}</div>
+                            </div>
+                            <div style="text-align: right; color: #667eea; font-size: 0.8em;">
+                                #${index + 1}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.innerHTML = html;
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+
+        async function loadPieces() {
+            const container = document.getElementById('pieces-content');
+            container.innerHTML = '<div class="loading">📥 Chargement des pièces...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/products/pieces-catalog?limit=20', {
+                    headers: { 'internal-call': 'true' }
+                });
+                const data = await response.json();
+                
+                let html = `<div class="data-list">`;
+                html += `<div style="padding: 10px; background: #667eea; color: white; font-weight: bold;">
+                    📊 ${data.products.length} pièces trouvées (échantillon)
+                </div>`;
+                
+                data.products.forEach((piece, index) => {
+                    html += `
+                        <div class="item">
+                            <div>
+                                <div class="item-name">${piece.piece_name}</div>
+                                <div class="item-details">SKU: ${piece.piece_sku} | ID: ${piece.piece_id} | Actif: ${piece.piece_activ ? '✅' : '❌'}</div>
+                            </div>
+                            <div style="text-align: right; color: #667eea; font-size: 0.8em;">
+                                #${index + 1}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.innerHTML = html;
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+
+        async function loadMorePieces() {
+            const container = document.getElementById('pieces-content');
+            container.innerHTML = '<div class="loading">📥 Chargement de plus de pièces...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/products/pieces-catalog?limit=100', {
+                    headers: { 'internal-call': 'true' }
+                });
+                const data = await response.json();
+                
+                let html = `<div class="data-list">`;
+                html += `<div style="padding: 10px; background: #667eea; color: white; font-weight: bold;">
+                    📊 ${data.products.length} pièces trouvées (limite 100)
+                </div>`;
+                
+                data.products.forEach((piece, index) => {
+                    html += `
+                        <div class="item">
+                            <div>
+                                <div class="item-name">${piece.piece_name}</div>
+                                <div class="item-details">SKU: ${piece.piece_sku} | ID: ${piece.piece_id} | Actif: ${piece.piece_activ ? '✅' : '❌'}</div>
+                            </div>
+                            <div style="text-align: right; color: #667eea; font-size: 0.8em;">
+                                #${index + 1}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                container.innerHTML = html;
+                
+            } catch (error) {
+                container.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
