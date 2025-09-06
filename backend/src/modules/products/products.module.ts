@@ -18,6 +18,7 @@ import { ProductsController } from './products.controller';
 
 // Services
 import { ProductsService } from './products.service';
+import { ProductsEnhancementService } from './services/products-enhancement.service';
 
 @Module({
   imports: [
@@ -32,9 +33,11 @@ import { ProductsService } from './products.service';
   ],
   providers: [
     ProductsService, // ✅ Service principal de gestion des produits
+    ProductsEnhancementService, // ✅ Service d'amélioration avec règles métier avancées
   ],
   exports: [
     ProductsService, // ✅ Exporté pour utilisation dans d'autres modules
+    ProductsEnhancementService, // ✅ Service d'amélioration exporté
   ],
 })
 export class ProductsModule {}
