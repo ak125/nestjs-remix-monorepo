@@ -8,6 +8,17 @@ import { RemixBrowser } from "@remix-run/react";
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 
+// Nettoyage des service workers existants
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+    for(let registration of registrations) {
+      registration.unregister().then(function(boolean) {
+        console.log('Service Worker désenregistré:', boolean);
+      });
+    }
+  });
+}
+
 startTransition(() => {
   hydrateRoot(
     document,
