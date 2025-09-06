@@ -16,6 +16,12 @@ export { FooterEnhanced } from './FooterEnhanced';
 // 🧭 Navigation
 export { Breadcrumbs } from './Breadcrumbs';
 
+// 🔍 Recherche avancée
+export { GlobalSearch, useGlobalSearch } from './GlobalSearch';
+
+// 🔔 Notifications
+export { NotificationCenter, useNotificationCenter } from './NotificationCenter';
+
 // 🧩 Composants auxiliaires
 export { QuickSearchTrigger } from './QuickSearchTrigger';
 export { UserMenu } from './UserMenu';
