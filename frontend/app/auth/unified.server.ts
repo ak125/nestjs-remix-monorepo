@@ -160,11 +160,27 @@ export const requireUser = async ({ context }: { context: AppLoadContext }): Pro
   return user;
 };
 
-export const requireAuth = async (request: Request): Promise<AuthUser> => {
+export const requireAuth = async (requestOrOptions: Request | { request: Request, context?: AppLoadContext, redirectTo?: string }): Promise<AuthUser> => {
+  let request: Request;
+  let redirectTo = '/login';
+  
+  if (requestOrOptions instanceof Request) {
+    request = requestOrOptions;
+  } else {
+    request = requestOrOptions.request;
+    redirectTo = requestOrOptions.redirectTo || '/login';
+  }
+  
   const user = await getAuthUser(request);
   if (!user) {
     console.log('❌ [Unified Auth] requireAuth: Redirection vers login');
-    throw redirect('/login?redirect=' + encodeURIComponent(new URL(request.url).pathname));
+    const url = request.url;
+    if (url && url !== 'undefined') {
+      const pathname = new URL(url).pathname;
+      throw redirect(`${redirectTo}?redirect=` + encodeURIComponent(pathname));
+    } else {
+      throw redirect(redirectTo);
+    }
   }
   return user;
 };

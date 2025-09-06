@@ -21,8 +21,8 @@ import {
   Monitor,
   BookOpen,
   Edit,
-  PenTool,
-  Eye
+  Eye,
+  Tag
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
@@ -89,6 +89,40 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       description: "Gestion des stocks",
       badge: stats ? { count: stats.totalStock || 409687, color: "bg-emerald-500" } : { count: 409687, color: "bg-emerald-500" },
       notification: false
+    },
+    {
+      name: "Produits",
+      href: "/products/admin",
+      icon: Store,
+      description: "Gestion catalogue produits",
+      badge: { count: "4.0M+", color: "bg-blue-500" },
+      notification: false,
+      subItems: [
+        {
+          name: "Dashboard Produits",
+          href: "/products/admin",
+          icon: BarChart3,
+          description: "4M+ produits automobile"
+        },
+        {
+          name: "Catalogue",
+          href: "/products/catalog",
+          icon: Search,
+          description: "4,036,045 produits"
+        },
+        {
+          name: "Marques",
+          href: "/products/brands",
+          icon: Tag,
+          description: "Gestion constructeurs"
+        },
+        {
+          name: "Gammes",
+          href: "/products/ranges",
+          icon: FileText,
+          description: "9,266 catégories"
+        }
+      ]
     },
     {
       name: "Blog",

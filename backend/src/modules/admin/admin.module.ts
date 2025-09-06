@@ -1,5 +1,11 @@
 /**
- * AdminModule - Module d'administration
+ * AdminModule - Module d'administratimport { UserManagementService } from './se  exports: [
+    ConfigurationService,
+    StockManagementService,
+    ReportingService,
+    UserManagementService,
+  ],user-management.service';
+import { StaffService } from '../staff/staff.service';
  *
  * Module aligné sur l'approche des modules orders, cart, user, payment :
  * - Structure modulaire claire avec séparation des responsabilités
@@ -34,20 +40,29 @@ import { AdminRootController } from './controllers/admin-root.controller';
 import { ReportingController } from './controllers/reporting.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { AdminStaffController } from './controllers/admin-staff.controller';
+import { AdminProductsController } from './controllers/admin-products.controller';
 
 // Services
 import { ConfigurationService } from './services/configuration.service';
 import { StockManagementService } from './services/stock-management.service';
 import { ReportingService } from './services/reporting.service';
 import { UserManagementService } from './services/user-management.service';
+// import { AdminProductsService } from './services/admin-products.service';
 import { StaffService } from '../staff/staff.service';
 
 // Import du module Orders pour les services
 import { OrdersModule } from '../orders/orders.module';
 import { StaffModule } from '../staff/staff.module';
+import { ProductsModule } from '../products/products.module';
 
 @Module({
-  imports: [DatabaseModule, CacheModule, OrdersModule, StaffModule],
+  imports: [
+    DatabaseModule,
+    CacheModule,
+    OrdersModule,
+    StaffModule,
+    ProductsModule,
+  ],
   controllers: [
     ConfigurationController,
     StockController,
@@ -62,6 +77,7 @@ import { StaffModule } from '../staff/staff.module';
     ReportingController,
     UserManagementController,
     AdminStaffController,
+    AdminProductsController,
   ],
   providers: [
     ConfigurationService,
@@ -70,6 +86,7 @@ import { StaffModule } from '../staff/staff.module';
     WorkingStockService,
     ReportingService,
     UserManagementService,
+    // AdminProductsService,
     StaffService,
   ],
   exports: [
@@ -77,6 +94,7 @@ import { StaffModule } from '../staff/staff.module';
     StockManagementService,
     ReportingService,
     UserManagementService,
+    // AdminProductsService,
   ],
 })
 export class AdminModule {}

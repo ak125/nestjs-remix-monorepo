@@ -35,6 +35,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
   try {
     // Récupérer les données depuis la nouvelle API Dashboard
     const dashboardResponse = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/dashboard/stats`);
+    
+    // Récupérer les statistiques produits admin
+    const productsStatsResponse = await fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/admin/products/stats/detailed`);
 
     if (dashboardResponse.ok) {
       const dashboardData = await dashboardResponse.json();
@@ -48,6 +51,16 @@ export async function loader({ context }: LoaderFunctionArgs) {
         totalSuppliers: dashboardData.totalSuppliers || 0,
         totalStock: 409687 // Valeur par défaut du stock
       };
+    }
+
+    // Intégrer les stats produits si disponibles
+    if (productsStatsResponse.ok) {
+      const productsData = await productsStatsResponse.json();
+      if (productsData.success) {
+        stats.totalProducts = productsData.stats.totalProducts || 0;
+        stats.totalCategories = productsData.stats.totalCategories || 0;
+        stats.totalBrands = productsData.stats.totalBrands || 0;
+      }
     }
   } catch (error) {
     console.error('❌ Erreur lors du chargement des stats sidebar:', error);

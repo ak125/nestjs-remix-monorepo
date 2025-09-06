@@ -27,7 +27,7 @@ interface PaymentStats {
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireAuth({ request, context, redirectTo: '/login' });
+  const user = await requireAuth(request);
   
   // Vérifier permissions admin (niveau 7+)
   if (!user.level || user.level < 7) {

@@ -7,9 +7,11 @@
  * ✅ Configuration via getAppConfig() en fallback
  * ✅ Évite toute dépendance circulaire
  * ✅ Service léger et performant
+ * ✅ Support du cache Redis pour les performances
  */
 
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 
 // Controllers
 import { ProductsController } from './products.controller';
@@ -18,8 +20,13 @@ import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 
 @Module({
-  // Pas d'imports - évite les dépendances circulaires
-  // SupabaseBaseService utilise getAppConfig() en fallback
+  imports: [
+    // Cache Redis pour améliorer les performances
+    CacheModule.register({
+      ttl: 300, // 5 minutes par défaut
+      max: 1000, // 1000 entrées max en cache
+    }),
+  ],
   controllers: [
     ProductsController, // ✅ API REST pour la gestion des produits
   ],

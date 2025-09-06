@@ -48,4 +48,6 @@ export interface SearchProductDto {
   page?: number;
   limit?: number;
   isActive?: boolean;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
