@@ -1,4 +1,4 @@
-import React, { useEffect, createContext, useContext, useState, useCallback } from 'react';
+import * as React from 'react';
 
 interface NotificationProps {
   id: string;
@@ -14,12 +14,12 @@ interface NotificationContextType {
   clearNotifications: () => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | null>(null);
+const NotificationContext = React.createContext<NotificationContextType | null>(null);
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<NotificationProps[]>([]);
+  const [notifications, setNotifications] = React.useState<NotificationProps[]>([]);
 
-  const addNotification = useCallback((type: NotificationProps['type'], message: string) => {
+  const addNotification = React.useCallback((type: NotificationProps['type'], message: string) => {
     const id = Date.now().toString();
     const notification: NotificationProps = {
       id,
@@ -30,11 +30,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setNotifications(prev => [...prev, notification]);
   }, []);
 
-  const removeNotification = useCallback((id: string) => {
+  const removeNotification = React.useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
-  const clearNotifications = useCallback(() => {
+  const clearNotifications = React.useCallback(() => {
     setNotifications([]);
   }, []);
 
@@ -51,12 +51,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 };
 
 const NotificationItem: React.FC<NotificationProps> = ({ id, type, message }) => {
-  const context = useContext(NotificationContext);
+  const context = React.useContext(NotificationContext);
   if (!context) throw new Error('NotificationItem must be used within NotificationProvider');
   
   const { removeNotification } = context;
 
-  useEffect(() => {
+  React.useEffect(() => {
     const timer = setTimeout(() => {
       removeNotification(id);
     }, 5000); // Auto-remove après 5 secondes
@@ -114,7 +114,7 @@ const NotificationItem: React.FC<NotificationProps> = ({ id, type, message }) =>
 };
 
 export const NotificationContainer: React.FC = () => {
-  const context = useContext(NotificationContext);
+  const context = React.useContext(NotificationContext);
   if (!context) throw new Error('NotificationContainer must be used within NotificationProvider');
   
   const { notifications } = context;
@@ -132,7 +132,7 @@ export const NotificationContainer: React.FC = () => {
 
 // Hook pour faciliter l'utilisation des notifications
 export const useNotifications = () => {
-  const context = useContext(NotificationContext);
+  const context = React.useContext(NotificationContext);
   if (!context) throw new Error('useNotifications must be used within NotificationProvider');
   
   const { addNotification, clearNotifications } = context;

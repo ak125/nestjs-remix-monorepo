@@ -27,6 +27,10 @@ import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - 
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
 import { LayoutModule } from './modules/layout/layout.module'; // 🎨 NOUVEAU - Module layout pour gestion des composants UI !
 import { LayoutTestModule } from './modules/layout/layout-test.module'; // 🧪 TEST - Module layout test !
+import { NotificationsModule } from './notifications/notifications.module'; // 📬 NOUVEAU - Module notifications avec WebSocket !
+import { PaymentsModule } from './modules/payments/payments.module'; // 💳 NOUVEAU - Module paiements avec Cyberplus !
+import { CommercialModule } from './modules/commercial/commercial.module'; // 🏢 NOUVEAU - Module commercial et ventes !
+import { StaffModule } from './modules/staff/staff.module'; // 👥 NOUVEAU - Module gestion du personnel !
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
 import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
@@ -81,11 +85,13 @@ import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Mod
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
     LayoutTestModule, // 🧪 TEST - Module layout test simple !
     LayoutModule, // 🎨 ACTIVÉ - Module layout pour gestion des composants UI !
-    // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
+    NotificationsModule, // 📬 NOUVEAU - Module notifications avec WebSocket et temps réel !
+    PaymentsModule, // 💳 ACTIVÉ - Module paiements avec Cyberplus et validation !
+    CommercialModule, // 🏢 ACTIVÉ - Module commercial avec CRM et ventes !
+    StaffModule, // 👥 ACTIVÉ - Module gestion du personnel et employés !
 
     // TODO: Réactiver progressivement
-    // PaymentsModule,
-    // SupplierModule,
+    // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées
