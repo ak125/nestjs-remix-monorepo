@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
-import { LayoutService } from '../services/layout.service';
+import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
+import { LayoutService, LayoutConfig } from '../services/layout.service';
 import { HeaderService } from '../services/header.service';
 import { FooterService } from '../services/footer.service';
 import { QuickSearchService } from '../services/quick-search.service';
@@ -237,5 +237,51 @@ export class LayoutController {
   @Get('responsive/all')
   async getAllResponsiveConfigs() {
     return this.responsiveService.getAllResponsiveConfigs();
+  }
+
+  /**
+   * ✨ NOUVEAUX ENDPOINTS AVANCÉS
+   * Obtient la configuration avancée du layout avec support multi-versions
+   * POST /layout/advanced
+   */
+  @Post('advanced')
+  async getAdvancedLayout(@Body() config: LayoutConfig) {
+    return this.layoutService.getAdvancedLayoutData(config);
+  }
+
+  /**
+   * Invalide le cache layout pour un type donné
+   * POST /layout/invalidate-cache
+   */
+  @Post('invalidate-cache')
+  async invalidateCache(
+    @Body() body: { type?: string; context?: string; userId?: string },
+  ) {
+    if (body.type) {
+      await this.layoutService.invalidateTypeCache(body.type);
+    } else if (body.context) {
+      await this.layoutService.invalidateCache(body.context, body.userId);
+    }
+    return { success: true, message: 'Cache invalidé avec succès' };
+  }
+
+  /**
+   * Obtient les configurations par défaut pour tous les types
+   * GET /layout/defaults
+   */
+  @Get('defaults')
+  async getDefaultConfigs() {
+    const contexts: ('admin' | 'commercial' | 'public')[] = [
+      'admin',
+      'commercial',
+      'public',
+    ];
+    const defaults: Record<string, any> = {};
+    
+    for (const context of contexts) {
+      defaults[context] = await this.layoutService.getLayoutData(context);
+    }
+    
+    return defaults;
   }
 }

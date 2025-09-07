@@ -6,15 +6,28 @@ import { FooterService } from './footer.service';
 import { QuickSearchService } from './quick-search.service';
 import { SocialShareService } from './social-share.service';
 import { MetaTagsService } from './meta-tags.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface LayoutConfig {
+  type:
+    | 'main'
+    | 'core'
+    | 'massdoc'
+    | 'v2'
+    | 'v7'
+    | 'admin'
+    | 'commercial'
+    | 'public';
   theme: 'admin' | 'commercial' | 'public';
+  version?: string;
+  page?: string;
   showHeader: boolean;
   showFooter: boolean;
   showSidebar: boolean;
   showQuickSearch: boolean;
   customCss?: string;
   metadata?: Record<string, any>;
+  user?: any;
 }
 
 export interface LayoutData {
@@ -103,6 +116,7 @@ export class LayoutService {
   private getDefaultConfig(context: string): LayoutConfig {
     const configs: Record<string, LayoutConfig> = {
       admin: {
+        type: 'admin',
         theme: 'admin',
         showHeader: true,
         showFooter: false,
@@ -110,6 +124,7 @@ export class LayoutService {
         showQuickSearch: true,
       },
       commercial: {
+        type: 'commercial',
         theme: 'commercial',
         showHeader: true,
         showFooter: true,
@@ -117,6 +132,7 @@ export class LayoutService {
         showQuickSearch: true,
       },
       public: {
+        type: 'public',
         theme: 'public',
         showHeader: true,
         showFooter: true,
@@ -187,6 +203,114 @@ export class LayoutService {
       const cacheKey = `layout:${context}:${userId || 'anonymous'}`;
       await this.cacheService.del(cacheKey);
       this.logger.log(`Cache layout invalidé pour ${context}`);
+    } catch (error) {
+      this.logger.error('Erreur invalidation cache layout:', error);
+    }
+  }
+
+  /**
+   * ✨ NOUVELLES MÉTHODES AVANCÉES
+   * Récupérer la configuration complète du layout avec support multi-versions
+   */
+  async getAdvancedLayoutData(config: LayoutConfig): Promise<LayoutData> {
+    const cacheKey = `layout:${config.type}:${config.version}:${config.page}`;
+    const cached = await this.cacheService.get<LayoutData>(cacheKey);
+    
+    if (cached && !config.user) {
+      return cached;
+    }
+
+    const _version = config.version || this.getDefaultVersion(config.type);
+
+    // Construire les données du layout avec les services existants
+    const [
+      header,
+      footer,
+      navigation,
+      quickSearch,
+      socialShare,
+      metaTags,
+      _widgets,
+    ] = await Promise.all([
+      this.headerService.getHeader(config.theme, config.user?.id),
+      this.footerService.getFooter(config.theme),
+      this.navigationService.getMainNavigation(
+        config.theme === 'public' ? 'user' : config.theme,
+      ),
+      this.quickSearchService.getSearchData(config.theme),
+      this.getSocialShareConfig(config.theme),
+      this.getMetaTags(config.theme),
+      this.getWidgets(config.type, config.page),
+    ]);
+
+    const layoutData: LayoutData = {
+      header,
+      footer,
+      navigation,
+      quickSearch,
+      socialShare,
+      metaTags: {
+        ...metaTags,
+        title: config.metadata?.title || metaTags.title,
+        description: config.metadata?.description || metaTags.description,
+        keywords: config.metadata?.keywords || [],
+        ogImage: config.metadata?.ogImage || '',
+        canonical: config.metadata?.canonical || '',
+      },
+      config,
+    };
+
+    // Mettre en cache si pas de contexte utilisateur
+    if (!config.user) {
+      await this.cacheService.set(cacheKey, layoutData, 3600);
+    }
+
+    return layoutData;
+  }
+
+  /**
+   * Récupérer les widgets pour une page spécifique
+   */
+  private async getWidgets(_type: string, _page?: string): Promise<any[]> {
+    // Pour l'instant retournons un tableau vide,
+    // cette méthode peut être étendue avec des vraies données
+    return [];
+  }
+
+  /**
+   * Déterminer la version par défaut selon le type
+   */
+  private getDefaultVersion(type: string): string {
+    const versionMap: Record<string, string> = {
+      main: 'v8',
+      core: 'v8',
+      massdoc: 'v8',
+      v2: 'v2',
+      v7: 'v7',
+      admin: 'v8',
+      commercial: 'v8',
+      public: 'v8',
+    };
+    return versionMap[type] || 'v8';
+  }
+
+  /**
+   * Invalider tout le cache layout pour un type donné
+   */
+  async invalidateTypeCache(type?: string): Promise<void> {
+    try {
+      if (type) {
+        // Pour l'instant on invalide en supprimant les clés principales
+        await this.cacheService.del(`layout:${type}:anonymous`);
+        this.logger.log(`Cache layout invalidé pour type ${type}`);
+      } else {
+        // Invalider les principales clés de cache layout
+        const contexts = ['admin', 'commercial', 'public'];
+        for (const context of contexts) {
+          await this.cacheService.del(`layout:${context}:anonymous`);
+        }
+        this.logger.log('Cache layout principal invalidé');
+      }
     } catch (error) {
       this.logger.error('Erreur invalidation cache layout:', error);
     }
