@@ -26,7 +26,6 @@ import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU -
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
 import { LayoutModule } from './modules/layout/layout.module'; // 🎨 NOUVEAU - Module layout pour gestion des composants UI !
-import { LayoutTestModule } from './modules/layout/layout-test.module'; // 🧪 TEST - Module layout test !
 import { NotificationsModule } from './notifications/notifications.module'; // 📬 NOUVEAU - Module notifications avec WebSocket !
 import { PaymentsModule } from './modules/payments/payments.module'; // 💳 NOUVEAU - Module paiements avec Cyberplus !
 import { CommercialModule } from './modules/commercial/commercial.module'; // 🏢 NOUVEAU - Module commercial et ventes !
@@ -83,7 +82,6 @@ import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Mod
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
-    LayoutTestModule, // 🧪 TEST - Module layout test simple !
     LayoutModule, // 🎨 ACTIVÉ - Module layout pour gestion des composants UI !
     NotificationsModule, // 📬 NOUVEAU - Module notifications avec WebSocket et temps réel !
     PaymentsModule, // 💳 ACTIVÉ - Module paiements avec Cyberplus et validation !

@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { ConfigService } from '@nestjs/config';
 
 export interface FooterData {
+  version?: string;
   company: {
     name: string;
     address?: string;
@@ -27,40 +30,239 @@ export interface FooterData {
   }>;
   copyright: string;
   showNewsletter?: boolean;
+  newsletter?: {
+    enabled: boolean;
+    title: string;
+    placeholder: string;
+    buttonText: string;
+  };
+  payment?: {
+    title: string;
+    methods: string[];
+  };
+  sections?: Array<{
+    key: string;
+    content: any;
+    styles?: any;
+  }>;
 }
 
 @Injectable()
 export class FooterService {
   private readonly logger = new Logger(FooterService.name);
+  private supabaseClient: SupabaseClient | null = null;
 
-  constructor(private readonly cacheService: CacheService) {}
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly configService: ConfigService,
+  ) {
+    // Initialiser le client Supabase
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
+    const supabaseKey = this.configService.get<string>('SUPABASE_ANON_KEY');
+    
+    if (supabaseUrl && supabaseKey) {
+      this.supabaseClient = createClient(supabaseUrl, supabaseKey);
+    }
+  }
 
   /**
-   * Génère les données du footer selon le contexte
+   * Génère les données du footer selon le contexte avec support versions et Supabase
    */
   async getFooter(
     context: 'admin' | 'commercial' | 'public',
+    version?: string,
   ): Promise<FooterData> {
     try {
-      const cacheKey = `footer:${context}`;
+      const finalVersion = version || 'v8';
+      const cacheKey = `footer:${context}:${finalVersion}`;
 
       // Vérifier le cache
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
+        this.logger.log(`Cache HIT pour footer ${context}:${finalVersion}`);
         return cached as FooterData;
       }
 
-      // Générer les données selon le contexte
-      const footerData = await this.buildFooterForContext(context);
+      this.logger.log(`Cache MISS - Génération footer ${context}:${finalVersion}`);
+
+      // Générer les données selon le contexte et version
+      let footerData: FooterData;
+      
+      if (this.supabaseClient && finalVersion === 'v8') {
+        footerData = await this.buildModernFooterWithSupabase(context, finalVersion);
+      } else {
+        footerData = await this.buildFooterForContext(context);
+      }
 
       // Cache pour 1 heure
       await this.cacheService.set(cacheKey, footerData, 3600);
+      this.logger.log(`Footer ${context}:${finalVersion} mis en cache`);
 
       return footerData;
     } catch (error) {
       this.logger.error('Erreur génération footer:', error);
       return this.getFallbackFooter();
     }
+  }
+
+  /**
+   * Construction moderne du footer avec Supabase (v8)
+   */
+  private async buildModernFooterWithSupabase(context: string, version: string): Promise<FooterData> {
+    try {
+      // Récupérer les sections du footer depuis Supabase
+      const sectionsPromise = this.getFooterSections(version);
+      const linksPromise = this.getFooterLinksFromSupabase();
+      const socialPromise = this.getSocialLinksFromSupabase();
+
+      const [sections, dynamicLinks, socialLinks] = await Promise.all([
+        sectionsPromise,
+        linksPromise,
+        socialPromise,
+      ]);
+
+      const baseFooter = await this.buildFooterForContext(context);
+
+      // Enrichir avec les données Supabase
+      return {
+        ...baseFooter,
+        version,
+        links: dynamicLinks.length > 0 ? dynamicLinks : baseFooter.links,
+        social: socialLinks.length > 0 ? socialLinks : baseFooter.social,
+        newsletter: {
+          enabled: true,
+          title: 'Newsletter',
+          placeholder: 'Votre email',
+          buttonText: 'S\'inscrire',
+        },
+        payment: {
+          title: 'Moyens de paiement',
+          methods: ['visa', 'mastercard', 'paypal', 'cb'],
+        },
+        sections: sections?.map(s => ({
+          key: s.section_key,
+          content: s.content,
+          styles: s.styles,
+        })),
+      };
+    } catch (error) {
+      this.logger.error('Erreur construction footer moderne:', error);
+      // Fallback vers la méthode classique
+      return this.buildFooterForContext(context);
+    }
+  }
+
+  /**
+   * Récupérer les sections footer depuis Supabase
+   */
+  private async getFooterSections(version: string) {
+    if (!this.supabaseClient) return [];
+
+    try {
+      const { data, error } = await this.supabaseClient
+        .from('layout_sections')
+        .select('*')
+        .eq('section_type', 'footer')
+        .eq('version', version)
+        .eq('is_visible', true)
+        .order('position');
+
+      if (error) {
+        this.logger.warn('Erreur récupération sections footer:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('Erreur Supabase sections footer:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Récupérer les liens footer depuis Supabase
+   */
+  private async getFooterLinksFromSupabase() {
+    if (!this.supabaseClient) return [];
+
+    try {
+      const { data, error } = await this.supabaseClient
+        .from('___FOOTER_MENU')
+        .select('*')
+        .eq('is_active', true)
+        .order('position');
+
+      if (error) {
+        this.logger.warn('Erreur récupération liens footer:', error);
+        return [];
+      }
+
+      // Grouper par catégorie
+      const groupedLinks = (data || []).reduce((acc, item) => {
+        const category = item.category || 'default';
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push({
+          label: item.label,
+          url: item.url,
+          external: item.external || false,
+        });
+        return acc;
+      }, {});
+
+      // Convertir en format attendu
+      return Object.entries(groupedLinks).map(([title, items]) => ({
+        title: this.formatCategoryTitle(title),
+        items: items as Array<{ label: string; url: string; external?: boolean }>,
+      }));
+    } catch (error) {
+      this.logger.error('Erreur Supabase liens footer:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Récupérer les liens sociaux depuis Supabase
+   */
+  private async getSocialLinksFromSupabase() {
+    if (!this.supabaseClient) return [];
+
+    try {
+      const { data, error } = await this.supabaseClient
+        .from('social_share_configs')
+        .select('*')
+        .eq('is_active', true)
+        .order('position');
+
+      if (error) {
+        this.logger.warn('Erreur récupération liens sociaux:', error);
+        return [];
+      }
+
+      return (data || []).map(item => ({
+        platform: item.platform,
+        url: item.base_url,
+        icon: item.icon || item.platform.toLowerCase(),
+      }));
+    } catch (error) {
+      this.logger.error('Erreur Supabase liens sociaux:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Formater le titre de catégorie
+   */
+  private formatCategoryTitle(category: string): string {
+    const titleMap: Record<string, string> = {
+      about: 'À propos',
+      services: 'Services',
+      support: 'Support',
+      legal: 'Légal',
+      default: 'Liens',
+    };
+    return titleMap[category] || category;
   }
 
   /**

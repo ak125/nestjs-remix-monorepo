@@ -4,7 +4,18 @@
  * Export unifié de tous les composants layout
  */
 
-// 🎯 Header principal et variantes
+// �️ Layout principal
+export { MainLayout } from './MainLayout';
+export type { 
+  LayoutProps, 
+  LayoutData, 
+  HeaderData, 
+  FooterData, 
+  NavigationItem, 
+  WidgetData 
+} from './MainLayout';
+
+// �🎯 Header principal et variantes
 export { Header } from './Header';
 export { AdminHeader } from './AdminHeader';
 export { EcommerceHeader } from './EcommerceHeader';

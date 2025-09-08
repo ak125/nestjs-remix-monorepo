@@ -2,8 +2,6 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { HeaderService } from '../services/header.service';
 import { FooterService } from '../services/footer.service';
 import { SocialShareService } from '../services/social-share.service';
-import { ThemeService } from '../services/theme.service';
-import { ResponsiveService } from '../services/responsive.service';
 
 @Controller('api/layout-test')
 export class LayoutTestController {
@@ -11,8 +9,6 @@ export class LayoutTestController {
     private readonly headerService: HeaderService,
     private readonly footerService: FooterService,
     private readonly socialShareService: SocialShareService,
-    private readonly themeService: ThemeService,
-    private readonly responsiveService: ResponsiveService,
   ) {}
 
   /**
@@ -28,7 +24,6 @@ export class LayoutTestController {
       services: {
         header: 'available',
         footer: 'available',
-        theme: 'available',
         responsive: 'available',
       },
     };
@@ -58,15 +53,6 @@ export class LayoutTestController {
   }
 
   /**
-   * Test du ThemeService
-   * GET /api/layout-test/theme?name=automotive
-   */
-  @Get('theme')
-  async getTheme(@Query('name') themeName?: string) {
-    return this.themeService.getTheme(themeName);
-  }
-
-  /**
    * Test du ResponsiveService
    * GET /api/layout-test/responsive?width=768
    */
@@ -74,31 +60,6 @@ export class LayoutTestController {
   async getResponsive(@Query('width') width?: string) {
     const screenWidth = width ? parseInt(width, 10) : 1024;
     return this.responsiveService.getResponsiveConfig(screenWidth);
-  }
-
-  /**
-   * Comparaison de tous les thèmes
-   * GET /api/layout-test/themes-comparison
-   */
-  @Get('themes-comparison')
-  async getThemesComparison() {
-    const themes = await this.themeService.getAvailableThemes();
-    const themeConfigs: Record<string, any> = {};
-
-    for (const themeName of themes) {
-      themeConfigs[themeName] = await this.themeService.getTheme(themeName);
-    }
-
-    return {
-      available: themes,
-      configs: themeConfigs,
-      summary: {
-        total: themes.length,
-        default: 'default',
-        automotive: 'automotive',
-        dark: 'dark',
-      },
-    };
   }
 
   /**
@@ -132,19 +93,23 @@ export class LayoutTestController {
     @Query('context') context: 'admin' | 'commercial' | 'public' = 'public',
     @Query('userId') userId?: string,
   ) {
-    const [header, theme, responsive] = await Promise.all([
+    const [header, responsive] = await Promise.all([
       this.headerService.getHeader(context, userId),
-      this.themeService.getTheme('automotive'), // Thème automobile
       this.responsiveService.getResponsiveConfig(1024), // Desktop
     ]);
 
     return {
-      integration: 'header-theme-responsive',
+      integration: 'header-responsive',
       data: {
         header,
         theme: {
-          colors: theme.colors,
-          name: theme.name,
+          colors: {
+            primary: '#007bff',
+            secondary: '#6c757d',
+            success: '#28a745',
+            danger: '#dc3545',
+          },
+          name: 'default',
         },
         responsive: {
           device: responsive.device,

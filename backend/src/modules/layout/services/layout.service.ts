@@ -1,12 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
-import { NavigationService } from '../../navigation/navigation.service';
 import { HeaderService } from './header.service';
 import { FooterService } from './footer.service';
 import { QuickSearchService } from './quick-search.service';
 import { SocialShareService } from './social-share.service';
 import { MetaTagsService } from './meta-tags.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface LayoutConfig {
   type:
@@ -46,7 +44,6 @@ export class LayoutService {
 
   constructor(
     private readonly cacheService: CacheService,
-    private readonly navigationService: NavigationService,
     private readonly headerService: HeaderService,
     private readonly footerService: FooterService,
     private readonly quickSearchService: QuickSearchService,
@@ -81,9 +78,7 @@ export class LayoutService {
         await Promise.all([
           this.headerService.getHeader(context, userId),
           this.footerService.getFooter(context),
-          this.navigationService.getMainNavigation(
-            context === 'public' ? 'user' : context,
-          ),
+          this.getInternalNavigation(context === 'public' ? 'user' : context),
           this.quickSearchService.getSearchData(context),
           this.getSocialShareConfig(context),
           this.getMetaTags(context),
@@ -234,7 +229,7 @@ export class LayoutService {
     ] = await Promise.all([
       this.headerService.getHeader(config.theme, config.user?.id),
       this.footerService.getFooter(config.theme),
-      this.navigationService.getMainNavigation(
+      this.getInternalNavigation(
         config.theme === 'public' ? 'user' : config.theme,
       ),
       this.quickSearchService.getSearchData(config.theme),
@@ -314,5 +309,40 @@ export class LayoutService {
     } catch (error) {
       this.logger.error('Erreur invalidation cache layout:', error);
     }
+  }
+
+  /**
+   * Récupérer la navigation interne
+   */
+  private getInternalNavigation(type: string): any[] {
+    const navigationTemplates: Record<string, any[]> = {
+      admin: [
+        { title: 'Dashboard', url: '/admin', icon: 'dashboard' },
+        { title: 'Produits', url: '/admin/products', icon: 'products' },
+        { title: 'Commandes', url: '/admin/orders', icon: 'orders' },
+        { title: 'Utilisateurs', url: '/admin/users', icon: 'users' },
+        { title: 'Paramètres', url: '/admin/settings', icon: 'settings' },
+      ],
+      commercial: [
+        { title: 'Accueil', url: '/', icon: 'home' },
+        { title: 'Produits', url: '/products', icon: 'products' },
+        { title: 'Services', url: '/services', icon: 'services' },
+        { title: 'Contact', url: '/contact', icon: 'contact' },
+      ],
+      user: [
+        { title: 'Accueil', url: '/', icon: 'home' },
+        { title: 'Mon compte', url: '/account', icon: 'account' },
+        { title: 'Mes commandes', url: '/orders', icon: 'orders' },
+        { title: 'Support', url: '/support', icon: 'support' },
+      ],
+      public: [
+        { title: 'Accueil', url: '/', icon: 'home' },
+        { title: 'Produits', url: '/products', icon: 'products' },
+        { title: 'À propos', url: '/about', icon: 'about' },
+        { title: 'Contact', url: '/contact', icon: 'contact' },
+      ],
+    };
+
+    return navigationTemplates[type] || navigationTemplates.public;
   }
 }

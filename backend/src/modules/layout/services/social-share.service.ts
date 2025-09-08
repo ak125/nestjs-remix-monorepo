@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { CacheService } from '../../../cache/cache.service';
 
 export interface SocialShareData {
   url: string;
@@ -19,12 +20,51 @@ export interface SocialShareLinks {
   copy: string;
 }
 
+export interface SocialPlatformConfig {
+  platform: string;
+  icon: string;
+  base_url: string;
+  is_active: boolean;
+  position: number;
+}
+
 @Injectable()
 export class SocialShareService {
   private readonly logger = new Logger(SocialShareService.name);
 
+  constructor(private readonly cacheService: CacheService) {}
+
   /**
-   * Génère les liens de partage pour les réseaux sociaux
+   * Génère les liens de partage à partir de configurations dynamiques
+   * Remplace global.social.share.php avec intégration base de données
+   */
+  async generateDynamicShareLinks(options: SocialShareData): Promise<any[]> {
+    try {
+      // Récupérer les configurations des plateformes depuis le cache ou la base
+      const platforms = await this.getPlatformConfigs();
+      
+      const shareLinks = [];
+
+      for (const platform of platforms) {
+        const link = this.buildDynamicShareUrl(platform, options);
+        shareLinks.push({
+          platform: platform.platform,
+          icon: platform.icon,
+          url: link,
+          label: `Partager sur ${platform.platform}`,
+        });
+      }
+
+      return shareLinks;
+    } catch (error) {
+      this.logger.error('Erreur génération liens partage dynamiques:', error);
+      // Fallback vers la méthode statique existante avec conversion
+      const staticLinks = this.generateShareLinks(options);
+      return this.convertToShareButtons(staticLinks);
+    }
+  }
+
+  /** Génère les liens de partage pour les réseaux sociaux
    */
   generateShareLinks(data: SocialShareData): SocialShareLinks {
     try {
@@ -256,5 +296,136 @@ export class SocialShareService {
       color: string;
       count?: number;
     }>;
+  }
+
+  /**
+   * Récupère les configurations des plateformes sociales
+   */
+  private async getPlatformConfigs(): Promise<SocialPlatformConfig[]> {
+    const cacheKey = 'social_platforms_config';
+    
+    try {
+      // Essayer de récupérer depuis le cache
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && Array.isArray(cached)) {
+        return cached as SocialPlatformConfig[];
+      }
+
+      // Configuration par défaut si pas de base de données
+      const defaultPlatforms: SocialPlatformConfig[] = [
+        {
+          platform: 'facebook',
+          icon: 'facebook',
+          base_url: 'https://www.facebook.com/sharer/sharer.php?u={url}',
+          is_active: true,
+          position: 1,
+        },
+        {
+          platform: 'twitter',
+          icon: 'twitter',
+          base_url:
+            'https://twitter.com/intent/tweet?url={url}&text={title}&hashtags={hashtags}',
+          is_active: true,
+          position: 2,
+        },
+        {
+          platform: 'linkedin',
+          icon: 'linkedin',
+          base_url: 'https://www.linkedin.com/sharing/share-offsite/?url={url}',
+          is_active: true,
+          position: 3,
+        },
+        {
+          platform: 'whatsapp',
+          icon: 'message-circle',
+          base_url: 'https://wa.me/?text={title}%20{url}',
+          is_active: true,
+          position: 4,
+        },
+        {
+          platform: 'pinterest',
+          icon: 'pinterest',
+          base_url:
+            'https://pinterest.com/pin/create/button/?url={url}&media={image}&description={description}',
+          is_active: true,
+          position: 5,
+        },
+        {
+          platform: 'email',
+          icon: 'mail',
+          base_url: 'mailto:?subject={title}&body={description}%20{url}',
+          is_active: true,
+          position: 6,
+        },
+      ];
+
+      // Mettre en cache pour 1 heure
+      await this.cacheService.set(cacheKey, defaultPlatforms, 3600);
+      
+      return defaultPlatforms;
+    } catch (error) {
+      this.logger.error('Erreur récupération config plateformes:', error);
+      // Retourner une configuration minimale
+      return [];
+    }
+  }
+
+  /**
+   * Construit l'URL de partage selon la plateforme et la configuration
+   */
+  private buildDynamicShareUrl(
+    platform: SocialPlatformConfig,
+    options: SocialShareData,
+  ): string {
+    const encodedUrl = encodeURIComponent(options.url);
+    const encodedTitle = encodeURIComponent(options.title || '');
+    const encodedDescription = encodeURIComponent(options.description || '');
+    const encodedImage = options.image ? encodeURIComponent(options.image) : '';
+    const hashtags = options.hashtags?.join(',') || '';
+
+    return platform.base_url
+      .replace('{url}', encodedUrl)
+      .replace('{title}', encodedTitle)
+      .replace('{description}', encodedDescription)
+      .replace('{image}', encodedImage)
+      .replace('{hashtags}', hashtags);
+  }
+
+  /**
+   * Convertit les liens statiques en format de boutons de partage
+   */
+  private convertToShareButtons(links: SocialShareLinks): any[] {
+    return [
+      {
+        platform: 'facebook',
+        icon: 'facebook',
+        url: links.facebook,
+        label: 'Partager sur Facebook',
+      },
+      {
+        platform: 'twitter',
+        icon: 'twitter',
+        url: links.twitter,
+        label: 'Partager sur Twitter',
+      },
+      {
+        platform: 'linkedin',
+        icon: 'linkedin',
+        url: links.linkedin,
+        label: 'Partager sur LinkedIn',
+      },
+      {
+        platform: 'whatsapp',
+        icon: 'message-circle',
+        url: links.whatsapp,
+        label: 'Partager sur WhatsApp',
+      },
+      {
+        platform: 'email',
+        icon: 'mail',
+        url: links.email,
+        label: 'Partager par Email',
+      },
+    ];
   }
 }

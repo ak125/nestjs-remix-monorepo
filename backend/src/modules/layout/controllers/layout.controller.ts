@@ -5,8 +5,6 @@ import { FooterService } from '../services/footer.service';
 import { QuickSearchService } from '../services/quick-search.service';
 import { SocialShareService } from '../services/social-share.service';
 import { MetaTagsService } from '../services/meta-tags.service';
-import { ThemeService } from '../services/theme.service';
-import { ResponsiveService } from '../services/responsive.service';
 
 @Controller('api/layout')
 export class LayoutController {
@@ -17,8 +15,6 @@ export class LayoutController {
     private readonly quickSearchService: QuickSearchService,
     private readonly socialShareService: SocialShareService,
     private readonly metaTagsService: MetaTagsService,
-    private readonly themeService: ThemeService,
-    private readonly responsiveService: ResponsiveService,
   ) {}
 
   /**
@@ -43,6 +39,15 @@ export class LayoutController {
     @Query('user') userId?: string,
   ) {
     return this.headerService.getHeader(context, userId);
+  }
+
+  /**
+   * 🆕 Obtient les données du header avec support multi-versions
+   * GET /layout/header/advanced?type=main
+   */
+  @Get('header/advanced')
+  async getAdvancedHeader(@Query('type') type: string = 'main') {
+    return this.headerService.getHeaderData(type);
   }
 
   /**
@@ -200,43 +205,6 @@ export class LayoutController {
       html: htmlTags.join('\n'),
       tags: htmlTags,
     };
-  }
-
-  /**
-   * Obtient la configuration d'un thème
-   * GET /layout/theme?name=dark
-   */
-  @Get('theme')
-  async getTheme(@Query('name') themeName?: string) {
-    return this.themeService.getTheme(themeName);
-  }
-
-  /**
-   * Obtient tous les thèmes disponibles
-   * GET /layout/themes
-   */
-  @Get('themes')
-  async getAvailableThemes() {
-    return this.themeService.getAvailableThemes();
-  }
-
-  /**
-   * Obtient la configuration responsive
-   * GET /layout/responsive?width=1024
-   */
-  @Get('responsive')
-  async getResponsiveConfig(@Query('width') width?: string) {
-    const screenWidth = width ? parseInt(width, 10) : 1024;
-    return this.responsiveService.getResponsiveConfig(screenWidth);
-  }
-
-  /**
-   * Obtient toutes les configurations responsive
-   * GET /layout/responsive/all
-   */
-  @Get('responsive/all')
-  async getAllResponsiveConfigs() {
-    return this.responsiveService.getAllResponsiveConfigs();
   }
 
   /**

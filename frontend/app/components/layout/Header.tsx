@@ -10,7 +10,6 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { 
   Search, 
   User, 
@@ -24,6 +23,7 @@ import {
   Instagram,
   Linkedin
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 // Imports des modules
 import { useOptionalUser } from "../../root";
@@ -70,35 +70,33 @@ interface HeaderData {
 
 interface HeaderProps {
   context?: 'admin' | 'commercial' | 'public';
-  variant?: 'default' | 'simple' | 'minimal';
-  theme?: string;
   onMobileMenuToggle?: () => void;
   className?: string;
   staticData?: HeaderData;
+  data?: HeaderData; // Support pour les données passées directement
 }
 
 export function Header({ 
   context = 'public',
-  variant = 'default',
-  theme = 'default',
   onMobileMenuToggle,
   className = "",
-  staticData 
+  staticData,
+  data: propData
 }: HeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [headerData, setHeaderData] = useState<HeaderData | null>(staticData || null);
-  const [loading, setLoading] = useState(!staticData);
+  const [headerData, setHeaderData] = useState<HeaderData | null>(propData || staticData || null);
+  const [loading, setLoading] = useState(!propData && !staticData);
   
   const fetcher = useFetcher();
   const user = useOptionalUser();
 
-  // 🔌 Connexion aux vraies APIs backend
+  // 🔌 Connexion aux vraies APIs backend (seulement si pas de données statiques)
   useEffect(() => {
-    if (!staticData) {
+    if (!propData && !staticData) {
       fetcher.load(`/api/layout/header?context=${context}`);
     }
-  }, [context, staticData, fetcher]);
+  }, [context, propData, staticData, fetcher]);
 
   // Mise à jour des données quand l'API répond
   useEffect(() => {
@@ -132,7 +130,7 @@ export function Header({
       { label: "Aide", href: "/aide", icon: "help" }
     ],
     topBar: {
-      show: variant !== 'minimal',
+      show: true,
       content: {
         phone: "+33 1 23 45 67 89",
         email: "contact@pieces-auto.fr",
@@ -143,7 +141,7 @@ export function Header({
       }
     },
     quickSearch: {
-      enabled: variant !== 'minimal',
+      enabled: true,
       placeholder: "Rechercher une pièce, référence, véhicule..."
     }
   };
@@ -161,59 +159,9 @@ export function Header({
     }
   };
 
-  // 🎨 Variante simple (pas de top bar, navigation réduite)
-  if (variant === 'simple') {
-    return (
-      <header className={`header header--simple ${className} ${theme === 'dark' ? 'dark' : ''}`}>
-        <div className="bg-white shadow-md">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between py-4">
-              <Link to={data.logo.link || "/"} className="flex-shrink-0">
-                <img src={data.logo.url} alt={data.logo.alt} className="h-10 w-auto" />
-              </Link>
-              
-              <nav className="hidden md:flex items-center space-x-6">
-                {data.navigation.slice(0, 4).map((item, index) => (
-                  <Link key={index} to={item.href} className="text-gray-700 hover:text-blue-600">
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-              
-              <div className="flex items-center space-x-4">
-                <CartIcon />
-                <button className="md:hidden" onClick={handleMobileMenuToggle}>
-                  <Menu className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
-
-  // 🎨 Variante minimale (juste logo + panier)
-  if (variant === 'minimal') {
-    return (
-      <header className={`header header--minimal ${className} ${theme === 'dark' ? 'dark' : ''}`}>
-        <div className="bg-white border-b">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between py-3">
-              <Link to={data.logo.link || "/"}>
-                <img src={data.logo.url} alt={data.logo.alt} className="h-8 w-auto" />
-              </Link>
-              <CartIcon />
-            </div>
-          </div>
-        </div>
-      </header>
-    );
-  }
-
-  // 🎨 Variante par défaut (complète)
+  // Header moderne unifié
   return (
-    <header className={`header header--default ${className} ${theme === 'dark' ? 'dark' : ''}`}>
+    <header className={`header ${className}`}>
       {/* 📞 Top Bar */}
       {data.topBar?.show && (
         <div className="bg-gray-100 border-b">
@@ -385,3 +333,4 @@ function NavItem({ item }: { item: any }) {
     </Link>
   );
 }
+
