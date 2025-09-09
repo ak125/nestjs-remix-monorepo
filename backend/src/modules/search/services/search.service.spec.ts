@@ -58,9 +58,12 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
 
     service = module.get<SearchService>(SearchService);
     meilisearchService = module.get<MeilisearchService>(MeilisearchService);
-    vehicleSearchService = module.get<VehicleSearchService>(VehicleSearchService);
+    vehicleSearchService =
+      module.get<VehicleSearchService>(VehicleSearchService);
     cacheService = module.get<SearchCacheService>(SearchCacheService);
-    analyticsService = module.get<SearchAnalyticsService>(SearchAnalyticsService);
+    analyticsService = module.get<SearchAnalyticsService>(
+      SearchAnalyticsService,
+    );
   });
 
   afterEach(() => {
@@ -82,7 +85,10 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       mockCacheService.generateKey.mockReturnValue('test-cache-key');
       mockCacheService.get.mockResolvedValue(null);
       mockMeilisearchService.searchVehicles.mockResolvedValue(mockResults);
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
 
       // Act
       const result = await service.search({
@@ -124,8 +130,15 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
 
     it('should handle MINE search correctly', async () => {
       // Arrange
-      const mockVehicle = { id: 1, mine: 'VF1BA0A0555123456', brand: 'Renault', model: 'Clio' };
-      const mockParts = [{ id: 1, reference: 'PART001', designation: 'Filtre à air' }];
+      const mockVehicle = {
+        id: 1,
+        mine: 'VF1BA0A0555123456',
+        brand: 'Renault',
+        model: 'Clio',
+      };
+      const mockParts = [
+        { id: 1, reference: 'PART001', designation: 'Filtre à air' },
+      ];
 
       mockCacheService.get.mockResolvedValue(null);
       mockVehicleSearchService.searchByCode.mockResolvedValue(mockVehicle);
@@ -176,12 +189,17 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
 
       mockCacheService.get.mockResolvedValue(null);
       mockMeilisearchService.searchVehicles.mockResolvedValue(mockResults);
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
 
       // Act
-      const searches = Array(10).fill(null).map(() =>
-        service.search({ query: `BMW-${Math.random()}`, type: 'v8' })
-      );
+      const searches = Array(10)
+        .fill(null)
+        .map(() =>
+          service.search({ query: `BMW-${Math.random()}`, type: 'v8' }),
+        );
 
       const startTime = Date.now();
       const results = await Promise.all(searches);
@@ -190,7 +208,7 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       // Assert
       expect(results.length).toBe(10);
       expect(endTime - startTime).toBeLessThan(1000); // Toutes en moins d'1 seconde
-      results.forEach(result => {
+      results.forEach((result) => {
         expect(result).toHaveProperty('items');
         expect(result).toHaveProperty('total');
       });
@@ -210,18 +228,27 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
 
       mockCacheService.get.mockResolvedValue(null);
       mockMeilisearchService.searchVehicles.mockResolvedValue(mockResults);
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
-      mockMeilisearchService.getSuggestions.mockResolvedValue({
-        hits: [{ suggestion: 'BMW Serie 3', brand: 'BMW', model: 'Serie 3' }]
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
       });
-      mockAnalyticsService.getPersonalizedSuggestions.mockResolvedValue(['BMW X1', 'BMW i3']);
+      mockMeilisearchService.getSuggestions.mockResolvedValue({
+        hits: [{ suggestion: 'BMW Serie 3', brand: 'BMW', model: 'Serie 3' }],
+      });
+      mockAnalyticsService.getPersonalizedSuggestions.mockResolvedValue([
+        'BMW X1',
+        'BMW i3',
+      ]);
 
       // Act
-      const result = await service.search({
-        query: 'BM',
-        type: 'v8',
-        options: { suggestions: true }
-      }, 'user123');
+      const result = await service.search(
+        {
+          query: 'BM',
+          type: 'v8',
+          options: { suggestions: true },
+        },
+        'user123',
+      );
 
       // Assert
       expect(result.suggestions).toBeDefined();
@@ -241,19 +268,27 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       const mockPreferences = {
         preferredBrands: ['BMW'],
         preferredCategories: ['SUV'],
-        priceRange: { min: 30000, max: 60000 }
+        priceRange: { min: 30000, max: 60000 },
       };
 
       mockCacheService.get.mockResolvedValue(null);
       mockMeilisearchService.searchVehicles.mockResolvedValue(mockResults);
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
-      mockAnalyticsService.getUserPreferences.mockResolvedValue(mockPreferences);
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
+      mockAnalyticsService.getUserPreferences.mockResolvedValue(
+        mockPreferences,
+      );
 
       // Act
-      const result = await service.search({
-        query: 'SUV',
-        type: 'v8'
-      }, 'user123');
+      const result = await service.search(
+        {
+          query: 'SUV',
+          type: 'v8',
+        },
+        'user123',
+      );
 
       // Assert
       expect(result.items.length).toBeGreaterThan(0);
@@ -264,13 +299,13 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
     it('should handle instant search with ultra-fast response', async () => {
       // Arrange
       const mockSuggestions = {
-        hits: [{ suggestion: 'BMW X5', brand: 'BMW', model: 'X5' }]
+        hits: [{ suggestion: 'BMW X5', brand: 'BMW', model: 'X5' }],
       };
       const mockQuickResults = {
         hits: [
           { id: 1, reference: 'BMW001', designation: 'BMW X5 2023' },
-          { id: 2, brand: 'BMW', model: 'X3', year: 2023 }
-        ]
+          { id: 2, brand: 'BMW', model: 'X3', year: 2023 },
+        ],
       };
 
       mockCacheService.get.mockResolvedValue(null);
@@ -282,7 +317,7 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       const startTime = Date.now();
       const result = await service.search({
         query: 'BMW',
-        type: 'instant'
+        type: 'instant',
       });
       const endTime = Date.now();
 
@@ -297,13 +332,17 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
     it('should handle Meilisearch service errors gracefully', async () => {
       // Arrange
       mockCacheService.get.mockResolvedValue(null);
-      mockMeilisearchService.searchVehicles.mockRejectedValue(new Error('Meilisearch unavailable'));
-      mockMeilisearchService.searchProducts.mockRejectedValue(new Error('Meilisearch unavailable'));
+      mockMeilisearchService.searchVehicles.mockRejectedValue(
+        new Error('Meilisearch unavailable'),
+      );
+      mockMeilisearchService.searchProducts.mockRejectedValue(
+        new Error('Meilisearch unavailable'),
+      );
 
       // Act
       const result = await service.search({
         query: 'BMW',
-        type: 'v8'
+        type: 'v8',
       });
 
       // Assert
@@ -316,7 +355,10 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
     it('should validate and normalize search parameters', async () => {
       // Arrange
       mockCacheService.get.mockResolvedValue(null);
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
 
       // Act
       const result = await service.search({
@@ -333,7 +375,7 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       // Act
       const result = await service.search({
         query: '',
-        type: 'v8'
+        type: 'v8',
       });
 
       // Assert
@@ -351,12 +393,18 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
         category: 'vehicles' as const,
         page: 1,
         limit: 10,
-        filters: { brandId: 1 }
+        filters: { brandId: 1 },
       };
 
       mockCacheService.get.mockResolvedValue(null);
-      mockMeilisearchService.searchVehicles.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+      mockMeilisearchService.searchVehicles.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
 
       // Act
       const result = await service.searchLegacy(legacyQuery);
@@ -373,9 +421,12 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
       mockCacheService.get.mockResolvedValue(null);
       mockMeilisearchService.searchVehicles.mockResolvedValue({
         hits: [{ id: 1, brand: 'BMW' }],
-        estimatedTotalHits: 1
+        estimatedTotalHits: 1,
       });
-      mockMeilisearchService.searchProducts.mockResolvedValue({ hits: [], estimatedTotalHits: 0 });
+      mockMeilisearchService.searchProducts.mockResolvedValue({
+        hits: [],
+        estimatedTotalHits: 0,
+      });
 
       // Act
       const items = await service.simpleSearch('BMW', 5);
@@ -440,7 +491,7 @@ describe('SearchService v3.0 - Tests de Compatibilité et Performance', () => {
 
 /**
  * 🧪 Tests d'Intégration pour Migration
- * 
+ *
  * Ces tests vérifient que la nouvelle version peut remplacer
  * l'ancienne sans interruption de service
  */
@@ -449,7 +500,11 @@ describe('🔄 Tests de Migration', () => {
     // Test que toutes les méthodes publiques de l'ancien service
     // sont présentes dans le nouveau
     const service = new SearchService(
-      {} as any, {} as any, {} as any, {} as any, {} as any
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
     );
 
     // Méthodes publiques critiques
@@ -460,7 +515,7 @@ describe('🔄 Tests de Migration', () => {
     expect(typeof service.getSearchStats).toBe('function');
     expect(typeof service.searchLegacy).toBe('function');
     expect(typeof service.simpleSearch).toBe('function');
-    
+
     // Nouvelles méthodes bonus
     expect(typeof service.searchMine).toBe('function');
   });
@@ -470,11 +525,13 @@ describe('🔄 Tests de Migration', () => {
     // pour éviter de casser les clients API
     const service = new SearchService(
       {
-        searchVehicles: () => Promise.resolve({ hits: [], estimatedTotalHits: 0 }),
-        searchProducts: () => Promise.resolve({ hits: [], estimatedTotalHits: 0 }),
+        searchVehicles: () =>
+          Promise.resolve({ hits: [], estimatedTotalHits: 0 }),
+        searchProducts: () =>
+          Promise.resolve({ hits: [], estimatedTotalHits: 0 }),
       } as any,
       { getByReference: () => Promise.resolve({}) } as any,
-      { 
+      {
         generateKey: () => 'key',
         get: () => Promise.resolve(null),
         set: () => Promise.resolve(),
@@ -483,7 +540,7 @@ describe('🔄 Tests de Migration', () => {
         recordSearch: () => Promise.resolve(),
         recordError: () => Promise.resolve(),
       } as any,
-      {} as any
+      {} as any,
     );
 
     const result = await service.search({ query: 'test', type: 'v8' });
@@ -494,7 +551,7 @@ describe('🔄 Tests de Migration', () => {
     expect(result).toHaveProperty('page');
     expect(result).toHaveProperty('limit');
     expect(result).toHaveProperty('executionTime');
-    
+
     expect(Array.isArray(result.items)).toBe(true);
     expect(typeof result.total).toBe('number');
     expect(typeof result.page).toBe('number');

@@ -444,7 +444,7 @@ export class PaymentService {
   ): Promise<Payment> {
     try {
       this.logger.log(`Updating payment ${paymentId} status to ${status}`);
-      
+
       const payment = await this.paymentDataService.findPaymentById(paymentId);
       if (!payment) {
         throw new NotFoundException(`Payment with ID ${paymentId} not found`);

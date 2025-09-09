@@ -181,7 +181,7 @@ export class ProductsController {
     const options = {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? Math.min(parseInt(limit, 10), 50) : 12,
-      search: search || ''
+      search: search || '',
     };
     return this.productsService.getRealCatalog(options);
   }
@@ -441,25 +441,25 @@ export class ProductsController {
       ];
 
       const results = [];
-      
+
       for (const test of tests) {
         try {
           const { count } = await (this.productsService as any).client
             .from('pieces')
             .select('*', { count: 'exact', head: true })
             .eq('piece_activ', test.value);
-          
+
           results.push({
             ...test,
             count: count || 0,
-            success: true
+            success: true,
           });
         } catch (error) {
           results.push({
             ...test,
             count: 0,
             success: false,
-            error: error.message
+            error: error.message,
           });
         }
       }
@@ -467,7 +467,7 @@ export class ProductsController {
       return {
         message: 'Diagnostic piece_activ terminé',
         tests: results,
-        recommendation: results.filter(r => r.count > 0)
+        recommendation: results.filter((r) => r.count > 0),
       };
     } catch (error) {
       this.logger.error('Erreur dans debugPieceActiv:', error);

@@ -45,7 +45,7 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
     try {
       const cacheKey = `social_share_${this.hashOptions(options)}`;
       const cached = await this.cacheService.get<SocialShareData>(cacheKey);
-      
+
       if (cached) {
         this.logger.debug('Social share cache hit');
         return cached;
@@ -66,9 +66,10 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
 
       await this.cacheService.set(cacheKey, shareData, 1800); // 30 minutes
       return shareData;
-
     } catch (error) {
-      this.logger.error(`Error in unified social share: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error in unified social share: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return this.getFallbackShareData(options);
     }
   }
@@ -76,20 +77,23 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
   /**
    * Génère les liens de partage avec configuration Supabase + Fallback
    */
-  private async generateShareLinks(options: ShareOptions): Promise<SocialPlatform[]> {
+  private async generateShareLinks(
+    options: ShareOptions,
+  ): Promise<SocialPlatform[]> {
     try {
       // Essayer d'abord la configuration Supabase
       const supabasePlatforms = await this.getSupabasePlatforms();
-      
+
       if (supabasePlatforms.length > 0) {
         return this.buildSupabaseShareLinks(supabasePlatforms, options);
       }
-      
+
       // Fallback sur configuration statique
       return this.buildStaticShareLinks(options);
-
     } catch (error) {
-      this.logger.error(`Error generating share links: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error generating share links: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return this.buildStaticShareLinks(options);
     }
   }
@@ -112,7 +116,9 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
 
       return data || [];
     } catch (error) {
-      this.logger.error(`Supabase social platforms error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Supabase social platforms error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return [];
     }
   }
@@ -120,8 +126,11 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
   /**
    * Construit les liens avec configuration Supabase
    */
-  private buildSupabaseShareLinks(platforms: any[], options: ShareOptions): SocialPlatform[] {
-    return platforms.map(platform => ({
+  private buildSupabaseShareLinks(
+    platforms: any[],
+    options: ShareOptions,
+  ): SocialPlatform[] {
+    return platforms.map((platform) => ({
       platform: platform.platform,
       icon: platform.icon,
       label: `Partager sur ${platform.platform}`,
@@ -207,7 +216,10 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
   /**
    * URLs par défaut par plateforme
    */
-  private buildDefaultPlatformUrl(platformName: string, options: ShareOptions): string {
+  private buildDefaultPlatformUrl(
+    platformName: string,
+    options: ShareOptions,
+  ): string {
     const encodedUrl = encodeURIComponent(options.url);
     const encodedTitle = encodeURIComponent(options.title || '');
     const encodedDescription = encodeURIComponent(options.description || '');
@@ -235,11 +247,14 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
   /**
    * Génère les métadonnées Open Graph
    */
-  private async generateOpenGraphMeta(options: ShareOptions): Promise<Record<string, string>> {
+  private async generateOpenGraphMeta(
+    options: ShareOptions,
+  ): Promise<Record<string, string>> {
     return {
       'og:url': options.url,
       'og:title': options.title || 'Pièces Auto',
-      'og:description': options.description || 'Spécialiste en pièces automobiles',
+      'og:description':
+        options.description || 'Spécialiste en pièces automobiles',
       'og:image': options.image || '/images/default-share.jpg',
       'og:type': 'website',
       'og:site_name': 'Pièces Auto',
@@ -249,11 +264,14 @@ export class SocialShareUnifiedService extends SupabaseBaseService {
   /**
    * Génère les métadonnées Twitter Card
    */
-  private async generateTwitterCardMeta(options: ShareOptions): Promise<Record<string, string>> {
+  private async generateTwitterCardMeta(
+    options: ShareOptions,
+  ): Promise<Record<string, string>> {
     return {
       'twitter:card': options.image ? 'summary_large_image' : 'summary',
       'twitter:title': options.title || 'Pièces Auto',
-      'twitter:description': options.description || 'Spécialiste en pièces automobiles',
+      'twitter:description':
+        options.description || 'Spécialiste en pièces automobiles',
       'twitter:image': options.image || '/images/default-share.jpg',
       'twitter:site': '@pieces_auto',
     };

@@ -47,7 +47,8 @@ export class ProductsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           *,
           pieces_gamme:pieces_gamme!inner(
             gamme_id,
@@ -59,12 +60,13 @@ export class ProductsService extends SupabaseBaseService {
             marque_name,
             marque_logo
           )
-        `)
+        `,
+        )
         .limit(filters?.limit || 50);
 
       if (filters?.search) {
         query = query.or(
-          `piece_name.ilike.%${filters.search}%,piece_ref.ilike.%${filters.search}%,piece_ref_brut.ilike.%${filters.search}%`
+          `piece_name.ilike.%${filters.search}%,piece_ref.ilike.%${filters.search}%,piece_ref_brut.ilike.%${filters.search}%`,
         );
       }
 
@@ -217,7 +219,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Vérifier si l'ID est numérique pour les vraies pièces de la DB
       const isNumericId = /^\d+$/.test(id);
-      
+
       if (!isNumericId) {
         // Pour les IDs non-numériques, retourner des données simulées
         return this.getMockProduct(id);
@@ -252,7 +254,7 @@ export class ProductsService extends SupabaseBaseService {
           .select('*')
           .eq('gamme_id', pieceData.gamme_id)
           .single();
-        
+
         if (!gammeError && gamme) {
           gammeData = {
             gamme_id: gamme.gamme_id,
@@ -270,7 +272,7 @@ export class ProductsService extends SupabaseBaseService {
           .select('*')
           .eq('marque_id', pieceData.marque_id)
           .single();
-        
+
         if (!marqueError && marque) {
           marqueData = {
             marque_id: marque.marque_id,
@@ -288,7 +290,7 @@ export class ProductsService extends SupabaseBaseService {
         .select('*')
         .eq('piece_id', id)
         .single();
-      
+
       if (!priceError && price) {
         priceData = {
           price_ht: price.price_ht,
@@ -308,7 +310,6 @@ export class ProductsService extends SupabaseBaseService {
 
       this.logger.log(`Produit ${id} récupéré avec succès`);
       return result;
-
     } catch (error) {
       this.logger.error(`Erreur dans findOne pour ${id}:`, error);
       throw error;
@@ -463,14 +464,16 @@ export class ProductsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('product_vehicle_compatibility')
-        .select(`
+        .select(
+          `
           product:products(
             *,
             range:product_ranges(*),
             prices:product_prices(*),
             images:product_images(*)
           )
-        `)
+        `,
+        )
         .eq('brand_id', brandId)
         .eq('model_id', modelId);
 
@@ -635,23 +638,23 @@ export class ProductsService extends SupabaseBaseService {
 
       return {
         debug: true,
-        message: "Vraie structure des tables Supabase",
+        message: 'Vraie structure des tables Supabase',
         samplePieces: samplePieces || [],
         sampleMarques: sampleMarques || [],
         tables: tables || [],
         errors: {
           piecesError: piecesError?.message || null,
           marquesError: marquesError?.message || null,
-          tablesError: tablesError?.message || null
+          tablesError: tablesError?.message || null,
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error('Erreur debug:', error);
       return {
         debug: true,
         error: (error as Error).message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -676,7 +679,7 @@ export class ProductsService extends SupabaseBaseService {
         { label: 'Stock 1-5', min: 1, max: 5 },
         { label: 'Stock 6-10', min: 6, max: 10 },
         { label: 'Stock 11-50', min: 11, max: 50 },
-        { label: 'Stock 51+', min: 51, max: 999999 }
+        { label: 'Stock 51+', min: 51, max: 999999 },
       ];
 
       const rangeCounts: any = {};
@@ -687,7 +690,7 @@ export class ProductsService extends SupabaseBaseService {
           .eq('piece_display', true)
           .gte('piece_qty_sale', range.min)
           .lte('piece_qty_sale', range.max);
-        
+
         rangeCounts[range.label] = count || 0;
       }
 
@@ -696,13 +699,13 @@ export class ProductsService extends SupabaseBaseService {
         stockSample: stockSample || [],
         rangeCounts,
         errors: { stockError },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       return {
         debug: 'Stock Distribution Error',
         error: (error as Error).message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -752,7 +755,14 @@ export class ProductsService extends SupabaseBaseService {
     sortOrder?: 'asc' | 'desc';
   }) {
     try {
-      const { gammeId, search = '', page = 1, limit = 24, sortBy = 'piece_name', sortOrder = 'asc' } = options;
+      const {
+        gammeId,
+        search = '',
+        page = 1,
+        limit = 24,
+        sortBy = 'piece_name',
+        sortOrder = 'asc',
+      } = options;
 
       // Récupérer les infos de la gamme
       const { data: gammeInfo, error: gammeError } = await this.client
@@ -798,16 +808,20 @@ export class ProductsService extends SupabaseBaseService {
       let enrichedProducts = [];
       if (products && products.length > 0) {
         // Récupérer tous les IDs de marques uniques
-        const brandIds = [...new Set(products.map(p => p.piece_pm_id).filter(id => id))];
-        
+        const brandIds = [
+          ...new Set(products.map((p) => p.piece_pm_id).filter((id) => id)),
+        ];
+
         // Récupérer les informations des marques en une seule requête
         let brandsData: any[] = [];
         if (brandIds.length > 0) {
           const { data: brands, error: brandsError } = await this.client
             .from('auto_marque')
-            .select('marque_id, marque_name, marque_logo, marque_activ, marque_country')
+            .select(
+              'marque_id, marque_name, marque_logo, marque_activ, marque_country',
+            )
             .in('marque_id', brandIds);
-          
+
           if (!brandsError && brands) {
             brandsData = brands;
           }
@@ -815,8 +829,8 @@ export class ProductsService extends SupabaseBaseService {
 
         // Mapper les produits enrichis
         enrichedProducts = products.map((product) => {
-          const brand = brandsData.find(b => b.pm_id === product.piece_pm_id);
-          
+          const brand = brandsData.find((b) => b.pm_id === product.piece_pm_id);
+
           return {
             piece_id: product.piece_id,
             piece_name: product.piece_name,
@@ -839,19 +853,21 @@ export class ProductsService extends SupabaseBaseService {
             gamme_id: product.piece_ga_id,
             filiere_id: product.piece_fil_id,
             // Marque enrichie
-            brand: brand ? {
-              id: brand.marque_id,
-              name: brand.marque_name,
-              logo: brand.marque_logo,
-              is_active: brand.marque_activ,
-              country: brand.marque_country,
-            } : {
-              id: product.piece_pm_id,
-              name: 'Marque inconnue',
-              logo: null,
-              is_active: false,
-              country: null,
-            },
+            brand: brand
+              ? {
+                  id: brand.marque_id,
+                  name: brand.marque_name,
+                  logo: brand.marque_logo,
+                  is_active: brand.marque_activ,
+                  country: brand.marque_country,
+                }
+              : {
+                  id: product.piece_pm_id,
+                  name: 'Marque inconnue',
+                  logo: null,
+                  is_active: false,
+                  country: null,
+                },
             // Prix et autres infos (à enrichir plus tard)
             pricing: null,
             oem_references: [],
@@ -879,7 +895,7 @@ export class ProductsService extends SupabaseBaseService {
           search,
           sortBy,
           sortOrder,
-        }
+        },
       };
     } catch (error) {
       this.logger.error('Erreur dans findProductsByGamme:', error);
@@ -1068,10 +1084,8 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { page = 1, limit = 20, ...vehicleFilters } = filters;
 
-      let query = this.client
-        .from('vehicules_pieces')
-        .select(
-          `
+      let query = this.client.from('vehicules_pieces').select(
+        `
           piece_id,
           brand_id,
           model_id,
@@ -1088,8 +1102,8 @@ export class ProductsService extends SupabaseBaseService {
             piece_has_img
           )
         `,
-          { count: 'exact' },
-        );
+        { count: 'exact' },
+      );
 
       // Appliquer les filtres
       if (vehicleFilters.brand_id) {
@@ -1241,10 +1255,9 @@ export class ProductsService extends SupabaseBaseService {
   }) {
     try {
       const { page = 1, limit = 20, ...criteriaFilters } = filters;
-      
-      let query = this.client
-        .from('pieces_criteres')
-        .select(`
+
+      let query = this.client.from('pieces_criteres').select(
+        `
           piece_id,
           criteria_type,
           criteria_value,
@@ -1258,7 +1271,9 @@ export class ProductsService extends SupabaseBaseService {
             piece_display,
             piece_has_img
           )
-        `, { count: 'exact' });
+        `,
+        { count: 'exact' },
+      );
 
       // Appliquer les filtres
       if (criteriaFilters.criteria_type) {
@@ -1267,9 +1282,13 @@ export class ProductsService extends SupabaseBaseService {
       if (criteriaFilters.criteria_value !== undefined) {
         if (criteriaFilters.tolerance) {
           // Recherche avec tolérance
-          const minValue = criteriaFilters.criteria_value - criteriaFilters.tolerance;
-          const maxValue = criteriaFilters.criteria_value + criteriaFilters.tolerance;
-          query = query.gte('criteria_value', minValue).lte('criteria_value', maxValue);
+          const minValue =
+            criteriaFilters.criteria_value - criteriaFilters.tolerance;
+          const maxValue =
+            criteriaFilters.criteria_value + criteriaFilters.tolerance;
+          query = query
+            .gte('criteria_value', minValue)
+            .lte('criteria_value', maxValue);
         } else {
           query = query.eq('criteria_value', criteriaFilters.criteria_value);
         }
@@ -1290,21 +1309,22 @@ export class ProductsService extends SupabaseBaseService {
       }
 
       return {
-        products: data?.map(item => ({
-          ...item.pieces,
-          criteria: {
-            criteria_type: item.criteria_type,
-            criteria_value: item.criteria_value,
-            criteria_unit: item.criteria_unit,
-            tolerance: item.tolerance,
-          }
-        })) || [],
+        products:
+          data?.map((item) => ({
+            ...item.pieces,
+            criteria: {
+              criteria_type: item.criteria_type,
+              criteria_value: item.criteria_value,
+              criteria_unit: item.criteria_unit,
+              tolerance: item.tolerance,
+            },
+          })) || [],
         pagination: {
           total: count || 0,
           page,
           limit,
           totalPages: Math.ceil((count || 0) / limit),
-        }
+        },
       };
     } catch (error) {
       this.logger.error('Erreur dans findByCriteria:', error);
@@ -1315,14 +1335,17 @@ export class ProductsService extends SupabaseBaseService {
   /**
    * Ajouter une compatibilité véhicule à un produit
    */
-  async addVehicleCompatibility(pieceId: string, compatibility: {
-    brand_id: number;
-    model_id: number;
-    motor_code?: string;
-    fuel_type?: string;
-    year_from?: number;
-    year_to?: number;
-  }) {
+  async addVehicleCompatibility(
+    pieceId: string,
+    compatibility: {
+      brand_id: number;
+      model_id: number;
+      motor_code?: string;
+      fuel_type?: string;
+      year_from?: number;
+      year_to?: number;
+    },
+  ) {
     try {
       const { data, error } = await this.client
         .from('vehicules_pieces')
@@ -1349,12 +1372,15 @@ export class ProductsService extends SupabaseBaseService {
   /**
    * Ajouter une référence OEM à un produit
    */
-  async addOEMReference(pieceId: string, oemRef: {
-    oem_number: string;
-    manufacturer: string;
-    quality_level: 'Original' | 'First' | 'Aftermarket';
-    notes?: string;
-  }) {
+  async addOEMReference(
+    pieceId: string,
+    oemRef: {
+      oem_number: string;
+      manufacturer: string;
+      quality_level: 'Original' | 'First' | 'Aftermarket';
+      notes?: string;
+    },
+  ) {
     try {
       const { data, error } = await this.client
         .from('pieces_ref_oem')
@@ -1381,12 +1407,15 @@ export class ProductsService extends SupabaseBaseService {
   /**
    * Ajouter un critère technique à un produit
    */
-  async addProductCriteria(pieceId: string, criteria: {
-    criteria_type: string;
-    criteria_value: number;
-    criteria_unit?: string;
-    tolerance?: number;
-  }) {
+  async addProductCriteria(
+    pieceId: string,
+    criteria: {
+      criteria_type: string;
+      criteria_value: number;
+      criteria_unit?: string;
+      tolerance?: number;
+    },
+  ) {
     try {
       const { data, error } = await this.client
         .from('pieces_criteres')
@@ -1417,11 +1446,13 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { data, error } = await this.client
         .from('vehicules_pieces')
-        .select(`
+        .select(
+          `
           *,
           auto_marque:auto_marque!vehicules_pieces_brand_id_fkey(marque_name),
           auto_modele:auto_modele!vehicules_pieces_model_id_fkey(modele_name)
-        `)
+        `,
+        )
         .eq('piece_id', parseInt(pieceId, 10));
 
       if (error) {

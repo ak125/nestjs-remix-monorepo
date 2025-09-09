@@ -19,7 +19,7 @@ export class ZodValidationPipe implements PipeTransform {
           const path = err.path.join('.');
           return `${path}: ${err.message}`;
         });
-        
+
         throw new BadRequestException({
           message: 'Données de validation invalides',
           errors: errorMessages,

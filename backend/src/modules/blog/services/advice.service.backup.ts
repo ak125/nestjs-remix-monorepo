@@ -28,7 +28,7 @@ export interface AdviceFilters {
 
 /**
  * 🛠️ AdviceService AMÉLIORÉ - Service spécialisé pour les conseils automobiles
- * 
+ *
  * 🎯 FONCTIONNALITÉS AMÉLIORÉES :
  * - Cache intelligent avec stratégie 3-niveaux (hot/warm/cold)
  * - Décodage HTML automatique des entités
@@ -53,10 +53,10 @@ export class AdviceService {
    * 📚 Récupérer liste des conseils avec pagination et filtres - VERSION AMÉLIORÉE
    */
   async getAdviceList(
-    gammeId?: number, 
-    page: number = 1, 
+    gammeId?: number,
+    page: number = 1,
     limit: number = 12,
-    filters: AdviceFilters = {}
+    filters: AdviceFilters = {},
   ): Promise<{
     items: BlogArticle[];
     total: number;
@@ -66,21 +66,21 @@ export class AdviceService {
     success: boolean;
   }> {
     const cacheKey = `advice_list:${gammeId || 'all'}:${page}:${limit}:${JSON.stringify(filters)}`;
-    
+
     try {
       // Essayer le cache intelligent d'abord
       const cached = await this.blogCacheService.get<any>(cacheKey, 1000);
       if (cached) return cached;
 
-      this.logger.log(`📚 Récupération conseils - page ${page}, limite ${limit}`);
+      this.logger.log(
+        `📚 Récupération conseils - page ${page}, limite ${limit}`,
+      );
 
       const offset = (page - 1) * limit;
       const client = this.supabaseService.client;
 
       // Construire la requête avec filtres
-      let query = client
-        .from('__blog_advice')
-        .select('*', { count: 'exact' });
+      let query = client.from('__blog_advice').select('*', { count: 'exact' });
 
       // Filtres avancés
       if (gammeId) {
@@ -90,7 +90,10 @@ export class AdviceService {
 
       if (filters.keywords?.length) {
         const keywordFilter = filters.keywords
-          .map(k => `ba_title.ilike.%${k}%,ba_keywords.ilike.%${k}%,ba_descrip.ilike.%${k}%`)
+          .map(
+            (k) =>
+              `ba_title.ilike.%${k}%,ba_keywords.ilike.%${k}%,ba_descrip.ilike.%${k}%`,
+          )
           .join(',');
         query = query.or(keywordFilter);
       }
@@ -108,15 +111,18 @@ export class AdviceService {
           query = query.order('ba_create', { ascending: false });
           break;
         case 'popularity':
-          query = query.order('ba_visit', { ascending: false })
-                      .order('ba_create', { ascending: false });
+          query = query
+            .order('ba_visit', { ascending: false })
+            .order('ba_create', { ascending: false });
           break;
         default:
           query = query.order('ba_visit', { ascending: false });
       }
 
-      const { data, error, count } = await query
-        .range(offset, offset + limit - 1);
+      const { data, error, count } = await query.range(
+        offset,
+        offset + limit - 1,
+      );
 
       if (error) {
         this.logger.error('Erreur récupération conseils:', error);
@@ -142,12 +148,13 @@ export class AdviceService {
       };
 
       // Cache avec stratégie basée sur la popularité moyenne
-      const avgViews = items.reduce((sum, item) => sum + (item.viewsCount || 0), 0) / items.length;
+      const avgViews =
+        items.reduce((sum, item) => sum + (item.viewsCount || 0), 0) /
+        items.length;
       await this.blogCacheService.set(cacheKey, result, avgViews || 500);
 
       this.logger.log(`✅ ${items.length} conseils récupérés (${count} total)`);
       return result;
-
     } catch (error) {
       this.logger.error(`❌ Erreur getAdviceList: ${(error as Error).message}`);
       return {
@@ -170,7 +177,7 @@ export class AdviceService {
     success: boolean;
   }> {
     const cacheKey = `advice_gamme:${gammeCode}`;
-    
+
     try {
       const cached = await this.blogCacheService.get<any>(cacheKey, 2000);
       if (cached) return cached;
@@ -183,7 +190,7 @@ export class AdviceService {
         id: 1,
         code: gammeCode,
         name: `Gamme ${gammeCode}`,
-        description: `Conseils pour la gamme ${gammeCode}`
+        description: `Conseils pour la gamme ${gammeCode}`,
       };
 
       // Rechercher les conseils liés à cette gamme
@@ -210,9 +217,10 @@ export class AdviceService {
       await this.blogCacheService.set(cacheKey, result, 2000);
 
       return result;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur getAdviceByGamme: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur getAdviceByGamme: ${(error as Error).message}`,
+      );
       return {
         gamme: null,
         advices: [],
@@ -284,7 +292,6 @@ export class AdviceService {
         advice: createdAdvice,
         success: true,
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur createAdvice: ${(error as Error).message}`);
       return {
@@ -298,23 +305,31 @@ export class AdviceService {
   /**
    * 🔗 Récupérer conseils liés à un produit - VERSION AMÉLIORÉE
    */
-  async getRelatedAdvice(productId: number, limit: number = 3): Promise<BlogArticle[]> {
+  async getRelatedAdvice(
+    productId: number,
+    limit: number = 3,
+  ): Promise<BlogArticle[]> {
     const cacheKey = `related_advice:${productId}:${limit}`;
-    
+
     try {
-      const cached = await this.blogCacheService.get<BlogArticle[]>(cacheKey, 1500);
+      const cached = await this.blogCacheService.get<BlogArticle[]>(
+        cacheKey,
+        1500,
+      );
       if (cached) return cached;
 
       this.logger.log(`🔗 Recherche conseils liés au produit: ${productId}`);
 
       // Note: Adaptez cette logique selon votre structure de base de données
       // Ici nous simulons une recherche par mots-clés liés au produit
-      
+
       // Recherche simple dans les conseils
       const { data, error } = await this.supabaseService.client
         .from('__blog_advice')
         .select('*')
-        .or(`ba_title.ilike.%produit%,ba_keywords.ilike.%produit%,ba_title.ilike.%${productId}%`)
+        .or(
+          `ba_title.ilike.%produit%,ba_keywords.ilike.%produit%,ba_title.ilike.%${productId}%`,
+        )
         .order('ba_visit', { ascending: false })
         .limit(limit);
 
@@ -333,9 +348,10 @@ export class AdviceService {
 
       await this.blogCacheService.set(cacheKey, articles, 1500);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur getRelatedAdvice: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur getRelatedAdvice: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -352,7 +368,7 @@ export class AdviceService {
     success: boolean;
   }> {
     const cacheKey = 'advice_stats_advanced';
-    
+
     try {
       const cached = await this.blogCacheService.get<any>(cacheKey, 3000);
       if (cached) return cached;
@@ -368,14 +384,20 @@ export class AdviceService {
       }
 
       const total = allAdvice?.length || 0;
-      const totalViews = allAdvice?.reduce((sum, item) => sum + (parseInt(item.ba_visit) || 0), 0) || 0;
+      const totalViews =
+        allAdvice?.reduce(
+          (sum, item) => sum + (parseInt(item.ba_visit) || 0),
+          0,
+        ) || 0;
       const avgViews = total > 0 ? Math.round(totalViews / total) : 0;
 
       // Analyser les mots-clés les plus populaires
       const keywordMap = new Map<string, number>();
       allAdvice?.forEach((advice) => {
         if (advice.ba_keywords) {
-          const keywords = advice.ba_keywords.split(',').map((k: string) => k.trim().toLowerCase());
+          const keywords = advice.ba_keywords
+            .split(',')
+            .map((k: string) => k.trim().toLowerCase());
           keywords.forEach((keyword: string) => {
             if (keyword && keyword.length > 2) {
               keywordMap.set(keyword, (keywordMap.get(keyword) || 0) + 1);
@@ -385,14 +407,17 @@ export class AdviceService {
       });
 
       const topKeywords = Array.from(keywordMap.entries())
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 10)
         .map(([keyword, count]) => ({ keyword, count }));
 
       // Articles les plus populaires
-      const popularAdvice = allAdvice
-        ?.sort((a, b) => (parseInt(b.ba_visit) || 0) - (parseInt(a.ba_visit) || 0))
-        ?.slice(0, 5) || [];
+      const popularAdvice =
+        allAdvice
+          ?.sort(
+            (a, b) => (parseInt(b.ba_visit) || 0) - (parseInt(a.ba_visit) || 0),
+          )
+          ?.slice(0, 5) || [];
 
       const mostPopular: BlogArticle[] = [];
       for (const advice of popularAdvice) {
@@ -411,9 +436,10 @@ export class AdviceService {
 
       await this.blogCacheService.set(cacheKey, stats, 3000);
       return stats;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur getAdviceStats: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur getAdviceStats: ${(error as Error).message}`,
+      );
       return {
         total: 0,
         totalViews: 0,
@@ -430,7 +456,9 @@ export class AdviceService {
   /**
    * 🔄 Transformation optimisée advice → BlogArticle
    */
-  private async transformAdviceToArticleImproved(advice: any): Promise<BlogArticle> {
+  private async transformAdviceToArticleImproved(
+    advice: any,
+  ): Promise<BlogArticle> {
     try {
       // Récupérer les sections H2/H3 en parallèle
       const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
@@ -467,28 +495,43 @@ export class AdviceService {
         title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
         slug: advice.ba_alias,
         alias: advice.ba_alias,
-        excerpt: BlogCacheService.decodeHtmlEntities(advice.ba_preview || advice.ba_descrip || ''),
+        excerpt: BlogCacheService.decodeHtmlEntities(
+          advice.ba_preview || advice.ba_descrip || '',
+        ),
         content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
         h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
         h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
-        keywords: advice.ba_keywords ? advice.ba_keywords.split(',').map((k: string) => k.trim()) : [],
-        tags: advice.ba_keywords ? advice.ba_keywords.split(',').map((k: string) => k.trim()) : [],
+        keywords: advice.ba_keywords
+          ? advice.ba_keywords.split(',').map((k: string) => k.trim())
+          : [],
+        tags: advice.ba_keywords
+          ? advice.ba_keywords.split(',').map((k: string) => k.trim())
+          : [],
         publishedAt: advice.ba_create,
         updatedAt: advice.ba_update,
         viewsCount: parseInt(advice.ba_visit) || 0,
-        readingTime: this.calculateReadingTime(advice.ba_content || advice.ba_descrip),
+        readingTime: this.calculateReadingTime(
+          advice.ba_content || advice.ba_descrip,
+        ),
         sections,
         legacy_id: parseInt(advice.ba_id),
         legacy_table: '__blog_advice',
         seo_data: {
-          meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
-          meta_description: BlogCacheService.decodeHtmlEntities(advice.ba_descrip || ''),
-          keywords: advice.ba_keywords ? advice.ba_keywords.split(',').map((k: string) => k.trim()) : [],
+          meta_title: BlogCacheService.decodeHtmlEntities(
+            advice.ba_title || '',
+          ),
+          meta_description: BlogCacheService.decodeHtmlEntities(
+            advice.ba_descrip || '',
+          ),
+          keywords: advice.ba_keywords
+            ? advice.ba_keywords.split(',').map((k: string) => k.trim())
+            : [],
         },
       };
-
     } catch (error) {
-      this.logger.error(`❌ Erreur transformation advice: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur transformation advice: ${(error as Error).message}`,
+      );
       throw error;
     }
   }
@@ -497,7 +540,7 @@ export class AdviceService {
    * 🔗 Générer un slug unique
    */
   private async generateUniqueSlug(title: string): Promise<string> {
-    let slug = this.slugify(title);
+    const slug = this.slugify(title);
     let counter = 0;
     let uniqueSlug = slug;
 
@@ -507,9 +550,9 @@ export class AdviceService {
         .select('ba_id')
         .eq('ba_alias', uniqueSlug)
         .maybeSingle();
-      
+
       if (!data) return uniqueSlug;
-      
+
       counter++;
       uniqueSlug = `${slug}-${counter}`;
     }
@@ -533,10 +576,15 @@ export class AdviceService {
    */
   private calculateReadingTime(content: string): number {
     if (!content) return 1;
-    
-    const cleanText = BlogCacheService.decodeHtmlEntities(content).replace(/<[^>]*>/g, '');
+
+    const cleanText = BlogCacheService.decodeHtmlEntities(content).replace(
+      /<[^>]*>/g,
+      '',
+    );
     const wordsPerMinute = 200;
-    const words = cleanText.split(/\s+/).filter(word => word.length > 0).length;
+    const words = cleanText
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
     return Math.max(1, Math.ceil(words / wordsPerMinute));
   }
 
@@ -545,7 +593,7 @@ export class AdviceService {
    */
   private createAnchor(text: string): string {
     if (!text) return '';
-    
+
     return BlogCacheService.decodeHtmlEntities(text)
       .toLowerCase()
       .normalize('NFD')
@@ -564,7 +612,7 @@ export class AdviceService {
       'advice_stats',
       'related_advice',
     ];
-    
+
     for (const pattern of cachePatterns) {
       await this.blogCacheService.del(pattern);
     }
@@ -597,9 +645,10 @@ export class AdviceService {
       }
 
       return article;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération conseil ${id}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération conseil ${id}: ${(error as Error).message}`,
+      );
       return null;
     }
   }
@@ -617,10 +666,10 @@ export class AdviceService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       // Construire une requête OR pour tous les mots-clés
       const keywordFilters = keywords
-        .map(keyword => `ba_keywords.ilike.%${keyword}%`)
+        .map((keyword) => `ba_keywords.ilike.%${keyword}%`)
         .join(',');
 
       const { data: adviceList } = await client
@@ -640,9 +689,10 @@ export class AdviceService {
 
       await this.cacheManager.set(cacheKey, articles, 1800);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche par mots-clés: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur recherche par mots-clés: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -650,7 +700,10 @@ export class AdviceService {
   /**
    * 🔗 Récupérer les conseils liés à un produit/pièce
    */
-  async getAdviceForProduct(productName: string, pieceType?: string): Promise<BlogArticle[]> {
+  async getAdviceForProduct(
+    productName: string,
+    pieceType?: string,
+  ): Promise<BlogArticle[]> {
     const cacheKey = `advice_product:${productName}:${pieceType || 'all'}`;
 
     try {
@@ -660,24 +713,26 @@ export class AdviceService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       // Rechercher par nom de produit dans le titre et les mots-clés
-      let query = client
-        .from('__blog_advice')
-        .select('*');
+      let query = client.from('__blog_advice').select('*');
 
       if (pieceType) {
-        query = query.or([
-          `ba_title.ilike.%${productName}%`,
-          `ba_title.ilike.%${pieceType}%`,
-          `ba_keywords.ilike.%${productName}%`,
-          `ba_keywords.ilike.%${pieceType}%`,
-        ].join(','));
+        query = query.or(
+          [
+            `ba_title.ilike.%${productName}%`,
+            `ba_title.ilike.%${pieceType}%`,
+            `ba_keywords.ilike.%${productName}%`,
+            `ba_keywords.ilike.%${pieceType}%`,
+          ].join(','),
+        );
       } else {
-        query = query.or([
-          `ba_title.ilike.%${productName}%`,
-          `ba_keywords.ilike.%${productName}%`,
-        ].join(','));
+        query = query.or(
+          [
+            `ba_title.ilike.%${productName}%`,
+            `ba_keywords.ilike.%${productName}%`,
+          ].join(','),
+        );
       }
 
       const { data: adviceList } = await query
@@ -694,9 +749,10 @@ export class AdviceService {
 
       await this.cacheManager.set(cacheKey, articles, 3600);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur conseils produit: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur conseils produit: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -727,19 +783,27 @@ export class AdviceService {
         .select('ba_visit, ba_keywords');
 
       if (!allAdvice) {
-        return { total: 0, totalViews: 0, avgViews: 0, topKeywords: [], mostPopular: [] };
+        return {
+          total: 0,
+          totalViews: 0,
+          avgViews: 0,
+          topKeywords: [],
+          mostPopular: [],
+        };
       }
 
-      const totalViews = allAdvice.reduce((sum, advice) => 
-        sum + (parseInt(advice.ba_visit) || 0), 0);
+      const totalViews = allAdvice.reduce(
+        (sum, advice) => sum + (parseInt(advice.ba_visit) || 0),
+        0,
+      );
       const avgViews = Math.round(totalViews / allAdvice.length);
 
       // Analyser les mots-clés
       const keywordCount: { [key: string]: number } = {};
-      allAdvice.forEach(advice => {
+      allAdvice.forEach((advice) => {
         if (advice.ba_keywords) {
           const keywords = advice.ba_keywords.split(', ');
-          keywords.forEach(keyword => {
+          keywords.forEach((keyword) => {
             const key = keyword.trim().toLowerCase();
             keywordCount[key] = (keywordCount[key] || 0) + 1;
           });
@@ -747,7 +811,7 @@ export class AdviceService {
       });
 
       const topKeywords = Object.entries(keywordCount)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 10)
         .map(([keyword, count]) => ({ keyword, count }));
 
@@ -776,10 +840,17 @@ export class AdviceService {
 
       await this.cacheManager.set(cacheKey, stats, 3600);
       return stats;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur stats conseils: ${(error as Error).message}`);
-      return { total: 0, totalViews: 0, avgViews: 0, topKeywords: [], mostPopular: [] };
+      this.logger.error(
+        `❌ Erreur stats conseils: ${(error as Error).message}`,
+      );
+      return {
+        total: 0,
+        totalViews: 0,
+        avgViews: 0,
+        topKeywords: [],
+        mostPopular: [],
+      };
     }
   }
 
@@ -789,7 +860,7 @@ export class AdviceService {
   async incrementAdviceViews(id: string | number): Promise<boolean> {
     try {
       const client = this.supabaseService.getClient();
-      
+
       // Récupérer les vues actuelles
       const { data: current } = await client
         .from('__blog_advice')
@@ -818,16 +889,20 @@ export class AdviceService {
 
       this.logger.debug(`👀 Vues mises à jour pour conseil ${id}: ${newViews}`);
       return true;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur incrément vues: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur incrément vues: ${(error as Error).message}`,
+      );
       return false;
     }
   }
 
   // MÉTHODES PRIVÉES
 
-  private async transformAdviceToArticle(client: any, advice: any): Promise<BlogArticle> {
+  private async transformAdviceToArticle(
+    client: any,
+    advice: any,
+  ): Promise<BlogArticle> {
     // Récupérer les sections H2/H3
     const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
       client
@@ -845,14 +920,22 @@ export class AdviceService {
     const sections: BlogSection[] = [
       ...(h2Sections?.map((s: any) => ({
         level: 2,
-        title: BlogCacheService.BlogCacheService.decodeHtmlEntities(s.ba2_h2 || ''),
-        content: BlogCacheService.BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
+        title: BlogCacheService.BlogCacheService.decodeHtmlEntities(
+          s.ba2_h2 || '',
+        ),
+        content: BlogCacheService.BlogCacheService.decodeHtmlEntities(
+          s.ba2_content || '',
+        ),
         anchor: s.ba2_h2?.toLowerCase().replace(/\s+/g, '-'),
       })) || []),
       ...(h3Sections?.map((s: any) => ({
         level: 3,
-        title: BlogCacheService.BlogCacheService.decodeHtmlEntities(s.ba3_h3 || ''),
-        content: BlogCacheService.BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
+        title: BlogCacheService.BlogCacheService.decodeHtmlEntities(
+          s.ba3_h3 || '',
+        ),
+        content: BlogCacheService.BlogCacheService.decodeHtmlEntities(
+          s.ba3_content || '',
+        ),
         anchor: s.ba3_h3?.toLowerCase().replace(/\s+/g, '-'),
       })) || []),
     ];
@@ -862,7 +945,9 @@ export class AdviceService {
       type: 'advice' as const,
       title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
-      excerpt: BlogCacheService.decodeHtmlEntities(advice.ba_preview || advice.ba_descrip || ''),
+      excerpt: BlogCacheService.decodeHtmlEntities(
+        advice.ba_preview || advice.ba_descrip || '',
+      ),
       content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
       h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
       h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
@@ -876,7 +961,9 @@ export class AdviceService {
       legacy_table: '__blog_advice',
       seo_data: {
         meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
-        meta_description: BlogCacheService.decodeHtmlEntities(advice.ba_descrip || ''),
+        meta_description: BlogCacheService.decodeHtmlEntities(
+          advice.ba_descrip || '',
+        ),
         keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
       },
     };

@@ -20,19 +20,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
-import {
-  StaffService,
-  CreateStaffDto,
-  UpdateStaffDto,
-} from './staff.service';
+import { StaffService, CreateStaffDto, UpdateStaffDto } from './staff.service';
 
 @ApiTags('Staff Management')
 @Controller('api/admin/staff')
@@ -154,10 +145,7 @@ export class StaffController {
       }
 
       if (!createStaffDto.role) {
-        throw new HttpException(
-          'Le rôle est requis',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new HttpException('Le rôle est requis', HttpStatus.BAD_REQUEST);
       }
 
       const staff = await this.staffService.create(createStaffDto);

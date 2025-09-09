@@ -14,7 +14,7 @@ export class CommercialMenuService extends SupabaseBaseService {
     try {
       this.logger.debug('Génération menu commercial (version avancée)');
       const config = await this.getCommercialMenuConfig();
-      
+
       return {
         type: 'commercial',
         title: 'Menu Commercial',
@@ -35,7 +35,7 @@ export class CommercialMenuService extends SupabaseBaseService {
   async getCommercialMenuConfig() {
     try {
       const pendingOrdersBadge = await this.getPendingOrdersCount();
-      
+
       return {
         sections: [
           {
@@ -210,12 +210,12 @@ export class CommercialMenuService extends SupabaseBaseService {
    * Convertir la config avancée au format legacy
    */
   private convertToLegacyFormat(sections: any[]) {
-    return sections.map(section => ({
+    return sections.map((section) => ({
       name: section.title,
       path: section.path,
       icon: this.convertIconToEmoji(section.icon),
       description: `Gestion ${section.title.toLowerCase()}`,
-      children: section.items.map(item => ({
+      children: section.items.map((item) => ({
         name: item.title,
         path: item.url,
         description: item.description,
@@ -230,8 +230,8 @@ export class CommercialMenuService extends SupabaseBaseService {
   private convertIconToEmoji(icon: string) {
     const iconMap = {
       'shopping-cart': '🛒',
-      'package': '📦',
-      'truck': '🚚',
+      package: '📦',
+      truck: '🚚',
       'chart-bar': '📊',
     };
     return iconMap[icon as keyof typeof iconMap] || '📋';

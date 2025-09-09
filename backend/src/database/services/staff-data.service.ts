@@ -18,11 +18,15 @@ export class StaffDataService extends SupabaseBaseService {
   /**
    * Récupérer tous les membres du staff avec pagination
    */
-  async findAll(page: number = 1, limit: number = 10, filters?: {
-    department?: string;
-    isActive?: boolean;
-    search?: string;
-  }) {
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    filters?: {
+      department?: string;
+      isActive?: boolean;
+      search?: string;
+    },
+  ) {
     try {
       const offset = (page - 1) * limit;
       let query = `${this.baseUrl}/${this.tableName}?select=*`;
@@ -139,13 +143,16 @@ export class StaffDataService extends SupabaseBaseService {
   /**
    * Mettre à jour un membre du staff
    */
-  async update(id: string, updates: Partial<{
-    firstName: string;
-    lastName: string;
-    department: string;
-    role: string;
-    isActive: boolean;
-  }>) {
+  async update(
+    id: string,
+    updates: Partial<{
+      firstName: string;
+      lastName: string;
+      department: string;
+      role: string;
+      isActive: boolean;
+    }>,
+  ) {
     try {
       const legacyUpdates = this.mapModernToLegacy(updates);
 
@@ -225,8 +232,12 @@ export class StaffDataService extends SupabaseBaseService {
         },
       );
 
-      const totalData = totalResponse.ok ? await totalResponse.json() : [{ count: 0 }];
-      const activeData = activeResponse.ok ? await activeResponse.json() : [{ count: 0 }];
+      const totalData = totalResponse.ok
+        ? await totalResponse.json()
+        : [{ count: 0 }];
+      const activeData = activeResponse.ok
+        ? await activeResponse.json()
+        : [{ count: 0 }];
       const deptData = deptResponse.ok ? await deptResponse.json() : [];
 
       return {

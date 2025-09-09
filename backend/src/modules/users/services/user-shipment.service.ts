@@ -17,12 +17,15 @@ export class UserShipmentService extends SupabaseBaseService {
         .limit(10);
 
       if (ordersError) {
-        this.logger.error('Erreur lors de la récupération des commandes:', ordersError);
+        this.logger.error(
+          'Erreur lors de la récupération des commandes:',
+          ordersError,
+        );
         return {
           success: false,
           error: ordersError.message,
           shipments: [],
-          count: 0
+          count: 0,
         };
       }
 
@@ -32,11 +35,13 @@ export class UserShipmentService extends SupabaseBaseService {
           success: true,
           shipments: [],
           count: 0,
-          message: 'Aucune commande trouvée'
+          message: 'Aucune commande trouvée',
         };
       }
 
-      this.logger.log(`${orders.length} commandes trouvées pour l'utilisateur ${userId}`);
+      this.logger.log(
+        `${orders.length} commandes trouvées pour l'utilisateur ${userId}`,
+      );
 
       // Créer des données de suivi simulées pour chaque commande
       const shipments = orders.map((order) => ({
@@ -50,7 +55,9 @@ export class UserShipmentService extends SupabaseBaseService {
           logo: '/images/carriers/colissimo.png',
         },
         shippedDate: order.ord_date,
-        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        estimatedDelivery: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
         currentLocation: {
           city: 'Lyon',
           country: 'France',

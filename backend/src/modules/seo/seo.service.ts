@@ -53,7 +53,7 @@ export class SeoService extends SupabaseBaseService {
     try {
       // Génération d'un ID unique basé sur l'URL
       const mtaId = urlPath.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      
+
       const { data, error } = await this.client
         .from('___meta_tags_ariane')
         .upsert({
@@ -131,18 +131,21 @@ export class SeoService extends SupabaseBaseService {
       const { data, error } = await this.client
         .from('___meta_tags_ariane')
         .select('mta_alias, mta_title, mta_descrip')
-        .or('mta_title.is.null,mta_descrip.is.null,mta_title.eq.,mta_descrip.eq.')
+        .or(
+          'mta_title.is.null,mta_descrip.is.null,mta_title.eq.,mta_descrip.eq.',
+        )
         .order('mta_id', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
       return {
-        pages: data?.map((item) => ({
-          url_path: item.mta_alias,
-          has_title: !!item.mta_title,
-          has_description: !!item.mta_descrip,
-        })) || [],
+        pages:
+          data?.map((item) => ({
+            url_path: item.mta_alias,
+            has_title: !!item.mta_title,
+            has_description: !!item.mta_descrip,
+          })) || [],
         count: data?.length || 0,
         timestamp: new Date().toISOString(),
       };
@@ -168,7 +171,7 @@ export class SeoService extends SupabaseBaseService {
 
       const pagesWithoutSeo = await this.getPagesWithoutSeo(limit);
       const seoConfig = await this.getSeoConfig('default');
-      
+
       // Calculs basiques pour les analytics
       const totalPages = 714000; // Estimation basée sur les 714k entrées sitemap
       const pagesWithSeoCount = totalPages - pagesWithoutSeo.count;

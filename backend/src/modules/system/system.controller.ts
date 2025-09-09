@@ -39,7 +39,7 @@ export class SystemController {
   }
 
   /**
-   * 🏥 GET /api/system/health/detailed  
+   * 🏥 GET /api/system/health/detailed
    * Health check complet du système
    */
   @Get('health/detailed')
@@ -47,11 +47,11 @@ export class SystemController {
     try {
       this.logger.log('🏥 Detailed health check requested');
       const health = await this.healthCheckService.performHealthCheck();
-      
+
       this.logger.log(
         `💚 Health check completed - Overall: ${health.overall} (${health.services.length} services)`,
       );
-      
+
       return {
         success: true,
         data: health,
@@ -75,8 +75,10 @@ export class SystemController {
     try {
       this.logger.log('📊 System status requested');
       const status = await this.systemService.getSystemStatus();
-      
-      this.logger.log(`✅ System status: ${status.overall} (${status.alerts.length} alerts)`);
+
+      this.logger.log(
+        `✅ System status: ${status.overall} (${status.alerts.length} alerts)`,
+      );
       return {
         success: true,
         data: status,
@@ -101,7 +103,7 @@ export class SystemController {
     try {
       this.logger.log('📈 System metrics requested');
       const metrics = await this.metricsService.getAllMetrics();
-      
+
       return {
         success: true,
         data: metrics,
@@ -126,7 +128,7 @@ export class SystemController {
     try {
       this.logger.log('🏥 Database health check requested');
       const health = await this.databaseMonitorService.getHealthReport();
-      
+
       this.logger.log(`💚 Database health: ${health.database.status}`);
       return {
         success: true,
@@ -152,8 +154,10 @@ export class SystemController {
     try {
       this.logger.log('🧠 System insights requested');
       const insights = await this.systemService.getSystemInsights();
-      
-      this.logger.log(`💡 Generated ${insights.recommendations.length} recommendations`);
+
+      this.logger.log(
+        `💡 Generated ${insights.recommendations.length} recommendations`,
+      );
       return {
         success: true,
         data: insights,
@@ -178,8 +182,10 @@ export class SystemController {
     try {
       this.logger.log('📊 Monitoring dashboard requested');
       const dashboard = await this.systemService.getMonitoringDashboard();
-      
-      this.logger.log(`📊 Dashboard generated - Status: ${dashboard.system.overall}`);
+
+      this.logger.log(
+        `📊 Dashboard generated - Status: ${dashboard.system.overall}`,
+      );
       return {
         success: true,
         data: dashboard,
@@ -204,12 +210,14 @@ export class SystemController {
     try {
       this.logger.log('⚠️ Active alerts requested');
       const alerts = this.databaseMonitorService.getActiveAlerts();
-      
-      const criticalCount = alerts.filter(a => a.level === 'critical').length;
-      const warningCount = alerts.filter(a => a.level === 'warning').length;
-      
-      this.logger.log(`🚨 Active alerts: ${criticalCount} critical, ${warningCount} warning, ${alerts.length} total`);
-      
+
+      const criticalCount = alerts.filter((a) => a.level === 'critical').length;
+      const warningCount = alerts.filter((a) => a.level === 'warning').length;
+
+      this.logger.log(
+        `🚨 Active alerts: ${criticalCount} critical, ${warningCount} warning, ${alerts.length} total`,
+      );
+
       return {
         success: true,
         data: {
@@ -218,8 +226,8 @@ export class SystemController {
             total: alerts.length,
             critical: criticalCount,
             warning: warningCount,
-            info: alerts.filter(a => a.level === 'info').length,
-          }
+            info: alerts.filter((a) => a.level === 'info').length,
+          },
         },
         timestamp: new Date().toISOString(),
       };
@@ -242,9 +250,11 @@ export class SystemController {
     try {
       this.logger.log('🔧 Manual maintenance requested');
       const result = await this.systemService.performMaintenanceTasks();
-      
-      this.logger.log(`🛠️ Maintenance completed: ${result.executed.length} tasks executed, ${result.failed.length} failed`);
-      
+
+      this.logger.log(
+        `🛠️ Maintenance completed: ${result.executed.length} tasks executed, ${result.failed.length} failed`,
+      );
+
       return {
         success: true,
         data: result,
@@ -268,16 +278,16 @@ export class SystemController {
   async getTablePerformance(@Param('table') tableName: string) {
     try {
       this.logger.log(`🔍 Table performance requested for: ${tableName}`);
-      
+
       // Valider le nom de table pour la sécurité
       const allowedTables = [
         '___xtr_customer',
-        '___xtr_order', 
+        '___xtr_order',
         '___xtr_product',
         '__sitemap_p_link',
         '___META_TAGS_ARIANE',
       ];
-      
+
       if (!allowedTables.includes(tableName)) {
         return {
           success: false,
@@ -286,17 +296,23 @@ export class SystemController {
         };
       }
 
-      const performance = await this.databaseMonitorService.monitorTablePerformance(tableName);
-      
-      this.logger.log(`📊 Table ${tableName} performance: ${performance.queryTime}ms, ${performance.recordCount} records`);
-      
+      const performance =
+        await this.databaseMonitorService.monitorTablePerformance(tableName);
+
+      this.logger.log(
+        `📊 Table ${tableName} performance: ${performance.queryTime}ms, ${performance.recordCount} records`,
+      );
+
       return {
         success: true,
         data: performance,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Error getting table performance for ${tableName}:`, error);
+      this.logger.error(
+        `❌ Error getting table performance for ${tableName}:`,
+        error,
+      );
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

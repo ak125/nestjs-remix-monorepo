@@ -132,7 +132,9 @@ describe('ProductsService', () => {
       const error = new Error('Database connection failed');
       jest.spyOn(service, 'findAllPieces').mockRejectedValue(error);
 
-      await expect(service.findAllPieces()).rejects.toThrow('Database connection failed');
+      await expect(service.findAllPieces()).rejects.toThrow(
+        'Database connection failed',
+      );
     });
   });
 

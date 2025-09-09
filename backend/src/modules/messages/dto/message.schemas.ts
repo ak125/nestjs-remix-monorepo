@@ -9,7 +9,12 @@ import { z } from 'zod';
 export const MessageTypeSchema = z.enum(['system', 'support', 'notification']);
 
 // Niveaux de priorité
-export const MessagePrioritySchema = z.enum(['low', 'normal', 'high', 'urgent']);
+export const MessagePrioritySchema = z.enum([
+  'low',
+  'normal',
+  'high',
+  'urgent',
+]);
 
 // Statuts de messages
 export const MessageStatusSchema = z.enum(['open', 'closed', 'all']);
@@ -27,8 +32,16 @@ export const CreateMessageSchema = z.object({
 
 // Schéma pour mettre à jour un message
 export const UpdateMessageSchema = z.object({
-  subject: z.string().min(1, 'Sujet requis').max(200, 'Sujet trop long').optional(),
-  content: z.string().min(1, 'Contenu requis').max(5000, 'Contenu trop long').optional(),
+  subject: z
+    .string()
+    .min(1, 'Sujet requis')
+    .max(200, 'Sujet trop long')
+    .optional(),
+  content: z
+    .string()
+    .min(1, 'Contenu requis')
+    .max(5000, 'Contenu trop long')
+    .optional(),
   priority: MessagePrioritySchema.optional(),
   type: MessageTypeSchema.optional(),
 });

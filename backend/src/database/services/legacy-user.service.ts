@@ -35,23 +35,27 @@ export class LegacyUserService extends SupabaseBaseService {
   /**
    * Récupère tous les utilisateurs avec pagination
    */
-  async getAllUsers(options: { limit?: number; offset?: number } = {}): Promise<LegacyUser[]> {
+  async getAllUsers(
+    options: { limit?: number; offset?: number } = {},
+  ): Promise<LegacyUser[]> {
     try {
       const { limit = 20, offset = 0 } = options;
-      
+
       console.log(`[UserService] getAllUsers called with:`, { limit, offset });
-      
+
       const { data, error } = await this.supabase
         .from('___xtr_customer')
-        .select('cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_level, cst_activ')
+        .select(
+          'cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_level, cst_activ',
+        )
         .eq('cst_activ', '1')
         .order('cst_id', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      console.log(`[UserService] Supabase query result:`, { 
+      console.log(`[UserService] Supabase query result:`, {
         dataLength: data?.length,
         error: error,
-        firstUser: data?.[0]
+        firstUser: data?.[0],
       });
 
       if (error) {
@@ -59,11 +63,14 @@ export class LegacyUserService extends SupabaseBaseService {
         throw error;
       }
 
-      const mappedUsers = (data || []).map(user => this.mapToLegacyUser(user));
-      console.log(`[UserService] Mapped users:`, { 
+      const mappedUsers = (data || []).map((user) =>
+        this.mapToLegacyUser(user),
+      );
+      console.log(`[UserService] Mapped users:`, {
         count: mappedUsers.length,
-        firstMapped: mappedUsers[0]
-      });      return mappedUsers;
+        firstMapped: mappedUsers[0],
+      });
+      return mappedUsers;
     } catch (error) {
       console.error('[UserService] Failed to get all users:', error);
       this.logger.error('Failed to get all users:', error);
@@ -102,14 +109,19 @@ export class LegacyUserService extends SupabaseBaseService {
         .from('___xtr_customer')
         .select('cst_id, cst_mail, cst_name, cst_fname, cst_city, cst_level')
         .eq('cst_activ', '1')
-        .or(`cst_mail.ilike.%${searchTerm}%,cst_name.ilike.%${searchTerm}%,cst_fname.ilike.%${searchTerm}%`)
+        .or(
+          `cst_mail.ilike.%${searchTerm}%,cst_name.ilike.%${searchTerm}%,cst_fname.ilike.%${searchTerm}%`,
+        )
         .limit(limit);
 
       if (error) throw error;
 
-      return (data || []).map(user => this.mapToLegacyUser(user));
+      return (data || []).map((user) => this.mapToLegacyUser(user));
     } catch (error) {
-      this.logger.error(`Failed to search users with term: ${searchTerm}`, error);
+      this.logger.error(
+        `Failed to search users with term: ${searchTerm}`,
+        error,
+      );
       throw error;
     }
   }
@@ -128,7 +140,7 @@ export class LegacyUserService extends SupabaseBaseService {
 
       if (error) throw error;
 
-      return (data || []).map(order => ({
+      return (data || []).map((order) => ({
         id: order.ord_id,
         date: order.ord_date,
         total: parseFloat(order.ord_total_ttc || '0'),
@@ -172,7 +184,7 @@ export class LegacyUserService extends SupabaseBaseService {
    */
   async getTotalActiveUsersCount(): Promise<number> {
     const cacheKey = 'total_active_users_count';
-    
+
     // Essayer d'abord le cache (TTL: 2 minutes pour les stats)
     const cached = this.cacheService.get<number>(cacheKey);
     if (cached !== null) {
@@ -182,7 +194,7 @@ export class LegacyUserService extends SupabaseBaseService {
 
     try {
       this.logger.debug('📊 Fetching total active users count from database');
-      
+
       const { count, error } = await this.supabase
         .from('___xtr_customer')
         .select('*', { count: 'exact', head: true })
@@ -191,10 +203,10 @@ export class LegacyUserService extends SupabaseBaseService {
       if (error) throw error;
 
       const totalCount = count || 0;
-      
+
       // Cache pour 2 minutes (les stats changent pas souvent)
       this.cacheService.set(cacheKey, totalCount, 2 * 60 * 1000);
-      
+
       return totalCount;
     } catch (error) {
       this.logger.error('Failed to count total active users:', error);

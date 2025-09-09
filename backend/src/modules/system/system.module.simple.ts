@@ -6,7 +6,7 @@ import { DatabaseMonitorService } from './services/database-monitor.service';
 
 /**
  * 🎯 SystemModule - Monitoring & Métriques Enterprise
- * 
+ *
  * Version optimisée pour production
  * Fonctionnalités principales :
  * ✅ Métriques performance, business, SEO

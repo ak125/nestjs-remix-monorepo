@@ -22,7 +22,7 @@ import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 
 /**
  * 📚 BlogController - Contrôleur principal du module blog
- * 
+ *
  * Endpoints centralisés pour toutes les fonctionnalités blog :
  * - Recherche globale
  * - Articles populaires
@@ -51,11 +51,11 @@ export class BlogController {
     try {
       this.logger.log('[BlogController] GET /api/blog/homepage');
       const homepage = await this.blogService.getHomepageContent();
-      
+
       return {
         data: homepage,
         success: true,
-        message: 'Homepage blog récupérée avec succès'
+        message: 'Homepage blog récupérée avec succès',
       };
     } catch (error) {
       this.logger.error('[BlogController] Erreur homepage:', error);
@@ -95,7 +95,9 @@ export class BlogController {
         offset,
       });
 
-      this.logger.log(`🔍 Recherche blog: "${query}" - ${results.articles.length} résultats`);
+      this.logger.log(
+        `🔍 Recherche blog: "${query}" - ${results.articles.length} résultats`,
+      );
 
       return {
         success: true,
@@ -110,7 +112,9 @@ export class BlogController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche blog: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur recherche blog: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la recherche',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -177,7 +181,9 @@ export class BlogController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur dashboard blog: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur dashboard blog: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors du chargement du dashboard',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -226,7 +232,9 @@ export class BlogController {
         throw error;
       }
 
-      this.logger.error(`❌ Erreur récupération article: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération article: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -261,7 +269,8 @@ export class BlogController {
             articles = guideResult.articles;
             break;
           case 'constructeur':
-            articles = await this.constructeurService.getPopularConstructeurs(limit);
+            articles =
+              await this.constructeurService.getPopularConstructeurs(limit);
             break;
           case 'glossaire':
             const glossaryStats = await this.glossaryService.getGlossaryStats();
@@ -283,7 +292,9 @@ export class BlogController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur articles populaires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur articles populaires: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -320,17 +331,13 @@ export class BlogController {
   @Get('navigation')
   async getBlogNavigation() {
     try {
-      const [
-        adviceStats,
-        guideStats,
-        constructeurs,
-        glossaryStats,
-      ] = await Promise.all([
-        this.adviceService.getAdviceStats(),
-        this.guideService.getGuideStats(),
-        this.constructeurService.getConstructeursByAlpha(),
-        this.glossaryService.getGlossaryStats(),
-      ]);
+      const [adviceStats, guideStats, constructeurs, glossaryStats] =
+        await Promise.all([
+          this.adviceService.getAdviceStats(),
+          this.guideService.getGuideStats(),
+          this.constructeurService.getConstructeursByAlpha(),
+          this.glossaryService.getGlossaryStats(),
+        ]);
 
       return {
         success: true,
@@ -344,11 +351,12 @@ export class BlogController {
             total: guideStats.total,
           },
           constructeur: {
-            byLetter: Object.keys(constructeurs).map(letter => ({
+            byLetter: Object.keys(constructeurs).map((letter) => ({
               letter,
               count: constructeurs[letter].length,
             })),
-            total: (await this.constructeurService.getConstructeurStats()).total,
+            total: (await this.constructeurService.getConstructeurStats())
+              .total,
           },
           glossaire: {
             byLetter: glossaryStats.byLetter,
@@ -357,7 +365,9 @@ export class BlogController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur navigation blog: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur navigation blog: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la navigation',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -385,7 +395,9 @@ export class BlogController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur rafraîchissement cache: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur rafraîchissement cache: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors du rafraîchissement',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -418,14 +430,19 @@ export class BlogController {
       }
     } catch (error) {
       // Erreur silencieuse pour ne pas impacter l'utilisateur
-      this.logger.debug(`⚠️ Erreur incrément vues: ${(error as Error).message}`);
+      this.logger.debug(
+        `⚠️ Erreur incrément vues: ${(error as Error).message}`,
+      );
     }
   }
 
   /**
    * Récupérer des articles similaires
    */
-  private async getRelatedArticles(article: any, limit: number = 5): Promise<any[]> {
+  private async getRelatedArticles(
+    article: any,
+    limit: number = 5,
+  ): Promise<any[]> {
     try {
       // Recherche basée sur les mots-clés de l'article
       const keywords = article.keywords || [];
@@ -437,10 +454,12 @@ export class BlogController {
       });
 
       return searchResults.articles
-        .filter(a => a.id !== article.id)
+        .filter((a) => a.id !== article.id)
         .slice(0, limit);
     } catch (error) {
-      this.logger.debug(`⚠️ Erreur articles similaires: ${(error as Error).message}`);
+      this.logger.debug(
+        `⚠️ Erreur articles similaires: ${(error as Error).message}`,
+      );
       return [];
     }
   }

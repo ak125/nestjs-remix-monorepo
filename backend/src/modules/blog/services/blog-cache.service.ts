@@ -9,7 +9,7 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class BlogCacheService {
   private readonly logger = new Logger(BlogCacheService.name);
-  
+
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   /**
@@ -31,7 +31,7 @@ export class BlogCacheService {
   async get<T>(key: string, viewsCount?: number): Promise<T | undefined> {
     const strategy = this.getCacheStrategy(viewsCount);
     const cacheKey = `${strategy.prefix}${key}`;
-    
+
     try {
       const cached = await this.cacheManager.get<T>(cacheKey);
       if (cached) {
@@ -50,7 +50,7 @@ export class BlogCacheService {
   async set<T>(key: string, value: T, viewsCount?: number): Promise<void> {
     const strategy = this.getCacheStrategy(viewsCount);
     const cacheKey = `${strategy.prefix}${key}`;
-    
+
     try {
       await this.cacheManager.set(cacheKey, value, strategy.ttl * 1000); // ms
       this.logger.debug(`💾 Cache set: ${cacheKey} (TTL: ${strategy.ttl}s)`);
@@ -64,7 +64,7 @@ export class BlogCacheService {
    */
   async del(key: string): Promise<void> {
     const strategies = ['blog:hot:', 'blog:warm:', 'blog:cold:'];
-    
+
     for (const prefix of strategies) {
       try {
         await this.cacheManager.del(`${prefix}${key}`);
@@ -94,7 +94,7 @@ export class BlogCacheService {
    */
   static decodeHtmlEntities(text: string | null | undefined): string {
     if (!text) return '';
-    
+
     return text
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')

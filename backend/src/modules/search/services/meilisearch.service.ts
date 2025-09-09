@@ -10,12 +10,16 @@ export class MeilisearchService implements OnModuleInit {
   private productIndex: Index;
 
   constructor(private readonly configService: ConfigService) {
-    const masterKey = this.configService.get('MEILISEARCH_MASTER_KEY') || 'masterKey123';
+    const masterKey =
+      this.configService.get('MEILISEARCH_MASTER_KEY') || 'masterKey123';
     this.client = new MeiliSearch({
-      host: this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700',
+      host:
+        this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700',
       apiKey: masterKey,
     });
-    this.logger.debug(`Meilisearch config: host=${this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700'}, apiKey=${masterKey ? '***' : 'undefined'}`);
+    this.logger.debug(
+      `Meilisearch config: host=${this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700'}, apiKey=${masterKey ? '***' : 'undefined'}`,
+    );
   }
 
   async onModuleInit() {
@@ -28,7 +32,7 @@ export class MeilisearchService implements OnModuleInit {
   }
 
   private async initializeIndexes() {
-        // Index des véhicules 
+    // Index des véhicules
     this.vehicleIndex = this.client.index('vehicles');
     await this.vehicleIndex.updateSettings({
       searchableAttributes: [
@@ -41,7 +45,7 @@ export class MeilisearchService implements OnModuleInit {
       ],
       filterableAttributes: [
         'marque',
-        'modele', 
+        'modele',
         'version',
         'anneeDebut',
         'anneeFin',
@@ -65,7 +69,7 @@ export class MeilisearchService implements OnModuleInit {
       ],
       rankingRules: [
         'words',
-        'typo', 
+        'typo',
         'proximity',
         'attribute',
         'sort',
@@ -98,7 +102,7 @@ export class MeilisearchService implements OnModuleInit {
         'updatedAt',
       ],
       sortableAttributes: [
-        'createdAt', 
+        'createdAt',
         'updatedAt',
         'brand', // 🏭 Nouveau : tri par marque
         'name',
@@ -122,7 +126,10 @@ export class MeilisearchService implements OnModuleInit {
    */
   async searchVehicles(query: string, options: any = {}) {
     try {
-      this.logger.debug(`🚗 Recherche véhicules: "${query}" avec options:`, options);
+      this.logger.debug(
+        `🚗 Recherche véhicules: "${query}" avec options:`,
+        options,
+      );
       const searchParams = {
         q: query,
         limit: options.limit || 20,
@@ -149,14 +156,22 @@ export class MeilisearchService implements OnModuleInit {
    */
   async searchProducts(query: string, options: any = {}) {
     try {
-      this.logger.debug(`🔧 Recherche produits: "${query}" avec options:`, options);
+      this.logger.debug(
+        `🔧 Recherche produits: "${query}" avec options:`,
+        options,
+      );
       const searchParams = {
         q: query,
         limit: options.limit || 20,
         offset: options.offset || 0,
         filter: options.filter,
         sort: options.sort,
-        attributesToHighlight: ['name', 'reference', 'description', 'searchTerms'],
+        attributesToHighlight: [
+          'name',
+          'reference',
+          'description',
+          'searchTerms',
+        ],
         highlightPreTag: '<em>',
         highlightPostTag: '</em>',
       };
@@ -175,7 +190,9 @@ export class MeilisearchService implements OnModuleInit {
    */
   async indexVehicles(vehicles: any[]) {
     try {
-      return await this.vehicleIndex.addDocuments(vehicles, { primaryKey: 'id' });
+      return await this.vehicleIndex.addDocuments(vehicles, {
+        primaryKey: 'id',
+      });
     } catch (error) {
       this.logger.error('Error indexing vehicles:', error);
       throw error;
@@ -187,7 +204,9 @@ export class MeilisearchService implements OnModuleInit {
    */
   async indexProducts(products: any[]) {
     try {
-      return await this.productIndex.addDocuments(products, { primaryKey: 'id' });
+      return await this.productIndex.addDocuments(products, {
+        primaryKey: 'id',
+      });
     } catch (error) {
       this.logger.error('Error indexing products:', error);
       throw error;
@@ -199,7 +218,9 @@ export class MeilisearchService implements OnModuleInit {
    */
   async updateVehicle(vehicleId: string, vehicle: any) {
     try {
-      return await this.vehicleIndex.addDocuments([{ id: vehicleId, ...vehicle }]);
+      return await this.vehicleIndex.addDocuments([
+        { id: vehicleId, ...vehicle },
+      ]);
     } catch (error) {
       this.logger.error(`Error updating vehicle ${vehicleId}:`, error);
       throw error;
@@ -223,7 +244,9 @@ export class MeilisearchService implements OnModuleInit {
    */
   async addVehicles(vehicles: any[]): Promise<any> {
     try {
-      return await this.vehicleIndex.addDocuments(vehicles, { primaryKey: 'id' });
+      return await this.vehicleIndex.addDocuments(vehicles, {
+        primaryKey: 'id',
+      });
     } catch (error) {
       this.logger.error('Error adding vehicles batch:', error);
       throw error;
@@ -235,7 +258,9 @@ export class MeilisearchService implements OnModuleInit {
    */
   async addProducts(products: any[]): Promise<any> {
     try {
-      return await this.productIndex.addDocuments(products, { primaryKey: 'id' });
+      return await this.productIndex.addDocuments(products, {
+        primaryKey: 'id',
+      });
     } catch (error) {
       this.logger.error('Error adding products batch:', error);
       throw error;

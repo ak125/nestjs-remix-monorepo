@@ -4,16 +4,15 @@ import { VehicleSearchDto, VehicleFilterDto } from './dto/vehicles.dto';
 
 /**
  * 🚗 SERVICE VEHICLES FORMS - MEILLEURE APPROCHE
- * 
+ *
  * Service optimisé pour les formulaires de recherche véhicules
  * Utilise les vraies tables auto_* qui fonctionnent
  * Inspiré des méthodes _form.get.car.*.php
- * 
+ *
  * Tables : auto_marque (40), auto_modele (5745), auto_type (48918)
  */
 @Injectable()
 export class VehiclesFormsService extends SupabaseBaseService {
-
   /**
    * Récupère tous les modèles disponibles (sans filtrage par marque)
    * Équivalent à _form.get.car.modele.php
@@ -22,14 +21,16 @@ export class VehiclesFormsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('auto_modele')
-        .select(`
+        .select(
+          `
           modele_id,
           modele_alias,
           modele_name,
           modele_ful_name,
           modele_marque_id,
           auto_marque!inner(marque_id, marque_name, marque_alias)
-        `)
+        `,
+        )
         .eq('modele_display', 1)
         .eq('auto_marque.marque_display', 1);
 
@@ -50,7 +51,7 @@ export class VehiclesFormsService extends SupabaseBaseService {
         .limit(filter?.limit || 100)
         .range(
           filter?.offset || 0,
-          (filter?.offset || 0) + (filter?.limit || 100) - 1
+          (filter?.offset || 0) + (filter?.limit || 100) - 1,
         );
 
       if (error) {
@@ -73,7 +74,8 @@ export class VehiclesFormsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_alias,
           type_name,
@@ -91,7 +93,8 @@ export class VehiclesFormsService extends SupabaseBaseService {
             modele_ful_name,
             auto_marque!modele_marque_id(marque_id, marque_name, marque_alias)
           )
-        `)
+        `,
+        )
         .eq('type_display', 1);
 
       if (filter?.search) {
@@ -132,11 +135,16 @@ export class VehiclesFormsService extends SupabaseBaseService {
    * Récupère toutes les années disponibles
    * Équivalent à _form.get.car.year.php
    */
-  async getAllYears(filter?: { typeId?: number; startYear?: number; endYear?: number }) {
+  async getAllYears(filter?: {
+    typeId?: number;
+    startYear?: number;
+    endYear?: number;
+  }) {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_year_from,
           type_year_to,
@@ -145,7 +153,8 @@ export class VehiclesFormsService extends SupabaseBaseService {
             modele_name,
             auto_marque!inner(marque_id, marque_name)
           )
-        `)
+        `,
+        )
         .eq('type_display', 1)
         .not('type_year_from', 'is', null);
 
@@ -161,7 +170,9 @@ export class VehiclesFormsService extends SupabaseBaseService {
         query = query.lte('type_year_from', filter.endYear);
       }
 
-      const { data, error } = await query.order('type_year_from', { descending: true });
+      const { data, error } = await query.order('type_year_from', {
+        descending: true,
+      });
 
       if (error) {
         this.logger.error('Error fetching years:', error);
@@ -170,10 +181,10 @@ export class VehiclesFormsService extends SupabaseBaseService {
 
       // Générer la liste des années uniques
       const years = new Set<number>();
-      data?.forEach(item => {
+      data?.forEach((item) => {
         const startYear = item.type_year_from;
         const endYear = item.type_year_to || new Date().getFullYear();
-        
+
         for (let year = startYear; year <= endYear; year++) {
           years.add(year);
         }
@@ -182,15 +193,17 @@ export class VehiclesFormsService extends SupabaseBaseService {
       const uniqueYears = Array.from(years).sort((a, b) => b - a);
 
       return {
-        years: uniqueYears.map(year => ({
+        years: uniqueYears.map((year) => ({
           year,
-          count: data?.filter(item => 
-            year >= item.type_year_from && 
-            year <= (item.type_year_to || new Date().getFullYear())
-          ).length || 0
+          count:
+            data?.filter(
+              (item) =>
+                year >= item.type_year_from &&
+                year <= (item.type_year_to || new Date().getFullYear()),
+            ).length || 0,
         })),
         totalYears: uniqueYears.length,
-        details: data
+        details: data,
       };
     } catch (error) {
       this.logger.error('Exception getAllYears:', error);
@@ -205,7 +218,8 @@ export class VehiclesFormsService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_fuel,
@@ -219,13 +233,17 @@ export class VehiclesFormsService extends SupabaseBaseService {
             modele_alias,
             auto_marque!inner(marque_id, marque_name, marque_alias)
           )
-        `)
+        `,
+        )
         .eq('type_display', 1)
         .eq('auto_modele.modele_display', 1)
         .eq('auto_modele.auto_marque.marque_display', 1);
 
       if (searchDto.brandCode) {
-        query = query.eq('auto_modele.auto_marque.marque_alias', searchDto.brandCode);
+        query = query.eq(
+          'auto_modele.auto_marque.marque_alias',
+          searchDto.brandCode,
+        );
       }
 
       if (searchDto.modelCode) {
@@ -269,25 +287,26 @@ export class VehiclesFormsService extends SupabaseBaseService {
    */
   async getVehicleStats() {
     try {
-      const [brandsResult, modelsResult, typesResult, activeTypesResult] = await Promise.all([
-        this.client
-          .from('auto_marque')
-          .select('marque_id', { count: 'exact' })
-          .eq('marque_display', 1),
-        this.client
-          .from('auto_modele')
-          .select('modele_id', { count: 'exact' })
-          .eq('modele_display', 1),
-        this.client
-          .from('auto_type')
-          .select('type_id', { count: 'exact' })
-          .eq('type_display', 1),
-        this.client
-          .from('auto_type')
-          .select('type_id', { count: 'exact' })
-          .eq('type_display', 1)
-          .is('type_year_to', null),
-      ]);
+      const [brandsResult, modelsResult, typesResult, activeTypesResult] =
+        await Promise.all([
+          this.client
+            .from('auto_marque')
+            .select('marque_id', { count: 'exact' })
+            .eq('marque_display', 1),
+          this.client
+            .from('auto_modele')
+            .select('modele_id', { count: 'exact' })
+            .eq('modele_display', 1),
+          this.client
+            .from('auto_type')
+            .select('type_id', { count: 'exact' })
+            .eq('type_display', 1),
+          this.client
+            .from('auto_type')
+            .select('type_id', { count: 'exact' })
+            .eq('type_display', 1)
+            .is('type_year_to', null),
+        ]);
 
       if (brandsResult.error) throw brandsResult.error;
       if (modelsResult.error) throw modelsResult.error;

@@ -31,24 +31,30 @@ export class IndexationService {
 
   constructor(
     private readonly meilisearch: MeilisearchService,
-    @Inject(SupabaseIndexationService) private readonly supabase: SupabaseIndexationService,
+    @Inject(SupabaseIndexationService)
+    private readonly supabase: SupabaseIndexationService,
   ) {}
 
   /**
    * � INDEXER DONNÉES RÉELLES - Véhicules depuis Supabase
    */
-  async indexRealVehicles(batchSize: number = 1000): Promise<{ success: boolean; count: number; message: string }> {
+  async indexRealVehicles(
+    batchSize: number = 1000,
+  ): Promise<{ success: boolean; count: number; message: string }> {
     try {
-      this.logger.log('🚗 Démarrage indexation véhicules RÉELS depuis Supabase...');
+      this.logger.log(
+        '🚗 Démarrage indexation véhicules RÉELS depuis Supabase...',
+      );
 
       // Récupérer les vraies données depuis Supabase
-      const vehicleData = await this.supabase.getAllVehiclesFromSupabase(batchSize);
-      
+      const vehicleData =
+        await this.supabase.getAllVehiclesFromSupabase(batchSize);
+
       if (!vehicleData.success) {
         return {
           success: false,
           count: 0,
-          message: `Erreur récupération Supabase: ${vehicleData.error}`
+          message: `Erreur récupération Supabase: ${vehicleData.error}`,
         };
       }
 
@@ -56,27 +62,28 @@ export class IndexationService {
         return {
           success: true,
           count: 0,
-          message: 'Aucun véhicule trouvé dans Supabase'
+          message: 'Aucun véhicule trouvé dans Supabase',
         };
       }
 
       // Indexer dans Meilisearch
       await this.meilisearch.indexVehicles(vehicleData.data);
-      
-      this.logger.log(`✅ ${vehicleData.count} véhicules RÉELS indexés avec succès`);
-      
+
+      this.logger.log(
+        `✅ ${vehicleData.count} véhicules RÉELS indexés avec succès`,
+      );
+
       return {
         success: true,
         count: vehicleData.count,
-        message: `${vehicleData.count} véhicules réels indexés depuis Supabase`
+        message: `${vehicleData.count} véhicules réels indexés depuis Supabase`,
       };
-
     } catch (error) {
       this.logger.error('❌ Erreur indexation véhicules réels:', error);
       return {
         success: false,
         count: 0,
-        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       };
     }
   }
@@ -84,18 +91,23 @@ export class IndexationService {
   /**
    * 🔧 INDEXER DONNÉES RÉELLES - Produits depuis Supabase
    */
-  async indexRealProducts(batchSize: number = 1000): Promise<{ success: boolean; count: number; message: string }> {
+  async indexRealProducts(
+    batchSize: number = 1000,
+  ): Promise<{ success: boolean; count: number; message: string }> {
     try {
-      this.logger.log('🔧 Démarrage indexation produits RÉELS depuis Supabase...');
+      this.logger.log(
+        '🔧 Démarrage indexation produits RÉELS depuis Supabase...',
+      );
 
       // Récupérer les vraies données depuis Supabase
-      const productData = await this.supabase.getAllProductsFromSupabase(batchSize);
-      
+      const productData =
+        await this.supabase.getAllProductsFromSupabase(batchSize);
+
       if (!productData.success) {
         return {
           success: false,
           count: 0,
-          message: `Erreur récupération Supabase: ${productData.error}`
+          message: `Erreur récupération Supabase: ${productData.error}`,
         };
       }
 
@@ -103,27 +115,28 @@ export class IndexationService {
         return {
           success: true,
           count: 0,
-          message: 'Aucun produit trouvé dans Supabase'
+          message: 'Aucun produit trouvé dans Supabase',
         };
       }
 
       // Indexer dans Meilisearch
       await this.meilisearch.indexProducts(productData.data);
-      
-      this.logger.log(`✅ ${productData.count} produits RÉELS indexés avec succès`);
-      
+
+      this.logger.log(
+        `✅ ${productData.count} produits RÉELS indexés avec succès`,
+      );
+
       return {
         success: true,
         count: productData.count,
-        message: `${productData.count} produits réels indexés depuis Supabase`
+        message: `${productData.count} produits réels indexés depuis Supabase`,
       };
-
     } catch (error) {
       this.logger.error('❌ Erreur indexation produits réels:', error);
       return {
         success: false,
         count: 0,
-        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       };
     }
   }
@@ -131,25 +144,37 @@ export class IndexationService {
   /**
    * 📊 INDEXER TOUTES LES DONNÉES RÉELLES
    */
-  async indexAllRealData(): Promise<{ success: boolean; vehicles: number; products: number; message: string }> {
+  async indexAllRealData(): Promise<{
+    success: boolean;
+    vehicles: number;
+    products: number;
+    message: string;
+  }> {
     try {
-      this.logger.log('🚀 Démarrage indexation COMPLÈTE des données réelles...');
+      this.logger.log(
+        '🚀 Démarrage indexation COMPLÈTE des données réelles...',
+      );
 
       // Obtenir les statistiques Supabase d'abord
       const stats = await this.supabase.getSupabaseStats();
-      this.logger.log('📊 Statistiques Supabase:', JSON.stringify(stats, null, 2));
+      this.logger.log(
+        '📊 Statistiques Supabase:',
+        JSON.stringify(stats, null, 2),
+      );
 
       // Indexer véhicules et produits en parallèle
       const [vehicleResult, productResult] = await Promise.all([
         this.indexRealVehicles(1000),
-        this.indexRealProducts(1000)
+        this.indexRealProducts(1000),
       ]);
 
       const success = vehicleResult.success && productResult.success;
       const totalCount = vehicleResult.count + productResult.count;
 
       if (success) {
-        this.logger.log(`🎉 Indexation complète réussie: ${vehicleResult.count} véhicules + ${productResult.count} produits = ${totalCount} éléments`);
+        this.logger.log(
+          `🎉 Indexation complète réussie: ${vehicleResult.count} véhicules + ${productResult.count} produits = ${totalCount} éléments`,
+        );
       }
 
       return {
@@ -158,16 +183,15 @@ export class IndexationService {
         products: productResult.count,
         message: success
           ? `Indexation complète réussie: ${vehicleResult.count} véhicules + ${productResult.count} produits`
-          : `Erreurs: ${vehicleResult.success ? '' : vehicleResult.message} ${productResult.success ? '' : productResult.message}`
+          : `Erreurs: ${vehicleResult.success ? '' : vehicleResult.message} ${productResult.success ? '' : productResult.message}`,
       };
-
     } catch (error) {
       this.logger.error('❌ Erreur indexation complète:', error);
       return {
         success: false,
         vehicles: 0,
         products: 0,
-        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       };
     }
   }
@@ -175,32 +199,35 @@ export class IndexationService {
   /**
    * 🧪 Test de connexion Supabase
    */
-  async testSupabaseConnection(): Promise<{ success: boolean; message: string; data?: any }> {
+  async testSupabaseConnection(): Promise<{
+    success: boolean;
+    message: string;
+    data?: any;
+  }> {
     try {
       this.logger.log('🧪 Test de connexion Supabase...');
-      
+
       const result = await this.supabase.testSupabaseConnection();
-      
+
       if (result.success) {
         this.logger.log('✅ Connexion Supabase fonctionnelle');
         return {
           success: true,
           message: 'Connexion Supabase réussie',
-          data: result.samples
+          data: result.samples,
         };
       } else {
         this.logger.error('❌ Échec connexion Supabase:', result.error);
         return {
           success: false,
-          message: `Connexion échouée: ${result.error}`
+          message: `Connexion échouée: ${result.error}`,
         };
       }
-
     } catch (error) {
       this.logger.error('❌ Erreur test connexion:', error);
       return {
         success: false,
-        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        message: `Erreur: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       };
     }
   }
@@ -284,19 +311,27 @@ export class IndexationService {
   /**
    * 🛍️ Index products data with real Supabase data
    */
-  async indexProducts(): Promise<{ success: boolean; count: number; message: string }> {
+  async indexProducts(): Promise<{
+    success: boolean;
+    count: number;
+    message: string;
+  }> {
     try {
       this.logger.log('🛍️ Début indexation produits avec données réelles...');
 
       // Récupérer les vraies pièces depuis Supabase
       const productsData = await this.supabase.getAllProductsFromSupabase(1000);
-      
+
       if (!productsData.success || !productsData.data) {
-        this.logger.error('❌ Échec récupération produits Supabase:', productsData.error);
+        this.logger.error(
+          '❌ Échec récupération produits Supabase:',
+          productsData.error,
+        );
         return {
           success: false,
           count: 0,
-          message: 'Erreur lors de la récupération des produits depuis Supabase',
+          message:
+            'Erreur lors de la récupération des produits depuis Supabase',
         };
       }
 
@@ -309,12 +344,16 @@ export class IndexationService {
         };
       }
 
-      this.logger.log(`📦 ${productsData.data.length} produits récupérés, indexation en cours...`);
+      this.logger.log(
+        `📦 ${productsData.data.length} produits récupérés, indexation en cours...`,
+      );
 
       // Indexer les produits réels dans Meilisearch
       const result = await this.meilisearch.indexProducts(productsData.data);
-      
-      this.logger.log(`✅ ${productsData.data.length} produits réels indexés avec succès`);
+
+      this.logger.log(
+        `✅ ${productsData.data.length} produits réels indexés avec succès`,
+      );
 
       return {
         success: true,
@@ -337,12 +376,12 @@ export class IndexationService {
   async clearAllIndexes(): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log('🗑️ Suppression de tous les index...');
-      
+
       await this.meilisearch.clearIndex('vehicles');
       await this.meilisearch.clearIndex('products');
-      
+
       this.logger.log('✅ Tous les index ont été supprimés');
-      
+
       return {
         success: true,
         message: 'Tous les index ont été supprimés avec succès',
@@ -390,21 +429,27 @@ export class IndexationService {
   /**
    * 📰 Indexer les articles de blog dans Meilisearch
    */
-  async indexBlogArticles(articles: any[]): Promise<{ success: boolean; indexed: number; message: string }> {
+  async indexBlogArticles(
+    articles: any[],
+  ): Promise<{ success: boolean; indexed: number; message: string }> {
     try {
-      this.logger.log(`📰 Indexation de ${articles.length} articles de blog...`);
+      this.logger.log(
+        `📰 Indexation de ${articles.length} articles de blog...`,
+      );
 
       if (!articles || articles.length === 0) {
         return {
           success: false,
           indexed: 0,
-          message: 'Aucun article à indexer'
+          message: 'Aucun article à indexer',
         };
       }
 
       // Créer l'index blog_articles s'il n'existe pas
-      const blogIndex = await this.meilisearch.getClient().getIndex('blog_articles');
-      
+      const blogIndex = await this.meilisearch
+        .getClient()
+        .getIndex('blog_articles');
+
       // Configuration de l'index blog
       await blogIndex.updateSettings({
         searchableAttributes: [
@@ -413,19 +458,15 @@ export class IndexationService {
           'content',
           'tags',
           'category',
-          'searchTerms'
+          'searchTerms',
         ],
         filterableAttributes: [
           'articleType',
           'category',
           'publishedAt',
-          'tags'
+          'tags',
         ],
-        sortableAttributes: [
-          'publishedAt',
-          'viewsCount',
-          'readingTime'
-        ],
+        sortableAttributes: ['publishedAt', 'viewsCount', 'readingTime'],
         displayedAttributes: [
           'id',
           'title',
@@ -436,8 +477,8 @@ export class IndexationService {
           'tags',
           'publishedAt',
           'readingTime',
-          'viewsCount'
-        ]
+          'viewsCount',
+        ],
       });
 
       // Indexer par batches pour éviter la surcharge
@@ -446,27 +487,30 @@ export class IndexationService {
 
       for (let i = 0; i < articles.length; i += batchSize) {
         const batch = articles.slice(i, i + batchSize);
-        
+
         const task = await blogIndex.addDocuments(batch);
-        this.logger.log(`📝 Batch ${Math.floor(i/batchSize) + 1}: ${batch.length} articles ajoutés (Task ID: ${task.taskUid})`);
-        
+        this.logger.log(
+          `📝 Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} articles ajoutés (Task ID: ${task.taskUid})`,
+        );
+
         totalIndexed += batch.length;
       }
 
-      this.logger.log(`✅ ${totalIndexed} articles de blog indexés avec succès`);
-      
+      this.logger.log(
+        `✅ ${totalIndexed} articles de blog indexés avec succès`,
+      );
+
       return {
         success: true,
         indexed: totalIndexed,
-        message: `${totalIndexed} articles de blog indexés avec succès`
+        message: `${totalIndexed} articles de blog indexés avec succès`,
       };
-
     } catch (error) {
       this.logger.error('❌ Erreur indexation articles blog:', error);
       return {
         success: false,
         indexed: 0,
-        message: `Erreur indexation blog: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+        message: `Erreur indexation blog: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       };
     }
   }

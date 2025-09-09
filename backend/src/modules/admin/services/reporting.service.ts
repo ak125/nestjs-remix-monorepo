@@ -79,7 +79,7 @@ export class ReportingService extends SupabaseBaseService {
     try {
       this.logger.log('🔄 Génération rapport analytics...');
 
-            // Essayer le cache d'abord
+      // Essayer le cache d'abord
       const cacheKey = 'admin:analytics-report';
       const cached = await this.cacheService.get<ReportData>(cacheKey);
       if (cached) {
@@ -102,7 +102,7 @@ export class ReportingService extends SupabaseBaseService {
       return reportData;
     } catch (error) {
       this.logger.error('❌ Erreur génération rapport analytics:', error);
-      
+
       // Retourner des données par défaut en cas d'erreur
       return this.getDefaultReportData();
     }
@@ -117,7 +117,7 @@ export class ReportingService extends SupabaseBaseService {
     try {
       // Requête vers Supabase pour les utilisateurs
       const usersQuery = `${this.baseUrl}/___xtr_customer?select=*`;
-      
+
       const response = await fetch(usersQuery, {
         method: 'GET',
         headers: this.headers,
@@ -128,18 +128,22 @@ export class ReportingService extends SupabaseBaseService {
       }
 
       const users = await response.json();
-      
+
       // Calculs analytiques
       const total = users.length;
       const active = users.filter((u: any) => u.cst_is_active === 'Y').length;
-      const professional = users.filter((u: any) => u.cst_is_pro === 'Y').length;
-      const verified = users.filter((u: any) => u.cst_email_verified === 'Y').length;
-      
+      const professional = users.filter(
+        (u: any) => u.cst_is_pro === 'Y',
+      ).length;
+      const verified = users.filter(
+        (u: any) => u.cst_email_verified === 'Y',
+      ).length;
+
       // Utilisateurs de ce mois
       const thisMonth = new Date();
       thisMonth.setDate(1);
-      const newThisMonth = users.filter((u: any) => 
-        new Date(u.cst_create_date) >= thisMonth
+      const newThisMonth = users.filter(
+        (u: any) => new Date(u.cst_create_date) >= thisMonth,
       ).length;
 
       return {
@@ -170,7 +174,7 @@ export class ReportingService extends SupabaseBaseService {
     try {
       // Requête vers Supabase pour les commandes
       const ordersQuery = `${this.baseUrl}/___xtr_order?select=*`;
-      
+
       const response = await fetch(ordersQuery, {
         method: 'GET',
         headers: this.headers,
@@ -181,18 +185,21 @@ export class ReportingService extends SupabaseBaseService {
       }
 
       const orders = await response.json();
-      
+
       // Calculs analytiques
       const total = orders.length;
       const completed = orders.filter((o: any) => o.ord_is_pay === '1').length;
       const pending = orders.filter((o: any) => o.ord_is_pay === '0').length;
       const cancelled = orders.filter((o: any) => o.ord_ords_id === '4').length;
-      
+
       // Calcul du chiffre d'affaires
       const revenue = orders
         .filter((o: any) => o.ord_is_pay === '1')
-        .reduce((sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || '0'), 0);
-      
+        .reduce(
+          (sum: number, o: any) => sum + parseFloat(o.ord_total_ttc || '0'),
+          0,
+        );
+
       const avgOrderValue = completed > 0 ? revenue / completed : 0;
 
       return {
@@ -210,7 +217,7 @@ export class ReportingService extends SupabaseBaseService {
         completed: 1296,
         pending: 144,
         cancelled: 72,
-        revenue: 431856.40,
+        revenue: 431856.4,
         avgOrderValue: 299.99,
       };
     }
@@ -219,16 +226,22 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 📈 Métriques de performance
    */
-  private async getPerformanceMetrics(filters: ReportFilters): Promise<ReportData['performance']> {
+  private async getPerformanceMetrics(
+    filters: ReportFilters,
+  ): Promise<ReportData['performance']> {
     try {
       const users = await this.getUsersAnalytics(filters);
       const orders = await this.getOrdersAnalytics(filters);
 
       // Calculs des taux
-      const conversionRate = users.total > 0 ? (orders.total / users.total) * 100 : 0;
-      const activeUserRate = users.total > 0 ? (users.active / users.total) * 100 : 0;
-      const verificationRate = users.total > 0 ? (users.verified / users.total) * 100 : 0;
-      const completionRate = orders.total > 0 ? (orders.completed / orders.total) * 100 : 0;
+      const conversionRate =
+        users.total > 0 ? (orders.total / users.total) * 100 : 0;
+      const activeUserRate =
+        users.total > 0 ? (users.active / users.total) * 100 : 0;
+      const verificationRate =
+        users.total > 0 ? (users.verified / users.total) * 100 : 0;
+      const completionRate =
+        orders.total > 0 ? (orders.completed / orders.total) * 100 : 0;
 
       return {
         conversionRate,
@@ -250,7 +263,9 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 📊 Analytics des tendances
    */
-  private async getTrendsAnalytics(filters: ReportFilters): Promise<ReportData['trends']> {
+  private async getTrendsAnalytics(
+    filters: ReportFilters,
+  ): Promise<ReportData['trends']> {
     try {
       const users = await this.getUsersAnalytics(filters);
       const orders = await this.getOrdersAnalytics(filters);
@@ -342,7 +357,10 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 🎯 Génération d'un rapport spécifique
    */
-  async generateSpecificReport(type: string, filters: ReportFilters = {}): Promise<GeneratedReport> {
+  async generateSpecificReport(
+    type: string,
+    filters: ReportFilters = {},
+  ): Promise<GeneratedReport> {
     try {
       this.logger.log(`🔄 Génération rapport ${type}...`);
 
@@ -359,12 +377,12 @@ export class ReportingService extends SupabaseBaseService {
       };
 
       // TODO: Implémenter génération réelle selon le type
-      
+
       this.logger.log(`✅ Rapport ${type} en cours de génération`);
       return report;
     } catch (error) {
       this.logger.error(`❌ Erreur génération rapport ${type}:`, error);
-      
+
       return {
         id: 'error',
         name: `Erreur Rapport ${type}`,
@@ -381,11 +399,15 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 🔍 Health check du service de reporting
    */
-  async healthCheck(): Promise<{ status: string; message: string; timestamp: string }> {
+  async healthCheck(): Promise<{
+    status: string;
+    message: string;
+    timestamp: string;
+  }> {
     try {
       // Test de connexion aux données
       await this.getUsersAnalytics({});
-      
+
       return {
         status: 'healthy',
         message: 'Service de reporting opérationnel',
@@ -393,7 +415,7 @@ export class ReportingService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('❌ Health check reporting failed:', error);
-      
+
       return {
         status: 'degraded',
         message: 'Service de reporting en mode dégradé',
@@ -419,7 +441,7 @@ export class ReportingService extends SupabaseBaseService {
         completed: 1296,
         pending: 144,
         cancelled: 72,
-        revenue: 431856.40,
+        revenue: 431856.4,
         avgOrderValue: 299.99,
       },
       performance: {

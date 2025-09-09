@@ -55,22 +55,26 @@ export class ManufacturersService extends SupabaseBaseService {
   /**
    * Récupère la liste des constructeurs avec pagination
    */
-  async findAll(options: {
-    limit?: number;
-    offset?: number;
-    search?: string;
-    featured?: boolean;
-  } = {}): Promise<PaginatedResponse<Manufacturer>> {
+  async findAll(
+    options: {
+      limit?: number;
+      offset?: number;
+      search?: string;
+      featured?: boolean;
+    } = {},
+  ): Promise<PaginatedResponse<Manufacturer>> {
     const cacheKey = `manufacturers:all:${JSON.stringify(options)}`;
-    
+
     try {
-      let query = this.client.from('auto_marque').select('*', { count: 'exact' });
+      let query = this.client
+        .from('auto_marque')
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (options.search) {
         query = query.ilike('marque_name', `%${options.search}%`);
       }
-      
+
       if (options.featured) {
         query = query.eq('marque_is_featured', true);
       }
@@ -78,7 +82,7 @@ export class ManufacturersService extends SupabaseBaseService {
       // Pagination
       const limit = Math.min(options.limit || 50, 100);
       const offset = options.offset || 0;
-      
+
       query = query
         .eq('marque_is_active', true)
         .order('marque_name')
@@ -87,7 +91,9 @@ export class ManufacturersService extends SupabaseBaseService {
       const { data, error, count } = await query;
 
       if (error) {
-        throw new Error(`Erreur lors de la récupération des constructeurs: ${error.message}`);
+        throw new Error(
+          `Erreur lors de la récupération des constructeurs: ${error.message}`,
+        );
       }
 
       const manufacturers = data?.map(this.mapToManufacturer) || [];
@@ -127,7 +133,10 @@ export class ManufacturersService extends SupabaseBaseService {
 
       return this.mapToManufacturer(data);
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération du constructeur ${id}:`, error);
+      this.logger.error(
+        `Erreur lors de la récupération du constructeur ${id}:`,
+        error,
+      );
       return null;
     }
   }
@@ -151,7 +160,10 @@ export class ManufacturersService extends SupabaseBaseService {
         models: modelsResult.success ? modelsResult.data : [],
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération du constructeur ${id} avec modèles:`, error);
+      this.logger.error(
+        `Erreur lors de la récupération du constructeur ${id} avec modèles:`,
+        error,
+      );
       return null;
     }
   }
@@ -159,15 +171,16 @@ export class ManufacturersService extends SupabaseBaseService {
   /**
    * Recherche des constructeurs
    */
-  async search(query: string, limit = 20): Promise<PaginatedResponse<Manufacturer>> {
+  async search(
+    query: string,
+    limit = 20,
+  ): Promise<PaginatedResponse<Manufacturer>> {
     try {
       const { data, error, count } = await this.client
         .from('auto_marque')
         .select('*', { count: 'exact' })
         .eq('marque_is_active', true)
-        .or(
-          `marque_name.ilike.%${query}%,marque_slug.ilike.%${query}%`,
-        )
+        .or(`marque_name.ilike.%${query}%,marque_slug.ilike.%${query}%`)
         .order('marque_name')
         .limit(limit);
 
@@ -205,7 +218,9 @@ export class ManufacturersService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new Error(`Erreur lors de la récupération des constructeurs populaires: ${error.message}`);
+        throw new Error(
+          `Erreur lors de la récupération des constructeurs populaires: ${error.message}`,
+        );
       }
 
       return data?.map(this.mapToManufacturer) || [];
@@ -229,7 +244,9 @@ export class ManufacturersService extends SupabaseBaseService {
         .limit(limit);
 
       if (error) {
-        throw new Error(`Erreur lors de la récupération des constructeurs en vedette: ${error.message}`);
+        throw new Error(
+          `Erreur lors de la récupération des constructeurs en vedette: ${error.message}`,
+        );
       }
 
       return data?.map(this.mapToManufacturer) || [];
@@ -278,7 +295,8 @@ export class ManufacturersService extends SupabaseBaseService {
 
       return { success: true, data: models };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       this.logger.error('Erreur dans getModelsByManufacturer:', error);
       return {
         success: false,
@@ -358,11 +376,19 @@ export class ManufacturersService extends SupabaseBaseService {
     try {
       await this.client
         .from('auto_marque')
-        .update({ marque_view_count: this.client.rpc('increment_view_count', { manufacturer_id: id }) })
+        .update({
+          marque_view_count: this.client.rpc('increment_view_count', {
+            manufacturer_id: id,
+          }),
+        })
         .eq('marque_id', id);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      this.logger.error('Erreur lors de l\'incrémentation des vues:', errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
+      this.logger.error(
+        "Erreur lors de l'incrémentation des vues:",
+        errorMessage,
+      );
     }
   }
 }

@@ -130,7 +130,7 @@ export class UploadService {
       return uploadResult;
     } catch (error: any) {
       const errorMessage = error.message || 'Erreur inconnue';
-      
+
       // Enregistrement de l'échec
       await this.uploadAnalyticsService.recordUploadFailure(
         file.originalname,
@@ -202,7 +202,7 @@ export class UploadService {
             };
 
             const uploadResult = await this.uploadFile(file, fileOptions);
-            
+
             result.successful.push(uploadResult);
             result.summary.totalSize += uploadResult.size;
 
@@ -227,9 +227,7 @@ export class UploadService {
 
       // Vérification des échecs si continueOnError est false
       if (!options.continueOnError) {
-        const failures = batchResults.filter(
-          (r) => r.status === 'rejected'
-        );
+        const failures = batchResults.filter((r) => r.status === 'rejected');
         if (failures.length > 0) {
           break;
         }
@@ -298,10 +296,7 @@ export class UploadService {
     try {
       return await this.supabaseStorageService.listFiles(folder, limit);
     } catch (error: any) {
-      this.logger.error(
-        `❌ Failed to list files in ${folder}:`,
-        error.message,
-      );
+      this.logger.error(`❌ Failed to list files in ${folder}:`, error.message);
       return [];
     }
   }
@@ -397,13 +392,14 @@ export class UploadService {
    */
   async cleanupOldFiles(retentionDays: number = 90): Promise<number> {
     try {
-      this.logger.log(`🧹 Starting cleanup of files older than ${retentionDays} days`);
+      this.logger.log(
+        `🧹 Starting cleanup of files older than ${retentionDays} days`,
+      );
 
       // Pour l'instant, on nettoie juste les analytics
       // On pourrait étendre pour nettoyer aussi les fichiers du storage
-      const cleanedCount = await this.uploadAnalyticsService.cleanupOldData(
-        retentionDays,
-      );
+      const cleanedCount =
+        await this.uploadAnalyticsService.cleanupOldData(retentionDays);
 
       this.logger.log(`✅ Cleanup completed: ${cleanedCount} records cleaned`);
       return cleanedCount;
@@ -416,10 +412,7 @@ export class UploadService {
   /**
    * Génère un rapport d'utilisation
    */
-  async generateUsageReport(
-    startDate: Date,
-    endDate: Date,
-  ): Promise<any> {
+  async generateUsageReport(startDate: Date, endDate: Date): Promise<any> {
     try {
       return await this.uploadAnalyticsService.generateReport(
         startDate,
@@ -514,7 +507,7 @@ export class UploadService {
     try {
       // Test du storage
       const storageHealthy = await this.testStorageHealth();
-      
+
       // Test des métriques
       const metrics = await this.uploadAnalyticsService.getRealTimeMetrics();
 

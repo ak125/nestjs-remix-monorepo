@@ -20,7 +20,7 @@ export class StockTestController {
   async getSimpleStock() {
     try {
       this.logger.debug('Test simple récupération stock');
-      
+
       // Test très basique - récupérer juste les données stock
       const { data, error } = await this.stockService.client
         .from('stock')
@@ -49,7 +49,7 @@ export class StockTestController {
   async getRealTables() {
     try {
       this.logger.debug('Test tables qui existent vraiment');
-      
+
       // Test avec une table qui existe : ___xtr_customer
       const { data, error } = await this.stockService.client
         .from('___xtr_customer')
@@ -64,7 +64,7 @@ export class StockTestController {
         success: true,
         data: data || [],
         count: data?.length || 0,
-        message: 'Table ___xtr_customer accessible'
+        message: 'Table ___xtr_customer accessible',
       };
     } catch (error) {
       this.logger.error('Erreur test tables réelles', error);
@@ -75,11 +75,11 @@ export class StockTestController {
     }
   }
 
-    @Get('test-pieces')
+  @Get('test-pieces')
   async testPieces() {
     try {
       this.logger.debug('Test table pieces réelle');
-      
+
       const { data, error } = await this.stockService.client
         .from('pieces')
         .select('piece_id, piece_ref, piece_name, piece_des')
@@ -108,7 +108,7 @@ export class StockTestController {
   async testPiecesPrice() {
     try {
       this.logger.debug('Test table pieces_price');
-      
+
       const { data, error } = await this.stockService.client
         .from('pieces_price')
         .select('*')

@@ -201,7 +201,11 @@ export class CartController {
   ) {
     try {
       // Valider que l'itemId est un UUID
-      if (!itemId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      if (
+        !itemId.match(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        )
+      ) {
         throw new BadRequestException('ID item invalide (doit être un UUID)');
       }
 

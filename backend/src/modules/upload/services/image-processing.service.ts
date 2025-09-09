@@ -45,7 +45,12 @@ export interface ImageProcessingOptions {
   watermark?: {
     text?: string;
     image?: Buffer;
-    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+    position?:
+      | 'top-left'
+      | 'top-right'
+      | 'bottom-left'
+      | 'bottom-right'
+      | 'center';
     opacity?: number;
   };
   metadata?: {
@@ -145,12 +150,20 @@ export class ImageProcessingService {
 
       // 5. Filtres
       if (options.filters) {
-        pipeline = await this.applyFilters(pipeline, options.filters, operations);
+        pipeline = await this.applyFilters(
+          pipeline,
+          options.filters,
+          operations,
+        );
       }
 
       // 6. Filigrane
       if (options.watermark) {
-        pipeline = await this.applyWatermark(pipeline, options.watermark, operations);
+        pipeline = await this.applyWatermark(
+          pipeline,
+          options.watermark,
+          operations,
+        );
       }
 
       // 7. Métadonnées
@@ -169,7 +182,8 @@ export class ImageProcessingService {
       const finalMetadata = await sharp(processedBuffer).metadata();
 
       const processingTime = Date.now() - startTime;
-      const compressionRatio = ((originalSize - processedBuffer.length) / originalSize) * 100;
+      const compressionRatio =
+        ((originalSize - processedBuffer.length) / originalSize) * 100;
 
       const result: ProcessingResult = {
         buffer: processedBuffer,
@@ -205,10 +219,12 @@ export class ImageProcessingService {
       name: string;
       options: ImageProcessingOptions;
     }>,
-  ): Promise<Array<{
-    name: string;
-    result: ProcessingResult;
-  }>> {
+  ): Promise<
+    Array<{
+      name: string;
+      result: ProcessingResult;
+    }>
+  > {
     this.logger.log(`🖼️ Generating ${variants.length} image variants`);
 
     const results = await Promise.allSettled(
@@ -242,12 +258,14 @@ export class ImageProcessingService {
       quality?: number;
       crop?: boolean;
     },
-  ): Promise<Array<{
-    size: number;
-    buffer: Buffer;
-    width: number;
-    height: number;
-  }>> {
+  ): Promise<
+    Array<{
+      size: number;
+      buffer: Buffer;
+      width: number;
+      height: number;
+    }>
+  > {
     const thumbnails = [];
 
     for (const size of sizes) {
@@ -356,12 +374,16 @@ export class ImageProcessingService {
 
       // Analyse du format
       if (metadata.format === 'png' && !metadata.hasAlpha) {
-        recommendations.push('Convertir en JPEG (pas de transparence détectée)');
+        recommendations.push(
+          'Convertir en JPEG (pas de transparence détectée)',
+        );
         estimatedSavings += 30;
       }
 
       if (metadata.format === 'jpeg' || metadata.format === 'png') {
-        recommendations.push('Convertir en WebP pour une meilleure compression');
+        recommendations.push(
+          'Convertir en WebP pour une meilleure compression',
+        );
         estimatedSavings += 25;
       }
 
@@ -515,7 +537,9 @@ export class ImageProcessingService {
       case 'png':
         pipeline = pipeline.png({
           progressive: format.progressive || false,
-          compressionLevel: this.qualityToCompressionLevel(format.quality || 80),
+          compressionLevel: this.qualityToCompressionLevel(
+            format.quality || 80,
+          ),
         });
         break;
 
@@ -547,7 +571,7 @@ export class ImageProcessingService {
       'top-right': 'northeast',
       'bottom-left': 'southwest',
       'bottom-right': 'southeast',
-      'center': 'center',
+      center: 'center',
     };
 
     return positionMap[position || 'bottom-right'] || 'southeast';

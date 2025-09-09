@@ -37,12 +37,16 @@ export class SearchController {
   @Get('/test-meilisearch')
   async testMeilisearch(@Query('q') query: string = '1.4') {
     this.logger.log(`🔍 Test direct Meilisearch: "${query}"`);
-    
+
     try {
       // Test direct des services Meilisearch
-      const vehicleResults = await this.searchService['meilisearch'].searchVehicles(query, { limit: 5 });
-      const productResults = await this.searchService['meilisearch'].searchProducts(query, { limit: 5 });
-      
+      const vehicleResults = await this.searchService[
+        'meilisearch'
+      ].searchVehicles(query, { limit: 5 });
+      const productResults = await this.searchService[
+        'meilisearch'
+      ].searchProducts(query, { limit: 5 });
+
       return {
         success: true,
         vehicleResults,
@@ -86,11 +90,11 @@ export class SearchController {
         itemsLength: result.items?.length,
         total: result.total,
         page: result.page,
-        limit: result.limit
+        limit: result.limit,
       });
 
       const searchTime = Date.now() - startTime;
-      
+
       // Enregistrer analytics
       await this.analytics.recordSearch({
         query: params.query,

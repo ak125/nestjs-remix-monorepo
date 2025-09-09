@@ -28,7 +28,9 @@ export class WorkingStockService extends SupabaseBaseService {
 
   constructor() {
     super();
-    this.logger.log('WorkingStockService initialized - Using pieces_price as primary table');
+    this.logger.log(
+      'WorkingStockService initialized - Using pieces_price as primary table',
+    );
   }
 
   /**
@@ -45,12 +47,12 @@ export class WorkingStockService extends SupabaseBaseService {
     },
   ): Promise<StockDashboardData> {
     try {
-      this.logger.debug(`Getting stock dashboard - page: ${page}, limit: ${limit}`);
+      this.logger.debug(
+        `Getting stock dashboard - page: ${page}, limit: ${limit}`,
+      );
 
       // Construire la requête
-      let query = this.client
-        .from('pieces_price')
-        .select(`
+      let query = this.client.from('pieces_price').select(`
           pri_piece_id,
           pri_ref,
           pri_des,
@@ -120,7 +122,7 @@ export class WorkingStockService extends SupabaseBaseService {
         .select('*', { count: 'exact', head: true })
         .eq('pri_dispo', '1');
 
-      // Articles indisponibles  
+      // Articles indisponibles
       const { count: unavailableCount } = await this.client
         .from('pieces_price')
         .select('*', { count: 'exact', head: true })
@@ -159,7 +161,8 @@ export class WorkingStockService extends SupabaseBaseService {
     try {
       let searchQuery = this.client
         .from('pieces_price')
-        .select(`
+        .select(
+          `
           pri_piece_id,
           pri_ref,
           pri_des,
@@ -168,7 +171,8 @@ export class WorkingStockService extends SupabaseBaseService {
           pri_vente_ht,
           pri_qte_vente,
           pri_marge
-        `)
+        `,
+        )
         .or(`pri_ref.ilike.%${query}%,pri_des.ilike.%${query}%`)
         .limit(limit);
 
@@ -192,7 +196,10 @@ export class WorkingStockService extends SupabaseBaseService {
   /**
    * Mettre à jour la disponibilité
    */
-  async updateAvailability(pieceId: string, available: boolean): Promise<boolean> {
+  async updateAvailability(
+    pieceId: string,
+    available: boolean,
+  ): Promise<boolean> {
     try {
       const { error } = await this.client
         .from('pieces_price')
@@ -218,7 +225,8 @@ export class WorkingStockService extends SupabaseBaseService {
     try {
       const { data, error } = await this.client
         .from('pieces_price')
-        .select(`
+        .select(
+          `
           pri_piece_id,
           pri_ref,
           pri_des,
@@ -227,7 +235,8 @@ export class WorkingStockService extends SupabaseBaseService {
           pri_vente_ht,
           pri_qte_vente,
           pri_marge
-        `)
+        `,
+        )
         .eq('pri_dispo', '1')
         .order('pri_vente_ttc', { ascending: false })
         .limit(limit);

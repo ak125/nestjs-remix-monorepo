@@ -150,11 +150,11 @@ export const MessageFiltersSchema = z
     hasReplies: z.boolean().optional(),
     isFromAdmin: z.boolean().optional(),
     category: z.string().max(50).optional(),
-    
+
     // Filtres de date
     dateFrom: z.date().optional(),
     dateTo: z.date().optional(),
-    
+
     // Recherche textuelle
     search: z
       .string()
@@ -191,12 +191,12 @@ export const MessageSchema = z
     createdAt: z.date(),
     updatedAt: z.date().optional(),
     parentId: z.number().int().positive().optional(),
-    
+
     // Métadonnées
     isUrgent: z.boolean().default(false),
     category: z.string().optional(),
     attachments: z.array(z.string().url()).optional(),
-    
+
     // Statistiques du fil
     replyCount: z.number().int().min(0).default(0),
     lastReplyAt: z.date().optional(),
@@ -242,10 +242,10 @@ export const MessageStatsSchema = z
     unreadCount: z.number().int().min(0),
     threadCount: z.number().int().min(0),
     lastMessageAt: z.date().optional(),
-    
+
     // Statistiques par catégorie
     byCategory: z.record(z.string(), z.number().int().min(0)).optional(),
-    
+
     // Statistiques temporelles
     thisMonth: z.number().int().min(0).default(0),
     thisWeek: z.number().int().min(0).default(0),

@@ -19,10 +19,12 @@ export class UserShipmentController {
   @Get(':userId/shipments')
   async getUserShipments(@Param('userId') userId: string) {
     try {
-      this.logger.log(`[UserShipmentController] GET /api/users/${userId}/shipments`);
+      this.logger.log(
+        `[UserShipmentController] GET /api/users/${userId}/shipments`,
+      );
 
       const shipments = await this.userShipmentService.getUserShipments(userId);
-      
+
       return {
         success: true,
         data: shipments,
@@ -48,10 +50,12 @@ export class UserShipmentController {
   @Get(':userId/shipments/stats')
   async getUserShipmentStats(@Param('userId') userId: string) {
     try {
-      this.logger.log(`[UserShipmentController] GET /api/users/${userId}/shipments/stats`);
+      this.logger.log(
+        `[UserShipmentController] GET /api/users/${userId}/shipments/stats`,
+      );
 
       const stats = await this.userShipmentService.getUserShipmentStats(userId);
-      
+
       return {
         success: true,
         data: stats,

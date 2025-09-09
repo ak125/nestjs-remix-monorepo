@@ -1,14 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import { 
-  Order, 
-  OrderLine, 
-  OrderDbEntity, 
-  OrderLineDbEntity, 
+import {
+  Order,
+  OrderLine,
+  OrderDbEntity,
+  OrderLineDbEntity,
   OrderMapper,
   OrderStatus,
-  OrderWithDetails 
+  OrderWithDetails,
 } from '../../types/order.types';
 
 @Injectable()
@@ -30,8 +30,8 @@ export class OrderDataService extends SupabaseBaseService {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      return (data || []).map(dbOrder => OrderMapper.fromDb(dbOrder));
+
+      return (data || []).map((dbOrder) => OrderMapper.fromDb(dbOrder));
     } catch (error) {
       this.logger.error(`Failed to get orders for user ${userId}:`, error);
       throw error;
@@ -87,7 +87,10 @@ export class OrderDataService extends SupabaseBaseService {
   /**
    * Met à jour le statut d'une commande
    */
-  async updateOrderStatus(orderId: number, status: OrderStatus): Promise<Order> {
+  async updateOrderStatus(
+    orderId: number,
+    status: OrderStatus,
+  ): Promise<Order> {
     try {
       const { data, error } = await this.client
         .from('___xtr_order')

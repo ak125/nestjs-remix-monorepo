@@ -15,7 +15,7 @@ export class DatabaseAnalysisService {
    */
   async analyzeVehicleStructure() {
     this.logger.log('🔍 Analyse structure véhicules...');
-    
+
     try {
       const client = this.supabaseService.getClient();
 
@@ -75,11 +75,13 @@ export class DatabaseAnalysisService {
       // Test relation AUTO_TYPE → AUTO_MODELE
       const { data: typeWithModel, error: e1 } = await client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           auto_modele!inner(modele_name)
-        `)
+        `,
+        )
         .limit(3);
 
       return {
@@ -93,9 +95,9 @@ export class DatabaseAnalysisService {
         },
       };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
       };
     }
   }
@@ -106,17 +108,19 @@ export class DatabaseAnalysisService {
   async testOptimalQuery() {
     try {
       const client = this.supabaseService.getClient();
-      
+
       const { data: vehicles, error } = await client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           auto_modele!inner(
             modele_name,
             auto_marque!inner(marque_name)
           )
-        `)
+        `,
+        )
         .eq('type_display', 1)
         .limit(5);
 
@@ -167,7 +171,7 @@ export class DatabaseAnalysisService {
   async analyzePiecesStructure() {
     try {
       const client = this.supabaseService.getClient();
-      
+
       // Échantillon de pièces
       const { data: pieces, error } = await client
         .from('pieces')

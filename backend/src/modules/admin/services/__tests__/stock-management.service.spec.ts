@@ -102,10 +102,13 @@ describe('StockManagementService', () => {
 
     it('should handle errors gracefully', async () => {
       // Mock d'erreur Supabase
-      mockSupabaseClient.from().select().order.mockResolvedValue({
-        data: null,
-        error: { message: 'Test error' },
-      });
+      mockSupabaseClient
+        .from()
+        .select()
+        .order.mockResolvedValue({
+          data: null,
+          error: { message: 'Test error' },
+        });
 
       const result = await service.getStockDashboard();
 
@@ -118,10 +121,14 @@ describe('StockManagementService', () => {
   describe('reserveStock', () => {
     it('should handle insufficient stock', async () => {
       // Mock stock insuffisant
-      mockSupabaseClient.from().select().eq().single.mockResolvedValue({
-        data: { available: 5, reserved: 0 },
-        error: null,
-      });
+      mockSupabaseClient
+        .from()
+        .select()
+        .eq()
+        .single.mockResolvedValue({
+          data: { available: 5, reserved: 0 },
+          error: null,
+        });
 
       const result = await service.reserveStock('test-id', 10, 'order-123');
 

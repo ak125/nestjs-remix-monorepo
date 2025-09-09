@@ -34,27 +34,34 @@ export class VehiclesFormsController {
   @Get('models')
   async getAllModels(@Query() query: any) {
     const startTime = Date.now();
-    this.logger.log(`🔍 GET /models - search: ${query.search || 'none'}, limit: ${query.limit || 'default'}`);
-    
+    this.logger.log(
+      `🔍 GET /models - search: ${query.search || 'none'}, limit: ${query.limit || 'default'}`,
+    );
+
     try {
       // Pour récupérer tous les modèles, on fait appel à la recherche avancée
       const result = await this.vehiclesService.searchAdvanced(
         query.search || '',
         1000,
       );
-      
+
       const responseTime = Date.now() - startTime;
-      this.logger.log(`✅ Models retrieved: ${result.models?.length || 0} items in ${responseTime}ms`);
-      
+      this.logger.log(
+        `✅ Models retrieved: ${result.models?.length || 0} items in ${responseTime}ms`,
+      );
+
       return result.models;
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      this.logger.error(`❌ Error in getAllModels: ${error.message} (${responseTime}ms)`, error.stack);
+      this.logger.error(
+        `❌ Error in getAllModels: ${error.message} (${responseTime}ms)`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-    /**
+  /**
    * GET /api/vehicles/forms/types
    * Tous les types avec modèles et marques
    */
@@ -64,7 +71,7 @@ export class VehiclesFormsController {
     this.logger.log(
       `🔍 GET /types - modelId: ${query.modelId || 'none'}, search: ${query.search || 'none'}`,
     );
-    
+
     try {
       // Si modelId est fourni, utiliser l'endpoint spécifique
       if (query.modelId) {
@@ -76,7 +83,7 @@ export class VehiclesFormsController {
             page: parseInt(query.page) || 0,
           },
         );
-        
+
         // Adapter le format pour correspondre à celui attendu par le TypeSelector
         const formattedTypes = result.data.map((type) => ({
           type_id: type.type_id,
@@ -94,7 +101,9 @@ export class VehiclesFormsController {
         }));
 
         const responseTime = Date.now() - startTime;
-        this.logger.log(`✅ Types by model retrieved: ${formattedTypes.length} items in ${responseTime}ms`);
+        this.logger.log(
+          `✅ Types by model retrieved: ${formattedTypes.length} items in ${responseTime}ms`,
+        );
         return formattedTypes;
       }
 
@@ -103,9 +112,11 @@ export class VehiclesFormsController {
         query.search || '',
         2000,
       );
-      
+
       const responseTime = Date.now() - startTime;
-      this.logger.log(`✅ All types retrieved: ${result.types?.length || 0} items in ${responseTime}ms`);
+      this.logger.log(
+        `✅ All types retrieved: ${result.types?.length || 0} items in ${responseTime}ms`,
+      );
       return result.types;
     } catch (error) {
       const responseTime = Date.now() - startTime;
@@ -123,7 +134,10 @@ export class VehiclesFormsController {
    */
   @Get('search')
   async searchVehicles(@Query() query: any) {
-    return this.vehiclesService.searchAdvanced(query.q || query.search || '', 100);
+    return this.vehiclesService.searchAdvanced(
+      query.q || query.search || '',
+      100,
+    );
   }
 
   /**
@@ -138,50 +152,50 @@ export class VehiclesFormsController {
       const typesResult = await this.vehiclesService.findTypesByModel('', {
         search: '',
         limit: 50000, // Grande limite pour chercher le type
-        page: 0
+        page: 0,
       });
-      
+
       const specificType = typesResult.data.find(
-        type => type.type_id === query.typeId.toString()
+        (type) => type.type_id === query.typeId.toString(),
       );
-      
+
       if (specificType && specificType.type_year_from) {
         const startYear = parseInt(specificType.type_year_from);
-        const endYear = specificType.type_year_to 
-          ? parseInt(specificType.type_year_to) 
+        const endYear = specificType.type_year_to
+          ? parseInt(specificType.type_year_to)
           : new Date().getFullYear();
-        
+
         const years = [];
         for (let year = startYear; year <= endYear; year++) {
-          years.push({ 
-            year, 
+          years.push({
+            year,
             count: 1,
-            available: true 
+            available: true,
           });
         }
-        
+
         return {
           years: years.reverse(), // Plus récent en premier
           totalYears: years.length,
-          typeId: query.typeId
+          typeId: query.typeId,
         };
       }
     }
-    
+
     // Sinon, retourner une plage d'années génériques
     const currentYear = new Date().getFullYear();
     const years = [];
     for (let year = 1990; year <= currentYear; year++) {
-      years.push({ 
-        year, 
+      years.push({
+        year,
         count: 1,
-        available: true 
+        available: true,
       });
     }
-    
+
     return {
       years: years.reverse(),
-      totalYears: years.length
+      totalYears: years.length,
     };
   }
 
@@ -193,21 +207,21 @@ export class VehiclesFormsController {
   async getStats() {
     const startTime = Date.now();
     this.logger.log('📊 GET /stats - Fetching vehicle statistics');
-    
+
     try {
       const stats = await this.vehiclesService.getVehicleStats();
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.log(
         `✅ Stats retrieved: ${JSON.stringify({
           brands: stats.totalBrands,
           models: stats.totalModels,
           types: stats.totalTypes,
           products: stats.totalProducts,
-          responseTime: `${responseTime}ms`
+          responseTime: `${responseTime}ms`,
         })}`,
       );
-      
+
       return {
         ...stats,
         performance: {
@@ -221,7 +235,7 @@ export class VehiclesFormsController {
         `❌ Error in getStats: ${error.message} (${responseTime}ms)`,
         error.stack,
       );
-      
+
       return {
         totalBrands: 0,
         totalModels: 0,
@@ -245,12 +259,12 @@ export class VehiclesFormsController {
   async getCompatibleProducts(@Query() query: any) {
     try {
       const { modelId, typeId, year } = query;
-      
+
       if (!modelId && !typeId && !year) {
         return {
           products: [],
           total: 0,
-          message: 'Aucun critère de recherche fourni'
+          message: 'Aucun critère de recherche fourni',
         };
       }
 
@@ -264,7 +278,7 @@ export class VehiclesFormsController {
           price: 24.99,
           brand: 'AutoParts Pro',
           category: 'Filtration',
-          description: 
+          description:
             'Filtre à huile haute performance pour moteurs essence et diesel',
         },
         {
@@ -296,13 +310,12 @@ export class VehiclesFormsController {
           year,
         },
       };
-
     } catch (error) {
       console.error('Erreur dans getCompatibleProducts:', error);
       return {
         products: [],
         total: 0,
-        error: 'Erreur lors de la recherche de produits'
+        error: 'Erreur lors de la recherche de produits',
       };
     }
   }

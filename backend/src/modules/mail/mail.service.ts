@@ -21,7 +21,7 @@ export class MailService {
       // TODO: Implémenter l'envoi d'email
       // Utiliser un service comme SendGrid, Mailgun, ou SMTP
       this.logger.log(`Sending email to ${emailData.to}: ${emailData.subject}`);
-      
+
       // Simulation pour le moment
       console.log('Email data:', emailData);
     } catch (error) {
@@ -79,10 +79,7 @@ export class MailService {
   /**
    * Envoie un email de facture
    */
-  async sendInvoice(
-    customerEmail: string,
-    invoiceData: any,
-  ): Promise<void> {
+  async sendInvoice(customerEmail: string, invoiceData: any): Promise<void> {
     try {
       await this.sendEmail({
         to: customerEmail,

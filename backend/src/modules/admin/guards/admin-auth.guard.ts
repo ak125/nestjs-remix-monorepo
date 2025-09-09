@@ -12,11 +12,11 @@ export class AdminAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    
+
     // TODO: Implémenter la vraie logique d'authentification admin
     // Pour l'instant, on simule qu'on a un utilisateur admin connecté
     const user = this.extractUserFromRequest(request);
-    
+
     if (!user) {
       throw new UnauthorizedException('Authentification requise');
     }
@@ -37,7 +37,7 @@ export class AdminAuthGuard implements CanActivate {
 
     // Attacher l'utilisateur à la requête pour usage ultérieur
     request.user = user;
-    
+
     return true;
   }
 

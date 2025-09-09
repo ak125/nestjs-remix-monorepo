@@ -60,7 +60,7 @@ import { SearchModule } from '../search/search.module';
     // Services principaux
     BlogService,
     BlogCacheService,
-    
+
     // Services spécialisés par type de contenu
     AdviceService,
     GuideService,

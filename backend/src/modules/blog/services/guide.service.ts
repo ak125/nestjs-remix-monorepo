@@ -13,7 +13,7 @@ export interface GuideFilters {
 
 /**
  * 📖 GuideService - Service spécialisé pour les guides automobiles
- * 
+ *
  * Gère spécifiquement la table __blog_guide avec logique métier
  * dédiée aux guides d'achat, techniques et de réparation.
  */
@@ -29,11 +29,13 @@ export class GuideService {
   /**
    * 📖 Récupérer tous les guides avec pagination
    */
-  async getAllGuides(options: {
-    limit?: number;
-    offset?: number;
-    filters?: GuideFilters;
-  } = {}): Promise<{ articles: BlogArticle[]; total: number }> {
+  async getAllGuides(
+    options: {
+      limit?: number;
+      offset?: number;
+      filters?: GuideFilters;
+    } = {},
+  ): Promise<{ articles: BlogArticle[]; total: number }> {
     const { limit = 20, offset = 0, filters = {} } = options;
     const cacheKey = `guides_all:${limit}:${offset}:${JSON.stringify(filters)}`;
 
@@ -44,9 +46,7 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client
-        .from('__blog_guide')
-        .select('*');
+      let query = client.from('__blog_guide').select('*');
 
       // Appliquer les filtres
       if (filters.type) {
@@ -80,9 +80,10 @@ export class GuideService {
 
       this.logger.log(`📖 Récupéré ${articles.length} guides (${count} total)`);
       return result;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération guides: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération guides: ${(error as Error).message}`,
+      );
       return { articles: [], total: 0 };
     }
   }
@@ -114,9 +115,10 @@ export class GuideService {
       }
 
       return article;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération guide ${id}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération guide ${id}: ${(error as Error).message}`,
+      );
       return null;
     }
   }
@@ -134,16 +136,18 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: guidesList } = await client
         .from('__blog_guide')
         .select('*')
-        .or([
-          'bg_title.ilike.%achat%',
-          'bg_title.ilike.%acheter%',
-          'bg_title.ilike.%choisir%',
-          'bg_keywords.ilike.%achat%',
-        ].join(','))
+        .or(
+          [
+            'bg_title.ilike.%achat%',
+            'bg_title.ilike.%acheter%',
+            'bg_title.ilike.%choisir%',
+            'bg_keywords.ilike.%achat%',
+          ].join(','),
+        )
         .order('bg_visit', { ascending: false })
         .limit(10);
 
@@ -157,9 +161,10 @@ export class GuideService {
 
       await this.cacheManager.set(cacheKey, articles, 3600);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur guides d'achat: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur guides d'achat: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -177,16 +182,18 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: guidesList } = await client
         .from('__blog_guide')
         .select('*')
-        .or([
-          'bg_title.ilike.%technique%',
-          'bg_title.ilike.%fonctionnement%',
-          'bg_title.ilike.%comprendre%',
-          'bg_keywords.ilike.%technique%',
-        ].join(','))
+        .or(
+          [
+            'bg_title.ilike.%technique%',
+            'bg_title.ilike.%fonctionnement%',
+            'bg_title.ilike.%comprendre%',
+            'bg_keywords.ilike.%technique%',
+          ].join(','),
+        )
         .order('bg_visit', { ascending: false })
         .limit(10);
 
@@ -200,9 +207,10 @@ export class GuideService {
 
       await this.cacheManager.set(cacheKey, articles, 3600);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur guides techniques: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur guides techniques: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -233,22 +241,40 @@ export class GuideService {
         .select('bg_visit, bg_title, bg_keywords');
 
       if (!allGuides) {
-        return { total: 0, totalViews: 0, avgViews: 0, byType: [], mostPopular: [] };
+        return {
+          total: 0,
+          totalViews: 0,
+          avgViews: 0,
+          byType: [],
+          mostPopular: [],
+        };
       }
 
-      const totalViews = allGuides.reduce((sum, guide) => 
-        sum + (parseInt(guide.bg_visit) || 0), 0);
+      const totalViews = allGuides.reduce(
+        (sum, guide) => sum + (parseInt(guide.bg_visit) || 0),
+        0,
+      );
       const avgViews = Math.round(totalViews / allGuides.length);
 
       // Analyser les types de guides
       const typeCount: { [key: string]: number } = {};
-      allGuides.forEach(guide => {
+      allGuides.forEach((guide) => {
         const title = guide.bg_title.toLowerCase();
-        if (title.includes('achat') || title.includes('acheter') || title.includes('choisir')) {
+        if (
+          title.includes('achat') ||
+          title.includes('acheter') ||
+          title.includes('choisir')
+        ) {
           typeCount['Achat'] = (typeCount['Achat'] || 0) + 1;
-        } else if (title.includes('technique') || title.includes('fonctionnement')) {
+        } else if (
+          title.includes('technique') ||
+          title.includes('fonctionnement')
+        ) {
           typeCount['Technique'] = (typeCount['Technique'] || 0) + 1;
-        } else if (title.includes('entretien') || title.includes('maintenance')) {
+        } else if (
+          title.includes('entretien') ||
+          title.includes('maintenance')
+        ) {
           typeCount['Entretien'] = (typeCount['Entretien'] || 0) + 1;
         } else if (title.includes('réparation') || title.includes('réparer')) {
           typeCount['Réparation'] = (typeCount['Réparation'] || 0) + 1;
@@ -258,7 +284,7 @@ export class GuideService {
       });
 
       const byType = Object.entries(typeCount)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .map(([type, count]) => ({ type, count }));
 
       // Guides les plus populaires
@@ -286,10 +312,15 @@ export class GuideService {
 
       await this.cacheManager.set(cacheKey, stats, 3600);
       return stats;
-
     } catch (error) {
       this.logger.error(`❌ Erreur stats guides: ${(error as Error).message}`);
-      return { total: 0, totalViews: 0, avgViews: 0, byType: [], mostPopular: [] };
+      return {
+        total: 0,
+        totalViews: 0,
+        avgViews: 0,
+        byType: [],
+        mostPopular: [],
+      };
     }
   }
 
@@ -299,7 +330,7 @@ export class GuideService {
   async incrementGuideViews(id: string | number): Promise<boolean> {
     try {
       const client = this.supabaseService.getClient();
-      
+
       // Récupérer les vues actuelles
       const { data: current } = await client
         .from('__blog_guide')
@@ -328,16 +359,20 @@ export class GuideService {
 
       this.logger.debug(`👀 Vues mises à jour pour guide ${id}: ${newViews}`);
       return true;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur incrément vues: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur incrément vues: ${(error as Error).message}`,
+      );
       return false;
     }
   }
 
   // MÉTHODES PRIVÉES
 
-  private async transformGuideToArticle(client: any, guide: any): Promise<BlogArticle> {
+  private async transformGuideToArticle(
+    client: any,
+    guide: any,
+  ): Promise<BlogArticle> {
     // Récupérer les sections H2/H3
     const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
       client

@@ -75,7 +75,7 @@ export class SystemHealthController {
   }
 
   // 🚀 Nouveaux endpoints avancés utilisant le SystemService existant
-  
+
   @Get('status')
   async getSystemStatus() {
     this.logger.log('🎯 System status demandé (avancé)');

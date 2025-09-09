@@ -8,7 +8,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { FileUploadResult, UploadType, UploadAnalytics } from '../dto/upload.dto';
+import {
+  FileUploadResult,
+  UploadType,
+  UploadAnalytics,
+} from '../dto/upload.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { Cache } from 'cache-manager';
@@ -179,12 +183,12 @@ export class UploadAnalyticsService extends SupabaseBaseService {
     cacheKey?: string,
   ): Promise<AnalyticsReport> {
     const cacheKeyToUse =
-      cacheKey || `analytics_report_${startDate.getTime()}_${endDate.getTime()}`;
+      cacheKey ||
+      `analytics_report_${startDate.getTime()}_${endDate.getTime()}`;
 
     // Vérification du cache
-    const cachedReport = await this.cacheManager.get<AnalyticsReport>(
-      cacheKeyToUse,
-    );
+    const cachedReport =
+      await this.cacheManager.get<AnalyticsReport>(cacheKeyToUse);
     if (cachedReport) {
       this.logger.debug('📊 Returning cached analytics report');
       return cachedReport;
@@ -265,7 +269,10 @@ export class UploadAnalyticsService extends SupabaseBaseService {
       }
 
       const uploads = data || [];
-      const totalSize = uploads.reduce((sum, upload) => sum + (upload.size || 0), 0);
+      const totalSize = uploads.reduce(
+        (sum, upload) => sum + (upload.size || 0),
+        0,
+      );
       const averageSize = uploads.length > 0 ? totalSize / uploads.length : 0;
 
       // Top MIME types
@@ -315,7 +322,9 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   }> {
     try {
       const endDate = new Date();
-      const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
+      const startDate = new Date(
+        endDate.getTime() - days * 24 * 60 * 60 * 1000,
+      );
 
       const { data, error } = await this.supabase
         .from('upload_analytics')
@@ -392,7 +401,8 @@ export class UploadAnalyticsService extends SupabaseBaseService {
    */
   private async updateAllMetrics(): Promise<void> {
     this.realTimeMetrics.errorRate = await this.calculateErrorRate();
-    this.realTimeMetrics.averageResponseTime = await this.calculateAverageResponseTime();
+    this.realTimeMetrics.averageResponseTime =
+      await this.calculateAverageResponseTime();
   }
 
   /**
@@ -420,12 +430,15 @@ export class UploadAnalyticsService extends SupabaseBaseService {
     const summary = {
       totalUploads: uploads.length,
       totalSize: successfulUploads.reduce((sum, u) => sum + (u.size || 0), 0),
-      averageSize: successfulUploads.length > 0 
-        ? successfulUploads.reduce((sum, u) => sum + (u.size || 0), 0) / successfulUploads.length 
-        : 0,
-      successRate: uploads.length > 0 
-        ? (successfulUploads.length / uploads.length) * 100 
-        : 0,
+      averageSize:
+        successfulUploads.length > 0
+          ? successfulUploads.reduce((sum, u) => sum + (u.size || 0), 0) /
+            successfulUploads.length
+          : 0,
+      successRate:
+        uploads.length > 0
+          ? (successfulUploads.length / uploads.length) * 100
+          : 0,
     };
 
     // Breakdown par type
@@ -477,9 +490,10 @@ export class UploadAnalyticsService extends SupabaseBaseService {
       .filter((t) => t && t > 0);
 
     const performance = {
-      averageUploadTime: uploadTimes.length > 0 
-        ? uploadTimes.reduce((sum, t) => sum + t, 0) / uploadTimes.length 
-        : 0,
+      averageUploadTime:
+        uploadTimes.length > 0
+          ? uploadTimes.reduce((sum, t) => sum + t, 0) / uploadTimes.length
+          : 0,
       slowestUpload: Math.max(...uploadTimes, 0),
       fastestUpload: Math.min(...uploadTimes, 0),
       peakHours: this.calculatePeakHours(successfulUploads),
@@ -489,7 +503,8 @@ export class UploadAnalyticsService extends SupabaseBaseService {
     const errorTypes: Record<string, number> = {};
     failedUploads.forEach((upload) => {
       if (upload.error_message) {
-        errorTypes[upload.error_message] = (errorTypes[upload.error_message] || 0) + 1;
+        errorTypes[upload.error_message] =
+          (errorTypes[upload.error_message] || 0) + 1;
       }
     });
 
@@ -514,7 +529,9 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   /**
    * Calcule les heures de pointe
    */
-  private calculatePeakHours(uploads: any[]): Array<{ hour: number; count: number }> {
+  private calculatePeakHours(
+    uploads: any[],
+  ): Array<{ hour: number; count: number }> {
     const hourCounts: Record<number, number> = {};
 
     uploads.forEach((upload) => {
@@ -578,7 +595,9 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   /**
    * Agrège les données par jour
    */
-  private aggregateByDay(uploads: any[]): Array<{ date: string; uploads: number; size: number }> {
+  private aggregateByDay(
+    uploads: any[],
+  ): Array<{ date: string; uploads: number; size: number }> {
     const daily: Record<string, { uploads: number; size: number }> = {};
 
     uploads.forEach((upload) => {
@@ -598,7 +617,9 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   /**
    * Calcule les taux de croissance
    */
-  private calculateGrowthRates(daily: Array<{ uploads: number; size: number }>): {
+  private calculateGrowthRates(
+    daily: Array<{ uploads: number; size: number }>,
+  ): {
     uploadsGrowth: number;
     sizeGrowth: number;
   } {
@@ -615,12 +636,14 @@ export class UploadAnalyticsService extends SupabaseBaseService {
     const firstHalfSize = firstHalf.reduce((sum, d) => sum + d.size, 0);
     const secondHalfSize = secondHalf.reduce((sum, d) => sum + d.size, 0);
 
-    const uploadsGrowth = firstHalfUploads > 0 
-      ? ((secondHalfUploads - firstHalfUploads) / firstHalfUploads) * 100 
-      : 0;
-    const sizeGrowth = firstHalfSize > 0 
-      ? ((secondHalfSize - firstHalfSize) / firstHalfSize) * 100 
-      : 0;
+    const uploadsGrowth =
+      firstHalfUploads > 0
+        ? ((secondHalfUploads - firstHalfUploads) / firstHalfUploads) * 100
+        : 0;
+    const sizeGrowth =
+      firstHalfSize > 0
+        ? ((secondHalfSize - firstHalfSize) / firstHalfSize) * 100
+        : 0;
 
     return { uploadsGrowth, sizeGrowth };
   }

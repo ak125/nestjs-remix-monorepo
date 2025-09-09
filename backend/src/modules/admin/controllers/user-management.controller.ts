@@ -44,7 +44,7 @@ export class UserManagementController {
       const stats = await this.userManagementService.getUserStats();
 
       this.logger.log('✅ Stats utilisateurs récupérées');
-      
+
       return {
         success: true,
         data: stats,
@@ -53,11 +53,12 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur stats utilisateurs:', error);
-      
+
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la récupération des statistiques utilisateurs',
+          message:
+            'Erreur lors de la récupération des statistiques utilisateurs',
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -81,7 +82,7 @@ export class UserManagementController {
       this.logger.log('👥 Récupération liste utilisateurs...');
 
       const filters: UserFilters = {};
-      
+
       if (page) filters.page = parseInt(page);
       if (limit) filters.limit = parseInt(limit);
       if (search) filters.search = search;
@@ -92,7 +93,7 @@ export class UserManagementController {
       const result = await this.userManagementService.getUsers(filters);
 
       this.logger.log(`✅ ${result.users.length} utilisateurs récupérés`);
-      
+
       return {
         success: true,
         data: result,
@@ -101,7 +102,7 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur liste utilisateurs:', error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -122,7 +123,7 @@ export class UserManagementController {
       this.logger.log(`👤 Récupération utilisateur: ${userId}`);
 
       const user = await this.userManagementService.getUserById(userId);
-      
+
       if (!user) {
         throw new HttpException(
           {
@@ -134,7 +135,7 @@ export class UserManagementController {
       }
 
       this.logger.log(`✅ Utilisateur ${userId} récupéré`);
-      
+
       return {
         success: true,
         data: user,
@@ -143,15 +144,15 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur utilisateur ${userId}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la récupération de l\'utilisateur',
+          message: "Erreur lors de la récupération de l'utilisateur",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -181,19 +182,21 @@ export class UserManagementController {
         userId,
         updates,
       );
-      
+
       if (!success) {
         throw new HttpException(
           {
             success: false,
-            message: 'Échec de la mise à jour de l\'utilisateur',
+            message: "Échec de la mise à jour de l'utilisateur",
           },
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      this.logger.log(`✅ Utilisateur ${userId} mis à jour par admin ${admin?.cst_id}`);
-      
+      this.logger.log(
+        `✅ Utilisateur ${userId} mis à jour par admin ${admin?.cst_id}`,
+      );
+
       return {
         success: true,
         message: 'Utilisateur mis à jour avec succès',
@@ -201,15 +204,15 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur mise à jour utilisateur ${userId}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la mise à jour de l\'utilisateur',
+          message: "Erreur lors de la mise à jour de l'utilisateur",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -233,35 +236,40 @@ export class UserManagementController {
         userId,
         reason,
       );
-      
+
       if (!success) {
         throw new HttpException(
           {
             success: false,
-            message: 'Échec de la désactivation de l\'utilisateur',
+            message: "Échec de la désactivation de l'utilisateur",
           },
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      this.logger.log(`✅ Utilisateur ${userId} désactivé par admin ${admin?.cst_id}`);
-      
+      this.logger.log(
+        `✅ Utilisateur ${userId} désactivé par admin ${admin?.cst_id}`,
+      );
+
       return {
         success: true,
         message: 'Utilisateur désactivé avec succès',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur désactivation utilisateur ${userId}:`, error);
-      
+      this.logger.error(
+        `❌ Erreur désactivation utilisateur ${userId}:`,
+        error,
+      );
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la désactivation de l\'utilisateur',
+          message: "Erreur lors de la désactivation de l'utilisateur",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -273,27 +281,26 @@ export class UserManagementController {
    * ✅ Réactiver un utilisateur
    */
   @Patch('/:userId/reactivate')
-  async reactivateUser(
-    @Param('userId') userId: string,
-    @User() admin?: any,
-  ) {
+  async reactivateUser(@Param('userId') userId: string, @User() admin?: any) {
     try {
       this.logger.log(`✅ Réactivation utilisateur: ${userId}`);
 
       const success = await this.userManagementService.reactivateUser(userId);
-      
+
       if (!success) {
         throw new HttpException(
           {
             success: false,
-            message: 'Échec de la réactivation de l\'utilisateur',
+            message: "Échec de la réactivation de l'utilisateur",
           },
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      this.logger.log(`✅ Utilisateur ${userId} réactivé par admin ${admin?.cst_id}`);
-      
+      this.logger.log(
+        `✅ Utilisateur ${userId} réactivé par admin ${admin?.cst_id}`,
+      );
+
       return {
         success: true,
         message: 'Utilisateur réactivé avec succès',
@@ -301,15 +308,15 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur réactivation utilisateur ${userId}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         {
           success: false,
-          message: 'Erreur lors de la réactivation de l\'utilisateur',
+          message: "Erreur lors de la réactivation de l'utilisateur",
           error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -335,7 +342,7 @@ export class UserManagementController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur health check user management:', error);
-      
+
       throw new HttpException(
         {
           success: false,

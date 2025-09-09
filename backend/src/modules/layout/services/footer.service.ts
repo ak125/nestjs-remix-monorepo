@@ -59,7 +59,7 @@ export class FooterService {
     // Initialiser le client Supabase
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>('SUPABASE_ANON_KEY');
-    
+
     if (supabaseUrl && supabaseKey) {
       this.supabaseClient = createClient(supabaseUrl, supabaseKey);
     }
@@ -83,13 +83,18 @@ export class FooterService {
         return cached as FooterData;
       }
 
-      this.logger.log(`Cache MISS - Génération footer ${context}:${finalVersion}`);
+      this.logger.log(
+        `Cache MISS - Génération footer ${context}:${finalVersion}`,
+      );
 
       // Générer les données selon le contexte et version
       let footerData: FooterData;
-      
+
       if (this.supabaseClient && finalVersion === 'v8') {
-        footerData = await this.buildModernFooterWithSupabase(context, finalVersion);
+        footerData = await this.buildModernFooterWithSupabase(
+          context,
+          finalVersion,
+        );
       } else {
         footerData = await this.buildFooterForContext(context);
       }
@@ -108,7 +113,10 @@ export class FooterService {
   /**
    * Construction moderne du footer avec Supabase (v8)
    */
-  private async buildModernFooterWithSupabase(context: string, version: string): Promise<FooterData> {
+  private async buildModernFooterWithSupabase(
+    context: string,
+    version: string,
+  ): Promise<FooterData> {
     try {
       // Récupérer les sections du footer depuis Supabase
       const sectionsPromise = this.getFooterSections(version);
@@ -133,13 +141,13 @@ export class FooterService {
           enabled: true,
           title: 'Newsletter',
           placeholder: 'Votre email',
-          buttonText: 'S\'inscrire',
+          buttonText: "S'inscrire",
         },
         payment: {
           title: 'Moyens de paiement',
           methods: ['visa', 'mastercard', 'paypal', 'cb'],
         },
-        sections: sections?.map(s => ({
+        sections: sections?.map((s) => ({
           key: s.section_key,
           content: s.content,
           styles: s.styles,
@@ -214,7 +222,11 @@ export class FooterService {
       // Convertir en format attendu
       return Object.entries(groupedLinks).map(([title, items]) => ({
         title: this.formatCategoryTitle(title),
-        items: items as Array<{ label: string; url: string; external?: boolean }>,
+        items: items as Array<{
+          label: string;
+          url: string;
+          external?: boolean;
+        }>,
       }));
     } catch (error) {
       this.logger.error('Erreur Supabase liens footer:', error);
@@ -240,7 +252,7 @@ export class FooterService {
         return [];
       }
 
-      return (data || []).map(item => ({
+      return (data || []).map((item) => ({
         platform: item.platform,
         url: item.base_url,
         icon: item.icon || item.platform.toLowerCase(),

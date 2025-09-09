@@ -57,9 +57,7 @@ export class InvoicesService extends SupabaseBaseService {
   private readonly logger = new Logger(InvoicesService.name);
   private readonly CACHE_TTL = 300; // 5 minutes
 
-  constructor(
-    @Inject(CACHE_MANAGER) cacheManager: Cache,
-  ) {
+  constructor(@Inject(CACHE_MANAGER) cacheManager: Cache) {
     super(cacheManager);
   }
 
@@ -68,7 +66,7 @@ export class InvoicesService extends SupabaseBaseService {
    */
   async getAllInvoices(page: number = 1, limit: number = 20) {
     const cacheKey = `invoices:all:page_${page}:limit_${limit}`;
-    
+
     try {
       // Vérifier le cache
       const cachedData = await this.getCachedData(cacheKey);
@@ -82,15 +80,20 @@ export class InvoicesService extends SupabaseBaseService {
       // Récupérer les factures avec informations client
       const { data, error } = await this.client
         .from('___xtr_invoice')
-        .select(`
+        .select(
+          `
           *,
           customer:___xtr_customer!inv_cst_id(cst_id, cst_name, cst_fname, cst_mail, cst_city)
-        `)
+        `,
+        )
         .range(offset, offset + limit - 1)
         .order('inv_date', { ascending: false });
 
       if (error) {
-        this.logger.error('Erreur lors de la récupération des factures:', error);
+        this.logger.error(
+          'Erreur lors de la récupération des factures:',
+          error,
+        );
         throw new Error('Impossible de récupérer les factures');
       }
 
@@ -105,13 +108,15 @@ export class InvoicesService extends SupabaseBaseService {
           page,
           limit,
           total: count || 0,
-          totalPages: Math.ceil((count || 0) / limit)
-        }
+          totalPages: Math.ceil((count || 0) / limit),
+        },
       };
 
       // Mettre en cache
       await this.setCachedData(cacheKey, result, this.CACHE_TTL);
-      this.logger.log(`Récupération de ${data?.length || 0} factures (page ${page})`);
+      this.logger.log(
+        `Récupération de ${data?.length || 0} factures (page ${page})`,
+      );
 
       return result;
     } catch (error) {
@@ -137,10 +142,12 @@ export class InvoicesService extends SupabaseBaseService {
       // Récupérer la facture principale
       const { data: invoice, error: invoiceError } = await this.client
         .from('___xtr_invoice')
-        .select(`
+        .select(
+          `
           *,
           customer:___xtr_customer!inv_cst_id(*)
-        `)
+        `,
+        )
         .eq('inv_id', invoiceId)
         .single();
 
@@ -157,17 +164,22 @@ export class InvoicesService extends SupabaseBaseService {
         .order('invl_id');
 
       if (linesError) {
-        this.logger.error('Erreur lors de la récupération des lignes:', linesError);
+        this.logger.error(
+          'Erreur lors de la récupération des lignes:',
+          linesError,
+        );
       }
 
       const result = {
         ...invoice,
-        lines: lines || []
+        lines: lines || [],
       };
 
       // Mettre en cache
       await this.setCachedData(cacheKey, result, this.CACHE_TTL);
-      this.logger.log(`Facture ${invoiceId} récupérée avec ${lines?.length || 0} lignes`);
+      this.logger.log(
+        `Facture ${invoiceId} récupérée avec ${lines?.length || 0} lignes`,
+      );
 
       return result;
     } catch (error) {
@@ -179,7 +191,11 @@ export class InvoicesService extends SupabaseBaseService {
   /**
    * 👥 Récupérer les factures d'un client
    */
-  async getInvoicesByCustomer(customerId: string, page: number = 1, limit: number = 10) {
+  async getInvoicesByCustomer(
+    customerId: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const cacheKey = `invoices:customer:${customerId}:page_${page}:limit_${limit}`;
 
     try {
@@ -200,7 +216,10 @@ export class InvoicesService extends SupabaseBaseService {
         .order('inv_date', { ascending: false });
 
       if (error) {
-        this.logger.error('Erreur lors de la récupération des factures client:', error);
+        this.logger.error(
+          'Erreur lors de la récupération des factures client:',
+          error,
+        );
         throw new Error('Impossible de récupérer les factures du client');
       }
 
@@ -215,12 +234,14 @@ export class InvoicesService extends SupabaseBaseService {
           page,
           limit,
           total: count || 0,
-          totalPages: Math.ceil((count || 0) / limit)
-        }
+          totalPages: Math.ceil((count || 0) / limit),
+        },
       };
 
       await this.setCachedData(cacheKey, result, this.CACHE_TTL);
-      this.logger.log(`Récupération de ${data?.length || 0} factures pour le client ${customerId}`);
+      this.logger.log(
+        `Récupération de ${data?.length || 0} factures pour le client ${customerId}`,
+      );
 
       return result;
     } catch (error) {
@@ -251,15 +272,16 @@ export class InvoicesService extends SupabaseBaseService {
         .from('___xtr_invoice')
         .select('inv_total_ttc');
 
-      const totalAmount = amountData?.reduce((sum, invoice) => {
-        return sum + parseFloat(invoice.inv_total_ttc || '0');
-      }, 0) || 0;
+      const totalAmount =
+        amountData?.reduce((sum, invoice) => {
+          return sum + parseFloat(invoice.inv_total_ttc || '0');
+        }, 0) || 0;
 
       const result = {
         totalInvoices: totalInvoices || 0,
         totalAmount: totalAmount,
         averageAmount: totalInvoices ? totalAmount / totalInvoices : 0,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
 
       await this.setCachedData(cacheKey, result, this.CACHE_TTL * 2); // Cache plus long pour les stats
@@ -278,11 +300,11 @@ export class InvoicesService extends SupabaseBaseService {
   async clearInvoiceCache() {
     try {
       const patterns = ['invoices:*', 'invoice:*'];
-      
+
       for (const pattern of patterns) {
         await this.clearCachePattern(pattern);
       }
-      
+
       this.logger.log('Cache des factures nettoyé');
       return { success: true, message: 'Cache nettoyé avec succès' };
     } catch (error) {

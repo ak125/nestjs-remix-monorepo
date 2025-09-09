@@ -26,29 +26,27 @@ export class SessionService extends SupabaseBaseService {
    * Créer une nouvelle session
    */
   async createSession(
-    sessionId: string, 
-    sessionData: SessionData, 
-    options: SessionOptions = {}
+    sessionId: string,
+    sessionData: SessionData,
+    options: SessionOptions = {},
   ): Promise<void> {
     const maxAge = options.maxAge || this.DEFAULT_MAX_AGE;
     const expiresAt = new Date(Date.now() + maxAge);
 
     try {
-      const { error } = await this.supabase
-        .from(this.SESSION_TABLE)
-        .insert({
-          session_id: sessionId,
-          user_id: sessionData.userId,
-          email: sessionData.email,
-          role: sessionData.role,
-          permissions: sessionData.permissions,
-          last_activity: sessionData.lastActivity.toISOString(),
-          ip_address: sessionData.ipAddress,
-          user_agent: sessionData.userAgent,
-          expires_at: expiresAt.toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await this.supabase.from(this.SESSION_TABLE).insert({
+        session_id: sessionId,
+        user_id: sessionData.userId,
+        email: sessionData.email,
+        role: sessionData.role,
+        permissions: sessionData.permissions,
+        last_activity: sessionData.lastActivity.toISOString(),
+        ip_address: sessionData.ipAddress,
+        user_agent: sessionData.userAgent,
+        expires_at: expiresAt.toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
         throw new Error(`Erreur création session: ${error.message}`);
@@ -84,7 +82,7 @@ export class SessionService extends SupabaseBaseService {
         permissions: data.permissions || [],
         lastActivity: new Date(data.last_activity),
         ipAddress: data.ip_address,
-        userAgent: data.user_agent
+        userAgent: data.user_agent,
       };
     } catch (error) {
       this.logger.error(`Erreur récupération session: ${error}`);
@@ -101,7 +99,7 @@ export class SessionService extends SupabaseBaseService {
         .from(this.SESSION_TABLE)
         .update({
           last_activity: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('session_id', sessionId);
 
@@ -144,7 +142,7 @@ export class SessionService extends SupabaseBaseService {
         .lt('expires_at', new Date().toISOString());
 
       const deletedCount = Array.isArray(data) ? data.length : 0;
-      
+
       if (!error) {
         this.logger.log(`${deletedCount} sessions expirées nettoyées`);
       }
@@ -172,14 +170,14 @@ export class SessionService extends SupabaseBaseService {
         return [];
       }
 
-      return data.map(row => ({
+      return data.map((row) => ({
         userId: row.user_id,
         email: row.email,
         role: row.role,
         permissions: row.permissions || [],
         lastActivity: new Date(row.last_activity),
         ipAddress: row.ip_address,
-        userAgent: row.user_agent
+        userAgent: row.user_agent,
       }));
     } catch (error) {
       this.logger.error(`Erreur récupération sessions utilisateur: ${error}`);
@@ -198,15 +196,18 @@ export class SessionService extends SupabaseBaseService {
   /**
    * Prolonger la durée de vie d'une session
    */
-  async extendSession(sessionId: string, additionalTime: number = this.DEFAULT_MAX_AGE): Promise<boolean> {
+  async extendSession(
+    sessionId: string,
+    additionalTime: number = this.DEFAULT_MAX_AGE,
+  ): Promise<boolean> {
     try {
       const newExpiryTime = new Date(Date.now() + additionalTime);
-      
+
       const { error } = await this.supabaseService
         .from(this.SESSION_TABLE)
         .update({
           expires_at: newExpiryTime.toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('session_id', sessionId);
 

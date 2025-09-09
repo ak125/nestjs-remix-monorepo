@@ -104,28 +104,35 @@ export class HeaderUnifiedService extends SupabaseBaseService {
     try {
       const cacheKey = `header_unified:${context}:${version}:${userId || 'anonymous'}`;
       const cached = await this.cacheService.get<HeaderData>(cacheKey);
-      
+
       if (cached) {
         this.logger.debug(`Header unified cache hit: ${context}/${version}`);
         return cached;
       }
 
       // Auto-détection de la version optimale
-      const finalVersion = version === 'auto' ? await this.detectOptimalVersion(context) : version;
-      
+      const finalVersion =
+        version === 'auto' ? await this.detectOptimalVersion(context) : version;
+
       // Récupération des sections de layout si disponibles
       const sections = await this.getLayoutSections('header', finalVersion);
-      
+
       // Construction du header selon le contexte ET la version
-      const headerData = await this.buildUnifiedHeader(context, finalVersion, userId, sections);
-      
+      const headerData = await this.buildUnifiedHeader(
+        context,
+        finalVersion,
+        userId,
+        sections,
+      );
+
       await this.cacheService.set(cacheKey, headerData, 900); // 15 minutes
-      
+
       this.logger.log(`Header unified généré: ${context}/${finalVersion}`);
       return headerData;
-
     } catch (error) {
-      this.logger.error(`Error unified header: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error unified header: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return this.getFallbackHeader(context, version);
     }
   }
@@ -140,13 +147,14 @@ export class HeaderUnifiedService extends SupabaseBaseService {
     sections?: any[],
   ): Promise<HeaderData> {
     // Données communes récupérées en parallèle
-    const [userStats, productStats, orderStats, realUser, quickSearchConfig] = await Promise.all([
-      this.getUserStats(),
-      this.getProductStats(),
-      this.getOrderStats(),
-      userId ? this.getRealUser(userId) : null,
-      this.quickSearchService.getConfig('main'),
-    ]);
+    const [userStats, productStats, orderStats, realUser, quickSearchConfig] =
+      await Promise.all([
+        this.getUserStats(),
+        this.getProductStats(),
+        this.getOrderStats(),
+        userId ? this.getRealUser(userId) : null,
+        this.quickSearchService.getConfig('main'),
+      ]);
 
     // Base commune pour tous les headers
     const baseHeader: Partial<HeaderData> = {
@@ -157,7 +165,7 @@ export class HeaderUnifiedService extends SupabaseBaseService {
         activeOrders: orderStats.active,
       },
       user: realUser,
-      sections: sections?.map(s => ({
+      sections: sections?.map((s) => ({
         key: s.section_key,
         content: s.content,
         styles: s.styles,
@@ -180,7 +188,11 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   /**
    * Header V8 (moderne avec toutes les fonctionnalités)
    */
-  private async buildV8Header(base: Partial<HeaderData>, context: string, quickSearchConfig: any): Promise<HeaderData> {
+  private async buildV8Header(
+    base: Partial<HeaderData>,
+    context: string,
+    quickSearchConfig: any,
+  ): Promise<HeaderData> {
     return {
       ...base,
       version: 'v8',
@@ -205,14 +217,18 @@ export class HeaderUnifiedService extends SupabaseBaseService {
         searchButton: true,
       },
       actions: await this.getContextActions(context),
-      notifications: context === 'admin' ? await this.getRealNotifications() : undefined,
+      notifications:
+        context === 'admin' ? await this.getRealNotifications() : undefined,
     } as HeaderData;
   }
 
   /**
    * Header V7 (avec top bar et catégories)
    */
-  private async buildV7Header(base: Partial<HeaderData>, context: string): Promise<HeaderData> {
+  private async buildV7Header(
+    base: Partial<HeaderData>,
+    context: string,
+  ): Promise<HeaderData> {
     return {
       ...base,
       version: 'v7',
@@ -245,7 +261,10 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   /**
    * Header V2 (simple et rétro)
    */
-  private async buildV2Header(base: Partial<HeaderData>, context: string): Promise<HeaderData> {
+  private async buildV2Header(
+    base: Partial<HeaderData>,
+    context: string,
+  ): Promise<HeaderData> {
     return {
       ...base,
       version: 'v2',
@@ -271,7 +290,11 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   /**
    * Header moderne (admin/commercial/public optimisé)
    */
-  private async buildModernHeader(base: Partial<HeaderData>, context: string, quickSearchConfig: any): Promise<HeaderData> {
+  private async buildModernHeader(
+    base: Partial<HeaderData>,
+    context: string,
+    quickSearchConfig: any,
+  ): Promise<HeaderData> {
     const contextTitles = {
       admin: 'Administration - Données Réelles',
       commercial: 'Espace Commercial',
@@ -281,20 +304,27 @@ export class HeaderUnifiedService extends SupabaseBaseService {
     return {
       ...base,
       version: 'modern',
-      title: contextTitles[context as keyof typeof contextTitles] || 'Pièces Auto',
+      title:
+        contextTitles[context as keyof typeof contextTitles] || 'Pièces Auto',
       logo: {
-        src: context === 'admin' ? '/images/admin-logo.png' : '/images/logo.png',
+        src:
+          context === 'admin' ? '/images/admin-logo.png' : '/images/logo.png',
         alt: context === 'admin' ? 'Admin Dashboard' : 'Boutique',
         link: '/',
       },
-      quickSearch: context !== 'v2' ? {
-        enabled: true,
-        config: quickSearchConfig,
-        placeholder: 'Rechercher une pièce, référence...',
-      } : undefined,
+      quickSearch:
+        context !== 'v2'
+          ? {
+              enabled: true,
+              config: quickSearchConfig,
+              placeholder: 'Rechercher une pièce, référence...',
+            }
+          : undefined,
       actions: await this.getContextActions(context),
-      notifications: context === 'admin' ? await this.getRealNotifications() : undefined,
-      breadcrumbs: context === 'admin' ? await this.getAdminBreadcrumbs() : undefined,
+      notifications:
+        context === 'admin' ? await this.getRealNotifications() : undefined,
+      breadcrumbs:
+        context === 'admin' ? await this.getAdminBreadcrumbs() : undefined,
     } as HeaderData;
   }
 
@@ -305,21 +335,24 @@ export class HeaderUnifiedService extends SupabaseBaseService {
     // Logique intelligente pour choisir la version
     if (context === 'admin') return 'modern';
     if (context === 'commercial') return 'v8';
-    
+
     // Vérifier si des sections layout existent
     const hasV8Sections = await this.hasLayoutSections('header', 'v8');
     const hasV7Sections = await this.hasLayoutSections('header', 'v7');
-    
+
     if (hasV8Sections) return 'v8';
     if (hasV7Sections) return 'v7';
-    
+
     return 'modern';
   }
 
   /**
    * Récupération des sections de layout
    */
-  private async getLayoutSections(sectionType: string, version: string): Promise<any[]> {
+  private async getLayoutSections(
+    sectionType: string,
+    version: string,
+  ): Promise<any[]> {
     try {
       const { data, error } = await this.supabase
         .from('layout_sections')
@@ -330,7 +363,9 @@ export class HeaderUnifiedService extends SupabaseBaseService {
         .order('position');
 
       if (error) {
-        this.logger.debug(`No layout_sections table or error: ${error.message}`);
+        this.logger.debug(
+          `No layout_sections table or error: ${error.message}`,
+        );
         return [];
       }
 
@@ -344,7 +379,10 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   /**
    * Vérifie si des sections layout existent
    */
-  private async hasLayoutSections(sectionType: string, version: string): Promise<boolean> {
+  private async hasLayoutSections(
+    sectionType: string,
+    version: string,
+  ): Promise<boolean> {
     const sections = await this.getLayoutSections(sectionType, version);
     return sections.length > 0;
   }
@@ -353,7 +391,7 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   private getContextTitle(context: string): string {
     const titles = {
       admin: 'Administration',
-      commercial: 'Espace Commercial', 
+      commercial: 'Espace Commercial',
       public: 'Boutique',
       products: 'Gestion Produits',
       orders: 'Gestion Commandes',
@@ -404,7 +442,10 @@ export class HeaderUnifiedService extends SupabaseBaseService {
       const { count: active } = await this.supabase
         .from('___xtr_customer')
         .select('*', { count: 'exact', head: true })
-        .gte('customer_date_upd', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .gte(
+          'customer_date_upd',
+          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        );
 
       return { total: total || 0, active: active || 0 };
     } catch (error) {
@@ -412,7 +453,10 @@ export class HeaderUnifiedService extends SupabaseBaseService {
     }
   }
 
-  private async getProductStats(): Promise<{ total: number; lowStock: number }> {
+  private async getProductStats(): Promise<{
+    total: number;
+    lowStock: number;
+  }> {
     try {
       const { count: total } = await this.supabase
         .from('pieces')
@@ -506,7 +550,8 @@ export class HeaderUnifiedService extends SupabaseBaseService {
   }
 
   private async getSecondaryNavigation(context: string): Promise<any[]> {
-    const menuKey = context === 'admin' ? 'admin_navigation' : 'secondary_navigation';
+    const menuKey =
+      context === 'admin' ? 'admin_navigation' : 'secondary_navigation';
     try {
       const { data } = await this.supabase
         .from('navigation_menus')

@@ -275,7 +275,7 @@ export class QuickSearchService {
     }
 
     return results;
-  }  /**
+  } /**
    * Construit les données de recherche selon le contexte
    */
   private async buildSearchDataForContext(
@@ -335,12 +335,13 @@ export class QuickSearchService {
         { id: '3', name: 'Maison', products_count: 67 },
       ];
 
-      const popularCategories = mockCategories?.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        url: `/categories/${cat.id}`,
-        count: cat.products_count || 0,
-      })) || [];
+      const popularCategories =
+        mockCategories?.map((cat) => ({
+          id: cat.id,
+          name: cat.name,
+          url: `/categories/${cat.id}`,
+          count: cat.products_count || 0,
+        })) || [];
 
       return {
         suggestions: [

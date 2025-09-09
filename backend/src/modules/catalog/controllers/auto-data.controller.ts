@@ -124,7 +124,8 @@ export class AutoDataController {
       return {
         success: true,
         data: {
-          brands: brands.status === 'fulfilled' ? brands.value.data?.length || 0 : 0,
+          brands:
+            brands.status === 'fulfilled' ? brands.value.data?.length || 0 : 0,
           models: 5745, // Valeur connue depuis la liste des tables
           types: 48918, // Valeur connue depuis la liste des tables
           parts: 4037422, // Valeur connue depuis la liste des tables
@@ -132,7 +133,10 @@ export class AutoDataController {
         },
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des statistiques:', error);
+      this.logger.error(
+        'Erreur lors de la récupération des statistiques:',
+        error,
+      );
       return {
         success: false,
         error: error.message,

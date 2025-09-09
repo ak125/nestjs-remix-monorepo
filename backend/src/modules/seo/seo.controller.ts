@@ -49,7 +49,7 @@ export class SeoController {
     try {
       const decodedUrl = decodeURIComponent(url);
       const metadata = await this.seoService.getMetadata(decodedUrl);
-      
+
       if (!metadata) {
         return {
           page_url: decodedUrl,
@@ -86,9 +86,9 @@ export class SeoController {
         metadataDto.page_url,
         metadataDto,
       );
-      
+
       this.logger.log(`Métadonnées mises à jour pour ${metadataDto.page_url}`);
-      
+
       return {
         success: true,
         message: 'Métadonnées mises à jour avec succès',
@@ -114,7 +114,7 @@ export class SeoController {
     try {
       const decodedUrl = decodeURIComponent(url);
       const redirect = await this.seoService.getRedirect(decodedUrl);
-      
+
       if (!redirect) {
         return { hasRedirect: false };
       }
@@ -124,7 +124,10 @@ export class SeoController {
         ...redirect,
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la vérification des redirections pour ${url}:`, error);
+      this.logger.error(
+        `Erreur lors de la vérification des redirections pour ${url}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la vérification des redirections',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -165,7 +168,7 @@ export class SeoController {
         limit || 100,
       );
       const seoConfig = await this.seoService.getSeoConfig('default');
-      
+
       // Calculs basiques pour les analytics
       const totalPages = 50000; // Estimation basée sur les 714k entrées sitemap
       const pagesWithSeoCount = totalPages - pagesWithoutSeo.count;
@@ -199,13 +202,16 @@ export class SeoController {
   async getPagesWithoutSeo(@Query('limit') limit?: number) {
     try {
       const pages = await this.seoService.getPagesWithoutSeo(limit || 50);
-      
+
       return {
         count: pages.count,
         pages: pages.pages,
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des pages sans SEO:', error);
+      this.logger.error(
+        'Erreur lors de la récupération des pages sans SEO:',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des pages sans SEO',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -242,7 +248,9 @@ export class SeoController {
         }
       }
 
-      this.logger.log(`Batch update terminé: ${successCount} succès, ${errorCount} erreurs`);
+      this.logger.log(
+        `Batch update terminé: ${successCount} succès, ${errorCount} erreurs`,
+      );
 
       return {
         success: true,

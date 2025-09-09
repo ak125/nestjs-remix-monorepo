@@ -204,7 +204,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
       // 2. Récupérer les produits actifs normaux
       const remainingLimit = Math.max(0, limit - (filters?.length || 0));
       let activeProducts: any[] = [];
-      
+
       if (remainingLimit > 0) {
         const { data: products, error: productsError } = await this.client
           .from('pieces')
@@ -228,7 +228,10 @@ export class SupabaseIndexationService extends SupabaseBaseService {
           .range(offset, offset + remainingLimit - 1);
 
         if (productsError) {
-          this.logger.error('❌ Erreur récupération produits actifs:', productsError);
+          this.logger.error(
+            '❌ Erreur récupération produits actifs:',
+            productsError,
+          );
         } else {
           activeProducts = products || [];
         }
@@ -251,7 +254,7 @@ export class SupabaseIndexationService extends SupabaseBaseService {
         allProducts?.map((product: any) => {
           // 🏭 Déterminer l'équipementier basé sur la référence
           const brand = this.extractBrandFromReference(product.piece_ref || '');
-          
+
           return {
             id: `product_${product.piece_id}`,
             type: 'product',
@@ -276,15 +279,16 @@ export class SupabaseIndexationService extends SupabaseBaseService {
 
             // Données d'indexation
             isActive: product.piece_display === true,
-            isFilter: product.piece_name?.toLowerCase().includes('filtre') || false,
-            
+            isFilter:
+              product.piece_name?.toLowerCase().includes('filtre') || false,
+
             // Métadonnées supplémentaires
             year: product.piece_year || null,
             weight: product.piece_weight_kgm || 0,
             hasImage: product.piece_has_img || false,
             hasOEM: product.piece_has_oem || false,
             quantity: product.piece_qty_sale || 1,
-            
+
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
@@ -452,30 +456,30 @@ export class SupabaseIndexationService extends SupabaseBaseService {
    */
   private extractBrandFromReference(reference: string): string {
     if (!reference) return 'INCONNU';
-    
+
     const ref = reference.toLowerCase().replace(/\s+/g, '');
-    
+
     // Patterns de références courantes
     const brandPatterns = {
-      'bosch': ['0986', '0 986', 'bosch'],
+      bosch: ['0986', '0 986', 'bosch'],
       'mann-filter': ['mann', 'hum', 'w'],
-      'mahle': ['lx', 'ox', 'kx', 'mahle'],
-      'fram': ['fram', 'ca'],
-      'purflux': ['purflux', 'a', 'l'],
-      'knecht': ['knecht', 'lx'],
-      'champion': ['champion', 'cof'],
-      'febi': ['febi', '49', '48'],
-      'sachs': ['sachs', 'zf'],
-      'valeo': ['valeo', '585'],
+      mahle: ['lx', 'ox', 'kx', 'mahle'],
+      fram: ['fram', 'ca'],
+      purflux: ['purflux', 'a', 'l'],
+      knecht: ['knecht', 'lx'],
+      champion: ['champion', 'cof'],
+      febi: ['febi', '49', '48'],
+      sachs: ['sachs', 'zf'],
+      valeo: ['valeo', '585'],
     };
-    
+
     // Recherche de correspondance
     for (const [brand, patterns] of Object.entries(brandPatterns)) {
-      if (patterns.some(pattern => ref.includes(pattern))) {
+      if (patterns.some((pattern) => ref.includes(pattern))) {
         return brand.toUpperCase();
       }
     }
-    
+
     // Si aucune correspondance, retourner le début de la référence
     const firstPart = reference.split(' ')[0] || reference.substring(0, 4);
     return firstPart.toUpperCase();

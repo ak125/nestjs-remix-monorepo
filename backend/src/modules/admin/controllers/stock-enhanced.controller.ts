@@ -80,7 +80,7 @@ export class StockEnhancedController {
     }
   }
 
-    @Post('movements')
+  @Post('movements')
   @ApiOperation({ summary: 'Enregistrer un mouvement de stock' })
   @ApiResponse({ status: 201, description: 'Mouvement enregistré avec succès' })
   async recordMovement(@Body() movementData: any) {

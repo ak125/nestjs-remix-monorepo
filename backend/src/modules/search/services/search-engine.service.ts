@@ -30,24 +30,37 @@ export class SearchEngineService {
   /**
    * Recherche globale multi-index
    */
-  async search(query: string, options: SearchOptions = {}): Promise<SearchResult> {
+  async search(
+    query: string,
+    options: SearchOptions = {},
+  ): Promise<SearchResult> {
     try {
-      const vehicleResults = await this.meilisearchService.searchVehicles(query, options);
-      const productResults = await this.meilisearchService.searchProducts(query, options);
+      const vehicleResults = await this.meilisearchService.searchVehicles(
+        query,
+        options,
+      );
+      const productResults = await this.meilisearchService.searchProducts(
+        query,
+        options,
+      );
 
       // Combine et trie les résultats par pertinence
       const combinedHits = [
-        ...vehicleResults.hits.map(hit => ({ ...hit, _index: 'vehicles' })),
-        ...productResults.hits.map(hit => ({ ...hit, _index: 'products' })),
+        ...vehicleResults.hits.map((hit) => ({ ...hit, _index: 'vehicles' })),
+        ...productResults.hits.map((hit) => ({ ...hit, _index: 'products' })),
       ];
 
       return {
         hits: combinedHits,
         query,
-        processingTimeMs: Math.max(vehicleResults.processingTimeMs, productResults.processingTimeMs),
+        processingTimeMs: Math.max(
+          vehicleResults.processingTimeMs,
+          productResults.processingTimeMs,
+        ),
         limit: options.limit || 20,
         offset: options.offset || 0,
-        estimatedTotalHits: vehicleResults.estimatedTotalHits + productResults.estimatedTotalHits,
+        estimatedTotalHits:
+          vehicleResults.estimatedTotalHits + productResults.estimatedTotalHits,
         facetDistribution: {
           ...vehicleResults.facetDistribution,
           ...productResults.facetDistribution,
@@ -62,10 +75,14 @@ export class SearchEngineService {
   /**
    * Recherche dans un index spécifique
    */
-  async searchIndex(indexName: string, query: string, options: SearchOptions = {}): Promise<SearchResult> {
+  async searchIndex(
+    indexName: string,
+    query: string,
+    options: SearchOptions = {},
+  ): Promise<SearchResult> {
     try {
       let results;
-      
+
       if (indexName === 'vehicles') {
         results = await this.meilisearchService.searchVehicles(query, options);
       } else if (indexName === 'products') {
@@ -92,9 +109,15 @@ export class SearchEngineService {
   /**
    * Suggestions d'auto-complétion
    */
-  async getSuggestions(query: string, indexName: string = 'vehicles'): Promise<any[]> {
+  async getSuggestions(
+    query: string,
+    indexName: string = 'vehicles',
+  ): Promise<any[]> {
     try {
-      const results = await this.meilisearchService.getSuggestions(query, indexName);
+      const results = await this.meilisearchService.getSuggestions(
+        query,
+        indexName,
+      );
       return results.hits;
     } catch (error) {
       this.logger.error('Error getting suggestions:', error);
@@ -105,9 +128,15 @@ export class SearchEngineService {
   /**
    * Obtient les facettes pour les filtres
    */
-  async getFacets(indexName: string, facets: string[]): Promise<Record<string, Record<string, number>>> {
+  async getFacets(
+    indexName: string,
+    facets: string[],
+  ): Promise<Record<string, Record<string, number>>> {
     try {
-      const results = await this.meilisearchService.getFacets(indexName, facets);
+      const results = await this.meilisearchService.getFacets(
+        indexName,
+        facets,
+      );
       return results.facetDistribution || {};
     } catch (error) {
       this.logger.error('Error getting facets:', error);
@@ -118,14 +147,20 @@ export class SearchEngineService {
   /**
    * Recherche similaire (based on document)
    */
-  async findSimilar(indexName: string, documentId: string, options: SearchOptions = {}): Promise<SearchResult> {
+  async findSimilar(
+    indexName: string,
+    documentId: string,
+    options: SearchOptions = {},
+  ): Promise<SearchResult> {
     try {
       // Meilisearch n'a pas de "more like this" natif, on utilise les attributs du document
       const index = this.meilisearchService.getIndex(indexName);
       const document = await index.getDocument(documentId);
-      
+
       if (!document) {
-        throw new Error(`Document ${documentId} not found in index ${indexName}`);
+        throw new Error(
+          `Document ${documentId} not found in index ${indexName}`,
+        );
       }
 
       // Utilise les attributs principaux pour la recherche similaire
@@ -143,7 +178,10 @@ export class SearchEngineService {
 
       return results;
     } catch (error) {
-      this.logger.error(`Error finding similar documents for ${documentId}:`, error);
+      this.logger.error(
+        `Error finding similar documents for ${documentId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -170,16 +208,26 @@ export class SearchEngineService {
   /**
    * Mise à jour d'un document
    */
-  async updateDocument(indexName: string, documentId: string, document: any): Promise<any> {
+  async updateDocument(
+    indexName: string,
+    documentId: string,
+    document: any,
+  ): Promise<any> {
     try {
       if (indexName === 'vehicles') {
-        return await this.meilisearchService.updateVehicle(documentId, document);
+        return await this.meilisearchService.updateVehicle(
+          documentId,
+          document,
+        );
       } else {
         const index = this.meilisearchService.getIndex(indexName);
         return await index.addDocuments([{ id: documentId, ...document }]);
       }
     } catch (error) {
-      this.logger.error(`Error updating document ${documentId} in ${indexName}:`, error);
+      this.logger.error(
+        `Error updating document ${documentId} in ${indexName}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -196,7 +244,10 @@ export class SearchEngineService {
         return await index.deleteDocument(documentId);
       }
     } catch (error) {
-      this.logger.error(`Error deleting document ${documentId} from ${indexName}:`, error);
+      this.logger.error(
+        `Error deleting document ${documentId} from ${indexName}:`,
+        error,
+      );
       throw error;
     }
   }

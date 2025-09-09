@@ -38,8 +38,9 @@ export class MessagingGateway
   async handleConnection(client: AuthenticatedSocket) {
     try {
       // Extraire le token JWT depuis les query params ou headers
-      const token = client.handshake.auth?.token || client.handshake.query?.token;
-      
+      const token =
+        client.handshake.auth?.token || client.handshake.query?.token;
+
       if (!token) {
         this.logger.warn(`Connection rejected: No token provided`);
         client.disconnect();
@@ -61,18 +62,19 @@ export class MessagingGateway
       const sockets = this.userSockets.get(client.userId) || [];
       sockets.push(client.id);
       this.userSockets.set(client.userId, sockets);
-      
+
       // Joindre la room de l'utilisateur
       await client.join(`user-${client.userId}`);
-      
-      this.logger.log(`User ${client.userId} (${client.userEmail}) connected with socket ${client.id}`);
-      
-      // Notifier le client de la connexion réussie
-      client.emit('connected', { 
-        userId: client.userId, 
-        socketId: client.id 
-      });
 
+      this.logger.log(
+        `User ${client.userId} (${client.userEmail}) connected with socket ${client.id}`,
+      );
+
+      // Notifier le client de la connexion réussie
+      client.emit('connected', {
+        userId: client.userId,
+        socketId: client.id,
+      });
     } catch (error: any) {
       this.logger.error(`Connection failed: ${error.message}`);
       client.disconnect();
@@ -83,13 +85,13 @@ export class MessagingGateway
     if (client.userId) {
       const sockets = this.userSockets.get(client.userId) || [];
       const filtered = sockets.filter((id) => id !== client.id);
-      
+
       if (filtered.length > 0) {
         this.userSockets.set(client.userId, filtered);
       } else {
         this.userSockets.delete(client.userId);
       }
-      
+
       this.logger.log(`User ${client.userId} disconnected socket ${client.id}`);
     }
   }
@@ -104,16 +106,18 @@ export class MessagingGateway
     // Notifier le destinataire du nouveau message
     this.server.to(`user-${payload.recipientId}`).emit('newMessage', {
       message: payload.message,
-      type: 'new_message'
+      type: 'new_message',
     });
 
     // Notifier l'expéditeur que le message a été envoyé
     this.server.to(`user-${payload.senderId}`).emit('messageSent', {
       message: payload.message,
-      type: 'message_sent'
+      type: 'message_sent',
     });
 
-    this.logger.log(`Message sent from ${payload.senderId} to ${payload.recipientId}`);
+    this.logger.log(
+      `Message sent from ${payload.senderId} to ${payload.recipientId}`,
+    );
   }
 
   @OnEvent('message.read')
@@ -126,7 +130,7 @@ export class MessagingGateway
     this.server.to(`user-${payload.senderId}`).emit('messageRead', {
       messageId: payload.messageId,
       readerId: payload.readerId,
-      type: 'message_read'
+      type: 'message_read',
     });
 
     this.logger.log(`Message ${payload.messageId} read by ${payload.readerId}`);
@@ -142,17 +146,19 @@ export class MessagingGateway
     this.server.to(`user-${payload.senderId}`).emit('messageClosed', {
       messageId: payload.messageId,
       closerId: payload.closerId,
-      type: 'message_closed'
+      type: 'message_closed',
     });
 
-    this.logger.log(`Message ${payload.messageId} closed by ${payload.closerId}`);
+    this.logger.log(
+      `Message ${payload.messageId} closed by ${payload.closerId}`,
+    );
   }
 
   // Messages WebSocket entrants du client
   @SubscribeMessage('typing')
   handleTyping(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() payload: { recipientId: string; isTyping: boolean }
+    @MessageBody() payload: { recipientId: string; isTyping: boolean },
   ) {
     if (!client.userId) return;
 
@@ -161,16 +167,18 @@ export class MessagingGateway
       userId: client.userId,
       userEmail: client.userEmail,
       isTyping: payload.isTyping,
-      type: 'typing_indicator'
+      type: 'typing_indicator',
     });
 
-    this.logger.debug(`User ${client.userId} typing to ${payload.recipientId}: ${payload.isTyping}`);
+    this.logger.debug(
+      `User ${client.userId} typing to ${payload.recipientId}: ${payload.isTyping}`,
+    );
   }
 
   @SubscribeMessage('markAsRead')
   handleMarkAsRead(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() payload: { messageId: string }
+    @MessageBody() payload: { messageId: string },
   ) {
     if (!client.userId) return;
 
@@ -178,32 +186,38 @@ export class MessagingGateway
     // Note: Ceci devrait déclencher une mise à jour en base de données via le service
     client.emit('readConfirmation', {
       messageId: payload.messageId,
-      readAt: new Date().toISOString()
+      readAt: new Date().toISOString(),
     });
 
-    this.logger.debug(`Message ${payload.messageId} marked as read by ${client.userId}`);
+    this.logger.debug(
+      `Message ${payload.messageId} marked as read by ${client.userId}`,
+    );
   }
 
   @SubscribeMessage('joinConversation')
   handleJoinConversation(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() payload: { conversationId: string }
+    @MessageBody() payload: { conversationId: string },
   ) {
     if (!client.userId) return;
 
     client.join(`conversation-${payload.conversationId}`);
-    this.logger.debug(`User ${client.userId} joined conversation ${payload.conversationId}`);
+    this.logger.debug(
+      `User ${client.userId} joined conversation ${payload.conversationId}`,
+    );
   }
 
   @SubscribeMessage('leaveConversation')
   handleLeaveConversation(
     @ConnectedSocket() client: AuthenticatedSocket,
-    @MessageBody() payload: { conversationId: string }
+    @MessageBody() payload: { conversationId: string },
   ) {
     if (!client.userId) return;
 
     client.leave(`conversation-${payload.conversationId}`);
-    this.logger.debug(`User ${client.userId} left conversation ${payload.conversationId}`);
+    this.logger.debug(
+      `User ${client.userId} left conversation ${payload.conversationId}`,
+    );
   }
 
   // Méthodes utilitaires

@@ -15,7 +15,7 @@ import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 
 /**
  * 💡 AdviceController - Contrôleur spécialisé pour les conseils automobiles
- * 
+ *
  * Endpoints pour gérer spécifiquement les articles de conseils
  * de la table __blog_advice avec leurs fonctionnalités dédiées.
  */
@@ -39,7 +39,7 @@ export class AdviceController {
   ) {
     try {
       const offset = (page - 1) * limit;
-      
+
       const filters: AdviceFilters = {};
       if (category) filters.category = category;
       if (difficulty) filters.difficulty = difficulty;
@@ -63,7 +63,9 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur liste conseils: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur liste conseils: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des conseils',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -90,15 +92,17 @@ export class AdviceController {
 
       const keywordArray = keywords
         .split(',')
-        .map(k => k.trim())
-        .filter(k => k.length > 0);
+        .map((k) => k.trim())
+        .filter((k) => k.length > 0);
 
       const articles = await this.adviceService.getAdviceByKeywords(
         keywordArray,
         limit,
       );
 
-      this.logger.log(`🔍 Recherche conseils: [${keywordArray.join(', ')}] - ${articles.length} résultats`);
+      this.logger.log(
+        `🔍 Recherche conseils: [${keywordArray.join(', ')}] - ${articles.length} résultats`,
+      );
 
       return {
         success: true,
@@ -114,7 +118,9 @@ export class AdviceController {
         throw error;
       }
 
-      this.logger.error(`❌ Erreur recherche conseils: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur recherche conseils: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la recherche',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -154,7 +160,9 @@ export class AdviceController {
         throw error;
       }
 
-      this.logger.error(`❌ Erreur récupération conseil ${id}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération conseil ${id}: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -187,7 +195,9 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur conseils produit ${productId}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur conseils produit ${productId}: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -209,7 +219,9 @@ export class AdviceController {
         data: stats,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur stats conseils: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur stats conseils: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -239,7 +251,9 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur mots-clés populaires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur mots-clés populaires: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -278,7 +292,9 @@ export class AdviceController {
         },
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur conseils populaires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur conseils populaires: ${(error as Error).message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -291,7 +307,10 @@ export class AdviceController {
   /**
    * Récupérer des conseils similaires basés sur les mots-clés
    */
-  private async getSimilarAdvice(article: any, limit: number = 5): Promise<any[]> {
+  private async getSimilarAdvice(
+    article: any,
+    limit: number = 5,
+  ): Promise<any[]> {
     try {
       if (!article.keywords || article.keywords.length === 0) {
         return [];
@@ -299,17 +318,18 @@ export class AdviceController {
 
       // Prendre les 3 premiers mots-clés
       const searchKeywords = article.keywords.slice(0, 3);
-      
-      const similarArticles = await this.adviceService.getAdviceByKeywords(
-        searchKeywords,
-      );
+
+      const similarArticles =
+        await this.adviceService.getAdviceByKeywords(searchKeywords);
 
       // Exclure l'article actuel
       return similarArticles
-        .filter(a => a.legacy_id !== article.legacy_id)
+        .filter((a) => a.legacy_id !== article.legacy_id)
         .slice(0, limit);
     } catch (error) {
-      this.logger.debug(`⚠️ Erreur articles similaires: ${(error as Error).message}`);
+      this.logger.debug(
+        `⚠️ Erreur articles similaires: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -317,18 +337,23 @@ export class AdviceController {
   /**
    * Récupérer les mots-clés les plus utilisés
    */
-  private async getTopKeywords(limit: number): Promise<Array<{ keyword: string; count: number }>> {
+  private async getTopKeywords(
+    limit: number,
+  ): Promise<Array<{ keyword: string; count: number }>> {
     try {
       // Récupérer un échantillon d'articles pour analyser les mots-clés
-      const { articles } = await this.adviceService.getAllAdvice({ limit: 200 });
-      
+      const { articles } = await this.adviceService.getAllAdvice({
+        limit: 200,
+      });
+
       // Compter les occurrences des mots-clés
       const keywordCount: { [key: string]: number } = {};
-      
-      articles.forEach(article => {
-        article.keywords.forEach(keyword => {
+
+      articles.forEach((article) => {
+        article.keywords.forEach((keyword) => {
           const normalizedKeyword = keyword.toLowerCase().trim();
-          keywordCount[normalizedKeyword] = (keywordCount[normalizedKeyword] || 0) + 1;
+          keywordCount[normalizedKeyword] =
+            (keywordCount[normalizedKeyword] || 0) + 1;
         });
       });
 
@@ -338,7 +363,9 @@ export class AdviceController {
         .slice(0, limit)
         .map(([keyword, count]) => ({ keyword, count }));
     } catch (error) {
-      this.logger.debug(`⚠️ Erreur analyse mots-clés: ${(error as Error).message}`);
+      this.logger.debug(
+        `⚠️ Erreur analyse mots-clés: ${(error as Error).message}`,
+      );
       return [];
     }
   }

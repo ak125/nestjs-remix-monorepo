@@ -41,7 +41,9 @@ export class PaymentValidationService {
       );
       return true;
     } catch (error) {
-      this.logger.error(`Payment validation failed: ${(error as Error).message}`);
+      this.logger.error(
+        `Payment validation failed: ${(error as Error).message}`,
+      );
       throw error;
     }
   }
@@ -66,7 +68,9 @@ export class PaymentValidationService {
 
       return true;
     } catch (error) {
-      this.logger.error(`Callback validation failed: ${(error as Error).message}`);
+      this.logger.error(
+        `Callback validation failed: ${(error as Error).message}`,
+      );
       return false;
     }
   }

@@ -71,7 +71,8 @@ describe('SEO Services Integration Test', () => {
     });
 
     it('should generate constructeurs sitemap', async () => {
-      const constructeursSitemap = await sitemapService.generateConstructeursSitemap();
+      const constructeursSitemap =
+        await sitemapService.generateConstructeursSitemap();
       expect(constructeursSitemap).toContain('<?xml version="1.0"');
       expect(constructeursSitemap).toContain('<urlset');
     });
@@ -92,7 +93,7 @@ describe('SEO Services Integration Test', () => {
   describe('Integration Tests', () => {
     it('should update metadata and reflect in pages without SEO', async () => {
       const testUrl = '/test-seo-integration';
-      
+
       // Update metadata
       const metadata = {
         meta_title: 'Test SEO Integration',
@@ -108,7 +109,7 @@ describe('SEO Services Integration Test', () => {
       const foundPage = pagesWithoutSeo.pages.find(
         (page: any) => page.url_path === testUrl,
       );
-      
+
       // If the page was created, it should not be in "pages without SEO" list
       // since we just added metadata to it
       expect(foundPage).toBeUndefined();

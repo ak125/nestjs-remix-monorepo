@@ -1,6 +1,6 @@
 /**
  * 🧪 Tests d'intégration - Dashboard Commercial
- * 
+ *
  * Tests complets pour valider :
  * - API Endpoints du dashboard commercial
  * - Intégration avec les vraies données
@@ -40,7 +40,7 @@ describe('Commercial Dashboard API (e2e)', () => {
       expect(response.body).toHaveProperty('totalOrders');
       expect(response.body).toHaveProperty('totalRevenue');
       expect(response.body).toHaveProperty('seoStats');
-      
+
       // Valider les types de données
       expect(typeof response.body.totalUsers).toBe('number');
       expect(typeof response.body.totalRevenue).toBe('number');
@@ -50,12 +50,12 @@ describe('Commercial Dashboard API (e2e)', () => {
 
     it('should return stats within performance limits', async () => {
       const start = Date.now();
-      
+
       await request(app.getHttpServer())
         .get('/api/dashboard/stats')
         .set('internal-call', 'true')
         .expect(200);
-        
+
       const duration = Date.now() - start;
       expect(duration).toBeLessThan(2000); // < 2 secondes
     });
@@ -71,7 +71,7 @@ describe('Commercial Dashboard API (e2e)', () => {
       expect(response.body).toHaveProperty('orders');
       expect(response.body).toHaveProperty('success', true);
       expect(Array.isArray(response.body.orders)).toBe(true);
-      
+
       // Vérifier structure des commandes
       if (response.body.orders.length > 0) {
         const order = response.body.orders[0];
@@ -91,7 +91,7 @@ describe('Commercial Dashboard API (e2e)', () => {
       // Vérifier que tous les ordres ont des valeurs valides ou nulles explicites
       response.body.orders.forEach((order: any) => {
         expect(['string', 'object']).toContain(typeof order.status); // null ok
-        expect(['number', 'object']).toContain(typeof order.total);  // null ok mais converti en 0
+        expect(['number', 'object']).toContain(typeof order.total); // null ok mais converti en 0
       });
     });
   });
@@ -134,9 +134,15 @@ describe('Commercial Dashboard API (e2e)', () => {
   describe('Data Consistency Tests', () => {
     it('should maintain data consistency across multiple calls', async () => {
       const responses = await Promise.all([
-        request(app.getHttpServer()).get('/api/dashboard/stats').set('internal-call', 'true'),
-        request(app.getHttpServer()).get('/api/dashboard/stats').set('internal-call', 'true'),
-        request(app.getHttpServer()).get('/api/dashboard/stats').set('internal-call', 'true')
+        request(app.getHttpServer())
+          .get('/api/dashboard/stats')
+          .set('internal-call', 'true'),
+        request(app.getHttpServer())
+          .get('/api/dashboard/stats')
+          .set('internal-call', 'true'),
+        request(app.getHttpServer())
+          .get('/api/dashboard/stats')
+          .set('internal-call', 'true'),
       ]);
 
       // Les totaux devraient être cohérents

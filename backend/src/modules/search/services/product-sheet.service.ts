@@ -103,7 +103,9 @@ export class ProductSheetService {
    */
   async getCategories() {
     try {
-      const results = await this.meilisearchService.getFacets('products', ['category']);
+      const results = await this.meilisearchService.getFacets('products', [
+        'category',
+      ]);
       return Object.keys(results.category || {});
     } catch (error) {
       this.logger.error('Error getting categories:', error);

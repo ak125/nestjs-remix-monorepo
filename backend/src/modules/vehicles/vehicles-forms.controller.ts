@@ -4,7 +4,7 @@ import { VehicleSearchDto, VehicleFilterDto } from './dto/vehicles.dto';
 
 /**
  * 🚗 CONTROLLER VEHICLES FORMS - MEILLEURE APPROCHE
- * 
+ *
  * Controller optimisé pour les formulaires de recherche véhicules
  * Remplace les anciens endpoints _form.get.car.*.php
  */
@@ -71,8 +71,10 @@ export class VehiclesFormsController {
   @Get('fuels')
   async getAllFuels() {
     const types = await this.vehiclesFormsService.getAllTypes({ limit: 10000 });
-    const fuels = [...new Set(types.map((type) => type.type_fuel).filter(Boolean))];
-    
+    const fuels = [
+      ...new Set(types.map((type) => type.type_fuel).filter(Boolean)),
+    ];
+
     return {
       fuels: fuels.sort(),
       total: fuels.length,

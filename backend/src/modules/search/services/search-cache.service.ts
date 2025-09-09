@@ -11,7 +11,7 @@ export interface CacheStats {
 
 /**
  * 💾 SearchCacheService - Cache intelligent Redis pour la recherche
- * 
+ *
  * Service de cache optimisé avec :
  * ✅ TTL adaptatif basé sur la popularité
  * ✅ Invalidation intelligente par tags
@@ -45,7 +45,7 @@ export class SearchCacheService {
 
       const responseTime = Date.now() - startTime;
       this.stats.responseTime.push(responseTime);
-      
+
       if (cachedData) {
         this.stats.hits++;
         this.logger.debug(`✅ Cache HIT: ${key} (${responseTime}ms)`);
@@ -72,7 +72,7 @@ export class SearchCacheService {
       const finalTTL = ttl || this.calculateAdaptiveTTL(key, data);
 
       await this.cache.set(cacheKey, serializedData, finalTTL);
-      
+
       // Taggage pour invalidation groupée
       const tags = this.extractTags(key);
       if (tags.length > 0) {
@@ -105,14 +105,14 @@ export class SearchCacheService {
     try {
       const tagKey = `tag:${tag}`;
       const taggedKeys = await this.cache.get(tagKey);
-      
+
       if (taggedKeys && Array.isArray(taggedKeys)) {
-        await Promise.all(
-          taggedKeys.map(key => this.cache.del(key))
-        );
+        await Promise.all(taggedKeys.map((key) => this.cache.del(key)));
         await this.cache.del(tagKey);
-        
-        this.logger.log(`🏷️ Cache invalidé par tag: ${tag} (${taggedKeys.length} clés)`);
+
+        this.logger.log(
+          `🏷️ Cache invalidé par tag: ${tag} (${taggedKeys.length} clés)`,
+        );
       }
     } catch (error) {
       this.logger.error(`💥 Cache invalidation ERROR: ${tag}:`, error.message);
@@ -124,7 +124,7 @@ export class SearchCacheService {
    */
   async warmUp(popularQueries: string[]): Promise<void> {
     this.logger.log('🔥 Démarrage warm-up cache...');
-    
+
     for (const query of popularQueries.slice(0, 20)) {
       try {
         // Simuler les recherches populaires pour pré-remplir le cache
@@ -135,7 +135,7 @@ export class SearchCacheService {
         this.logger.warn(`⚠️ Erreur warm-up ${query}:`, error.message);
       }
     }
-    
+
     this.logger.log('✅ Warm-up cache terminé');
   }
 
@@ -143,16 +143,19 @@ export class SearchCacheService {
    * 📊 Statistiques du cache
    */
   async getStats(): Promise<CacheStats> {
-    const avgResponseTime = this.stats.responseTime.length > 0
-      ? this.stats.responseTime.reduce((a, b) => a + b, 0) / this.stats.responseTime.length
-      : 0;
+    const avgResponseTime =
+      this.stats.responseTime.length > 0
+        ? this.stats.responseTime.reduce((a, b) => a + b, 0) /
+          this.stats.responseTime.length
+        : 0;
 
     return {
       hits: this.stats.hits,
       misses: this.stats.misses,
-      hitRate: this.stats.totalRequests > 0 
-        ? (this.stats.hits / this.stats.totalRequests) * 100 
-        : 0,
+      hitRate:
+        this.stats.totalRequests > 0
+          ? (this.stats.hits / this.stats.totalRequests) * 100
+          : 0,
       totalRequests: this.stats.totalRequests,
       avgResponseTime: Math.round(avgResponseTime * 100) / 100,
     };
@@ -169,12 +172,12 @@ export class SearchCacheService {
   async cleanup(): Promise<void> {
     try {
       this.logger.log('🧹 Démarrage nettoyage cache...');
-      
+
       // Reset des statistiques périodiquement
       if (this.stats.responseTime.length > 1000) {
         this.stats.responseTime = this.stats.responseTime.slice(-500);
       }
-      
+
       this.logger.log('✅ Nettoyage cache terminé');
     } catch (error) {
       this.logger.error('💥 Erreur nettoyage cache:', error);
@@ -197,7 +200,7 @@ export class SearchCacheService {
         JSON.stringify(params.filters || {}),
         JSON.stringify(params.options || {}),
       ];
-      
+
       const key = keyParts.join(':');
       return this.buildCacheKey(key);
     } catch (error) {
@@ -213,14 +216,14 @@ export class SearchCacheService {
   private serializeData<T>(data: T): string {
     try {
       const json = JSON.stringify(data);
-      
+
       // Compression pour les grandes données (> 1KB)
       if (json.length > 1024) {
         // Ici on pourrait ajouter une compression zlib
         // Pour l'instant, on garde la sérialisation JSON simple
         return json;
       }
-      
+
       return json;
     } catch (error) {
       this.logger.error('Erreur sérialisation:', error);
@@ -267,16 +270,16 @@ export class SearchCacheService {
    */
   private extractTags(key: string): string[] {
     const tags: string[] = [];
-    
+
     if (key.includes('vehicles')) tags.push('vehicles');
     if (key.includes('products')) tags.push('products');
     if (key.includes('pages')) tags.push('pages');
     if (key.includes('search:all')) tags.push('search-all');
-    
+
     // Extraction de marques/modèles pour invalidation ciblée
     const brandMatch = key.match(/brand:(\w+)/);
     if (brandMatch) tags.push(`brand-${brandMatch[1]}`);
-    
+
     const modelMatch = key.match(/model:(\w+)/);
     if (modelMatch) tags.push(`model-${modelMatch[1]}`);
 
@@ -290,8 +293,8 @@ export class SearchCacheService {
     for (const tag of tags) {
       try {
         const tagKey = `tag:${tag}`;
-        const existingKeys = await this.cache.get(tagKey) || [];
-        
+        const existingKeys = (await this.cache.get(tagKey)) || [];
+
         if (Array.isArray(existingKeys) && !existingKeys.includes(cacheKey)) {
           existingKeys.push(cacheKey);
           await this.cache.set(tagKey, existingKeys, 7200); // 2h pour les tags
@@ -309,15 +312,15 @@ export class SearchCacheService {
     // Cette méthode serait appelée par un cron job
     // pour pré-charger les recherches populaires
     this.logger.log('🔄 Préchargement recherches populaires...');
-    
+
     const popularTerms = [
       'peugeot 308',
-      'renault clio', 
+      'renault clio',
       'volkswagen golf',
       'citroën c3',
-      'ford fiesta'
+      'ford fiesta',
     ];
-    
+
     await this.warmUp(popularTerms);
   }
 }

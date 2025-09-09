@@ -99,7 +99,7 @@ describe('Products API (e2e)', () => {
   describe('Performance Tests', () => {
     it('devrait répondre rapidement au catalogue (< 2s)', () => {
       const startTime = Date.now();
-      
+
       return request(app.getHttpServer())
         .get('/api/products/pieces-catalog?limit=24')
         .set('internal-call', 'true')

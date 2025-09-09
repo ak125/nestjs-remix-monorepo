@@ -65,7 +65,7 @@ export class FooterService extends SupabaseBaseService {
   ): Promise<FooterData> {
     try {
       const cacheKey = `footer:${context}:${version}:${type || 'default'}`;
-      
+
       // Vérifier le cache
       const cached = await this.cacheService.get<FooterData>(cacheKey);
       if (cached) {
@@ -75,9 +75,14 @@ export class FooterService extends SupabaseBaseService {
 
       // Récupérer les sections depuis Supabase
       const sections = await this.getFooterSections(version);
-      
+
       // Construire le footer selon la version et le contexte
-      const footerData = await this.buildFooter(context, version, type, sections);
+      const footerData = await this.buildFooter(
+        context,
+        version,
+        type,
+        sections,
+      );
 
       // Cache pour 1 heure
       await this.cacheService.set(cacheKey, footerData, 3600);
@@ -111,7 +116,9 @@ export class FooterService extends SupabaseBaseService {
 
       return sections || [];
     } catch (error) {
-      this.logger.error(`Error fetching footer sections: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error fetching footer sections: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return [];
     }
   }
@@ -172,7 +179,7 @@ export class FooterService extends SupabaseBaseService {
           { label: 'Cookies', link: '/support/cookies' },
         ],
       },
-      sections: sections.map(s => ({
+      sections: sections.map((s) => ({
         key: s.section_key,
         content: s.content,
         styles: s.styles,
@@ -183,9 +190,12 @@ export class FooterService extends SupabaseBaseService {
   /**
    * Footer V7 avec support legacy
    */
-  private async buildV7Footer(context: string, sections: any[] = []): Promise<FooterData> {
+  private async buildV7Footer(
+    context: string,
+    sections: any[] = [],
+  ): Promise<FooterData> {
     const company = await this.getCompanyInfo();
-    
+
     return {
       version: 'v7',
       company,
@@ -212,7 +222,7 @@ export class FooterService extends SupabaseBaseService {
       copyright: {
         text: `© ${new Date().getFullYear()} - Version 7`,
       },
-      sections: sections.map(s => ({
+      sections: sections.map((s) => ({
         key: s.section_key,
         content: s.content,
         styles: s.styles,
@@ -223,7 +233,10 @@ export class FooterService extends SupabaseBaseService {
   /**
    * Footer V2 simple
    */
-  private async buildV2Footer(context: string, sections: any[] = []): Promise<FooterData> {
+  private async buildV2Footer(
+    context: string,
+    sections: any[] = [],
+  ): Promise<FooterData> {
     return {
       version: 'v2',
       company: {
@@ -242,7 +255,7 @@ export class FooterService extends SupabaseBaseService {
       copyright: {
         text: `© ${new Date().getFullYear()} - Version 2`,
       },
-      sections: sections.map(s => ({
+      sections: sections.map((s) => ({
         key: s.section_key,
         content: s.content,
         styles: s.styles,
@@ -272,10 +285,12 @@ export class FooterService extends SupabaseBaseService {
 
       return data;
     } catch (error) {
-      this.logger.error(`Error fetching company info: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error fetching company info: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return {
         name: 'Pièces Auto',
-        address: '123 Rue de la Paix, 75001 Paris', 
+        address: '123 Rue de la Paix, 75001 Paris',
         phone: '+33 1 23 45 67 89',
         email: 'contact@pieces-auto.com',
       };
@@ -285,7 +300,9 @@ export class FooterService extends SupabaseBaseService {
   /**
    * Récupère les colonnes du footer par contexte
    */
-  private async getFooterColumns(context: string): Promise<FooterData['columns']> {
+  private async getFooterColumns(
+    context: string,
+  ): Promise<FooterData['columns']> {
     try {
       const { data, error } = await this.supabase
         .from('___FOOTER_MENU')
@@ -298,23 +315,28 @@ export class FooterService extends SupabaseBaseService {
       }
 
       // Grouper par catégorie
-      const groupedLinks = data.reduce((acc, item) => {
-        if (!acc[item.category]) {
-          acc[item.category] = [];
-        }
-        acc[item.category].push({
-          label: item.label,
-          url: item.url,
-        });
-        return acc;
-      }, {} as Record<string, any[]>);
+      const groupedLinks = data.reduce(
+        (acc, item) => {
+          if (!acc[item.category]) {
+            acc[item.category] = [];
+          }
+          acc[item.category].push({
+            label: item.label,
+            url: item.url,
+          });
+          return acc;
+        },
+        {} as Record<string, any[]>,
+      );
 
       return Object.entries(groupedLinks).map(([title, links]) => ({
         title: title.charAt(0).toUpperCase() + title.slice(1),
         links,
       }));
     } catch (error) {
-      this.logger.error(`Error fetching footer columns: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error fetching footer columns: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return this.getDefaultColumns(context);
     }
   }
@@ -397,7 +419,9 @@ export class FooterService extends SupabaseBaseService {
       ],
     };
 
-    return baseColumns[context as keyof typeof baseColumns] || baseColumns.public;
+    return (
+      baseColumns[context as keyof typeof baseColumns] || baseColumns.public
+    );
   }
 
   /**
@@ -413,19 +437,29 @@ export class FooterService extends SupabaseBaseService {
 
       if (error || !data) {
         return [
-          { platform: 'Facebook', url: 'https://facebook.com', icon: 'facebook' },
+          {
+            platform: 'Facebook',
+            url: 'https://facebook.com',
+            icon: 'facebook',
+          },
           { platform: 'Twitter', url: 'https://twitter.com', icon: 'twitter' },
-          { platform: 'Instagram', url: 'https://instagram.com', icon: 'instagram' },
+          {
+            platform: 'Instagram',
+            url: 'https://instagram.com',
+            icon: 'instagram',
+          },
         ];
       }
 
-      return data.map(item => ({
+      return data.map((item) => ({
         platform: item.platform,
         url: item.base_url,
         icon: item.icon,
       }));
     } catch (error) {
-      this.logger.error(`Error fetching social links: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error fetching social links: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       return [
         { platform: 'Facebook', url: 'https://facebook.com', icon: 'facebook' },
         { platform: 'Twitter', url: 'https://twitter.com', icon: 'twitter' },

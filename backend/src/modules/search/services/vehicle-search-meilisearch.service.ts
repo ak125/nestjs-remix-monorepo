@@ -1,6 +1,6 @@
 /**
  * 🚗 VEHICLE SEARCH SERVICE - Version Meilisearch v3.0
- * 
+ *
  * Service de recherche spécialisé pour les véhicules utilisant Meilisearch
  */
 
@@ -74,23 +74,25 @@ export class VehicleSearchService {
       // Vérifier le cache d'abord
       const cached = await this.cache.get(cacheKey);
       if (cached) {
-        this.logger.debug(`Cache hit pour recherche véhicules: ${params.query}`);
+        this.logger.debug(
+          `Cache hit pour recherche véhicules: ${params.query}`,
+        );
         return cached;
       }
 
       // Préparer les paramètres de recherche Meilisearch
       const searchParams = this.buildMeilisearchQuery(params);
-      
+
       // Effectuer la recherche
       const response = await this.meilisearch.search(
         this.vehicleIndex,
         params.query || '',
-        searchParams
+        searchParams,
       );
 
       // Formater les résultats
       const result: VehicleSearchResult = {
-        items: response.hits.map(hit => this.formatVehicleItem(hit)),
+        items: response.hits.map((hit) => this.formatVehicleItem(hit)),
         total: response.estimatedTotalHits || 0,
         page: params.page || 1,
         limit: params.limit || 20,
@@ -102,10 +104,11 @@ export class VehicleSearchService {
       // Mettre en cache le résultat
       await this.cache.set(cacheKey, result, 300); // 5 minutes
 
-      this.logger.log(`Recherche véhicules terminée: ${result.total} résultats en ${result.executionTime}ms`);
-      
-      return result;
+      this.logger.log(
+        `Recherche véhicules terminée: ${result.total} résultats en ${result.executionTime}ms`,
+      );
 
+      return result;
     } catch (error) {
       this.logger.error('Erreur lors de la recherche véhicules:', error);
       return {
@@ -131,8 +134,17 @@ export class VehicleSearchService {
       limit: params.limit || 20,
       offset: ((params.page || 1) - 1) * (params.limit || 20),
       attributesToRetrieve: [
-        'id', 'brand', 'model', 'year', 'price', 'mileage', 
-        'fuelType', 'transmission', 'description', 'images', 'availability'
+        'id',
+        'brand',
+        'model',
+        'year',
+        'price',
+        'mileage',
+        'fuelType',
+        'transmission',
+        'description',
+        'images',
+        'availability',
       ],
       facets: ['brand', 'model', 'year', 'fuelType', 'transmission'],
       attributesToHighlight: ['brand', 'model', 'description'],
@@ -140,48 +152,50 @@ export class VehicleSearchService {
 
     // Construire les filtres Meilisearch
     const filters: string[] = [];
-    
+
     if (params.filters) {
       const { filters: f } = params;
-      
+
       if (f.brand) {
         filters.push(`brand = "${f.brand}"`);
       }
-      
+
       if (f.model) {
         filters.push(`model = "${f.model}"`);
       }
-      
+
       if (f.yearMin) {
         filters.push(`year >= ${f.yearMin}`);
       }
-      
+
       if (f.yearMax) {
         filters.push(`year <= ${f.yearMax}`);
       }
-      
+
       if (f.priceMin) {
         filters.push(`price >= ${f.priceMin}`);
       }
-      
+
       if (f.priceMax) {
         filters.push(`price <= ${f.priceMax}`);
       }
-      
+
       if (f.mileageMax) {
         filters.push(`mileage <= ${f.mileageMax}`);
       }
-      
+
       if (f.fuelType && f.fuelType.length > 0) {
-        const fuelFilters = f.fuelType.map(fuel => `fuelType = "${fuel}"`);
+        const fuelFilters = f.fuelType.map((fuel) => `fuelType = "${fuel}"`);
         filters.push(`(${fuelFilters.join(' OR ')})`);
       }
-      
+
       if (f.transmission && f.transmission.length > 0) {
-        const transFilters = f.transmission.map(trans => `transmission = "${trans}"`);
+        const transFilters = f.transmission.map(
+          (trans) => `transmission = "${trans}"`,
+        );
         filters.push(`(${transFilters.join(' OR ')})`);
       }
-      
+
       if (f.availability) {
         filters.push(`availability = "${f.availability}"`);
       }
@@ -244,25 +258,32 @@ export class VehicleSearchService {
         offset: ((params.page || 1) - 1) * (params.limit || 20),
         filter: filters.join(' OR '),
         attributesToRetrieve: [
-          'id', 'brand', 'model', 'year', 'mine', 'vin',
-          'engineCode', 'powerKw', 'cylinderCapacity', 'description'
+          'id',
+          'brand',
+          'model',
+          'year',
+          'mine',
+          'vin',
+          'engineCode',
+          'powerKw',
+          'cylinderCapacity',
+          'description',
         ],
       };
 
       const response = await this.meilisearch.search(
         'vehicles_technical',
         query,
-        searchParams
+        searchParams,
       );
 
       return {
-        items: response.hits.map(hit => this.formatVehicleItem(hit)),
+        items: response.hits.map((hit) => this.formatVehicleItem(hit)),
         total: response.estimatedTotalHits || 0,
         page: params.page || 1,
         limit: params.limit || 20,
         executionTime: Date.now() - startTime,
       };
-
     } catch (error) {
       this.logger.error('Erreur recherche MINE/VIN:', error);
       return {
@@ -286,23 +307,28 @@ export class VehicleSearchService {
   }> {
     try {
       const stats = await this.meilisearch.getIndexStats(this.vehicleIndex);
-      
+
       // Recherche pour obtenir des facettes
-      const facetResponse = await this.meilisearch.search(this.vehicleIndex, '', {
-        limit: 1,
-        facets: ['brand', 'year', 'price'],
-      });
+      const facetResponse = await this.meilisearch.search(
+        this.vehicleIndex,
+        '',
+        {
+          limit: 1,
+          facets: ['brand', 'year', 'price'],
+        },
+      );
 
       const brands = Object.keys(facetResponse.facetDistribution?.brand || {});
-      const years = Object.keys(facetResponse.facetDistribution?.year || {}).map(Number);
-      
+      const years = Object.keys(
+        facetResponse.facetDistribution?.year || {},
+      ).map(Number);
+
       return {
         totalVehicles: stats.numberOfDocuments || 0,
         brandCount: brands.length,
         averagePrice: 0, // À calculer si nécessaire
         latestYear: Math.max(...years, 0),
       };
-
     } catch (error) {
       this.logger.error('Erreur récupération stats véhicules:', error);
       return {

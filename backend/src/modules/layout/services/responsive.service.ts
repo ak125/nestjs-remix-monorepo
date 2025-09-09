@@ -52,7 +52,7 @@ export class ResponsiveService {
       const device = this.detectDevice(width);
       const cacheKey = `responsive_${device}`;
       const cached = await this.cacheService.get<ResponsiveConfig>(cacheKey);
-      
+
       if (cached) {
         this.logger.debug(`Responsive config cache hit for: ${device}`);
         return cached;
@@ -60,7 +60,7 @@ export class ResponsiveService {
 
       const config = this.generateResponsiveConfig(device);
       await this.cacheService.set(cacheKey, config, 3600); // 1 heure
-      
+
       return config;
     } catch (error) {
       this.logger.error(
@@ -82,7 +82,7 @@ export class ResponsiveService {
     ];
 
     const configs: Record<string, ResponsiveConfig> = {};
-    
+
     for (const device of devices) {
       configs[device] = this.generateResponsiveConfig(device);
     }
@@ -93,7 +93,9 @@ export class ResponsiveService {
   /**
    * Détecte le type d'appareil basé sur la largeur
    */
-  private detectDevice(width: number): 'mobile' | 'tablet' | 'desktop' | 'wide' {
+  private detectDevice(
+    width: number,
+  ): 'mobile' | 'tablet' | 'desktop' | 'wide' {
     if (width < 640) return 'mobile';
     if (width < 768) return 'tablet';
     if (width < 1280) return 'desktop';
@@ -103,7 +105,9 @@ export class ResponsiveService {
   /**
    * Génère la configuration responsive pour un appareil
    */
-  private generateResponsiveConfig(device: 'mobile' | 'tablet' | 'desktop' | 'wide'): ResponsiveConfig {
+  private generateResponsiveConfig(
+    device: 'mobile' | 'tablet' | 'desktop' | 'wide',
+  ): ResponsiveConfig {
     const configs = {
       mobile: this.getMobileConfig(),
       tablet: this.getTabletConfig(),

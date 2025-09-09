@@ -97,7 +97,7 @@ export class UsersController {
   @Get('test-user')
   async getTestUser() {
     this.logger.log('GET /api/users/test-user');
-    
+
     try {
       const user = await this.usersService.findById('test-user-123');
       return {
@@ -121,13 +121,17 @@ export class UsersController {
   @Get('test-session-user')
   async getSessionUser() {
     this.logger.log('GET /api/users/test-session-user');
-    
+
     try {
-      const user = await this.usersService.findById('usr_1752842636126_j88bat3bh');
+      const user = await this.usersService.findById(
+        'usr_1752842636126_j88bat3bh',
+      );
       return {
         success: true,
         data: user,
-        message: user ? 'Utilisateur de session trouvé' : 'Utilisateur de session non trouvé',
+        message: user
+          ? 'Utilisateur de session trouvé'
+          : 'Utilisateur de session non trouvé',
       };
     } catch (error: any) {
       this.logger.error('Erreur getSessionUser:', error);
@@ -144,26 +148,29 @@ export class UsersController {
    */
   @Get('test-staff')
   async getTestStaff(@Query() query: any) {
-    this.logger.log('GET /api/users/test-staff - Récupération staff depuis ___config_admin');
-    
+    this.logger.log(
+      'GET /api/users/test-staff - Récupération staff depuis ___config_admin',
+    );
+
     try {
       // Utiliser le service de données directement via Supabase
       const page = parseInt(query.page) || 1;
       const limit = parseInt(query.limit) || 100;
       const offset = (page - 1) * limit;
-      
+
       // Configuration Supabase
       const supabaseUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cG9qcHJnd2d1YnpqeXF6bW9xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjUzNDU5NSwiZXhwIjoyMDY4MTEwNTk1fQ.ta_KmARDalKoBf6pIKNwZM0e6cBGO3F15CEgfw0lkzY';
-      
+      const supabaseKey =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cG9qcHJnd2d1YnpqeXF6bW9xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjUzNDU5NSwiZXhwIjoyMDY4MTEwNTk1fQ.ta_KmARDalKoBf6pIKNwZM0e6cBGO3F15CEgfw0lkzY';
+
       let apiQuery = `${supabaseUrl}/rest/v1/___config_admin?select=*`;
       apiQuery += `&order=cnfa_fname.asc,cnfa_name.asc&offset=${offset}&limit=${limit}`;
 
       const headers = {
         'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Prefer': 'return=representation',
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        Prefer: 'return=representation',
       };
 
       const response = await fetch(apiQuery, {
@@ -172,7 +179,11 @@ export class UsersController {
       });
 
       if (!response.ok) {
-        this.logger.error('❌ Erreur Supabase:', response.status, response.statusText);
+        this.logger.error(
+          '❌ Erreur Supabase:',
+          response.status,
+          response.statusText,
+        );
         return {
           success: false,
           message: 'Erreur lors de la récupération des données staff',
@@ -182,7 +193,7 @@ export class UsersController {
       }
 
       const rawStaff = await response.json();
-      
+
       // Mapper les données vers le format attendu par le frontend
       const staffMembers = rawStaff.map((s: any) => ({
         id: s.cnfa_id,
@@ -198,10 +209,14 @@ export class UsersController {
       }));
 
       // Filtrer pour ne garder que le staff (niveau >= 7)
-      const staffFiltered = staffMembers.filter((member: any) => member.level >= 7);
-      
-      this.logger.log(`✅ ${staffFiltered.length} membres du staff trouvés sur ${rawStaff.length} utilisateurs admin`);
-      
+      const staffFiltered = staffMembers.filter(
+        (member: any) => member.level >= 7,
+      );
+
+      this.logger.log(
+        `✅ ${staffFiltered.length} membres du staff trouvés sur ${rawStaff.length} utilisateurs admin`,
+      );
+
       return {
         success: true,
         data: staffFiltered,
@@ -223,15 +238,17 @@ export class UsersController {
 
   private extractDepartment(job: string): string {
     if (!job) return 'Non défini';
-    
+
     const jobLower = job.toLowerCase();
-    if (jobLower.includes('développeur') || jobLower.includes('webmaster')) return 'IT';
+    if (jobLower.includes('développeur') || jobLower.includes('webmaster'))
+      return 'IT';
     if (jobLower.includes('rh') || jobLower.includes('manager')) return 'RH';
-    if (jobLower.includes('comptable') || jobLower.includes('finance')) return 'Finance';
+    if (jobLower.includes('comptable') || jobLower.includes('finance'))
+      return 'Finance';
     if (jobLower.includes('admin')) return 'Administration';
-    
+
     return 'Général';
-  }  /**
+  } /**
    * GET /api/users/profile - Profil de l'utilisateur connecté
    */
   @Get('profile')
@@ -268,33 +285,37 @@ export class UsersController {
   @Post('force-session-login')
   async forceSessionLogin(@Body() body: any, @Req() request: any) {
     this.logger.log('POST /api/users/force-session-login');
-    
+
     const { email } = body;
-    
+
     try {
       // Récupérer l'utilisateur depuis les données mock via la méthode privée
       // On utilise une approche différente pour accéder aux données mock
       const testUser = {
         id: 'usr_1752842636126_j88bat3bh',
         email: 'auto@example.com',
-        firstName: 'AutoModified', 
+        firstName: 'AutoModified',
         lastName: 'EquipementModified',
         isPro: false,
-        isActive: true
+        isActive: true,
       };
-      
+
       // Vérifier que l'email correspond
       if (email && email !== testUser.email) {
         return {
           success: false,
           message: `Email ${email} non supporté. Utilisez ${testUser.email}`,
-          availableEmails: [testUser.email, 'admin@automecanik.com', 'client@test.com']
+          availableEmails: [
+            testUser.email,
+            'admin@automecanik.com',
+            'client@test.com',
+          ],
         };
       }
-      
+
       // Utiliser l'utilisateur par défaut si pas d'email spécifié
       const userToLogin = email ? testUser : testUser;
-      
+
       // Créer l'objet utilisateur pour la session
       const sessionUser = {
         id: userToLogin.id,
@@ -306,7 +327,7 @@ export class UsersController {
         level: 1,
         isActive: userToLogin.isActive,
       };
-      
+
       // Fonction de connexion en promesse pour gérer l'async
       const loginPromise = new Promise((resolve, reject) => {
         request.login(sessionUser, (err: any) => {
@@ -318,32 +339,34 @@ export class UsersController {
           }
         });
       });
-      
+
       await loginPromise;
-      
+
       // Vérifier l'état après connexion
       const postLoginInfo = {
         isAuthenticated: request.isAuthenticated(),
         hasUser: !!request.user,
         user: request.user,
         sessionPassport: request.session?.passport || null,
-        sessionId: request.sessionID
+        sessionId: request.sessionID,
       };
-      
-      this.logger.log('Session forcée créée:', JSON.stringify(postLoginInfo, null, 2));
-      
+
+      this.logger.log(
+        'Session forcée créée:',
+        JSON.stringify(postLoginInfo, null, 2),
+      );
+
       return {
         success: true,
         message: `Session authentifiée créée pour ${email}`,
-        data: postLoginInfo
+        data: postLoginInfo,
       };
-      
     } catch (error: any) {
       this.logger.error('Erreur forceSessionLogin:', error);
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -354,7 +377,7 @@ export class UsersController {
   @Post('test-login')
   async testLogin(@Req() request: any) {
     this.logger.log('POST /api/users/test-login');
-    
+
     try {
       // Simuler une connexion avec l'utilisateur de session
       const sessionUser = {
@@ -365,9 +388,9 @@ export class UsersController {
         isAdmin: false,
         isPro: false,
         level: 1,
-        isActive: true
+        isActive: true,
       };
-      
+
       // Configurer manuellement la session Passport
       request.login(sessionUser, (err: any) => {
         if (err) {
@@ -375,34 +398,36 @@ export class UsersController {
           return {
             success: false,
             message: 'Erreur lors de la connexion de test',
-            error: err.message
+            error: err.message,
           };
         }
       });
-      
+
       // Vérifier l'état après connexion
       const postLoginInfo = {
         isAuthenticated: request.isAuthenticated(),
         hasUser: !!request.user,
         user: request.user,
         sessionPassport: request.session?.passport || null,
-        sessionId: request.sessionID
+        sessionId: request.sessionID,
       };
-      
-      this.logger.log('État après connexion test:', JSON.stringify(postLoginInfo, null, 2));
-      
+
+      this.logger.log(
+        'État après connexion test:',
+        JSON.stringify(postLoginInfo, null, 2),
+      );
+
       return {
         success: true,
         message: 'Connexion de test réussie',
-        data: postLoginInfo
+        data: postLoginInfo,
       };
-      
     } catch (error: any) {
       this.logger.error('Erreur testLogin:', error);
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -413,45 +438,50 @@ export class UsersController {
   @Get('debug-session')
   async debugSession(@Req() request: any) {
     this.logger.log('GET /api/users/debug-session');
-    
+
     try {
       const sessionInfo = {
         // Session basic info
         sessionExists: !!request.session,
         sessionId: request.session?.id || request.sessionID,
-        
+
         // Authentication status
-        isAuthenticated: request.isAuthenticated ? request.isAuthenticated() : false,
-        
+        isAuthenticated: request.isAuthenticated
+          ? request.isAuthenticated()
+          : false,
+
         // User info
         hasUser: !!request.user,
         user: request.user || null,
-        
+
         // Session data
         sessionData: request.session || {},
-        
+
         // Passport specific
         hasPassport: !!request.session?.passport,
         passportData: request.session?.passport || null,
-        
+
         // Headers
         cookies: request.headers.cookie || 'none',
-        userAgent: request.headers['user-agent'] || 'none'
+        userAgent: request.headers['user-agent'] || 'none',
       };
-      
-      this.logger.log('Session debug info:', JSON.stringify(sessionInfo, null, 2));
-      
+
+      this.logger.log(
+        'Session debug info:',
+        JSON.stringify(sessionInfo, null, 2),
+      );
+
       return {
         success: true,
         data: sessionInfo,
-        message: 'Session debug info récupérée'
+        message: 'Session debug info récupérée',
       };
     } catch (error: any) {
       this.logger.error('Erreur debugSession:', error);
       return {
         success: false,
         message: error.message,
-        data: null
+        data: null,
       };
     }
   }
@@ -542,7 +572,7 @@ export class UsersController {
       const [ordersCount, messagesCount] = await Promise.allSettled([
         // TODO: Intégrer avec OrdersService quand il sera migré
         Promise.resolve({ total: 0, pending: 0, completed: 0 }),
-        // TODO: Intégrer avec MessagesService quand il sera migré  
+        // TODO: Intégrer avec MessagesService quand il sera migré
         Promise.resolve({ total: 0, unread: 0, threads: 0 }),
       ]);
 
@@ -578,9 +608,7 @@ export class UsersController {
           total:
             ordersCount.status === 'fulfilled' ? ordersCount.value.total : 0,
           pending:
-            ordersCount.status === 'fulfilled'
-              ? ordersCount.value.pending
-              : 0,
+            ordersCount.status === 'fulfilled' ? ordersCount.value.pending : 0,
           completed:
             ordersCount.status === 'fulfilled'
               ? ordersCount.value.completed
@@ -624,24 +652,26 @@ export class UsersController {
   ) {
     // Log détaillé pour debug
     this.logger.log(`GET /api/users - Request received`);
-    
+
     // Vérifier les headers d'authentification internes en priorité
     const internalUserId = req?.headers?.['x-user-id'] as string;
     const internalUserEmail = req?.headers?.['x-user-email'] as string;
     const internalUserLevel = req?.headers?.['x-user-level'] as string;
     const isInternalCall = req?.headers?.['internal-call'] === 'true';
-    
+
     let currentUser = req?.user;
-    
+
     // Si c'est un appel interne avec headers d'auth, créer un objet user
     if (isInternalCall && internalUserId && internalUserEmail) {
       currentUser = {
         id: internalUserId,
         email: internalUserEmail,
         level: parseInt(internalUserLevel) || 1,
-        isAuthenticated: true
+        isAuthenticated: true,
       };
-      this.logger.log(`Using internal auth - User: ${internalUserEmail} (Level: ${internalUserLevel})`);
+      this.logger.log(
+        `Using internal auth - User: ${internalUserEmail} (Level: ${internalUserLevel})`,
+      );
     } else {
       this.logger.log(`User: ${currentUser?.email || 'anonymous'}`);
       this.logger.log(`IsAuthenticated: ${req?.isAuthenticated?.() || false}`);

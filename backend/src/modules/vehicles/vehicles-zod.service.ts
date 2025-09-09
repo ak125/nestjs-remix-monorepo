@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { 
-  VehicleFilterDto, 
+import {
+  VehicleFilterDto,
   AdvancedVehicleSearchDto,
   BrandQueryDto,
   ModelQueryDto,
-  TypeQueryDto
+  TypeQueryDto,
 } from './dto/vehicles-zod.dto';
 
 /**
  * Service pour la gestion des véhicules automobiles avec validation Zod
  * Utilise les vraies tables de la base de données :
  * - auto_marque (marques automobiles)
- * - auto_modele (modèles de véhicules) 
+ * - auto_modele (modèles de véhicules)
  * - auto_type (types/motorisations)
  */
 @Injectable()
 export class VehiclesZodService extends SupabaseBaseService {
-  
   /**
    * Récupérer toutes les marques avec validation Zod
    */
@@ -161,7 +160,8 @@ export class VehiclesZodService extends SupabaseBaseService {
       // Construction de la requête avec jointures
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_fuel,
@@ -181,13 +181,14 @@ export class VehiclesZodService extends SupabaseBaseService {
               marque_logo
             )
           )
-        `)
+        `,
+        )
         .range(filters.offset, filters.offset + filters.limit - 1);
 
       // Filtres de recherche textuelle
       if (filters.search) {
         query = query.or(
-          `type_name.ilike.%${filters.search}%,auto_modele.modele_name.ilike.%${filters.search}%,auto_modele.auto_marque.marque_name.ilike.%${filters.search}%`
+          `type_name.ilike.%${filters.search}%,auto_modele.modele_name.ilike.%${filters.search}%,auto_modele.auto_marque.marque_name.ilike.%${filters.search}%`,
         );
       }
 
@@ -244,7 +245,9 @@ export class VehiclesZodService extends SupabaseBaseService {
 
       // Tri
       const sortColumn = this.getSortColumn(filters.sortBy);
-      query = query.order(sortColumn, { ascending: filters.sortOrder === 'asc' });
+      query = query.order(sortColumn, {
+        ascending: filters.sortOrder === 'asc',
+      });
 
       const { data, error, count } = await query;
 
@@ -253,19 +256,21 @@ export class VehiclesZodService extends SupabaseBaseService {
         throw error;
       }
 
-      this.logger.log(`✅ ${data?.length || 0} véhicules trouvés (recherche avancée)`);
-      
+      this.logger.log(
+        `✅ ${data?.length || 0} véhicules trouvés (recherche avancée)`,
+      );
+
       return {
         data: data || [],
         count: data?.length || 0,
         total: count || 0,
-        pagination: { 
-          limit: filters.limit, 
-          offset: filters.offset, 
+        pagination: {
+          limit: filters.limit,
+          offset: filters.offset,
           page: Math.floor(filters.offset / filters.limit),
         },
         filters,
-        stats: this.generateSearchStats(data || [])
+        stats: this.generateSearchStats(data || []),
       };
     } catch (error) {
       this.logger.error('Erreur searchAdvanced:', error);
@@ -307,12 +312,18 @@ export class VehiclesZodService extends SupabaseBaseService {
    */
   private getSortColumn(sortBy: string): string {
     switch (sortBy) {
-      case 'name': return 'type_name';
-      case 'year': return 'type_year_from';
-      case 'power': return 'type_power_ps';
-      case 'fuel': return 'type_fuel';
-      case 'brand': return 'auto_modele.auto_marque.marque_name';
-      default: return 'type_name';
+      case 'name':
+        return 'type_name';
+      case 'year':
+        return 'type_year_from';
+      case 'power':
+        return 'type_power_ps';
+      case 'fuel':
+        return 'type_fuel';
+      case 'brand':
+        return 'auto_modele.auto_marque.marque_name';
+      default:
+        return 'type_name';
     }
   }
 
@@ -328,18 +339,25 @@ export class VehiclesZodService extends SupabaseBaseService {
       return acc;
     }, {});
 
-    const avgPower = results.reduce((sum, item) => {
-      return sum + (parseInt(item.type_power_ps) || 0);
-    }, 0) / results.length;
+    const avgPower =
+      results.reduce((sum, item) => {
+        return sum + (parseInt(item.type_power_ps) || 0);
+      }, 0) / results.length;
 
     return {
       totalResults: results.length,
       fuelTypes,
       avgPowerPs: Math.round(avgPower),
       yearRange: {
-        min: Math.min(...results.map(r => parseInt(r.type_year_from) || 9999)),
-        max: Math.max(...results.map(r => parseInt(r.type_year_to) || new Date().getFullYear()))
-      }
+        min: Math.min(
+          ...results.map((r) => parseInt(r.type_year_from) || 9999),
+        ),
+        max: Math.max(
+          ...results.map(
+            (r) => parseInt(r.type_year_to) || new Date().getFullYear(),
+          ),
+        ),
+      },
     };
   }
 }

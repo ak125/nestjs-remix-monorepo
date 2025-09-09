@@ -25,7 +25,7 @@ export class InvoicesService extends SupabaseBaseService {
    */
   async getAllInvoices(page: number = 1, limit: number = 20) {
     const cacheKey = `invoices:all:page_${page}:limit_${limit}`;
-    
+
     try {
       // Cache check
       const cached = await this.cacheManager.get(cacheKey);

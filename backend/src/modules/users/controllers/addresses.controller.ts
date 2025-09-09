@@ -52,14 +52,17 @@ export class AddressesController {
   @Get()
   @ApiOperation({
     summary: 'Récupérer toutes les adresses du client connecté',
-    description: "Retourne l'adresse de facturation et toutes les adresses de livraison",
+    description:
+      "Retourne l'adresse de facturation et toutes les adresses de livraison",
   })
   @ApiResponse({
     status: 200,
     description: 'Adresses récupérées avec succès',
     type: Object,
   })
-  async getAllAddresses(@User('id') userId: number): Promise<AddressListResponse> {
+  async getAllAddresses(
+    @User('id') userId: number,
+  ): Promise<AddressListResponse> {
     return this.addressesService.getAllAddresses(userId);
   }
 
@@ -77,7 +80,9 @@ export class AddressesController {
     description: 'Adresse de facturation récupérée',
     type: Object,
   })
-  async getBillingAddress(@User('id') userId: number): Promise<BillingAddress | null> {
+  async getBillingAddress(
+    @User('id') userId: number,
+  ): Promise<BillingAddress | null> {
     return this.addressesService.getBillingAddress(userId);
   }
 
@@ -99,7 +104,7 @@ export class AddressesController {
     const validatedData = CreateBillingAddressSchema.omit({
       customerId: true,
     }).parse(addressData);
-    
+
     return this.addressesService.upsertBillingAddress(userId, validatedData);
   }
 
@@ -110,14 +115,17 @@ export class AddressesController {
   @Get('delivery')
   @ApiOperation({
     summary: 'Récupérer toutes les adresses de livraison',
-    description: 'Retourne toutes les adresses de livraison du client, triées par défaut',
+    description:
+      'Retourne toutes les adresses de livraison du client, triées par défaut',
   })
   @ApiResponse({
     status: 200,
     description: 'Adresses de livraison récupérées',
     type: [Object],
   })
-  async getDeliveryAddresses(@User('id') userId: number): Promise<DeliveryAddress[]> {
+  async getDeliveryAddresses(
+    @User('id') userId: number,
+  ): Promise<DeliveryAddress[]> {
     return this.addressesService.getDeliveryAddresses(userId);
   }
 
@@ -131,7 +139,9 @@ export class AddressesController {
     description: 'Adresse de livraison par défaut récupérée',
     type: Object,
   })
-  async getDefaultDeliveryAddress(@User('id') userId: number): Promise<DeliveryAddress | null> {
+  async getDefaultDeliveryAddress(
+    @User('id') userId: number,
+  ): Promise<DeliveryAddress | null> {
     return this.addressesService.getDefaultDeliveryAddress(userId);
   }
 
@@ -153,7 +163,7 @@ export class AddressesController {
     const validatedData = CreateDeliveryAddressSchema.omit({
       customerId: true,
     }).parse(addressData);
-    
+
     return this.addressesService.createDeliveryAddress(userId, validatedData);
   }
 
@@ -174,15 +184,20 @@ export class AddressesController {
   ): Promise<DeliveryAddress> {
     // Validation avec Zod
     const validatedData = UpdateDeliveryAddressSchema.parse(addressData);
-    
-    return this.addressesService.updateDeliveryAddress(userId, addressId, validatedData);
+
+    return this.addressesService.updateDeliveryAddress(
+      userId,
+      addressId,
+      validatedData,
+    );
   }
 
   @Delete('delivery/:addressId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Supprimer une adresse de livraison',
-    description: 'Supprime une adresse de livraison (minimum 1 adresse obligatoire)',
+    description:
+      'Supprime une adresse de livraison (minimum 1 adresse obligatoire)',
   })
   @ApiResponse({
     status: 204,
@@ -198,7 +213,8 @@ export class AddressesController {
   @Patch('delivery/:addressId/set-default')
   @ApiOperation({
     summary: 'Définir une adresse de livraison par défaut',
-    description: 'Marque cette adresse comme défaut et retire le défaut des autres',
+    description:
+      'Marque cette adresse comme défaut et retire le défaut des autres',
   })
   @ApiResponse({
     status: 200,

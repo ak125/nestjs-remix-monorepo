@@ -26,9 +26,14 @@ export class SearchFilterService {
   async getAvailableFilters(indexName: string): Promise<FilterGroup[]> {
     try {
       const facets = await this.getFacetsForIndex(indexName);
-      const facetResults = await this.meilisearchService.getFacets(indexName, facets);
+      const facetResults = await this.meilisearchService.getFacets(
+        indexName,
+        facets,
+      );
 
-      return this.transformFacetsToFilters(facetResults.facetDistribution || {});
+      return this.transformFacetsToFilters(
+        facetResults.facetDistribution || {},
+      );
     } catch (error) {
       this.logger.error(`Error getting filters for ${indexName}:`, error);
       throw error;
@@ -68,9 +73,13 @@ export class SearchFilterService {
     Object.entries(filters).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         // Filtre multiple (OR)
-        const orConditions = value.map(v => `${key} = "${v}"`).join(' OR ');
+        const orConditions = value.map((v) => `${key} = "${v}"`).join(' OR ');
         filterQueries.push(`(${orConditions})`);
-      } else if (typeof value === 'object' && value.min !== undefined && value.max !== undefined) {
+      } else if (
+        typeof value === 'object' &&
+        value.min !== undefined &&
+        value.max !== undefined
+      ) {
         // Filtre de plage
         filterQueries.push(`${key} >= ${value.min} AND ${key} <= ${value.max}`);
       } else if (value !== null && value !== undefined && value !== '') {
@@ -100,9 +109,15 @@ export class SearchFilterService {
       };
 
       if (indexName === 'vehicles') {
-        return await this.meilisearchService.searchVehicles(query, searchOptions);
+        return await this.meilisearchService.searchVehicles(
+          query,
+          searchOptions,
+        );
       } else if (indexName === 'products') {
-        return await this.meilisearchService.searchProducts(query, searchOptions);
+        return await this.meilisearchService.searchProducts(
+          query,
+          searchOptions,
+        );
       } else {
         throw new Error(`Index ${indexName} not supported`);
       }
@@ -117,7 +132,15 @@ export class SearchFilterService {
    */
   private getFacetsForIndex(indexName: string): string[] {
     const facetMapping: Record<string, string[]> = {
-      vehicles: ['brand', 'model', 'category', 'fuel_type', 'transmission', 'color', 'year'],
+      vehicles: [
+        'brand',
+        'model',
+        'category',
+        'fuel_type',
+        'transmission',
+        'color',
+        'year',
+      ],
       products: ['category', 'type', 'status'],
     };
 
@@ -127,7 +150,9 @@ export class SearchFilterService {
   /**
    * Transforme les facettes Meilisearch en filtres UI
    */
-  private transformFacetsToFilters(facetDistribution: Record<string, Record<string, number>>): FilterGroup[] {
+  private transformFacetsToFilters(
+    facetDistribution: Record<string, Record<string, number>>,
+  ): FilterGroup[] {
     const filterGroups: FilterGroup[] = [];
 
     Object.entries(facetDistribution).forEach(([facetName, facetValues]) => {

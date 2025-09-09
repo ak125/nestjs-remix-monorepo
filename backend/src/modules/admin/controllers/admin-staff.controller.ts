@@ -56,7 +56,8 @@ export class AdminStaffController {
       const filters = {
         role: query.role,
         department: query.department,
-        isActive: query.isActive !== undefined ? query.isActive === 'true' : undefined,
+        isActive:
+          query.isActive !== undefined ? query.isActive === 'true' : undefined,
         search: query.search,
       };
 
@@ -124,11 +125,11 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error(`Erreur récupération staff ${id}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Erreur lors de la récupération du membre',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -158,11 +159,11 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error('Erreur création staff:', error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Erreur lors de la création',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -195,11 +196,11 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error(`Erreur mise à jour staff ${id}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Erreur lors de la mise à jour',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -228,11 +229,11 @@ export class AdminStaffController {
       };
     } catch (error) {
       this.logger.error(`Erreur suppression staff ${id}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Erreur lors de la suppression',
         HttpStatus.INTERNAL_SERVER_ERROR,

@@ -28,7 +28,9 @@ interface NotificationData {
   },
   namespace: '/notifications',
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -49,12 +51,12 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       priority: 'normal',
       data: {
         connectionId: client.id,
-        features: ['real-time', 'offline-queue', 'sound', 'vibration']
-      }
+        features: ['real-time', 'offline-queue', 'sound', 'vibration'],
+      },
     };
 
     client.emit('notification', welcomeNotification);
-    
+
     // Send system status
     setTimeout(() => {
       const statusNotification: NotificationData = {
@@ -63,7 +65,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         title: '✅ Système opérationnel',
         message: 'Tous les services fonctionnent correctement',
         timestamp: new Date().toISOString(),
-        priority: 'low'
+        priority: 'low',
       };
       client.emit('notification', statusNotification);
     }, 2000);
@@ -77,12 +79,12 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   @SubscribeMessage('subscribe')
   handleSubscribe(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
     this.logger.log(`Client ${client.id} subscribed with data:`, data);
-    
+
     // Join specific rooms based on user preferences
     if (data.userId) {
       client.join(`user-${data.userId}`);
     }
-    
+
     if (data.interests) {
       data.interests.forEach((interest: string) => {
         client.join(`interest-${interest}`);
@@ -92,12 +94,15 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     client.emit('subscribed', {
       success: true,
       message: 'Successfully subscribed to notifications',
-      rooms: Array.from(client.rooms)
+      rooms: Array.from(client.rooms),
     });
   }
 
   @SubscribeMessage('unsubscribe')
-  handleUnsubscribe(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+  handleUnsubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: any,
+  ) {
     if (data.room) {
       client.leave(data.room);
       client.emit('unsubscribed', { room: data.room });
@@ -112,7 +117,10 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
   // Send notification to specific user
   sendToUser(userId: string, notification: NotificationData) {
-    this.logger.log(`Sending notification to user ${userId}:`, notification.title);
+    this.logger.log(
+      `Sending notification to user ${userId}:`,
+      notification.title,
+    );
     this.server.to(`user-${userId}`).emit('notification', notification);
   }
 
@@ -141,7 +149,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       return {
         id: client.id,
         rooms: Array.from(client.rooms),
-        connected: client.connected
+        connected: client.connected,
       };
     }
     return null;
@@ -149,15 +157,19 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
 
   // Demo notifications for testing
   @SubscribeMessage('test-notification')
-  handleTestNotification(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+  handleTestNotification(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: any,
+  ) {
     const testNotifications: NotificationData[] = [
       {
         id: `test-info-${Date.now()}`,
         type: 'info',
         title: '📋 Information de test',
-        message: 'Ceci est une notification d\'information pour tester le système',
+        message:
+          "Ceci est une notification d'information pour tester le système",
         timestamp: new Date().toISOString(),
-        priority: 'normal'
+        priority: 'normal',
       },
       {
         id: `test-success-${Date.now() + 1}`,
@@ -165,7 +177,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         title: '✅ Succès de test',
         message: 'Opération de test terminée avec succès',
         timestamp: new Date().toISOString(),
-        priority: 'normal'
+        priority: 'normal',
       },
       {
         id: `test-warning-${Date.now() + 2}`,
@@ -173,42 +185,61 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         title: '⚠️ Avertissement de test',
         message: 'Ceci est un avertissement de test - veuillez vérifier',
         timestamp: new Date().toISOString(),
-        priority: 'high'
+        priority: 'high',
       },
       {
         id: `test-error-${Date.now() + 3}`,
         type: 'error',
         title: '❌ Erreur de test',
-        message: 'Simulation d\'erreur pour tester la gestion des erreurs',
+        message: "Simulation d'erreur pour tester la gestion des erreurs",
         timestamp: new Date().toISOString(),
-        priority: 'urgent'
-      }
+        priority: 'urgent',
+      },
     ];
 
     const selectedType = data.type || 'info';
-    const notification = testNotifications.find(n => n.type === selectedType) || testNotifications[0];
-    
+    const notification =
+      testNotifications.find((n) => n.type === selectedType) ||
+      testNotifications[0];
+
     client.emit('notification', notification);
   }
 
   // Periodic demo notifications
   startDemoMode() {
     const demoMessages = [
-      { type: 'info', title: '📦 Nouvelle commande', message: 'Commande #12345 reçue et en cours de traitement' },
-      { type: 'success', title: '🚚 Expédition', message: 'Votre commande #12344 a été expédiée' },
-      { type: 'warning', title: '⚠️ Stock faible', message: 'Le produit XYZ n\'a plus que 2 unités en stock' },
-      { type: 'info', title: '👤 Nouveau client', message: 'Un nouveau client s\'est inscrit sur la plateforme' },
+      {
+        type: 'info',
+        title: '📦 Nouvelle commande',
+        message: 'Commande #12345 reçue et en cours de traitement',
+      },
+      {
+        type: 'success',
+        title: '🚚 Expédition',
+        message: 'Votre commande #12344 a été expédiée',
+      },
+      {
+        type: 'warning',
+        title: '⚠️ Stock faible',
+        message: "Le produit XYZ n'a plus que 2 unités en stock",
+      },
+      {
+        type: 'info',
+        title: '👤 Nouveau client',
+        message: "Un nouveau client s'est inscrit sur la plateforme",
+      },
     ];
 
     setInterval(() => {
-      const randomMessage = demoMessages[Math.floor(Math.random() * demoMessages.length)];
+      const randomMessage =
+        demoMessages[Math.floor(Math.random() * demoMessages.length)];
       const notification: NotificationData = {
         id: `demo-${Date.now()}`,
         type: randomMessage.type as any,
         title: randomMessage.title,
         message: randomMessage.message,
         timestamp: new Date().toISOString(),
-        priority: 'normal'
+        priority: 'normal',
       };
 
       this.broadcastNotification(notification);

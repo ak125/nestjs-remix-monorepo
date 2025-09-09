@@ -74,7 +74,7 @@ export class ManufacturersService extends SupabaseBaseService {
     try {
       // Clé de cache basée sur la recherche
       const cacheKey = `manufacturers_${search || 'all'}`;
-      
+
       // Vérifier le cache d'abord
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
@@ -210,10 +210,7 @@ export class ManufacturersService extends SupabaseBaseService {
         error: null,
       };
     } catch (error) {
-      this.logger.error(
-        `Erreur getManufacturerById(${id}):`,
-        error,
-      );
+      this.logger.error(`Erreur getManufacturerById(${id}):`, error);
       return {
         success: false,
         data: null,
@@ -415,7 +412,9 @@ export class ManufacturersService extends SupabaseBaseService {
         .limit(5000);
 
       if (error) {
-        throw new Error(`Erreur récupération types carburant: ${error.message}`);
+        throw new Error(
+          `Erreur récupération types carburant: ${error.message}`,
+        );
       }
 
       const fuelTypes = [
@@ -428,7 +427,14 @@ export class ManufacturersService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('Erreur getFuelTypes:', error);
       // Fallback avec les types connus
-      return ['Diesel', 'Essence', 'Électrique', 'Essence-Électrique', 'GPL', 'Gaz naturel'];
+      return [
+        'Diesel',
+        'Essence',
+        'Électrique',
+        'Essence-Électrique',
+        'GPL',
+        'Gaz naturel',
+      ];
     }
   }
 
@@ -449,23 +455,28 @@ export class ManufacturersService extends SupabaseBaseService {
         .not('type_power_ps', 'is', null);
 
       if (error) {
-        throw new Error(`Erreur récupération gammes puissance: ${error.message}`);
+        throw new Error(
+          `Erreur récupération gammes puissance: ${error.message}`,
+        );
       }
 
-      const powers = data?.map(t => ({
-        ps: t.type_power_ps ? parseInt(t.type_power_ps, 10) : 0,
-        kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : 0,
-      })).filter(p => p.ps > 0) || [];
+      const powers =
+        data
+          ?.map((t) => ({
+            ps: t.type_power_ps ? parseInt(t.type_power_ps, 10) : 0,
+            kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : 0,
+          }))
+          .filter((p) => p.ps > 0) || [];
 
       const result = {
         ps: {
-          min: Math.min(...powers.map(p => p.ps)),
-          max: Math.max(...powers.map(p => p.ps)),
+          min: Math.min(...powers.map((p) => p.ps)),
+          max: Math.max(...powers.map((p) => p.ps)),
         },
         kw: {
-          min: Math.min(...powers.map(p => p.kw)),
-          max: Math.max(...powers.map(p => p.kw)),
-        }
+          min: Math.min(...powers.map((p) => p.kw)),
+          max: Math.max(...powers.map((p) => p.kw)),
+        },
       };
 
       await this.cacheManager.set(cacheKey, result);
@@ -491,10 +502,8 @@ export class ManufacturersService extends SupabaseBaseService {
     offset?: number;
   }) {
     try {
-      let query = this.client
-        .from('auto_type')
-        .select(
-          `
+      let query = this.client.from('auto_type').select(
+        `
           type_id,
           type_name,
           type_fuel,
@@ -514,12 +523,15 @@ export class ManufacturersService extends SupabaseBaseService {
             )
           )
         `,
-          { count: 'exact' }
-        );
+        { count: 'exact' },
+      );
 
       // Filtres
       if (filters?.manufacturerId) {
-        query = query.eq('auto_modele.modele_marque_id', filters.manufacturerId);
+        query = query.eq(
+          'auto_modele.modele_marque_id',
+          filters.manufacturerId,
+        );
       }
 
       if (filters?.search) {
@@ -557,33 +569,34 @@ export class ManufacturersService extends SupabaseBaseService {
         throw new Error(`Erreur recherche types: ${error.message}`);
       }
 
-      const formattedTypes = data?.map((t: any) => ({
-        id: t.type_id,
-        name: t.type_name,
-        fuel_type: t.type_fuel,
-        power_hp: t.type_power_ps ? parseInt(t.type_power_ps, 10) : null,
-        power_kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : null,
-        engine_size: t.type_liter,
-        engine_code: t.type_engine,
-        year_from: t.type_year_from ? parseInt(t.type_year_from, 10) : 0,
-        year_to: t.type_year_to ? parseInt(t.type_year_to, 10) : 0,
-        model: {
-          id: t.auto_modele?.modele_id,
-          name: t.auto_modele?.modele_name,
-          manufacturer: {
-            id: t.auto_modele?.auto_marque?.marque_id,
-            name: t.auto_modele?.auto_marque?.marque_name,
-            logo_url: t.auto_modele?.auto_marque?.marque_logo
-              ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${t.auto_modele.auto_marque.marque_logo}`
-              : null,
-          }
-        }
-      })) || [];
+      const formattedTypes =
+        data?.map((t: any) => ({
+          id: t.type_id,
+          name: t.type_name,
+          fuel_type: t.type_fuel,
+          power_hp: t.type_power_ps ? parseInt(t.type_power_ps, 10) : null,
+          power_kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : null,
+          engine_size: t.type_liter,
+          engine_code: t.type_engine,
+          year_from: t.type_year_from ? parseInt(t.type_year_from, 10) : 0,
+          year_to: t.type_year_to ? parseInt(t.type_year_to, 10) : 0,
+          model: {
+            id: t.auto_modele?.modele_id,
+            name: t.auto_modele?.modele_name,
+            manufacturer: {
+              id: t.auto_modele?.auto_marque?.marque_id,
+              name: t.auto_modele?.auto_marque?.marque_name,
+              logo_url: t.auto_modele?.auto_marque?.marque_logo
+                ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${t.auto_modele.auto_marque.marque_logo}`
+                : null,
+            },
+          },
+        })) || [];
 
       return {
         data: formattedTypes,
         total: count || 0,
-        hasNext: (offset + limit) < (count || 0),
+        hasNext: offset + limit < (count || 0),
         hasPrev: offset > 0,
         message: `${formattedTypes.length} types trouvés`,
       };
@@ -617,10 +630,14 @@ export class ManufacturersService extends SupabaseBaseService {
         .not('type_fuel', 'eq', '');
 
       if (error) {
-        throw new Error(`Erreur récupération types carburant: ${error.message}`);
+        throw new Error(
+          `Erreur récupération types carburant: ${error.message}`,
+        );
       }
 
-      const fuelTypes = [...new Set(data?.map(item => item.type_fuel).filter(Boolean))];
+      const fuelTypes = [
+        ...new Set(data?.map((item) => item.type_fuel).filter(Boolean)),
+      ];
       const sortedTypes = fuelTypes.sort();
 
       await this.cacheManager.set(cacheKey, sortedTypes);
@@ -644,7 +661,8 @@ export class ManufacturersService extends SupabaseBaseService {
 
       const { data, error } = await this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_fuel,
@@ -656,7 +674,8 @@ export class ManufacturersService extends SupabaseBaseService {
             modele_marque_id,
             auto_marque!modele_marque_id(marque_name, marque_logo)
           )
-        `)
+        `,
+        )
         .eq('type_fuel', fuelType)
         .limit(limit)
         .order('type_power_ps', { ascending: false, nullsFirst: false });
@@ -665,24 +684,25 @@ export class ManufacturersService extends SupabaseBaseService {
         throw new Error(`Erreur types par carburant: ${error.message}`);
       }
 
-      const formattedTypes = data?.map((t: any) => ({
-        id: t.type_id,
-        name: t.type_name,
-        fuel_type: t.type_fuel,
-        power_hp: t.type_power_ps ? parseInt(t.type_power_ps, 10) : null,
-        power_kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : null,
-        model: {
-          id: t.type_modele_id,
-          name: t.auto_modele?.modele_name,
-          manufacturer: {
-            id: t.auto_modele?.auto_marque?.marque_id,
-            name: t.auto_modele?.auto_marque?.marque_name,
-            logo_url: t.auto_modele?.auto_marque?.marque_logo
-              ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${t.auto_modele.auto_marque.marque_logo}`
-              : null,
+      const formattedTypes =
+        data?.map((t: any) => ({
+          id: t.type_id,
+          name: t.type_name,
+          fuel_type: t.type_fuel,
+          power_hp: t.type_power_ps ? parseInt(t.type_power_ps, 10) : null,
+          power_kw: t.type_power_kw ? parseInt(t.type_power_kw, 10) : null,
+          model: {
+            id: t.type_modele_id,
+            name: t.auto_modele?.modele_name,
+            manufacturer: {
+              id: t.auto_modele?.auto_marque?.marque_id,
+              name: t.auto_modele?.auto_marque?.marque_name,
+              logo_url: t.auto_modele?.auto_marque?.marque_logo
+                ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${t.auto_modele.auto_marque.marque_logo}`
+                : null,
+            },
           },
-        },
-      })) || [];
+        })) || [];
 
       const result = {
         data: formattedTypes,
@@ -724,9 +744,17 @@ export class ManufacturersService extends SupabaseBaseService {
           .gt('type_power_ps', 0),
       ]);
 
-      const fuelTypes = [...new Set(fuelTypesData.data?.map(item => item.type_fuel))];
-      const totalPower = avgPower.data?.reduce((sum, item) => sum + parseInt(item.type_power_ps, 10), 0) || 0;
-      const avgHorsepower = avgPower.data?.length ? Math.round(totalPower / avgPower.data.length) : 0;
+      const fuelTypes = [
+        ...new Set(fuelTypesData.data?.map((item) => item.type_fuel)),
+      ];
+      const totalPower =
+        avgPower.data?.reduce(
+          (sum, item) => sum + parseInt(item.type_power_ps, 10),
+          0,
+        ) || 0;
+      const avgHorsepower = avgPower.data?.length
+        ? Math.round(totalPower / avgPower.data.length)
+        : 0;
 
       const stats = {
         total_types: totalTypes.count || 0,
@@ -781,17 +809,26 @@ export class ManufacturersService extends SupabaseBaseService {
       // Utilisons une approche simple - les marques avec le plus de modèles
       const { data: popular, error } = await this.client
         .from('auto_marque')
-        .select(`
+        .select(
+          `
           marque_id,
           marque_name,
           marque_logo,
           marque_display
-        `)
+        `,
+        )
         .gte('marque_display', 1)
         .in('marque_name', [
-          'VOLKSWAGEN', 'BMW', 'AUDI', 'MERCEDES', 
-          'TOYOTA', 'PEUGEOT', 'RENAULT', 'FORD',
-          'OPEL', 'FIAT'
+          'VOLKSWAGEN',
+          'BMW',
+          'AUDI',
+          'MERCEDES',
+          'TOYOTA',
+          'PEUGEOT',
+          'RENAULT',
+          'FORD',
+          'OPEL',
+          'FIAT',
         ])
         .order('marque_name')
         .limit(limit);
@@ -800,16 +837,17 @@ export class ManufacturersService extends SupabaseBaseService {
         throw new Error(`Erreur récupération populaires: ${error.message}`);
       }
 
-      const formattedData = popular?.map((m: any) => ({
-        id: m.marque_id,
-        name: m.marque_name,
-        logo_url: m.marque_logo
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${m.marque_logo}`
-          : null,
-        slug: this.generateSlug(m.marque_name),
-        is_active: m.marque_display >= 1,
-        is_popular: true,
-      })) || [];
+      const formattedData =
+        popular?.map((m: any) => ({
+          id: m.marque_id,
+          name: m.marque_name,
+          logo_url: m.marque_logo
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${m.marque_logo}`
+            : null,
+          slug: this.generateSlug(m.marque_name),
+          is_active: m.marque_display >= 1,
+          is_popular: true,
+        })) || [];
 
       const result = {
         data: formattedData,
@@ -841,16 +879,24 @@ export class ManufacturersService extends SupabaseBaseService {
       // Prendre les constructeurs avec le plus de modèles comme "vedette"
       const { data: featured, error } = await this.client
         .from('auto_marque')
-        .select(`
+        .select(
+          `
           marque_id,
           marque_name,
           marque_logo,
           marque_display
-        `)
+        `,
+        )
         .gte('marque_display', 1)
         .in('marque_name', [
-          'AUDI', 'BMW', 'MERCEDES', 'VOLKSWAGEN',
-          'PEUGEOT', 'RENAULT', 'TOYOTA', 'FORD'
+          'AUDI',
+          'BMW',
+          'MERCEDES',
+          'VOLKSWAGEN',
+          'PEUGEOT',
+          'RENAULT',
+          'TOYOTA',
+          'FORD',
         ])
         .order('marque_name')
         .limit(limit);
@@ -859,16 +905,17 @@ export class ManufacturersService extends SupabaseBaseService {
         throw new Error(`Erreur récupération vedettes: ${error.message}`);
       }
 
-      const formattedData = featured?.map((m: any) => ({
-        id: m.marque_id,
-        name: m.marque_name,
-        logo_url: m.marque_logo
-          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${m.marque_logo}`
-          : null,
-        slug: this.generateSlug(m.marque_name),
-        is_active: m.marque_display >= 1,
-        is_featured: true,
-      })) || [];
+      const formattedData =
+        featured?.map((m: any) => ({
+          id: m.marque_id,
+          name: m.marque_name,
+          logo_url: m.marque_logo
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${m.marque_logo}`
+            : null,
+          slug: this.generateSlug(m.marque_name),
+          is_active: m.marque_display >= 1,
+          is_featured: true,
+        })) || [];
 
       const result = {
         data: formattedData,

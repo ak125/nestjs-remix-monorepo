@@ -26,11 +26,12 @@ export class ManufacturersController {
    * GET /api/manufacturers
    * Récupérer tous les constructeurs
    */
-    @Get('/debug')
+  @Get('/debug')
   async debugConfig() {
     try {
       const configInfo = await this.manufacturersService.debugConfiguration();
-      const connectionTest = await this.manufacturersService.testDatabaseConnection();
+      const connectionTest =
+        await this.manufacturersService.testDatabaseConnection();
 
       return {
         config: configInfo,
@@ -55,7 +56,7 @@ export class ManufacturersController {
       await this.manufacturersService.clearCache(pattern);
       return {
         success: true,
-        message: pattern 
+        message: pattern
           ? `Cache nettoyé pour pattern: ${pattern}`
           : 'Cache entièrement nettoyé',
       };
@@ -179,7 +180,13 @@ export class ManufacturersController {
   async getCategories() {
     this.logger.log('GET /api/manufacturers/types/categories');
     return {
-      categories: ['passenger', 'commercial', 'motorcycle', 'sports', 'electric'],
+      categories: [
+        'passenger',
+        'commercial',
+        'motorcycle',
+        'sports',
+        'electric',
+      ],
       message: 'Catégories disponibles',
     };
   }
@@ -240,7 +247,10 @@ export class ManufacturersController {
       offset: offset ? parseInt(offset, 10) : 0,
     };
 
-    return this.manufacturersService.getModelsByManufacturer(manufacturerId, filters);
+    return this.manufacturersService.getModelsByManufacturer(
+      manufacturerId,
+      filters,
+    );
   }
 
   /**
@@ -307,11 +317,12 @@ export class ManufacturersController {
   @Get(':id/history')
   async getHistory(@Param('id', ParseIntPipe) id: number) {
     this.logger.log(`GET /api/manufacturers/${id}/history`);
-    const manufacturer = await this.manufacturersService.getManufacturerById(id);
+    const manufacturer =
+      await this.manufacturersService.getManufacturerById(id);
     if (!manufacturer.success) {
       return { success: false, error: 'Constructeur non trouvé', data: null };
     }
-    
+
     return {
       success: true,
       data: {
@@ -325,7 +336,7 @@ export class ManufacturersController {
   }
 
   /**
-   * GET /api/manufacturers/:id/stats  
+   * GET /api/manufacturers/:id/stats
    * Statistiques d'un constructeur (comme votre version)
    */
   @Get(':id/stats')
@@ -334,7 +345,8 @@ export class ManufacturersController {
     @Query('year') year?: string,
   ) {
     this.logger.log(`GET /api/manufacturers/${id}/stats`);
-    const manufacturer = await this.manufacturersService.getManufacturerById(id);
+    const manufacturer =
+      await this.manufacturersService.getManufacturerById(id);
     if (!manufacturer.success) {
       return { success: false, error: 'Constructeur non trouvé', data: null };
     }
@@ -358,7 +370,7 @@ export class ManufacturersController {
    */
   private groupModelsByDecade(models: any[]) {
     const decades: { [key: string]: number } = {};
-    models.forEach(model => {
+    models.forEach((model) => {
       if (model.year_start) {
         const decade = Math.floor(model.year_start / 10) * 10;
         const key = `${decade}s`;
@@ -374,26 +386,28 @@ export class ManufacturersController {
    */
   @Get('search-advanced')
   async searchAdvanced(
-    @Query('q') query: string = 'BMW', 
-    @Query('limit') limit?: string
+    @Query('q') query: string = 'BMW',
+    @Query('limit') limit?: string,
   ) {
     this.logger.log(`GET /api/manufacturers/search-advanced?q=${query}`);
-    
+
     if (!query || query.length < 2) {
       return {
         success: false,
         error: 'Query trop courte (minimum 2 caractères)',
-        data: []
+        data: [],
       };
     }
 
     try {
       // Test direct avec Supabase RPC
-      const { data, error } = await this.manufacturersService.client
-        .rpc('search_manufacturers_advanced', {
+      const { data, error } = await this.manufacturersService.client.rpc(
+        'search_manufacturers_advanced',
+        {
           search_query: query,
-          limit_count: limit ? parseInt(limit) : 20
-        });
+          limit_count: limit ? parseInt(limit) : 20,
+        },
+      );
 
       if (error) {
         this.logger.error('Erreur search_manufacturers_advanced:', error);
@@ -401,7 +415,7 @@ export class ManufacturersController {
           success: false,
           error: `Fonction SQL non disponible: ${error.message}`,
           fallback: true,
-          data: await this.fallbackSearch(query)
+          data: await this.fallbackSearch(query),
         };
       }
 
@@ -409,16 +423,15 @@ export class ManufacturersController {
         success: true,
         method: 'similarity_sql',
         data: data || [],
-        count: data?.length || 0
+        count: data?.length || 0,
       };
-
     } catch (error: any) {
       this.logger.error('Erreur search-advanced:', error);
       return {
         success: false,
         error: error.message,
         fallback: true,
-        data: await this.fallbackSearch(query)
+        data: await this.fallbackSearch(query),
       };
     }
   }
@@ -432,24 +445,28 @@ export class ManufacturersController {
     @Query('q') query: string = 'GTI',
     @Query('manufacturer_id') manufacturerId?: string,
     @Query('fuel_type') fuelType?: string,
-    @Query('limit') limit?: string
+    @Query('limit') limit?: string,
   ) {
     this.logger.log(`GET /api/manufacturers/types/search-advanced?q=${query}`);
 
     try {
-      const { data, error } = await this.manufacturersService.client
-        .rpc('search_types_advanced', {
+      const { data, error } = await this.manufacturersService.client.rpc(
+        'search_types_advanced',
+        {
           search_query: query,
-          filter_manufacturer_id: manufacturerId ? parseInt(manufacturerId) : null,
+          filter_manufacturer_id: manufacturerId
+            ? parseInt(manufacturerId)
+            : null,
           filter_fuel_type: fuelType || null,
-          limit_count: limit ? parseInt(limit) : 50
-        });
+          limit_count: limit ? parseInt(limit) : 50,
+        },
+      );
 
       if (error) {
         return {
           success: false,
           error: `Fonction SQL non disponible: ${error.message}`,
-          data: []
+          data: [],
         };
       }
 
@@ -457,14 +474,13 @@ export class ManufacturersController {
         success: true,
         method: 'similarity_sql',
         data: data || [],
-        count: data?.length || 0
+        count: data?.length || 0,
       };
-
     } catch (error: any) {
       return {
         success: false,
         error: error.message,
-        data: []
+        data: [],
       };
     }
   }
@@ -488,7 +504,7 @@ export class ManufacturersController {
         return {
           success: false,
           error: `Vue SQL non disponible: ${error.message}`,
-          data: []
+          data: [],
         };
       }
 
@@ -496,14 +512,13 @@ export class ManufacturersController {
         success: true,
         method: 'enhanced_view',
         data: data || [],
-        count: data?.length || 0
+        count: data?.length || 0,
       };
-
     } catch (error: any) {
       return {
         success: false,
         error: error.message,
-        data: []
+        data: [],
       };
     }
   }
@@ -518,28 +533,29 @@ export class ManufacturersController {
 
     try {
       // Essayer d'exécuter les fonctions de test
-      const { data, error } = await this.manufacturersService.client
-        .rpc('test_search_functions');
+      const { data, error } = await this.manufacturersService.client.rpc(
+        'test_search_functions',
+      );
 
       if (error) {
         return {
           success: false,
           error: `Fonctions SQL non disponibles: ${error.message}`,
-          install_note: 'Exécutez le fichier sql/manufacturers-search-functions.sql pour installer les fonctions'
+          install_note:
+            'Exécutez le fichier sql/manufacturers-search-functions.sql pour installer les fonctions',
         };
       }
 
       return {
         success: true,
         results: data || [],
-        message: 'Toutes les fonctions SQL sont opérationnelles'
+        message: 'Toutes les fonctions SQL sont opérationnelles',
       };
-
     } catch (error: any) {
       return {
         success: false,
         error: error.message,
-        install_note: 'Les fonctions SQL ne sont pas installées'
+        install_note: 'Les fonctions SQL ne sont pas installées',
       };
     }
   }
@@ -552,9 +568,11 @@ export class ManufacturersController {
    */
   private async fallbackSearch(query: string) {
     const manufacturers = await this.manufacturersService.getAllManufacturers();
-    return manufacturers.data?.filter((m: any) => 
-      m.name.toLowerCase().includes(query.toLowerCase())
-    ) || [];
+    return (
+      manufacturers.data?.filter((m: any) =>
+        m.name.toLowerCase().includes(query.toLowerCase()),
+      ) || []
+    );
   }
 
   /**

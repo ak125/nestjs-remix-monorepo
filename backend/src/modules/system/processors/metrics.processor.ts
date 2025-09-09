@@ -23,8 +23,10 @@ export class MetricsProcessor extends WorkerHost {
 
   async process(job: Job<MetricsJobData, any, string>): Promise<any> {
     try {
-      this.logger.log(`🔄 Processing ${job.data.type} metrics job (ID: ${job.id})`);
-      
+      this.logger.log(
+        `🔄 Processing ${job.data.type} metrics job (ID: ${job.id})`,
+      );
+
       const startTime = Date.now();
       let result: any;
 
@@ -99,8 +101,8 @@ export class MetricsProcessor extends WorkerHost {
       // 2. Résolution automatique des alertes anciennes
       const oldAlerts = this.databaseMonitorService
         .getActiveAlerts('info')
-        .filter(alert => 
-          alert.timestamp < new Date(Date.now() - 2 * 3600000) // Plus de 2h
+        .filter(
+          (alert) => alert.timestamp < new Date(Date.now() - 2 * 3600000), // Plus de 2h
         );
 
       for (const alert of oldAlerts) {

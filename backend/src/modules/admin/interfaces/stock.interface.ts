@@ -13,7 +13,7 @@ export interface StockItem {
   location?: string;
   warehouseId?: string;
   lastUpdated: Date;
-  
+
   // Relations
   product?: ProductInfo;
   movements?: StockMovement[];
@@ -40,7 +40,7 @@ export interface StockMovement {
   notes?: string;
   userId: string;
   createdAt: Date;
-  
+
   // Relations
   product?: ProductInfo;
   user?: UserInfo;
@@ -71,7 +71,7 @@ export interface StockAlert {
   isActive: boolean;
   createdAt: Date;
   acknowledgedAt?: Date;
-  
+
   // Relations
   product?: ProductInfo;
 }

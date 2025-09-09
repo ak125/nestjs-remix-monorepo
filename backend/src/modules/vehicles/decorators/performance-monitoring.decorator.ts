@@ -4,22 +4,26 @@ export const PERFORMANCE_MONITORING_KEY = 'performance_monitoring';
 
 /**
  * 📊 Décorateur pour activer le monitoring automatique des performances
- * 
+ *
  * Usage:
  * @MonitorPerformance('models')
  * @Get('models')
  * async getModels() { ... }
  */
 export function MonitorPerformance(endpointName: string) {
-  return applyDecorators(
-    SetMetadata(PERFORMANCE_MONITORING_KEY, endpointName)
-  );
+  return applyDecorators(SetMetadata(PERFORMANCE_MONITORING_KEY, endpointName));
 }
 
 /**
  * 🎯 Intercepteur personnalisé pour capturer les métriques
  */
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Inject,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';

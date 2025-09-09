@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Param, Body, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  Logger,
+} from '@nestjs/common';
 import { SuppliersService } from './suppliers.service';
 
 @Controller('api/suppliers')
@@ -59,12 +67,12 @@ export class SuppliersController {
   @Post(':id/purchase-order')
   async generatePurchaseOrder(
     @Param('id') supplierId: string,
-    @Body() { items }: { items: any[] }
+    @Body() { items }: { items: any[] },
   ) {
     try {
       const purchaseOrder = await this.suppliersService.generatePurchaseOrder(
         parseInt(supplierId),
-        items
+        items,
       );
       return {
         success: true,
@@ -88,7 +96,8 @@ export class SuppliersController {
   @Get('product/:productId')
   async getProductSuppliers(@Param('productId') productId: string) {
     try {
-      const suppliers = await this.suppliersService.getProductSuppliers(productId);
+      const suppliers =
+        await this.suppliersService.getProductSuppliers(productId);
       return {
         success: true,
         data: suppliers,
@@ -150,7 +159,7 @@ export class SuppliersController {
     }
   }
 
-    /**
+  /**
    * Désactiver un fournisseur
    */
 
@@ -160,13 +169,15 @@ export class SuppliersController {
   @Get(':id/details')
   async getSupplierDetails(@Param('id') id: string) {
     try {
-      const supplier = await this.suppliersService.getSupplierById(parseInt(id));
+      const supplier = await this.suppliersService.getSupplierById(
+        parseInt(id),
+      );
       const links = await this.suppliersService.getSupplierLinks(parseInt(id));
-      
+
       // Grouper par type (marques vs articles)
-      const brands = links.filter(link => link.type === 'brand');
-      const articles = links.filter(link => link.type === 'article');
-      
+      const brands = links.filter((link) => link.type === 'brand');
+      const articles = links.filter((link) => link.type === 'article');
+
       return {
         success: true,
         data: {
@@ -193,7 +204,7 @@ export class SuppliersController {
     }
   }
 
-    /**
+  /**
    * Route par défaut pour lister tous les fournisseurs (pour le dashboard)
    */
   @Get()
@@ -206,7 +217,7 @@ export class SuppliersController {
         search: '',
         isActive: true,
       });
-      
+
       return {
         success: true,
         suppliers: result.items || [],
@@ -268,7 +279,7 @@ export class SuppliersController {
   async testSupplierLinks(@Param('id') id: string) {
     try {
       const links = await this.suppliersService.getSupplierLinks(id);
-      
+
       return {
         success: true,
         data: {
@@ -296,7 +307,7 @@ export class SuppliersController {
   async testSupplierLinks() {
     try {
       const testResult = await this.suppliersService.testSupplierLinksTable();
-      
+
       return {
         success: true,
         data: testResult,
@@ -320,7 +331,7 @@ export class SuppliersController {
   async testGammes() {
     try {
       const testResult = await this.suppliersService.testPiecesGammeTable();
-      
+
       return {
         success: true,
         data: testResult,
@@ -340,7 +351,7 @@ export class SuppliersController {
   async testMarques() {
     try {
       const testResult = await this.suppliersService.testPiecesMarqueTable();
-      
+
       return {
         success: true,
         data: testResult,
@@ -360,7 +371,7 @@ export class SuppliersController {
   async testPieces() {
     try {
       const testResult = await this.suppliersService.testPiecesTable();
-      
+
       return {
         success: true,
         data: testResult,
@@ -384,7 +395,7 @@ export class SuppliersController {
   async getSupplierSimple(@Param('id') id: string) {
     try {
       const supplier = await this.suppliersService.getSupplierById(id);
-      
+
       return {
         success: true,
         data: supplier,
@@ -410,7 +421,7 @@ export class SuppliersController {
       const supplier = await this.suppliersService.getSupplierById(id);
       const links = await this.suppliersService.getSupplierLinks(id);
       const stats = await this.suppliersService.getSupplierStatistics(id);
-      
+
       return {
         success: true,
         data: {
@@ -477,8 +488,8 @@ export class SuppliersController {
       return {
         success: true,
         data: result,
-        message: result 
-          ? 'Meilleur fournisseur trouvé' 
+        message: result
+          ? 'Meilleur fournisseur trouvé'
           : 'Aucun fournisseur approprié trouvé',
         timestamp: new Date().toISOString(),
       };
@@ -496,13 +507,12 @@ export class SuppliersController {
    * Attribution automatique de fournisseurs pour plusieurs produits
    */
   @Post('auto-assign')
-  async autoAssignSuppliers(@Body() requestData: {
-    productIds: number[];
-    criteria?: any;
-  }) {
+  async autoAssignSuppliers(
+    @Body() requestData: { productIds: number[]; criteria?: any },
+  ) {
     try {
       const { productIds, criteria = {} } = requestData;
-      
+
       if (!productIds || productIds.length === 0) {
         return {
           success: false,
@@ -550,7 +560,7 @@ export class SuppliersController {
     try {
       // IDs de produits d'exemple
       const testProductIds = [1, 2, 3, 4, 5];
-      
+
       const testCriteria = {
         maxDeliveryTime: 10,
         minDiscountRate: 5,
@@ -571,9 +581,10 @@ export class SuppliersController {
           summary: {
             totalProducts: testProductIds.length,
             successfulAssignments: results.length,
-            averageScore: results.length > 0 
-              ? results.reduce((sum, r) => sum + r.score, 0) / results.length 
-              : 0,
+            averageScore:
+              results.length > 0
+                ? results.reduce((sum, r) => sum + r.score, 0) / results.length
+                : 0,
           },
         },
         message: "Test d'attribution automatique terminé",
@@ -595,8 +606,10 @@ export class SuppliersController {
   @Get('analyze/:id')
   async analyzeSupplier(@Param('id') id: string) {
     try {
-      const supplier = await this.suppliersService.getSupplierById(parseInt(id));
-      
+      const supplier = await this.suppliersService.getSupplierById(
+        parseInt(id),
+      );
+
       // Test avec un produit d'exemple
       const testProductId = 1;
       const score = await this.suppliersService.findBestSupplierForProduct(

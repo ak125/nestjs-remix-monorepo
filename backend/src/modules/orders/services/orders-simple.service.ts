@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { OrderService } from '../../../database/services/order.service';
 import { OrderCalculationService } from './order-calculation.service';
 import { ShippingService } from '../../shipping/shipping.service';
@@ -121,8 +117,8 @@ export class OrdersSimpleService {
 
       if (result.orders && result.orders.length > 0) {
         // Filtrer côté application
-        const order = result.orders.find(o => o.ord_id === orderId);
-        
+        const order = result.orders.find((o) => o.ord_id === orderId);
+
         if (order) {
           return {
             data: order,
@@ -135,7 +131,7 @@ export class OrdersSimpleService {
       return null;
     } catch (error) {
       this.logger.error(`Error getting order ${orderId}:`, error);
-      
+
       // Retourner un mock en cas d'erreur
       return {
         data: {
@@ -222,7 +218,10 @@ export class OrdersSimpleService {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`Error getting orders for customer ${customerId}:`, error);
+      this.logger.error(
+        `Error getting orders for customer ${customerId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -264,7 +263,9 @@ export class OrdersSimpleService {
 
       return {
         success: isConnected,
-        message: isConnected ? 'Supabase connection OK' : 'Supabase connection failed',
+        message: isConnected
+          ? 'Supabase connection OK'
+          : 'Supabase connection failed',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {

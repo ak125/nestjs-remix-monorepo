@@ -16,7 +16,10 @@ export const RequireModuleAccess = (module: string, action: string = 'read') =>
   });
 
 // Fonction helper pour obtenir la valeur du décorateur
-export const getModuleAccessData = (module: string, action: string = 'read') => ({
+export const getModuleAccessData = (
+  module: string,
+  action: string = 'read',
+) => ({
   module,
   action,
 });

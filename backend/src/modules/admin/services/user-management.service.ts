@@ -72,7 +72,7 @@ export class UserManagementService extends SupabaseBaseService {
 
       // Requête vers Supabase
       const usersQuery = `${this.baseUrl}/___xtr_customer?select=*`;
-      
+
       const response = await fetch(usersQuery, {
         method: 'GET',
         headers: this.headers,
@@ -83,26 +83,39 @@ export class UserManagementService extends SupabaseBaseService {
       }
 
       const users = await response.json();
-      
+
       // Calculs statistiques
       const total = users.length;
       const active = users.filter((u: any) => u.cst_is_active === 'Y').length;
       const inactive = total - active;
-      const professional = users.filter((u: any) => u.cst_is_pro === 'Y').length;
-      const verified = users.filter((u: any) => u.cst_email_verified === 'Y').length;
-      
+      const professional = users.filter(
+        (u: any) => u.cst_is_pro === 'Y',
+      ).length;
+      const verified = users.filter(
+        (u: any) => u.cst_email_verified === 'Y',
+      ).length;
+
       // Nouveaux utilisateurs ce mois
       const thisMonth = new Date();
       thisMonth.setDate(1);
-      const newThisMonth = users.filter((u: any) => 
-        new Date(u.cst_create_date) >= thisMonth
+      const newThisMonth = users.filter(
+        (u: any) => new Date(u.cst_create_date) >= thisMonth,
       ).length;
 
       // Répartition par niveau
       const byLevel: Record<string, number> = {
-        '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0
+        '1': 0,
+        '2': 0,
+        '3': 0,
+        '4': 0,
+        '5': 0,
+        '6': 0,
+        '7': 0,
+        '8': 0,
+        '9': 0,
+        '10': 0,
       };
-      
+
       users.forEach((u: any) => {
         const level = u.cst_level?.toString() || '1';
         if (byLevel[level] !== undefined) {
@@ -123,11 +136,13 @@ export class UserManagementService extends SupabaseBaseService {
       // Cache pour 10 minutes
       await this.cacheService.set(cacheKey, stats, 600);
 
-      this.logger.log(`✅ Stats utilisateurs: ${total} total, ${active} actifs`);
+      this.logger.log(
+        `✅ Stats utilisateurs: ${total} total, ${active} actifs`,
+      );
       return stats;
     } catch (error) {
       this.logger.error('❌ Erreur récupération stats utilisateurs:', error);
-      
+
       // Retourner des stats par défaut
       return {
         total: 59134,
@@ -137,8 +152,16 @@ export class UserManagementService extends SupabaseBaseService {
         verified: 29567,
         newThisMonth: 234,
         byLevel: {
-          '1': 45000, '2': 8000, '3': 3000, '4': 1500, '5': 800,
-          '6': 400, '7': 250, '8': 120, '9': 50, '10': 14
+          '1': 45000,
+          '2': 8000,
+          '3': 3000,
+          '4': 1500,
+          '5': 800,
+          '6': 400,
+          '7': 250,
+          '8': 120,
+          '9': 50,
+          '10': 14,
         },
       };
     }
@@ -162,19 +185,19 @@ export class UserManagementService extends SupabaseBaseService {
 
       // Construction de la requête avec filtres
       let usersQuery = `${this.baseUrl}/___xtr_customer?select=*`;
-      
+
       if (filters.isActive !== undefined) {
         usersQuery += `&cst_is_active=eq.${filters.isActive ? 'Y' : 'N'}`;
       }
-      
+
       if (filters.isPro !== undefined) {
         usersQuery += `&cst_is_pro=eq.${filters.isPro ? 'Y' : 'N'}`;
       }
-      
+
       if (filters.level) {
         usersQuery += `&cst_level=eq.${filters.level}`;
       }
-      
+
       if (filters.search) {
         usersQuery += `&or=(cst_email.ilike.*${filters.search}*,cst_firstname.ilike.*${filters.search}*,cst_lastname.ilike.*${filters.search}*)`;
       }
@@ -191,7 +214,7 @@ export class UserManagementService extends SupabaseBaseService {
       }
 
       const users = await response.json();
-      
+
       // Transformation des données pour l'admin
       const adminUsers: AdminUser[] = users.map((u: any) => ({
         id: u.cst_id,
@@ -215,7 +238,7 @@ export class UserManagementService extends SupabaseBaseService {
         method: 'GET',
         headers: this.headers,
       });
-      
+
       let total = users.length;
       if (totalResponse.ok) {
         const totalResult = await totalResponse.json();
@@ -223,7 +246,7 @@ export class UserManagementService extends SupabaseBaseService {
       }
 
       this.logger.log(`✅ ${adminUsers.length} utilisateurs récupérés`);
-      
+
       return {
         users: adminUsers,
         total,
@@ -232,7 +255,7 @@ export class UserManagementService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('❌ Erreur récupération utilisateurs:', error);
-      
+
       return {
         users: [],
         total: 0,
@@ -250,7 +273,7 @@ export class UserManagementService extends SupabaseBaseService {
       this.logger.log(`👤 Récupération utilisateur ID: ${userId}`);
 
       const userQuery = `${this.baseUrl}/___xtr_customer?select=*&cst_id=eq.${userId}`;
-      
+
       const response = await fetch(userQuery, {
         method: 'GET',
         headers: this.headers,
@@ -261,7 +284,7 @@ export class UserManagementService extends SupabaseBaseService {
       }
 
       const users = await response.json();
-      
+
       if (users.length === 0) {
         this.logger.warn(`Utilisateur ${userId} non trouvé`);
         return null;
@@ -302,33 +325,33 @@ export class UserManagementService extends SupabaseBaseService {
       isActive?: boolean;
       isPro?: boolean;
       emailVerified?: boolean;
-    }
+    },
   ): Promise<boolean> {
     try {
       this.logger.log(`✏️ Mise à jour utilisateur ${userId}:`, updates);
 
       // Transformation des données pour Supabase
       const supabaseUpdates: any = {};
-      
+
       if (updates.level !== undefined) {
         supabaseUpdates.cst_level = updates.level;
       }
-      
+
       if (updates.isActive !== undefined) {
         supabaseUpdates.cst_is_active = updates.isActive ? 'Y' : 'N';
       }
-      
+
       if (updates.isPro !== undefined) {
         supabaseUpdates.cst_is_pro = updates.isPro ? 'Y' : 'N';
       }
-      
+
       if (updates.emailVerified !== undefined) {
         supabaseUpdates.cst_email_verified = updates.emailVerified ? 'Y' : 'N';
       }
 
       // Mise à jour en base
       const updateQuery = `${this.baseUrl}/___xtr_customer?cst_id=eq.${userId}`;
-      
+
       const response = await fetch(updateQuery, {
         method: 'PATCH',
         headers: {
@@ -358,10 +381,12 @@ export class UserManagementService extends SupabaseBaseService {
    */
   async deactivateUser(userId: string, reason?: string): Promise<boolean> {
     try {
-      this.logger.log(`🚫 Désactivation utilisateur ${userId}, raison: ${reason}`);
+      this.logger.log(
+        `🚫 Désactivation utilisateur ${userId}, raison: ${reason}`,
+      );
 
       const success = await this.updateUser(userId, { isActive: false });
-      
+
       if (success) {
         // TODO: Log de l'action admin
         this.logger.log(`✅ Utilisateur ${userId} désactivé`);
@@ -369,7 +394,10 @@ export class UserManagementService extends SupabaseBaseService {
 
       return success;
     } catch (error) {
-      this.logger.error(`❌ Erreur désactivation utilisateur ${userId}:`, error);
+      this.logger.error(
+        `❌ Erreur désactivation utilisateur ${userId}:`,
+        error,
+      );
       return false;
     }
   }
@@ -382,7 +410,7 @@ export class UserManagementService extends SupabaseBaseService {
       this.logger.log(`✅ Réactivation utilisateur ${userId}`);
 
       const success = await this.updateUser(userId, { isActive: true });
-      
+
       if (success) {
         // TODO: Log de l'action admin
         this.logger.log(`✅ Utilisateur ${userId} réactivé`);
@@ -398,11 +426,15 @@ export class UserManagementService extends SupabaseBaseService {
   /**
    * 🔍 Health check du service de gestion utilisateurs
    */
-  async healthCheck(): Promise<{ status: string; message: string; timestamp: string }> {
+  async healthCheck(): Promise<{
+    status: string;
+    message: string;
+    timestamp: string;
+  }> {
     try {
       // Test de récupération des stats
       await this.getUserStats();
-      
+
       return {
         status: 'healthy',
         message: 'Service de gestion utilisateurs opérationnel',
@@ -410,7 +442,7 @@ export class UserManagementService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('❌ Health check user management failed:', error);
-      
+
       return {
         status: 'degraded',
         message: 'Service de gestion utilisateurs en mode dégradé',

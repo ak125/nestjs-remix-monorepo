@@ -1,7 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MetricsService, SystemMetric, PerformanceMetrics } from './metrics.service';
-import { DatabaseMonitorService, DatabaseHealth, SystemAlert } from './database-monitor.service';
+import {
+  MetricsService,
+  SystemMetric,
+  PerformanceMetrics,
+} from './metrics.service';
+import {
+  DatabaseMonitorService,
+  DatabaseHealth,
+  SystemAlert,
+} from './database-monitor.service';
 
 export interface SystemStatus {
   overall: 'healthy' | 'warning' | 'critical';
@@ -41,22 +49,25 @@ export class SystemService {
   async getSystemStatus(): Promise<SystemStatus> {
     try {
       this.logger.log('📊 Getting complete system status');
-      
+
       const [performance, database] = await Promise.all([
         this.metricsService.collectPerformanceMetrics(),
         this.databaseMonitorService.checkDatabaseHealth(),
       ]);
 
       const alerts = this.databaseMonitorService.getActiveAlerts();
-      
+
       // Déterminer le statut général
       let overall: SystemStatus['overall'] = 'healthy';
-      
-      if (database.status === 'critical' || alerts.some(a => a.level === 'critical')) {
+
+      if (
+        database.status === 'critical' ||
+        alerts.some((a) => a.level === 'critical')
+      ) {
         overall = 'critical';
       } else if (
-        database.status === 'warning' || 
-        alerts.some(a => a.level === 'warning') ||
+        database.status === 'warning' ||
+        alerts.some((a) => a.level === 'warning') ||
         performance.responseTime > 1000 ||
         performance.errorRate > 5
       ) {
@@ -113,7 +124,9 @@ export class SystemService {
 
       // Analyse des performances
       if (allMetrics.performance.responseTime > 500) {
-        recommendations.push('Optimize database queries - response time above 500ms');
+        recommendations.push(
+          'Optimize database queries - response time above 500ms',
+        );
       }
       if (allMetrics.performance.memoryUsage > 512) {
         recommendations.push('Monitor memory usage - currently above 512MB');
@@ -140,9 +153,13 @@ export class SystemService {
       }
 
       // Prédictions basées sur les alertes
-      const criticalAlerts = healthReport.alerts.filter(a => a.level === 'critical');
+      const criticalAlerts = healthReport.alerts.filter(
+        (a) => a.level === 'critical',
+      );
       if (criticalAlerts.length > 0) {
-        predictedIssues.push('System instability if critical alerts not resolved');
+        predictedIssues.push(
+          'System instability if critical alerts not resolved',
+        );
       }
 
       // Analyse des tendances (simulée - en réel, comparer avec historique)
@@ -163,7 +180,7 @@ export class SystemService {
         recommendations: ['System analysis failed - manual review required'],
         trends: {
           performance: 'stable',
-          business: 'stable', 
+          business: 'stable',
           seo: 'stable',
         },
         predictedIssues: ['Unable to predict issues due to analysis error'],
@@ -181,7 +198,7 @@ export class SystemService {
   }> {
     try {
       this.logger.log('🔧 Performing automated maintenance tasks');
-      
+
       const executed: string[] = [];
       const failed: string[] = [];
       const recommendations: string[] = [];
@@ -201,7 +218,8 @@ export class SystemService {
       try {
         const minorAlerts = this.databaseMonitorService.getActiveAlerts('info');
         for (const alert of minorAlerts) {
-          if (alert.timestamp < new Date(Date.now() - 3600000)) { // Plus d'1h
+          if (alert.timestamp < new Date(Date.now() - 3600000)) {
+            // Plus d'1h
             this.databaseMonitorService.resolveAlert(alert.id);
             executed.push(`Auto-resolved old info alert: ${alert.title}`);
           }
@@ -213,21 +231,29 @@ export class SystemService {
       // 3. Recommandations préventives
       const systemStatus = await this.getSystemStatus();
       if (systemStatus.performance.memoryUsage > 400) {
-        recommendations.push('Consider scheduling memory optimization during low-traffic hours');
+        recommendations.push(
+          'Consider scheduling memory optimization during low-traffic hours',
+        );
       }
       if (systemStatus.alerts.length > 5) {
-        recommendations.push('Review and address persistent alerts to prevent escalation');
+        recommendations.push(
+          'Review and address persistent alerts to prevent escalation',
+        );
       }
 
-      this.logger.log(`🛠️ Maintenance completed: ${executed.length} tasks, ${failed.length} failures`);
-      
+      this.logger.log(
+        `🛠️ Maintenance completed: ${executed.length} tasks, ${failed.length} failures`,
+      );
+
       return { executed, failed, recommendations };
     } catch (error) {
       this.logger.error('❌ Error in maintenance tasks:', error);
       return {
         executed: [],
         failed: ['Critical maintenance failure'],
-        recommendations: ['Manual intervention required for system maintenance'],
+        recommendations: [
+          'Manual intervention required for system maintenance',
+        ],
       };
     }
   }
@@ -257,7 +283,9 @@ export class SystemService {
       // Recommandations prioritaires
       const recommendations = [
         ...insights.recommendations.slice(0, 3),
-        ...(system.alerts.length > 0 ? [`Address ${system.alerts.length} active alerts`] : []),
+        ...(system.alerts.length > 0
+          ? [`Address ${system.alerts.length} active alerts`]
+          : []),
       ];
 
       return {
@@ -278,13 +306,13 @@ export class SystemService {
   async initializeMonitoring(): Promise<void> {
     try {
       this.logger.log('🚀 Initializing system monitoring');
-      
+
       // Démarrer la surveillance périodique de la base de données
       await this.databaseMonitorService.startPeriodicMonitoring(300000); // 5 minutes
-      
+
       // Collecte initiale des métriques
       await this.metricsService.getAllMetrics();
-      
+
       // Maintenance automatique périodique (1 heure)
       setInterval(async () => {
         try {

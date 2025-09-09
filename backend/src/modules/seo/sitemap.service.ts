@@ -286,13 +286,11 @@ ${entries
    */
   async updateSitemapStats(type: string, entriesCount: number) {
     try {
-      const { data, error } = await this.client
-        .from('___config')
-        .upsert({
-          config_key: `sitemap_${type}_count`,
-          config_value: entriesCount.toString(),
-          updated_at: new Date().toISOString(),
-        });
+      const { data, error } = await this.client.from('___config').upsert({
+        config_key: `sitemap_${type}_count`,
+        config_value: entriesCount.toString(),
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
       return data;
@@ -353,7 +351,7 @@ ${entries
         .order('modele_nom');
 
       const entries: SitemapEntry[] = [];
-      
+
       if (modeles) {
         modeles.forEach((modele) => {
           entries.push({
@@ -366,11 +364,11 @@ ${entries
       }
 
       const xml = this.buildSitemapXml(entries);
-      
+
       this.logger.log(
         `Sitemap constructeur ${marque} généré avec ${entries.length} entrées`,
       );
-      
+
       return xml;
     } catch (error) {
       this.logger.error(

@@ -123,7 +123,9 @@ export class OrdersServiceEnhanced extends SupabaseBaseService {
   /**
    * Calculer les frais de port
    */
-  private async calculateShippingCost(orderData: CreateOrderData): Promise<number> {
+  private async calculateShippingCost(
+    orderData: CreateOrderData,
+  ): Promise<number> {
     try {
       // Calculer le poids total approximatif
       const totalWeight = orderData.orderLines.reduce(
@@ -158,14 +160,16 @@ export class OrdersServiceEnhanced extends SupabaseBaseService {
   /**
    * Lister les commandes avec filtres
    */
-  async listOrders(filters: {
-    limit?: number;
-    offset?: number;
-    customerId?: number;
-    status?: number;
-    dateFrom?: string;
-    dateTo?: string;
-  } = {}): Promise<any> {
+  async listOrders(
+    filters: {
+      limit?: number;
+      offset?: number;
+      customerId?: number;
+      status?: number;
+      dateFrom?: string;
+      dateTo?: string;
+    } = {},
+  ): Promise<any> {
     try {
       let query = this.supabase
         .from('___xtr_order')
@@ -197,7 +201,10 @@ export class OrdersServiceEnhanced extends SupabaseBaseService {
         query = query.limit(filters.limit);
       }
       if (filters.offset) {
-        query = query.range(filters.offset, (filters.offset || 0) + (filters.limit || 50) - 1);
+        query = query.range(
+          filters.offset,
+          (filters.offset || 0) + (filters.limit || 50) - 1,
+        );
       }
 
       const { data, error } = await query;
@@ -224,12 +231,14 @@ export class OrdersServiceEnhanced extends SupabaseBaseService {
 
       const { data: order, error } = await this.supabase
         .from('___xtr_order')
-        .select(`
+        .select(
+          `
           *,
           ___xtr_order_line (
             *
           )
-        `)
+        `,
+        )
         .eq('order_id', orderId)
         .single();
 

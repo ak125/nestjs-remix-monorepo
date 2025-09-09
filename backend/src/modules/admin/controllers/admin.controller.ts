@@ -54,7 +54,6 @@ export class AdminController {
         `✅ Dashboard admin récupéré avec ${dashboard.summary.totalProducts} produits`,
       );
       return dashboard;
-
     } catch (error) {
       this.logger.error('❌ Erreur récupération dashboard admin:', error);
       return {
@@ -71,8 +70,8 @@ export class AdminController {
           totalProducts: 0,
           totalValue: 0,
           alertCount: 0,
-          status: 'error'
-        }
+          status: 'error',
+        },
       };
     }
   }
@@ -86,14 +85,14 @@ export class AdminController {
     try {
       // Test de connexion aux services
       const stockHealth = await this.stockService.healthCheck();
-      
+
       return {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         services: {
           stock: stockHealth,
         },
-        version: '1.0.0'
+        version: '1.0.0',
       };
     } catch (error) {
       this.logger.error('❌ Health check admin failed:', error);
@@ -101,7 +100,7 @@ export class AdminController {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
         error: error instanceof Error ? error.message : 'Unknown error',
-        version: '1.0.0'
+        version: '1.0.0',
       };
     }
   }

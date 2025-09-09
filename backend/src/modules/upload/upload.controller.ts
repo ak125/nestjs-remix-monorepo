@@ -20,7 +20,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { UploadService, UploadOptions, BulkUploadOptions } from './services/upload.service';
+import {
+  UploadService,
+  UploadOptions,
+  BulkUploadOptions,
+} from './services/upload.service';
 import { UploadType } from './dto/upload.dto';
 
 @Controller('upload')
@@ -60,7 +64,7 @@ export class UploadController {
     } catch (error: any) {
       this.logger.error('Upload failed:', error);
       throw new HttpException(
-        error.message || 'Erreur lors de l\'upload',
+        error.message || "Erreur lors de l'upload",
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -88,7 +92,10 @@ export class UploadController {
     };
 
     try {
-      const result = await this.uploadService.uploadMultipleFiles(files, options);
+      const result = await this.uploadService.uploadMultipleFiles(
+        files,
+        options,
+      );
       return {
         success: true,
         message: `${result.successful.length}/${files.length} fichiers uploadés`,
@@ -97,7 +104,7 @@ export class UploadController {
     } catch (error: any) {
       this.logger.error('Bulk upload failed:', error);
       throw new HttpException(
-        error.message || 'Erreur lors de l\'upload en lot',
+        error.message || "Erreur lors de l'upload en lot",
         error.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -139,7 +146,7 @@ export class UploadController {
   async deleteFile(@Param('filePath') filePath: string) {
     try {
       const success = await this.uploadService.deleteFile(filePath);
-      
+
       if (success) {
         return {
           success: true,
@@ -192,10 +199,7 @@ export class UploadController {
         data: config,
       };
     } catch (error: any) {
-      throw new HttpException(
-        'Type d\'upload invalide',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException("Type d'upload invalide", HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -233,7 +237,7 @@ export class UploadController {
         folder,
         limit ? parseInt(limit) : undefined,
       );
-      
+
       return {
         success: true,
         data: {

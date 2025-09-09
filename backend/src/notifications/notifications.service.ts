@@ -87,16 +87,16 @@ export class NotificationsService {
       id: `inventory-${Date.now()}`,
       type: stock === 0 ? 'error' : 'warning',
       title: stock === 0 ? '❌ Rupture de stock' : '⚠️ Stock faible',
-      message: 
-        stock === 0 
+      message:
+        stock === 0
           ? `Le produit "${productName}" est en rupture de stock`
           : `Le produit "${productName}" n'a plus que ${stock} unités (seuil: ${threshold})`,
       timestamp: new Date().toISOString(),
       priority: stock === 0 ? 'urgent' : 'high',
-      data: { 
-        productName, 
-        stock, 
-        threshold, 
+      data: {
+        productName,
+        stock,
+        threshold,
         type: 'inventory-alert',
       },
     };
@@ -142,7 +142,9 @@ export class NotificationsService {
     };
 
     this.notificationsGateway.sendToUser(userId, notification);
-    this.logger.log(`Payment confirmation sent: ${orderId} - ${amount}${currency}`);
+    this.logger.log(
+      `Payment confirmation sent: ${orderId} - ${amount}${currency}`,
+    );
   }
 
   // Send shipping notification
@@ -159,16 +161,18 @@ export class NotificationsService {
       message: `Votre commande #${orderId} a été expédiée via ${carrier}. Numéro de suivi: ${trackingNumber}`,
       timestamp: new Date().toISOString(),
       priority: 'normal',
-      data: { 
-        orderId, 
-        trackingNumber, 
-        carrier, 
+      data: {
+        orderId,
+        trackingNumber,
+        carrier,
         type: 'shipping-notification',
       },
     };
 
     this.notificationsGateway.sendToUser(userId, notification);
-    this.logger.log(`Shipping notification sent: ${orderId} - ${trackingNumber}`);
+    this.logger.log(
+      `Shipping notification sent: ${orderId} - ${trackingNumber}`,
+    );
   }
 
   // Get notification statistics
@@ -182,7 +186,7 @@ export class NotificationsService {
   // Start demo mode for testing
   startDemoMode() {
     this.logger.log('Starting demo mode...');
-    
+
     // Send periodic demo notifications
     setInterval(() => {
       const demoNotifications = [
@@ -204,12 +208,13 @@ export class NotificationsService {
         {
           type: 'info' as const,
           title: '👤 Nouveau client',
-          message: 'Un nouveau client vient de s\'inscrire sur la plateforme',
+          message: "Un nouveau client vient de s'inscrire sur la plateforme",
         },
       ];
 
-      const randomNotification = demoNotifications[Math.floor(Math.random() * demoNotifications.length)];
-      
+      const randomNotification =
+        demoNotifications[Math.floor(Math.random() * demoNotifications.length)];
+
       const notification: NotificationData = {
         id: `demo-${Date.now()}`,
         type: randomNotification.type,

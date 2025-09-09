@@ -107,7 +107,10 @@ export class OrderRepository extends SupabaseBaseService {
   /**
    * Mettre à jour le statut d'une ligne de commande
    */
-  async updateOrderLineStatus(lineId: number, status: number): Promise<boolean> {
+  async updateOrderLineStatus(
+    lineId: number,
+    status: number,
+  ): Promise<boolean> {
     try {
       const { error } = await this.supabase
         .from('___xtr_order_line')
@@ -132,16 +135,16 @@ export class OrderRepository extends SupabaseBaseService {
   /**
    * Récupérer les commandes avec pagination
    */
-  async findOrders(filters: {
-    limit?: number;
-    offset?: number;
-    status?: number;
-    customerId?: number;
-  } = {}): Promise<Order[]> {
+  async findOrders(
+    filters: {
+      limit?: number;
+      offset?: number;
+      status?: number;
+      customerId?: number;
+    } = {},
+  ): Promise<Order[]> {
     try {
-      let query = this.supabase
-        .from('___xtr_order')
-        .select('*');
+      let query = this.supabase.from('___xtr_order').select('*');
 
       if (filters.status !== undefined) {
         query = query.eq('status', filters.status);
@@ -155,7 +158,7 @@ export class OrderRepository extends SupabaseBaseService {
         .order('created_at', { ascending: false })
         .range(
           filters.offset || 0,
-          (filters.offset || 0) + (filters.limit || 20) - 1
+          (filters.offset || 0) + (filters.limit || 20) - 1,
         );
 
       const { data, error } = await query;
@@ -202,18 +205,16 @@ export class OrderRepository extends SupabaseBaseService {
     orderId: number,
     status: number,
     comment?: string,
-    userId?: number
+    userId?: number,
   ): Promise<boolean> {
     try {
-      const { error } = await this.supabase
-        .from('___xtr_order_status')
-        .insert({
-          order_id: orderId,
-          status: status,
-          comment: comment || '',
-          user_id: userId || null,
-          created_at: new Date().toISOString(),
-        });
+      const { error } = await this.supabase.from('___xtr_order_status').insert({
+        order_id: orderId,
+        status: status,
+        comment: comment || '',
+        user_id: userId || null,
+        created_at: new Date().toISOString(),
+      });
 
       if (error) {
         this.logger.error('Erreur création historique:', error);
@@ -257,7 +258,7 @@ export class OrderRepository extends SupabaseBaseService {
 
       // Compter manuellement par statut
       const byStatus: Record<number, number> = {};
-      orders?.forEach(order => {
+      orders?.forEach((order) => {
         byStatus[order.status] = (byStatus[order.status] || 0) + 1;
       });
 

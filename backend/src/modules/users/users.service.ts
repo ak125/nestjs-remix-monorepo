@@ -285,7 +285,8 @@ export class UsersService extends SupabaseBaseService {
         ...user,
         email: updateUserDto.email || user.email,
         firstName: updateUserDto.name?.split(' ')[0] || user.firstName,
-        lastName: updateUserDto.name?.split(' ').slice(1).join(' ') || user.lastName,
+        lastName:
+          updateUserDto.name?.split(' ').slice(1).join(' ') || user.lastName,
         isPro:
           updateUserDto.isPro !== undefined ? updateUserDto.isPro : user.isPro,
         updatedAt: new Date(),
@@ -748,7 +749,7 @@ export class UsersService extends SupabaseBaseService {
     try {
       // Utiliser le service UserService pour chercher dans les vraies tables (customers + admins)
       const user = await this.userService.getUserById(id);
-      
+
       if (user) {
         // Convertir vers UserResponseDto
         const userResponse: UserResponseDto = {
@@ -762,7 +763,7 @@ export class UsersService extends SupabaseBaseService {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        
+
         console.log('✅ Utilisateur trouvé:', userResponse.email);
         return userResponse;
       }
@@ -895,19 +896,24 @@ export class UsersService extends SupabaseBaseService {
    */
   async findAll(options: any = {}, currentUser?: any): Promise<any> {
     console.log('[UsersService.findAll] Options:', options);
-    console.log('[UsersService.findAll] Current user:', currentUser?.email || 'none');
-    
+    console.log(
+      '[UsersService.findAll] Current user:',
+      currentUser?.email || 'none',
+    );
+
     try {
       // Si nous avons un utilisateur authentifié, récupérer vraiment les données
       if (currentUser && currentUser.level >= 5) {
-        console.log('[UsersService.findAll] Admin user detected, fetching real data');
-        
+        console.log(
+          '[UsersService.findAll] Admin user detected, fetching real data',
+        );
+
         const { data: users, error } = await this.supabase
           .from('___users')
           .select('*')
           .range(
             ((options.page || 1) - 1) * (options.limit || 20),
-            (options.page || 1) * (options.limit || 20) - 1
+            (options.page || 1) * (options.limit || 20) - 1,
           );
 
         if (error) {
@@ -935,7 +941,7 @@ export class UsersService extends SupabaseBaseService {
     } catch (error) {
       console.error('[UsersService.findAll] Error:', error);
     }
-    
+
     // Fallback pour utilisateurs non authentifiés ou erreur
     console.log('[UsersService.findAll] Returning empty result');
     return {
@@ -966,7 +972,8 @@ export class UsersService extends SupabaseBaseService {
       password: userData.password,
       confirmPassword: userData.password, // Même valeur que password
       firstName: userData.firstName || userData.name?.split(' ')[0],
-      lastName: userData.lastName || userData.name?.split(' ').slice(1).join(' '),
+      lastName:
+        userData.lastName || userData.name?.split(' ').slice(1).join(' '),
       phone: userData.phone,
     };
     return this.register(registerDto);
@@ -978,7 +985,8 @@ export class UsersService extends SupabaseBaseService {
   async updateUserWithValidation(id: string, userData: any): Promise<any> {
     const updateDto: UpdateProfileDto = {
       firstName: userData.firstName || userData.name?.split(' ')[0],
-      lastName: userData.lastName || userData.name?.split(' ').slice(1).join(' '),
+      lastName:
+        userData.lastName || userData.name?.split(' ').slice(1).join(' '),
       email: userData.email,
       phone: userData.phone,
     };
@@ -990,7 +998,8 @@ export class UsersService extends SupabaseBaseService {
    */
   async createPasswordResetToken(email: string): Promise<string> {
     // Générer un token simple
-    const token = Math.random().toString(36).substring(2, 15) +
+    const token =
+      Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
     return token;
   }
@@ -998,11 +1007,14 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Réinitialiser le mot de passe avec token
    */
-  async resetPasswordWithToken(token: string, newPassword: string): Promise<any> {
+  async resetPasswordWithToken(
+    token: string,
+    newPassword: string,
+  ): Promise<any> {
     // Pour l'instant, retourner un succès simulé
-    return { 
-      success: true, 
-      message: 'Mot de passe réinitialisé avec succès' 
+    return {
+      success: true,
+      message: 'Mot de passe réinitialisé avec succès',
     };
   }
 
@@ -1035,7 +1047,9 @@ export class UsersService extends SupabaseBaseService {
 
       const paginatedUsers = filteredUsers.slice(offset, offset + limit);
 
-      console.log(`✅ ${paginatedUsers.length} utilisateurs trouvés avec civilité ${civility}`);
+      console.log(
+        `✅ ${paginatedUsers.length} utilisateurs trouvés avec civilité ${civility}`,
+      );
       return {
         users: paginatedUsers,
         pagination: {
@@ -1068,7 +1082,8 @@ export class UsersService extends SupabaseBaseService {
     } catch (error: any) {
       console.error('❌ Erreur updateLastLogin:', error);
       throw new HttpException(
-        error?.message || 'Erreur lors de la mise à jour de la dernière connexion',
+        error?.message ||
+          'Erreur lors de la mise à jour de la dernière connexion',
         error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

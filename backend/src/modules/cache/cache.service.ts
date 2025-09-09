@@ -50,7 +50,7 @@ export class CacheService {
     try {
       // TTL intelligent selon le préfixe
       const smartTTL = ttl || this.getSmartTTL(key);
-      
+
       await this.redis.setex(key, smartTTL, JSON.stringify(value));
       this.logger.debug(`💾 Cache SET: ${key} (TTL: ${smartTTL}s)`);
     } catch (error) {
@@ -78,7 +78,9 @@ export class CacheService {
       const keys = await this.redis.keys(pattern);
       if (keys.length > 0) {
         await this.redis.del(...keys);
-        this.logger.log(`🧹 Cleared ${keys.length} cache entries matching: ${pattern}`);
+        this.logger.log(
+          `🧹 Cleared ${keys.length} cache entries matching: ${pattern}`,
+        );
       }
     } catch (error) {
       this.logger.error(`Cache clear error for pattern ${pattern}:`, error);
@@ -90,14 +92,14 @@ export class CacheService {
    */
   private getSmartTTL(key: string): number {
     const ttlMap: Record<string, number> = {
-      'dashboard:stats': 300,        // 5 min - Stats dashboard
-      'stock:available': 60,         // 1 min - Stock disponible
-      'suppliers:list': 1800,        // 30 min - Liste fournisseurs
-      'seo:stats': 3600,            // 1h - Stats SEO
-      'orders:recent': 180,         // 3 min - Commandes récentes
-      'users:count': 600,           // 10 min - Compteur utilisateurs
-      'manufacturers:list': 3600,   // 1h - Constructeurs
-      'blog:articles': 1800,        // 30 min - Articles blog
+      'dashboard:stats': 300, // 5 min - Stats dashboard
+      'stock:available': 60, // 1 min - Stock disponible
+      'suppliers:list': 1800, // 30 min - Liste fournisseurs
+      'seo:stats': 3600, // 1h - Stats SEO
+      'orders:recent': 180, // 3 min - Commandes récentes
+      'users:count': 600, // 10 min - Compteur utilisateurs
+      'manufacturers:list': 3600, // 1h - Constructeurs
+      'blog:articles': 1800, // 30 min - Articles blog
     };
 
     // Trouver le TTL correspondant au préfixe
@@ -122,11 +124,11 @@ export class CacheService {
     try {
       const info = await this.redis.info('memory');
       const keyCount = await this.redis.dbsize();
-      
+
       return {
         memory: this.extractMemoryUsed(info),
         keyCount,
-        hitRate: 'N/A' // Redis doesn't track hit rate by default
+        hitRate: 'N/A', // Redis doesn't track hit rate by default
       };
     } catch (error) {
       this.logger.error('Error getting cache stats:', error);
@@ -143,9 +145,9 @@ export class CacheService {
    * 🔄 Cache-aside pattern helper
    */
   async getOrSet<T>(
-    key: string, 
-    fetcher: () => Promise<T>, 
-    ttl?: number
+    key: string,
+    fetcher: () => Promise<T>,
+    ttl?: number,
   ): Promise<T> {
     // Try cache first
     const cached = await this.get<T>(key);
@@ -156,10 +158,10 @@ export class CacheService {
     // Fetch from source
     this.logger.debug(`🔄 Fetching fresh data for: ${key}`);
     const fresh = await fetcher();
-    
+
     // Cache the result
     await this.set(key, fresh, ttl);
-    
+
     return fresh;
   }
 }

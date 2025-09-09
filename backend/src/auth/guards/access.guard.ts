@@ -31,7 +31,7 @@ export class AccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    
+
     // Vérifier si l'authentification est requise
     const requireAuth =
       this.reflector.get(REQUIRE_AUTH, context.getHandler()) ||

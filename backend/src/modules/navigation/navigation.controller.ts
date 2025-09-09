@@ -1,4 +1,12 @@
-import { Controller, Get, Query, Logger, Delete, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Logger,
+  Delete,
+  Post,
+  Body,
+} from '@nestjs/common';
 import { NavigationService, MenuConfig } from './navigation.service';
 import { CommercialMenuService } from './services/commercial-menu.service';
 import { ExpeditionMenuService } from './services/expedition-menu.service';
@@ -20,12 +28,15 @@ export class NavigationController {
    * Récupère la navigation principale selon le contexte
    */
   @Get()
-  async getNavigation(@Query('context') context: 'admin' | 'user' | 'commercial' = 'user') {
+  async getNavigation(
+    @Query('context') context: 'admin' | 'user' | 'commercial' = 'user',
+  ) {
     try {
       this.logger.log(`Récupération navigation pour contexte: ${context}`);
-      
-      const navigation = await this.navigationService.getMainNavigation(context);
-      
+
+      const navigation =
+        await this.navigationService.getMainNavigation(context);
+
       return {
         success: true,
         data: navigation,
@@ -52,9 +63,9 @@ export class NavigationController {
   async getCommercialMenu() {
     try {
       this.logger.log('Récupération menu commercial');
-      
+
       const menu = await this.commercialMenuService.getMenu();
-      
+
       return {
         success: true,
         data: menu,
@@ -78,9 +89,9 @@ export class NavigationController {
   async getExpeditionMenu() {
     try {
       this.logger.log('Récupération menu expédition');
-      
+
       const menu = await this.expeditionMenuService.getMenu();
-      
+
       return {
         success: true,
         data: menu,
@@ -104,9 +115,9 @@ export class NavigationController {
   async getSeoMenu() {
     try {
       this.logger.log('Récupération menu SEO');
-      
+
       const menu = await this.seoMenuService.getMenu();
-      
+
       return {
         success: true,
         data: menu,
@@ -130,9 +141,9 @@ export class NavigationController {
   async invalidateCache(@Query('context') context?: string) {
     try {
       this.logger.log(`Invalidation cache navigation: ${context || 'tous'}`);
-      
+
       await this.navigationService.invalidateCache(context);
-      
+
       return {
         success: true,
         message: `Cache invalidé pour ${context || 'tous les contextes'}`,
@@ -142,7 +153,7 @@ export class NavigationController {
       this.logger.error('Erreur invalidation cache:', error);
       return {
         success: false,
-        error: 'Erreur lors de l\'invalidation du cache',
+        error: "Erreur lors de l'invalidation du cache",
         timestamp: new Date().toISOString(),
       };
     }
@@ -154,7 +165,8 @@ export class NavigationController {
    */
   @Get('menu/:module')
   async getMenuByModule(
-    @Query('module') module: 'admin' | 'commercial' | 'seo' | 'expedition' | 'staff',
+    @Query('module')
+    module: 'admin' | 'commercial' | 'seo' | 'expedition' | 'staff',
     @Query('userRole') userRole?: string,
     @Query('userId') userId?: string,
   ) {

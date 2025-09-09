@@ -8,11 +8,7 @@
  * ✅ Compatible avec l'approche modulaire
  */
 
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
 import { PromoService } from '../promo.service';
@@ -58,10 +54,7 @@ export class CartService extends SupabaseBaseService {
       const items = await this.getCartItems(userId || sessionId);
 
       // Récupérer ou créer les métadonnées
-      const metadata = await this.getOrCreateCartMetadata(
-        sessionId,
-        userId,
-      );
+      const metadata = await this.getOrCreateCartMetadata(sessionId, userId);
 
       const cart: Cart = {
         id: metadata.id.toString(),
@@ -78,9 +71,7 @@ export class CartService extends SupabaseBaseService {
 
       return cart;
     } catch (error) {
-      this.logger.error(
-        `Erreur getCart: ${(error as any)?.message || error}`,
-      );
+      this.logger.error(`Erreur getCart: ${(error as any)?.message || error}`);
       throw new Error('Impossible de récupérer le panier');
     }
   }
@@ -410,7 +401,7 @@ export class CartService extends SupabaseBaseService {
   ): Promise<void> {
     try {
       const items = await this.getCartItems(userId || sessionId);
-      
+
       // Utiliser le service de calcul avancé
       const calculations = await this.calculationService.calculateCart(items);
 

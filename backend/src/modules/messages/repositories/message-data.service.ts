@@ -39,10 +39,19 @@ export class MessageDataService extends SupabaseBaseService {
     page: number;
     limit: number;
   }> {
-    const { page = 1, limit = 20, search, status = 'all', customerId, staffId } = filters;
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      status = 'all',
+      customerId,
+      staffId,
+    } = filters;
 
     try {
-      let query = this.supabase.from(this.tableName).select('*', { count: 'exact' });
+      let query = this.supabase
+        .from(this.tableName)
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (status !== 'all') {
@@ -58,7 +67,9 @@ export class MessageDataService extends SupabaseBaseService {
       }
 
       if (search) {
-        query = query.or(`msg_subject.ilike.%${search}%,msg_content.ilike.%${search}%`);
+        query = query.or(
+          `msg_subject.ilike.%${search}%,msg_content.ilike.%${search}%`,
+        );
       }
 
       // Pagination
@@ -75,7 +86,9 @@ export class MessageDataService extends SupabaseBaseService {
         throw new Error(`Failed to fetch messages: ${error.message}`);
       }
 
-      const messages = (data || []).map((row: any) => this.mapLegacyToModern(row));
+      const messages = (data || []).map((row: any) =>
+        this.mapLegacyToModern(row),
+      );
 
       return {
         messages,
@@ -164,7 +177,10 @@ export class MessageDataService extends SupabaseBaseService {
   /**
    * Mettre à jour le statut d'un message
    */
-  async updateMessageStatus(messageId: string, updates: { closed?: boolean; read?: boolean }): Promise<ModernMessage> {
+  async updateMessageStatus(
+    messageId: string,
+    updates: { closed?: boolean; read?: boolean },
+  ): Promise<ModernMessage> {
     try {
       const updateData: any = {};
 
@@ -198,10 +214,14 @@ export class MessageDataService extends SupabaseBaseService {
   /**
    * Obtenir les statistiques
    */
-  async getStatistics(customerId?: string): Promise<{ total: number; open: number; closed: number; unread: number }> {
+  async getStatistics(
+    customerId?: string,
+  ): Promise<{ total: number; open: number; closed: number; unread: number }> {
     try {
-      let query = this.supabase.from(this.tableName).select('msg_close, msg_open');
-      
+      let query = this.supabase
+        .from(this.tableName)
+        .select('msg_close, msg_open');
+
       // Filtrer par customer si spécifié
       if (customerId) {
         query = query.eq('cst_id', customerId);
@@ -216,7 +236,8 @@ export class MessageDataService extends SupabaseBaseService {
 
       const total = data?.length || 0;
       const open = data?.filter((row: any) => row.msg_close === 0).length || 0;
-      const closed = data?.filter((row: any) => row.msg_close === 1).length || 0;
+      const closed =
+        data?.filter((row: any) => row.msg_close === 1).length || 0;
       const unread = data?.filter((row: any) => row.msg_open === 0).length || 0;
 
       return { total, open, closed, unread };
@@ -229,7 +250,9 @@ export class MessageDataService extends SupabaseBaseService {
   /**
    * Obtenir les clients récents
    */
-  async getCustomers(limit: number = 100): Promise<Array<{ cst_id: string; cst_fname: string; cst_mail: string }>> {
+  async getCustomers(
+    limit: number = 100,
+  ): Promise<Array<{ cst_id: string; cst_fname: string; cst_mail: string }>> {
     try {
       const { data, error } = await this.supabase
         .from('customers')

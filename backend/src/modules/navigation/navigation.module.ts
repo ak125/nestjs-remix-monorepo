@@ -1,6 +1,6 @@
 /**
  * NavigationModule - Module de gestion de la navigation
- * 
+ *
  * Aligné sur les meilleures pratiques du projet :
  * - Structure modulaire avec services spécialisés
  * - Cache intégré pour les performances (10 minutes TTL)
@@ -21,7 +21,7 @@ import { CacheModule } from '../../cache/cache.module';
 @Module({
   imports: [
     DatabaseModule, // Utilise le module database existant du projet
-    CacheModule,   // Utilise le module cache personnalisé (cohérent avec admin.module)
+    CacheModule, // Utilise le module cache personnalisé (cohérent avec admin.module)
   ],
   controllers: [NavigationController],
   providers: [

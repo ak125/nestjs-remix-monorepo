@@ -1,12 +1,12 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Body, 
-  Query, 
-  Param, 
-  Logger 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Query,
+  Param,
+  Logger,
 } from '@nestjs/common';
 import { WorkingStockService } from '../services/working-stock.service';
 
@@ -145,19 +145,30 @@ export class WorkingStockController {
   ) {
     try {
       let data: any[] = [];
-      
+
       switch (type) {
         case 'top':
           data = await this.stockService.getTopItems(parseInt(limit, 10));
           break;
         case 'available':
-          data = await this.stockService.searchItems('', parseInt(limit, 10), true);
+          data = await this.stockService.searchItems(
+            '',
+            parseInt(limit, 10),
+            true,
+          );
           break;
         case 'unavailable':
-          data = await this.stockService.searchItems('', parseInt(limit, 10), false);
+          data = await this.stockService.searchItems(
+            '',
+            parseInt(limit, 10),
+            false,
+          );
           break;
         default:
-          const dashboard = await this.stockService.getDashboard(1, parseInt(limit, 10));
+          const dashboard = await this.stockService.getDashboard(
+            1,
+            parseInt(limit, 10),
+          );
           data = dashboard.items;
       }
 
@@ -171,11 +182,11 @@ export class WorkingStockController {
       }
 
       // Pour CSV, on retourne les données formatées
-      const csvData = data.map(item => ({
+      const csvData = data.map((item) => ({
         'ID Pièce': item.pri_piece_id,
-        'Référence': item.pri_ref,
-        'Description': item.pri_des,
-        'Disponible': item.pri_dispo === '1' ? 'Oui' : 'Non',
+        Référence: item.pri_ref,
+        Description: item.pri_des,
+        Disponible: item.pri_dispo === '1' ? 'Oui' : 'Non',
         'Prix HT': parseFloat(item.pri_vente_ht || '0').toFixed(2),
         'Prix TTC': parseFloat(item.pri_vente_ttc || '0').toFixed(2),
         'Marge (%)': parseFloat(item.pri_marge || '0').toFixed(2),

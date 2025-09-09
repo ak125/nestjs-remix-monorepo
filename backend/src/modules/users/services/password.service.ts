@@ -57,7 +57,7 @@ export class PasswordService extends SupabaseBaseService {
     try {
       this.logger.log(`Password change request for user: ${userId}`);
 
-            // Récupérer l'utilisateur avec son mot de passe actuel
+      // Récupérer l'utilisateur avec son mot de passe actuel
       const { data: user, error: userError } = await this.client
         .from('___xtr_customer')
         .select('cst_id, cst_mail, cst_fname, cst_pswd')
@@ -69,10 +69,7 @@ export class PasswordService extends SupabaseBaseService {
       }
 
       // Vérifier l'ancien mot de passe
-      const isValidOld = await this.verifyPassword(
-        oldPassword,
-        user.cst_pswd,
-      );
+      const isValidOld = await this.verifyPassword(oldPassword, user.cst_pswd);
       if (!isValidOld) {
         throw new BadRequestException('Ancien mot de passe incorrect');
       }
@@ -136,7 +133,9 @@ export class PasswordService extends SupabaseBaseService {
 
       if (error || !user) {
         // Ne pas révéler si l'email existe (sécurité)
-        this.logger.warn(`Password reset requested for non-existent email: ${email}`);
+        this.logger.warn(
+          `Password reset requested for non-existent email: ${email}`,
+        );
         return;
       }
 
@@ -180,7 +179,10 @@ export class PasswordService extends SupabaseBaseService {
 
       this.logger.log(`✅ Password reset email sent to: ${email}`);
     } catch (error) {
-      this.logger.error(`Failed to request password reset for ${email}:`, error);
+      this.logger.error(
+        `Failed to request password reset for ${email}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -205,7 +207,8 @@ export class PasswordService extends SupabaseBaseService {
       // Vérifier le token avec JOIN pour récupérer les infos utilisateur
       const { data: resetData, error } = await this.client
         .from('password_resets')
-        .select(`
+        .select(
+          `
           id,
           user_id,
           expires_at,
@@ -215,7 +218,8 @@ export class PasswordService extends SupabaseBaseService {
             cst_mail,
             cst_fname
           )
-        `)
+        `,
+        )
         .eq('token', hashedToken)
         .eq('used', false)
         .gte('expires_at', new Date().toISOString())
@@ -255,7 +259,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Exécuter les mises à jour
       const results = await Promise.all(updates);
-      
+
       // Vérifier les erreurs
       for (const result of results) {
         if (result.error) {
@@ -278,7 +282,9 @@ export class PasswordService extends SupabaseBaseService {
         },
       });
 
-      this.logger.log(`✅ Password reset completed for user: ${resetData.user_id}`);
+      this.logger.log(
+        `✅ Password reset completed for user: ${resetData.user_id}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to reset password with token:`, error);
       throw error;
@@ -379,12 +385,18 @@ export class PasswordService extends SupabaseBaseService {
         .eq('user_id', userId);
 
       if (error) {
-        this.logger.warn(`Failed to invalidate sessions for user ${userId}:`, error);
+        this.logger.warn(
+          `Failed to invalidate sessions for user ${userId}:`,
+          error,
+        );
       } else {
         this.logger.log(`✅ All sessions invalidated for user: ${userId}`);
       }
     } catch (error) {
-      this.logger.warn(`Error invalidating sessions for user ${userId}:`, error);
+      this.logger.warn(
+        `Error invalidating sessions for user ${userId}:`,
+        error,
+      );
     }
   }
 
@@ -403,7 +415,9 @@ export class PasswordService extends SupabaseBaseService {
       }
 
       const deletedCount = count || 0;
-      this.logger.log(`🧹 Cleaned up ${deletedCount} expired password reset tokens`);
+      this.logger.log(
+        `🧹 Cleaned up ${deletedCount} expired password reset tokens`,
+      );
       return deletedCount;
     } catch (error) {
       this.logger.error('Error cleaning up expired tokens:', error);

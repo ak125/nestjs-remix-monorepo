@@ -34,7 +34,9 @@ export class CartCalculationService extends SupabaseBaseService {
 
   constructor() {
     super();
-    this.logger.log('CartCalculationService initialized - Advanced architecture');
+    this.logger.log(
+      'CartCalculationService initialized - Advanced architecture',
+    );
   }
 
   /**
@@ -55,7 +57,7 @@ export class CartCalculationService extends SupabaseBaseService {
         item.quantity,
         item.price,
       );
-      
+
       subtotalHT += item.quantity * itemPrice;
       totalWeight += item.quantity * ((item as any).weight || 0);
       itemCount += item.quantity;
@@ -154,12 +156,12 @@ export class CartCalculationService extends SupabaseBaseService {
 
       if (discountTiers && discountTiers.length > 0) {
         const discount = discountTiers[0];
-        
+
         // Remise en pourcentage
         if (discount.discount_percent) {
           return basePrice * (1 - discount.discount_percent / 100);
         }
-        
+
         // Remise en montant fixe
         if (discount.discount_amount) {
           return Math.max(0, basePrice - discount.discount_amount);
@@ -254,8 +256,9 @@ export class CartCalculationService extends SupabaseBaseService {
             ? product.categories[0]?.name || 'Autre'
             : (product.categories as any)?.name || 'Autre';
           const itemTotal = item.price * item.quantity;
-          
-          categories[categoryName] = (categories[categoryName] || 0) + itemTotal;
+
+          categories[categoryName] =
+            (categories[categoryName] || 0) + itemTotal;
           totalByCategory += itemTotal;
         }
       } catch (error) {
@@ -277,7 +280,7 @@ export class CartCalculationService extends SupabaseBaseService {
     totalSavings: number;
   }> {
     let quantityDiscountSavings = 0;
-    let promoSavings = 0;
+    const promoSavings = 0;
 
     // Calculer les économies sur les remises quantité
     for (const item of items) {
@@ -287,8 +290,9 @@ export class CartCalculationService extends SupabaseBaseService {
         item.quantity,
         originalPrice,
       );
-      
-      quantityDiscountSavings += (originalPrice - discountedPrice) * item.quantity;
+
+      quantityDiscountSavings +=
+        (originalPrice - discountedPrice) * item.quantity;
     }
 
     // Les économies promo seront calculées séparément

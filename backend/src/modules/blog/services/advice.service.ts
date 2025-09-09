@@ -37,7 +37,7 @@ export interface AdviceFilters {
 
 /**
  * 🔧 Service optimisé pour la gestion des conseils automobiles
- * 
+ *
  * 🎯 FONCTIONNALITÉS AVANCÉES :
  * - Cache intelligent avec stratégie 3-niveaux (hot/warm/cold)
  * - Décodage HTML automatique des entités
@@ -100,9 +100,7 @@ export class AdviceService {
         success: true,
       };
     } catch (error) {
-      this.logger.error(
-        `❌ Erreur test: ${(error as Error).message}`,
-      );
+      this.logger.error(`❌ Erreur test: ${(error as Error).message}`);
       return {
         items: [],
         total: 0,
@@ -143,9 +141,7 @@ export class AdviceService {
       const client = this.supabaseService.client;
       const offset = (page - 1) * limit;
 
-      let query = client
-        .from('__blog_advice')
-        .select('*', { count: 'exact' });
+      let query = client.from('__blog_advice').select('*', { count: 'exact' });
 
       // Filtres avancés
       if (filters.category) {
@@ -189,7 +185,11 @@ export class AdviceService {
       }
 
       // Tri optimisé selon les filtres
-      if (filters.sortBy === 'popularity' || filters.difficulty === 'facile' || !filters.sortBy) {
+      if (
+        filters.sortBy === 'popularity' ||
+        filters.difficulty === 'facile' ||
+        !filters.sortBy
+      ) {
         query = query
           .order('ba_visit', { ascending: false })
           .order('ba_create', { ascending: false });
@@ -236,9 +236,7 @@ export class AdviceService {
       this.logger.log(`✅ ${items.length} conseils récupérés (${count} total)`);
       return result;
     } catch (error) {
-      this.logger.error(
-        `❌ Erreur getAdviceList: ${(error as Error).message}`,
-      );
+      this.logger.error(`❌ Erreur getAdviceList: ${(error as Error).message}`);
       return {
         items: [],
         total: 0,
@@ -264,9 +262,7 @@ export class AdviceService {
       const cached = await this.blogCacheService.get<any>(cacheKey, 2000);
       if (cached) return cached;
 
-      this.logger.log(
-        `🏷️ Récupération conseils pour gamme: ${gammeCode}`,
-      );
+      this.logger.log(`🏷️ Récupération conseils pour gamme: ${gammeCode}`);
 
       // Rechercher d'abord la gamme si nécessaire
       const gamme = {
@@ -280,9 +276,7 @@ export class AdviceService {
       const { data, error } = await this.supabaseService.client
         .from('__blog_advice')
         .select('*')
-        .or(
-          `ba_title.ilike.%${gammeCode}%,ba_keywords.ilike.%${gammeCode}%`,
-        )
+        .or(`ba_title.ilike.%${gammeCode}%,ba_keywords.ilike.%${gammeCode}%`)
         .order('ba_visit', { ascending: false });
 
       if (error) {
@@ -330,9 +324,7 @@ export class AdviceService {
       );
       if (cached) return cached;
 
-      this.logger.log(
-        `🔗 Recherche conseils liés au produit: ${productId}`,
-      );
+      this.logger.log(`🔗 Recherche conseils liés au produit: ${productId}`);
 
       // Recherche améliorée dans les conseils
       const { data, error } = await this.supabaseService.client
@@ -421,9 +413,7 @@ export class AdviceService {
 
       return article;
     } catch (error) {
-      this.logger.error(
-        `❌ Erreur getAdviceById: ${(error as Error).message}`,
-      );
+      this.logger.error(`❌ Erreur getAdviceById: ${(error as Error).message}`);
       return null;
     }
   }
@@ -446,7 +436,10 @@ export class AdviceService {
       // Utiliser BlogService pour créer l'article si disponible
       let createdArticle: BlogArticle;
 
-      if (this.blogService && typeof this.blogService.createArticle === 'function') {
+      if (
+        this.blogService &&
+        typeof this.blogService.createArticle === 'function'
+      ) {
         createdArticle = await this.blogService.createArticle(
           {
             ...article,
@@ -479,13 +472,14 @@ export class AdviceService {
 
       return {
         article: createdArticle,
-        advice: { ...advice, articleId: parseInt(createdArticle.legacy_id.toString()) },
+        advice: {
+          ...advice,
+          articleId: parseInt(createdArticle.legacy_id.toString()),
+        },
         success: true,
       };
     } catch (error) {
-      this.logger.error(
-        `❌ Erreur createAdvice: ${(error as Error).message}`,
-      );
+      this.logger.error(`❌ Erreur createAdvice: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -577,7 +571,7 @@ export class AdviceService {
    */
   private calculateReadingTime(content: string): number {
     if (!content) return 1;
-    
+
     const cleanText = BlogCacheService.decodeHtmlEntities(content).replace(
       /<[^>]*>/g,
       '',
@@ -594,7 +588,7 @@ export class AdviceService {
    */
   private createAnchor(text: string): string {
     if (!text) return '';
-    
+
     return BlogCacheService.decodeHtmlEntities(text)
       .toLowerCase()
       .normalize('NFD')
@@ -653,7 +647,7 @@ export class AdviceService {
       const page = Math.floor(offset / limit) + 1;
 
       const result = await this.getAdviceList(undefined, page, limit, filters);
-      
+
       return {
         articles: result.items,
         total: result.total,

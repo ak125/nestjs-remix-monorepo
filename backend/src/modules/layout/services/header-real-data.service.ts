@@ -114,12 +114,14 @@ export class HeaderRealDataService extends SupabaseBaseService {
   private async buildAdminHeader(userId?: string): Promise<HeaderData> {
     try {
       // Récupérer les vraies statistiques en parallèle
-      const [userStats, productStats, orderStats, realUser] = await Promise.all([
-        this.getUserStats(),
-        this.getProductStats(),
-        this.getOrderStats(),
-        userId ? this.getRealUser(userId) : null,
-      ]);
+      const [userStats, productStats, orderStats, realUser] = await Promise.all(
+        [
+          this.getUserStats(),
+          this.getProductStats(),
+          this.getOrderStats(),
+          userId ? this.getRealUser(userId) : null,
+        ],
+      );
 
       return {
         title: 'Administration - Données Réelles',
@@ -272,7 +274,10 @@ export class HeaderRealDataService extends SupabaseBaseService {
   /**
    * Récupère les statistiques produits depuis Supabase
    */
-  private async getProductStats(): Promise<{ total: number; lowStock: number }> {
+  private async getProductStats(): Promise<{
+    total: number;
+    lowStock: number;
+  }> {
     try {
       const { count: total, error: totalError } = await this.supabase
         .from('pieces')
@@ -354,7 +359,12 @@ export class HeaderRealDataService extends SupabaseBaseService {
         name: user.cst_name || user.cst_fname || 'Utilisateur',
         email: user.cst_mail || user.customer_email || 'unknown@example.com',
         avatar: user.cst_avatar || undefined,
-        role: user.customer_level === 5 ? 'admin' : user.customer_level === 3 ? 'commercial' : 'user',
+        role:
+          user.customer_level === 5
+            ? 'admin'
+            : user.customer_level === 3
+              ? 'commercial'
+              : 'user',
         isActive: user.customer_active === true || user.customer_active === 1,
         isPro: user.customer_is_pro === true || user.customer_is_pro === 1,
       };

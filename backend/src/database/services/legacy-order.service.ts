@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../common/cache.service';
@@ -69,7 +73,7 @@ export class LegacyOrderService extends SupabaseBaseService {
 
   /**
    * =====================================================
-   * NOUVELLES MÉTHODES - CRÉATION ET GESTION COMMANDES  
+   * NOUVELLES MÉTHODES - CRÉATION ET GESTION COMMANDES
    * =====================================================
    */
 
@@ -118,7 +122,9 @@ export class LegacyOrderService extends SupabaseBaseService {
   /**
    * Calcule les totaux d'une commande
    */
-  private calculateOrderTotals(orderLines: CreateLegacyOrderData['orderLines']): {
+  private calculateOrderTotals(
+    orderLines: CreateLegacyOrderData['orderLines'],
+  ): {
     totalHt: number;
     totalTtc: number;
     totalTva: number;
@@ -157,9 +163,13 @@ export class LegacyOrderService extends SupabaseBaseService {
   /**
    * Crée une nouvelle commande avec ses lignes
    */
-  async createLegacyOrder(orderData: CreateLegacyOrderData): Promise<LegacyOrder> {
+  async createLegacyOrder(
+    orderData: CreateLegacyOrderData,
+  ): Promise<LegacyOrder> {
     try {
-      this.logger.log(`Creating legacy order for customer ${orderData.customerId}`);
+      this.logger.log(
+        `Creating legacy order for customer ${orderData.customerId}`,
+      );
 
       // 1. Vérifier que le client existe
       const { data: customer, error: customerError } = await this.supabase
@@ -169,7 +179,9 @@ export class LegacyOrderService extends SupabaseBaseService {
         .single();
 
       if (customerError || !customer) {
-        throw new NotFoundException(`Customer ${orderData.customerId} not found`);
+        throw new NotFoundException(
+          `Customer ${orderData.customerId} not found`,
+        );
       }
 
       // 2. Générer le numéro de commande
@@ -243,7 +255,10 @@ export class LegacyOrderService extends SupabaseBaseService {
         if (linesError) {
           this.logger.error('Failed to insert order lines:', linesError);
           // Tentative de rollback de la commande
-          await this.supabase.from('___xtr_order').delete().eq('ord_id', orderNumber);
+          await this.supabase
+            .from('___xtr_order')
+            .delete()
+            .eq('ord_id', orderNumber);
           throw linesError;
         }
       }
@@ -300,7 +315,11 @@ export class LegacyOrderService extends SupabaseBaseService {
   /**
    * Met à jour le statut d'une commande
    */
-  async updateOrderStatus(orderId: string, status: string, comment?: string): Promise<void> {
+  async updateOrderStatus(
+    orderId: string,
+    status: string,
+    comment?: string,
+  ): Promise<void> {
     try {
       // 1. Vérifier que la commande existe
       const order = await this.getOrderById(orderId);
@@ -356,20 +375,24 @@ export class LegacyOrderService extends SupabaseBaseService {
   /**
    * Crée une entrée dans l'historique des statuts
    */
-  private async createOrderStatus(orderId: string, status: string, comment?: string): Promise<void> {
+  private async createOrderStatus(
+    orderId: string,
+    status: string,
+    comment?: string,
+  ): Promise<void> {
     try {
-      const { error } = await this.supabase
-        .from('___xtr_order_status')
-        .insert({
-          ords_ord_id: orderId,
-          ords_status: status,
-          ords_comment: comment || '',
-          ords_date: new Date().toISOString(),
-          ords_user_id: null, // Pourrait être l'utilisateur connecté
-        });
+      const { error } = await this.supabase.from('___xtr_order_status').insert({
+        ords_ord_id: orderId,
+        ords_status: status,
+        ords_comment: comment || '',
+        ords_date: new Date().toISOString(),
+        ords_user_id: null, // Pourrait être l'utilisateur connecté
+      });
 
       if (error) {
-        this.logger.warn(`Failed to create order status entry: ${error.message}`);
+        this.logger.warn(
+          `Failed to create order status entry: ${error.message}`,
+        );
         // Ne pas faire échouer toute l'opération pour ça
       }
     } catch (error) {
@@ -399,7 +422,10 @@ export class LegacyOrderService extends SupabaseBaseService {
         userId: status.ords_user_id,
       }));
     } catch (error) {
-      this.logger.error(`Failed to get order status history for ${orderId}:`, error);
+      this.logger.error(
+        `Failed to get order status history for ${orderId}:`,
+        error,
+      );
       return [];
     }
   }
@@ -463,12 +489,14 @@ export class LegacyOrderService extends SupabaseBaseService {
    * MÉTHODES EXISTANTES PRÉSERVÉES
    * =====================================================
    */
-  async getAllOrders(options: {
-    limit?: number;
-    offset?: number;
-    status?: string;
-    userId?: string;
-  } = {}): Promise<LegacyOrder[]> {
+  async getAllOrders(
+    options: {
+      limit?: number;
+      offset?: number;
+      status?: string;
+      userId?: string;
+    } = {},
+  ): Promise<LegacyOrder[]> {
     try {
       const { limit = 20, offset = 0, status, userId } = options;
 
@@ -673,7 +701,7 @@ export class LegacyOrderService extends SupabaseBaseService {
    */
   async getTotalOrdersCount(): Promise<number> {
     const cacheKey = 'total_orders_count';
-    
+
     // Essayer d'abord le cache (TTL: 2 minutes)
     const cached = this.cacheService.get<number>(cacheKey);
     if (cached !== null) {
@@ -683,7 +711,7 @@ export class LegacyOrderService extends SupabaseBaseService {
 
     try {
       this.logger.debug('📊 Fetching total orders count from database');
-      
+
       const { count, error } = await this.supabase
         .from('___xtr_order')
         .select('*', { count: 'exact', head: true });
@@ -691,10 +719,10 @@ export class LegacyOrderService extends SupabaseBaseService {
       if (error) throw error;
 
       const totalCount = count || 0;
-      
+
       // Cache pour 2 minutes (les stats changent moins souvent)
       this.cacheService.set(cacheKey, totalCount, 2 * 60 * 1000);
-      
+
       return totalCount;
     } catch (error) {
       this.logger.error('Failed to count total orders:', error);

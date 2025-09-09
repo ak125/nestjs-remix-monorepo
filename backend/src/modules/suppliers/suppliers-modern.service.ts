@@ -30,7 +30,7 @@ export class SuppliersModernService {
    */
   async getSuppliers(filters: SupplierFilters) {
     const validatedFilters = validateSupplierFilters(filters);
-    
+
     return await this.suppliersService.getSuppliers({
       search: validatedFilters.search,
       isActive: validatedFilters.isActive,

@@ -28,7 +28,11 @@ export interface ConstructeurStats {
   byLetter: Array<{ letter: string; count: number; avgViews: number }>;
   withModels: number;
   recentlyUpdated: BlogArticle[];
-  topCategories: Array<{ letter: string; totalViews: number; avgViews: number }>;
+  topCategories: Array<{
+    letter: string;
+    totalViews: number;
+    avgViews: number;
+  }>;
   performance: {
     cacheHitRate: number;
     avgResponseTime: number;
@@ -38,10 +42,10 @@ export interface ConstructeurStats {
 
 /**
  * 🏭 ConstructeurService - Service optimisé pour les pages constructeurs automobiles
- * 
+ *
  * Version Premium avec :
  * ✅ Cache intelligent 3-tiers (hot/warm/cold) basé sur la popularité
- * ✅ Requêtes parallèles H2/H3 pour performance optimale  
+ * ✅ Requêtes parallèles H2/H3 pour performance optimale
  * ✅ Décodage HTML entités automatique
  * ✅ Filtrage avancé multi-critères
  * ✅ Gestion d'erreurs granulaire avec retry automatique
@@ -50,7 +54,7 @@ export interface ConstructeurStats {
  * ✅ Support recherche multi-colonnes
  * ✅ Pagination intelligente
  * ✅ Monitoring performance intégré
- * 
+ *
  * Gère spécifiquement la table __blog_constructeur avec données
  * des marques et modèles automobiles.
  */
@@ -82,7 +86,10 @@ export class ConstructeurService {
   /**
    * 📊 Calcul TTL intelligent basé sur la popularité
    */
-  private calculateIntelligentTTL(avgViews: number, totalItems: number): number {
+  private calculateIntelligentTTL(
+    avgViews: number,
+    totalItems: number,
+  ): number {
     if (avgViews > 2000) return 300; // 5min - très populaire
     if (avgViews > 1000) return 900; // 15min - populaire
     if (avgViews > 500) return 1800; // 30min - modéré
@@ -209,12 +216,20 @@ export class ConstructeurService {
 
       if (filters.minViews !== undefined) {
         query = query.filter('bc_visit', 'gte', filters.minViews.toString());
-        countQuery = countQuery.filter('bc_visit', 'gte', filters.minViews.toString());
+        countQuery = countQuery.filter(
+          'bc_visit',
+          'gte',
+          filters.minViews.toString(),
+        );
       }
 
       if (filters.maxViews !== undefined) {
         query = query.filter('bc_visit', 'lte', filters.maxViews.toString());
-        countQuery = countQuery.filter('bc_visit', 'lte', filters.maxViews.toString());
+        countQuery = countQuery.filter(
+          'bc_visit',
+          'lte',
+          filters.maxViews.toString(),
+        );
       }
 
       // Tri avancé
@@ -223,10 +238,9 @@ export class ConstructeurService {
       query = query.order(sortColumn, { ascending });
 
       // Exécution parallèle des requêtes
-      const [{ data: constructeursList }, { count: total }] = await Promise.all([
-        query,
-        countQuery,
-      ]);
+      const [{ data: constructeursList }, { count: total }] = await Promise.all(
+        [query, countQuery],
+      );
 
       if (!constructeursList) {
         return { articles: [], total: 0 };
@@ -334,23 +348,29 @@ export class ConstructeurService {
       const { data: constructeur } = await client
         .from('__blog_constructeur')
         .select('*')
-        .or([
-          `bc_constructeur.ilike.%${brand}%`,
-          `bc_alias.ilike.%${brand.toLowerCase()}%`,
-        ].join(','))
+        .or(
+          [
+            `bc_constructeur.ilike.%${brand}%`,
+            `bc_alias.ilike.%${brand.toLowerCase()}%`,
+          ].join(','),
+        )
         .single();
 
       if (!constructeur) return null;
 
-      const article = await this.transformConstructeurToArticle(client, constructeur);
+      const article = await this.transformConstructeurToArticle(
+        client,
+        constructeur,
+      );
       if (article) {
         await this.cacheService.set(cacheKey, article, 3600); // 1h
       }
 
       return article;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération constructeur par marque ${brand}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération constructeur par marque ${brand}: ${(error as Error).message}`,
+      );
       return null;
     }
   }
@@ -368,7 +388,7 @@ export class ConstructeurService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: constructeursList } = await client
         .from('__blog_constructeur')
         .select('*')
@@ -379,15 +399,19 @@ export class ConstructeurService {
 
       const articles: BlogArticle[] = [];
       for (const constructeur of constructeursList) {
-        const article = await this.transformConstructeurToArticle(client, constructeur);
+        const article = await this.transformConstructeurToArticle(
+          client,
+          constructeur,
+        );
         if (article) articles.push(article);
       }
 
       await this.cacheService.set(cacheKey, articles, 3600);
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur constructeurs populaires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur constructeurs populaires: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -395,7 +419,9 @@ export class ConstructeurService {
   /**
    * 🔤 Récupérer les constructeurs par ordre alphabétique
    */
-  async getConstructeursByAlpha(): Promise<{ [letter: string]: BlogArticle[] }> {
+  async getConstructeursByAlpha(): Promise<{
+    [letter: string]: BlogArticle[];
+  }> {
     const cacheKey = 'constructeurs_alpha';
 
     try {
@@ -405,7 +431,7 @@ export class ConstructeurService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: constructeursList } = await client
         .from('__blog_constructeur')
         .select('*')
@@ -416,9 +442,14 @@ export class ConstructeurService {
       const constructeursByLetter: { [letter: string]: BlogArticle[] } = {};
 
       for (const constructeur of constructeursList) {
-        const article = await this.transformConstructeurToArticle(client, constructeur);
+        const article = await this.transformConstructeurToArticle(
+          client,
+          constructeur,
+        );
         if (article) {
-          const firstLetter = constructeur.bc_constructeur.charAt(0).toUpperCase();
+          const firstLetter = constructeur.bc_constructeur
+            .charAt(0)
+            .toUpperCase();
           if (!constructeursByLetter[firstLetter]) {
             constructeursByLetter[firstLetter] = [];
           }
@@ -428,9 +459,10 @@ export class ConstructeurService {
 
       await this.cacheService.set(cacheKey, constructeursByLetter, 7200); // 2h
       return constructeursByLetter;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur constructeurs alphabétique: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur constructeurs alphabétique: ${(error as Error).message}`,
+      );
       return {};
     }
   }
@@ -458,7 +490,9 @@ export class ConstructeurService {
         { data: popularConstructeurs },
         { count: modelsCount },
       ] = await Promise.all([
-        client.from('__blog_constructeur').select('bc_visit, bc_constructeur, bc_update'),
+        client
+          .from('__blog_constructeur')
+          .select('bc_visit, bc_constructeur, bc_update'),
         client
           .from('__blog_constructeur')
           .select('*')
@@ -493,13 +527,17 @@ export class ConstructeurService {
       }
 
       // Calculs statistiques avancés
-      const totalViews = allConstructeurs.reduce((sum, c) =>
-        sum + (parseInt(c.bc_visit) || 0), 0);
+      const totalViews = allConstructeurs.reduce(
+        (sum, c) => sum + (parseInt(c.bc_visit) || 0),
+        0,
+      );
       const avgViews = Math.round(totalViews / allConstructeurs.length);
 
       // Distribution par lettre avec analyses avancées
-      const letterStats: { [letter: string]: { count: number; totalViews: number } } = {};
-      allConstructeurs.forEach(c => {
+      const letterStats: {
+        [letter: string]: { count: number; totalViews: number };
+      } = {};
+      allConstructeurs.forEach((c) => {
         const letter = c.bc_constructeur.charAt(0).toUpperCase();
         if (!letterStats[letter]) {
           letterStats[letter] = { count: 0, totalViews: 0 };
@@ -550,9 +588,14 @@ export class ConstructeurService {
       }
 
       // Métriques de performance
-      const cacheHitRate = this.performanceMetrics.totalRequests > 0
-        ? Math.round((this.performanceMetrics.cacheHits / this.performanceMetrics.totalRequests) * 100) / 100
-        : 0;
+      const cacheHitRate =
+        this.performanceMetrics.totalRequests > 0
+          ? Math.round(
+              (this.performanceMetrics.cacheHits /
+                this.performanceMetrics.totalRequests) *
+                100,
+            ) / 100
+          : 0;
 
       const stats: ConstructeurStats = {
         total: allConstructeurs.length,
@@ -571,16 +614,23 @@ export class ConstructeurService {
       };
 
       // Cache avec TTL intelligent
-      const ttl = this.calculateIntelligentTTL(avgViews, allConstructeurs.length);
+      const ttl = this.calculateIntelligentTTL(
+        avgViews,
+        allConstructeurs.length,
+      );
       await this.cacheService.set(cacheKey, stats, ttl);
 
       this.updatePerformanceMetrics(startTime, false);
-      this.logger.log(`📊 Statistiques constructeurs calculées: ${allConstructeurs.length} total, ${avgViews} vues moy.`);
+      this.logger.log(
+        `📊 Statistiques constructeurs calculées: ${allConstructeurs.length} total, ${avgViews} vues moy.`,
+      );
 
       return stats;
     } catch (error) {
       this.updatePerformanceMetrics(startTime, false);
-      this.logger.error(`❌ Erreur stats constructeurs: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur stats constructeurs: ${(error as Error).message}`,
+      );
       return {
         total: 0,
         totalViews: 0,
@@ -617,7 +667,12 @@ export class ConstructeurService {
     searchTime: number;
   }> {
     const startTime = Date.now();
-    const { limit = 10, includeSuggestions = false, fuzzyMatch = true, filters = {} } = options;
+    const {
+      limit = 10,
+      includeSuggestions = false,
+      fuzzyMatch = true,
+      filters = {},
+    } = options;
 
     if (!searchTerm || searchTerm.length < 2) {
       return { results: [], total: 0, searchTime: 0 };
@@ -667,7 +722,11 @@ export class ConstructeurService {
       // Application des filtres additionnels
       if (filters.minViews) {
         query = query.filter('bc_visit', 'gte', filters.minViews.toString());
-        countQuery = countQuery.filter('bc_visit', 'gte', filters.minViews.toString());
+        countQuery = countQuery.filter(
+          'bc_visit',
+          'gte',
+          filters.minViews.toString(),
+        );
       }
 
       if (filters.letter) {
@@ -704,11 +763,11 @@ export class ConstructeurService {
       articles.sort((a, b) => {
         const titleMatchA = a.title.toLowerCase().indexOf(searchTermClean);
         const titleMatchB = b.title.toLowerCase().indexOf(searchTermClean);
-        
+
         // Priorité à la correspondance exacte au début du titre
         if (titleMatchA === 0 && titleMatchB !== 0) return -1;
         if (titleMatchB === 0 && titleMatchA !== 0) return 1;
-        
+
         // Sinon tri par nombre de vues
         return b.viewsCount - a.viewsCount;
       });
@@ -716,7 +775,10 @@ export class ConstructeurService {
       // Génération suggestions intelligentes si demandées
       let suggestions: string[] = [];
       if (includeSuggestions && articles.length < 5) {
-        suggestions = await this.generateSearchSuggestions(searchTermClean, client);
+        suggestions = await this.generateSearchSuggestions(
+          searchTermClean,
+          client,
+        );
       }
 
       const searchTime = Date.now() - startTime;
@@ -731,12 +793,16 @@ export class ConstructeurService {
       await this.cacheService.set(cacheKey, result, 300); // 5min
 
       this.updatePerformanceMetrics(startTime, false);
-      this.logger.debug(`🔍 Recherche "${searchTerm}": ${articles.length}/${total} en ${searchTime}ms`);
+      this.logger.debug(
+        `🔍 Recherche "${searchTerm}": ${articles.length}/${total} en ${searchTime}ms`,
+      );
 
       return result;
     } catch (error) {
       this.updatePerformanceMetrics(startTime, false);
-      this.logger.error(`❌ Erreur recherche constructeurs: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur recherche constructeurs: ${(error as Error).message}`,
+      );
       return { results: [], total: 0, searchTime: Date.now() - startTime };
     }
   }
@@ -764,8 +830,8 @@ export class ConstructeurService {
 
       return suggestions
         .map((s: any) => s.bc_constructeur)
-        .filter((name: string) => 
-          name.toLowerCase() !== searchTerm.toLowerCase()
+        .filter(
+          (name: string) => name.toLowerCase() !== searchTerm.toLowerCase(),
         )
         .slice(0, 3);
     } catch {
@@ -776,7 +842,9 @@ export class ConstructeurService {
   /**
    * 🏷️ Récupérer les tags populaires des constructeurs
    */
-  async getPopularTags(limit: number = 20): Promise<Array<{ tag: string; count: number }>> {
+  async getPopularTags(
+    limit: number = 20,
+  ): Promise<Array<{ tag: string; count: number }>> {
     const cacheKey = `constructeur_tags:${limit}`;
 
     try {
@@ -795,7 +863,9 @@ export class ConstructeurService {
 
       constructeurs.forEach((c) => {
         if (c.bc_keywords) {
-          const tags = c.bc_keywords.split(', ').map((t: string) => t.trim().toLowerCase());
+          const tags = c.bc_keywords
+            .split(', ')
+            .map((t: string) => t.trim().toLowerCase());
           const weight = Math.max(1, Math.floor(parseInt(c.bc_visit) / 100));
 
           tags.forEach((tag) => {
@@ -812,7 +882,9 @@ export class ConstructeurService {
       await this.cacheService.set(cacheKey, popularTags, 7200);
       return popularTags;
     } catch (error) {
-      this.logger.error(`❌ Erreur tags populaires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur tags populaires: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -826,7 +898,7 @@ export class ConstructeurService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: models } = await client
         .from('__blog_constructeur_modele')
         .select('*')
@@ -836,9 +908,10 @@ export class ConstructeurService {
       const result = models || [];
       await this.cacheService.set(cacheKey, result, 3600);
       return result;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur modèles constructeur ${constructeurId}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur modèles constructeur ${constructeurId}: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -849,7 +922,7 @@ export class ConstructeurService {
   async incrementConstructeurViews(id: string | number): Promise<boolean> {
     try {
       const client = this.supabaseService.getClient();
-      
+
       // Récupérer les vues actuelles
       const { data: current } = await client
         .from('__blog_constructeur')
@@ -876,11 +949,14 @@ export class ConstructeurService {
       await this.cacheService.del(`constructeur:${id}`);
       await this.cacheService.del('constructeurs_stats');
 
-      this.logger.debug(`👀 Vues mises à jour pour constructeur ${id}: ${newViews}`);
+      this.logger.debug(
+        `👀 Vues mises à jour pour constructeur ${id}: ${newViews}`,
+      );
       return true;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur incrément vues: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur incrément vues: ${(error as Error).message}`,
+      );
       return false;
     }
   }
@@ -894,7 +970,11 @@ export class ConstructeurService {
   ): Promise<BlogArticle> {
     try {
       // Récupérer les sections H2/H3 et modèles en parallèle pour performance maximale
-      const [{ data: h2Sections }, { data: h3Sections }, { count: modelsCount }] = await Promise.all([
+      const [
+        { data: h2Sections },
+        { data: h3Sections },
+        { count: modelsCount },
+      ] = await Promise.all([
         client
           .from('__blog_constructeur_h2')
           .select('*')
@@ -934,38 +1014,61 @@ export class ConstructeurService {
       ];
 
       // Génération des tags intelligents
-      const baseTags = [`constructeur:${constructeur.bc_constructeur.toLowerCase()}`];
+      const baseTags = [
+        `constructeur:${constructeur.bc_constructeur.toLowerCase()}`,
+      ];
       const keywordTags = constructeur.bc_keywords
-        ? constructeur.bc_keywords.split(', ').map((k: string) => k.trim().toLowerCase())
+        ? constructeur.bc_keywords
+            .split(', ')
+            .map((k: string) => k.trim().toLowerCase())
         : [];
-      
-      const popularityTag = this.getPopularityTag(parseInt(constructeur.bc_visit) || 0);
+
+      const popularityTag = this.getPopularityTag(
+        parseInt(constructeur.bc_visit) || 0,
+      );
       const modelTag = modelsCount > 0 ? `models:${modelsCount}` : 'no-models';
       const letterTag = `letter:${constructeur.bc_constructeur.charAt(0).toLowerCase()}`;
 
-      const allTags = [...baseTags, ...keywordTags, popularityTag, modelTag, letterTag];
+      const allTags = [
+        ...baseTags,
+        ...keywordTags,
+        popularityTag,
+        modelTag,
+        letterTag,
+      ];
 
       // Construction de l'article optimisé avec métadonnées enrichies
       const article: BlogArticle = {
         id: `constructeur_${constructeur.bc_id}`,
         type: 'constructeur',
-        title: BlogCacheService.decodeHtmlEntities(constructeur.bc_constructeur),
-        slug: constructeur.bc_alias || this.generateSlug(constructeur.bc_constructeur),
+        title: BlogCacheService.decodeHtmlEntities(
+          constructeur.bc_constructeur,
+        ),
+        slug:
+          constructeur.bc_alias ||
+          this.generateSlug(constructeur.bc_constructeur),
         excerpt: BlogCacheService.decodeHtmlEntities(
           constructeur.bc_preview || constructeur.bc_descrip || '',
         ),
-        content: BlogCacheService.decodeHtmlEntities(constructeur.bc_content || ''),
-        h1: BlogCacheService.decodeHtmlEntities(constructeur.bc_h1 || constructeur.bc_constructeur),
+        content: BlogCacheService.decodeHtmlEntities(
+          constructeur.bc_content || '',
+        ),
+        h1: BlogCacheService.decodeHtmlEntities(
+          constructeur.bc_h1 || constructeur.bc_constructeur,
+        ),
         h2: BlogCacheService.decodeHtmlEntities(constructeur.bc_h2 || ''),
         keywords: keywordTags,
         tags: allTags,
         publishedAt: constructeur.bc_create || new Date().toISOString(),
-        updatedAt: constructeur.bc_update || constructeur.bc_create || new Date().toISOString(),
+        updatedAt:
+          constructeur.bc_update ||
+          constructeur.bc_create ||
+          new Date().toISOString(),
         viewsCount: parseInt(constructeur.bc_visit) || 0,
         sections,
         legacy_id: parseInt(constructeur.bc_id),
         legacy_table: '__blog_constructeur',
-        
+
         // Métadonnées SEO enrichies
         seo_data: {
           meta_title: BlogCacheService.decodeHtmlEntities(
@@ -1018,7 +1121,10 @@ export class ConstructeurService {
    */
   private countWords(content: string): number {
     if (!content) return 0;
-    return content.trim().split(/\s+/).filter(word => word.length > 0).length;
+    return content
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
   }
 
   /**
@@ -1035,7 +1141,10 @@ export class ConstructeurService {
   /**
    * 📊 Calcul du score de popularité normalisé
    */
-  private calculatePopularityScore(views: number, sectionsCount: number): number {
+  private calculatePopularityScore(
+    views: number,
+    sectionsCount: number,
+  ): number {
     const baseScore = Math.min(100, (views / 100) * 10); // Max 100 pour 1000+ vues
     const contentBonus = Math.min(20, sectionsCount * 2); // Bonus contenu riche
     return Math.round(baseScore + contentBonus);

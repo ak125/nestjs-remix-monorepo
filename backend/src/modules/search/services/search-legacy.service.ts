@@ -55,7 +55,7 @@ export interface SearchResult {
 
 /**
  * 🔍 SearchService Enterprise v3.0 - Service principal unifié optimisé
- * 
+ *
  * ✨ AMÉLIORATIONS v3.0:
  * ✅ Meilisearch ultra-rapide avec IA
  * ✅ Cache intelligent multi-niveaux Redis
@@ -87,10 +87,10 @@ export class SearchService {
    */
   async search(params: SearchParams, userId?: string): Promise<SearchResult> {
     const startTime = Date.now();
-    
+
     // Validation et normalisation des paramètres
     const normalizedParams = this.normalizeParams(params);
-    
+
     if (!normalizedParams.query && normalizedParams.type !== 'instant') {
       return this.emptyResult(normalizedParams);
     }
@@ -98,9 +98,11 @@ export class SearchService {
     // Vérifier le cache intelligent
     const cacheKey = this.cache.generateKey(normalizedParams);
     const cached = await this.cache.get(cacheKey);
-    
+
     if (cached && this.isCacheValid(cached)) {
-      this.logger.debug(`⚡ Cache hit: "${normalizedParams.query}" (${normalizedParams.type})`);
+      this.logger.debug(
+        `⚡ Cache hit: "${normalizedParams.query}" (${normalizedParams.type})`,
+      );
       await this.analytics.recordSearch(normalizedParams, cached, userId, true);
       return { ...cached, fromCache: true };
     }
@@ -110,7 +112,7 @@ export class SearchService {
     try {
       // Router vers la stratégie de recherche optimale
       results = await this.routeSearch(normalizedParams);
-      
+
       // Enrichissement intelligent des résultats
       if (
         normalizedParams.options?.facets ||
@@ -119,10 +121,14 @@ export class SearchService {
       ) {
         results = await this.enrichResults(results, normalizedParams, userId);
       }
-      
+
       // Post-traitement et scoring personnalisé
-      results = await this.postProcessResults(results, normalizedParams, userId);
-      
+      results = await this.postProcessResults(
+        results,
+        normalizedParams,
+        userId,
+      );
+
       // Calcul temps d'exécution
       results.executionTime = Date.now() - startTime;
 
@@ -131,15 +137,23 @@ export class SearchService {
       await this.cache.set(cacheKey, results, cacheTtl);
 
       // Analytics et métriques avancées
-      await this.analytics.recordSearch(normalizedParams, results, userId, false);
-      
+      await this.analytics.recordSearch(
+        normalizedParams,
+        results,
+        userId,
+        false,
+      );
+
       this.logger.log(
         `✅ Recherche "${normalizedParams.query}" (${normalizedParams.type}): ${results.total} résultats en ${results.executionTime}ms`,
       );
-      
+
       return results;
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche "${normalizedParams.query}":`, error);
+      this.logger.error(
+        `❌ Erreur recherche "${normalizedParams.query}":`,
+        error,
+      );
       await this.analytics.recordError(normalizedParams, error, userId);
       return this.errorResult(normalizedParams, error);
     }
@@ -152,20 +166,20 @@ export class SearchService {
     switch (params.type) {
       case 'v7':
         return this.searchV7Enhanced(params);
-      
+
       case 'v8':
         return this.searchV8Enhanced(params);
-      
+
       case 'mine':
       case 'vin':
         return this.searchByVehicleCodeEnhanced(params);
-      
+
       case 'reference':
         return this.searchByReferenceEnhanced(params);
-      
+
       case 'instant':
         return this.instantSearchEnhanced(params.query || '');
-      
+
       case 'text':
       default:
         // V8 par défaut avec Meilisearch + IA
@@ -179,8 +193,7 @@ export class SearchService {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV7(params.filters),
       sort:
         params.sort?.field === 'price'
@@ -221,8 +234,7 @@ export class SearchService {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV8Enhanced(params.filters),
       sort: this.buildSortEnhanced(params.sort),
       facets: [
@@ -286,24 +298,41 @@ export class SearchService {
    * 🚗 Recherche par MINE/VIN (remplace search.mine.php)
    */
   async searchByMine(mine: string, userId?: string): Promise<SearchResult> {
-    return this.search({
-      query: mine,
-      type: 'mine',
-      options: { facets: true },
-    }, userId);
+    return this.search(
+      {
+        query: mine,
+        type: 'mine',
+        options: { facets: true },
+      },
+      userId,
+    );
   }
 
-  private async searchByVehicleCode(params: SearchParams): Promise<SearchResult> {
+  private async searchByVehicleCode(
+    params: SearchParams,
+  ): Promise<SearchResult> {
     // Recherche spécialisée pour codes véhicules
     const searchOptions = {
       limit: 50,
-      filter: params.type === 'mine' ? 
-        [`mine = "${params.query}"`] : 
-        [`vin LIKE "${params.query}%"`],
-      attributesToRetrieve: ['id', 'mine', 'vin', 'brand', 'model', 'year', 'engine'],
+      filter:
+        params.type === 'mine'
+          ? [`mine = "${params.query}"`]
+          : [`vin LIKE "${params.query}%"`],
+      attributesToRetrieve: [
+        'id',
+        'mine',
+        'vin',
+        'brand',
+        'model',
+        'year',
+        'engine',
+      ],
     };
 
-    const vehicleResults = await this.meilisearch.searchVehicles('', searchOptions);
+    const vehicleResults = await this.meilisearch.searchVehicles(
+      '',
+      searchOptions,
+    );
 
     if (!vehicleResults.hits || vehicleResults.hits.length === 0) {
       return {
@@ -345,7 +374,8 @@ export class SearchService {
     const results = await this.meilisearch.searchProducts(params.query, {
       filter: [`reference LIKE "${params.query}%"`],
       limit: params.pagination?.limit || 50,
-      offset: ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
+      offset:
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
       attributesToHighlight: ['reference', 'title', 'description'],
     });
 
@@ -384,9 +414,12 @@ export class SearchService {
       this.meilisearch.searchProducts(query, { limit: 5 }),
     ]);
 
-    const items = quickResults.status === 'fulfilled' ? quickResults.value.hits : [];
-    const suggestionList = suggestions.status === 'fulfilled' ? 
-      suggestions.value.hits.map(hit => `${hit.brand} ${hit.model}`) : [];
+    const items =
+      quickResults.status === 'fulfilled' ? quickResults.value.hits : [];
+    const suggestionList =
+      suggestions.status === 'fulfilled'
+        ? suggestions.value.hits.map((hit) => `${hit.brand} ${hit.model}`)
+        : [];
 
     return {
       items,
@@ -401,17 +434,24 @@ export class SearchService {
    * 🔧 Méthodes utilitaires privées
    */
 
-  private async enrichResults(results: SearchResult, params: SearchParams): Promise<SearchResult> {
+  private async enrichResults(
+    results: SearchResult,
+    params: SearchParams,
+  ): Promise<SearchResult> {
     // Ajouter les facettes si demandées
     if (params.options?.facets && results.items.length > 0) {
       results.facets = await this.extractFacetsFromResults(results.items);
     }
 
     // Ajouter les suggestions si demandées et peu de résultats
-    if (params.options?.suggestions && results.total < 5 && params.query.length > 2) {
+    if (
+      params.options?.suggestions &&
+      results.total < 5 &&
+      params.query.length > 2
+    ) {
       const suggestions = await this.meilisearch.getSuggestions(params.query);
       results.suggestions = suggestions.hits
-        .map(hit => `${hit.brand} ${hit.model}`)
+        .map((hit) => `${hit.brand} ${hit.model}`)
         .filter((item, index, arr) => arr.indexOf(item) === index)
         .slice(0, 5);
     }
@@ -419,17 +459,22 @@ export class SearchService {
     return results;
   }
 
-  private async extractFacetsFromResults(items: any[]): Promise<Record<string, any>> {
+  private async extractFacetsFromResults(
+    items: any[],
+  ): Promise<Record<string, any>> {
     const facets: Record<string, any> = {};
 
     if (items.length === 0) return facets;
 
     // Facettes par source
-    const sources = items.reduce((acc, item) => {
-      const source = item.source || 'unknown';
-      acc[source] = (acc[source] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const sources = items.reduce(
+      (acc, item) => {
+        const source = item.source || 'unknown';
+        acc[source] = (acc[source] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     facets.sources = Object.entries(sources)
       .map(([source, count]) => ({ source, count }))
@@ -437,11 +482,14 @@ export class SearchService {
 
     // Facettes par marque
     const brands = items
-      .filter(item => item.brand)
-      .reduce((acc, item) => {
-        acc[item.brand] = (acc[item.brand] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      .filter((item) => item.brand)
+      .reduce(
+        (acc, item) => {
+          acc[item.brand] = (acc[item.brand] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
     facets.brands = Object.entries(brands)
       .map(([brand, count]) => ({ brand, count }))
@@ -494,7 +542,9 @@ export class SearchService {
     }
 
     if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
-      filterQueries.push(`price >= ${filters.priceMin} AND price <= ${filters.priceMax}`);
+      filterQueries.push(
+        `price >= ${filters.priceMin} AND price <= ${filters.priceMax}`,
+      );
     } else {
       if (filters.priceMin !== undefined) {
         filterQueries.push(`price >= ${filters.priceMin}`);
@@ -536,7 +586,10 @@ export class SearchService {
     return [`${field}:${sort.order}`];
   }
 
-  private calculateCacheTtl(params: SearchParams, results: SearchResult): number {
+  private calculateCacheTtl(
+    params: SearchParams,
+    results: SearchResult,
+  ): number {
     // TTL adaptatif selon la complexité et le nombre de résultats
     if (params.type === 'instant') return 300; // 5 minutes pour instant search
     if (results.total === 0) return 600; // 10 minutes pour résultats vides
@@ -570,16 +623,20 @@ export class SearchService {
    */
   async getSearchStats(): Promise<any> {
     try {
-      const [vehicleStats, productStats, cacheStats] = await Promise.allSettled([
-        this.meilisearch.getIndexStats('vehicles'),
-        this.meilisearch.getIndexStats('products'),
-        this.cache.getStats(),
-      ]);
+      const [vehicleStats, productStats, cacheStats] = await Promise.allSettled(
+        [
+          this.meilisearch.getIndexStats('vehicles'),
+          this.meilisearch.getIndexStats('products'),
+          this.cache.getStats(),
+        ],
+      );
 
       return {
         indices: {
-          vehicles: vehicleStats.status === 'fulfilled' ? vehicleStats.value : null,
-          products: productStats.status === 'fulfilled' ? productStats.value : null,
+          vehicles:
+            vehicleStats.status === 'fulfilled' ? vehicleStats.value : null,
+          products:
+            productStats.status === 'fulfilled' ? productStats.value : null,
         },
         cache: cacheStats.status === 'fulfilled' ? cacheStats.value : null,
         totalIndexedItems: await this.getTotalIndexedItems(),
@@ -601,7 +658,10 @@ export class SearchService {
         this.meilisearch.getIndexStats('products'),
       ]);
 
-      return (vehicleStats.numberOfDocuments || 0) + (productStats.numberOfDocuments || 0);
+      return (
+        (vehicleStats.numberOfDocuments || 0) +
+        (productStats.numberOfDocuments || 0)
+      );
     } catch (error) {
       this.logger.error('Erreur comptage items indexés:', error);
       return 0;
@@ -611,7 +671,7 @@ export class SearchService {
   /**
    * 🔄 Méthodes de compatibilité avec les anciennes API
    */
-  
+
   // Compatibilité avec l'ancienne interface SearchQuery
   async searchLegacy(query: {
     query: string;

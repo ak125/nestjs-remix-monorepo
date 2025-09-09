@@ -235,7 +235,7 @@ export class CyberplusService {
         'order_id',
         'signature',
       ];
-      
+
       for (const field of requiredFields) {
         if (!callbackData[field]) {
           this.logger.warn(`Missing required field: ${field}`);
@@ -248,7 +248,7 @@ export class CyberplusService {
       const expectedSignature = this.generateSignature(dataWithoutSignature);
 
       const isValid = expectedSignature === signature;
-      
+
       if (!isValid) {
         this.logger.warn('Invalid signature in callback');
       }

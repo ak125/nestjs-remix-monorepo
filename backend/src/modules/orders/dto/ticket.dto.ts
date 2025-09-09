@@ -3,7 +3,7 @@ import { z } from 'zod';
 // Énumération des types de tickets
 export const TicketTypeEnum = z.enum([
   'VOUCHER',
-  'GIFT_CARD', 
+  'GIFT_CARD',
   'CREDIT_NOTE',
   'LOYALTY_POINTS',
   'REFUND',
@@ -43,7 +43,9 @@ export const ApplyTicketToOrderSchema = z.object({
 
 // Schema Zod pour créer un ticket de remboursement
 export const CreateRefundTicketSchema = z.object({
-  refundAmount: z.number().min(0, 'Le montant de remboursement doit être positif'),
+  refundAmount: z
+    .number()
+    .min(0, 'Le montant de remboursement doit être positif'),
   reason: z.string().min(1, 'La raison est requise'),
 });
 
@@ -55,7 +57,9 @@ export const UpdateTicketSchema = z.object({
 });
 
 // Types TypeScript pour l'utilisation
-export type CreateTicketEquivalentDto = z.infer<typeof CreateTicketEquivalentSchema>;
+export type CreateTicketEquivalentDto = z.infer<
+  typeof CreateTicketEquivalentSchema
+>;
 export type CreateTicketDto = z.infer<typeof CreateTicketSchema>;
 export type UseTicketDto = z.infer<typeof UseTicketSchema>;
 export type ApplyTicketToOrderDto = z.infer<typeof ApplyTicketToOrderSchema>;

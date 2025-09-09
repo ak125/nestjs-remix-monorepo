@@ -33,7 +33,7 @@ import { DatabaseModule } from '../../database/database.module';
 
 /**
  * 🔍 SearchModule - Moteur de recherche Enterprise v3.0
- * 
+ *
  * Architecture complète et optimisée pour FAFA AUTO :
  * ✅ 714K+ pages indexées avec Meilisearch
  * ✅ Recherche véhicules avancée multi-critères
@@ -49,8 +49,8 @@ import { DatabaseModule } from '../../database/database.module';
 @Module({
   imports: [ConfigModule, CacheModule, DatabaseModule],
   controllers: [
-    SearchController, 
-    IndexationController, 
+    SearchController,
+    IndexationController,
     PiecesController,
     SearchEnhancedController, // 🏭 Contrôleur de recherche enrichie
   ], // Contrôleurs de recherche et d'indexation

@@ -44,7 +44,13 @@ export const LinkSupplierBrandSchema = z.object({
 // Schema Zod pour créer un ticket
 export const CreateTicketSchema = z.object({
   orderLineId: z.number().min(1, 'ID ligne de commande requis'),
-  ticketType: z.enum(['VOUCHER', 'GIFT_CARD', 'CREDIT_NOTE', 'LOYALTY_POINTS', 'REFUND']),
+  ticketType: z.enum([
+    'VOUCHER',
+    'GIFT_CARD',
+    'CREDIT_NOTE',
+    'LOYALTY_POINTS',
+    'REFUND',
+  ]),
   ticketReference: z.string().min(1, 'Référence ticket requise'),
   ticketValue: z.number().min(0, 'La valeur doit être positive'),
   expiryDate: z.string().datetime().optional(),

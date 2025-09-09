@@ -4,7 +4,11 @@
  */
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MessageDataService, ModernMessage, MessageFilters } from './repositories/message-data.service';
+import {
+  MessageDataService,
+  ModernMessage,
+  MessageFilters,
+} from './repositories/message-data.service';
 
 @Injectable()
 export class MessagesService {
@@ -14,7 +18,9 @@ export class MessagesService {
     private readonly messageDataService: MessageDataService,
     private readonly eventEmitter: EventEmitter2,
   ) {
-    this.logger.log('MessagesService initialized - Modern architecture with legacy table support');
+    this.logger.log(
+      'MessagesService initialized - Modern architecture with legacy table support',
+    );
   }
 
   /**
@@ -26,7 +32,9 @@ export class MessagesService {
     page: number;
     limit: number;
   }> {
-    this.logger.log(`Fetching messages with filters: ${JSON.stringify(filters)}`);
+    this.logger.log(
+      `Fetching messages with filters: ${JSON.stringify(filters)}`,
+    );
     return this.messageDataService.getMessages(filters);
   }
 
@@ -35,13 +43,13 @@ export class MessagesService {
    */
   async getMessageById(messageId: string): Promise<ModernMessage> {
     this.logger.log(`Fetching message by ID: ${messageId}`);
-    
+
     const message = await this.messageDataService.findMessageById(messageId);
-    
+
     if (!message) {
       throw new NotFoundException(`Message with ID ${messageId} not found`);
     }
-    
+
     return message;
   }
 
@@ -57,16 +65,16 @@ export class MessagesService {
     priority?: 'low' | 'normal' | 'high';
   }): Promise<ModernMessage> {
     this.logger.log(`Creating message for customer: ${messageData.customerId}`);
-    
+
     const message = await this.messageDataService.createMessage(messageData);
-    
+
     // Émettre un événement pour WebSocket
     this.eventEmitter.emit('message.created', {
       message,
       recipientId: messageData.customerId,
       senderId: messageData.staffId,
     });
-    
+
     return message;
   }
 
@@ -75,33 +83,42 @@ export class MessagesService {
    */
   async closeMessage(messageId: string): Promise<ModernMessage> {
     this.logger.log(`Closing message: ${messageId}`);
-    
-    const message = await this.messageDataService.updateMessageStatus(messageId, {
-      closed: true,
-    });
-    
+
+    const message = await this.messageDataService.updateMessageStatus(
+      messageId,
+      {
+        closed: true,
+      },
+    );
+
     this.eventEmitter.emit('message.closed', { messageId, message });
-    
+
     return message;
   }
 
   /**
    * Marquer un message comme lu
    */
-  async markAsRead(messageId: string, readerId: string): Promise<ModernMessage> {
+  async markAsRead(
+    messageId: string,
+    readerId: string,
+  ): Promise<ModernMessage> {
     this.logger.log(`Marking message as read: ${messageId} by ${readerId}`);
-    
-    const message = await this.messageDataService.updateMessageStatus(messageId, {
-      read: true,
-    });
-    
-    this.eventEmitter.emit('message.read', { 
-      messageId, 
+
+    const message = await this.messageDataService.updateMessageStatus(
+      messageId,
+      {
+        read: true,
+      },
+    );
+
+    this.eventEmitter.emit('message.read', {
+      messageId,
       message,
       readerId,
       senderId: message.customerId.toString(), // ou staffId selon le contexte
     });
-    
+
     return message;
   }
 
@@ -121,11 +138,13 @@ export class MessagesService {
   /**
    * Obtenir les clients récents
    */
-  async getCustomers(limit: number = 100): Promise<Array<{
-    cst_id: string;
-    cst_fname: string;
-    cst_mail: string;
-  }>> {
+  async getCustomers(limit: number = 100): Promise<
+    Array<{
+      cst_id: string;
+      cst_fname: string;
+      cst_mail: string;
+    }>
+  > {
     this.logger.log(`Fetching customers with limit: ${limit}`);
     return this.messageDataService.getCustomers(limit);
   }

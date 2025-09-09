@@ -210,7 +210,7 @@ export class LayoutService {
   async getAdvancedLayoutData(config: LayoutConfig): Promise<LayoutData> {
     const cacheKey = `layout:${config.type}:${config.version}:${config.page}`;
     const cached = await this.cacheService.get<LayoutData>(cacheKey);
-    
+
     if (cached && !config.user) {
       return cached;
     }

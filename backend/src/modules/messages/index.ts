@@ -17,4 +17,7 @@ export { MessagesController } from './messages.controller';
 export { MessagingGateway } from './messaging.gateway';
 
 // Types et interfaces
-export type { ModernMessage, MessageFilters } from './repositories/message-data.service';
+export type {
+  ModernMessage,
+  MessageFilters,
+} from './repositories/message-data.service';

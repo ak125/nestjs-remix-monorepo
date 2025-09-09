@@ -28,7 +28,7 @@ export class BlogAdvancedCacheService {
     hits: 0,
     misses: 0,
     totalRequests: 0,
-    lastInvalidation: new Date()
+    lastInvalidation: new Date(),
   };
 
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
@@ -43,35 +43,37 @@ export class BlogAdvancedCacheService {
       'blog:dashboard': {
         ttl: 300, // 5 minutes
         tags: ['dashboard', 'stats'],
-        priority: 'high'
+        priority: 'high',
       },
       'blog:article': {
         ttl: 3600, // 1 heure
         tags: ['article'],
-        priority: 'medium'
+        priority: 'medium',
       },
       'blog:list': {
         ttl: 1800, // 30 minutes
         tags: ['list', 'pagination'],
-        priority: 'medium'
+        priority: 'medium',
       },
       'blog:popular': {
         ttl: 1800, // 30 minutes
         tags: ['popular', 'stats'],
-        priority: 'high'
+        priority: 'high',
       },
       'blog:seo': {
         ttl: 7200, // 2 heures
         tags: ['seo', 'meta'],
-        priority: 'low'
-      }
+        priority: 'low',
+      },
     };
 
-    return configs[type] || {
-      ttl: 600,
-      tags: ['default'],
-      priority: 'medium'
-    };
+    return (
+      configs[type] || {
+        ttl: 600,
+        tags: ['default'],
+        priority: 'medium',
+      }
+    );
   }
 
   /**
@@ -80,19 +82,18 @@ export class BlogAdvancedCacheService {
   async get<T>(key: string): Promise<T | null> {
     try {
       this.stats.totalRequests++;
-      
+
       const cached = await this.redis.get(key);
-      
+
       if (cached) {
         this.stats.hits++;
         this.logger.debug(`Cache HIT pour: ${key}`);
         return JSON.parse(cached);
       }
-      
+
       this.stats.misses++;
       this.logger.debug(`Cache MISS pour: ${key}`);
       return null;
-      
     } catch (error) {
       this.logger.error(`Erreur cache GET ${key}:`, error);
       return null;
@@ -105,13 +106,9 @@ export class BlogAdvancedCacheService {
   async set<T>(key: string, value: T, type?: string): Promise<boolean> {
     try {
       const config = this.getCacheConfig(type || 'default');
-      
+
       // Stocker la valeur avec TTL
-      await this.redis.setex(
-        key,
-        config.ttl,
-        JSON.stringify(value)
-      );
+      await this.redis.setex(key, config.ttl, JSON.stringify(value));
 
       // Ajouter les tags pour l'invalidation
       for (const tag of config.tags) {
@@ -121,7 +118,6 @@ export class BlogAdvancedCacheService {
 
       this.logger.debug(`Cache SET pour: ${key} (TTL: ${config.ttl}s)`);
       return true;
-      
     } catch (error) {
       this.logger.error(`Erreur cache SET ${key}:`, error);
       return false;
@@ -134,14 +130,14 @@ export class BlogAdvancedCacheService {
   async invalidateByTag(tag: string): Promise<number> {
     try {
       const keys = await this.redis.smembers(`tag:${tag}`);
-      
+
       if (keys.length === 0) {
         return 0;
       }
 
       // Supprimer toutes les clés associées au tag
       const pipeline = this.redis.pipeline();
-      keys.forEach(key => pipeline.del(key));
+      keys.forEach((key) => pipeline.del(key));
       await pipeline.exec();
 
       // Nettoyer le tag
@@ -149,9 +145,8 @@ export class BlogAdvancedCacheService {
 
       this.stats.lastInvalidation = new Date();
       this.logger.log(`Cache invalidé pour tag "${tag}": ${keys.length} clés`);
-      
+
       return keys.length;
-      
     } catch (error) {
       this.logger.error(`Erreur invalidation tag ${tag}:`, error);
       return 0;
@@ -167,10 +162,9 @@ export class BlogAdvancedCacheService {
 
       const result = await this.redis.del(...keys);
       this.stats.lastInvalidation = new Date();
-      
+
       this.logger.log(`Cache invalidé: ${result} clés supprimées`);
       return result;
-      
     } catch (error) {
       this.logger.error(`Erreur invalidation multiple:`, error);
       return 0;
@@ -183,7 +177,7 @@ export class BlogAdvancedCacheService {
   async getOrSet<T>(
     key: string,
     factory: () => Promise<T>,
-    type?: string
+    type?: string,
   ): Promise<T> {
     // Essayer de récupérer depuis le cache
     const cached = await this.get<T>(key);
@@ -193,10 +187,10 @@ export class BlogAdvancedCacheService {
 
     // Générer la valeur
     const value = await factory();
-    
+
     // Stocker dans le cache
     await this.set(key, value, type);
-    
+
     return value;
   }
 
@@ -205,16 +199,17 @@ export class BlogAdvancedCacheService {
    */
   async getStats(): Promise<BlogCacheStats> {
     const cacheSize = await this.getCacheSize();
-    const hitRate = this.stats.totalRequests > 0 
-      ? (this.stats.hits / this.stats.totalRequests) * 100 
-      : 0;
-    
+    const hitRate =
+      this.stats.totalRequests > 0
+        ? (this.stats.hits / this.stats.totalRequests) * 100
+        : 0;
+
     return {
       hitRate: Math.round(hitRate * 100) / 100,
       missRate: Math.round((100 - hitRate) * 100) / 100,
       totalRequests: this.stats.totalRequests,
       cacheSize,
-      lastInvalidation: this.stats.lastInvalidation
+      lastInvalidation: this.stats.lastInvalidation,
     };
   }
 
@@ -241,12 +236,11 @@ export class BlogAdvancedCacheService {
         hits: 0,
         misses: 0,
         totalRequests: 0,
-        lastInvalidation: new Date()
+        lastInvalidation: new Date(),
       };
-      
+
       this.logger.log('Cache vidé complètement');
       return true;
-      
     } catch (error) {
       this.logger.error('Erreur lors du vidage du cache:', error);
       return false;
@@ -260,18 +254,18 @@ export class BlogAdvancedCacheService {
     try {
       // Nettoyer les tags expirés
       const tagKeys = await this.redis.keys('tag:*');
-      
+
       for (const tagKey of tagKeys) {
         const members = await this.redis.smembers(tagKey);
         const validMembers = [];
-        
+
         for (const member of members) {
           const exists = await this.redis.exists(member);
           if (exists) {
             validMembers.push(member);
           }
         }
-        
+
         if (validMembers.length === 0) {
           await this.redis.del(tagKey);
         } else if (validMembers.length !== members.length) {
@@ -281,9 +275,8 @@ export class BlogAdvancedCacheService {
           }
         }
       }
-      
+
       this.logger.debug('Nettoyage du cache terminé');
-      
     } catch (error) {
       this.logger.error('Erreur lors du nettoyage:', error);
     }

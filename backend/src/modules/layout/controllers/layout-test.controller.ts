@@ -69,7 +69,7 @@ export class LayoutTestController {
   @Get('responsive-comparison')
   async getResponsiveComparison() {
     const configs = await this.responsiveService.getAllResponsiveConfigs();
-    
+
     return {
       configs,
       summary: {
@@ -124,27 +124,30 @@ export class LayoutTestController {
     };
   }
 
-    /**
+  /**
    * Test des performances du cache
    * GET /api/layout-test/cache-performance
    */
   @Get('cache-performance')
   async testCachePerformance() {
     const start = Date.now();
-    
+
     // Premier appel (sans cache)
     const firstStart = Date.now();
     await this.headerService.getHeader('admin');
     const firstDuration = Date.now() - firstStart;
-    
+
     // Deuxième appel (avec cache)
     const secondStart = Date.now();
     await this.headerService.getHeader('admin');
     const secondDuration = Date.now() - secondStart;
-    
+
     const totalDuration = Date.now() - start;
-    const improvement = firstDuration > 0 ? ((firstDuration - secondDuration) / firstDuration * 100) : 0;
-    
+    const improvement =
+      firstDuration > 0
+        ? ((firstDuration - secondDuration) / firstDuration) * 100
+        : 0;
+
     return {
       cacheTest: {
         firstCall: `${firstDuration}ms (no cache)`,
@@ -164,7 +167,8 @@ export class LayoutTestController {
   async compareSocialShare(
     @Query('url') url: string = 'https://pieces-auto.com/product/123',
     @Query('title') title: string = 'Plaquettes de frein avant',
-    @Query('description') description: string = 'Plaquettes de frein haute qualité pour voiture',
+    @Query('description')
+    description: string = 'Plaquettes de frein haute qualité pour voiture',
   ) {
     const shareOptions = {
       url,

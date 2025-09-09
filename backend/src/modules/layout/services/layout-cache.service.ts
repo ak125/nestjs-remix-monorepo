@@ -39,16 +39,16 @@ export class LayoutCacheService {
     try {
       const prefixedKey = this.getPrefixedKey(key);
       const finalTtl = this.calculateTtl(ttl, options?.priority);
-      
+
       let processedValue = value;
-      
+
       // Compression pour gros objets
       if (options?.compress && this.shouldCompress(value)) {
         processedValue = await this.compressValue(value);
       }
 
       await this.cacheService.set(prefixedKey, processedValue, finalTtl);
-      
+
       // Gérer les tags pour invalidation groupée
       if (options?.tags) {
         await this.addToTags(prefixedKey, options.tags);
@@ -57,7 +57,9 @@ export class LayoutCacheService {
       this.stats.totalKeys++;
       this.logger.debug(`Cached ${prefixedKey} with TTL ${finalTtl}s`);
     } catch (error) {
-      this.logger.error(`Error caching ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error caching ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -68,7 +70,7 @@ export class LayoutCacheService {
     try {
       const prefixedKey = this.getPrefixedKey(key);
       const value = await this.cacheService.get<T>(prefixedKey);
-      
+
       if (value === null) {
         this.stats.misses++;
         this.logger.debug(`Cache miss for ${prefixedKey}`);
@@ -77,7 +79,7 @@ export class LayoutCacheService {
 
       this.stats.hits++;
       this.logger.debug(`Cache hit for ${prefixedKey}`);
-      
+
       // Décompression si nécessaire
       if (this.isCompressed(value)) {
         return this.decompressValue(value);
@@ -85,7 +87,9 @@ export class LayoutCacheService {
 
       return value;
     } catch (error) {
-      this.logger.error(`Error getting cache ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error getting cache ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       this.stats.misses++;
       return null;
     }
@@ -105,14 +109,14 @@ export class LayoutCacheService {
     },
   ): Promise<T> {
     const cached = await this.get<T>(key);
-    
+
     if (cached !== null) {
       return cached;
     }
 
     const value = await generator();
     await this.set(key, value, ttl, options);
-    
+
     return value;
   }
 
@@ -126,26 +130,36 @@ export class LayoutCacheService {
         await this.invalidateKeys(keys);
         await this.removeTag(tag);
       }
-      
+
       this.logger.debug(`Invalidated cache by tags: ${tags.join(', ')}`);
     } catch (error) {
-      this.logger.error(`Error invalidating by tags: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error invalidating by tags: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Warming du cache avec des données préchargées
    */
-  async warmup(warmupData: Array<{ key: string; generator: () => Promise<any>; ttl?: number }>): Promise<void> {
+  async warmup(
+    warmupData: Array<{
+      key: string;
+      generator: () => Promise<any>;
+      ttl?: number;
+    }>,
+  ): Promise<void> {
     this.logger.log('Starting cache warmup...');
-    
+
     const promises = warmupData.map(async ({ key, generator, ttl }) => {
       try {
         const value = await generator();
         await this.set(key, value, ttl, { priority: 'high', tags: ['warmup'] });
         this.logger.debug(`Warmed up cache for ${key}`);
       } catch (error) {
-        this.logger.error(`Error warming up ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        this.logger.error(
+          `Error warming up ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
       }
     });
 
@@ -174,10 +188,12 @@ export class LayoutCacheService {
       // Supprime les clés expirées et les données de faible priorité
       await this.removeExpiredKeys();
       await this.removeByTags(['temporary', 'low-priority']);
-      
+
       this.logger.log('Cache cleanup completed');
     } catch (error) {
-      this.logger.error(`Error during cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      this.logger.error(
+        `Error during cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -191,9 +207,12 @@ export class LayoutCacheService {
   /**
    * Calcule le TTL optimal
    */
-  private calculateTtl(ttl?: number, priority?: 'low' | 'normal' | 'high'): number {
+  private calculateTtl(
+    ttl?: number,
+    priority?: 'low' | 'normal' | 'high',
+  ): number {
     if (ttl) return ttl;
-    
+
     const baseTtl = {
       low: 300, // 5 minutes
       normal: 900, // 15 minutes
@@ -243,7 +262,8 @@ export class LayoutCacheService {
   private async addToTags(key: string, tags: string[]): Promise<void> {
     for (const tag of tags) {
       const tagKey = `tag:${tag}`;
-      const existingKeys = await this.cacheService.get<string[]>(tagKey) || [];
+      const existingKeys =
+        (await this.cacheService.get<string[]>(tagKey)) || [];
       if (!existingKeys.includes(key)) {
         existingKeys.push(key);
         await this.cacheService.set(tagKey, existingKeys, 7200); // 2 heures
@@ -256,14 +276,14 @@ export class LayoutCacheService {
    */
   private async getKeysByTag(tag: string): Promise<string[]> {
     const tagKey = `tag:${tag}`;
-    return await this.cacheService.get<string[]>(tagKey) || [];
+    return (await this.cacheService.get<string[]>(tagKey)) || [];
   }
 
   /**
    * Invalide plusieurs clés
    */
   private async invalidateKeys(keys: string[]): Promise<void> {
-    const promises = keys.map(key => this.cacheService.delete(key));
+    const promises = keys.map((key) => this.cacheService.delete(key));
     await Promise.all(promises);
   }
 

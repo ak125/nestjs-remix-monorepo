@@ -67,7 +67,7 @@ export class HeaderService {
     try {
       const cacheKey = `header_${type}`;
       const cached = await this.cacheService.get<HeaderData>(cacheKey);
-      
+
       if (cached) {
         this.logger.debug(`Header cache hit for ${type}`);
         return cached;
@@ -91,7 +91,7 @@ export class HeaderService {
     try {
       const cacheKey = `header_${context}`;
       const cached = await this.cacheService.get<HeaderData>(cacheKey);
-      
+
       if (cached) {
         this.logger.debug(`Header cache hit for context: ${context}`);
         return cached;

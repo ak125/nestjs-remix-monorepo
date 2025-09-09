@@ -1,6 +1,6 @@
 /**
  * 🏭 MANUFACTURERS SERVICE - Version Optimisée
- * 
+ *
  * Combine le meilleur des deux approches :
  * - Utilise les vraies tables auto_* (existantes)
  * - Architecture moderne avec filtres et recherche
@@ -37,7 +37,8 @@ export interface Manufacturer {
 export class ManufacturersService extends SupabaseBaseService {
   protected readonly logger = new Logger(ManufacturersService.name);
   private readonly CACHE_TTL = 300; // 5 minutes
-  private readonly LOGO_BASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos';
+  private readonly LOGO_BASE_URL =
+    'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos';
 
   constructor(
     configService: ConfigService,
@@ -65,7 +66,7 @@ export class ManufacturersService extends SupabaseBaseService {
    */
   async findAll(filter: ManufacturerFilter = {}) {
     const cacheKey = `manufacturers:all:${JSON.stringify(filter)}`;
-    
+
     try {
       // Vérifier le cache
       const cached = await this.cacheManager.get(cacheKey);
@@ -112,7 +113,7 @@ export class ManufacturersService extends SupabaseBaseService {
         total: count || 0,
         page: Math.floor(offset / limit),
         pageSize: limit,
-        hasNext: (offset + limit) < (count || 0),
+        hasNext: offset + limit < (count || 0),
       };
 
       // Cache le résultat
@@ -141,7 +142,7 @@ export class ManufacturersService extends SupabaseBaseService {
       }
 
       const isNumeric = !isNaN(Number(idOrSlug));
-      
+
       const { data: manufacturer, error } = await this.supabase
         .from('auto_marque')
         .select('*')
@@ -158,9 +159,12 @@ export class ManufacturersService extends SupabaseBaseService {
 
       // Inclure les modèles si demandé
       if (includeModels) {
-        const modelsResult = await this.getModelsByManufacturer(manufacturer.marque_id, {
-          limit: 50,
-        });
+        const modelsResult = await this.getModelsByManufacturer(
+          manufacturer.marque_id,
+          {
+            limit: 50,
+          },
+        );
         result = {
           ...result,
           models: modelsResult.success ? modelsResult.data : [],
@@ -204,7 +208,7 @@ export class ManufacturersService extends SupabaseBaseService {
       }
 
       const manufacturers = data?.map(this.formatManufacturer.bind(this)) || [];
-      
+
       await this.cacheManager.set(cacheKey, manufacturers, this.CACHE_TTL * 2);
       return manufacturers;
     } catch (error) {
@@ -222,7 +226,7 @@ export class ManufacturersService extends SupabaseBaseService {
     }
 
     const cacheKey = `manufacturers:search:${query}:${limit}`;
-    
+
     try {
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
@@ -232,10 +236,12 @@ export class ManufacturersService extends SupabaseBaseService {
       const { data, error } = await this.supabase
         .from('auto_marque')
         .select('*')
-        .or(`
+        .or(
+          `
           marque_name.ilike.%${query}%,
           marque_display_name.ilike.%${query}%
-        `)
+        `,
+        )
         .gte('marque_display', 1)
         .order('marque_name')
         .limit(limit);
@@ -246,7 +252,7 @@ export class ManufacturersService extends SupabaseBaseService {
       }
 
       const results = data?.map(this.formatManufacturer.bind(this)) || [];
-      
+
       await this.cacheManager.set(cacheKey, results, this.CACHE_TTL);
       return results;
     } catch (error) {
@@ -294,31 +300,40 @@ export class ManufacturersService extends SupabaseBaseService {
   /**
    * 🚗 Obtenir les modèles d'une marque (méthode existante préservée)
    */
-  async getModelsByManufacturer(manufacturerId: number, options: { limit?: number; offset?: number } = {}) {
+  async getModelsByManufacturer(
+    manufacturerId: number,
+    options: { limit?: number; offset?: number } = {},
+  ) {
     try {
       const { data, error } = await this.supabase
         .from('auto_modele')
-        .select(`
+        .select(
+          `
           modele_id,
           modele_name,
           modele_date_debut,
           modele_date_fin
-        `)
+        `,
+        )
         .eq('modele_marque_id', manufacturerId)
         .order('modele_name')
-        .range(options.offset || 0, (options.offset || 0) + (options.limit || 50) - 1);
+        .range(
+          options.offset || 0,
+          (options.offset || 0) + (options.limit || 50) - 1,
+        );
 
       if (error) {
         return { success: false, data: [], error: error.message };
       }
 
-      const models = data?.map(model => ({
-        id: model.modele_id,
-        name: model.modele_name,
-        start_year: model.modele_date_debut,
-        end_year: model.modele_date_fin,
-        slug: this.generateSlug(model.modele_name),
-      })) || [];
+      const models =
+        data?.map((model) => ({
+          id: model.modele_id,
+          name: model.modele_name,
+          start_year: model.modele_date_debut,
+          end_year: model.modele_date_fin,
+          slug: this.generateSlug(model.modele_name),
+        })) || [];
 
       return { success: true, data: models };
     } catch (error) {
@@ -349,7 +364,7 @@ export class ManufacturersService extends SupabaseBaseService {
       id: raw.marque_id,
       name: raw.marque_name,
       display_name: raw.marque_display_name || raw.marque_name,
-      logo_url: raw.marque_logo 
+      logo_url: raw.marque_logo
         ? `${this.LOGO_BASE_URL}/${raw.marque_logo}`
         : null,
       slug: this.generateSlug(raw.marque_name),

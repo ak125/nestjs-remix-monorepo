@@ -13,7 +13,8 @@ export class ShippingController {
   @Get('tracking/all')
   async getAllShipmentsTracking() {
     try {
-      const trackingData = await this.shippingService.getAllShipmentsWithTracking();
+      const trackingData =
+        await this.shippingService.getAllShipmentsWithTracking();
       return {
         success: true,
         data: trackingData,
@@ -96,7 +97,8 @@ export class ShippingController {
     },
   ) {
     try {
-      const estimate = await this.shippingService.calculateShippingEstimate(data);
+      const estimate =
+        await this.shippingService.calculateShippingEstimate(data);
       return {
         success: true,
         data: estimate,
@@ -118,7 +120,8 @@ export class ShippingController {
   @Get('methods/:zipCode')
   async getShippingMethods(@Param('zipCode') zipCode: string) {
     try {
-      const methods = await this.shippingService.getAvailableShippingMethods(zipCode);
+      const methods =
+        await this.shippingService.getAvailableShippingMethods(zipCode);
       return {
         success: true,
         data: {

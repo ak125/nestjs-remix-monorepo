@@ -37,9 +37,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
         throw new Error(`Supabase upload error: ${error.message}`);
       }
 
-      const { data: { publicUrl } } = this.supabase.storage
-        .from(this.bucketName)
-        .getPublicUrl(filePath);
+      const {
+        data: { publicUrl },
+      } = this.supabase.storage.from(this.bucketName).getPublicUrl(filePath);
 
       return {
         fileName,
@@ -74,7 +74,10 @@ export class SupabaseStorageService extends SupabaseBaseService {
     }
   }
 
-  async getSignedUrl(filePath: string, expiresIn: number = 3600): Promise<string> {
+  async getSignedUrl(
+    filePath: string,
+    expiresIn: number = 3600,
+  ): Promise<string> {
     try {
       const { data, error } = await this.supabase.storage
         .from(this.bucketName)
@@ -95,7 +98,10 @@ export class SupabaseStorageService extends SupabaseBaseService {
     try {
       const { data, error } = await this.supabase.storage
         .from(this.bucketName)
-        .list(folder, { limit, sortBy: { column: 'created_at', order: 'desc' } });
+        .list(folder, {
+          limit,
+          sortBy: { column: 'created_at', order: 'desc' },
+        });
 
       if (error) {
         throw new Error(`List files error: ${error.message}`);
@@ -110,8 +116,10 @@ export class SupabaseStorageService extends SupabaseBaseService {
 
   async getBucketInfo(): Promise<any> {
     try {
-      const { data, error } = await this.supabase.storage.getBucket(this.bucketName);
-      
+      const { data, error } = await this.supabase.storage.getBucket(
+        this.bucketName,
+      );
+
       if (error) {
         throw new Error(`Bucket info error: ${error.message}`);
       }

@@ -8,7 +8,10 @@ export const ApplyPromoSchema = z.object({
     })
     .min(1, 'Le code promo ne peut pas être vide')
     .max(20, 'Le code promo ne peut pas dépasser 20 caractères')
-    .regex(/^[A-Z0-9_-]+$/i, 'Le code promo ne peut contenir que des lettres, chiffres, tirets et underscores'),
+    .regex(
+      /^[A-Z0-9_-]+$/i,
+      'Le code promo ne peut contenir que des lettres, chiffres, tirets et underscores',
+    ),
 });
 
 // Type TypeScript inféré du schéma Zod

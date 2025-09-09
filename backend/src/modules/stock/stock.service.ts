@@ -21,9 +21,14 @@ export class StockService extends SupabaseBaseService {
 
       // Récupérer les articles avec stock bas depuis la table pieces
       // On simule un stock minimum de 5 et on cherche les articles avec peu de stock
-      const { data: stockData, error: stockError, count } = await this.supabase
+      const {
+        data: stockData,
+        error: stockError,
+        count,
+      } = await this.supabase
         .from('pieces')
-        .select(`
+        .select(
+          `
           pie_id,
           pie_nom,
           pie_ref,
@@ -31,9 +36,11 @@ export class StockService extends SupabaseBaseService {
           pieces_marque!inner(
             pmq_nom
           )
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' },
+        )
         .lt('pie_stock', 10) // Stock inférieur à 10
-        .gt('pie_stock', 0)  // Stock supérieur à 0
+        .gt('pie_stock', 0) // Stock supérieur à 0
         .order('pie_stock', { ascending: true })
         .limit(limit);
 
@@ -48,20 +55,22 @@ export class StockService extends SupabaseBaseService {
         reference: item.pie_ref || 'REF-UNKNOWN',
         currentStock: parseInt(item.pie_stock || '0', 10),
         minStock: 5, // Seuil minimum simulé
-        supplier: item.pieces_marque?.pmq_nom || 'Marque inconnue'
+        supplier: item.pieces_marque?.pmq_nom || 'Marque inconnue',
       }));
 
-      this.logger.log(`Found ${items.length} low stock items out of ${count} total`);
+      this.logger.log(
+        `Found ${items.length} low stock items out of ${count} total`,
+      );
 
       return {
         items,
-        totalCount: count || 0
+        totalCount: count || 0,
       };
     } catch (error) {
       this.logger.error('Error in getLowStockItems:', error);
       return {
         items: [],
-        totalCount: 0
+        totalCount: 0,
       };
     }
   }
@@ -76,25 +85,27 @@ export class StockService extends SupabaseBaseService {
       this.logger.log('Calculating stock statistics');
 
       // Statistiques globales du stock
-      const [totalResult, lowStockResult, outOfStockResult] = await Promise.all([
-        // Total d'articles
-        this.supabase
-          .from('pieces')
-          .select('pie_id', { count: 'exact', head: true }),
-        
-        // Articles avec stock bas (< 10)
-        this.supabase
-          .from('pieces')
-          .select('pie_id', { count: 'exact', head: true })
-          .lt('pie_stock', 10)
-          .gt('pie_stock', 0),
-        
-        // Articles en rupture (stock = 0)
-        this.supabase
-          .from('pieces')
-          .select('pie_id', { count: 'exact', head: true })
-          .eq('pie_stock', 0)
-      ]);
+      const [totalResult, lowStockResult, outOfStockResult] = await Promise.all(
+        [
+          // Total d'articles
+          this.supabase
+            .from('pieces')
+            .select('pie_id', { count: 'exact', head: true }),
+
+          // Articles avec stock bas (< 10)
+          this.supabase
+            .from('pieces')
+            .select('pie_id', { count: 'exact', head: true })
+            .lt('pie_stock', 10)
+            .gt('pie_stock', 0),
+
+          // Articles en rupture (stock = 0)
+          this.supabase
+            .from('pieces')
+            .select('pie_id', { count: 'exact', head: true })
+            .eq('pie_stock', 0),
+        ],
+      );
 
       // Calcul de la moyenne de stock (échantillon)
       const { data: sampleData } = await this.supabase
@@ -102,15 +113,18 @@ export class StockService extends SupabaseBaseService {
         .select('pie_stock')
         .limit(1000);
 
-      const avgStock = sampleData?.length 
-        ? sampleData.reduce((sum, item) => sum + parseInt(item.pie_stock || '0', 10), 0) / sampleData.length
+      const avgStock = sampleData?.length
+        ? sampleData.reduce(
+            (sum, item) => sum + parseInt(item.pie_stock || '0', 10),
+            0,
+          ) / sampleData.length
         : 0;
 
       const stats = {
         totalItems: totalResult.count || 0,
         lowStockCount: lowStockResult.count || 0,
         outOfStockCount: outOfStockResult.count || 0,
-        avgStockLevel: Math.round(avgStock * 100) / 100
+        avgStockLevel: Math.round(avgStock * 100) / 100,
       };
 
       this.logger.log('Stock statistics:', stats);
@@ -121,7 +135,7 @@ export class StockService extends SupabaseBaseService {
         totalItems: 0,
         lowStockCount: 0,
         outOfStockCount: 0,
-        avgStockLevel: 0
+        avgStockLevel: 0,
       };
     }
   }

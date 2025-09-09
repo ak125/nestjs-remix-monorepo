@@ -1,4 +1,11 @@
-import { Controller, Get, Logger, Query, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Query,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PiecesAnalysisService } from '../services/pieces-analysis.service';
 import { SupabaseIndexationService } from '../services/supabase-indexation.service';
 import { MeilisearchService } from '../services/meilisearch.service';
@@ -22,10 +29,10 @@ export class PiecesController {
   @Get('analyze')
   async analyzePieces() {
     this.logger.log('🔍 Analyse de la table pieces...');
-    
+
     try {
       const result = await this.piecesAnalysisService.analyzePiecesTable();
-      
+
       return {
         success: result.success,
         data: result.data,
@@ -46,7 +53,10 @@ export class PiecesController {
    * 🔍 Rechercher des pièces par nom
    */
   @Get('search')
-  async searchPieces(@Query('q') query: string, @Query('limit') limit?: string) {
+  async searchPieces(
+    @Query('q') query: string,
+    @Query('limit') limit?: string,
+  ) {
     if (!query) {
       return {
         success: false,
@@ -56,13 +66,13 @@ export class PiecesController {
     }
 
     this.logger.log(`🔍 Recherche pieces: "${query}"`);
-    
+
     try {
       const result = await this.piecesAnalysisService.searchPiecesByName(
-        query, 
-        limit ? parseInt(limit, 10) : 20
+        query,
+        limit ? parseInt(limit, 10) : 20,
       );
-      
+
       return {
         success: result.success,
         data: result,
@@ -81,7 +91,7 @@ export class PiecesController {
   /**
    * 🔍 Découvrir la structure complète de la table pieces
    */
-    @Get('structure')
+  @Get('structure')
   async getPiecesStructure() {
     try {
       const structure = await this.piecesAnalysisService.getPiecesStructure();
@@ -119,8 +129,9 @@ export class PiecesController {
   async testBrands() {
     try {
       // Récupérer quelques filtres avec les infos de marques
-      const result = await this.supabaseIndexationService.getAllProductsFromSupabase(10);
-      
+      const result =
+        await this.supabaseIndexationService.getAllProductsFromSupabase(10);
+
       return {
         success: true,
         data: {
@@ -143,20 +154,24 @@ export class PiecesController {
   async testBoschFilters() {
     try {
       // Récupérer spécifiquement les filtres à air BOSCH
-      const result = await this.supabaseIndexationService.getAllProductsFromSupabase(50);
-      
+      const result =
+        await this.supabaseIndexationService.getAllProductsFromSupabase(50);
+
       // Filtrer les produits BOSCH
-      const boschFilters = result.data?.filter((p: any) => 
-        p.brand === 'BOSCH' && p.isFilter
-      ) || [];
-      
+      const boschFilters =
+        result.data?.filter((p: any) => p.brand === 'BOSCH' && p.isFilter) ||
+        [];
+
       return {
         success: true,
         data: {
           boschFilters: boschFilters.slice(0, 5),
           totalBoschFilters: boschFilters.length,
-          brandDetection: boschFilters.length > 0 ? 'SUCCESS' : 'NO_BOSCH_FOUND',
-          sampleBrands: [...new Set(result.data?.map((p: any) => p.brand) || [])].slice(0, 10),
+          brandDetection:
+            boschFilters.length > 0 ? 'SUCCESS' : 'NO_BOSCH_FOUND',
+          sampleBrands: [
+            ...new Set(result.data?.map((p: any) => p.brand) || []),
+          ].slice(0, 10),
         },
         timestamp: new Date().toISOString(),
       };
@@ -173,18 +188,18 @@ export class PiecesController {
   async testBoschDirect() {
     try {
       // Test direct avec une référence BOSCH connue
-      const testRef = "0 986 B02 502";
-      
+      const testRef = '0 986 B02 502';
+
       // Utiliser la méthode d'extraction directement (nous devons l'exposer)
       const extractedBrand = this.extractBrandFromRef(testRef);
-      
+
       return {
         success: true,
         data: {
           testReference: testRef,
           extractedBrand,
-          expected: "BOSCH",
-          isCorrect: extractedBrand === "BOSCH",
+          expected: 'BOSCH',
+          isCorrect: extractedBrand === 'BOSCH',
         },
         timestamp: new Date().toISOString(),
       };
@@ -201,20 +216,22 @@ export class PiecesController {
   async testAirFiltersWithBrands() {
     try {
       // Récupérer spécifiquement les filtres à air et calculer leurs marques
-      const result = await this.piecesAnalysisService.searchCompleteAirFilters(20);
-      
+      const result =
+        await this.piecesAnalysisService.searchCompleteAirFilters(20);
+
       // Transformer avec extraction de marques
-      const filtersWithBrands = result.filtres?.map((filter: any) => {
-        const brand = this.extractBrandFromRef(filter.piece_ref || '');
-        return {
-          ...filter,
-          extractedBrand: brand,
-          isBosch: brand === 'BOSCH',
-        };
-      }) || [];
-      
-      const boschCount = filtersWithBrands.filter(f => f.isBosch).length;
-      
+      const filtersWithBrands =
+        result.filtres?.map((filter: any) => {
+          const brand = this.extractBrandFromRef(filter.piece_ref || '');
+          return {
+            ...filter,
+            extractedBrand: brand,
+            isBosch: brand === 'BOSCH',
+          };
+        }) || [];
+
+      const boschCount = filtersWithBrands.filter((f) => f.isBosch).length;
+
       return {
         success: true,
         data: {
@@ -224,7 +241,9 @@ export class PiecesController {
             bosch: boschCount,
             others: filtersWithBrands.length - boschCount,
           },
-          uniqueBrands: [...new Set(filtersWithBrands.map(f => f.extractedBrand))],
+          uniqueBrands: [
+            ...new Set(filtersWithBrands.map((f) => f.extractedBrand)),
+          ],
         },
         timestamp: new Date().toISOString(),
       };
@@ -244,8 +263,9 @@ export class PiecesController {
   async searchFiltreAir(@Query('limit') limit: string = '50') {
     try {
       const limitNum = parseInt(limit) || 50;
-      
-      const result = await this.piecesAnalysisService.searchCompleteAirFilters(limitNum);
+
+      const result =
+        await this.piecesAnalysisService.searchCompleteAirFilters(limitNum);
 
       return {
         success: true,
@@ -266,13 +286,17 @@ export class PiecesController {
   async testProducts(@Query('limit') limit?: string) {
     const testLimit = limit ? parseInt(limit, 10) : 50;
     this.logger.log(`🧪 Test récupération ${testLimit} produits...`);
-    
+
     try {
-      const result = await this.supabaseIndexationService.getAllProductsFromSupabase(testLimit);
-      
-      const filterItems = result.data?.filter((p: any) => 
-        p.name?.toLowerCase().includes('filtre')
-      ) || [];
+      const result =
+        await this.supabaseIndexationService.getAllProductsFromSupabase(
+          testLimit,
+        );
+
+      const filterItems =
+        result.data?.filter((p: any) =>
+          p.name?.toLowerCase().includes('filtre'),
+        ) || [];
 
       return {
         success: result.success,
@@ -297,11 +321,14 @@ export class PiecesController {
   async indexPieces(@Query('limit') limit?: string) {
     const indexLimit = limit ? parseInt(limit, 10) : 500;
     this.logger.log(`🔧 Indexation de ${indexLimit} pièces...`);
-    
+
     try {
       // Récupérer les pièces depuis Supabase (avec filtres)
-      const result = await this.supabaseIndexationService.getAllProductsFromSupabase(indexLimit);
-      
+      const result =
+        await this.supabaseIndexationService.getAllProductsFromSupabase(
+          indexLimit,
+        );
+
       if (!result.success || !result.data) {
         return {
           success: false,
@@ -320,8 +347,12 @@ export class PiecesController {
         message: `${result.data.length} pièces indexées (avec filtres)`,
         data: {
           count: result.data.length,
-          hasFilters: result.data.some((p: any) => p.name?.toLowerCase().includes('filtre')),
-          filterCount: result.data.filter((p: any) => p.name?.toLowerCase().includes('filtre')).length,
+          hasFilters: result.data.some((p: any) =>
+            p.name?.toLowerCase().includes('filtre'),
+          ),
+          filterCount: result.data.filter((p: any) =>
+            p.name?.toLowerCase().includes('filtre'),
+          ).length,
         },
         timestamp: new Date().toISOString(),
       };
@@ -338,9 +369,10 @@ export class PiecesController {
   @Get('index-bosch-filters')
   async indexBoschFilters() {
     try {
-      // Récupérer spécifiquement les filtres à air BOSCH 
-      const boschFilters = await this.piecesAnalysisService.searchCompleteAirFilters(50);
-      
+      // Récupérer spécifiquement les filtres à air BOSCH
+      const boschFilters =
+        await this.piecesAnalysisService.searchCompleteAirFilters(50);
+
       if (!boschFilters.filtres || boschFilters.filtres.length === 0) {
         return {
           success: false,
@@ -352,7 +384,7 @@ export class PiecesController {
       // Transformer les filtres BOSCH pour Meilisearch avec les marques
       const transformedFilters = boschFilters.filtres.map((filter: any) => {
         const brand = this.extractBrandFromRef(filter.piece_ref || '');
-        
+
         return {
           id: `product_${filter.piece_id}`,
           type: 'product',
@@ -360,7 +392,7 @@ export class PiecesController {
           name: filter.piece_name,
           reference: filter.piece_ref,
           description: filter.piece_des,
-          
+
           // 🏭 Informations équipementier
           brand: brand,
           brandId: filter.piece_pm_id || null,
@@ -378,29 +410,30 @@ export class PiecesController {
           // Données d'indexation
           isActive: filter.piece_display === true,
           isFilter: true, // Force true pour les filtres
-          
+
           // Métadonnées supplémentaires
           year: filter.piece_year || null,
           weight: filter.piece_weight_kgm || 0,
           hasImage: filter.piece_has_img || false,
           hasOEM: filter.piece_has_oem || false,
           quantity: filter.piece_qty_sale || 1,
-          
+
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
       });
 
       // TODO: Indexer dans Meilisearch (nécessite l'accès au MeilisearchService)
-      
+
       return {
         success: true,
         message: `${transformedFilters.length} filtres BOSCH préparés pour indexation`,
         data: {
           count: transformedFilters.length,
-          boschCount: transformedFilters.filter(f => f.brand === 'BOSCH').length,
+          boschCount: transformedFilters.filter((f) => f.brand === 'BOSCH')
+            .length,
           sample: transformedFilters.slice(0, 3),
-          brands: [...new Set(transformedFilters.map(f => f.brand))],
+          brands: [...new Set(transformedFilters.map((f) => f.brand))],
         },
         timestamp: new Date().toISOString(),
       };

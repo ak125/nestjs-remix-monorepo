@@ -204,7 +204,9 @@ export class UploadOptimizationService {
       case 'png':
         pipeline = pipeline.png({
           progressive: options.progressive || false,
-          compressionLevel: Math.floor(((100 - (options.quality || 80)) / 100) * 9),
+          compressionLevel: Math.floor(
+            ((100 - (options.quality || 80)) / 100) * 9,
+          ),
         });
         break;
 
@@ -232,7 +234,8 @@ export class UploadOptimizationService {
     }
 
     const optimizedSize = optimizedBuffer.length;
-    const compressionRatio = ((originalSize - optimizedSize) / originalSize) * 100;
+    const compressionRatio =
+      ((originalSize - optimizedSize) / originalSize) * 100;
 
     return {
       originalSize,
@@ -267,21 +270,22 @@ export class UploadOptimizationService {
     sizes: number[],
     format: string,
     quality: number,
-  ): Promise<Array<{
-    size: number;
-    buffer: Buffer;
-    width: number;
-    height: number;
-  }>> {
+  ): Promise<
+    Array<{
+      size: number;
+      buffer: Buffer;
+      width: number;
+      height: number;
+    }>
+  > {
     const thumbnails = [];
 
     for (const size of sizes) {
       try {
-        let pipeline = sharp(originalBuffer)
-          .resize(size, size, {
-            fit: 'cover',
-            position: 'centre',
-          });
+        let pipeline = sharp(originalBuffer).resize(size, size, {
+          fit: 'cover',
+          position: 'centre',
+        });
 
         // Application du format
         switch (format) {
@@ -325,10 +329,12 @@ export class UploadOptimizationService {
       uploadType: UploadType;
       options?: OptimizationOptions;
     }>,
-  ): Promise<Array<{
-    originalFile: Express.Multer.File;
-    result: OptimizationResult | null;
-  }>> {
+  ): Promise<
+    Array<{
+      originalFile: Express.Multer.File;
+      result: OptimizationResult | null;
+    }>
+  > {
     this.logger.log(`⚡ Optimizing batch of ${files.length} files`);
 
     const results = await Promise.allSettled(
@@ -354,9 +360,7 @@ export class UploadOptimizationService {
   /**
    * Analyse un fichier pour recommander des optimisations
    */
-  async analyzeFile(
-    file: Express.Multer.File,
-  ): Promise<{
+  async analyzeFile(file: Express.Multer.File): Promise<{
     isOptimizable: boolean;
     currentFormat: string;
     recommendedFormat: string;
@@ -369,7 +373,7 @@ export class UploadOptimizationService {
         currentFormat: file.mimetype,
         recommendedFormat: file.mimetype,
         estimatedSavings: 0,
-        recommendations: ['Fichier non-image, pas d\'optimisation possible'],
+        recommendations: ["Fichier non-image, pas d'optimisation possible"],
       };
     }
 
@@ -387,7 +391,9 @@ export class UploadOptimizationService {
       // Analyse du format
       const recommendedFormat = this.getBestFormat(file.mimetype);
       if (recommendedFormat !== this.getFormatFromMime(file.mimetype)) {
-        recommendations.push(`Convertir en ${recommendedFormat} pour une meilleure compression`);
+        recommendations.push(
+          `Convertir en ${recommendedFormat} pour une meilleure compression`,
+        );
         estimatedSavings += 25;
       }
 
@@ -422,7 +428,7 @@ export class UploadOptimizationService {
         currentFormat: file.mimetype,
         recommendedFormat: file.mimetype,
         estimatedSavings: 0,
-        recommendations: ['Erreur lors de l\'analyse'],
+        recommendations: ["Erreur lors de l'analyse"],
       };
     }
   }

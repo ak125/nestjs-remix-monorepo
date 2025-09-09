@@ -1,9 +1,9 @@
 /**
  * 🎨 LAYOUT SERVICE UNIFIÉ AMÉLIORÉ
- * 
+ *
  * Service principal pour orchestrer tout le système de layout
  * ✅ Support Core/Massdoc layouts dédiés
- * ✅ Sections modulaires et réutilisables  
+ * ✅ Sections modulaires et réutilisables
  * ✅ Configuration centralisée Supabase
  * ✅ Cache intelligent pour performances
  * ✅ Headers et footers dynamiques
@@ -16,8 +16,14 @@ import { FooterService } from './footer.service';
 import { SocialShareService } from './social-share.service';
 import { QuickSearchService } from './quick-search.service';
 import { MetaTagsService } from './meta-tags.service';
-import { LayoutConfigurationService, LayoutConfigData } from './layout-config.service';
-import { ModularSectionsService, ModularSection } from './modular-sections.service';
+import {
+  LayoutConfigurationService,
+  LayoutConfigData,
+} from './layout-config.service';
+import {
+  ModularSectionsService,
+  ModularSection,
+} from './modular-sections.service';
 
 export interface LayoutConfig {
   type: 'core' | 'massdoc' | 'admin' | 'commercial' | 'public';
@@ -68,7 +74,7 @@ export class LayoutServiceUnified {
    */
   async getLayoutData(config: LayoutConfig): Promise<LayoutData> {
     const cacheKey = this.generateCacheKey(config);
-    
+
     try {
       // Vérifier le cache d'abord
       const cached = await this.cacheService.get<LayoutData>(cacheKey);
@@ -77,25 +83,41 @@ export class LayoutServiceUnified {
         return cached;
       }
 
-      this.logger.log(`Génération layout ${config.type} pour ${config.page || 'default'}`);
-
-      // Récupérer la configuration layout
-      const layoutConfig = await this.layoutConfigService.getLayoutConfiguration(
-        config.type,
-        config.version,
+      this.logger.log(
+        `Génération layout ${config.type} pour ${config.page || 'default'}`,
       );
 
+      // Récupérer la configuration layout
+      const layoutConfig =
+        await this.layoutConfigService.getLayoutConfiguration(
+          config.type,
+          config.version,
+        );
+
       // Construire les données layout en parallèle
-      const [header, footer, sections, navigation, quickSearch, socialShare, metaTags] = 
-        await Promise.all([
-          config.showHeader !== false ? this.headerService.getHeader(config) : null,
-          config.showFooter !== false ? this.footerService.getFooter(config) : null,
-          this.sectionsService.getSectionsForContext(config.type, config.page),
-          this.getInternalNavigation(config),
-          config.showQuickSearch !== false ? this.quickSearchService.getQuickSearchConfig(config) : null,
-          this.socialShareService.getSocialShareConfig(config),
-          this.metaTagsService.generateMetaTags(config),
-        ]);
+      const [
+        header,
+        footer,
+        sections,
+        navigation,
+        quickSearch,
+        socialShare,
+        metaTags,
+      ] = await Promise.all([
+        config.showHeader !== false
+          ? this.headerService.getHeader(config)
+          : null,
+        config.showFooter !== false
+          ? this.footerService.getFooter(config)
+          : null,
+        this.sectionsService.getSectionsForContext(config.type, config.page),
+        this.getInternalNavigation(config),
+        config.showQuickSearch !== false
+          ? this.quickSearchService.getQuickSearchConfig(config)
+          : null,
+        this.socialShareService.getSocialShareConfig(config),
+        this.metaTagsService.generateMetaTags(config),
+      ]);
 
       const layoutData: LayoutData = {
         header,
@@ -116,9 +138,8 @@ export class LayoutServiceUnified {
 
       // Mettre en cache pour 1 heure
       await this.cacheService.set(cacheKey, layoutData, 3600);
-      
-      return layoutData;
 
+      return layoutData;
     } catch (error) {
       this.logger.error(`Erreur getLayoutData pour ${config.type}:`, error);
       return await this.getFallbackLayout(config);
@@ -130,11 +151,13 @@ export class LayoutServiceUnified {
    */
   async getAdvancedLayoutData(config: LayoutConfig): Promise<LayoutData> {
     const layoutData = await this.getLayoutData(config);
-    
+
     // Ajouter des métadonnées avancées pour l'admin
     layoutData.performance = {
       ...layoutData.performance,
-      cacheHit: Boolean(await this.cacheService.get(this.generateCacheKey(config))),
+      cacheHit: Boolean(
+        await this.cacheService.get(this.generateCacheKey(config)),
+      ),
       lastUpdated: new Date().toISOString(),
     };
 
@@ -155,7 +178,9 @@ export class LayoutServiceUnified {
   /**
    * 💾 Sauvegarde une configuration layout
    */
-  async saveLayoutConfiguration(config: Partial<LayoutConfigData>): Promise<boolean> {
+  async saveLayoutConfiguration(
+    config: Partial<LayoutConfigData>,
+  ): Promise<boolean> {
     try {
       const saved = await this.layoutConfigService.saveConfiguration(config);
       if (saved) {
@@ -183,7 +208,7 @@ export class LayoutServiceUnified {
         // Invalider tout le cache layout
         await this.cacheService.del('layout:*');
       }
-      
+
       this.logger.log(`Cache layout invalidé${type ? ` pour ${type}` : ''}`);
     } catch (error) {
       this.logger.error('Erreur invalidateCache:', error);

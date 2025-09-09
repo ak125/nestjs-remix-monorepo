@@ -26,7 +26,14 @@ export class AdminProductFiltersDto {
 
   @ApiPropertyOptional({
     description: 'Champ de tri',
-    enum: ['name', 'sku', 'price', 'stock_quantity', 'created_at', 'updated_at'],
+    enum: [
+      'name',
+      'sku',
+      'price',
+      'stock_quantity',
+      'created_at',
+      'updated_at',
+    ],
     default: 'name',
   })
   sortBy?: string;

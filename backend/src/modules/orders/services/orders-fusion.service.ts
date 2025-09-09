@@ -40,7 +40,7 @@ export interface OrderFilters {
  * ✅ Compatible avec DatabaseService existant
  * ✅ Transactions simulées pour l'intégrité
  * ✅ Validation métier appropriée
- * 
+ *
  * 🔄 MIGRÉ : DatabaseService → SupabaseBaseService (direct queries)
  */
 @Injectable()
@@ -121,14 +121,16 @@ export class OrdersService extends SupabaseBaseService {
     }
   }
 
-  async getOrders(filters: {
-    customerId?: number;
-    status?: number;
-    startDate?: Date;
-    endDate?: Date;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<any> {
+  async getOrders(
+    filters: {
+      customerId?: number;
+      status?: number;
+      startDate?: Date;
+      endDate?: Date;
+      page?: number;
+      limit?: number;
+    } = {},
+  ): Promise<any> {
     try {
       this.logger.log('Listing orders with filters:', filters);
 
@@ -137,9 +139,7 @@ export class OrdersService extends SupabaseBaseService {
       const offset = (page - 1) * limit;
 
       // Construction de la requête avec Supabase (sans JOIN pour éviter l'erreur de relation)
-      let query = this.supabase
-        .from('___xtr_order')
-        .select('*');
+      let query = this.supabase.from('___xtr_order').select('*');
 
       // Appliquer les filtres
       if (filters.customerId) {
@@ -182,11 +182,17 @@ export class OrdersService extends SupabaseBaseService {
       }
 
       if (filters.startDate) {
-        countQuery = countQuery.gte('created_at', filters.startDate.toISOString());
+        countQuery = countQuery.gte(
+          'created_at',
+          filters.startDate.toISOString(),
+        );
       }
 
       if (filters.endDate) {
-        countQuery = countQuery.lte('created_at', filters.endDate.toISOString());
+        countQuery = countQuery.lte(
+          'created_at',
+          filters.endDate.toISOString(),
+        );
       }
 
       const { count, error: countError } = await countQuery;
@@ -362,19 +368,17 @@ export class OrdersService extends SupabaseBaseService {
       lineData.unitPrice *
       (1 - (lineData.discount || 0) / 100);
 
-    const { error } = await this.supabase
-      .from('___xtr_order_line')
-      .insert({
-        order_id: orderId,
-        product_id: lineData.productId,
-        product_name: lineData.productName,
-        product_reference: lineData.productReference,
-        quantity: lineData.quantity,
-        unit_price: lineData.unitPrice,
-        vat_rate: lineData.vatRate || 20,
-        discount: lineData.discount || 0,
-        total_line: totalLine,
-      });
+    const { error } = await this.supabase.from('___xtr_order_line').insert({
+      order_id: orderId,
+      product_id: lineData.productId,
+      product_name: lineData.productName,
+      product_reference: lineData.productReference,
+      quantity: lineData.quantity,
+      unit_price: lineData.unitPrice,
+      vat_rate: lineData.vatRate || 20,
+      discount: lineData.discount || 0,
+      total_line: totalLine,
+    });
 
     if (error) {
       this.logger.error('Erreur création ligne commande:', error);
@@ -388,15 +392,13 @@ export class OrdersService extends SupabaseBaseService {
     comment?: string,
     userId?: number,
   ): Promise<void> {
-    const { error } = await this.supabase
-      .from('___xtr_order_status')
-      .insert({
-        order_id: orderId,
-        status: status,
-        comment: comment || '',
-        user_id: userId || null,
-        created_at: new Date().toISOString(),
-      });
+    const { error } = await this.supabase.from('___xtr_order_status').insert({
+      order_id: orderId,
+      status: status,
+      comment: comment || '',
+      user_id: userId || null,
+      created_at: new Date().toISOString(),
+    });
 
     if (error) {
       this.logger.error('Erreur création historique statut:', error);

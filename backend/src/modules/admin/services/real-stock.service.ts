@@ -41,12 +41,14 @@ export class RealStockService extends SupabaseBaseService {
     },
   ): Promise<StockDashboard> {
     try {
-      this.logger.debug('Getting real stock dashboard', { page, limit, filters });
+      this.logger.debug('Getting real stock dashboard', {
+        page,
+        limit,
+        filters,
+      });
 
       // Requête avec JOIN entre pieces et pieces_price
-      let query = this.client
-        .from('pieces')
-        .select(`
+      let query = this.client.from('pieces').select(`
           piece_id,
           piece_ref,
           piece_name,
@@ -68,7 +70,10 @@ export class RealStockService extends SupabaseBaseService {
       }
 
       if (filters?.available !== undefined) {
-        query = query.eq('pieces_price.pri_dispo', filters.available ? '1' : '0');
+        query = query.eq(
+          'pieces_price.pri_dispo',
+          filters.available ? '1' : '0',
+        );
       }
 
       // Pagination
@@ -88,7 +93,7 @@ export class RealStockService extends SupabaseBaseService {
         totalItems: data?.length || 0,
         availableItems: stats.availableItems,
         unavailableItems: stats.unavailableItems,
-        items: data as RealStockItem[] || [],
+        items: (data as RealStockItem[]) || [],
       };
     } catch (error) {
       this.logger.error('Erreur dashboard stock réel', error);
@@ -129,11 +134,15 @@ export class RealStockService extends SupabaseBaseService {
   /**
    * Rechercher des pièces
    */
-  async searchPieces(query: string, limit: number = 50): Promise<RealStockItem[]> {
+  async searchPieces(
+    query: string,
+    limit: number = 50,
+  ): Promise<RealStockItem[]> {
     try {
       const { data, error } = await this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_ref,
           piece_name,
@@ -145,7 +154,8 @@ export class RealStockService extends SupabaseBaseService {
             pri_vente_ht,
             pri_marge
           )
-        `)
+        `,
+        )
         .or(`piece_ref.ilike.%${query}%,piece_name.ilike.%${query}%`)
         .limit(limit);
 
@@ -163,7 +173,10 @@ export class RealStockService extends SupabaseBaseService {
   /**
    * Mettre à jour la disponibilité d'une pièce
    */
-  async updateAvailability(pieceId: number, available: boolean): Promise<boolean> {
+  async updateAvailability(
+    pieceId: number,
+    available: boolean,
+  ): Promise<boolean> {
     try {
       const { error } = await this.client
         .from('pieces_price')
@@ -174,7 +187,9 @@ export class RealStockService extends SupabaseBaseService {
         throw new Error(`Erreur mise à jour: ${error.message}`);
       }
 
-      this.logger.log(`Disponibilité mise à jour: pièce ${pieceId} -> ${available}`);
+      this.logger.log(
+        `Disponibilité mise à jour: pièce ${pieceId} -> ${available}`,
+      );
       return true;
     } catch (error) {
       this.logger.error('Erreur update disponibilité', error);

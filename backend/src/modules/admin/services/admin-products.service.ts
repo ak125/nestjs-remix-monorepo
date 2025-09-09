@@ -154,7 +154,10 @@ export class AdminProductsService {
 
       return null;
     } catch (error) {
-      this.logger.error(`Erreur récupération détails admin produit ${id}:`, error);
+      this.logger.error(
+        `Erreur récupération détails admin produit ${id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -275,7 +278,9 @@ export class AdminProductsService {
 
   async performBulkOperation(bulkDto: AdminBulkOperationsDto) {
     try {
-      this.logger.log(`Opération en lot: ${bulkDto.operation} sur ${bulkDto.productIds.length} produits`);
+      this.logger.log(
+        `Opération en lot: ${bulkDto.operation} sur ${bulkDto.productIds.length} produits`,
+      );
 
       let successCount = 0;
       let errorCount = 0;
@@ -363,11 +368,16 @@ export class AdminProductsService {
       const result = await this.update(id, updateData);
 
       // TODO: Enregistrer dans l'historique des stocks
-      this.logger.log(`Stock mis à jour pour ${id}: ${currentProduct.stock_quantity} -> ${quantity}`);
+      this.logger.log(
+        `Stock mis à jour pour ${id}: ${currentProduct.stock_quantity} -> ${quantity}`,
+      );
 
       return result;
     } catch (error) {
-      this.logger.error(`Erreur mise à jour stock avec historique ${id}:`, error);
+      this.logger.error(
+        `Erreur mise à jour stock avec historique ${id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -418,17 +428,11 @@ export class AdminProductsService {
           missingDescriptions: 23,
           missingPrices: 5,
           missingReferences: 2,
-          duplicateSkus: [
-            { sku: 'FILTER001', productIds: ['1', '2'] },
-          ],
+          duplicateSkus: [{ sku: 'FILTER001', productIds: ['1', '2'] }],
         },
         performance: {
-          bestSellers: [
-            { productId: '1', name: 'Filtre à huile', sales: 150 },
-          ],
-          worstSellers: [
-            { productId: '99', name: 'Pièce rare', sales: 1 },
-          ],
+          bestSellers: [{ productId: '1', name: 'Filtre à huile', sales: 150 }],
+          worstSellers: [{ productId: '99', name: 'Pièce rare', sales: 1 }],
         },
         stock: {
           totalValue: 450000,

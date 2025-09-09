@@ -245,11 +245,11 @@ export class LayoutController {
       'public',
     ];
     const defaults: Record<string, any> = {};
-    
+
     for (const context of contexts) {
       defaults[context] = await this.layoutService.getLayoutData(context);
     }
-    
+
     return defaults;
   }
 }

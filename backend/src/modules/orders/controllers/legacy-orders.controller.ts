@@ -32,7 +32,7 @@ export class LegacyOrdersController {
       // Test des fonctions existantes
       const totalOrders = await this.legacyOrderService.getTotalOrdersCount();
       const stats = await this.legacyOrderService.getOrdersStats();
-      
+
       // Test de pagination
       const recentOrders = await this.legacyOrderService.getAllOrders({
         limit: 5,
@@ -49,20 +49,20 @@ export class LegacyOrdersController {
           features: {
             existing: [
               'getAllOrders',
-              'getOrderById', 
+              'getOrderById',
               'getUserOrders',
               'getOrdersStats',
               'getOrderWithCustomer',
-              'getTotalOrdersCount'
+              'getTotalOrdersCount',
             ],
             new: [
               'createLegacyOrder',
               'getOrderLines',
               'updateOrderStatus',
               'getOrderStatusHistory',
-              'getOrderWithDetails'
-            ]
-          }
+              'getOrderWithDetails',
+            ],
+          },
         },
       };
     } catch (error: any) {
@@ -129,10 +129,7 @@ export class LegacyOrdersController {
       };
     } catch (error) {
       this.logger.error(`Failed to get order ${id}:`, error);
-      throw new HttpException(
-        'Order not found',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -143,17 +140,15 @@ export class LegacyOrdersController {
   @ApiOperation({ summary: 'Récupérer une commande avec tous ses détails' })
   async getOrderWithDetails(@Param('id') id: string): Promise<any> {
     try {
-      const orderDetails = await this.legacyOrderService.getOrderWithDetails(id);
+      const orderDetails =
+        await this.legacyOrderService.getOrderWithDetails(id);
       return {
         success: true,
         data: orderDetails,
       };
     } catch (error) {
       this.logger.error(`Failed to get order details for ${id}:`, error);
-      throw new HttpException(
-        'Order not found',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -161,7 +156,7 @@ export class LegacyOrdersController {
    * Récupère les lignes d'une commande
    */
   @Get(':id/lines')
-  @ApiOperation({ summary: 'Récupérer les lignes d\'une commande' })
+  @ApiOperation({ summary: "Récupérer les lignes d'une commande" })
   async getOrderLines(@Param('id') id: string): Promise<any> {
     try {
       const lines = await this.legacyOrderService.getOrderLines(id);
@@ -182,7 +177,9 @@ export class LegacyOrdersController {
    * Récupère l'historique des statuts d'une commande
    */
   @Get(':id/status-history')
-  @ApiOperation({ summary: 'Récupérer l\'historique des statuts d\'une commande' })
+  @ApiOperation({
+    summary: "Récupérer l'historique des statuts d'une commande",
+  })
   async getOrderStatusHistory(@Param('id') id: string): Promise<any> {
     try {
       const history = await this.legacyOrderService.getOrderStatusHistory(id);
@@ -208,9 +205,10 @@ export class LegacyOrdersController {
   async createOrder(@Body() orderData: any): Promise<any> {
     try {
       this.logger.log(`Creating order for customer ${orderData.customerId}`);
-      
-      const newOrder = await this.legacyOrderService.createLegacyOrder(orderData);
-      
+
+      const newOrder =
+        await this.legacyOrderService.createLegacyOrder(orderData);
+
       return {
         success: true,
         message: 'Order created successfully',
@@ -229,7 +227,7 @@ export class LegacyOrdersController {
    * Met à jour le statut d'une commande
    */
   @Patch(':id/status')
-  @ApiOperation({ summary: 'Mettre à jour le statut d\'une commande' })
+  @ApiOperation({ summary: "Mettre à jour le statut d'une commande" })
   async updateOrderStatus(
     @Param('id') id: string,
     @Body() updateData: { status: string; comment?: string },
@@ -284,7 +282,7 @@ export class LegacyOrdersController {
    * Test de création d'une commande simple
    */
   @Post('test/create')
-  @ApiOperation({ summary: 'Test de création d\'une commande simple' })
+  @ApiOperation({ summary: "Test de création d'une commande simple" })
   async testCreateOrder(): Promise<any> {
     try {
       this.logger.log('🧪 Testing order creation...');
@@ -298,7 +296,7 @@ export class LegacyOrdersController {
             productName: 'Produit de test',
             productReference: 'REF-TEST-001',
             quantity: 2,
-            unitPrice: 25.50,
+            unitPrice: 25.5,
             vatRate: 20,
             discount: 0,
           },
@@ -307,7 +305,7 @@ export class LegacyOrdersController {
             productName: 'Autre produit test',
             productReference: 'REF-TEST-002',
             quantity: 1,
-            unitPrice: 15.00,
+            unitPrice: 15.0,
             vatRate: 20,
             discount: 10, // 10% de remise
           },
@@ -316,7 +314,8 @@ export class LegacyOrdersController {
         shippingMethod: 'standard',
       };
 
-      const newOrder = await this.legacyOrderService.createLegacyOrder(testOrderData);
+      const newOrder =
+        await this.legacyOrderService.createLegacyOrder(testOrderData);
 
       return {
         success: true,
@@ -325,8 +324,8 @@ export class LegacyOrdersController {
           order: newOrder,
           testData: testOrderData,
           calculations: {
-            expectedTotalHt: (2 * 25.5) + (1 * 15 * 0.9), // 51 + 13.5 = 64.5
-            expectedTva: (64.5 * 0.2), // 12.9
+            expectedTotalHt: 2 * 25.5 + 1 * 15 * 0.9, // 51 + 13.5 = 64.5
+            expectedTva: 64.5 * 0.2, // 12.9
             expectedShipping: 0, // Gratuit car > 50€
             expectedTotalTtc: 64.5 + 12.9, // 77.4
           },
@@ -334,13 +333,15 @@ export class LegacyOrdersController {
       };
     } catch (error: any) {
       this.logger.error('❌ Test order creation failed:', error);
-      
+
       return {
         success: false,
         error: error.message,
         details: {
-          message: 'Test order creation failed - this is expected if customer ID 1 does not exist',
-          suggestion: 'Try creating a customer first, or check existing customer IDs',
+          message:
+            'Test order creation failed - this is expected if customer ID 1 does not exist',
+          suggestion:
+            'Try creating a customer first, or check existing customer IDs',
         },
       };
     }

@@ -18,7 +18,7 @@ export class SuppliersService extends SupabaseBaseService {
   }
 
   // ===== INTERFACES =====
-  
+
   // Interface principale Supplier
   private readonly supplierSchema = {
     id: 'number',
@@ -45,7 +45,7 @@ export class SuppliersService extends SupabaseBaseService {
     isActive: 'boolean',
     notes: 'string?',
     createdAt: 'Date',
-    updatedAt: 'Date'
+    updatedAt: 'Date',
   };
 
   // ===== MÉTHODES CRUD PRINCIPALES =====
@@ -54,13 +54,17 @@ export class SuppliersService extends SupabaseBaseService {
    * Créer un nouveau fournisseur
    */
   async createSupplier(supplierData: any) {
-    this.logger.log(`Création fournisseur: ${supplierData.code} - ${supplierData.name}`);
-    
+    this.logger.log(
+      `Création fournisseur: ${supplierData.code} - ${supplierData.name}`,
+    );
+
     try {
       // Vérifier l'unicité du code
       const existing = await this.checkSupplierCodeExists(supplierData.code);
       if (existing) {
-        throw new Error(`Le code fournisseur "${supplierData.code}" existe déjà`);
+        throw new Error(
+          `Le code fournisseur "${supplierData.code}" existe déjà`,
+        );
       }
 
       const formattedData = {
@@ -87,7 +91,7 @@ export class SuppliersService extends SupabaseBaseService {
         is_active: supplierData.isActive !== false,
         notes: supplierData.notes,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await this.supabase
@@ -109,15 +113,17 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Récupérer tous les fournisseurs avec filtres et pagination
    */
-  async getSuppliers(options: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    isActive?: boolean;
-    brandId?: number;
-  } = {}) {
+  async getSuppliers(
+    options: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      isActive?: boolean;
+      brandId?: number;
+    } = {},
+  ) {
     const { page = 1, limit = 20, search } = options;
-    
+
     try {
       let query = this.supabase
         .from('___xtr_supplier')
@@ -125,7 +131,9 @@ export class SuppliersService extends SupabaseBaseService {
 
       // Appliquer le filtre de recherche sur les colonnes réelles
       if (search) {
-        query = query.or(`spl_name.ilike.%${search}%,spl_alias.ilike.%${search}%`);
+        query = query.or(
+          `spl_name.ilike.%${search}%,spl_alias.ilike.%${search}%`,
+        );
       }
 
       // Pagination
@@ -137,14 +145,16 @@ export class SuppliersService extends SupabaseBaseService {
 
       if (error) throw error;
 
-      const items = (data || []).map(item => this.transformSupplierData(item));
-      
+      const items = (data || []).map((item) =>
+        this.transformSupplierData(item),
+      );
+
       return {
         items,
         total: count || 0,
         page,
         limit,
-        totalPages: Math.ceil((count || 0) / limit)
+        totalPages: Math.ceil((count || 0) / limit),
       };
     } catch (error) {
       this.logger.error('Erreur récupération fournisseurs:', error);
@@ -185,7 +195,7 @@ export class SuppliersService extends SupabaseBaseService {
       isPreferred?: boolean;
       discountRate?: number;
       deliveryDelay?: number;
-    } = {}
+    } = {},
   ) {
     this.logger.log(`Liaison fournisseur ${supplierId} avec marque ${brandId}`);
 
@@ -211,7 +221,7 @@ export class SuppliersService extends SupabaseBaseService {
         is_preferred: options.isPreferred || false,
         discount_rate: options.discountRate || 0,
         delivery_delay: options.deliveryDelay || 0,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
       const { data, error } = await this.supabase
@@ -242,7 +252,7 @@ export class SuppliersService extends SupabaseBaseService {
       minDiscountRate?: number;
       isPreferred?: boolean;
       region?: string;
-    } = {}
+    } = {},
   ) {
     this.logger.log(`Recherche meilleur fournisseur pour produit ${productId}`);
 
@@ -262,7 +272,11 @@ export class SuppliersService extends SupabaseBaseService {
       const supplierScores = [];
 
       for (const supplier of suppliers) {
-        const score = await this.calculateSupplierScore(supplier, productId, criteria);
+        const score = await this.calculateSupplierScore(
+          supplier,
+          productId,
+          criteria,
+        );
         if (score.score > 0) {
           supplierScores.push(score);
         }
@@ -290,36 +304,52 @@ export class SuppliersService extends SupabaseBaseService {
       minDiscountRate?: number;
       isPreferred?: boolean;
       region?: string;
-    } = {}
+    } = {},
   ) {
-    this.logger.log(`Attribution automatique pour ${productIds.length} produits`);
+    this.logger.log(
+      `Attribution automatique pour ${productIds.length} produits`,
+    );
 
     const results = [];
 
     for (const productId of productIds) {
       try {
-        const bestSupplier = await this.findBestSupplierForProduct(productId, criteria);
-        
+        const bestSupplier = await this.findBestSupplierForProduct(
+          productId,
+          criteria,
+        );
+
         if (bestSupplier) {
           // Récupérer les alternatives (top 3 après le meilleur)
-          const alternatives = await this.findAlternativeSuppliers(productId, criteria, bestSupplier.supplier.id);
-          
+          const alternatives = await this.findAlternativeSuppliers(
+            productId,
+            criteria,
+            bestSupplier.supplier.id,
+          );
+
           results.push({
             productId,
             recommendedSupplier: bestSupplier.supplier,
             alternativeSuppliers: alternatives.slice(0, 3),
             score: bestSupplier.score,
-            reasoning: bestSupplier.reasons
+            reasoning: bestSupplier.reasons,
           });
         } else {
-          this.logger.warn(`Aucun fournisseur trouvé pour produit ${productId}`);
+          this.logger.warn(
+            `Aucun fournisseur trouvé pour produit ${productId}`,
+          );
         }
       } catch (error) {
-        this.logger.error(`Erreur attribution fournisseur produit ${productId}:`, error);
+        this.logger.error(
+          `Erreur attribution fournisseur produit ${productId}:`,
+          error,
+        );
       }
     }
 
-    this.logger.log(`Attribution terminée: ${results.length}/${productIds.length} produits traités`);
+    this.logger.log(
+      `Attribution terminée: ${results.length}/${productIds.length} produits traités`,
+    );
     return results;
   }
 
@@ -347,7 +377,11 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Calculer le score d'un fournisseur pour un produit
    */
-  private async calculateSupplierScore(supplier: any, productId: number, criteria: any) {
+  private async calculateSupplierScore(
+    supplier: any,
+    productId: number,
+    criteria: any,
+  ) {
     let score = 50; // Score de base
     const reasons: string[] = [];
 
@@ -372,12 +406,20 @@ export class SuppliersService extends SupabaseBaseService {
     }
 
     // Score basé sur les critères spécifiques
-    if (criteria.maxDeliveryTime && supplier.delivery_delay && supplier.delivery_delay > criteria.maxDeliveryTime) {
+    if (
+      criteria.maxDeliveryTime &&
+      supplier.delivery_delay &&
+      supplier.delivery_delay > criteria.maxDeliveryTime
+    ) {
       score -= 30;
       reasons.push('Délai de livraison trop long');
     }
 
-    if (criteria.minDiscountRate && supplier.discount_rate && supplier.discount_rate < criteria.minDiscountRate) {
+    if (
+      criteria.minDiscountRate &&
+      supplier.discount_rate &&
+      supplier.discount_rate < criteria.minDiscountRate
+    ) {
       score -= 15;
       reasons.push('Taux de remise insuffisant');
     }
@@ -391,9 +433,9 @@ export class SuppliersService extends SupabaseBaseService {
     if (brandLinks && brandLinks.length > 0) {
       score += 15;
       reasons.push(`Partenaire de ${brandLinks.length} marque(s)`);
-      
+
       // Bonus pour fournisseur préféré
-      const preferredLinks = brandLinks.filter(link => link.is_preferred);
+      const preferredLinks = brandLinks.filter((link) => link.is_preferred);
       if (preferredLinks.length > 0) {
         score += 10;
         reasons.push('Fournisseur préféré');
@@ -403,14 +445,18 @@ export class SuppliersService extends SupabaseBaseService {
     return {
       supplier: this.transformSupplierData(supplier),
       score: Math.max(0, Math.min(100, score)),
-      reasons
+      reasons,
     };
   }
 
   /**
    * Trouver des fournisseurs alternatifs
    */
-  private async findAlternativeSuppliers(productId: number, criteria: any, excludeSupplierId: number) {
+  private async findAlternativeSuppliers(
+    productId: number,
+    criteria: any,
+    excludeSupplierId: number,
+  ) {
     try {
       const { data: suppliers } = await this.supabase
         .from('___xtr_supplier')
@@ -423,8 +469,13 @@ export class SuppliersService extends SupabaseBaseService {
       const alternatives = [];
 
       for (const supplier of suppliers) {
-        const score = await this.calculateSupplierScore(supplier, productId, criteria);
-        if (score.score > 30) { // Score minimum pour être une alternative
+        const score = await this.calculateSupplierScore(
+          supplier,
+          productId,
+          criteria,
+        );
+        if (score.score > 30) {
+          // Score minimum pour être une alternative
           alternatives.push(score);
         }
       }
@@ -432,7 +483,7 @@ export class SuppliersService extends SupabaseBaseService {
       // Trier par score décroissant
       alternatives.sort((a, b) => b.score - a.score);
 
-      return alternatives.map(alt => alt.supplier);
+      return alternatives.map((alt) => alt.supplier);
     } catch (error) {
       this.logger.error('Erreur recherche fournisseurs alternatifs:', error);
       return [];
@@ -470,7 +521,9 @@ export class SuppliersService extends SupabaseBaseService {
    * Générer un bon de commande fournisseur
    */
   async generatePurchaseOrder(supplierId: number, items: any[]): Promise<any> {
-    this.logger.log(`Génération bon de commande pour fournisseur ${supplierId}`);
+    this.logger.log(
+      `Génération bon de commande pour fournisseur ${supplierId}`,
+    );
 
     try {
       const supplier = await this.getSupplierById(supplierId);
@@ -486,20 +539,23 @@ export class SuppliersService extends SupabaseBaseService {
       };
 
       // Calculer les totaux
-      items.forEach(item => {
+      items.forEach((item) => {
         const lineTotal = item.quantity * (item.purchasePrice || 0);
         purchaseOrder.subtotal += lineTotal;
       });
 
       // Appliquer la remise si configurée
       if (supplier.discount_rate && supplier.discount_rate > 0) {
-        purchaseOrder.discount = purchaseOrder.subtotal * (supplier.discount_rate / 100);
+        purchaseOrder.discount =
+          purchaseOrder.subtotal * (supplier.discount_rate / 100);
       }
 
       purchaseOrder.total = purchaseOrder.subtotal - purchaseOrder.discount;
 
-      this.logger.log(`Bon de commande généré: ${purchaseOrder.reference} - Total: ${purchaseOrder.total}€`);
-      
+      this.logger.log(
+        `Bon de commande généré: ${purchaseOrder.reference} - Total: ${purchaseOrder.total}€`,
+      );
+
       return purchaseOrder;
     } catch (error) {
       this.logger.error('Erreur génération bon de commande:', error);
@@ -516,23 +572,25 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       const { data, error } = await this.supabase
         .from('___xtr_supplier_link_pm')
-        .select(`
+        .select(
+          `
           *,
           supplier:___xtr_supplier!inner(*)
-        `)
+        `,
+        )
         .eq('product_id', productId)
         .eq('is_active', true)
         .order('is_preferred', { ascending: false });
 
       if (error) throw error;
 
-      return (data || []).map(link => ({
+      return (data || []).map((link) => ({
         ...this.transformSupplierData(link.supplier),
         linkInfo: {
           isPreferred: link.is_preferred,
           deliveryDelay: link.delivery_delay,
           discountRate: link.discount_rate,
-        }
+        },
       }));
     } catch (error) {
       this.logger.error('Erreur récupération fournisseurs produit:', error);
@@ -550,9 +608,9 @@ export class SuppliersService extends SupabaseBaseService {
       // Désactiver le fournisseur
       const { error: supplierError } = await this.supabase
         .from('___xtr_supplier')
-        .update({ 
+        .update({
           is_active: false,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('spl_id', id);
 
@@ -561,9 +619,9 @@ export class SuppliersService extends SupabaseBaseService {
       // Désactiver ses liaisons
       const { error: linkError } = await this.supabase
         .from('___xtr_supplier_link_pm')
-        .update({ 
+        .update({
           is_active: false,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('supplier_id', id);
 
@@ -605,7 +663,9 @@ export class SuppliersService extends SupabaseBaseService {
           // Récupérer les info du produit depuis la table pieces
           const { data: pieceData } = await this.supabase
             .from('pieces')
-            .select('piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id')
+            .select(
+              'piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id',
+            )
             .eq('piece_id', parseInt(link.slpm_pm_id))
             .single();
 
@@ -617,7 +677,7 @@ export class SuppliersService extends SupabaseBaseService {
               .select('pg_name')
               .eq('pg_id', pieceData.piece_pg_id)
               .single();
-            
+
             if (gammeData) {
               brandName = gammeData.pg_name || 'À déterminer';
             }
@@ -631,26 +691,32 @@ export class SuppliersService extends SupabaseBaseService {
             isActive: link.slpm_display === '1',
             type: 'piece',
             // Ajouter les informations du produit
-            productInfo: pieceData ? {
-              id: pieceData.piece_id,
-              designation: pieceData.piece_des || pieceData.piece_name || 'Produit sans nom',
-              reference: pieceData.piece_ref || '',
-              brand: brandName,
-              isActive: pieceData.piece_display === '1',
-            } : {
-              id: link.slpm_pm_id,
-              designation: `Produit #${link.slpm_pm_id}`,
-              reference: '',
-              brand: 'Marque inconnue',
-              isActive: true,
-            },
+            productInfo: pieceData
+              ? {
+                  id: pieceData.piece_id,
+                  designation:
+                    pieceData.piece_des ||
+                    pieceData.piece_name ||
+                    'Produit sans nom',
+                  reference: pieceData.piece_ref || '',
+                  brand: brandName,
+                  isActive: pieceData.piece_display === '1',
+                }
+              : {
+                  id: link.slpm_pm_id,
+                  designation: `Produit #${link.slpm_pm_id}`,
+                  reference: '',
+                  brand: 'Marque inconnue',
+                  isActive: true,
+                },
           };
-        })
+        }),
       );
 
-      this.logger.log(`Trouvé ${enrichedLinks.length} liens enrichis pour fournisseur ${supplierId}`);
+      this.logger.log(
+        `Trouvé ${enrichedLinks.length} liens enrichis pour fournisseur ${supplierId}`,
+      );
       return enrichedLinks;
-
     } catch (error) {
       this.logger.error('Erreur récupération liens fournisseur:', error);
       return [];
@@ -666,20 +732,23 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Utiliser les liens enrichis pour calculer les vraies statistiques
       const links = await this.getSupplierLinks(supplierId);
-      
+
       // Compter les marques uniques (en excluant les marques génériques)
       const uniqueBrands = new Set(
         links
-          .filter(link => link.productInfo?.brand && 
-                         link.productInfo.brand !== 'À déterminer' && 
-                         link.productInfo.brand !== 'Marque inconnue')
-          .map(link => link.productInfo.brand)
+          .filter(
+            (link) =>
+              link.productInfo?.brand &&
+              link.productInfo.brand !== 'À déterminer' &&
+              link.productInfo.brand !== 'Marque inconnue',
+          )
+          .map((link) => link.productInfo.brand),
       );
 
       const totalBrands = uniqueBrands.size;
       const totalPieces = links.length; // Tous les liens sont des pièces dans cette table
       const totalLinks = links.length;
-      const activeLinks = links.filter(link => link.isActive).length;
+      const activeLinks = links.filter((link) => link.isActive).length;
 
       return {
         totalBrands,
@@ -751,7 +820,8 @@ export class SuppliersService extends SupabaseBaseService {
         };
       }
 
-      const columns = marques && marques.length > 0 ? Object.keys(marques[0]) : [];
+      const columns =
+        marques && marques.length > 0 ? Object.keys(marques[0]) : [];
 
       return {
         accessible: true,
@@ -788,7 +858,8 @@ export class SuppliersService extends SupabaseBaseService {
       }
 
       // Récupérer les colonnes disponibles
-      const columns = sampleData && sampleData.length > 0 ? Object.keys(sampleData[0]) : [];
+      const columns =
+        sampleData && sampleData.length > 0 ? Object.keys(sampleData[0]) : [];
 
       // Tester avec quelques échantillons
       const { data: pieces, error } = await this.supabase
@@ -831,7 +902,11 @@ export class SuppliersService extends SupabaseBaseService {
 
     try {
       // Vérifier la structure et les données de la table
-      const { data: sampleData, error: sampleError, count } = await this.supabase
+      const {
+        data: sampleData,
+        error: sampleError,
+        count,
+      } = await this.supabase
         .from('___xtr_supplier_link_pm')
         .select('*', { count: 'exact' })
         .limit(10);
@@ -856,7 +931,7 @@ export class SuppliersService extends SupabaseBaseService {
             linksFound: links.length,
             stats,
           };
-        })
+        }),
       );
 
       return {
@@ -889,7 +964,9 @@ export class SuppliersService extends SupabaseBaseService {
         .select('count', { count: 'exact', head: true });
 
       const totalSuppliers = connectionTest || 0;
-      this.logger.log(`✅ Connexion OK - ${totalSuppliers} fournisseurs trouvés`);
+      this.logger.log(
+        `✅ Connexion OK - ${totalSuppliers} fournisseurs trouvés`,
+      );
 
       // Échantillon de données
       const { data: sampleData } = await this.supabase
@@ -902,7 +979,7 @@ export class SuppliersService extends SupabaseBaseService {
         connection: true,
         totalSuppliers,
         sampleSupplier: sampleData,
-        tableStructure: sampleData ? Object.keys(sampleData) : []
+        tableStructure: sampleData ? Object.keys(sampleData) : [],
       };
     } catch (error) {
       this.logger.error('Erreur test service:', error);

@@ -9,16 +9,18 @@ export class SystemSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(SystemSchedulerService.name);
 
   constructor(
-    @InjectQueue('metrics-processing') 
+    @InjectQueue('metrics-processing')
     private metricsQueue: Queue<MetricsJobData>,
-    
-    @InjectQueue('system-maintenance') 
+
+    @InjectQueue('system-maintenance')
     private maintenanceQueue: Queue<MetricsJobData>,
   ) {}
 
   async onModuleInit() {
-    this.logger.log('🚀 SystemScheduler initialized - Setting up automated tasks');
-    
+    this.logger.log(
+      '🚀 SystemScheduler initialized - Setting up automated tasks',
+    );
+
     // Démarrage immédiat pour collecte initiale
     await this.scheduleImmediateMetricsCollection();
   }
@@ -38,9 +40,9 @@ export class SystemSchedulerService implements OnModuleInit {
         {
           removeOnComplete: 100,
           removeOnFail: 50,
-        }
+        },
       );
-      
+
       this.logger.debug('📊 Performance metrics job scheduled');
     } catch (error) {
       this.logger.error('❌ Failed to schedule performance metrics:', error);
@@ -62,9 +64,9 @@ export class SystemSchedulerService implements OnModuleInit {
         {
           removeOnComplete: 50,
           removeOnFail: 25,
-        }
+        },
       );
-      
+
       this.logger.debug('💼 Business metrics job scheduled');
     } catch (error) {
       this.logger.error('❌ Failed to schedule business metrics:', error);
@@ -80,15 +82,15 @@ export class SystemSchedulerService implements OnModuleInit {
       await this.metricsQueue.add(
         'seo-metrics',
         {
-          type: 'seo', 
+          type: 'seo',
           priority: 'low',
         },
         {
           removeOnComplete: 25,
           removeOnFail: 10,
-        }
+        },
       );
-      
+
       this.logger.debug('🎯 SEO metrics job scheduled');
     } catch (error) {
       this.logger.error('❌ Failed to schedule SEO metrics:', error);
@@ -110,9 +112,9 @@ export class SystemSchedulerService implements OnModuleInit {
         {
           removeOnComplete: 50,
           removeOnFail: 25,
-        }
+        },
       );
-      
+
       this.logger.debug('🏥 Database health check scheduled');
     } catch (error) {
       this.logger.error('❌ Failed to schedule database health check:', error);
@@ -138,9 +140,9 @@ export class SystemSchedulerService implements OnModuleInit {
         {
           removeOnComplete: 10,
           removeOnFail: 5,
-        }
+        },
       );
-      
+
       this.logger.log('🔧 System maintenance job scheduled');
     } catch (error) {
       this.logger.error('❌ Failed to schedule system maintenance:', error);
@@ -152,8 +154,10 @@ export class SystemSchedulerService implements OnModuleInit {
    */
   async scheduleEmergencyMetricsCollection(alertType: string) {
     try {
-      this.logger.warn(`🚨 Emergency metrics collection triggered: ${alertType}`);
-      
+      this.logger.warn(
+        `🚨 Emergency metrics collection triggered: ${alertType}`,
+      );
+
       const jobs = await Promise.allSettled([
         this.metricsQueue.add(
           'emergency-performance',
@@ -162,21 +166,25 @@ export class SystemSchedulerService implements OnModuleInit {
             priority: 'high',
             metadata: { trigger: alertType, emergency: true },
           },
-          { priority: 1 }
+          { priority: 1 },
         ),
         this.metricsQueue.add(
           'emergency-database',
           {
             type: 'database_health',
-            priority: 'high', 
+            priority: 'high',
             metadata: { trigger: alertType, emergency: true },
           },
-          { priority: 1 }
+          { priority: 1 },
         ),
       ]);
 
-      const successful = jobs.filter(job => job.status === 'fulfilled').length;
-      this.logger.warn(`🚨 Emergency collection: ${successful}/2 jobs scheduled`);
+      const successful = jobs.filter(
+        (job) => job.status === 'fulfilled',
+      ).length;
+      this.logger.warn(
+        `🚨 Emergency collection: ${successful}/2 jobs scheduled`,
+      );
     } catch (error) {
       this.logger.error('❌ Failed to schedule emergency metrics:', error);
     }
@@ -188,7 +196,7 @@ export class SystemSchedulerService implements OnModuleInit {
   private async scheduleImmediateMetricsCollection() {
     try {
       this.logger.log('🎬 Scheduling immediate metrics collection');
-      
+
       const initialJobs = [
         { type: 'performance' as const, delay: 0 },
         { type: 'business' as const, delay: 5000 },
@@ -208,7 +216,7 @@ export class SystemSchedulerService implements OnModuleInit {
             delay: job.delay,
             removeOnComplete: 10,
             removeOnFail: 5,
-          }
+          },
         );
       }
 
@@ -225,16 +233,32 @@ export class SystemSchedulerService implements OnModuleInit {
     try {
       const [metricsStats, maintenanceStats] = await Promise.all([
         {
-          waiting: await this.metricsQueue.getWaiting().then(jobs => jobs.length),
-          active: await this.metricsQueue.getActive().then(jobs => jobs.length),
-          completed: await this.metricsQueue.getCompleted().then(jobs => jobs.length),
-          failed: await this.metricsQueue.getFailed().then(jobs => jobs.length),
+          waiting: await this.metricsQueue
+            .getWaiting()
+            .then((jobs) => jobs.length),
+          active: await this.metricsQueue
+            .getActive()
+            .then((jobs) => jobs.length),
+          completed: await this.metricsQueue
+            .getCompleted()
+            .then((jobs) => jobs.length),
+          failed: await this.metricsQueue
+            .getFailed()
+            .then((jobs) => jobs.length),
         },
         {
-          waiting: await this.maintenanceQueue.getWaiting().then(jobs => jobs.length),
-          active: await this.maintenanceQueue.getActive().then(jobs => jobs.length),
-          completed: await this.maintenanceQueue.getCompleted().then(jobs => jobs.length),
-          failed: await this.maintenanceQueue.getFailed().then(jobs => jobs.length),
+          waiting: await this.maintenanceQueue
+            .getWaiting()
+            .then((jobs) => jobs.length),
+          active: await this.maintenanceQueue
+            .getActive()
+            .then((jobs) => jobs.length),
+          completed: await this.maintenanceQueue
+            .getCompleted()
+            .then((jobs) => jobs.length),
+          failed: await this.maintenanceQueue
+            .getFailed()
+            .then((jobs) => jobs.length),
         },
       ]);
 

@@ -31,11 +31,16 @@ export class StockManagementService extends SupabaseBaseService {
       // Mouvements récents (3 derniers jours)
       const { data: recentMovements } = await this.client
         .from('stock_movements')
-        .select(`
+        .select(
+          `
           *,
           pieces!inner(reference, name)
-        `)
-        .gte('created_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString())
+        `,
+        )
+        .gte(
+          'created_at',
+          new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        )
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -45,12 +50,17 @@ export class StockManagementService extends SupabaseBaseService {
       // Top 10 des produits avec le plus de mouvements
       const { data: topProducts } = await this.client
         .from('stock_movements')
-        .select(`
+        .select(
+          `
           product_id,
           count() as movement_count,
           pieces!inner(reference, name)
-        `)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        `,
+        )
+        .gte(
+          'created_at',
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        )
         .order('movement_count', { ascending: false })
         .limit(10);
 

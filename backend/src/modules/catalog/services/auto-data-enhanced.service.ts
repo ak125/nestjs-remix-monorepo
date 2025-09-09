@@ -25,21 +25,22 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
 
       return {
         success: true,
-        data: brands?.map(brand => ({
-          id: brand.marque_id,
-          code: brand.marque_code,
-          name: brand.marque_name,
-          logo: brand.marque_logo,
-          isActive: brand.marque_activ === '1',
-          slug: brand.marque_slug
-        })) || []
+        data:
+          brands?.map((brand) => ({
+            id: brand.marque_id,
+            code: brand.marque_code,
+            name: brand.marque_name,
+            logo: brand.marque_logo,
+            isActive: brand.marque_activ === '1',
+            slug: brand.marque_slug,
+          })) || [],
       };
     } catch (error) {
       this.logger.error('Erreur lors de la récupération des marques:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -59,20 +60,21 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
 
       return {
         success: true,
-        data: models?.map(model => ({
-          id: model.modele_id,
-          name: model.modele_name,
-          brandId: model.modele_marque_id,
-          slug: model.modele_slug,
-          isActive: true
-        })) || []
+        data:
+          models?.map((model) => ({
+            id: model.modele_id,
+            name: model.modele_name,
+            brandId: model.modele_marque_id,
+            slug: model.modele_slug,
+            isActive: true,
+          })) || [],
       };
     } catch (error) {
       this.logger.error('Erreur lors de la récupération des modèles:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -92,29 +94,30 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
 
       return {
         success: true,
-        data: types?.map(type => ({
-          id: type.type_id,
-          name: type.type_name,
-          modelId: type.type_modele_id,
-          fuelType: type.type_carburant,
-          power: {
-            cv: type.type_puissance_cv,
-            kw: type.type_puissance_kw
-          },
-          displacement: type.type_cylindree,
-          engineCode: type.type_code_moteur,
-          period: {
-            start: type.type_date_debut,
-            end: type.type_date_fin
-          }
-        })) || []
+        data:
+          types?.map((type) => ({
+            id: type.type_id,
+            name: type.type_name,
+            modelId: type.type_modele_id,
+            fuelType: type.type_carburant,
+            power: {
+              cv: type.type_puissance_cv,
+              kw: type.type_puissance_kw,
+            },
+            displacement: type.type_cylindree,
+            engineCode: type.type_code_moteur,
+            period: {
+              start: type.type_date_debut,
+              end: type.type_date_fin,
+            },
+          })) || [],
       };
     } catch (error) {
       this.logger.error('Erreur lors de la récupération des types:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -132,13 +135,15 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
       // Recherche dans les tables de compatibilité existantes
       const { data: piece, error } = await this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_title,
           piece_ref,
           piece_marque,
           piece_gamme
-        `)
+        `,
+        )
         .eq('piece_id', pieceId)
         .single();
 
@@ -156,20 +161,24 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
         success: true,
         data: {
           piece,
-          compatibleBrands: brands?.map(brand => ({
-            id: brand.marque_id,
-            name: brand.marque_name,
-            logo: brand.marque_logo,
-            code: brand.marque_code
-          })) || []
-        }
+          compatibleBrands:
+            brands?.map((brand) => ({
+              id: brand.marque_id,
+              name: brand.marque_name,
+              logo: brand.marque_logo,
+              code: brand.marque_code,
+            })) || [],
+        },
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération de compatibilité:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: null 
+      this.logger.error(
+        'Erreur lors de la récupération de compatibilité:',
+        error,
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: null,
       };
     }
   }
@@ -185,7 +194,7 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     engineCode,
     fuelType,
     limit = 50,
-    offset = 0
+    offset = 0,
   }: {
     brandId?: string;
     modelId?: string;
@@ -199,7 +208,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_carburant,
@@ -219,7 +229,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
               marque_code
             )
           )
-        `)
+        `,
+        )
         .range(offset, offset + limit - 1);
 
       // Filtres conditionnels
@@ -239,7 +250,9 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
         query = query.eq('type_carburant', fuelType);
       }
 
-      const { data: vehicles, error } = await query.order('modele.marque.marque_name');
+      const { data: vehicles, error } = await query.order(
+        'modele.marque.marque_name',
+      );
 
       if (error) throw error;
 
@@ -249,15 +262,15 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
         meta: {
           total: vehicles?.length || 0,
           limit,
-          offset
-        }
+          offset,
+        },
       };
     } catch (error) {
       this.logger.error('Erreur lors de la recherche de véhicules:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -293,15 +306,18 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           totalBrands: brandsCount || 0,
           totalModels: modelsCount || 0,
           totalTypes: typesCount || 0,
-          lastUpdate: new Date().toISOString()
-        }
+          lastUpdate: new Date().toISOString(),
+        },
       };
     } catch (error) {
-      this.logger.error('Erreur lors du calcul des statistiques véhicules:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: null 
+      this.logger.error(
+        'Erreur lors du calcul des statistiques véhicules:',
+        error,
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: null,
       };
     }
   }
@@ -311,9 +327,10 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
    */
   async getPartsByVehicle(brandId: string, modelId: string, typeId?: string) {
     try {
-      let query = this.client
+      const query = this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_title,
           piece_ref,
@@ -323,12 +340,13 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           piece_price_public,
           piece_stock,
           piece_img_principal
-        `)
+        `,
+        )
         .eq('piece_statut', '1');
 
       // Logique de recherche par gamme et marque automobile
       // (À adapter selon la structure réelle des relations)
-      
+
       const { data: parts, error } = await query
         .limit(100)
         .order('piece_title');
@@ -342,15 +360,18 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           brandId,
           modelId,
           typeId,
-          total: parts?.length || 0
-        }
+          total: parts?.length || 0,
+        },
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la recherche de pièces par véhicule:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      this.logger.error(
+        'Erreur lors de la recherche de pièces par véhicule:',
+        error,
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -362,7 +383,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     try {
       const { data: parts, error } = await this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_title,
           piece_ref,
@@ -372,7 +394,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           piece_price_public,
           piece_stock,
           piece_img_principal
-        `)
+        `,
+        )
         .or(`piece_title.ilike.%${searchTerm}%,piece_ref.ilike.%${searchTerm}%`)
         .eq('piece_statut', '1')
         .limit(limit);
@@ -381,14 +404,14 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
 
       return {
         success: true,
-        data: parts || []
+        data: parts || [],
       };
     } catch (error) {
       this.logger.error('Erreur lors de la recherche rapide:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -402,7 +425,7 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     typeId,
     gamme,
     limit = 50,
-    offset = 0
+    offset = 0,
   }: {
     brandId?: string;
     modelId?: string;
@@ -414,7 +437,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_title,
           piece_ref,
@@ -424,7 +448,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           piece_price_public,
           piece_stock,
           piece_img_principal
-        `)
+        `,
+        )
         .eq('piece_statut', '1') // Seulement les pièces actives
         .range(offset, offset + limit - 1);
 
@@ -449,15 +474,18 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           total: parts?.length || 0,
           limit,
           offset,
-          filters: { brandId, modelId, typeId, gamme }
-        }
+          filters: { brandId, modelId, typeId, gamme },
+        },
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la recherche de pièces par véhicule:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: [] 
+      this.logger.error(
+        'Erreur lors de la recherche de pièces par véhicule:',
+        error,
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: [],
       };
     }
   }
@@ -469,7 +497,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
     try {
       const { data: part, error } = await this.client
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_title,
           piece_ref,
@@ -480,7 +509,8 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
           piece_stock,
           piece_img_principal,
           piece_statut
-        `)
+        `,
+        )
         .eq('piece_id', partId)
         .single();
 
@@ -488,14 +518,17 @@ export class AutoDataEnhancedService extends SupabaseBaseService {
 
       return {
         success: true,
-        data: part
+        data: part,
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des détails de pièce:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erreur inconnue', 
-        data: null 
+      this.logger.error(
+        'Erreur lors de la récupération des détails de pièce:',
+        error,
+      );
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        data: null,
       };
     }
   }

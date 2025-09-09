@@ -48,10 +48,12 @@ export class TicketsAdvancedService extends SupabaseBaseService {
     super();
   }
 
-    /**
+  /**
    * Créer un ticket de préparation avancé pour une ligne de commande
    */
-  async createPreparationTicket(orderLineId: string): Promise<PreparationTicket> {
+  async createPreparationTicket(
+    orderLineId: string,
+  ): Promise<PreparationTicket> {
     try {
       this.logger.log(`Création ticket préparation pour ligne: ${orderLineId}`);
 
@@ -84,7 +86,11 @@ export class TicketsAdvancedService extends SupabaseBaseService {
       const unitPrice = parseFloat(orderLine.orl_art_price_sell_unit_ttc) || 0;
       const totalAmount = quantity * unitPrice;
 
-      this.logger.log('Montants calculés:', { quantity, unitPrice, totalAmount });
+      this.logger.log('Montants calculés:', {
+        quantity,
+        unitPrice,
+        totalAmount,
+      });
 
       // Générer un ID en suivant la séquence existante - Supabase fait un tri alphabétique
       const { data: allTickets } = await this.supabase
@@ -93,7 +99,7 @@ export class TicketsAdvancedService extends SupabaseBaseService {
 
       let maxId = 0;
       if (allTickets && allTickets.length > 0) {
-        maxId = Math.max(...allTickets.map(t => parseInt(t.orlet_id) || 0));
+        maxId = Math.max(...allTickets.map((t) => parseInt(t.orlet_id) || 0));
       }
 
       const nextId = (maxId + 1).toString();
@@ -252,7 +258,10 @@ export class TicketsAdvancedService extends SupabaseBaseService {
       let type: 'PREPARATION' | 'CREDIT_NOTE' | 'STANDARD' = 'STANDARD';
       if (ticketReference.startsWith('PREP-')) {
         type = 'PREPARATION';
-      } else if (ticketReference.startsWith('CREDIT_') || ticketReference.startsWith('AVOIR-')) {
+      } else if (
+        ticketReference.startsWith('CREDIT_') ||
+        ticketReference.startsWith('AVOIR-')
+      ) {
         type = 'CREDIT_NOTE';
       }
 
@@ -286,7 +295,8 @@ export class TicketsAdvancedService extends SupabaseBaseService {
       // Requête Supabase pour récupérer le ticket
       const { data: tickets, error: selectError } = await this.supabase
         .from('___xtr_order_line_equiv_ticket')
-        .select(`
+        .select(
+          `
           orlet_id,
           orlet_equiv_id,
           orlet_amount_ttc,
@@ -294,7 +304,8 @@ export class TicketsAdvancedService extends SupabaseBaseService {
           ___xtr_order_line (
             order_id
           )
-        `)
+        `,
+        )
         .eq('orlet_equiv_id', ticketReference)
         .limit(1);
 
@@ -349,7 +360,8 @@ export class TicketsAdvancedService extends SupabaseBaseService {
       // Requête Supabase pour récupérer les tickets d'une commande
       const { data: tickets, error } = await this.supabase
         .from('___xtr_order_line_equiv_ticket')
-        .select(`
+        .select(
+          `
           orlet_id,
           orlet_equiv_id,
           orlet_amount_ttc,
@@ -363,7 +375,8 @@ export class TicketsAdvancedService extends SupabaseBaseService {
           ___xtr_order (
             order_number
           )
-        `)
+        `,
+        )
         .eq('orlet_ord_id', orderId)
         .order('orlet_id');
 

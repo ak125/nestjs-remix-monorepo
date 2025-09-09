@@ -83,9 +83,7 @@ export class StaffService {
       };
     } catch (error) {
       this.logger.error('❌ Erreur findAll staff:', error);
-      throw new BadRequestException(
-        'Erreur lors de la récupération du staff',
-      );
+      throw new BadRequestException('Erreur lors de la récupération du staff');
     }
   }
 
@@ -126,9 +124,7 @@ export class StaffService {
       this.validateStaffData(staffData);
 
       // Vérifier si l'email existe déjà
-      const exists = await this.staffDataService.existsByEmail(
-        staffData.email,
-      );
+      const exists = await this.staffDataService.existsByEmail(staffData.email);
       if (exists) {
         throw new BadRequestException(
           'Un membre du staff avec cet email existe déjà',

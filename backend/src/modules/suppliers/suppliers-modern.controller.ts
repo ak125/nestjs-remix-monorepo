@@ -53,9 +53,8 @@ export class SuppliersModernController {
       // Validation des filtres
       const validatedFilters = validateSupplierFilters(filters);
 
-      const result = await this.suppliersModernService.getSuppliers(
-        validatedFilters,
-      );
+      const result =
+        await this.suppliersModernService.getSuppliers(validatedFilters);
 
       return {
         success: true,
@@ -119,9 +118,8 @@ export class SuppliersModernController {
   async create(@Body() createSupplierDto: CreateSupplierDto) {
     try {
       // La validation est faite dans le service moderne
-      const supplier = await this.suppliersModernService.createSupplier(
-        createSupplierDto,
-      );
+      const supplier =
+        await this.suppliersModernService.createSupplier(createSupplierDto);
 
       return {
         success: true,
@@ -145,7 +143,8 @@ export class SuppliersModernController {
   @Get('test/service')
   async testService() {
     try {
-      const testResult = await this.suppliersModernService.testSuppliersService();
+      const testResult =
+        await this.suppliersModernService.testSuppliersService();
 
       return {
         success: true,

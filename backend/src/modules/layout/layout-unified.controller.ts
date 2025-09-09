@@ -1,6 +1,6 @@
 /**
  * 🎛️ LAYOUT CONTROLLER UNIFIÉ
- * 
+ *
  * Contrôleur principal pour toutes les fonctionnalités layout
  * ✅ API complète pour Core/Massdoc
  * ✅ Endpoints sections modulaires
@@ -207,7 +207,7 @@ export class LayoutController {
     } catch (error) {
       this.logger.error('Erreur invalidateCache:', error);
       throw new HttpException(
-        'Erreur lors de l\'invalidation du cache',
+        "Erreur lors de l'invalidation du cache",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -283,10 +283,10 @@ export class LayoutController {
       // Pour le moment, retourner toutes les configurations
       // TODO: Implémenter la recherche réelle
       const configs = ['core', 'massdoc', 'admin', 'commercial', 'public'];
-      
+
       const results = configs
-        .filter(type => !query || type.includes(query.toLowerCase()))
-        .map(type => ({
+        .filter((type) => !query || type.includes(query.toLowerCase()))
+        .map((type) => ({
           type,
           name: `${type.charAt(0).toUpperCase()}${type.slice(1)} Layout`,
           description: `Configuration layout pour ${type}`,

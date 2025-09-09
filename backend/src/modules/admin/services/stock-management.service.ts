@@ -115,8 +115,10 @@ export class StockManagementService extends SupabaseBaseService {
       // Calculer les statistiques basiques
       const stats = {
         totalProducts: items?.length || 0,
-        lowStock: items?.filter(item => item.available <= (item.min_stock || 0)).length || 0,
-        outOfStock: items?.filter(item => item.available <= 0).length || 0,
+        lowStock:
+          items?.filter((item) => item.available <= (item.min_stock || 0))
+            .length || 0,
+        outOfStock: items?.filter((item) => item.available <= 0).length || 0,
       };
 
       const result = {
@@ -762,9 +764,7 @@ export class StockManagementService extends SupabaseBaseService {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
 
-      query = query
-        .range(from, to)
-        .order('available', { ascending: true });
+      query = query.range(from, to).order('available', { ascending: true });
 
       const { data, error, count } = await query;
 
@@ -831,11 +831,17 @@ export class StockManagementService extends SupabaseBaseService {
         });
 
       if (movementError) {
-        throw new Error(`Erreur enregistrement mouvement: ${movementError.message}`);
+        throw new Error(
+          `Erreur enregistrement mouvement: ${movementError.message}`,
+        );
       }
 
       // Mettre à jour le stock si nécessaire
-      await this.updateStockAfterMovement(movement.productId, movement.movementType, movement.quantity);
+      await this.updateStockAfterMovement(
+        movement.productId,
+        movement.movementType,
+        movement.quantity,
+      );
 
       // Vérifier les alertes
       const { data: currentStock } = await this.client
@@ -856,7 +862,6 @@ export class StockManagementService extends SupabaseBaseService {
         type: movement.movementType,
         quantity: movement.quantity,
       });
-
     } catch (error) {
       this.logger.error('Erreur enregistrement mouvement', error);
       throw error;
@@ -871,10 +876,10 @@ export class StockManagementService extends SupabaseBaseService {
     actualQuantity: number,
     reason: string,
     userId: string,
-    notes?: string
+    notes?: string,
   ): Promise<{ success: boolean; difference: number; message: string }> {
     try {
-      this.logger.debug('Ajustement d\'inventaire', {
+      this.logger.debug("Ajustement d'inventaire", {
         productId,
         actualQuantity,
         reason,
@@ -904,7 +909,7 @@ export class StockManagementService extends SupabaseBaseService {
           userId,
         });
 
-        this.logger.log('Ajustement d\'inventaire effectué', {
+        this.logger.log("Ajustement d'inventaire effectué", {
           productId,
           oldQuantity: currentStock.quantity,
           newQuantity: actualQuantity,
@@ -951,7 +956,8 @@ export class StockManagementService extends SupabaseBaseService {
       // Récupérer tous les stocks avec détails produits
       const { data: stocks, error: stocksError } = await this.client
         .from('stock')
-        .select(`
+        .select(
+          `
           *,
           pieces!inner(
             id,
@@ -960,7 +966,8 @@ export class StockManagementService extends SupabaseBaseService {
             description,
             average_cost
           )
-        `)
+        `,
+        )
         .order('pieces.reference');
 
       if (stocksError) {
@@ -970,11 +977,16 @@ export class StockManagementService extends SupabaseBaseService {
       // Récupérer les mouvements récents (7 derniers jours)
       const { data: recentMovements } = await this.client
         .from('stock_movements')
-        .select(`
+        .select(
+          `
           *,
           pieces!inner(reference, name)
-        `)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        `,
+        )
+        .gte(
+          'created_at',
+          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        )
         .order('created_at', { ascending: false })
         .limit(100);
 
@@ -991,7 +1003,7 @@ export class StockManagementService extends SupabaseBaseService {
       const outOfStockDetails: any[] = [];
       const overstockDetails: any[] = [];
 
-      stocks?.forEach(stock => {
+      stocks?.forEach((stock) => {
         const avgCost = parseFloat(stock.pieces?.average_cost || '0');
         const value = stock.available * avgCost;
         summary.totalValue += value;
@@ -1047,14 +1059,15 @@ export class StockManagementService extends SupabaseBaseService {
       dateTo?: Date;
       limit?: number;
       userId?: string;
-    }
+    },
   ): Promise<any[]> {
     try {
-      this.logger.debug('Récupération historique mouvements', { productId, filters });
+      this.logger.debug('Récupération historique mouvements', {
+        productId,
+        filters,
+      });
 
-      let query = this.client
-        .from('stock_movements')
-        .select(`
+      let query = this.client.from('stock_movements').select(`
           *,
           pieces!inner(reference, name)
         `);
@@ -1103,12 +1116,12 @@ export class StockManagementService extends SupabaseBaseService {
   private async updateStockAfterMovement(
     productId: string,
     movementType: string,
-    quantity: number
+    quantity: number,
   ): Promise<void> {
     try {
       // Cette logique peut être gérée par des triggers en base
       // ou ici selon l'architecture choisie
-      
+
       // Récupérer le stock actuel
       const { data: currentStock } = await this.client
         .from('stock')

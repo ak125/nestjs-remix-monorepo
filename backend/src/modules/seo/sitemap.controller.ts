@@ -60,7 +60,8 @@ export class SitemapController {
   @Header('Content-Type', 'application/xml')
   async getConstructeursSitemap(@Res() res: Response) {
     try {
-      const xmlContent = await this.sitemapService.generateConstructeursSitemap();
+      const xmlContent =
+        await this.sitemapService.generateConstructeursSitemap();
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération sitemap constructeurs:', error);
@@ -117,7 +118,8 @@ export class SitemapController {
     @Res() res: Response,
   ) {
     try {
-      const xmlContent = await this.sitemapService.generateConstructeurSitemap(marque);
+      const xmlContent =
+        await this.sitemapService.generateConstructeurSitemap(marque);
       res.send(xmlContent);
     } catch (error) {
       this.logger.error(
@@ -157,7 +159,7 @@ export class SitemapController {
     try {
       // Récupération des stats depuis les tables existantes
       const stats = await this.sitemapService.getSitemapStats();
-      
+
       return {
         success: true,
         stats,

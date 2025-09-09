@@ -50,16 +50,14 @@ import { MessagingGateway } from './messaging.gateway';
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  controllers: [
-    MessagesController,
-  ],
+  controllers: [MessagesController],
   providers: [
     // Services métier
     MessagesService,
-    
+
     // Data Services (Repository Pattern)
     MessageDataService,
-    
+
     // WebSocket Gateway
     MessagingGateway,
   ],

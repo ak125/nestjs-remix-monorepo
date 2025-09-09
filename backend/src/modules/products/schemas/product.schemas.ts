@@ -323,7 +323,7 @@ export const VehicleCompatibilitySchema = z.object({
     .int('ID type doit être un entier')
     .positive('ID type véhicule invalide')
     .optional(),
-  
+
   // Informations moteur (AUTO_TYPE_MOTOR_*)
   motor_code: z
     .string()
@@ -350,7 +350,7 @@ export const VehicleCompatibilitySchema = z.object({
     .min(0.1, 'Cylindrée minimum 0.1L')
     .max(20, 'Cylindrée maximum 20L')
     .optional(),
-  
+
   // Années de compatibilité
   year_from: z
     .number()
@@ -363,18 +363,18 @@ export const VehicleCompatibilitySchema = z.object({
     .min(1900, 'Année fin trop ancienne')
     .max(new Date().getFullYear() + 10, 'Année fin trop future')
     .optional(),
-  
+
   // Position/spécificités
   position: z
     .enum(['avant', 'arriere', 'gauche', 'droite', 'tous'])
     .default('tous'),
-  
+
   // Notes spécifiques
   compatibility_notes: z
     .string()
     .max(500, 'Notes de compatibilité trop longues')
     .optional(),
-  
+
   // Métadonnées
   is_confirmed: z.boolean().default(false),
   created_at: z.date().default(() => new Date()),
@@ -514,13 +514,13 @@ export const ProductCriteriaSchema = z.object({
     .optional(), // mm, cm, kg, V, A, W, °C, bar, Nm, etc.
   numeric_value: z.number().optional(), // Valeur numérique pour comparaisons
   tolerance: z.string().max(20, 'Tolérance trop longue').optional(), // ±0.1, +0/-0.05, etc.
-  
+
   // Métadonnées
   is_searchable: z.boolean().default(true),
   is_filterable: z.boolean().default(true),
   is_comparable: z.boolean().default(false),
   display_order: z.number().int().min(0).default(0),
-  
+
   created_at: z.date().default(() => new Date()),
   updated_at: z.date().default(() => new Date()),
 });

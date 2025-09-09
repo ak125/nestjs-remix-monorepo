@@ -7,11 +7,14 @@ export interface DatabaseHealth {
   status: 'healthy' | 'warning' | 'critical';
   connections: number;
   responseTime: number;
-  tableStatus: Record<string, {
-    accessible: boolean;
-    recordCount: number;
-    lastUpdated?: Date;
-  }>;
+  tableStatus: Record<
+    string,
+    {
+      accessible: boolean;
+      recordCount: number;
+      lastUpdated?: Date;
+    }
+  >;
 }
 
 export interface SystemAlert {
@@ -28,7 +31,7 @@ export interface SystemAlert {
 export class DatabaseMonitorService extends SupabaseBaseService {
   private readonly logger = new Logger(DatabaseMonitorService.name);
   private alerts: SystemAlert[] = [];
-  
+
   // Tables critiques à surveiller
   private readonly CRITICAL_TABLES = [
     '___xtr_customer',
@@ -65,7 +68,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
             .select('*', { count: 'exact', head: true });
 
           const responseTime = Date.now() - startTableTime;
-          
+
           if (!error && count !== null) {
             tableResults[table] = {
               accessible: true,
@@ -78,35 +81,58 @@ export class DatabaseMonitorService extends SupabaseBaseService {
               accessible: false,
               recordCount: 0,
             };
-            await this.createAlert('warning', `Table ${table} inaccessible`, error?.message || 'Unknown error');
+            await this.createAlert(
+              'warning',
+              `Table ${table} inaccessible`,
+              error?.message || 'Unknown error',
+            );
           }
 
           // Alerter si table vide de façon inattendue
-          if (count === 0 && ['___xtr_customer', '___xtr_product'].includes(table)) {
-            await this.createAlert('critical', `Table ${table} appears empty`, `Expected data but found 0 records`);
+          if (
+            count === 0 &&
+            ['___xtr_customer', '___xtr_product'].includes(table)
+          ) {
+            await this.createAlert(
+              'critical',
+              `Table ${table} appears empty`,
+              `Expected data but found 0 records`,
+            );
           }
-
         } catch (error) {
           this.logger.error(`❌ Error checking table ${table}:`, error);
           tableResults[table] = {
             accessible: false,
             recordCount: 0,
           };
-          await this.createAlert('error', `Failed to check table ${table}`, error.message);
+          await this.createAlert(
+            'error',
+            `Failed to check table ${table}`,
+            error.message,
+          );
         }
       }
 
       const totalResponseTime = Date.now() - startTime;
-      
+
       // Déterminer le statut global
-      const failedTables = Object.values(tableResults).filter(t => !t.accessible).length;
+      const failedTables = Object.values(tableResults).filter(
+        (t) => !t.accessible,
+      ).length;
       let status: DatabaseHealth['status'] = 'healthy';
-      
+
       if (failedTables > 0) {
-        status = failedTables >= this.CRITICAL_TABLES.length / 2 ? 'critical' : 'warning';
+        status =
+          failedTables >= this.CRITICAL_TABLES.length / 2
+            ? 'critical'
+            : 'warning';
       } else if (totalResponseTime > 5000) {
         status = 'warning';
-        await this.createAlert('warning', 'Slow database response', `Database took ${totalResponseTime}ms to respond`);
+        await this.createAlert(
+          'warning',
+          'Slow database response',
+          `Database took ${totalResponseTime}ms to respond`,
+        );
       }
 
       const healthStatus: DatabaseHealth = {
@@ -127,8 +153,12 @@ export class DatabaseMonitorService extends SupabaseBaseService {
       return healthStatus;
     } catch (error) {
       this.logger.error('❌ Critical error in database health check:', error);
-      await this.createAlert('critical', 'Database health check failed', error.message);
-      
+      await this.createAlert(
+        'critical',
+        'Database health check failed',
+        error.message,
+      );
+
       return {
         status: 'critical',
         connections: 0,
@@ -149,7 +179,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
   }> {
     try {
       this.logger.log(`🔍 Monitoring performance for table: ${tableName}`);
-      
+
       const startTime = Date.now();
       const { count, error } = await this.supabase
         .from(tableName)
@@ -159,21 +189,27 @@ export class DatabaseMonitorService extends SupabaseBaseService {
 
       const queryTime = Date.now() - startTime;
       const recordCount = count || 0;
-      
+
       // Analyser les performances
       let indexHealth: 'good' | 'slow' | 'critical' = 'good';
       const recommendations: string[] = [];
 
       if (queryTime > 2000) {
         indexHealth = 'critical';
-        recommendations.push('Query time > 2s: Consider adding indexes or optimizing queries');
+        recommendations.push(
+          'Query time > 2s: Consider adding indexes or optimizing queries',
+        );
       } else if (queryTime > 1000) {
         indexHealth = 'slow';
-        recommendations.push('Query time > 1s: Monitor for potential optimization');
+        recommendations.push(
+          'Query time > 1s: Monitor for potential optimization',
+        );
       }
 
       if (recordCount > 1000000) {
-        recommendations.push('Large table detected: Consider partitioning or archiving old data');
+        recommendations.push(
+          'Large table detected: Consider partitioning or archiving old data',
+        );
       }
 
       // Stocker la métrique
@@ -211,7 +247,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
     level: SystemAlert['level'],
     title: string,
     message: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<void> {
     const alert: SystemAlert = {
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -224,22 +260,25 @@ export class DatabaseMonitorService extends SupabaseBaseService {
     };
 
     this.alerts.push(alert);
-    
+
     // Garder seulement les 100 dernières alertes
     if (this.alerts.length > 100) {
       this.alerts = this.alerts.slice(-100);
     }
 
-    this.logger.log(`🚨 ${level.toUpperCase()} Alert created: ${title}`, message);
+    this.logger.log(
+      `🚨 ${level.toUpperCase()} Alert created: ${title}`,
+      message,
+    );
   }
 
   /**
    * 📋 Récupérer les alertes actives
    */
   getActiveAlerts(level?: SystemAlert['level']): SystemAlert[] {
-    let alerts = this.alerts.filter(a => !a.resolved);
+    let alerts = this.alerts.filter((a) => !a.resolved);
     if (level) {
-      alerts = alerts.filter(a => a.level === level);
+      alerts = alerts.filter((a) => a.level === level);
     }
     return alerts.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
@@ -248,7 +287,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
    * ✅ Résoudre une alerte
    */
   resolveAlert(alertId: string): boolean {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.resolved = true;
       this.logger.log(`✅ Alert resolved: ${alert.title}`);
@@ -261,12 +300,14 @@ export class DatabaseMonitorService extends SupabaseBaseService {
    * 🔄 Surveillance automatique (à lancer périodiquement)
    */
   async startPeriodicMonitoring(intervalMs: number = 300000): Promise<void> {
-    this.logger.log(`🔄 Starting periodic database monitoring every ${intervalMs/1000}s`);
-    
+    this.logger.log(
+      `🔄 Starting periodic database monitoring every ${intervalMs / 1000}s`,
+    );
+
     const monitor = async () => {
       try {
         await this.checkDatabaseHealth();
-        
+
         // Surveillance spécifique des tables critiques
         for (const table of this.CRITICAL_TABLES) {
           await this.monitorTablePerformance(table);
@@ -278,7 +319,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
 
     // Premier run immédiat
     await monitor();
-    
+
     // Puis périodique
     setInterval(monitor, intervalMs);
   }
@@ -294,7 +335,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
   }> {
     const database = await this.checkDatabaseHealth();
     const alerts = this.getActiveAlerts();
-    
+
     return {
       database,
       alerts,

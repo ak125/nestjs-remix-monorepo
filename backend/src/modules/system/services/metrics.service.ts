@@ -40,7 +40,7 @@ export class MetricsService extends SupabaseBaseService {
       this.logger.log('🔍 Collecting system performance metrics');
 
       const startTime = Date.now();
-      
+
       // Test de connectivité base de données
       const dbTest = await this.testDatabaseConnection();
       const responseTime = Date.now() - startTime;
@@ -118,10 +118,16 @@ export class MetricsService extends SupabaseBaseService {
         .gte('ord_date_order', yesterday.toISOString());
 
       const totalOrders = recentOrders?.length || 0;
-      const paidOrders = recentOrders?.filter(o => o.ord_is_pay === '1') || [];
-      const revenue24h = paidOrders.reduce((sum, order) => sum + parseFloat(order.ord_total_ttc || '0'), 0);
-      const averageOrderValue = paidOrders.length > 0 ? revenue24h / paidOrders.length : 0;
-      const conversionRate = totalOrders > 0 ? (paidOrders.length / totalOrders) * 100 : 0;
+      const paidOrders =
+        recentOrders?.filter((o) => o.ord_is_pay === '1') || [];
+      const revenue24h = paidOrders.reduce(
+        (sum, order) => sum + parseFloat(order.ord_total_ttc || '0'),
+        0,
+      );
+      const averageOrderValue =
+        paidOrders.length > 0 ? revenue24h / paidOrders.length : 0;
+      const conversionRate =
+        totalOrders > 0 ? (paidOrders.length / totalOrders) * 100 : 0;
 
       const metrics = {
         totalUsers: usersCount.count || 0,
@@ -189,7 +195,9 @@ export class MetricsService extends SupabaseBaseService {
         indexedPages: sitemapCount.count || 0,
         optimizedPages: optimizedCount.count || 0,
         averageLoadTime: Math.random() * 200 + 100, // Simulé pour le moment
-        sitemapHealth: sitemapCount.count ? Math.round(((optimizedCount.count || 0) / sitemapCount.count) * 100) : 0,
+        sitemapHealth: sitemapCount.count
+          ? Math.round(((optimizedCount.count || 0) / sitemapCount.count) * 100)
+          : 0,
       };
 
       await this.storeMetric({
@@ -223,7 +231,7 @@ export class MetricsService extends SupabaseBaseService {
     try {
       // Cache local
       this.metricsCache.set(metric.id, metric);
-      
+
       // Nettoyage automatique du cache
       setTimeout(() => {
         this.metricsCache.delete(metric.id);
@@ -231,8 +239,10 @@ export class MetricsService extends SupabaseBaseService {
 
       // Stockage en base (optionnel, peut être activé plus tard)
       // await this.supabase.from('system_metrics').insert(metric);
-      
-      this.logger.debug(`📊 Metric stored: ${metric.name} = ${metric.value}${metric.unit}`);
+
+      this.logger.debug(
+        `📊 Metric stored: ${metric.name} = ${metric.value}${metric.unit}`,
+      );
     } catch (error) {
       this.logger.error('❌ Error storing metric:', error);
     }
@@ -243,9 +253,7 @@ export class MetricsService extends SupabaseBaseService {
    */
   getRecentMetrics(category?: SystemMetric['category']): SystemMetric[] {
     const metrics = Array.from(this.metricsCache.values());
-    return category 
-      ? metrics.filter(m => m.category === category)
-      : metrics;
+    return category ? metrics.filter((m) => m.category === category) : metrics;
   }
 
   /**
@@ -281,7 +289,10 @@ export class MetricsService extends SupabaseBaseService {
   // Méthodes utilitaires privées
   private async testDatabaseConnection(): Promise<boolean> {
     try {
-      const { error } = await this.supabase.from('___xtr_customer').select('cst_id').limit(1);
+      const { error } = await this.supabase
+        .from('___xtr_customer')
+        .select('cst_id')
+        .limit(1);
       return !error;
     } catch {
       return false;

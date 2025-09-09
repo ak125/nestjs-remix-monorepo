@@ -49,8 +49,14 @@ export class HealthCheckService extends SupabaseBaseService {
       ]);
 
       const services: HealthCheckResult[] = checks.map((check, index) => {
-        const serviceNames = ['database', 'metrics', 'memory', 'disk', 'external'];
-        
+        const serviceNames = [
+          'database',
+          'metrics',
+          'memory',
+          'disk',
+          'external',
+        ];
+
         if (check.status === 'fulfilled') {
           return check.value;
         } else {
@@ -65,9 +71,13 @@ export class HealthCheckService extends SupabaseBaseService {
       });
 
       // Déterminer le statut global
-      const unhealthyServices = services.filter(s => s.status === 'unhealthy').length;
-      const degradedServices = services.filter(s => s.status === 'degraded').length;
-      
+      const unhealthyServices = services.filter(
+        (s) => s.status === 'unhealthy',
+      ).length;
+      const degradedServices = services.filter(
+        (s) => s.status === 'degraded',
+      ).length;
+
       let overall: SystemHealthCheck['overall'] = 'healthy';
       if (unhealthyServices > 0) {
         overall = unhealthyServices > 1 ? 'unhealthy' : 'degraded';
@@ -84,7 +94,9 @@ export class HealthCheckService extends SupabaseBaseService {
         timestamp: new Date().toISOString(),
       };
 
-      this.logger.log(`💚 Health check completed: ${overall} (${services.length} services)`);
+      this.logger.log(
+        `💚 Health check completed: ${overall} (${services.length} services)`,
+      );
       return healthCheck;
     } catch (error) {
       this.logger.error('❌ Critical error in health check:', error);
@@ -104,11 +116,11 @@ export class HealthCheckService extends SupabaseBaseService {
    */
   private async checkDatabase(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const health = await this.databaseMonitorService.checkDatabaseHealth();
       const responseTime = Date.now() - startTime;
-      
+
       let status: HealthCheckResult['status'] = 'healthy';
       if (health.status === 'critical') {
         status = 'unhealthy';
@@ -123,7 +135,9 @@ export class HealthCheckService extends SupabaseBaseService {
         details: {
           connections: health.connections,
           tablesChecked: Object.keys(health.tableStatus).length,
-          failedTables: Object.values(health.tableStatus).filter(t => !t.accessible).length,
+          failedTables: Object.values(health.tableStatus).filter(
+            (t) => !t.accessible,
+          ).length,
         },
         timestamp: new Date().toISOString(),
       };
@@ -143,11 +157,11 @@ export class HealthCheckService extends SupabaseBaseService {
    */
   private async checkMetricsService(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const metrics = await this.metricsService.collectPerformanceMetrics();
       const responseTime = Date.now() - startTime;
-      
+
       let status: HealthCheckResult['status'] = 'healthy';
       if (metrics.responseTime < 0 || metrics.databaseConnections === 0) {
         status = 'unhealthy';
@@ -182,17 +196,19 @@ export class HealthCheckService extends SupabaseBaseService {
    */
   private async checkMemoryUsage(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const memoryUsage = process.memoryUsage();
       const heapUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
       const heapTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
       const rssUsageMB = Math.round(memoryUsage.rss / 1024 / 1024);
-      
+
       let status: HealthCheckResult['status'] = 'healthy';
-      if (heapUsedMB > 1024) { // Plus de 1GB
+      if (heapUsedMB > 1024) {
+        // Plus de 1GB
         status = 'unhealthy';
-      } else if (heapUsedMB > 512) { // Plus de 512MB
+      } else if (heapUsedMB > 512) {
+        // Plus de 512MB
         status = 'degraded';
       }
 
@@ -224,12 +240,12 @@ export class HealthCheckService extends SupabaseBaseService {
    */
   private async checkDiskSpace(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       // En environnement containerisé, on simule un check d'espace disque
       // En production réelle, utiliser 'fs' pour vérifier l'espace disponible
       const simulatedDiskUsage = Math.random() * 100;
-      
+
       let status: HealthCheckResult['status'] = 'healthy';
       if (simulatedDiskUsage > 90) {
         status = 'unhealthy';
@@ -264,13 +280,15 @@ export class HealthCheckService extends SupabaseBaseService {
    */
   private async checkExternalServices(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       // Test de connectivité réseau basique
       const networkTest = await this.testNetworkConnectivity();
       const responseTime = Date.now() - startTime;
-      
-      let status: HealthCheckResult['status'] = networkTest ? 'healthy' : 'degraded';
+
+      const status: HealthCheckResult['status'] = networkTest
+        ? 'healthy'
+        : 'degraded';
 
       return {
         service: 'external',

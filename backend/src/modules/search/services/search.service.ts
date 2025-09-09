@@ -197,8 +197,7 @@ export class SearchService {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV7(params.filters),
       sort:
         params.sort?.field === 'price'
@@ -236,13 +235,12 @@ export class SearchService {
    */
   private async searchV8Enhanced(params: SearchParams): Promise<SearchResult> {
     this.logger.debug(`⚡ searchV8Enhanced appelée avec: "${params.query}"`);
-    
+
     // Configuration avancée avec toutes les fonctionnalités Meilisearch
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV8Enhanced(params.filters),
       sort: this.buildSortEnhanced(params.sort),
       facets: [
@@ -387,8 +385,7 @@ export class SearchService {
       ],
       limit: params.pagination?.limit || 50,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 50),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
       attributesToHighlight: ['reference', 'designation', 'description'],
       attributesToRetrieve: [
         'id',
@@ -449,8 +446,8 @@ export class SearchService {
     }
 
     // Recherche ultra-rapide limitée
-    const [suggestions, quickProducts, quickVehicles] = await Promise.allSettled(
-      [
+    const [suggestions, quickProducts, quickVehicles] =
+      await Promise.allSettled([
         this.meilisearch.getSuggestions(query, 'auto_complete'),
         this.meilisearch.searchProducts(query, {
           limit: 3,
@@ -473,8 +470,7 @@ export class SearchService {
             'image',
           ],
         }),
-      ],
-    );
+      ]);
 
     const items = [];
     let suggestionList: string[] = [];
@@ -518,11 +514,11 @@ export class SearchService {
 
   private normalizeParams(params: SearchParams): SearchParams {
     const normalized = { ...params };
-    
+
     // Normalisation de base
     normalized.query = params.query?.trim() || '';
     normalized.type = params.type || 'v8';
-    
+
     // 🏭 Détection automatique des marques dans la requête
     const brandDetection = this.detectBrandInQuery(normalized.query);
     if (brandDetection.detected) {
@@ -533,12 +529,14 @@ export class SearchService {
       };
       // Nettoyer la requête en supprimant le nom de la marque
       normalized.query = brandDetection.cleanedQuery;
-      
-      this.logger.log(`🏭 MARQUE DÉTECTÉE: ${brandDetection.brand}, requête nettoyée: "${normalized.query}"`);
+
+      this.logger.log(
+        `🏭 MARQUE DÉTECTÉE: ${brandDetection.brand}, requête nettoyée: "${normalized.query}"`,
+      );
     } else {
       this.logger.log(`🏭 Aucune marque détectée dans: "${normalized.query}"`);
     }
-    
+
     return {
       ...normalized,
       pagination: {
@@ -580,7 +578,10 @@ export class SearchService {
 
     for (const { pattern, brand } of brandPatterns) {
       if (pattern.test(query)) {
-        const cleanedQuery = query.replace(pattern, '').replace(/\s+/g, ' ').trim();
+        const cleanedQuery = query
+          .replace(pattern, '')
+          .replace(/\s+/g, ' ')
+          .trim();
         return {
           detected: true,
           brand,
@@ -625,11 +626,9 @@ export class SearchService {
       params.query.length > 2
     ) {
       enrichPromises.push(
-        this.generateSmartSuggestions(
-          params.query,
-          results.items,
-          userId,
-        ).then((suggestions) => (results.suggestions = suggestions)),
+        this.generateSmartSuggestions(params.query, results.items, userId).then(
+          (suggestions) => (results.suggestions = suggestions),
+        ),
       );
     }
 
@@ -673,13 +672,19 @@ export class SearchService {
     this.logger.debug('🔄 Fusion des résultats...');
     this.logger.debug('🚗 VehicleResults status:', vehicleResults?.status);
     this.logger.debug('🔧 ProductResults status:', productResults?.status);
-    
+
     if (vehicleResults?.status === 'fulfilled') {
-      this.logger.debug('🚗 Nombre hits véhicules:', vehicleResults.value?.hits?.length);
+      this.logger.debug(
+        '🚗 Nombre hits véhicules:',
+        vehicleResults.value?.hits?.length,
+      );
     }
-    
+
     if (productResults?.status === 'fulfilled') {
-      this.logger.debug('🔧 Nombre hits produits:', productResults.value?.hits?.length);
+      this.logger.debug(
+        '🔧 Nombre hits produits:',
+        productResults.value?.hits?.length,
+      );
     }
 
     const items: any[] = [];
@@ -842,9 +847,8 @@ export class SearchService {
       const suggestions = new Set<string>();
 
       // Suggestions basées sur Meilisearch
-      const meilisearchSuggestions = await this.meilisearch.getSuggestions(
-        query,
-      );
+      const meilisearchSuggestions =
+        await this.meilisearch.getSuggestions(query);
       meilisearchSuggestions.hits.forEach((hit) => {
         if (hit.suggestion) suggestions.add(hit.suggestion);
         if (hit.brand && hit.model) {
@@ -884,13 +888,16 @@ export class SearchService {
   }
 
   private generateHighlights(item: any, query: string): string[] {
-    const terms = query
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
     const highlights: string[] = [];
 
-    const fields = ['designation', 'description', 'brand', 'model', 'reference'];
+    const fields = [
+      'designation',
+      'description',
+      'brand',
+      'model',
+      'reference',
+    ];
 
     fields.forEach((field) => {
       if (item[field]) {
@@ -1021,10 +1028,7 @@ export class SearchService {
     }
 
     // Plage de prix optimisée
-    if (
-      filters.priceMin !== undefined &&
-      filters.priceMax !== undefined
-    ) {
+    if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
       filterQueries.push(`price ${filters.priceMin} TO ${filters.priceMax}`);
     } else {
       if (filters.priceMin !== undefined) {

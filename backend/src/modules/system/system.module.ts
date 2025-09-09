@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
 
 /**
  * 🎯 SystemModule - Monitoring & Métriques Enterprise
- * 
+ *
  * Version hybride combinant :
  * ✅ SystemHealthController simple (fonctionnel)
  * ✅ SystemService avancé (complet)
@@ -22,8 +22,8 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [SystemHealthController],
   providers: [
     SystemHealthService, // Simple, fonctionne
-    SystemService,       // Avancé, complet
-    MetricsService,      // Enterprise metrics
+    SystemService, // Avancé, complet
+    MetricsService, // Enterprise metrics
     DatabaseMonitorService, // Database monitoring
   ],
   exports: [

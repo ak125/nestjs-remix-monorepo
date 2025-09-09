@@ -13,7 +13,7 @@ export interface GlossaryFilters {
 
 /**
  * 📚 GlossaryService - Service spécialisé pour le glossaire automobile
- * 
+ *
  * Gère spécifiquement la table __blog_glossaire avec définitions
  * et termes techniques automobiles.
  */
@@ -29,11 +29,13 @@ export class GlossaryService {
   /**
    * 📚 Récupérer tous les termes du glossaire avec pagination
    */
-  async getAllTerms(options: {
-    limit?: number;
-    offset?: number;
-    filters?: GlossaryFilters;
-  } = {}): Promise<{ articles: BlogArticle[]; total: number }> {
+  async getAllTerms(
+    options: {
+      limit?: number;
+      offset?: number;
+      filters?: GlossaryFilters;
+    } = {},
+  ): Promise<{ articles: BlogArticle[]; total: number }> {
     const { limit = 50, offset = 0, filters = {} } = options;
     const cacheKey = `glossary_all:${limit}:${offset}:${JSON.stringify(filters)}`;
 
@@ -44,9 +46,7 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client
-        .from('__blog_glossaire')
-        .select('*');
+      let query = client.from('__blog_glossaire').select('*');
 
       // Appliquer les filtres
       if (filters.letter) {
@@ -69,8 +69,8 @@ export class GlossaryService {
       }
 
       // Transformer chaque terme en article
-      const articles: BlogArticle[] = termsList.map(term => 
-        this.transformTermToArticle(term)
+      const articles: BlogArticle[] = termsList.map((term) =>
+        this.transformTermToArticle(term),
       );
 
       const result = { articles, total: count || 0 };
@@ -78,9 +78,10 @@ export class GlossaryService {
 
       this.logger.log(`📚 Récupéré ${articles.length} termes (${count} total)`);
       return result;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération glossaire: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération glossaire: ${(error as Error).message}`,
+      );
       return { articles: [], total: 0 };
     }
   }
@@ -110,9 +111,10 @@ export class GlossaryService {
       await this.cacheManager.set(cacheKey, article, 3600); // 1h
 
       return article;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération terme ${id}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur récupération terme ${id}: ${(error as Error).message}`,
+      );
       return null;
     }
   }
@@ -130,7 +132,7 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: termsList } = await client
         .from('__blog_glossaire')
         .select('*')
@@ -139,13 +141,16 @@ export class GlossaryService {
 
       if (!termsList) return [];
 
-      const articles = termsList.map(term => this.transformTermToArticle(term));
+      const articles = termsList.map((term) =>
+        this.transformTermToArticle(term),
+      );
 
       await this.cacheManager.set(cacheKey, articles, 7200); // 2h
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur termes lettre ${letter}: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur termes lettre ${letter}: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -163,27 +168,32 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: termsList } = await client
         .from('__blog_glossaire')
         .select('*')
-        .or([
-          `bgl_terme.ilike.%${query}%`,
-          `bgl_definition.ilike.%${query}%`,
-          `bgl_keywords.ilike.%${query}%`,
-        ].join(','))
+        .or(
+          [
+            `bgl_terme.ilike.%${query}%`,
+            `bgl_definition.ilike.%${query}%`,
+            `bgl_keywords.ilike.%${query}%`,
+          ].join(','),
+        )
         .order('bgl_visit', { ascending: false })
         .limit(limit);
 
       if (!termsList) return [];
 
-      const articles = termsList.map(term => this.transformTermToArticle(term));
+      const articles = termsList.map((term) =>
+        this.transformTermToArticle(term),
+      );
 
       await this.cacheManager.set(cacheKey, articles, 1800); // 30min
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche termes: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur recherche termes: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -201,7 +211,7 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       const { data: termsList } = await client
         .from('__blog_glossaire')
         .select('*')
@@ -211,22 +221,23 @@ export class GlossaryService {
 
       const termsByLetter: { [letter: string]: BlogArticle[] } = {};
 
-      termsList.forEach(term => {
+      termsList.forEach((term) => {
         const article = this.transformTermToArticle(term);
         const firstLetter = term.bgl_terme.charAt(0).toUpperCase();
-        
+
         if (!termsByLetter[firstLetter]) {
           termsByLetter[firstLetter] = [];
         }
-        
+
         termsByLetter[firstLetter].push(article);
       });
 
       await this.cacheManager.set(cacheKey, termsByLetter, 7200); // 2h
       return termsByLetter;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur glossaire alphabétique: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur glossaire alphabétique: ${(error as Error).message}`,
+      );
       return {};
     }
   }
@@ -244,7 +255,7 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      
+
       // Utiliser une fonction random ou ordre aléatoire
       const { data: termsList } = await client
         .from('__blog_glossaire')
@@ -258,14 +269,17 @@ export class GlossaryService {
       const shuffled = termsList.sort(() => 0.5 - Math.random());
       const randomTerms = shuffled.slice(0, count);
 
-      const articles = randomTerms.map(term => this.transformTermToArticle(term));
+      const articles = randomTerms.map((term) =>
+        this.transformTermToArticle(term),
+      );
 
       // Cache plus court pour le contenu aléatoire
       await this.cacheManager.set(cacheKey, articles, 900); // 15min
       return articles;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur termes aléatoires: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur termes aléatoires: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -297,28 +311,32 @@ export class GlossaryService {
         .select('bgl_visit, bgl_terme, bgl_definition');
 
       if (!allTerms) {
-        return { 
-          total: 0, 
-          totalViews: 0, 
-          avgViews: 0, 
-          byLetter: [], 
+        return {
+          total: 0,
+          totalViews: 0,
+          avgViews: 0,
+          byLetter: [],
           mostPopular: [],
           averageDefinitionLength: 0,
         };
       }
 
-      const totalViews = allTerms.reduce((sum, term) => 
-        sum + (parseInt(term.bgl_visit) || 0), 0);
+      const totalViews = allTerms.reduce(
+        (sum, term) => sum + (parseInt(term.bgl_visit) || 0),
+        0,
+      );
       const avgViews = Math.round(totalViews / allTerms.length);
 
       // Longueur moyenne des définitions
-      const totalLength = allTerms.reduce((sum, term) => 
-        sum + (term.bgl_definition?.length || 0), 0);
+      const totalLength = allTerms.reduce(
+        (sum, term) => sum + (term.bgl_definition?.length || 0),
+        0,
+      );
       const averageDefinitionLength = Math.round(totalLength / allTerms.length);
 
       // Distribution par lettre
       const letterCount: { [letter: string]: number } = {};
-      allTerms.forEach(term => {
+      allTerms.forEach((term) => {
         const letter = term.bgl_terme.charAt(0).toUpperCase();
         letterCount[letter] = (letterCount[letter] || 0) + 1;
       });
@@ -334,8 +352,8 @@ export class GlossaryService {
         .order('bgl_visit', { ascending: false })
         .limit(10);
 
-      const mostPopular = popularTerms 
-        ? popularTerms.map(term => this.transformTermToArticle(term))
+      const mostPopular = popularTerms
+        ? popularTerms.map((term) => this.transformTermToArticle(term))
         : [];
 
       const stats = {
@@ -349,14 +367,15 @@ export class GlossaryService {
 
       await this.cacheManager.set(cacheKey, stats, 3600);
       return stats;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur stats glossaire: ${(error as Error).message}`);
-      return { 
-        total: 0, 
-        totalViews: 0, 
-        avgViews: 0, 
-        byLetter: [], 
+      this.logger.error(
+        `❌ Erreur stats glossaire: ${(error as Error).message}`,
+      );
+      return {
+        total: 0,
+        totalViews: 0,
+        avgViews: 0,
+        byLetter: [],
         mostPopular: [],
         averageDefinitionLength: 0,
       };
@@ -369,7 +388,7 @@ export class GlossaryService {
   async incrementTermViews(id: string | number): Promise<boolean> {
     try {
       const client = this.supabaseService.getClient();
-      
+
       // Récupérer les vues actuelles
       const { data: current } = await client
         .from('__blog_glossaire')
@@ -398,9 +417,10 @@ export class GlossaryService {
 
       this.logger.debug(`👀 Vues mises à jour pour terme ${id}: ${newViews}`);
       return true;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur incrément vues: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur incrément vues: ${(error as Error).message}`,
+      );
       return false;
     }
   }
@@ -409,12 +429,14 @@ export class GlossaryService {
 
   private transformTermToArticle(term: any): BlogArticle {
     // Section unique avec la définition
-    const sections: BlogSection[] = [{
-      level: 2,
-      title: 'Définition',
-      content: term.bgl_definition,
-      anchor: 'definition',
-    }];
+    const sections: BlogSection[] = [
+      {
+        level: 2,
+        title: 'Définition',
+        content: term.bgl_definition,
+        anchor: 'definition',
+      },
+    ];
 
     return {
       id: `glossary_${term.bgl_id}`,

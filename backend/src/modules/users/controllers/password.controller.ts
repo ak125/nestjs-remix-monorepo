@@ -86,7 +86,8 @@ export class PasswordController {
 
       return {
         success: true,
-        message: 'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation',
+        message:
+          'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation',
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
@@ -94,7 +95,8 @@ export class PasswordController {
       // Ne pas révéler si l'email existe pour des raisons de sécurité
       return {
         success: true,
-        message: 'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation',
+        message:
+          'Si un compte avec cet email existe, vous recevrez un lien de réinitialisation',
         timestamp: new Date().toISOString(),
       };
     }

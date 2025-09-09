@@ -74,7 +74,7 @@ export class ContactService extends SupabaseBaseService {
 
       // 1. Trouver ou créer le client dans ___xtr_customer
       let customerId = contactData.customer_id;
-      
+
       if (!customerId) {
         // Chercher un client existant par email
         const { data: existingCustomer } = await this.supabase
@@ -96,11 +96,12 @@ export class ContactService extends SupabaseBaseService {
             cst_actif: '1',
           };
 
-          const { data: createdCustomer, error: customerError } = await this.supabase
-            .from('___xtr_customer')
-            .insert(newCustomer)
-            .select('cst_id')
-            .single();
+          const { data: createdCustomer, error: customerError } =
+            await this.supabase
+              .from('___xtr_customer')
+              .insert(newCustomer)
+              .select('cst_id')
+              .single();
 
           if (customerError) {
             this.logger.error('Erreur création client:', customerError);
@@ -127,7 +128,8 @@ export class ContactService extends SupabaseBaseService {
       const { data, error } = await this.supabase
         .from('___xtr_msg')
         .insert(ticketData)
-        .select(`
+        .select(
+          `
           *,
           ___xtr_customer:msg_cst_id (
             cst_name,
@@ -135,7 +137,8 @@ export class ContactService extends SupabaseBaseService {
             cst_mail,
             cst_phone
           )
-        `)
+        `,
+        )
         .single();
 
       if (error) {
@@ -166,7 +169,8 @@ export class ContactService extends SupabaseBaseService {
   async getContactById(id: string): Promise<ContactTicket> {
     const { data, error } = await this.supabase
       .from('___xtr_msg')
-      .select(`
+      .select(
+        `
         *,
         ___xtr_customer:msg_cst_id (
           cst_name,
@@ -174,7 +178,8 @@ export class ContactService extends SupabaseBaseService {
           cst_mail,
           cst_phone
         )
-      `)
+      `,
+      )
       .eq('msg_id', id)
       .single();
 
@@ -206,9 +211,8 @@ export class ContactService extends SupabaseBaseService {
     page: number;
     limit: number;
   }> {
-    let query = this.supabase
-      .from('___xtr_msg')
-      .select(`
+    let query = this.supabase.from('___xtr_msg').select(
+      `
         *,
         ___xtr_customer:msg_cst_id (
           cst_name,
@@ -216,7 +220,9 @@ export class ContactService extends SupabaseBaseService {
           cst_mail,
           cst_phone
         )
-      `, { count: 'exact' });
+      `,
+      { count: 'exact' },
+    );
 
     // Application des filtres
     if (options.status && options.status !== 'all') {
@@ -254,7 +260,8 @@ export class ContactService extends SupabaseBaseService {
       throw new BadRequestException('Impossible de récupérer les tickets');
     }
 
-    const transformedData = data?.map(item => this.transformToContactTicket(item)) || [];
+    const transformedData =
+      data?.map((item) => this.transformToContactTicket(item)) || [];
 
     return {
       data: transformedData,
@@ -291,7 +298,8 @@ export class ContactService extends SupabaseBaseService {
       .from('___xtr_msg')
       .update(updateData)
       .eq('msg_id', id)
-      .select(`
+      .select(
+        `
         *,
         ___xtr_customer:msg_cst_id (
           cst_name,
@@ -299,7 +307,8 @@ export class ContactService extends SupabaseBaseService {
           cst_mail,
           cst_phone
         )
-      `)
+      `,
+      )
       .single();
 
     if (error) {
@@ -363,14 +372,16 @@ export class ContactService extends SupabaseBaseService {
   async getTicketResponses(ticketId: string): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('___xtr_msg')
-      .select(`
+      .select(
+        `
         *,
         ___xtr_customer:msg_cst_id (
           cst_name,
           cst_fname,
           cst_mail
         )
-      `)
+      `,
+      )
       .or(`msg_id.eq.${ticketId},msg_parent_id.eq.${ticketId}`)
       .order('msg_date', { ascending: true });
 
@@ -384,10 +395,14 @@ export class ContactService extends SupabaseBaseService {
   /**
    * Escalade un ticket (assigne à un staff et marque comme prioritaire)
    */
-  async escalateTicket(id: string, staffId: string, reason: string): Promise<ContactTicket> {
+  async escalateTicket(
+    id: string,
+    staffId: string,
+    reason: string,
+  ): Promise<ContactTicket> {
     // Récupérer le ticket actuel
     const ticket = await this.getContactById(id);
-    
+
     // Mettre à jour avec escalade
     const escalationNote = `[ESCALADE] ${reason}`;
     const updatedContent = `${ticket.msg_content}\n\n--- ESCALADÉ ---\n${escalationNote}`;
@@ -399,7 +414,8 @@ export class ContactService extends SupabaseBaseService {
         msg_content: updatedContent,
       })
       .eq('msg_id', id)
-      .select(`
+      .select(
+        `
         *,
         ___xtr_customer:msg_cst_id (
           cst_name,
@@ -407,7 +423,8 @@ export class ContactService extends SupabaseBaseService {
           cst_mail,
           cst_phone
         )
-      `)
+      `,
+      )
       .single();
 
     if (error) {
@@ -415,7 +432,7 @@ export class ContactService extends SupabaseBaseService {
     }
 
     const transformedTicket = this.transformToContactTicket(data);
-    
+
     // Notification d'escalade
     await this.sendNotifications(transformedTicket, 'escalated');
 
@@ -443,7 +460,7 @@ export class ContactService extends SupabaseBaseService {
       // Messages des dernières 24h
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      
+
       const { count: recentCount } = await this.supabase
         .from('___xtr_msg')
         .select('*', { count: 'exact', head: true })
@@ -521,9 +538,11 @@ export class ContactService extends SupabaseBaseService {
     // Extraire les métadonnées du contenu si elles existent
     let priority = 'normal';
     let category = 'general';
-    
+
     try {
-      const metadataMatch = data.msg_content.match(/--- MÉTADONNÉES ---\n(.*)/s);
+      const metadataMatch = data.msg_content.match(
+        /--- MÉTADONNÉES ---\n(.*)/s,
+      );
       if (metadataMatch) {
         const metadata = JSON.parse(metadataMatch[1]);
         priority = metadata.priority || 'normal';
@@ -546,12 +565,14 @@ export class ContactService extends SupabaseBaseService {
       msg_close: data.msg_close,
       priority,
       category,
-      customer: data.___xtr_customer ? {
-        cst_name: data.___xtr_customer.cst_name,
-        cst_fname: data.___xtr_customer.cst_fname,
-        cst_mail: data.___xtr_customer.cst_mail,
-        cst_phone: data.___xtr_customer.cst_phone,
-      } : undefined,
+      customer: data.___xtr_customer
+        ? {
+            cst_name: data.___xtr_customer.cst_name,
+            cst_fname: data.___xtr_customer.cst_fname,
+            cst_mail: data.___xtr_customer.cst_mail,
+            cst_phone: data.___xtr_customer.cst_phone,
+          }
+        : undefined,
     };
   }
 
@@ -561,9 +582,9 @@ export class ContactService extends SupabaseBaseService {
     additionalData?: any,
   ): Promise<void> {
     try {
-      const customerName = ticket.customer ? 
-        `${ticket.customer.cst_fname} ${ticket.customer.cst_name}`.trim() : 
-        'Client';
+      const customerName = ticket.customer
+        ? `${ticket.customer.cst_fname} ${ticket.customer.cst_name}`.trim()
+        : 'Client';
 
       switch (event) {
         case 'created':
@@ -608,7 +629,10 @@ export class ContactService extends SupabaseBaseService {
             priority: 'urgent',
             title: 'Ticket escaladé',
             message: `Ticket ${ticket.msg_id} escaladé et assigné`,
-            metadata: { ticketId: ticket.msg_id, assignedTo: ticket.msg_cnfa_id },
+            metadata: {
+              ticketId: ticket.msg_id,
+              assignedTo: ticket.msg_cnfa_id,
+            },
           });
           break;
       }

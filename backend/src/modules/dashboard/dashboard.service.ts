@@ -40,20 +40,18 @@ export class DashboardService extends SupabaseBaseService {
       const cachedStats = await this.cacheService.getOrSet(
         'dashboard:stats:all',
         async () => {
-          this.logger.log('🚀 Cache MISS - Fetching fresh dashboard statistics with SEO');
+          this.logger.log(
+            '🚀 Cache MISS - Fetching fresh dashboard statistics with SEO',
+          );
 
           // Récupérer toutes les statistiques en parallèle
-          const [
-            usersStats,
-            ordersStats,
-            suppliersStats,
-            seoStats,
-          ] = await Promise.all([
-            this.getUsersStats(),
-            this.getOrdersStats(),
-            this.getSuppliersStats(),
-            this.getSeoStats(),
-          ]);
+          const [usersStats, ordersStats, suppliersStats, seoStats] =
+            await Promise.all([
+              this.getUsersStats(),
+              this.getOrdersStats(),
+              this.getSuppliersStats(),
+              this.getSeoStats(),
+            ]);
 
           const completeStats = {
             ...usersStats,
@@ -64,17 +62,22 @@ export class DashboardService extends SupabaseBaseService {
 
           this.logger.log('✅ Fresh statistics fetched and cached');
           return completeStats;
-        }
+        },
       );
 
       const performanceTime = Date.now() - startTime;
-      this.logger.log(`✅ getAllStats completed in ${performanceTime}ms (cache hit: ${performanceTime < 100 ? 'YES' : 'NO'})`);
+      this.logger.log(
+        `✅ getAllStats completed in ${performanceTime}ms (cache hit: ${performanceTime < 100 ? 'YES' : 'NO'})`,
+      );
 
       return cachedStats;
     } catch (error) {
       const performanceTime = Date.now() - startTime;
-      this.logger.error(`❌ Error in getAllStats after ${performanceTime}ms:`, error);
-      
+      this.logger.error(
+        `❌ Error in getAllStats after ${performanceTime}ms:`,
+        error,
+      );
+
       // Retourner des valeurs par défaut en cas d'erreur
       return {
         totalUsers: 0,
@@ -138,8 +141,9 @@ export class DashboardService extends SupabaseBaseService {
       const totalSitemapEntries = sitemapEntries || 0;
       const totalBlogEntries = blogEntries || 0;
       const totalGammeEntries = gammeEntries || 0;
-      const totalPages = totalSitemapEntries + totalBlogEntries + totalGammeEntries;
-      
+      const totalPages =
+        totalSitemapEntries + totalBlogEntries + totalGammeEntries;
+
       // Estimation du taux d'optimisation basé sur les données réelles
       const pagesWithSeo = Math.round(totalPages * 0.952); // 95.2% comme observé
       const completionRate = 95.2;
@@ -276,7 +280,7 @@ export class DashboardService extends SupabaseBaseService {
   }
 
   /**
-   * 🏭 Statistiques des fournisseurs - Méthode existante préservée  
+   * 🏭 Statistiques des fournisseurs - Méthode existante préservée
    */
   async getSuppliersStats(): Promise<{ totalSuppliers: number }> {
     try {
@@ -422,7 +426,7 @@ export class DashboardService extends SupabaseBaseService {
   }
 
   /**
-   * 🎯 Dashboard SEO - Utilise tables méta existantes  
+   * 🎯 Dashboard SEO - Utilise tables méta existantes
    */
   async getSeoDashboard(userId: string) {
     try {
@@ -535,7 +539,8 @@ export class DashboardService extends SupabaseBaseService {
   }> {
     return {
       success: true,
-      message: 'DashboardService modernized - Architecture existante préservée + Flexibilité modulaire ajoutée',
+      message:
+        'DashboardService modernized - Architecture existante préservée + Flexibilité modulaire ajoutée',
       version: '2.0 - Vérifier Existant et Utiliser le Meilleur',
       timestamp: new Date().toISOString(),
     };
@@ -551,7 +556,9 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getUserCountFixed: ${error.message}`);
-        throw new Error(`Impossible de récupérer le nombre d'utilisateurs: ${error.message}`);
+        throw new Error(
+          `Impossible de récupérer le nombre d'utilisateurs: ${error.message}`,
+        );
       }
 
       return count || 0;
@@ -569,7 +576,9 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getOrderCountFixed: ${error.message}`);
-        throw new Error(`Impossible de récupérer le nombre de commandes: ${error.message}`);
+        throw new Error(
+          `Impossible de récupérer le nombre de commandes: ${error.message}`,
+        );
       }
 
       return count || 0;
@@ -587,7 +596,9 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getSupplierCountFixed: ${error.message}`);
-        throw new Error(`Impossible de récupérer le nombre de fournisseurs: ${error.message}`);
+        throw new Error(
+          `Impossible de récupérer le nombre de fournisseurs: ${error.message}`,
+        );
       }
 
       return count || 0;
@@ -609,7 +620,9 @@ export class DashboardService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Erreur getRecentOrdersCountFixed: ${error.message}`);
-        throw new Error(`Impossible de récupérer les commandes récentes: ${error.message}`);
+        throw new Error(
+          `Impossible de récupérer les commandes récentes: ${error.message}`,
+        );
       }
 
       return count || 0;
@@ -628,14 +641,16 @@ export class DashboardService extends SupabaseBaseService {
 
       const { data, error } = await this.supabase
         .from('___xtr_order')
-        .select(`
+        .select(
+          `
           ord_id,
           ord_total_ttc,
           ord_ords_id,
           ord_is_pay,
           ord_date,
           ord_cst_id
-        `)
+        `,
+        )
         .order('ord_date', { ascending: false })
         .limit(limit);
 
@@ -645,14 +660,15 @@ export class DashboardService extends SupabaseBaseService {
       }
 
       // Transformer les données pour un format plus lisible
-      const transformedOrders = data?.map(order => ({
-        id: order.ord_id,
-        total: parseFloat(order.ord_total_ttc || '0'),
-        status: order.ord_ords_id,
-        isPaid: order.ord_is_pay === '1',
-        date: order.ord_date,
-        customerId: order.ord_cst_id,
-      })) || [];
+      const transformedOrders =
+        data?.map((order) => ({
+          id: order.ord_id,
+          total: parseFloat(order.ord_total_ttc || '0'),
+          status: order.ord_ords_id,
+          isPaid: order.ord_is_pay === '1',
+          date: order.ord_date,
+          customerId: order.ord_cst_id,
+        })) || [];
 
       this.logger.log(`Retrieved ${transformedOrders.length} recent orders`);
       return transformedOrders;
@@ -671,13 +687,15 @@ export class DashboardService extends SupabaseBaseService {
 
       const { data, error } = await this.supabase
         .from('___xtr_order')
-        .select(`
+        .select(
+          `
           ord_id,
           ord_ords_id,
           ord_date,
           ord_cst_id,
           ord_total_ttc
-        `)
+        `,
+        )
         .in('ord_ords_id', ['4', '5']) // Prêt et expédié
         .order('ord_date', { ascending: false })
         .limit(50);
@@ -688,15 +706,16 @@ export class DashboardService extends SupabaseBaseService {
       }
 
       // Transformer les données pour inclure des infos de suivi simulées
-      const shipments = data?.map(order => ({
-        id: order.ord_id,
-        orderId: order.ord_id,
-        status: order.ord_ords_id === '5' ? 'shipped' : 'ready',
-        trackingNumber: `TRK${order.ord_id}${Date.now().toString().slice(-4)}`,
-        date: order.ord_date,
-        customerId: order.ord_cst_id,
-        total: parseFloat(order.ord_total_ttc || '0'),
-      })) || [];
+      const shipments =
+        data?.map((order) => ({
+          id: order.ord_id,
+          orderId: order.ord_id,
+          status: order.ord_ords_id === '5' ? 'shipped' : 'ready',
+          trackingNumber: `TRK${order.ord_id}${Date.now().toString().slice(-4)}`,
+          date: order.ord_date,
+          customerId: order.ord_cst_id,
+          total: parseFloat(order.ord_total_ttc || '0'),
+        })) || [];
 
       this.logger.log(`Retrieved ${shipments.length} shipments`);
       return shipments;
@@ -758,14 +777,17 @@ export class DashboardService extends SupabaseBaseService {
       const cachedStats = await this.cacheService.getOrSet(
         'dashboard:stats:fixed',
         async () => {
-          this.logger.log('🔄 Cache MISS - Fetching fresh fixed dashboard stats');
+          this.logger.log(
+            '🔄 Cache MISS - Fetching fresh fixed dashboard stats',
+          );
 
-          const [totalUsers, totalOrders, totalSuppliers, recentOrders] = await Promise.all([
-            this.getUserCountFixed(),
-            this.getOrderCountFixed(),
-            this.getSupplierCountFixed(),
-            this.getRecentOrdersCountFixed(),
-          ]);
+          const [totalUsers, totalOrders, totalSuppliers, recentOrders] =
+            await Promise.all([
+              this.getUserCountFixed(),
+              this.getOrderCountFixed(),
+              this.getSupplierCountFixed(),
+              this.getRecentOrdersCountFixed(),
+            ]);
 
           return {
             totalUsers,
@@ -773,18 +795,24 @@ export class DashboardService extends SupabaseBaseService {
             totalSuppliers,
             recentOrders,
             success: true,
-            message: 'Statistiques dashboard récupérées avec succès (méthodes Fixed modernes avec cache)',
+            message:
+              'Statistiques dashboard récupérées avec succès (méthodes Fixed modernes avec cache)',
           };
-        }
+        },
       );
 
       const performanceTime = Date.now() - startTime;
-      this.logger.log(`✅ getDashboardStatsFixed completed in ${performanceTime}ms (cache hit: ${performanceTime < 50 ? 'YES' : 'NO'})`);
+      this.logger.log(
+        `✅ getDashboardStatsFixed completed in ${performanceTime}ms (cache hit: ${performanceTime < 50 ? 'YES' : 'NO'})`,
+      );
 
       return cachedStats;
     } catch (error) {
       const performanceTime = Date.now() - startTime;
-      this.logger.error(`❌ Erreur getDashboardStatsFixed after ${performanceTime}ms:`, error);
+      this.logger.error(
+        `❌ Erreur getDashboardStatsFixed after ${performanceTime}ms:`,
+        error,
+      );
       return {
         totalUsers: 0,
         totalOrders: 0,
@@ -795,5 +823,4 @@ export class DashboardService extends SupabaseBaseService {
       };
     }
   }
-
 }

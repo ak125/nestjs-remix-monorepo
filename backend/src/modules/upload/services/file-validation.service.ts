@@ -181,8 +181,14 @@ export class FileValidationService {
   }> {
     this.logger.log(`🔍 Validating ${files.length} files`);
 
-    const valid: Array<{ file: Express.Multer.File; result: ValidationResult }> = [];
-    const invalid: Array<{ file: Express.Multer.File; result: ValidationResult }> = [];
+    const valid: Array<{
+      file: Express.Multer.File;
+      result: ValidationResult;
+    }> = [];
+    const invalid: Array<{
+      file: Express.Multer.File;
+      result: ValidationResult;
+    }> = [];
 
     // Traitement en parallèle avec limitation
     const batchSize = 10;
@@ -312,7 +318,10 @@ export class FileValidationService {
         };
 
         // Vérification de cohérence
-        const declaredExtension = path.extname(file.originalname).slice(1).toLowerCase();
+        const declaredExtension = path
+          .extname(file.originalname)
+          .slice(1)
+          .toLowerCase();
         if (detectedType.ext !== declaredExtension) {
           result.warnings.push(
             `Incohérence d'extension: déclarée "${declaredExtension}", détectée "${detectedType.ext}"`,

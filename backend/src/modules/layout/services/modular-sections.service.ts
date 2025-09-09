@@ -330,7 +330,8 @@ export class ModularSectionsService {
       {
         id: 'hero-extended',
         name: 'Hero Extended',
-        description: 'Section hero complète avec image et liste de fonctionnalités',
+        description:
+          'Section hero complète avec image et liste de fonctionnalités',
         type: 'hero',
         component: 'HeroExtended',
         defaultProps: {

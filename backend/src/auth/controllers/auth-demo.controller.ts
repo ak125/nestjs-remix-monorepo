@@ -1,6 +1,9 @@
 import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from '../auth.service';
-import { ModulePermissionGuard, RequireModule } from '../guards/module-permission.guard';
+import {
+  ModulePermissionGuard,
+  RequireModule,
+} from '../guards/module-permission.guard';
 
 @Controller('auth-demo')
 export class AuthDemoController {
@@ -27,7 +30,7 @@ export class AuthDemoController {
     const userModules = await this.authService.getUserAccessibleModules(
       request.user?.id || 'demo-user',
     );
-    
+
     return {
       message: 'Accès commercial autorisé',
       user: request.user?.email || 'Demo User',
@@ -74,7 +77,7 @@ export class AuthDemoController {
   @RequireModule('expedition', 'read')
   async testExpeditionAccess(@Req() request: any) {
     const sessionInfo = await this.authService.getSessionFromRequest(request);
-    
+
     return {
       message: 'Accès expédition autorisé',
       sessionInfo,

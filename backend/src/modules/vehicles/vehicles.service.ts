@@ -9,12 +9,12 @@ import {
 
 /**
  * 🚗 SERVICE VEHICLES OPTIMAL - Meilleure approche
- * 
+ *
  * Utilise les vraies tables de la base de données qui fonctionnent :
  * - auto_marque (40 marques actives)
  * - auto_modele (5745 modèles)
  * - auto_type (48918 types/motorisations)
- * 
+ *
  * Amélioration : Recherche avancée + Filtrage optimisé + Gestion d'erreurs
  */
 @Injectable()
@@ -62,7 +62,10 @@ export class VehiclesService extends SupabaseBaseService {
   /**
    * Récupérer les modèles d'une marque
    */
-  async findModelsByBrand(brandId: string, filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
+  async findModelsByBrand(
+    brandId: string,
+    filters?: VehiclePaginationDto,
+  ): Promise<VehicleResponseDto> {
     try {
       let query = this.client
         .from('auto_modele')
@@ -99,7 +102,10 @@ export class VehiclesService extends SupabaseBaseService {
   /**
    * Récupérer les types d'un modèle
    */
-  async findTypesByModel(modelId: string, filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
+  async findTypesByModel(
+    modelId: string,
+    filters?: VehiclePaginationDto,
+  ): Promise<VehicleResponseDto> {
     try {
       let query = this.client
         .from('auto_type')
@@ -140,18 +146,23 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           *,
           auto_modele!inner(
             *,
             auto_marque!inner(*)
           )
-        `)
+        `,
+        )
         .limit(50);
 
       // Filtre par marque via code
       if (searchDto.brandCode) {
-        query = query.eq('auto_modele.auto_marque.marque_alias', searchDto.brandCode);
+        query = query.eq(
+          'auto_modele.auto_marque.marque_alias',
+          searchDto.brandCode,
+        );
       }
 
       // Filtre par modèle via alias
@@ -176,7 +187,9 @@ export class VehiclesService extends SupabaseBaseService {
           .or(`type_year_to.is.null,type_year_to.gte.${searchDto.year}`);
       }
 
-      const { data, error } = await query.order('auto_modele.auto_marque.marque_name');
+      const { data, error } = await query.order(
+        'auto_modele.auto_marque.marque_name',
+      );
 
       if (error) {
         this.logger.error('Erreur searchByCode:', error);
@@ -199,21 +212,28 @@ export class VehiclesService extends SupabaseBaseService {
   /**
    * Filtrage avancé avec offset/limit
    */
-  async filterVehicles(filterDto: VehicleFilterDto): Promise<VehicleResponseDto> {
+  async filterVehicles(
+    filterDto: VehicleFilterDto,
+  ): Promise<VehicleResponseDto> {
     try {
       let query = this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           *,
           auto_modele!inner(
             *,
             auto_marque!inner(*)
           )
-        `)
+        `,
+        )
         .limit(filterDto.limit || 50);
 
       if (filterDto.offset) {
-        query = query.range(filterDto.offset, filterDto.offset + (filterDto.limit || 50) - 1);
+        query = query.range(
+          filterDto.offset,
+          filterDto.offset + (filterDto.limit || 50) - 1,
+        );
       }
 
       // Filtres
@@ -224,7 +244,10 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       if (filterDto.brandId) {
-        query = query.eq('auto_modele.auto_marque.marque_id', filterDto.brandId);
+        query = query.eq(
+          'auto_modele.auto_marque.marque_id',
+          filterDto.brandId,
+        );
       }
 
       if (filterDto.modelId) {
@@ -235,7 +258,9 @@ export class VehiclesService extends SupabaseBaseService {
         query = query.is('type_year_to', null);
       }
 
-      const { data, error } = await query.order('auto_modele.auto_marque.marque_name');
+      const { data, error } = await query.order(
+        'auto_modele.auto_marque.marque_name',
+      );
 
       if (error) {
         this.logger.error('Erreur filterVehicles:', error);
@@ -306,7 +331,9 @@ export class VehiclesService extends SupabaseBaseService {
       // Recherche dans les modèles
       const modelsResult = await this.client
         .from('auto_modele')
-        .select('modele_id, modele_name, modele_alias, modele_ful_name, modele_marque_id')
+        .select(
+          'modele_id, modele_name, modele_alias, modele_ful_name, modele_marque_id',
+        )
         .eq('modele_display', 1)
         .ilike('modele_name', `%${searchTerm}%`)
         .order('modele_name')
@@ -321,7 +348,8 @@ export class VehiclesService extends SupabaseBaseService {
         brands: brandsResult.data || [],
         models: modelsResult.data || [],
         types: [], // Pour l'instant, on skip les types
-        total: (brandsResult.data?.length || 0) + (modelsResult.data?.length || 0),
+        total:
+          (brandsResult.data?.length || 0) + (modelsResult.data?.length || 0),
         searchTerm,
       };
     } catch (error) {
@@ -358,8 +386,8 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // Récupérer les type_ids correspondants
-      const typeIds = codeData.map(item => item.tnc_type_id).filter(Boolean);
-      
+      const typeIds = codeData.map((item) => item.tnc_type_id).filter(Boolean);
+
       if (typeIds.length === 0) {
         return {
           data: [],
@@ -383,13 +411,15 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // Combiner les données
-      const combinedData = codeData.map(code => {
-        const type = typeData?.find(t => t.type_id === code.tnc_type_id);
-        return {
-          ...code,
-          auto_type: type || null
-        };
-      }).filter(item => item.auto_type !== null);
+      const combinedData = codeData
+        .map((code) => {
+          const type = typeData?.find((t) => t.type_id === code.tnc_type_id);
+          return {
+            ...code,
+            auto_type: type || null,
+          };
+        })
+        .filter((item) => item.auto_type !== null);
 
       return {
         data: combinedData,
@@ -433,7 +463,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Récupérer les type_ids correspondants
       const typeIds = codeData.map((item) => item.tnc_type_id).filter(Boolean);
-      
+
       if (typeIds.length === 0) {
         return {
           data: [],

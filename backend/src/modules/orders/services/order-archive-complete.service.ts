@@ -10,7 +10,7 @@ export class OrderArchiveCompleteService {
    */
   private isOrderArchived(order: any): boolean {
     if (!order) return false;
-    
+
     // Statuts finaux simulés
     const finalStatuses = [6, 91, 92, 94];
     return finalStatuses.includes(parseInt(order.status || '0'));
@@ -22,7 +22,7 @@ export class OrderArchiveCompleteService {
   async getArchivedOrder(orderId: number): Promise<any> {
     try {
       const order = await this.ordersService.getOrderById(orderId);
-      
+
       if (!order || !this.isOrderArchived(order)) {
         return null;
       }
@@ -54,8 +54,12 @@ export class OrderArchiveCompleteService {
         invoices: [],
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération de la commande archivée:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error(
+        'Erreur lors de la récupération de la commande archivée:',
+        error,
+      );
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       throw new Error(`Erreur base de données: ${errorMessage}`);
     }
   }
@@ -63,7 +67,11 @@ export class OrderArchiveCompleteService {
   /**
    * Lister les commandes archivées d'un client (simulation)
    */
-  async listArchivedOrders(customerId: number, page = 1, limit = 10): Promise<any> {
+  async listArchivedOrders(
+    customerId: number,
+    page = 1,
+    limit = 10,
+  ): Promise<any> {
     try {
       // Simulation - dans un vrai système, on ferait une requête filtrée
       const mockArchivedOrders = Array.from({ length: 3 }, (_, i) => ({
@@ -77,7 +85,7 @@ export class OrderArchiveCompleteService {
           created: new Date().toISOString(),
           archived: new Date().toISOString(),
         },
-        totalTTC: (100 + i * 50),
+        totalTTC: 100 + i * 50,
       }));
 
       return {
@@ -90,8 +98,12 @@ export class OrderArchiveCompleteService {
         },
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération des commandes archivées:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error(
+        'Erreur lors de la récupération des commandes archivées:',
+        error,
+      );
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       throw new Error(`Erreur base de données: ${errorMessage}`);
     }
   }
@@ -102,7 +114,7 @@ export class OrderArchiveCompleteService {
   async exportOrderForPdf(orderId: number): Promise<any> {
     try {
       const archivedOrder = await this.getArchivedOrder(orderId);
-      
+
       if (!archivedOrder) {
         throw new Error('Commande archivée non trouvée');
       }
@@ -117,8 +129,9 @@ export class OrderArchiveCompleteService {
         },
       };
     } catch (error) {
-      console.error('Erreur lors de la préparation de l\'export PDF:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      console.error("Erreur lors de la préparation de l'export PDF:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       throw new Error(`Erreur export: ${errorMessage}`);
     }
   }

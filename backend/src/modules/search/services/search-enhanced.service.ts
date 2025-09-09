@@ -56,7 +56,7 @@ export interface SearchResult {
 
 /**
  * 🔍 SearchService Enterprise v3.0 - Service unifié optimisé
- * 
+ *
  * ✨ NOUVELLES FONCTIONNALITÉS v3.0:
  * ✅ Meilisearch ultra-rapide avec IA
  * ✅ Cache intelligent multi-niveaux Redis
@@ -88,10 +88,10 @@ export class SearchService {
    */
   async search(params: SearchParams, userId?: string): Promise<SearchResult> {
     const startTime = Date.now();
-    
+
     // Validation et normalisation des paramètres
     const normalizedParams = this.normalizeParams(params);
-    
+
     if (!normalizedParams.query && normalizedParams.type !== 'instant') {
       return this.emptyResult(normalizedParams);
     }
@@ -99,9 +99,11 @@ export class SearchService {
     // Vérifier le cache multi-niveaux
     const cacheKey = this.cache.generateKey(normalizedParams);
     const cached = await this.cache.get(cacheKey);
-    
+
     if (cached && this.isCacheValid(cached)) {
-      this.logger.debug(`⚡ Cache hit pour: "${normalizedParams.query}" (${normalizedParams.type})`);
+      this.logger.debug(
+        `⚡ Cache hit pour: "${normalizedParams.query}" (${normalizedParams.type})`,
+      );
       await this.analytics.recordSearch(normalizedParams, cached, userId, true);
       return { ...cached, fromCache: true };
     }
@@ -111,13 +113,17 @@ export class SearchService {
     try {
       // Router vers la stratégie de recherche optimale
       results = await this.routeSearch(normalizedParams);
-      
+
       // Enrichissement intelligent des résultats
       results = await this.enrichResults(results, normalizedParams, userId);
-      
+
       // Post-traitement et scoring personnalisé
-      results = await this.postProcessResults(results, normalizedParams, userId);
-      
+      results = await this.postProcessResults(
+        results,
+        normalizedParams,
+        userId,
+      );
+
       // Calcul temps d'exécution
       results.executionTime = Date.now() - startTime;
 
@@ -126,17 +132,24 @@ export class SearchService {
       await this.cache.set(cacheKey, results, cacheTtl);
 
       // Analytics et métriques avancées
-      await this.analytics.recordSearch(normalizedParams, results, userId, false);
-      
+      await this.analytics.recordSearch(
+        normalizedParams,
+        results,
+        userId,
+        false,
+      );
+
       this.logger.log(
         `✅ Recherche "${normalizedParams.query}" (${normalizedParams.type}): ` +
-        `${results.total} résultats en ${results.executionTime}ms`
+          `${results.total} résultats en ${results.executionTime}ms`,
       );
-      
-      return results;
 
+      return results;
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche "${normalizedParams.query}":`, error);
+      this.logger.error(
+        `❌ Erreur recherche "${normalizedParams.query}":`,
+        error,
+      );
       await this.analytics.recordError(normalizedParams, error, userId);
       return this.errorResult(normalizedParams, error);
     }
@@ -149,20 +162,20 @@ export class SearchService {
     switch (params.type) {
       case 'v7':
         return this.searchV7(params);
-      
+
       case 'v8':
         return this.searchV8(params);
-      
+
       case 'mine':
       case 'vin':
         return this.searchByVehicleCode(params);
-      
+
       case 'reference':
         return this.searchByReference(params);
-      
+
       case 'instant':
         return this.instantSearch(params.query || '');
-      
+
       case 'text':
       default:
         // V8 par défaut avec Meilisearch + IA
@@ -176,16 +189,27 @@ export class SearchService {
   private async searchV7(params: SearchParams): Promise<SearchResult> {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
-      offset: ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
+      offset:
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV7(params.filters),
       sort: this.buildSort(params.sort),
       attributesToRetrieve: [
-        'id', 'reference', 'designation', 'price', 'brand', 
-        'category', 'stock', 'image', 'availability'
+        'id',
+        'reference',
+        'designation',
+        'price',
+        'brand',
+        'category',
+        'stock',
+        'image',
+        'availability',
       ],
     };
 
-    const results = await this.meilisearch.searchProducts(params.query, searchOptions);
+    const results = await this.meilisearch.searchProducts(
+      params.query,
+      searchOptions,
+    );
 
     return {
       version: 'v7',
@@ -202,15 +226,33 @@ export class SearchService {
   private async searchV8(params: SearchParams): Promise<SearchResult> {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
-      offset: ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
+      offset:
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV8(params.filters),
       sort: this.buildSort(params.sort),
-      facets: ['marque', 'modele', 'carburant', 'transmissionType', 'anneeDebut'], // 🔧 Attributs véhicules corrects
-      attributesToHighlight: params.options?.highlight ? 
-        ['brand', 'model', 'designation', 'description'] : undefined,
+      facets: [
+        'marque',
+        'modele',
+        'carburant',
+        'transmissionType',
+        'anneeDebut',
+      ], // 🔧 Attributs véhicules corrects
+      attributesToHighlight: params.options?.highlight
+        ? ['brand', 'model', 'designation', 'description']
+        : undefined,
       attributesToRetrieve: [
-        'id', 'reference', 'designation', 'price', 'brand', 'model', 
-        'category', 'year', 'stock', 'availability', 'image', 'description'
+        'id',
+        'reference',
+        'designation',
+        'price',
+        'brand',
+        'model',
+        'category',
+        'year',
+        'stock',
+        'availability',
+        'image',
+        'description',
       ],
     };
 
@@ -239,15 +281,23 @@ export class SearchService {
   private async searchV8Advanced(params: SearchParams): Promise<SearchResult> {
     const baseOptions = {
       limit: params.pagination?.limit || 20,
-      offset: ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
+      offset:
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV8Advanced(params.filters),
       sort: this.buildSortAdvanced(params.sort),
       facets: [
-        'marque', 'modele', 'carburant', 'transmissionType', // 🔧 Attributs véhicules
-        'brand', 'type', 'isActive', 'year', // 🔧 Attributs produits  
+        'marque',
+        'modele',
+        'carburant',
+        'transmissionType', // 🔧 Attributs véhicules
+        'brand',
+        'type',
+        'isActive',
+        'year', // 🔧 Attributs produits
       ],
-      attributesToHighlight: params.options?.highlight ? 
-        ['brand', 'model', 'designation', 'description', 'features'] : undefined,
+      attributesToHighlight: params.options?.highlight
+        ? ['brand', 'model', 'designation', 'description', 'features']
+        : undefined,
       attributesToCrop: ['description:100', 'features:50'],
       showMatchesPosition: true,
       matchingStrategy: params.options?.fuzzySearch ? 'last' : 'all',
@@ -271,7 +321,7 @@ export class SearchService {
       if (expandedQuery !== params.query) {
         promises.push(
           this.meilisearch.searchVehicles(expandedQuery, baseOptions),
-          this.meilisearch.searchProducts(expandedQuery, baseOptions)
+          this.meilisearch.searchProducts(expandedQuery, baseOptions),
         );
       }
     }
@@ -293,19 +343,24 @@ export class SearchService {
    * 🚗 Recherche par MINE/VIN optimisée
    */
   async searchByMine(mine: string, userId?: string): Promise<SearchResult> {
-    return this.search({
-      query: mine,
-      type: 'mine',
-      options: { facets: true, suggestions: true },
-    }, userId);
+    return this.search(
+      {
+        query: mine,
+        type: 'mine',
+        options: { facets: true, suggestions: true },
+      },
+      userId,
+    );
   }
 
-  private async searchByVehicleCode(params: SearchParams): Promise<SearchResult> {
+  private async searchByVehicleCode(
+    params: SearchParams,
+  ): Promise<SearchResult> {
     try {
       // Utiliser le service spécialisé véhicules
       const vehicleData = await this.vehicleSearch.searchByCode(
         params.query,
-        params.type as 'mine' | 'vin'
+        params.type as 'mine' | 'vin',
       );
 
       if (!vehicleData) {
@@ -325,9 +380,11 @@ export class SearchService {
         {
           limit: params.pagination?.limit || 100,
           includeAlternatives: true,
-          priceRange: params.filters?.priceMin || params.filters?.priceMax ? 
-            { min: params.filters.priceMin, max: params.filters.priceMax } : undefined,
-        }
+          priceRange:
+            params.filters?.priceMin || params.filters?.priceMax
+              ? { min: params.filters.priceMin, max: params.filters.priceMax }
+              : undefined,
+        },
       );
 
       return {
@@ -338,7 +395,10 @@ export class SearchService {
         vehicle: vehicleData,
       };
     } catch (error) {
-      this.logger.error(`Erreur recherche ${params.type} "${params.query}":`, error);
+      this.logger.error(
+        `Erreur recherche ${params.type} "${params.query}":`,
+        error,
+      );
       throw error;
     }
   }
@@ -351,20 +411,33 @@ export class SearchService {
       filter: [
         `reference LIKE "${params.query}%"`,
         // Recherche aussi dans les références alternatives
-        `alternative_references LIKE "%${params.query}%"`
+        `alternative_references LIKE "%${params.query}%"`,
       ],
       limit: params.pagination?.limit || 50,
-      offset: ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
+      offset:
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
       attributesToHighlight: ['reference', 'designation', 'description'],
       attributesToRetrieve: [
-        'id', 'reference', 'designation', 'price', 'brand', 'category',
-        'stock', 'availability', 'image', 'alternative_references',
-        'compatibility', 'specifications'
+        'id',
+        'reference',
+        'designation',
+        'price',
+        'brand',
+        'category',
+        'stock',
+        'availability',
+        'image',
+        'alternative_references',
+        'compatibility',
+        'specifications',
       ],
       sort: ['exact_match:desc', 'relevance:desc'],
     };
 
-    const results = await this.meilisearch.searchProducts(params.query, searchOptions);
+    const results = await this.meilisearch.searchProducts(
+      params.query,
+      searchOptions,
+    );
 
     return {
       items: results.hits || [],
@@ -403,32 +476,50 @@ export class SearchService {
     }
 
     // Recherche ultra-rapide limitée
-    const [suggestions, quickProducts, quickVehicles] = await Promise.allSettled([
-      this.meilisearch.getSuggestions(query, 'auto_complete'),
-      this.meilisearch.searchProducts(query, { 
-        limit: 3, 
-        attributesToRetrieve: ['id', 'reference', 'designation', 'price', 'image']
-      }),
-      this.meilisearch.searchVehicles(query, { 
-        limit: 2,
-        attributesToRetrieve: ['id', 'brand', 'model', 'year', 'price', 'image']
-      }),
-    ]);
+    const [suggestions, quickProducts, quickVehicles] =
+      await Promise.allSettled([
+        this.meilisearch.getSuggestions(query, 'auto_complete'),
+        this.meilisearch.searchProducts(query, {
+          limit: 3,
+          attributesToRetrieve: [
+            'id',
+            'reference',
+            'designation',
+            'price',
+            'image',
+          ],
+        }),
+        this.meilisearch.searchVehicles(query, {
+          limit: 2,
+          attributesToRetrieve: [
+            'id',
+            'brand',
+            'model',
+            'year',
+            'price',
+            'image',
+          ],
+        }),
+      ]);
 
     const items = [];
     let suggestionList = [];
 
     if (quickProducts.status === 'fulfilled') {
-      items.push(...quickProducts.value.hits.map(hit => ({ ...hit, type: 'product' })));
+      items.push(
+        ...quickProducts.value.hits.map((hit) => ({ ...hit, type: 'product' })),
+      );
     }
 
     if (quickVehicles.status === 'fulfilled') {
-      items.push(...quickVehicles.value.hits.map(hit => ({ ...hit, type: 'vehicle' })));
+      items.push(
+        ...quickVehicles.value.hits.map((hit) => ({ ...hit, type: 'vehicle' })),
+      );
     }
 
     if (suggestions.status === 'fulfilled') {
       suggestionList = suggestions.value.hits
-        .map(hit => hit.suggestion || `${hit.brand} ${hit.model}`)
+        .map((hit) => hit.suggestion || `${hit.brand} ${hit.model}`)
         .filter(Boolean)
         .slice(0, 5);
     }
@@ -471,34 +562,42 @@ export class SearchService {
 
   private isCacheValid(cached: any): boolean {
     // Validation cache basique
-    return cached && 
-           cached.items !== undefined && 
-           cached.total !== undefined &&
-           (Date.now() - (cached.timestamp || 0)) < 3600000; // 1 heure max
+    return (
+      cached &&
+      cached.items !== undefined &&
+      cached.total !== undefined &&
+      Date.now() - (cached.timestamp || 0) < 3600000
+    ); // 1 heure max
   }
 
-  private async enrichResults(results: SearchResult, params: SearchParams, userId?: string): Promise<SearchResult> {
+  private async enrichResults(
+    results: SearchResult,
+    params: SearchParams,
+    userId?: string,
+  ): Promise<SearchResult> {
     const enrichPromises = [];
 
     // Facettes
     if (params.options?.facets && results.items.length > 0) {
       enrichPromises.push(
-        this.extractFacetsFromResults(results.items)
-          .then(facets => results.facets = facets)
+        this.extractFacetsFromResults(results.items).then(
+          (facets) => (results.facets = facets),
+        ),
       );
     }
 
     // Suggestions intelligentes
     if (params.options?.suggestions && results.total < 10) {
       enrichPromises.push(
-        this.generateSmartSuggestions(params.query, results.items, userId)
-          .then(suggestions => results.suggestions = suggestions)
+        this.generateSmartSuggestions(params.query, results.items, userId).then(
+          (suggestions) => (results.suggestions = suggestions),
+        ),
       );
     }
 
     // Highlights
     if (params.options?.highlight && results.items.length > 0) {
-      results.items = results.items.map(item => ({
+      results.items = results.items.map((item) => ({
         ...item,
         highlights: this.generateHighlights(item, params.query),
       }));
@@ -508,10 +607,17 @@ export class SearchService {
     return results;
   }
 
-  private async postProcessResults(results: SearchResult, params: SearchParams, userId?: string): Promise<SearchResult> {
+  private async postProcessResults(
+    results: SearchResult,
+    params: SearchParams,
+    userId?: string,
+  ): Promise<SearchResult> {
     // Scoring personnalisé basé sur l'historique utilisateur
     if (userId && results.items.length > 0) {
-      results.items = await this.applyPersonalizedScoring(results.items, userId);
+      results.items = await this.applyPersonalizedScoring(
+        results.items,
+        userId,
+      );
     }
 
     // Déduplication avancée
@@ -521,23 +627,31 @@ export class SearchService {
     return results;
   }
 
-  private mergeResults(vehicleResults: any, productResults: any, params: SearchParams): any[] {
+  private mergeResults(
+    vehicleResults: any,
+    productResults: any,
+    params: SearchParams,
+  ): any[] {
     const items: any[] = [];
 
     if (vehicleResults.status === 'fulfilled') {
-      items.push(...vehicleResults.value.hits.map((hit: any) => ({ 
-        ...hit, 
-        source: 'vehicle',
-        _score: hit._rankingScore || 0
-      })));
+      items.push(
+        ...vehicleResults.value.hits.map((hit: any) => ({
+          ...hit,
+          source: 'vehicle',
+          _score: hit._rankingScore || 0,
+        })),
+      );
     }
 
     if (productResults.status === 'fulfilled') {
-      items.push(...productResults.value.hits.map((hit: any) => ({ 
-        ...hit, 
-        source: 'product',
-        _score: hit._rankingScore || 0
-      })));
+      items.push(
+        ...productResults.value.hits.map((hit: any) => ({
+          ...hit,
+          source: 'product',
+          _score: hit._rankingScore || 0,
+        })),
+      );
     }
 
     // Tri intelligent par pertinence
@@ -548,15 +662,15 @@ export class SearchService {
 
   private calculateTotalHits(vehicleResults: any, productResults: any): number {
     let total = 0;
-    
+
     if (vehicleResults.status === 'fulfilled') {
       total += vehicleResults.value.estimatedTotalHits || 0;
     }
-    
+
     if (productResults.status === 'fulfilled') {
       total += productResults.value.estimatedTotalHits || 0;
     }
-    
+
     return total;
   }
 
@@ -586,9 +700,9 @@ export class SearchService {
         // Boost pour correspondance exacte
         const aExact = this.isExactMatch(a, params.query) ? 1 : 0;
         const bExact = this.isExactMatch(b, params.query) ? 1 : 0;
-        
+
         if (aExact !== bExact) return bExact - aExact;
-        
+
         // Puis par score
         return (b._score || 0) - (a._score || 0);
       })
@@ -597,20 +711,24 @@ export class SearchService {
 
   private calculateAdvancedTotalHits(results: any[]): number {
     return results
-      .filter(result => result.status === 'fulfilled')
-      .reduce((total, result) => total + (result.value.estimatedTotalHits || 0), 0);
+      .filter((result) => result.status === 'fulfilled')
+      .reduce(
+        (total, result) => total + (result.value.estimatedTotalHits || 0),
+        0,
+      );
   }
 
   private isExactMatch(item: any, query: string): boolean {
     const normalizedQuery = query.toLowerCase().trim();
     const fields = [item.reference, item.designation, item.brand, item.model]
       .filter(Boolean)
-      .map(field => field.toString().toLowerCase());
-    
-    return fields.some(field => 
-      field === normalizedQuery || 
-      field.includes(normalizedQuery) ||
-      normalizedQuery.includes(field)
+      .map((field) => field.toString().toLowerCase());
+
+    return fields.some(
+      (field) =>
+        field === normalizedQuery ||
+        field.includes(normalizedQuery) ||
+        normalizedQuery.includes(field),
     );
   }
 
@@ -724,7 +842,7 @@ export class SearchService {
 
   private buildSortAdvanced(sort?: SearchParams['sort']): string[] | undefined {
     const basicSort = this.buildSort(sort);
-    
+
     if (!basicSort && !sort) {
       // Tri par défaut optimisé (sans _score qui n'est pas sortable)
       return ['createdAt:desc', 'updatedAt:desc'];
@@ -733,7 +851,9 @@ export class SearchService {
     return basicSort;
   }
 
-  private async extractFacetsFromResults(items: any[]): Promise<Record<string, any>> {
+  private async extractFacetsFromResults(
+    items: any[],
+  ): Promise<Record<string, any>> {
     const facets: Record<string, any> = {};
 
     if (items.length === 0) return facets;
@@ -766,15 +886,20 @@ export class SearchService {
   }
 
   private groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
-    return array.reduce((groups, item) => {
-      const value = String(item[key] || 'unknown');
-      groups[value] = groups[value] || [];
-      groups[value].push(item);
-      return groups;
-    }, {} as Record<string, T[]>);
+    return array.reduce(
+      (groups, item) => {
+        const value = String(item[key] || 'unknown');
+        groups[value] = groups[value] || [];
+        groups[value].push(item);
+        return groups;
+      },
+      {} as Record<string, T[]>,
+    );
   }
 
-  private calculatePriceRanges(items: any[]): Array<{ range: string; count: number }> {
+  private calculatePriceRanges(
+    items: any[],
+  ): Array<{ range: string; count: number }> {
     const ranges = [
       { min: 0, max: 100, label: '0-100€' },
       { min: 100, max: 500, label: '100-500€' },
@@ -783,43 +908,56 @@ export class SearchService {
       { min: 5000, max: Infinity, label: '5000€+' },
     ];
 
-    return ranges.map(range => ({
-      range: range.label,
-      count: items.filter(item => {
-        const price = parseFloat(item.price) || 0;
-        return price >= range.min && price < range.max;
-      }).length,
-    })).filter(range => range.count > 0);
+    return ranges
+      .map((range) => ({
+        range: range.label,
+        count: items.filter((item) => {
+          const price = parseFloat(item.price) || 0;
+          return price >= range.min && price < range.max;
+        }).length,
+      }))
+      .filter((range) => range.count > 0);
   }
 
-  private async generateSmartSuggestions(query: string, results: any[], userId?: string): Promise<string[]> {
+  private async generateSmartSuggestions(
+    query: string,
+    results: any[],
+    userId?: string,
+  ): Promise<string[]> {
     try {
       const suggestions = new Set<string>();
 
       // Suggestions basées sur Meilisearch
-      const meilisearchSuggestions = await this.meilisearch.getSuggestions(query);
-      meilisearchSuggestions.hits.forEach(hit => {
+      const meilisearchSuggestions =
+        await this.meilisearch.getSuggestions(query);
+      meilisearchSuggestions.hits.forEach((hit) => {
         if (hit.suggestion) suggestions.add(hit.suggestion);
-        if (hit.brand && hit.model) suggestions.add(`${hit.brand} ${hit.model}`);
+        if (hit.brand && hit.model)
+          suggestions.add(`${hit.brand} ${hit.model}`);
       });
 
       // Suggestions basées sur les résultats actuels
-      results.forEach(item => {
+      results.forEach((item) => {
         if (item.brand) suggestions.add(item.brand);
-        if (item.brand && item.model) suggestions.add(`${item.brand} ${item.model}`);
+        if (item.brand && item.model)
+          suggestions.add(`${item.brand} ${item.model}`);
         if (item.category) suggestions.add(item.category);
       });
 
       // Suggestions personnalisées basées sur l'historique (si userId)
       if (userId) {
-        const personalizedSuggestions = await this.analytics.getPersonalizedSuggestions(userId, query);
-        personalizedSuggestions.forEach(suggestion => suggestions.add(suggestion));
+        const personalizedSuggestions =
+          await this.analytics.getPersonalizedSuggestions(userId, query);
+        personalizedSuggestions.forEach((suggestion) =>
+          suggestions.add(suggestion),
+        );
       }
 
       return Array.from(suggestions)
-        .filter(suggestion => 
-          suggestion.toLowerCase() !== query.toLowerCase() &&
-          suggestion.length >= 2
+        .filter(
+          (suggestion) =>
+            suggestion.toLowerCase() !== query.toLowerCase() &&
+            suggestion.length >= 2,
         )
         .slice(0, 5);
     } catch (error) {
@@ -832,14 +970,20 @@ export class SearchService {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
     const highlights: string[] = [];
 
-    const fields = ['designation', 'description', 'brand', 'model', 'reference'];
+    const fields = [
+      'designation',
+      'description',
+      'brand',
+      'model',
+      'reference',
+    ];
 
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (item[field]) {
         const text = item[field].toString();
         let highlightedText = text;
 
-        terms.forEach(term => {
+        terms.forEach((term) => {
           if (text.toLowerCase().includes(term)) {
             const regex = new RegExp(`(${this.escapeRegex(term)})`, 'gi');
             highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
@@ -859,16 +1003,24 @@ export class SearchService {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
-  private async applyPersonalizedScoring(items: any[], userId: string): Promise<any[]> {
+  private async applyPersonalizedScoring(
+    items: any[],
+    userId: string,
+  ): Promise<any[]> {
     try {
       const userPreferences = await this.analytics.getUserPreferences(userId);
-      
-      return items.map(item => ({
-        ...item,
-        _personalScore: this.calculatePersonalScore(item, userPreferences),
-      })).sort((a, b) => 
-        (b._personalScore + (b._score || 0)) - (a._personalScore + (a._score || 0))
-      );
+
+      return items
+        .map((item) => ({
+          ...item,
+          _personalScore: this.calculatePersonalScore(item, userPreferences),
+        }))
+        .sort(
+          (a, b) =>
+            b._personalScore +
+            (b._score || 0) -
+            (a._personalScore + (a._score || 0)),
+        );
     } catch (error) {
       this.logger.warn('Erreur scoring personnalisé:', error);
       return items;
@@ -882,7 +1034,10 @@ export class SearchService {
     if (preferences.preferredCategories?.includes(item.category)) score += 0.15;
     if (preferences.priceRange && item.price) {
       const price = parseFloat(item.price);
-      if (price >= preferences.priceRange.min && price <= preferences.priceRange.max) {
+      if (
+        price >= preferences.priceRange.min &&
+        price <= preferences.priceRange.max
+      ) {
         score += 0.1;
       }
     }
@@ -892,7 +1047,7 @@ export class SearchService {
 
   private deduplicateResults(items: any[]): any[] {
     const seen = new Set<string>();
-    return items.filter(item => {
+    return items.filter((item) => {
       const key = `${item.source}_${item.id}_${item.reference}`;
       if (seen.has(key)) return false;
       seen.add(key);
@@ -900,13 +1055,16 @@ export class SearchService {
     });
   }
 
-  private calculateSmartCacheTtl(params: SearchParams, results: SearchResult): number {
+  private calculateSmartCacheTtl(
+    params: SearchParams,
+    results: SearchResult,
+  ): number {
     // TTL adaptatif intelligent
     if (params.type === 'instant') return 300; // 5 minutes
     if (results.total === 0) return 600; // 10 minutes pour éviter répétitions
     if (results.total > 1000) return 3600; // 1 heure pour grosses recherches
     if (params.options?.facets) return 1800; // 30 minutes avec facettes
-    
+
     return 1800; // 30 minutes par défaut
   }
 
@@ -938,20 +1096,24 @@ export class SearchService {
 
   async getSearchStats(): Promise<any> {
     try {
-      const [vehicleStats, productStats, cacheStats, analyticsStats] = await Promise.allSettled([
-        this.meilisearch.getIndexStats('vehicles'),
-        this.meilisearch.getIndexStats('products'),
-        this.cache.getStats(),
-        this.analytics.getStats(),
-      ]);
+      const [vehicleStats, productStats, cacheStats, analyticsStats] =
+        await Promise.allSettled([
+          this.meilisearch.getIndexStats('vehicles'),
+          this.meilisearch.getIndexStats('products'),
+          this.cache.getStats(),
+          this.analytics.getStats(),
+        ]);
 
       return {
         indices: {
-          vehicles: vehicleStats.status === 'fulfilled' ? vehicleStats.value : null,
-          products: productStats.status === 'fulfilled' ? productStats.value : null,
+          vehicles:
+            vehicleStats.status === 'fulfilled' ? vehicleStats.value : null,
+          products:
+            productStats.status === 'fulfilled' ? productStats.value : null,
         },
         cache: cacheStats.status === 'fulfilled' ? cacheStats.value : null,
-        analytics: analyticsStats.status === 'fulfilled' ? analyticsStats.value : null,
+        analytics:
+          analyticsStats.status === 'fulfilled' ? analyticsStats.value : null,
         totalIndexedItems: await this.getTotalIndexedItems(),
         timestamp: new Date().toISOString(),
       };
@@ -971,7 +1133,10 @@ export class SearchService {
         this.meilisearch.getIndexStats('products'),
       ]);
 
-      return (vehicleStats.numberOfDocuments || 0) + (productStats.numberOfDocuments || 0);
+      return (
+        (vehicleStats.numberOfDocuments || 0) +
+        (productStats.numberOfDocuments || 0)
+      );
     } catch (error) {
       this.logger.error('Erreur comptage items indexés:', error);
       return 0;

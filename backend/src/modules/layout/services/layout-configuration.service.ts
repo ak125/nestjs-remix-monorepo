@@ -440,7 +440,7 @@ export class LayoutConfigurationService {
    */
   async getAllConfigurations(): Promise<LayoutConfigData[]> {
     const cacheKey = 'layout_configs:all';
-    
+
     try {
       const cached = await this.cacheService.get<LayoutConfigData[]>(cacheKey);
       if (cached) {
@@ -460,9 +460,8 @@ export class LayoutConfigurationService {
 
       // Cache pour 30 minutes
       await this.cacheService.set(cacheKey, data || [], 1800);
-      
-      return data || [];
 
+      return data || [];
     } catch (error) {
       this.logger.error('Erreur getAllConfigurations:', error);
       return [];
@@ -506,12 +505,13 @@ export class LayoutConfigurationService {
   async getWidgetsForContext(
     type: string,
     page: string,
-    userRole?: string
+    userRole?: string,
   ): Promise<LayoutWidgetConfig[]> {
     const cacheKey = `layout_widgets:${type}:${page}:${userRole || 'anonymous'}`;
-    
+
     try {
-      const cached = await this.cacheService.get<LayoutWidgetConfig[]>(cacheKey);
+      const cached =
+        await this.cacheService.get<LayoutWidgetConfig[]>(cacheKey);
       if (cached) {
         return cached;
       }
@@ -529,9 +529,12 @@ export class LayoutConfigurationService {
       }
 
       // Filtrer les widgets selon les conditions
-      const filteredWidgets = (data || []).filter(widget => {
+      const filteredWidgets = (data || []).filter((widget) => {
         // Vérifier les conditions de page
-        if (widget.conditions?.pages && !widget.conditions.pages.includes(page)) {
+        if (
+          widget.conditions?.pages &&
+          !widget.conditions.pages.includes(page)
+        ) {
           return false;
         }
 
@@ -547,9 +550,8 @@ export class LayoutConfigurationService {
 
       // Cache pour 15 minutes
       await this.cacheService.set(cacheKey, filteredWidgets, 900);
-      
-      return filteredWidgets;
 
+      return filteredWidgets;
     } catch (error) {
       this.logger.error('Erreur getWidgetsForContext:', error);
       return [];
@@ -578,8 +580,9 @@ export class LayoutConfigurationService {
         await this.cacheService.del('layout_configs:all');
       }
 
-      this.logger.log(`Cache layout invalidé${type ? ` pour ${type}` : ''}${version ? `:${version}` : ''}`);
-
+      this.logger.log(
+        `Cache layout invalidé${type ? ` pour ${type}` : ''}${version ? `:${version}` : ''}`,
+      );
     } catch (error) {
       this.logger.error('Erreur invalidateCache:', error);
     }
@@ -588,7 +591,9 @@ export class LayoutConfigurationService {
   /**
    * Configuration par défaut pour un type donné
    */
-  private async getDefaultConfiguration(type: string): Promise<LayoutConfigData> {
+  private async getDefaultConfiguration(
+    type: string,
+  ): Promise<LayoutConfigData> {
     const defaultConfigs: Record<string, LayoutConfigData> = {
       core: {
         id: 'core-default',
@@ -632,8 +637,18 @@ export class LayoutConfigurationService {
           },
           navigation: {
             main: [
-              { id: '1', label: 'Dashboard', href: '/core/dashboard', icon: 'dashboard' },
-              { id: '2', label: 'Documents', href: '/core/documents', icon: 'documents' },
+              {
+                id: '1',
+                label: 'Dashboard',
+                href: '/core/dashboard',
+                icon: 'dashboard',
+              },
+              {
+                id: '2',
+                label: 'Documents',
+                href: '/core/documents',
+                icon: 'documents',
+              },
             ],
             breadcrumbs: { enabled: true, separator: '>' },
           },
@@ -647,7 +662,12 @@ export class LayoutConfigurationService {
             borderRadius: 'small',
           },
           responsive: {
-            breakpoints: { mobile: 640, tablet: 768, desktop: 1024, wide: 1280 },
+            breakpoints: {
+              mobile: 640,
+              tablet: 768,
+              desktop: 1024,
+              wide: 1280,
+            },
             behavior: {
               sidebar: 'collapsed',
               navigation: 'hamburger',
@@ -661,7 +681,11 @@ export class LayoutConfigurationService {
             offline: false,
             analytics: { enabled: false, provider: '' },
             seo: { enabled: false, autoMetaTags: false, structuredData: false },
-            performance: { cacheStrategy: 'aggressive', prefetch: true, compression: true },
+            performance: {
+              cacheStrategy: 'aggressive',
+              prefetch: true,
+              compression: true,
+            },
           },
         },
         is_active: true,
@@ -689,8 +713,8 @@ export class LayoutConfigurationService {
                 { id: '3', label: 'Support', href: '/massdoc/support' },
               ],
             },
-            topBar: { 
-              show: true, 
+            topBar: {
+              show: true,
               content: {
                 phone: '+33 1 23 45 67 89',
                 email: 'support@massdoc.com',
@@ -722,25 +746,39 @@ export class LayoutConfigurationService {
                 ],
               },
             ],
-            newsletter: { 
-              enabled: true, 
+            newsletter: {
+              enabled: true,
               title: 'Newsletter Massdoc',
               description: 'Restez informé des nouveautés',
             },
             social: { enabled: true, platforms: [] },
-            legal: { 
-              enabled: true, 
+            legal: {
+              enabled: true,
               links: [
                 { label: 'CGV', url: '/legal/cgv', required: true },
-                { label: 'Mentions légales', url: '/legal/mentions', required: true },
+                {
+                  label: 'Mentions légales',
+                  url: '/legal/mentions',
+                  required: true,
+                },
               ],
             },
             copyright: '© Massdoc - Tous droits réservés',
           },
           navigation: {
             main: [
-              { id: '1', label: 'Catalogue', href: '/massdoc/catalogue', icon: 'catalogue' },
-              { id: '2', label: 'Documentation', href: '/massdoc/docs', icon: 'docs' },
+              {
+                id: '1',
+                label: 'Catalogue',
+                href: '/massdoc/catalogue',
+                icon: 'catalogue',
+              },
+              {
+                id: '2',
+                label: 'Documentation',
+                href: '/massdoc/docs',
+                icon: 'docs',
+              },
             ],
             breadcrumbs: { enabled: true, separator: '/' },
           },
@@ -754,7 +792,12 @@ export class LayoutConfigurationService {
             borderRadius: 'medium',
           },
           responsive: {
-            breakpoints: { mobile: 640, tablet: 768, desktop: 1024, wide: 1280 },
+            breakpoints: {
+              mobile: 640,
+              tablet: 768,
+              desktop: 1024,
+              wide: 1280,
+            },
             behavior: {
               sidebar: 'overlay',
               navigation: 'tabs',
@@ -768,7 +811,11 @@ export class LayoutConfigurationService {
             offline: true,
             analytics: { enabled: true, provider: 'ga4' },
             seo: { enabled: true, autoMetaTags: true, structuredData: true },
-            performance: { cacheStrategy: 'moderate', prefetch: true, compression: true },
+            performance: {
+              cacheStrategy: 'moderate',
+              prefetch: true,
+              compression: true,
+            },
           },
         },
         is_active: true,

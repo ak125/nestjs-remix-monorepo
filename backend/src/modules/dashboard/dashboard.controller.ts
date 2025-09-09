@@ -108,9 +108,9 @@ export class DashboardController {
   @Get('orders')
   async getOrdersForDashboard() {
     this.logger.log('[DashboardController] GET /api/dashboard/orders');
-    
+
     const stats = await this.dashboardService.getOrdersStats();
-    
+
     return {
       orders: [], // Empty array for compatibility
       pagination: {

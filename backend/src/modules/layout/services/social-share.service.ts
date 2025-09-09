@@ -42,7 +42,7 @@ export class SocialShareService {
     try {
       // Récupérer les configurations des plateformes depuis le cache ou la base
       const platforms = await this.getPlatformConfigs();
-      
+
       const shareLinks = [];
 
       for (const platform of platforms) {
@@ -303,7 +303,7 @@ export class SocialShareService {
    */
   private async getPlatformConfigs(): Promise<SocialPlatformConfig[]> {
     const cacheKey = 'social_platforms_config';
-    
+
     try {
       // Essayer de récupérer depuis le cache
       const cached = await this.cacheService.get(cacheKey);
@@ -361,7 +361,7 @@ export class SocialShareService {
 
       // Mettre en cache pour 1 heure
       await this.cacheService.set(cacheKey, defaultPlatforms, 3600);
-      
+
       return defaultPlatforms;
     } catch (error) {
       this.logger.error('Erreur récupération config plateformes:', error);

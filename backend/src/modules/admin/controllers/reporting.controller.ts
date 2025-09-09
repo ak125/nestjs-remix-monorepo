@@ -40,23 +40,24 @@ export class ReportingController {
       this.logger.log('📊 Génération rapport analytics...');
 
       const filters: ReportFilters = {};
-      
+
       if (startDate) {
         filters.startDate = startDate;
       }
-      
+
       if (endDate) {
         filters.endDate = endDate;
       }
-      
+
       if (category) {
         filters.category = category;
       }
 
-      const report = await this.reportingService.generateAnalyticsReport(filters);
+      const report =
+        await this.reportingService.generateAnalyticsReport(filters);
 
       this.logger.log('✅ Rapport analytics généré');
-      
+
       return {
         success: true,
         data: report,
@@ -65,7 +66,7 @@ export class ReportingController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur génération rapport analytics:', error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -97,7 +98,7 @@ export class ReportingController {
       );
 
       this.logger.log(`✅ Rapport ${body.type} généré`);
-      
+
       return {
         success: true,
         data: report,
@@ -106,7 +107,7 @@ export class ReportingController {
       };
     } catch (error) {
       this.logger.error(`❌ Erreur génération rapport ${body.type}:`, error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -129,7 +130,7 @@ export class ReportingController {
       const reports = await this.reportingService.getGeneratedReports();
 
       this.logger.log(`✅ ${reports.length} rapports récupérés`);
-      
+
       return {
         success: true,
         data: reports,
@@ -138,7 +139,7 @@ export class ReportingController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur récupération rapports:', error);
-      
+
       throw new HttpException(
         {
           success: false,
@@ -168,7 +169,7 @@ export class ReportingController {
       };
     } catch (error) {
       this.logger.error('❌ Erreur health check reporting:', error);
-      
+
       throw new HttpException(
         {
           success: false,

@@ -80,11 +80,14 @@ export class PiecesAnalysisService extends SupabaseBaseService {
           },
           commonTypes: commonTypes?.slice(0, 10),
           analysis: {
-            activeRatio: activeCount && totalCount ? (activeCount / totalCount * 100).toFixed(2) : '0',
+            activeRatio:
+              activeCount && totalCount
+                ? ((activeCount / totalCount) * 100).toFixed(2)
+                : '0',
             recommendIndexActive: (activeCount || 0) > 0,
-            totalFiltersAvailable: (allFilters?.length || 0),
-          }
-        }
+            totalFiltersAvailable: allFilters?.length || 0,
+          },
+        },
       };
     } catch (error) {
       this.logger.error('❌ Erreur analyse pieces:', error);
@@ -167,7 +170,9 @@ export class PiecesAnalysisService extends SupabaseBaseService {
       const { data: variants, error: variantError } = await this.client
         .from('pieces')
         .select('*')
-        .or('piece_name.eq.Filtre à air secondaire,piece_name.ilike.Filtre à air%')
+        .or(
+          'piece_name.eq.Filtre à air secondaire,piece_name.ilike.Filtre à air%',
+        )
         .limit(limit);
 
       if (variantError) {
@@ -176,26 +181,30 @@ export class PiecesAnalysisService extends SupabaseBaseService {
 
       // Combiner et dédupliquer par piece_id
       const combined = [...(exactMatches || []), ...(variants || [])];
-      const deduplicated = combined.filter((item, index) => 
-        combined.findIndex((i) => i.piece_id === item.piece_id) === index
+      const deduplicated = combined.filter(
+        (item, index) =>
+          combined.findIndex((i) => i.piece_id === item.piece_id) === index,
       );
 
       // Limiter aux premiers résultats
       const results = deduplicated.slice(0, limit);
 
       // Statistiques
-      const exact = results.filter((r) => r.piece_name === 'Filtre à air').length;
+      const exact = results.filter(
+        (r) => r.piece_name === 'Filtre à air',
+      ).length;
       const variantes = results.length;
       const actifs = results.filter((r) => r.piece_display === true).length;
       const inactifs = results.filter((r) => r.piece_display === false).length;
 
       // Analyser les colonnes d'équipementiers/marques disponibles
       const columns = results.length > 0 ? Object.keys(results[0]) : [];
-      const brandColumns = columns.filter(col => 
-        col.toLowerCase().includes('brand') || 
-        col.toLowerCase().includes('marque') || 
-        col.toLowerCase().includes('fabricant') ||
-        col.toLowerCase().includes('equipementier')
+      const brandColumns = columns.filter(
+        (col) =>
+          col.toLowerCase().includes('brand') ||
+          col.toLowerCase().includes('marque') ||
+          col.toLowerCase().includes('fabricant') ||
+          col.toLowerCase().includes('equipementier'),
       );
 
       return {
@@ -235,61 +244,79 @@ export class PiecesAnalysisService extends SupabaseBaseService {
       if (idsError) throw idsError;
 
       // Analyser la distribution des IDs
-      const pmIds = [...new Set(brandIds?.map(p => p.piece_pm_id).filter(id => id))];
-      const pgIds = [...new Set(brandIds?.map(p => p.piece_pg_id).filter(id => id))];
-      const gaIds = [...new Set(brandIds?.map(p => p.piece_ga_id).filter(id => id))];
+      const pmIds = [
+        ...new Set(brandIds?.map((p) => p.piece_pm_id).filter((id) => id)),
+      ];
+      const pgIds = [
+        ...new Set(brandIds?.map((p) => p.piece_pg_id).filter((id) => id)),
+      ];
+      const gaIds = [
+        ...new Set(brandIds?.map((p) => p.piece_ga_id).filter((id) => id)),
+      ];
 
       // Essayer de trouver les tables de correspondance
       const tableAttempts = [
-        'piece_marques', 'marques', 'brands', 'fabricants', 
-        'piece_brands', 'piece_fabricants', 'equipmentiers',
-        'piece_pm', 'piece_pg', 'piece_ga', 'pm', 'pg', 'ga'
+        'piece_marques',
+        'marques',
+        'brands',
+        'fabricants',
+        'piece_brands',
+        'piece_fabricants',
+        'equipmentiers',
+        'piece_pm',
+        'piece_pg',
+        'piece_ga',
+        'pm',
+        'pg',
+        'ga',
       ];
-      
+
       const foundTables = {};
-      
+
       for (const tableName of tableAttempts) {
         try {
           const { data, error } = await this.client
             .from(tableName)
             .select('*')
             .limit(5);
-            
+
           if (!error && data?.length > 0) {
             foundTables[tableName] = {
               sample: data.slice(0, 3),
               columns: Object.keys(data[0]),
-              recordCount: data.length
+              recordCount: data.length,
             };
           }
         } catch (err) {
           // Table n'existe pas, continuer
         }
       }
-      
+
       // Récupérer quelques pièces avec leurs IDs pour analyse
       const { data: samplePieces } = await this.client
         .from('pieces')
-        .select('piece_id, piece_name, piece_ref, piece_pm_id, piece_pg_id, piece_ga_id')
+        .select(
+          'piece_id, piece_name, piece_ref, piece_pm_id, piece_pg_id, piece_ga_id',
+        )
         .not('piece_pm_id', 'is', null)
         .limit(20);
-        
+
       return {
         brandIdDistribution: {
           piece_pm_ids: pmIds.slice(0, 10),
-          piece_pg_ids: pgIds.slice(0, 10), 
+          piece_pg_ids: pgIds.slice(0, 10),
           piece_ga_ids: gaIds.slice(0, 10),
           total_pm_ids: pmIds.length,
           total_pg_ids: pgIds.length,
-          total_ga_ids: gaIds.length
+          total_ga_ids: gaIds.length,
         },
         foundTables,
         samplePiecesWithBrands: samplePieces || [],
         tablesSearched: tableAttempts,
         analysis: {
           hasFoundTables: Object.keys(foundTables).length > 0,
-          potentialBrandTables: Object.keys(foundTables)
-        }
+          potentialBrandTables: Object.keys(foundTables),
+        },
       };
     } catch (error) {
       this.logger.error('❌ Erreur analyse marques:', error);

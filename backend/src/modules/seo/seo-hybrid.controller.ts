@@ -52,9 +52,9 @@ export class SeoHybridController {
     try {
       const fullPath = `/${path}`;
       this.logger.log(`Récupération métadonnées pour: ${fullPath}`);
-      
+
       const metadata = await this.seoService.getMetadata(fullPath);
-      
+
       if (!metadata) {
         return {
           success: false,
@@ -102,7 +102,7 @@ export class SeoHybridController {
       }
 
       const result = await this.seoService.updateMetadata(fullPath, metadata);
-      
+
       return {
         success: true,
         path: fullPath,
@@ -111,11 +111,11 @@ export class SeoHybridController {
       };
     } catch (error) {
       this.logger.error(`Erreur mise à jour métadonnées pour ${path}:`, error);
-      
+
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException(
         'Erreur lors de la mise à jour des métadonnées',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -137,9 +137,11 @@ export class SeoHybridController {
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération index sitemap:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>',
+        );
     }
   }
 
@@ -157,9 +159,11 @@ export class SeoHybridController {
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération sitemap principal:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>',
+        );
     }
   }
 
@@ -173,13 +177,16 @@ export class SeoHybridController {
   async getConstructeursSitemap(@Res() res: Response) {
     try {
       this.logger.log('Génération sitemap constructeurs (117 marques)');
-      const xmlContent = await this.sitemapService.generateConstructeursSitemap();
+      const xmlContent =
+        await this.sitemapService.generateConstructeursSitemap();
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération sitemap constructeurs:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>',
+        );
     }
   }
 
@@ -197,9 +204,11 @@ export class SeoHybridController {
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération sitemap produits:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>',
+        );
     }
   }
 
@@ -217,9 +226,11 @@ export class SeoHybridController {
       res.send(xmlContent);
     } catch (error) {
       this.logger.error('Erreur génération sitemap blog:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          '<?xml version="1.0" encoding="UTF-8"?><error>Sitemap temporairement indisponible</error>',
+        );
     }
   }
 
@@ -237,9 +248,11 @@ export class SeoHybridController {
       res.send(robotsContent);
     } catch (error) {
       this.logger.error('Erreur génération robots.txt:', error);
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(
-        'User-agent: *\nDisallow: /\n# Robots.txt temporairement indisponible'
-      );
+      res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send(
+          'User-agent: *\nDisallow: /\n# Robots.txt temporairement indisponible',
+        );
     }
   }
 
@@ -252,7 +265,7 @@ export class SeoHybridController {
     try {
       this.logger.log('Récupération configuration SEO');
       const config = await this.seoService.getSeoConfig('default');
-      
+
       return {
         success: true,
         config: config || {
@@ -279,10 +292,10 @@ export class SeoHybridController {
   async getSeoStats() {
     try {
       this.logger.log('Récupération statistiques SEO');
-      
+
       const pagesWithoutSeo = await this.seoService.getPagesWithoutSeo(10);
       const sitemapStats = await this.sitemapService.getSitemapStats();
-      
+
       return {
         success: true,
         seo: {

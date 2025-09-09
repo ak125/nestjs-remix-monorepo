@@ -33,7 +33,7 @@ export class NavigationService {
   async getMainNavigation(context: 'admin' | 'user' | 'commercial' = 'user') {
     try {
       const cacheKey = `navigation:${context}`;
-      
+
       // Essayer de récupérer depuis le cache
       const cached = await this.cacheService.get(cacheKey);
       if (cached) {
@@ -46,11 +46,14 @@ export class NavigationService {
 
       // Mettre en cache pour 10 minutes
       await this.cacheService.set(cacheKey, navigation, 600);
-      
+
       this.logger.log(`Navigation ${context} générée et mise en cache`);
       return navigation;
     } catch (error) {
-      this.logger.error('Erreur lors de la génération de la navigation:', error);
+      this.logger.error(
+        'Erreur lors de la génération de la navigation:',
+        error,
+      );
       throw error;
     }
   }
@@ -59,7 +62,7 @@ export class NavigationService {
     const baseNavigation = {
       timestamp: new Date().toISOString(),
       context,
-      sections: []
+      sections: [],
     };
 
     switch (context) {
@@ -71,30 +74,30 @@ export class NavigationService {
               name: 'Dashboard',
               path: '/admin',
               icon: '📊',
-              description: 'Vue d\'ensemble et métriques'
+              description: "Vue d'ensemble et métriques",
             },
             {
               name: 'A/B Testing',
               path: '/admin/checkout-ab-test',
               icon: '🚀',
               description: 'Tests de conversion checkout',
-              badge: '987 commandes'
+              badge: '987 commandes',
             },
             {
               name: 'Commandes',
               path: '/admin/orders',
               icon: '📦',
-              description: 'Gestion des commandes'
+              description: 'Gestion des commandes',
             },
             {
               name: 'Staff',
               path: '/admin/staff',
               icon: '👥',
-              description: 'Administration du personnel'
-            }
-          ]
+              description: 'Administration du personnel',
+            },
+          ],
         };
-        
+
       case 'commercial':
         return {
           ...baseNavigation,
@@ -103,17 +106,17 @@ export class NavigationService {
               name: 'Catalogue',
               path: '/catalog',
               icon: '🛍️',
-              description: 'Produits et services'
+              description: 'Produits et services',
             },
             {
               name: 'Mon Panier',
               path: '/cart',
               icon: '🛒',
-              description: 'Panier d\'achat'
-            }
-          ]
+              description: "Panier d'achat",
+            },
+          ],
         };
-        
+
       default:
         return {
           ...baseNavigation,
@@ -122,9 +125,9 @@ export class NavigationService {
               name: 'Accueil',
               path: '/',
               icon: '🏠',
-              description: 'Page d\'accueil'
-            }
-          ]
+              description: "Page d'accueil",
+            },
+          ],
         };
     }
   }
@@ -176,7 +179,9 @@ export class NavigationService {
   /**
    * Construction statique des menus en attendant l'intégration Supabase
    */
-  private async buildStaticMenuForModule(config: MenuConfig): Promise<MenuItem[]> {
+  private async buildStaticMenuForModule(
+    config: MenuConfig,
+  ): Promise<MenuItem[]> {
     switch (config.module) {
       case 'admin':
         return [
@@ -321,11 +326,17 @@ export class NavigationService {
     const cacheKey = `menu:preferences:${userId}:${menuId}`;
 
     // Sauvegarder en cache (en attendant l'intégration Supabase)
-    await this.cacheService.set(cacheKey, {
-      ...preferences,
-      updated_at: new Date().toISOString(),
-    }, 3600);
+    await this.cacheService.set(
+      cacheKey,
+      {
+        ...preferences,
+        updated_at: new Date().toISOString(),
+      },
+      3600,
+    );
 
-    this.logger.log(`Préférences sauvegardées pour user ${userId}, menu ${menuId}`);
+    this.logger.log(
+      `Préférences sauvegardées pour user ${userId}, menu ${menuId}`,
+    );
   }
 }

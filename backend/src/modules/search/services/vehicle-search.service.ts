@@ -43,7 +43,7 @@ export interface VehicleSearchResult extends SearchResultItem {
 
 /**
  * 🚗 VehicleSearchService - Recherche véhicules spécialisée
- * 
+ *
  * Service optimisé pour la recherche de véhicules avec :
  * ✅ Filtres multi-critères avancés
  * ✅ Recherche géolocalisée
@@ -66,9 +66,11 @@ export class VehicleSearchService {
   /**
    * 🔍 Recherche véhicules avec filtres avancés
    */
-  async searchVehicles(query: Partial<SearchQuery> & { filters?: VehicleSearchFilters }): Promise<SearchResult> {
+  async searchVehicles(
+    query: Partial<SearchQuery> & { filters?: VehicleSearchFilters },
+  ): Promise<SearchResult> {
     const cacheKey = `vehicles:${JSON.stringify(query)}`;
-    
+
     // Vérifier le cache
     const cached = await this.cache.get(cacheKey);
     if (cached) {
@@ -95,7 +97,10 @@ export class VehicleSearchService {
         totalCount,
         page: query.page || 1,
         limit: query.limit || 20,
-        suggestions: await this.generateSuggestions(query.query, results.length),
+        suggestions: await this.generateSuggestions(
+          query.query,
+          results.length,
+        ),
         facets: this.extractFacets(response.body.aggregations),
       };
 
@@ -105,7 +110,6 @@ export class VehicleSearchService {
 
       this.logger.log(`✅ Véhicules trouvés: ${results.length}/${totalCount}`);
       return searchResult;
-
     } catch (error) {
       this.logger.error(`❌ Erreur recherche véhicules:`, error);
       return {
@@ -120,7 +124,9 @@ export class VehicleSearchService {
   /**
    * 🏗️ Construction de la requête Elasticsearch optimisée
    */
-  private buildElasticsearchQuery(query: Partial<SearchQuery> & { filters?: VehicleSearchFilters }) {
+  private buildElasticsearchQuery(
+    query: Partial<SearchQuery> & { filters?: VehicleSearchFilters },
+  ) {
     const mustClauses = [];
     const filterClauses = [];
     const shouldClauses = [];
@@ -131,11 +137,11 @@ export class VehicleSearchService {
         multi_match: {
           query: query.query,
           fields: [
-            'brand^3',           // Brand prioritaire
-            'model^3',           // Model prioritaire  
-            'full_name^2',       // Nom complet
-            'description',       // Description
-            'features',          // Caractéristiques
+            'brand^3', // Brand prioritaire
+            'model^3', // Model prioritaire
+            'full_name^2', // Nom complet
+            'description', // Description
+            'features', // Caractéristiques
           ],
           type: 'cross_fields',
           minimum_should_match: '75%',
@@ -193,10 +199,10 @@ export class VehicleSearchService {
 
     // Filtres par kilométrage
     if (filters.mileageMax) {
-      filterClauses.push({ 
-        range: { 
-          mileage: { lte: filters.mileageMax } 
-        } 
+      filterClauses.push({
+        range: {
+          mileage: { lte: filters.mileageMax },
+        },
       });
     }
 
@@ -206,7 +212,9 @@ export class VehicleSearchService {
     }
 
     if (filters.transmission && filters.transmission.length > 0) {
-      filterClauses.push({ terms: { 'transmission.keyword': filters.transmission } });
+      filterClauses.push({
+        terms: { 'transmission.keyword': filters.transmission },
+      });
     }
 
     if (filters.bodyType && filters.bodyType.length > 0) {
@@ -215,7 +223,9 @@ export class VehicleSearchService {
 
     // Filtre de disponibilité
     if (filters.availability && filters.availability !== 'all') {
-      filterClauses.push({ term: { 'availability.keyword': filters.availability } });
+      filterClauses.push({
+        term: { 'availability.keyword': filters.availability },
+      });
     }
 
     // Recherche géolocalisée
@@ -273,7 +283,9 @@ export class VehicleSearchService {
       return {
         id: hit._id,
         title: `${source.brand} ${source.model} ${source.year}`,
-        description: source.description || `${source.brand} ${source.model} - ${source.year} - ${source.mileage.toLocaleString()} km`,
+        description:
+          source.description ||
+          `${source.brand} ${source.model} - ${source.year} - ${source.mileage.toLocaleString()} km`,
         url: `/vehicles/${hit._id}`,
         category: 'vehicle',
         score: hit._score,
@@ -323,11 +335,13 @@ export class VehicleSearchService {
 
     // Modèles
     if (aggregations.models) {
-      facets.models = aggregations.models.buckets.slice(0, 20).map((bucket: any) => ({
-        value: bucket.key,
-        count: bucket.doc_count,
-        label: bucket.key,
-      }));
+      facets.models = aggregations.models.buckets
+        .slice(0, 20)
+        .map((bucket: any) => ({
+          value: bucket.key,
+          count: bucket.doc_count,
+          label: bucket.key,
+        }));
     }
 
     // Années
@@ -352,11 +366,13 @@ export class VehicleSearchService {
 
     // Transmissions
     if (aggregations.transmissions) {
-      facets.transmissions = aggregations.transmissions.buckets.map((bucket: any) => ({
-        value: bucket.key,
-        count: bucket.doc_count,
-        label: this.getTransmissionLabel(bucket.key),
-      }));
+      facets.transmissions = aggregations.transmissions.buckets.map(
+        (bucket: any) => ({
+          value: bucket.key,
+          count: bucket.doc_count,
+          label: this.getTransmissionLabel(bucket.key),
+        }),
+      );
     }
 
     // Gammes de prix
@@ -377,7 +393,10 @@ export class VehicleSearchService {
   /**
    * 💡 Génération de suggestions intelligentes
    */
-  private async generateSuggestions(query: string, resultCount: number): Promise<string[]> {
+  private async generateSuggestions(
+    query: string,
+    resultCount: number,
+  ): Promise<string[]> {
     if (!query || resultCount > 10) return [];
 
     try {
@@ -398,16 +417,20 @@ export class VehicleSearchService {
       });
 
       const suggestions = new Set<string>();
-      
+
       // Suggestions de marques
-      response.body.suggest.brand_suggestions?.[0]?.options?.forEach((option: any) => {
-        suggestions.add(option.text);
-      });
+      response.body.suggest.brand_suggestions?.[0]?.options?.forEach(
+        (option: any) => {
+          suggestions.add(option.text);
+        },
+      );
 
       // Suggestions de modèles
-      response.body.suggest.model_suggestions?.[0]?.options?.forEach((option: any) => {
-        suggestions.add(option.text);
-      });
+      response.body.suggest.model_suggestions?.[0]?.options?.forEach(
+        (option: any) => {
+          suggestions.add(option.text);
+        },
+      );
 
       return Array.from(suggestions).slice(0, 5);
     } catch (error) {
@@ -422,7 +445,7 @@ export class VehicleSearchService {
   private calculateCacheTTL(query: any, resultCount: number): number {
     // Cache plus long pour les recherches avec beaucoup de résultats
     if (resultCount > 100) return 3600; // 1h
-    if (resultCount > 10) return 1800;  // 30min
+    if (resultCount > 10) return 1800; // 30min
     return 600; // 10min pour les résultats rares
   }
 

@@ -22,7 +22,10 @@ export class SearchSuggestionService {
   /**
    * Obtient des suggestions populaires
    */
-  async getPopularSuggestions(indexName: string = 'vehicles', limit: number = 10) {
+  async getPopularSuggestions(
+    indexName: string = 'vehicles',
+    limit: number = 10,
+  ) {
     try {
       // Recherche les termes les plus fréquents (simulation)
       const results = await this.meilisearchService.searchVehicles('', {
@@ -30,7 +33,7 @@ export class SearchSuggestionService {
         attributesToRetrieve: ['brand', 'model'],
       });
 
-      return results.hits.map(hit => ({
+      return results.hits.map((hit) => ({
         text: `${hit.brand} ${hit.model}`,
         count: Math.floor(Math.random() * 100), // Simulation de popularité
       }));

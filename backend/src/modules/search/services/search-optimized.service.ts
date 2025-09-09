@@ -194,8 +194,7 @@ export class SearchService {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV7(params.filters),
       sort:
         params.sort?.field === 'price'
@@ -236,8 +235,7 @@ export class SearchService {
     const searchOptions = {
       limit: params.pagination?.limit || 20,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 20),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 20),
       filter: this.buildFiltersV8Enhanced(params.filters),
       sort: this.buildSortEnhanced(params.sort),
       facets: [
@@ -379,8 +377,7 @@ export class SearchService {
       ],
       limit: params.pagination?.limit || 50,
       offset:
-        ((params.pagination?.page || 1) - 1) *
-        (params.pagination?.limit || 50),
+        ((params.pagination?.page || 1) - 1) * (params.pagination?.limit || 50),
       attributesToHighlight: ['reference', 'designation', 'description'],
       attributesToRetrieve: [
         'id',
@@ -441,8 +438,8 @@ export class SearchService {
     }
 
     // Recherche ultra-rapide limitée
-    const [suggestions, quickProducts, quickVehicles] = await Promise.allSettled(
-      [
+    const [suggestions, quickProducts, quickVehicles] =
+      await Promise.allSettled([
         this.meilisearch.getSuggestions(query, 'auto_complete'),
         this.meilisearch.searchProducts(query, {
           limit: 3,
@@ -465,8 +462,7 @@ export class SearchService {
             'image',
           ],
         }),
-      ],
-    );
+      ]);
 
     const items = [];
     let suggestionList: string[] = [];
@@ -559,11 +555,9 @@ export class SearchService {
       params.query.length > 2
     ) {
       enrichPromises.push(
-        this.generateSmartSuggestions(
-          params.query,
-          results.items,
-          userId,
-        ).then((suggestions) => (results.suggestions = suggestions)),
+        this.generateSmartSuggestions(params.query, results.items, userId).then(
+          (suggestions) => (results.suggestions = suggestions),
+        ),
       );
     }
 
@@ -762,9 +756,8 @@ export class SearchService {
       const suggestions = new Set<string>();
 
       // Suggestions basées sur Meilisearch
-      const meilisearchSuggestions = await this.meilisearch.getSuggestions(
-        query,
-      );
+      const meilisearchSuggestions =
+        await this.meilisearch.getSuggestions(query);
       meilisearchSuggestions.hits.forEach((hit) => {
         if (hit.suggestion) suggestions.add(hit.suggestion);
         if (hit.brand && hit.model) {
@@ -804,13 +797,16 @@ export class SearchService {
   }
 
   private generateHighlights(item: any, query: string): string[] {
-    const terms = query
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean);
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
     const highlights: string[] = [];
 
-    const fields = ['designation', 'description', 'brand', 'model', 'reference'];
+    const fields = [
+      'designation',
+      'description',
+      'brand',
+      'model',
+      'reference',
+    ];
 
     fields.forEach((field) => {
       if (item[field]) {
@@ -931,10 +927,7 @@ export class SearchService {
     }
 
     // Plage de prix optimisée
-    if (
-      filters.priceMin !== undefined &&
-      filters.priceMax !== undefined
-    ) {
+    if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
       filterQueries.push(`price ${filters.priceMin} TO ${filters.priceMax}`);
     } else {
       if (filters.priceMin !== undefined) {

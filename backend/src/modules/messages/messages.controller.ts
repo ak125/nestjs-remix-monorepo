@@ -16,13 +16,13 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
-import { 
-  CreateMessageDto, 
-  MessageFiltersDto, 
+import {
+  CreateMessageDto,
+  MessageFiltersDto,
   MarkAsReadDto,
   validateCreateMessage,
   validateMessageFilters,
-  validateMarkAsRead
+  validateMarkAsRead,
 } from './dto';
 
 @Controller('api/messages')
@@ -54,7 +54,7 @@ export class MessagesController {
         staffId,
         customerId,
         search,
-        status: status as 'open' | 'closed' | 'all' || 'all',
+        status: (status as 'open' | 'closed' | 'all') || 'all',
       };
 
       const result = await this.messagesService.getMessages(filters);
@@ -97,14 +97,11 @@ export class MessagesController {
       };
     } catch (error: any) {
       console.error(`❌ API Messages Error: ${error.message || error}`);
-      
+
       if (error.status === 404) {
-        throw new HttpException(
-          'Message non trouvé',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Message non trouvé', HttpStatus.NOT_FOUND);
       }
-      
+
       throw new HttpException(
         'Erreur serveur lors de la récupération du message',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -118,14 +115,15 @@ export class MessagesController {
    */
   @Post()
   async createMessage(
-    @Body() messageData: {
+    @Body()
+    messageData: {
       customerId: string;
       staffId: string;
       orderId?: string;
       subject: string;
       content: string;
       priority?: 'low' | 'normal' | 'high';
-    }
+    },
   ) {
     console.log(`📧 API Messages: POST /api/messages`);
 
@@ -186,9 +184,14 @@ export class MessagesController {
 
     try {
       const readerId = body?.readerId || 'unknown';
-      const message = await this.messagesService.markAsRead(messageId, readerId);
+      const message = await this.messagesService.markAsRead(
+        messageId,
+        readerId,
+      );
 
-      console.log(`✅ API Messages: Message ${messageId} marqué comme lu par ${readerId}`);
+      console.log(
+        `✅ API Messages: Message ${messageId} marqué comme lu par ${readerId}`,
+      );
       return {
         success: true,
         data: message,
