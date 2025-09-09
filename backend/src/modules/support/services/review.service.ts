@@ -519,7 +519,7 @@ export class ReviewService extends SupabaseBaseService {
             cst_fname: firstName,
             cst_name: lastName,
             cst_mail: email,
-            cst_date: new Date().toISOString(),
+            cst_date_add: new Date().toISOString(),
           })
           .select('*')
           .single();

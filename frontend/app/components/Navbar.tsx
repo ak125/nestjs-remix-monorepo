@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound, Package, Settings } from 'lucide-react';
+import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones } from 'lucide-react';
 import { useOptionalUser } from "../root";
 import { CartIcon } from "./cart/CartIcon";
 
@@ -24,6 +24,9 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </Link>
           <Link to="/marques" className="hover:text-blue-200 transition-colors text-sm font-medium">
             Marques
+          </Link>
+          <Link to="/support" className="hover:text-blue-200 transition-colors text-sm font-medium">
+            Support
           </Link>
           <Link to="/aide" className="hover:text-blue-200 transition-colors text-sm font-medium">
             Aide
@@ -61,8 +64,16 @@ export const Navbar = ({ logo }: { logo: string }) => {
           <Bell className="flex-shrink-0" />
         </Link>
 
+        <Link 
+          to='/support' 
+          className="hover:text-blue-200 transition-colors"
+          aria-label="Support Client"
+        >
+          <Headphones className="flex-shrink-0" />
+        </Link>
+
         {/* Lien Admin conditionnel */}
-        {user?.level >= 7 && (
+        {user?.level && user.level >= 7 && (
           <Link 
             to='/admin' 
             className="hover:text-blue-200 transition-colors bg-blue-800 px-2 py-1 rounded text-sm"

@@ -1,59 +1,69 @@
 /**
  * Service Contact API - Interface avec le backend NestJS ContactService
  * Compatible avec le ContactService adapté utilisant les tables existantes
+ * Version mise à jour pour la compatibilité complète
  */
 
-export interface ContactRequest {
+export interface ContactFormData {
   name: string;
   email: string;
   phone?: string;
   subject: string;
   message: string;
-  category: 'general' | 'technical' | 'billing' | 'complaint' | 'suggestion' | 'order' | 'product' | 'commercial' | 'other';
-  priority?: 'urgent' | 'high' | 'normal' | 'low';
-  customerId?: string;
-  orderNumber?: string;
-  vehicleInfo?: {
+  priority: 'urgent' | 'high' | 'normal' | 'low';
+  category: 'general' | 'technical' | 'billing' | 'complaint' | 'suggestion';
+  vehicle_info?: {
     brand?: string;
     model?: string;
     year?: number;
-    licensePlate?: string;
+    license_plate?: string;
   };
-  ipAddress?: string | null;
-  userAgent?: string | null;
-  attachments?: File[];
+  order_number?: string;
+  customer_id?: string;
 }
 
-export interface ContactResponse {
-  success: boolean;
-  ticketNumber: string;
-  ticket: {
-    msg_id: string;
-    msg_subject: string;
-    msg_date: string;
-    status: 'open' | 'closed' | 'pending';
-    priority: string;
-    category: string;
-  };
-  message?: string;
-  error?: string;
-}
-
-export interface ContactTicketStatus {
+export interface ContactTicket {
   msg_id: string;
-  status: 'open' | 'closed' | 'pending';
+  msg_cst_id: string;
+  msg_cnfa_id?: string;
+  msg_ord_id?: string;
+  msg_date: string;
+  msg_subject: string;
+  msg_content: string;
+  msg_parent_id?: string;
+  msg_open: '0' | '1';
+  msg_close: '0' | '1';
+  priority?: string;
+  category?: string;
+  customer?: {
+    cst_name: string;
+    cst_fname: string;
+    cst_mail: string;
+    cst_phone: string;
+  };
+}
+
+export interface ContactTicketWithStatus extends ContactTicket {
+  status: 'open' | 'closed';
   lastUpdate: string;
   responseCount: number;
   assignedTo?: string;
+}
+
+export interface ContactStats {
+  total_tickets: number;
+  open_tickets: number;
+  closed_tickets: number;
+  tickets_last_24h: number;
 }
 
 /**
  * Créer un nouveau ticket de support
  */
 export async function createContact(
-  contactData: ContactRequest,
+  contactData: ContactFormData,
   request?: Request
-): Promise<ContactResponse> {
+): Promise<ContactTicket> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   
   try {
@@ -71,70 +81,32 @@ export async function createContact(
       }
     }
 
-    // Préparer les données en respectant l'interface du ContactService
-    const payload = {
-      name: contactData.name,
-      email: contactData.email,
-      phone: contactData.phone,
-      subject: contactData.subject,
-      message: contactData.message,
-      priority: contactData.priority || 'normal',
-      category: contactData.category || 'general',
-      vehicle_info: contactData.vehicleInfo,
-      order_number: contactData.orderNumber,
-      customer_id: contactData.customerId,
-      // Métadonnées pour traçabilité
-      metadata: {
-        ip_address: contactData.ipAddress,
-        user_agent: contactData.userAgent,
-        created_via: 'web_form',
-        form_version: '2.0'
-      }
-    };
-
     const response = await fetch(`${baseUrl}/api/support/contact`, {
       method: "POST",
       headers,
-      body: JSON.stringify(payload),
+      body: JSON.stringify(contactData),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
     }
 
-    const result = await response.json();
-    
-    return {
-      success: true,
-      ticketNumber: result.ticket.msg_id,
-      ticket: {
-        msg_id: result.ticket.msg_id,
-        msg_subject: result.ticket.msg_subject,
-        msg_date: result.ticket.msg_date,
-        status: result.ticket.msg_open === '1' ? 'open' : 'closed',
-        priority: result.ticket.priority || 'normal',
-        category: result.ticket.category || 'general',
-      },
-      message: result.message
-    };
+    const ticket = await response.json();
+    return ticket;
   } catch (error) {
     console.error("Erreur lors de la création du ticket:", error);
-    throw new Error(
-      error instanceof Error 
-        ? error.message 
-        : "Une erreur est survenue lors de l'envoi du message"
-    );
+    throw error;
   }
 }
 
 /**
- * Récupérer le statut d'un ticket
+ * Récupérer un ticket par son ID
  */
-export async function getTicketStatus(
+export async function getTicket(
   ticketId: string,
   request?: Request
-): Promise<ContactTicketStatus> {
+): Promise<ContactTicket> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   
   try {
@@ -149,7 +121,7 @@ export async function getTicketStatus(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/${ticketId}/status`, {
+    const response = await fetch(`${baseUrl}/api/support/contact/ticket/${ticketId}`, {
       method: "GET",
       headers,
     });
@@ -158,26 +130,18 @@ export async function getTicketStatus(
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
 
-    const result = await response.json();
-    
-    return {
-      msg_id: result.msg_id,
-      status: result.msg_open === '1' ? 'open' : 'closed',
-      lastUpdate: result.msg_date,
-      responseCount: result.responseCount || 0,
-      assignedTo: result.assignedTo,
-    };
+    const ticket = await response.json();
+    return ticket;
   } catch (error) {
-    console.error("Erreur lors de la récupération du statut:", error);
+    console.error("Erreur lors de la récupération du ticket:", error);
     throw error;
   }
 }
 
 /**
- * Récupérer les tickets d'un utilisateur
+ * Récupérer tous les tickets
  */
-export async function getUserTickets(
-  customerId: string,
+export async function getAllTickets(
   options: {
     page?: number;
     limit?: number;
@@ -185,7 +149,7 @@ export async function getUserTickets(
   } = {},
   request?: Request
 ): Promise<{
-  tickets: ContactTicketStatus[];
+  tickets: ContactTicket[];
   total: number;
   page: number;
   limit: number;
@@ -213,32 +177,17 @@ export async function getUserTickets(
       }
     }
 
-    const response = await fetch(
-      `${baseUrl}/api/support/contact/customer/${customerId}?${searchParams}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
+    const response = await fetch(`${baseUrl}/api/support/contact/tickets?${searchParams}`, {
+      method: "GET",
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Erreur HTTP: ${response.status}`);
     }
 
     const result = await response.json();
-    
-    return {
-      tickets: result.tickets.map((ticket: any) => ({
-        msg_id: ticket.msg_id,
-        status: ticket.msg_open === '1' ? 'open' : 'closed',
-        lastUpdate: ticket.msg_date,
-        responseCount: ticket.responseCount || 0,
-        assignedTo: ticket.assignedTo,
-      })),
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
-    };
+    return result;
   } catch (error) {
     console.error("Erreur lors de la récupération des tickets:", error);
     throw error;
@@ -246,23 +195,17 @@ export async function getUserTickets(
 }
 
 /**
- * Uploader des fichiers pour un ticket
+ * Récupérer les statistiques des tickets
  */
-export async function uploadTicketAttachments(
-  ticketId: string,
-  files: File[],
+export async function getContactStats(
   request?: Request
-): Promise<{ success: boolean; uploadedFiles: string[] }> {
+): Promise<ContactStats> {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   
   try {
-    const formData = new FormData();
-    files.forEach((file, index) => {
-      formData.append(`file_${index}`, file);
-    });
-    formData.append('ticketId', ticketId);
-
-    const headers: HeadersInit = {};
+    const headers: HeadersInit = {
+      Accept: "application/json",
+    };
 
     if (request) {
       const cookie = request.headers.get("Cookie");
@@ -271,10 +214,116 @@ export async function uploadTicketAttachments(
       }
     }
 
-    const response = await fetch(`${baseUrl}/api/support/contact/${ticketId}/upload`, {
-      method: "POST",
+    const response = await fetch(`${baseUrl}/api/support/contact/stats`, {
+      method: "GET",
       headers,
-      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    const stats = await response.json();
+    return stats;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des statistiques:", error);
+    throw error;
+  }
+}
+
+/**
+ * Mettre à jour le statut d'un ticket
+ */
+export async function updateTicketStatus(
+  ticketId: string,
+  status: 'open' | 'closed',
+  request?: Request
+): Promise<ContactTicket> {
+  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+  
+  try {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (request) {
+      const cookie = request.headers.get("Cookie");
+      if (cookie) {
+        headers.Cookie = cookie;
+      }
+    }
+
+    const response = await fetch(`${baseUrl}/api/support/contact/ticket/${ticketId}/status`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+
+    const ticket = await response.json();
+    return ticket;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du statut:", error);
+    throw error;
+  }
+}
+
+/**
+ * Rechercher des tickets par critères
+ */
+export async function searchTickets(
+  searchCriteria: {
+    keyword?: string;
+    customer_id?: string;
+    priority?: string;
+    category?: string;
+    date_from?: string;
+    date_to?: string;
+  },
+  options: {
+    page?: number;
+    limit?: number;
+  } = {},
+  request?: Request
+): Promise<{
+  tickets: ContactTicket[];
+  total: number;
+  page: number;
+  limit: number;
+}> {
+  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+  
+  try {
+    const searchParams = new URLSearchParams({
+      page: (options.page || 1).toString(),
+      limit: (options.limit || 10).toString(),
+    });
+
+    // Ajouter les critères de recherche
+    Object.entries(searchCriteria).forEach(([key, value]) => {
+      if (value) {
+        searchParams.append(key, value);
+      }
+    });
+
+    const headers: HeadersInit = {
+      Accept: "application/json",
+    };
+
+    if (request) {
+      const cookie = request.headers.get("Cookie");
+      if (cookie) {
+        headers.Cookie = cookie;
+      }
+    }
+
+    const response = await fetch(`${baseUrl}/api/support/contact/search?${searchParams}`, {
+      method: "GET",
+      headers,
     });
 
     if (!response.ok) {
@@ -282,20 +331,9 @@ export async function uploadTicketAttachments(
     }
 
     const result = await response.json();
-    
-    return {
-      success: true,
-      uploadedFiles: result.uploadedFiles || []
-    };
+    return result;
   } catch (error) {
-    console.error("Erreur lors de l'upload:", error);
+    console.error("Erreur lors de la recherche de tickets:", error);
     throw error;
   }
 }
-
-export const contactApi = {
-  createContact,
-  getTicketStatus,
-  getUserTickets,
-  uploadTicketAttachments,
-};

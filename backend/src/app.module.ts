@@ -32,6 +32,7 @@ import { CommercialModule } from './modules/commercial/commercial.module'; // �
 import { StaffModule } from './modules/staff/staff.module'; // 👥 NOUVEAU - Module gestion du personnel !
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
 import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
+import { SupportModule } from './modules/support/support.module'; // 🎯 NOUVEAU - Module support client complet !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
@@ -87,6 +88,7 @@ import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Mod
     PaymentsModule, // 💳 ACTIVÉ - Module paiements avec Cyberplus et validation !
     CommercialModule, // 🏢 ACTIVÉ - Module commercial avec CRM et ventes !
     StaffModule, // 👥 ACTIVÉ - Module gestion du personnel et employés !
+    SupportModule, // 🎯 ACTIVÉ - Module support client complet (contact, legal, reviews, FAQ) !
 
     // TODO: Réactiver progressivement
     // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !

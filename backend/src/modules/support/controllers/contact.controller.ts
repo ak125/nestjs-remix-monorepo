@@ -32,15 +32,20 @@ export class ContactController {
     return this.contactService.submitContactForm(contactData);
   }
 
-  @Get()
+  @Get('tickets')
   async getAllTickets(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
     @Query('status') status?: string,
     @Query('category') category?: string,
     @Query('assignedTo') assignedTo?: string,
     @Query('priority') priority?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-  ): Promise<ContactTicket[]> {
+  ) {
+    const pageNum = parseInt(page || '1', 10);
+    const limitNum = parseInt(limit || '10', 10);
+    
     const filters = {
       status,
       category,
@@ -50,74 +55,91 @@ export class ContactController {
       endDate: endDate ? new Date(endDate) : undefined,
     };
 
-    return this.contactService.getAllTickets(filters);
+    const tickets = await this.contactService.getAllTickets(filters);
+    
+    // Pagination simple
+    const total = tickets.length;
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    const paginatedTickets = tickets.slice(startIndex, endIndex);
+
+    return {
+      tickets: paginatedTickets,
+      total,
+      page: pageNum,
+      limit: limitNum,
+    };
   }
 
   @Get('stats')
-  async getStats(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
-    const period =
-      startDate && endDate
-        ? { start: new Date(startDate), end: new Date(endDate) }
-        : undefined;
-
-    return this.contactService.getStats(period);
+  async getStats() {
+    return this.contactService.getStats();
   }
 
-  @Get(':ticketId')
+  @Get('ticket/:ticketId')
   async getTicket(@Param('ticketId') ticketId: string): Promise<ContactTicket> {
-    const ticket = await this.contactService.getTicket(ticketId);
-    if (!ticket) {
-      throw new Error(`Ticket ${ticketId} not found`);
-    }
-    return ticket;
+    return this.contactService.getTicket(ticketId);
   }
 
-  @Put(':ticketId/status')
+  @Get('search')
+  async searchTickets(
+    @Query('keyword') keyword?: string,
+    @Query('customer_id') customerId?: string,
+    @Query('priority') priority?: string,
+    @Query('category') category?: string,
+    @Query('date_from') dateFrom?: string,
+    @Query('date_to') dateTo?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = parseInt(page || '1', 10);
+    const limitNum = parseInt(limit || '10', 10);
+    
+    // Pour l'instant, retournons juste la liste filtrée par les critères basiques
+    const filters = {
+      priority,
+      category,
+      startDate: dateFrom ? new Date(dateFrom) : undefined,
+      endDate: dateTo ? new Date(dateTo) : undefined,
+    };
+
+    let tickets = await this.contactService.getAllTickets(filters);
+    
+    // Filtrage simple par mot-clé
+    if (keyword) {
+      tickets = tickets.filter(ticket => 
+        ticket.msg_subject.toLowerCase().includes(keyword.toLowerCase()) ||
+        ticket.msg_content.toLowerCase().includes(keyword.toLowerCase())
+      );
+    }
+    
+    // Filtrage par customer_id
+    if (customerId) {
+      tickets = tickets.filter(ticket => ticket.msg_cst_id === customerId);
+    }
+    
+    // Pagination
+    const total = tickets.length;
+    const startIndex = (pageNum - 1) * limitNum;
+    const endIndex = startIndex + limitNum;
+    const paginatedTickets = tickets.slice(startIndex, endIndex);
+
+    return {
+      tickets: paginatedTickets,
+      total,
+      page: pageNum,
+      limit: limitNum,
+    };
+  }
+
+  @Put('ticket/:ticketId/status')
   async updateTicketStatus(
     @Param('ticketId') ticketId: string,
-    @Body() body: { status: string; staffId?: string },
+    @Body() body: { status: string },
   ): Promise<ContactTicket> {
     return this.contactService.updateTicketStatus(
       ticketId,
       body.status as any,
-      body.staffId,
-    );
-  }
-
-  @Put(':ticketId/assign')
-  async assignTicket(
-    @Param('ticketId') ticketId: string,
-    @Body() body: { staffId: string },
-  ): Promise<ContactTicket> {
-    return this.contactService.assignTicket(ticketId, body.staffId);
-  }
-
-  @Post(':ticketId/responses')
-  async addResponse(
-    @Param('ticketId') ticketId: string,
-    @Body()
-    responseData: {
-      message: string;
-      author: string;
-      authorType: 'customer' | 'staff';
-      attachments?: string[];
-    },
-  ): Promise<ContactTicket> {
-    return this.contactService.addResponse(ticketId, responseData);
-  }
-
-  @Post(':ticketId/satisfaction')
-  async addSatisfactionRating(
-    @Param('ticketId') ticketId: string,
-    @Body() ratingData: { rating: number; feedback?: string },
-  ): Promise<ContactTicket> {
-    return this.contactService.addSatisfactionRating(
-      ticketId,
-      ratingData.rating,
-      ratingData.feedback,
     );
   }
 }
