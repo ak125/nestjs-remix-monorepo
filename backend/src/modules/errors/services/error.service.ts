@@ -31,13 +31,15 @@ export class ErrorService {
       const redirectRule = await this.redirectService.findRedirect(path);
 
       if (redirectRule) {
-        this.logger.log(
-          `Redirection trouvée: ${path} -> ${redirectRule.destination_path}`,
-        );
+        // Couche de compatibilité intelligente pour les interfaces
+        const redirectUrl = this.getRedirectDestination(redirectRule);
+        const statusCode = this.getRedirectStatusCode(redirectRule);
+
+        this.logger.log(`Redirection trouvée: ${path} -> ${redirectUrl}`);
         return {
           shouldRedirect: true,
-          redirectUrl: redirectRule.destination_path,
-          statusCode: redirectRule.status_code,
+          redirectUrl,
+          statusCode,
         };
       }
 
@@ -86,13 +88,15 @@ export class ErrorService {
       const redirectRule = await this.redirectService.findRedirect(path);
 
       if (redirectRule) {
-        this.logger.log(
-          `Redirection 410 trouvée: ${path} -> ${redirectRule.destination_path}`,
-        );
+        // Couche de compatibilité intelligente pour les interfaces
+        const redirectUrl = this.getRedirectDestination(redirectRule);
+        const statusCode = this.getRedirectStatusCode(redirectRule);
+
+        this.logger.log(`Redirection 410 trouvée: ${path} -> ${redirectUrl}`);
         return {
           shouldRedirect: true,
-          redirectUrl: redirectRule.destination_path,
-          statusCode: redirectRule.status_code,
+          redirectUrl,
+          statusCode,
         };
       }
 
@@ -647,5 +651,85 @@ export class ErrorService {
   private extractPathFromMessage(message: string): string {
     const match = message.match(/Page non trouvée: (.+)/);
     return match ? match[1] : message;
+  }
+
+  /**
+   * Méthode publique pour obtenir des suggestions pour une URL donnée
+   * Utilisée par l'API pour les appels depuis le frontend
+   */
+  async getSuggestionsForUrl(url: string): Promise<string[]> {
+    try {
+      // Créer un objet Request minimal pour la méthode privée
+      const mockRequest = {
+        path: url,
+        originalUrl: url,
+        url: url,
+        headers: {},
+        query: {},
+        get: () => undefined,
+      } as any;
+
+      // Appeler la méthode privée avec les bons paramètres
+      return await this.findSuggestions(url, mockRequest);
+    } catch (error) {
+      this.logger.error('Erreur dans getSuggestionsForUrl:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Couche de compatibilité intelligente pour extraire la destination
+   * Fonctionne avec RedirectEntry ET RedirectRule
+   */
+  private getRedirectDestination(redirect: any): string {
+    // RedirectEntry interface (code utilisateur original)
+    if (redirect.destination) {
+      return redirect.destination;
+    }
+    // RedirectRule interface (nouvelle architecture)
+    if (redirect.destination_path) {
+      return redirect.destination_path;
+    }
+    // Fallback sécurisé
+    return redirect.target || redirect.to || '/';
+  }
+
+  /**
+   * Couche de compatibilité intelligente pour extraire le code de statut
+   * Fonctionne avec RedirectEntry ET RedirectRule
+   */
+  private getRedirectStatusCode(redirect: any): number {
+    // RedirectRule interface (nouvelle architecture)
+    if (redirect.status_code) {
+      return redirect.status_code;
+    }
+    // RedirectEntry interface (code utilisateur original)
+    if (redirect.permanent === true) {
+      return 301; // Permanent redirect
+    }
+    if (redirect.permanent === false) {
+      return 302; // Temporary redirect
+    }
+    // Fallback par défaut
+    return 302;
+  }
+
+  /**
+   * Type guard pour détecter le type de redirection
+   */
+  private isRedirectEntry(redirect: any): boolean {
+    return (
+      redirect &&
+      typeof redirect.source === 'string' &&
+      typeof redirect.destination === 'string' &&
+      typeof redirect.permanent === 'boolean'
+    );
+  }
+
+  /**
+   * Type guard pour détecter RedirectRule
+   */
+  private isRedirectRule(redirect: any): boolean {
+    return redirect && redirect.destination_path && redirect.status_code;
   }
 }

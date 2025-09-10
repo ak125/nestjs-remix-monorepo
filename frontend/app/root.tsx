@@ -1,7 +1,17 @@
 import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData } from "@remix-run/react";
+import { 
+  Links, 
+  Meta, 
+  Outlet, 
+  Scripts, 
+  ScrollRestoration, 
+  useRouteLoaderData,
+  useRouteError,
+  isRouteErrorResponse 
+} from "@remix-run/react";
 import { getOptionalUser } from "./auth/unified.server";
+import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
@@ -97,4 +107,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return <Outlet />;
+}
+
+// ErrorBoundary globale pour gérer les erreurs de routes
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    switch (error.status) {
+      case 404:
+        return <Error404 url={error.data?.url} suggestions={error.data?.suggestions} />;
+      case 410:
+        return <Error410 
+          url={error.data?.url} 
+          isOldLink={error.data?.isOldLink} 
+          redirectTo={error.data?.redirectTo} 
+        />;
+      case 412:
+        return <Error412 
+          condition={error.data?.condition} 
+          requirement={error.data?.requirement} 
+        />;
+      default:
+        return <ErrorGeneric 
+          status={error.status} 
+          message={error.statusText || error.data?.message}
+          details={error.data?.details}
+        />;
+    }
+  }
+
+  // Erreur non-HTTP (erreur JavaScript, etc.)
+  const errorMessage = error instanceof Error ? error.message : "Une erreur inattendue s'est produite";
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  
+  return <ErrorGeneric 
+    status={500}
+    message={errorMessage}
+    details="Une erreur technique s'est produite. Nos équipes ont été notifiées."
+    showStackTrace={process.env.NODE_ENV === 'development'}
+    stack={errorStack}
+  />;
 }
