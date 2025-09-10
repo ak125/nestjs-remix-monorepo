@@ -10,12 +10,13 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
+  PreconditionFailedException,
 } from '@nestjs/common';
 import { ErrorService } from '../services/error.service';
 import { RedirectService } from '../services/redirect.service';
 import { ErrorLogService } from '../services/error-log.service';
 
-@Controller('errors')
+@Controller('api/errors')
 export class ErrorController {
   constructor(
     private readonly errorService: ErrorService,
@@ -37,7 +38,8 @@ export class ErrorController {
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 50,
       severity,
-      resolved: resolved === 'true' ? true : resolved === 'false' ? false : undefined,
+      resolved:
+        resolved === 'true' ? true : resolved === 'false' ? false : undefined,
     };
 
     return this.errorService.getErrors(options);
@@ -135,6 +137,68 @@ export class ErrorController {
     return {
       has_redirect: !!redirect,
       redirect: redirect || null,
+    };
+  }
+
+  /**
+   * Endpoint de test pour déclencher une erreur 412
+   */
+  @Get('test/412')
+  async test412(
+    @Query('condition') condition?: string,
+    @Query('requirement') requirement?: string,
+  ) {
+    throw new PreconditionFailedException({
+      message: 'Test de condition préalable échouée',
+      condition: condition || 'Version du cache obsolète',
+      requirement: requirement || 'ETag correspondant requis',
+    });
+  }
+
+  /**
+   * Endpoint de test pour valider la détection des anciens formats
+   */
+  @Get('test/old-link-detection/:path')
+  async testOldLinkDetection(@Param('path') path: string) {
+    // Import du GlobalErrorFilter pour tester la méthode
+    const patterns = [
+      /^\/old-format-/i,
+      /^\/legacy-/i,
+      /^\/v1\//i,
+      /^\/v2\//i,
+      /\.php$/i,
+      /\.asp$/i,
+      /\.jsp$/i,
+      /\/index\.html?$/i,
+      /\/default\.html?$/i,
+      /^\/app\//i,
+      /^\/old\//i,
+      /^\/archive\//i,
+      /\/product-(\d+)\.html$/i,
+      /\/category-(\d+)\.html$/i,
+      /\/page-(\d+)\.html$/i,
+      /\?id=\d+/,
+      /\/content\.php/i,
+      /\/show\.php/i,
+    ];
+
+    const testPath = `/${path}`;
+    const detectedPatterns = patterns
+      .map((pattern, index) => ({
+        index,
+        pattern: pattern.toString(),
+        matches: pattern.test(testPath),
+      }))
+      .filter((result) => result.matches);
+
+    return {
+      path: testPath,
+      isOldLink: detectedPatterns.length > 0,
+      matchedPatterns: detectedPatterns,
+      allPatterns: patterns.map((p, i) => ({
+        index: i,
+        pattern: p.toString(),
+      })),
     };
   }
 }
