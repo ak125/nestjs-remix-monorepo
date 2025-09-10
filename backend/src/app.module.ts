@@ -33,6 +33,7 @@ import { StaffModule } from './modules/staff/staff.module'; // 👥 NOUVEAU - Mo
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
 import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
 import { SupportModule } from './modules/support/support.module'; // 🎯 NOUVEAU - Module support client complet !
+import { ErrorsModule } from './modules/errors/errors.module'; // ❌ NOUVEAU - Module de gestion des erreurs et redirections !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
@@ -89,6 +90,7 @@ import { SupportModule } from './modules/support/support.module'; // 🎯 NOUVEA
     CommercialModule, // 🏢 ACTIVÉ - Module commercial avec CRM et ventes !
     StaffModule, // 👥 ACTIVÉ - Module gestion du personnel et employés !
     SupportModule, // 🎯 ACTIVÉ - Module support client complet (contact, legal, reviews, FAQ) !
+    ErrorsModule, // ❌ ACTIVÉ - Module de gestion des erreurs et redirections avec logs !
 
     // TODO: Réactiver progressivement
     // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !

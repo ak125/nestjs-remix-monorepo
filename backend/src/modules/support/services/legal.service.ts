@@ -115,7 +115,7 @@ export class LegalService extends SupabaseBaseService {
       const { data: legalMessage, error } = await this.supabase
         .from('___xtr_msg')
         .insert({
-          msg_cst_id: documentData.createdBy,
+          msg_cst_id: documentData.createdBy || '1', // Utiliser ID par défaut si null
           msg_date: new Date().toISOString(),
           msg_subject: documentData.title,
           msg_content: JSON.stringify(contentData),
@@ -661,7 +661,7 @@ export class LegalService extends SupabaseBaseService {
             type: doc.type,
             title: doc.title,
             content: doc.content,
-            createdBy: 'system',
+            createdBy: 'system', // Retour à 'system' car géré dans createDocument
             language: 'fr',
             effectiveDate: new Date('2024-01-01'),
             metadata: { isDefault: true },
