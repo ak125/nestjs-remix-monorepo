@@ -9,6 +9,7 @@ import { FaqController } from './controllers/faq.controller';
 import { LegalController } from './controllers/legal.controller';
 import { ClaimController } from './controllers/claim.controller';
 import { SupportAnalyticsController } from './controllers/support-analytics.controller';
+import { AISupportController } from './controllers/ai-support.controller';
 
 // Services
 import { ReviewService } from './services/review.service';
@@ -20,13 +21,15 @@ import { ClaimService } from './services/claim.service';
 import { NotificationService } from './services/notification.service';
 import { SupportAnalyticsService } from './services/support-analytics.service';
 import { SupportConfigService } from './services/support-config.service';
+import { AISentimentService, AICategorizationService } from './services/ai-analysis.service';
+import { AISmartResponseService, AIPredictiveService } from './services/ai-smart-response.service';
 
 // External Modules
 import { DatabaseModule } from '../../database/database.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 
 /**
- * SupportModule - Module de support client complet
+ * SupportModule - Module de support client complet avec Intelligence Artificielle
  *
  * Fonctionnalités:
  * ✅ Gestion des avis clients (reviews)
@@ -38,6 +41,12 @@ import { NotificationsModule } from '../../notifications/notifications.module';
  * ✅ Notifications temps réel
  * ✅ Analytics et rapports
  * ✅ Configuration centralisée
+ * 🤖 Intelligence Artificielle:
+ *   - Analyse de sentiment automatique
+ *   - Catégorisation intelligente des tickets
+ *   - Réponses suggérées par IA
+ *   - Prédiction d'escalation
+ *   - Optimisation de workflow
  */
 @Module({
   imports: [ConfigModule, DatabaseModule, NotificationsModule],
@@ -49,6 +58,7 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     LegalController,
     ClaimController,
     SupportAnalyticsController,
+    AISupportController, // 🤖 Contrôleur IA
   ],
   providers: [
     // Services principaux
@@ -63,12 +73,23 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     // Services avancés
     SupportAnalyticsService,
     SupportConfigService,
+
+    // Services Intelligence Artificielle 🤖
+    AISentimentService,
+    AICategorizationService,
+    AISmartResponseService,
+    AIPredictiveService,
   ],
   exports: [
     ContactService,
     NotificationService,
     SupportAnalyticsService,
     SupportConfigService,
+    // Export des services IA
+    AISentimentService,
+    AICategorizationService,
+    AISmartResponseService,
+    AIPredictiveService,
   ],
 })
 export class SupportModule {}
