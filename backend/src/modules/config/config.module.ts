@@ -42,7 +42,7 @@ import { EnvironmentValidator } from './validators/environment.validator';
 
 // Modules externes
 import { DatabaseModule } from '../../database/database.module';
-import { CacheModule } from '../../cache/cache.module';
+import { CacheModule } from '../cache/cache.module';
 
 // Interfaces et types
 import { ConfigModuleOptions, ConfigEnvironment } from './interfaces/config.interfaces';

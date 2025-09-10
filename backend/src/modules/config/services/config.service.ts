@@ -318,4 +318,17 @@ export class ConfigService implements OnModuleInit {
       return current && current[key] !== undefined ? current[key] : undefined;
     }, obj);
   }
+
+  getEnvironmentInfo(): any {
+    return {
+      nodeEnv: this.nestConfigService.get<string>('NODE_ENV'),
+      port: this.nestConfigService.get<number>('PORT'),
+      databaseUrl: this.nestConfigService.get<string>('DATABASE_URL') ? '[CONFIGURED]' : '[NOT SET]',
+      supabaseUrl: this.nestConfigService.get<string>('SUPABASE_URL') ? '[CONFIGURED]' : '[NOT SET]',
+      redisUrl: this.nestConfigService.get<string>('REDIS_URL') ? '[CONFIGURED]' : '[NOT SET]',
+      jwtSecret: this.nestConfigService.get<string>('JWT_SECRET') ? '[CONFIGURED]' : '[NOT SET]',
+      version: process.env.npm_package_version || '1.0.0',
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
