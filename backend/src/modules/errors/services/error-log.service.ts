@@ -71,6 +71,7 @@ export class ErrorLogService extends SupabaseBaseService {
       };
 
       const errorLog = {
+        msg_id: this.generateMessageId(),
         msg_cst_id: entry.userId || null,
         msg_cnfa_id: null,
         msg_ord_id: null,
@@ -125,6 +126,7 @@ export class ErrorLogService extends SupabaseBaseService {
       };
 
       const errorLog = {
+        msg_id: this.generateMessageId(),
         msg_cst_id: errorData.msg_cst_id || null,
         msg_cnfa_id: errorData.msg_cnfa_id || null,
         msg_ord_id: errorData.msg_ord_id || null,
@@ -206,6 +208,7 @@ export class ErrorLogService extends SupabaseBaseService {
 
       // Insérer les statistiques comme un message spécialisé
       const { error } = await this.supabase.from('___xtr_msg').insert({
+        msg_id: this.generateMessageId(),
         msg_cst_id: null,
         msg_cnfa_id: null,
         msg_ord_id: null,
@@ -478,6 +481,13 @@ export class ErrorLogService extends SupabaseBaseService {
 
   private generateCorrelationId(): string {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * Génère un ID unique pour msg_id
+   */
+  private generateMessageId(): string {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private getPeriodInMs(period: string): number {
