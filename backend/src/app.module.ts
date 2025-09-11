@@ -31,10 +31,12 @@ import { PaymentsModule } from './modules/payments/payments.module'; // 💳 NOU
 import { CommercialModule } from './modules/commercial/commercial.module'; // 🏢 NOUVEAU - Module commercial et ventes !
 import { StaffModule } from './modules/staff/staff.module'; // 👥 NOUVEAU - Module gestion du personnel !
 import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
+import { AnalyticsModule } from './modules/analytics/analytics.module'; // 📊 NOUVEAU - Module Analytics enhanced !
 import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
 import { SupportModule } from './modules/support/support.module'; // 🎯 NOUVEAU - Module support client complet !
 import { ErrorsModule } from './modules/errors/errors.module'; // ❌ NOUVEAU - Module de gestion des erreurs et redirections !
 import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU - API endpoints pour erreurs !
+import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 // import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
@@ -93,6 +95,8 @@ import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU
     SupportModule, // 🎯 ACTIVÉ - Module support client complet (contact, legal, reviews, FAQ) !
     ErrorsModule, // ❌ ACTIVÉ - Module de gestion des erreurs et redirections avec logs !
     ErrorsApiModule, // 🔌 ACTIVÉ - API endpoints pour erreurs et redirections !
+    CustomConfigModule, // 🔧 ACTIVÉ - Module config enhanced avec gestion dynamique !
+    AnalyticsModule, // 📊 ACTIVÉ - Module Analytics enhanced avec multi-providers !
 
     // TODO: Réactiver progressivement
     // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !

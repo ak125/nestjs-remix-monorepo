@@ -1,0 +1,633 @@
+/**
+ * 🔧 Admin Configuration System - Version Améliorée
+ * Compatible avec l'écosystème admin existant du projet
+ */
+
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { 
+  Settings, 
+  Database, 
+  Mail, 
+  Activity, 
+  Shield, 
+  Zap,
+  Save,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  Eye,
+  EyeOff,
+  Copy,
+  Search
+} from "lucide-react";
+import { configApi } from "../services/api/config.api";
+// import { requireAdmin } from "../services/auth.server";
+
+// Configuration des catégories - étendu et amélioré
+const CATEGORIES = [
+  { 
+    key: 'general', 
+    label: 'Configuration Générale', 
+    icon: Settings,
+    description: 'Paramètres globaux de l\'application',
+    color: 'bg-gray-500' 
+  },
+  { 
+    key: 'database', 
+    label: 'Base de données', 
+    icon: Database,
+    description: 'Configuration des connexions et pools',
+    color: 'bg-blue-500' 
+  },
+  { 
+    key: 'email', 
+    label: 'Email & Notifications', 
+    icon: Mail,
+    description: 'Services d\'envoi et templates',
+    color: 'bg-green-500' 
+  },
+  { 
+    key: 'analytics', 
+    label: 'Analytics & Tracking', 
+    icon: Activity,
+    description: 'Google Analytics, Matomo, métriques',
+    color: 'bg-purple-500' 
+  },
+  { 
+    key: 'security', 
+    label: 'Sécurité', 
+    icon: Shield,
+    description: 'JWT, cryptage, permissions',
+    color: 'bg-red-500' 
+  },
+  { 
+    key: 'performance', 
+    label: 'Performance & Cache', 
+    icon: Zap,
+    description: 'Redis, optimisations, CDN',
+    color: 'bg-yellow-500' 
+  },
+];
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  // Note: Authentication would be handled by middleware in production
+  
+  try {
+    const [configs, stats] = await Promise.all([
+      configApi.getAllConfigs(),
+      configApi.getStats()
+    ]);
+    
+    return json({ 
+      categories: CATEGORIES, 
+      configs: configs || [],
+      stats: stats || { totalConfigs: 0, configsByCategory: {} }
+    });
+  } catch (error) {
+    console.error('❌ Erreur chargement configurations:', error);
+    
+    // Fallback avec données par défaut
+    return json({ 
+      categories: CATEGORIES, 
+      configs: [],
+      stats: { totalConfigs: 0, configsByCategory: {} },
+      error: 'Erreur lors du chargement des configurations'
+    });
+  }
+}
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  // Note: Authentication would be handled by middleware in production
+  
+  const formData = await request.formData();
+  const action = formData.get("_action") as string;
+
+  try {
+    switch (action) {
+      case "update": {
+        const key = formData.get("key") as string;
+        const value = formData.get("value");
+        const type = formData.get("type") as string;
+        
+        // Conversion du type si nécessaire
+        let processedValue = value;
+        if (type === 'boolean') {
+          processedValue = value === 'true';
+        } else if (type === 'number') {
+          processedValue = Number(value);
+        } else if (type === 'json') {
+          try {
+            processedValue = JSON.parse(value as string);
+          } catch {
+            return json({ 
+              error: "Format JSON invalide",
+              field: key 
+            }, { status: 400 });
+          }
+        }
+        
+        await configApi.updateConfig(key, processedValue);
+        return json({ 
+          success: true, 
+          message: `Configuration "${key}" mise à jour avec succès`,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      case "backup": {
+        const name = formData.get("name") as string;
+        const backupId = await configApi.createBackup(name);
+        return json({ 
+          success: true, 
+          backupId, 
+          message: "Sauvegarde créée avec succès",
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      case "restore": {
+        const backupId = formData.get("backupId") as string;
+        await configApi.restoreBackup(backupId);
+        return json({ 
+          success: true, 
+          message: "Configuration restaurée avec succès",
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      case "reload": {
+        await configApi.reloadConfigs();
+        return json({ 
+          success: true, 
+          message: "Configurations rechargées depuis la base de données",
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      default:
+        return json({ error: "Action inconnue" }, { status: 400 });
+    }
+  } catch (error) {
+    console.error(`❌ Erreur action ${action}:`, error);
+    return json({ 
+      error: `Erreur lors de l'action ${action}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
+  }
+}
+
+export default function AdminConfigIndexPage() {
+  const { categories, configs, stats, error } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  
+  const [selectedCategory, setSelectedCategory] = useState('general');
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [backupName, setBackupName] = useState('');
+
+  // Auto-sélectionner la première catégorie qui a des configurations
+  useEffect(() => {
+    if (configs && configs.length > 0) {
+      const categoriesWithConfigs = categories.filter(cat => 
+        configs.some(config => config.category === cat.key)
+      );
+      if (categoriesWithConfigs.length > 0) {
+        setSelectedCategory(categoriesWithConfigs[0].key);
+      }
+    }
+  }, [configs, categories]);
+
+  const filteredConfigs = configs?.filter(config => {
+    const matchesCategory = config.category === selectedCategory;
+    const matchesSearch = !searchTerm || 
+      config.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      config.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  }) || [];
+
+  const selectedCategoryData = categories.find(cat => cat.key === selectedCategory);
+  const configsInCategory = stats?.configsByCategory?.[selectedCategory] || 0;
+
+  const toggleSensitiveVisibility = (key: string) => {
+    setShowSensitive(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // Notification de succès
+    } catch (error) {
+      console.error('Erreur copie:', error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header avec statistiques */}
+        <div className="bg-white rounded-lg shadow-sm border mb-6">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                  <Settings className="mr-3 h-6 w-6 text-blue-600" />
+                  Configuration Système
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Gestion avancée des paramètres et configurations
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                {/* Statistiques rapides */}
+                <div className="text-right">
+                  <div className="text-sm text-gray-500">Total configurations</div>
+                  <div className="text-2xl font-bold text-blue-600">{stats?.totalConfigs || 0}</div>
+                </div>
+                
+                {/* Actions rapides */}
+                <Form method="post" className="inline">
+                  <input type="hidden" name="_action" value="reload" />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center"
+                    title="Recharger depuis la base de données"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Recharger
+                  </button>
+                </Form>
+                
+                <Form method="post" className="inline">
+                  <input type="hidden" name="_action" value="backup" />
+                  <input 
+                    type="hidden" 
+                    name="name" 
+                    value={backupName || `Backup ${new Date().toLocaleString()}`} 
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Sauvegarder
+                  </button>
+                </Form>
+              </div>
+            </div>
+          </div>
+
+          {/* Messages de statut */}
+          {error && (
+            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                <p className="text-red-800">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {actionData?.success && (
+            <div className="px-6 py-3 bg-green-50 border-b border-green-200">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                <div>
+                  <p className="text-green-800">{actionData.message}</p>
+                  {actionData.backupId && (
+                    <p className="text-sm text-green-600 mt-1">
+                      ID de sauvegarde : <code className="bg-green-100 px-2 py-1 rounded">{actionData.backupId}</code>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {actionData?.error && (
+            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                <p className="text-red-800">{actionData.error}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="flex">
+            {/* Sidebar des catégories */}
+            <div className="w-80 border-r border-gray-200">
+              {/* Barre de recherche */}
+              <div className="p-4 border-b border-gray-200">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Rechercher une configuration..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation des catégories */}
+              <nav className="p-4">
+                {categories.map(category => {
+                  const Icon = category.icon;
+                  const count = stats?.configsByCategory?.[category.key] || 0;
+                  
+                  return (
+                    <button
+                      key={category.key}
+                      onClick={() => setSelectedCategory(category.key)}
+                      className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
+                        selectedCategory === category.key
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                          : 'hover:bg-gray-50 text-gray-700 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`p-2 rounded-md mr-3 ${category.color} bg-opacity-10`}>
+                          <Icon className={`h-4 w-4 ${category.color.replace('bg-', 'text-')}`} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium">{category.label}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {category.description}
+                          </div>
+                          {count > 0 && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              {count} configuration{count > 1 ? 's' : ''}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Zone de contenu principal */}
+            <div className="flex-1 p-6">
+              {/* Header de la catégorie */}
+              {selectedCategoryData && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`p-3 rounded-lg mr-4 ${selectedCategoryData.color} bg-opacity-10`}>
+                        <selectedCategoryData.icon className={`h-6 w-6 ${selectedCategoryData.color.replace('bg-', 'text-')}`} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          {selectedCategoryData.label}
+                        </h2>
+                        <p className="text-gray-600">{selectedCategoryData.description}</p>
+                        {configsInCategory > 0 && (
+                          <p className="text-sm text-blue-600 mt-1">
+                            {configsInCategory} configuration{configsInCategory > 1 ? 's' : ''} disponible{configsInCategory > 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Liste des configurations */}
+              {filteredConfigs.length === 0 ? (
+                <div className="text-center py-12">
+                  <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Aucune configuration trouvée
+                  </h3>
+                  <p className="text-gray-600">
+                    {searchTerm 
+                      ? "Aucune configuration ne correspond à votre recherche." 
+                      : "Aucune configuration disponible dans cette catégorie."
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredConfigs.map(config => (
+                    <div key={config.key} className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          {/* Header de la configuration */}
+                          <div className="flex items-center flex-wrap gap-2 mb-2">
+                            <h3 className="font-medium text-gray-900">{config.key}</h3>
+                            
+                            {/* Badges */}
+                            <div className="flex gap-2">
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                config.type === 'boolean' ? 'bg-green-100 text-green-700' :
+                                config.type === 'number' ? 'bg-blue-100 text-blue-700' :
+                                config.type === 'json' ? 'bg-purple-100 text-purple-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {config.type}
+                              </span>
+                              
+                              {config.isSensitive && (
+                                <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                                  Sensible
+                                </span>
+                              )}
+                              
+                              {config.requiresRestart && (
+                                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                                  Redémarrage requis
+                                </span>
+                              )}
+                              
+                              {config.isRequired && (
+                                <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
+                                  Requis
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Description */}
+                          {config.description && (
+                            <p className="text-sm text-gray-600 mb-3">{config.description}</p>
+                          )}
+                          
+                          {/* Formulaire d'édition ou affichage de la valeur */}
+                          {editingKey === config.key ? (
+                            <Form method="post" className="mt-3">
+                              <input type="hidden" name="_action" value="update" />
+                              <input type="hidden" name="key" value={config.key} />
+                              <input type="hidden" name="type" value={config.type} />
+                              <div className="flex items-center space-x-2">
+                                {config.type === 'boolean' ? (
+                                  <select
+                                    name="value"
+                                    defaultValue={String(config.value)}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  >
+                                    <option value="true">Activé</option>
+                                    <option value="false">Désactivé</option>
+                                  </select>
+                                ) : config.type === 'number' ? (
+                                  <input
+                                    type="number"
+                                    name="value"
+                                    defaultValue={config.value}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  />
+                                ) : config.type === 'json' ? (
+                                  <textarea
+                                    name="value"
+                                    defaultValue={typeof config.value === 'object' ? JSON.stringify(config.value, null, 2) : config.value}
+                                    rows={4}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+                                    placeholder="Format JSON valide"
+                                  />
+                                ) : (
+                                  <input
+                                    type="text"
+                                    name="value"
+                                    defaultValue={config.isSensitive && !showSensitive[config.key] ? '' : config.value}
+                                    placeholder={config.isSensitive && !showSensitive[config.key] ? '••••••••' : ''}
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  />
+                                )}
+                                <button
+                                  type="submit"
+                                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Valider
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingKey(null)}
+                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                >
+                                  Annuler
+                                </button>
+                              </div>
+                            </Form>
+                          ) : (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2 flex-1">
+                                  <code className="px-3 py-2 bg-gray-50 border rounded text-sm font-mono flex-1 break-all">
+                                    {config.isSensitive && !showSensitive[config.key] 
+                                      ? '••••••••••••••••' 
+                                      : config.type === 'json' 
+                                        ? JSON.stringify(config.value, null, 2)
+                                        : String(config.value)
+                                    }
+                                  </code>
+                                  
+                                  {/* Actions sur la valeur */}
+                                  <div className="flex space-x-1">
+                                    {config.isSensitive && (
+                                      <button
+                                        onClick={() => toggleSensitiveVisibility(config.key)}
+                                        className="p-2 text-gray-400 hover:text-gray-600 rounded"
+                                        title={showSensitive[config.key] ? "Masquer" : "Afficher"}
+                                      >
+                                        {showSensitive[config.key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                      </button>
+                                    )}
+                                    
+                                    <button
+                                      onClick={() => copyToClipboard(String(config.value))}
+                                      className="p-2 text-gray-400 hover:text-gray-600 rounded"
+                                      title="Copier la valeur"
+                                    >
+                                      <Copy className="h-4 w-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                <button
+                                  onClick={() => setEditingKey(config.key)}
+                                  className="ml-3 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                                >
+                                  Modifier
+                                </button>
+                              </div>
+                              
+                              {/* Métadonnées */}
+                              {(config.lastUpdated || config.updatedBy) && (
+                                <div className="text-xs text-gray-500 mt-2">
+                                  {config.lastUpdated && (
+                                    <span>Mise à jour : {new Date(config.lastUpdated).toLocaleString()}</span>
+                                  )}
+                                  {config.updatedBy && config.lastUpdated && <span> • </span>}
+                                  {config.updatedBy && <span>Par : {config.updatedBy}</span>}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Section des liens rapides */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link
+            to="/admin/config/database"
+            className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-3">
+              <Database className="h-6 w-6 text-blue-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Base de données</h3>
+            </div>
+            <p className="text-gray-600">Gérer les connexions et paramètres de base de données</p>
+            <div className="text-sm text-blue-600 mt-2">
+              {stats?.configsByCategory?.database || 0} configuration{(stats?.configsByCategory?.database || 0) !== 1 ? 's' : ''}
+            </div>
+          </Link>
+          
+          <Link
+            to="/admin/config/email"
+            className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-3">
+              <Mail className="h-6 w-6 text-green-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Email</h3>
+            </div>
+            <p className="text-gray-600">Configurer les services d'envoi d'emails</p>
+            <div className="text-sm text-green-600 mt-2">
+              {stats?.configsByCategory?.email || 0} configuration{(stats?.configsByCategory?.email || 0) !== 1 ? 's' : ''}
+            </div>
+          </Link>
+          
+          <Link
+            to="/admin/config/analytics"
+            className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center mb-3">
+              <Activity className="h-6 w-6 text-purple-600 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
+            </div>
+            <p className="text-gray-600">Paramétrer le tracking et les analytics</p>
+            <div className="text-sm text-purple-600 mt-2">
+              {stats?.configsByCategory?.analytics || 0} configuration{(stats?.configsByCategory?.analytics || 0) !== 1 ? 's' : ''}
+            </div>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

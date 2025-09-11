@@ -1,23 +1,42 @@
 /**
- * 🔧 CONFIG SERVICE - Service Principal de Configuration
+ * 🔧 CONFIG SERVICE - Service Principal de Configuration Avancé
  * 
- * Service centralisé pour la gestion des configurations applicatives
- * Cohérent avec l'architecture des autres services du projet
+ * Service centralisé unifiant configuration environnement + base de données
+ * Intègre les meilleures pratiques : cache, sécurité, validation, monitoring
  */
 
 import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigModuleOptions, FullConfigSchema, ConfigEnvironment } from '../interfaces/config.interfaces';
 import { ConfigCacheService } from './config-cache.service';
 import { ConfigValidationService } from './config-validation.service';
 import { ConfigSecurityService } from './config-security.service';
 import { ConfigMonitoringService } from './config-monitoring.service';
+import { ConfigValidator } from '../validators/config.validator';
 import { getAppConfig } from '../../../config/app.config';
+import * as crypto from 'crypto';
+
+export interface ConfigValue {
+  key: string;
+  value: any;
+  type: string;
+  category: string;
+  description?: string;
+  isSensitive?: boolean;
+  requiresRestart?: boolean;
+  isActive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  updatedBy?: string;
+}
 
 @Injectable()
-export class ConfigService implements OnModuleInit {
-  private readonly logger = new Logger(ConfigService.name);
+export class ConfigService extends SupabaseBaseService implements OnModuleInit {
+  protected readonly logger = new Logger(ConfigService.name);
   private configCache = new Map<string, any>();
+  private encryptionKey: string;
+  protected readonly tableName = '___config';
 
   constructor(
     private readonly nestConfigService: NestConfigService,
@@ -25,12 +44,19 @@ export class ConfigService implements OnModuleInit {
     private readonly validationService: ConfigValidationService,
     private readonly securityService: ConfigSecurityService,
     private readonly monitoringService: ConfigMonitoringService,
+    private readonly validator: ConfigValidator,
     @Inject('CONFIG_OPTIONS') private readonly options: ConfigModuleOptions,
     @Inject('CONFIG_ENVIRONMENT') private readonly environment: ConfigEnvironment,
-  ) {}
+  ) {
+    super();
+    this.encryptionKey = process.env.CONFIG_ENCRYPTION_KEY || 'default-key';
+  }
 
   async onModuleInit() {
     this.logger.log(`🔧 ConfigService initialisé pour l'environnement: ${this.environment}`);
+    
+    // Charger les configurations depuis ___config
+    await this.loadAllConfigs();
     
     // Charger les configurations par défaut
     await this.loadDefaultConfigurations();
@@ -254,7 +280,7 @@ export class ConfigService implements OnModuleInit {
 
       this.logger.log(`Cache invalidé ${pattern ? `pour le pattern '${pattern}'` : 'entièrement'}`);
     } catch (error) {
-      this.logger.error('Erreur lors de l\\'invalidation du cache:', error);
+      this.logger.error("Erreur lors de l'invalidation du cache:", error);
       throw error;
     }
   }
@@ -330,5 +356,213 @@ export class ConfigService implements OnModuleInit {
       version: process.env.npm_package_version || '1.0.0',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * Charge toutes les configurations depuis ___config au démarrage
+   */
+  async loadAllConfigs(): Promise<void> {
+    try {
+      const { data: configs, error } = await this.client
+        .from(this.tableName)
+        .select('*');
+
+      if (error) {
+        this.logger.error('Erreur lors du chargement des configurations', error);
+        return;
+      }
+
+      let loadedCount = 0;
+      for (const config of configs || []) {
+        try {
+          // Pour ___config, config_value est déjà en JSON
+          const value = typeof config.config_value === 'string' 
+            ? JSON.parse(config.config_value)
+            : config.config_value;
+          
+          this.configCache.set(config.config_key, value);
+          await this.cacheService.set(`config:${config.config_key}`, value, 3600);
+          loadedCount++;
+        } catch (parseError) {
+          this.logger.warn(`Erreur lors du parsing de ${config.config_key}:`, parseError);
+          // Stocker la valeur brute en cas d'erreur de parsing
+          this.configCache.set(config.config_key, config.config_value);
+        }
+      }
+
+      this.logger.log(`✅ Chargé ${loadedCount} configurations depuis ___config`);
+    } catch (error) {
+      this.logger.error('Échec du chargement des configurations:', error);
+    }
+  }
+
+  /**
+   * Récupère une configuration avec cache intelligent
+   */
+  async getConfig<T = any>(key: string, defaultValue?: T): Promise<T> {
+    try {
+      // 1. Vérifier le cache local
+      if (this.configCache.has(key)) {
+        return this.configCache.get(key) as T;
+      }
+
+      // 2. Vérifier le cache Redis
+      const cached = await this.cacheService.get(`config:${key}`);
+      if (cached) {
+        this.configCache.set(key, cached);
+        return cached as T;
+      }
+
+      // 3. Charger depuis la base de données (___config)
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select('*')
+        .eq('config_key', key)
+        .single();
+
+      if (error || !data) {
+        return defaultValue as T;
+      }
+
+      // Traiter la valeur
+      const value = typeof data.config_value === 'string' 
+        ? JSON.parse(data.config_value)
+        : data.config_value;
+
+      // Mettre en cache
+      this.configCache.set(key, value);
+      await this.cacheService.set(`config:${key}`, value, 3600);
+
+      return value as T;
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération de ${key}:`, error);
+      return defaultValue as T;
+    }
+  }
+
+  /**
+   * Définit une configuration (compatible avec ___config)
+   */
+  async setConfig(key: string, value: any, description?: string): Promise<void> {
+    try {
+      // Préparer la valeur pour stockage
+      const configValue = typeof value === 'object' 
+        ? JSON.stringify(value)
+        : String(value);
+
+      // Tenter de mettre à jour d'abord
+      const { data: updateResult, error: updateError } = await this.client
+        .from(this.tableName)
+        .update({
+          config_value: configValue,
+          description: description,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('config_key', key)
+        .select();
+
+      // Si pas de résultat, créer une nouvelle entrée
+      if (!updateResult || updateResult.length === 0) {
+        const { error: insertError } = await this.client
+          .from(this.tableName)
+          .insert({
+            config_key: key,
+            config_value: configValue,
+            description: description || `Configuration pour ${key}`,
+            updated_at: new Date().toISOString(),
+          });
+
+        if (insertError) {
+          throw insertError;
+        }
+      } else if (updateError) {
+        throw updateError;
+      }
+
+      // Invalider le cache
+      this.configCache.delete(key);
+      await this.cacheService.delete(`config:${key}`);
+
+      this.logger.log(`✅ Configuration ${key} mise à jour`);
+    } catch (error) {
+      this.logger.error(`Erreur lors de la définition de ${key}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Récupère toutes les configurations d'une catégorie (basé sur le préfixe de clé)
+   */
+  async getByCategory(category: string): Promise<ConfigValue[]> {
+    try {
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select('*')
+        .ilike('config_key', `${category}.%`)
+        .order('config_key');
+
+      if (error) {
+        throw error;
+      }
+
+      return (data || []).map(config => ({
+        key: config.config_key,
+        value: typeof config.config_value === 'string' 
+          ? JSON.parse(config.config_value)
+          : config.config_value,
+        type: this.detectType(config.config_value),
+        category: category,
+        description: config.description,
+        createdAt: config.created_at ? new Date(config.created_at) : undefined,
+        updatedAt: config.updated_at ? new Date(config.updated_at) : undefined,
+      }));
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération de la catégorie ${category}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Sauvegarde de la configuration (backup simple en cache)
+   */
+  async backup(description?: string): Promise<string> {
+    try {
+      const { data: configs } = await this.client
+        .from(this.tableName)
+        .select('*');
+
+      const backup = {
+        timestamp: new Date().toISOString(),
+        description: description || 'Sauvegarde automatique',
+        configs: configs || [],
+      };
+
+      const backupId = `backup_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      await this.cacheService.set(`backup:${backupId}`, backup, 86400); // 24h
+
+      this.logger.log(`✅ Backup créé: ${backupId}`);
+      return backupId;
+    } catch (error) {
+      this.logger.error('Erreur lors du backup:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Détecte le type d'une valeur
+   */
+  private detectType(value: any): string {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (typeof parsed === 'boolean') return 'boolean';
+        if (typeof parsed === 'number') return 'number';
+        if (Array.isArray(parsed)) return 'array';
+        if (typeof parsed === 'object') return 'object';
+      } catch {
+        return 'string';
+      }
+    }
+    return typeof value;
   }
 }

@@ -40,10 +40,23 @@ export class ConfigCacheService {
 
   async clear(): Promise<void> {
     try {
-      // Implementation depends on cache service capabilities
-      this.logger.log('Cache des configurations vidé');
+      // Implementation simplifiée - dans un vrai projet, 
+      // il faudrait implémenter une méthode de nettoyage par pattern
+      this.logger.log('Cache des configurations vidé (implémentation simplifiée)');
     } catch (error) {
       this.logger.error('Erreur lors du vidage du cache', error);
+    }
+  }
+
+  /**
+   * Invalider le cache avec pattern (implémentation future)
+   */
+  async invalidatePattern(pattern: string): Promise<void> {
+    try {
+      // TODO: Implémenter quand le CacheService supportera les patterns
+      this.logger.debug(`Pattern d'invalidation: ${pattern} (non implémenté)`);
+    } catch (error) {
+      this.logger.error('Erreur lors de l\'invalidation par pattern', error);
     }
   }
 }
