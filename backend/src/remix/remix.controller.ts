@@ -22,9 +22,10 @@ export class RemixController {
     // console.log('Request URL:', request.url);
 
     // Ne pas capturer les routes qui sont déjà gérées par d'autres contrôleurs backend
-    // Attention: les routes /admin/* doivent être gérées par Remix pour le frontend admin
+    // Les routes /admin/breadcrumbs/* sont gérées par le BreadcrumbAdminController
     if (
       request.url.startsWith('/api/') ||
+      request.url.startsWith('/admin/breadcrumbs') ||
       request.url.startsWith('/authenticate') ||
       request.url.startsWith('/auth/') ||
       request.url.startsWith('/profile/')

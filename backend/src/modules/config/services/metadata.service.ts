@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from './config.service';
-import { DatabaseConfigService } from './database-config.service';
+import { ConfigService as NestConfigService } from '@nestjs/config';
 import { CacheService } from '../../cache/cache.service';
+import { SupabaseBaseService } from '../../supabase/supabase-base.service';
 
 export interface PageMetadata {
   title: string;
   description: string;
   keywords?: string[];
   canonical?: string;
+  canonicalUrl?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
@@ -20,7 +21,10 @@ export interface PageMetadata {
     lang: string;
     url: string;
   }>;
+  h1?: string;
+  breadcrumb?: string;
   robots?: string;
+  schemaMarkup?: any;
   lastModified?: Date;
 }
 

@@ -1,6 +1,6 @@
 /**
  * 🔧 CONFIG MODULE - Module de Configuration Avancé
- * 
+ *
  * Architecture alignée sur les meilleures pratiques du projet :
  * ✅ Module global avec configuration dynamique
  * ✅ Services spécialisés par domaine (config, enhanced-config)
@@ -43,7 +43,10 @@ interface ConfigModuleOptions {
     DatabaseModule,
     CacheModule,
   ],
-  controllers: [SimpleConfigController, SimpleDatabaseConfigController],
+  controllers: [
+    SimpleConfigController,
+    SimpleDatabaseConfigController,
+  ],
   providers: [
     // Services principaux
     SimpleConfigService,
@@ -63,7 +66,9 @@ export class ConfigModule {
   static forRoot(options?: ConfigModuleOptions): DynamicModule {
     const defaultOptions: ConfigModuleOptions = {
       cacheTTL: 3600, // 1 heure par défaut
-      environment: (process.env.NODE_ENV as 'development' | 'production' | 'test') || 'development',
+      environment:
+        (process.env.NODE_ENV as 'development' | 'production' | 'test') ||
+        'development',
       enableValidation: true,
     };
 
