@@ -67,6 +67,67 @@ export class VehiclesService extends SupabaseBaseService {
     filters?: VehiclePaginationDto,
   ): Promise<VehicleResponseDto> {
     try {
+      // 🎯 FILTRAGE INTELLIGENT : Si une année est spécifiée, ne retourner que les modèles
+      // qui ont au moins une motorisation disponible pour cette année
+      if (filters?.year) {
+        // Récupérer les IDs des modèles qui ont des motorisations pour l'année donnée
+        const { data: modelIds, error: modelIdsError } = await this.client
+          .from('auto_type')
+          .select('type_modele_id')
+          .lte('type_year_from', filters.year.toString())
+          .gte('type_year_to', filters.year.toString());
+
+        if (modelIdsError) {
+          this.logger.error('Erreur récupération modelIds:', modelIdsError);
+          throw modelIdsError;
+        }
+
+        // Extraire les IDs uniques
+        const validModelIds = [
+          ...new Set(modelIds?.map((item) => item.type_modele_id) || []),
+        ];
+
+        // Si aucun modèle n'a de motorisations pour cette année, retourner vide
+        if (validModelIds.length === 0) {
+          return {
+            data: [],
+            total: 0,
+            page: filters?.page || 0,
+            limit: filters?.limit || 50,
+          };
+        }
+
+        // Requête filtrée par les modèles ayant des motorisations
+        let query = this.client
+          .from('auto_modele')
+          .select(`*`)
+          .eq('modele_marque_id', brandId)
+          .in('modele_id', validModelIds)
+          .limit(filters?.limit || 50);
+
+        if (filters?.search) {
+          query = query.ilike('modele_name', `%${filters.search}%`);
+        }
+
+        const offset = (filters?.page || 0) * (filters?.limit || 50);
+        const { data, error } = await query
+          .order('modele_name', { ascending: true })
+          .range(offset, offset + (filters?.limit || 50) - 1);
+
+        if (error) {
+          this.logger.error('Erreur findModelsByBrand avec année:', error);
+          throw error;
+        }
+
+        return {
+          data: data || [],
+          total: data?.length || 0,
+          page: filters?.page || 0,
+          limit: filters?.limit || 50,
+        };
+      }
+
+      // 📋 REQUÊTE NORMALE : Sans filtrage par année, retourner tous les modèles
       let query = this.client
         .from('auto_modele')
         .select(`*`)
@@ -115,6 +176,13 @@ export class VehiclesService extends SupabaseBaseService {
 
       if (filters?.search) {
         query = query.ilike('type_name', `%${filters.search}%`);
+      }
+
+      // 🗓️ FILTRAGE PAR ANNÉE - Motorisations disponibles pour l'année sélectionnée
+      if (filters?.year) {
+        query = query
+          .lte('type_year_from', filters.year.toString()) // Début <= année sélectionnée
+          .or(`type_year_to.is.null,type_year_to.gte.${filters.year}`); // Fin NULL OU >= année sélectionnée
       }
 
       const offset = (filters?.page || 0) * (filters?.limit || 50);

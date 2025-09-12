@@ -15,6 +15,7 @@ export class VehiclesController {
       brandId: query.brandId || undefined,
       modelId: query.modelId || undefined,
       typeId: query.typeId || undefined,
+      year: query.year ? parseInt(query.year, 10) : undefined,
       limit: query.limit ? parseInt(query.limit, 10) : undefined,
       page: query.page ? parseInt(query.page, 10) : undefined,
     };
@@ -43,6 +44,12 @@ export class VehiclesController {
   ) {
     const params = this.parseQueryParams(query);
     params.modelId = modelId;
+    
+    // 🔧 Support du filtrage par année
+    if (query.year) {
+      params.year = parseInt(query.year);
+    }
+    
     return this.vehiclesService.findTypesByModel(modelId, params);
   }
 

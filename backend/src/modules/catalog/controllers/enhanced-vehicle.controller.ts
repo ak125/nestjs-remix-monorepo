@@ -124,17 +124,20 @@ export class EnhancedVehicleController {
   @Get('models/:modelId/engines')
   @ApiOperation({ summary: 'Récupérer les motorisations d\'un modèle' })
   @ApiResponse({ status: 200, description: 'Liste des motorisations récupérée avec succès' })
-  async getEngineTypes(@Param('modelId', ParseIntPipe) modelId: number): Promise<VehicleType[]> {
+  async getEngineTypes(
+    @Param('modelId', ParseIntPipe) modelId: number,
+    @Query('year') year?: number
+  ): Promise<VehicleType[]> {
     try {
-      this.logger.debug(`⚙️ Récupération motorisations pour modèle: ${modelId}`);
+      this.logger.debug(`⚙️ Récupération motorisations pour modèle: ${modelId}, année: ${year || 'toutes'}`);
       
       if (modelId <= 0) {
         throw new BadRequestException('ID de modèle invalide');
       }
 
-      const engines = await this.vehicleService.getEngineTypes(modelId);
+      const engines = await this.vehicleService.getEngineTypes(modelId, year);
 
-      this.logger.log(`✅ ${engines.length} motorisations récupérées pour modèle ${modelId}`);
+      this.logger.log(`✅ ${engines.length} motorisations récupérées pour modèle ${modelId}${year ? ` année ${year}` : ''}`);
       return engines;
     } catch (error) {
       this.logger.error(`❌ Erreur récupération motorisations modèle ${modelId}:`, error);
@@ -241,5 +244,90 @@ export class EnhancedVehicleController {
   @ApiOperation({ summary: 'DEBUG: Valeurs marque_display' })
   async debugMarqueDisplay() {
     return await this.vehicleService.debugMarqueDisplay();
+  }
+
+  /**
+   * 🔍 DEBUG: Vérifier les valeurs de modele_display
+   */
+  @Get('debug/modele-display')
+  @ApiOperation({ summary: 'DEBUG: Valeurs modele_display' })
+  async debugModeleDisplay() {
+    return await this.vehicleService.debugModeleDisplay();
+  }
+
+  /**
+   * 🔍 DEBUG: Analyser les années AUDI 80 V
+   */
+  @Get('debug/audi-80v-years')
+  @ApiOperation({ summary: 'DEBUG: Années AUDI 80 V' })
+  async debugAudi80VYears() {
+    return await this.vehicleService.debugAudi80VYears();
+  }
+
+  /**
+   * 🔍 DEBUG: Analyser les années RENAULT Clio
+   */
+  @Get('debug/renault-clio-years')
+  @ApiOperation({ summary: 'DEBUG: Années RENAULT Clio' })
+  async debugRenaultClioYears() {
+    return await this.vehicleService.debugRenaultClioYears();
+  }
+
+  /**
+   * 🔍 DEBUG: Test filtrage CLIO II en 2013
+   */
+  @Get('debug/clio-ii-filter-2013')
+  @ApiOperation({ summary: 'DEBUG: Test filtrage CLIO II 2013' })
+  async debugClioIIFilter2013() {
+    return await this.vehicleService.debugClioIIFilter2013();
+  }
+
+  /**
+   * 🔍 DEBUG: Test complet filtrage RENAULT 2013
+   */
+  @Get('debug/renault-filtering-2013')
+  @ApiOperation({ summary: 'DEBUG: Test complet RENAULT 2013' })
+  async debugRenaultFiltering2013() {
+    return await this.vehicleService.debugRenaultFiltering2013();
+  }
+
+  @Get('debug/clio-iv-check-2013')
+  async debugClioIVCheck2013() {
+    return await this.vehicleService.debugClioIVCheck2013();
+  }
+
+  @Get('debug/clio-iv-check-2015')
+  async debugClioIVCheck2015() {
+    return await this.vehicleService.debugClioIVCheck2015();
+  }
+
+  @Get('debug/database-structure')
+  async debugDatabaseStructure() {
+    return await this.vehicleService.debugDatabaseStructure();
+  }
+
+  @Get('debug/clio-models-all')
+  async debugClioModelsAll() {
+    return await this.vehicleService.debugClioModelsAll();
+  }
+
+  @Get('debug/pagination-2015')
+  async debugPagination2015() {
+    return await this.vehicleService.debugPagination2015();
+  }
+
+  @Get('debug/clio-2013')
+  async debugClioFor2013() {
+    try {
+      const result = await this.vehicleService.debugClioFor2013();
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur debug CLIO 2013:', error);
+      return {
+        success: false,
+        message: 'Erreur lors du debug CLIO 2013',
+        error: error?.toString(),
+      };
+    }
   }
 }

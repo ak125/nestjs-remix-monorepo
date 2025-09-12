@@ -37,6 +37,7 @@ export interface VehiclePaginationDto {
   brandId?: string;
   modelId?: string;
   typeId?: string;
+  year?: number;
   limit?: number;
   page?: number;
 }

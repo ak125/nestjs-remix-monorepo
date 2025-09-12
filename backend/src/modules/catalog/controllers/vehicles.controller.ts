@@ -181,4 +181,14 @@ export class VehiclesController {
       limit ? parseInt(limit, 10) : 20,
     );
   }
+
+  /**
+   * GET /api/catalog/vehicles/debug/clio-analysis
+   * Debug endpoint pour analyser les données CLIO
+   */
+  @Get('debug/clio-analysis')
+  async debugClioAnalysis() {
+    this.logger.log('GET /catalog/vehicles/debug/clio-analysis');
+    return this.autoDataService.debugClioAnalysis();
+  }
 }

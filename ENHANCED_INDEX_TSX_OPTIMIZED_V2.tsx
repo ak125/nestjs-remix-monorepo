@@ -3,16 +3,18 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData } from "@remix-run/react";
-import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
-import { BrandCarousel } from "../components/home/BrandCarousel";
-import { ProductCatalog } from "../components/home/ProductCatalog";
-import { VehicleSelectorHybrid } from "../components/home/VehicleSelectorHybrid";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Package, Search, Star, Shield, Clock, Phone, Users, ShoppingCart, TrendingUp, Award } from 'lucide-react';
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+
+// 🔄 Imports pour les composants hybrides
+import { VehicleSelectorHybrid } from "~/components/home/VehicleSelectorHybrid";
+import { BrandCarousel } from "~/components/home/BrandCarousel";
+import { ProductCatalog } from "~/components/home/ProductCatalog";
 
 // 🚀 Services API améliorés (utilise Enhanced Vehicle Service)
-import { enhancedProductApi } from "../services/api/enhanced-product.api";
-import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
+import { enhancedVehicleApi } from "~/services/api/enhanced-vehicle.api";
+import { enhancedProductApi } from "~/services/api/enhanced-product.api";
 
 export const meta: MetaFunction = () => {
   return [
@@ -82,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function IndexOptimized() {
   const { brands, stats, categories } = useLoaderData<typeof loader>();
-  const [_searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -101,7 +103,7 @@ export default function IndexOptimized() {
 
           {/* 🚗 Sélecteur de véhicule hybride avec cascade intelligente */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelectorHybrid brands={brands as any} />
+            <VehicleSelectorHybrid />
           </div>
 
           {/* 📊 Statistiques en temps réel */}
@@ -115,11 +117,11 @@ export default function IndexOptimized() {
               <div className="text-blue-100">Marques référencées</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-400">{(stats as any).totalOrders?.toLocaleString() || '25K'}</div>
+              <div className="text-3xl font-bold text-purple-400">{stats.totalOrders?.toLocaleString() || '25K'}</div>
               <div className="text-blue-100">Commandes livrées</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-400">{(stats as any).customerSatisfaction || '4.8'}/5</div>
+              <div className="text-3xl font-bold text-orange-400">{stats.customerSatisfaction || '4.8'}/5</div>
               <div className="text-blue-100">Satisfaction client</div>
             </div>
           </div>
@@ -132,7 +134,7 @@ export default function IndexOptimized() {
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
             Marques populaires
           </h2>
-                    <BrandCarousel brands={brands as any} />
+          <BrandCarousel brands={brands} />
         </div>
       </section>
 

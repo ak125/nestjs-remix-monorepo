@@ -192,6 +192,138 @@ export class EnhancedVehicleService extends SupabaseBaseService {
         return cached;
       }
 
+      // Si une année est spécifiée, on filtre les modèles qui ont des motorisations valides pour cette année
+      if (year) {
+        // Récupérer TOUS les types valides sans limite
+        const allValidModelIds: number[] = [];
+        
+        // 1. Récupérer TOUS les types avec type_year_to NULL (toujours en production)
+        let offset = 0;
+        const batchSize = 1000;
+        let hasMore = true;
+        
+        while (hasMore) {
+          const { data: typesWithNull, count } = await this.supabase
+            .from('auto_type')
+            .select('type_modele_id', { count: 'exact' })
+            .eq('type_display', '1')
+            .lte('type_year_from', year.toString())
+            .is('type_year_to', null)
+            .range(offset, offset + batchSize - 1);
+          
+          if (typesWithNull && typesWithNull.length > 0) {
+            typesWithNull.forEach(t => allValidModelIds.push(t.type_modele_id));
+            offset += batchSize;
+            hasMore = typesWithNull.length === batchSize;
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        // 2. Récupérer TOUS les types avec type_year_to défini
+        offset = 0;
+        hasMore = true;
+        
+        while (hasMore) {
+          const { data: typesWithEnd } = await this.supabase
+            .from('auto_type')
+            .select('type_modele_id')
+            .eq('type_display', '1')
+            .lte('type_year_from', year.toString())
+            .gte('type_year_to', year.toString())
+            .range(offset, offset + batchSize - 1);
+          
+          if (typesWithEnd && typesWithEnd.length > 0) {
+            typesWithEnd.forEach(t => allValidModelIds.push(t.type_modele_id));
+            offset += batchSize;
+            hasMore = typesWithEnd.length === batchSize;
+          } else {
+            hasMore = false;
+          }
+        }
+
+        // Dédupliquer les IDs
+        const validModelIdsArray = [...new Set(allValidModelIds)];
+        
+        this.logger.log(
+          `🔍 Année ${year}: ${validModelIdsArray.length} modèles avec motorisations valides trouvés`,
+        );
+        
+        if (validModelIdsArray.length === 0) {
+          // Aucun modèle valide pour cette année
+          const result: VehicleResponse<VehicleModel> = {
+            success: true,
+            data: [],
+            total: 0,
+            page: options.page || 0,
+            limit: options.limit || 50,
+          };
+          return result;
+        }
+
+        // Récupérer les modèles pour ces IDs
+        let query = this.supabase
+          .from('auto_modele')
+          .select('*')
+          .eq('modele_marque_id', brandId)
+          .eq('modele_display', 1)
+          .in('modele_id', validModelIdsArray);
+
+        if (options.search) {
+          query = query.or(`
+            modele_name.ilike.%${options.search}%,
+            modele_ful_name.ilike.%${options.search}%,
+            modele_alias.ilike.%${options.search}%
+          `);
+        }
+
+        // Pagination
+        const page = options.page || 0;
+        const limit = options.limit || 50;
+        const offsetModels = page * limit;
+
+        const { data, error } = await query
+          .order('modele_name', { ascending: true })
+          .range(offsetModels, offsetModels + limit - 1);
+
+        if (error) {
+          throw error;
+        }
+
+        // Récupérer le count séparément pour les modèles filtrés par année
+        const { count } = await this.supabase
+          .from('auto_modele')
+          .select('*', { count: 'exact', head: true })
+          .eq('modele_marque_id', brandId)
+          .eq('modele_display', 1)
+          .in('modele_id', validModelIdsArray);
+
+        const models: VehicleModel[] = (data || []).map((model: any) => ({
+          id: model.modele_id,
+          name: model.modele_name,
+          fullName: model.modele_ful_name,
+          alias: model.modele_alias,
+          brandId: model.modele_marque_id,
+          isActive: model.modele_display === 1,
+        }));
+
+        const result: VehicleResponse<VehicleModel> = {
+          success: true,
+          data: models,
+          total: count || 0,
+          page,
+          limit,
+        };
+
+        await this.cacheManager.set(cacheKey, result, this.cacheTTL);
+
+        this.logger.log(
+          `🚙 ${models.length} modèles récupérés pour marque ${brandId} année ${year}`,
+        );
+        return result;
+      }
+
+      // Si aucune année n'est spécifiée, retourner tous les modèles
       let query = this.supabase
         .from('auto_modele')
         .select('*')
@@ -263,13 +395,13 @@ export class EnhancedVehicleService extends SupabaseBaseService {
   /**
    * ⚙️ Récupérer les motorisations
    */
-  async getEngineTypes(modelId: number): Promise<VehicleType[]> {
+  async getEngineTypes(modelId: number, year?: number): Promise<VehicleType[]> {
     try {
-      const cacheKey = `${this.cachePrefix}engines:model:${modelId}`;
+      const cacheKey = `${this.cachePrefix}engines:model:${modelId}${year ? `:year:${year}` : ''}`;
       
       const cached = await this.cacheManager.get<VehicleType[]>(cacheKey);
       if (cached) {
-        this.logger.debug(`✅ Motorisations trouvées en cache pour modèle ${modelId}`);
+        this.logger.debug(`✅ Motorisations trouvées en cache pour modèle ${modelId}${year ? ` année ${year}` : ''}`);
         return cached;
       }
 
@@ -284,7 +416,7 @@ export class EnhancedVehicleService extends SupabaseBaseService {
         throw error;
       }
 
-      const engineTypes: VehicleType[] = (data || []).map((type: any) => ({
+      let engineTypes: VehicleType[] = (data || []).map((type: any) => ({
         id: type.type_id,
         name: type.type_name,
         modelId: type.type_modele_id,
@@ -302,9 +434,30 @@ export class EnhancedVehicleService extends SupabaseBaseService {
         isActive: type.type_display === '1', // ✅ Comparer avec chaîne car type text dans auto_type
       }));
 
+      // 🔍 Filtrer par année si spécifiée
+      if (year) {
+        engineTypes = engineTypes.filter((engine) => {
+          const yearFrom = engine.yearFrom;
+          const yearTo = engine.yearTo;
+          
+          // Si pas de plage d'années définie, on inclut la motorisation
+          if (!yearFrom && !yearTo) {
+            return true;
+          }
+          
+          // Vérifier si l'année est dans la plage valide
+          const isValidFrom = !yearFrom || year >= yearFrom;
+          const isValidTo = !yearTo || year <= yearTo;
+          
+          return isValidFrom && isValidTo;
+        });
+        
+        this.logger.debug(`🔍 Filtrage par année ${year}: ${engineTypes.length} motorisations trouvées sur ${data?.length || 0} total`);
+      }
+
       await this.cacheManager.set(cacheKey, engineTypes, this.cacheTTL);
 
-      this.logger.log(`⚙️ ${engineTypes.length} motorisations récupérées pour modèle ${modelId}`);
+      this.logger.log(`⚙️ ${engineTypes.length} motorisations récupérées pour modèle ${modelId}${year ? ` année ${year}` : ''}`);
       return engineTypes;
     } catch (error) {
       this.logger.error(`❌ Erreur récupération motorisations modèle ${modelId}:`, error);
@@ -471,6 +624,103 @@ export class EnhancedVehicleService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('❌ Erreur debug marque_display:', error);
+      return { success: false, error: String(error) };
+    }
+  }
+
+  /**
+   * 🔍 DEBUG: Analyser les CLIO pour 2013
+   */
+  async debugClioFor2013() {
+    try {
+      // IDs des modèles CLIO
+      const clioIds = {
+        'CLIO I': 140002,
+        'CLIO II': 140003,
+        'CLIO III': 140004,
+        'CLIO III Break': 140005,
+        'CLIO IV': 140006,
+        'CLIO IV Break': 140007,
+      };
+
+      const year = 2013;
+      const results: any = {};
+
+      for (const [name, modelId] of Object.entries(clioIds)) {
+        // Récupérer TOUS les types pour ce modèle
+        const { data: allTypes } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_name, type_year_from, type_year_to, type_display')
+          .eq('type_modele_id', modelId)
+          .order('type_year_from', { ascending: true });
+
+        // Types avec type_year_to NULL
+        const { data: typesWithNull } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_name, type_year_from, type_year_to, type_display')
+          .eq('type_modele_id', modelId)
+          .eq('type_display', '1')
+          .lte('type_year_from', year.toString())
+          .is('type_year_to', null);
+
+        // Types avec type_year_to défini
+        const { data: typesWithEnd } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_name, type_year_from, type_year_to, type_display')
+          .eq('type_modele_id', modelId)
+          .eq('type_display', '1')
+          .lte('type_year_from', year.toString())
+          .gte('type_year_to', year.toString());
+
+        results[name] = {
+          modelId,
+          totalTypes: allTypes?.length || 0,
+          allTypes: allTypes?.slice(0, 3), // Montrer quelques exemples
+          typesWithNull: typesWithNull?.length || 0,
+          typesWithEnd: typesWithEnd?.length || 0,
+          validFor2013: (typesWithNull?.length || 0) + (typesWithEnd?.length || 0),
+          examplesWithNull: typesWithNull?.slice(0, 2),
+          examplesWithEnd: typesWithEnd?.slice(0, 2),
+        };
+      }
+
+      // Tester aussi la requête combinée utilisée dans getModels
+      const { data: typesWithNullEnd } = await this.supabase
+        .from('auto_type')
+        .select('type_modele_id')
+        .eq('type_display', '1')
+        .lte('type_year_from', year.toString())
+        .is('type_year_to', null);
+
+      const { data: typesWithEnd } = await this.supabase
+        .from('auto_type')
+        .select('type_modele_id')
+        .eq('type_display', '1')
+        .lte('type_year_from', year.toString())
+        .gte('type_year_to', year.toString());
+
+      const allTypes = [...(typesWithNullEnd || []), ...(typesWithEnd || [])];
+      const validModelIds = [...new Set(allTypes.map((t) => t.type_modele_id))];
+      
+      // Vérifier si les CLIO sont dans la liste
+      const clioInList: any = {};
+      for (const [name, modelId] of Object.entries(clioIds)) {
+        clioInList[name] = validModelIds.includes(modelId);
+      }
+
+      return {
+        success: true,
+        year,
+        clioAnalysis: results,
+        globalQuery: {
+          typesWithNull: typesWithNullEnd?.length || 0,
+          typesWithEnd: typesWithEnd?.length || 0,
+          totalValidModelIds: validModelIds.length,
+          clioInGlobalList: clioInList,
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur debug CLIO 2013:', error);
       return { success: false, error: String(error) };
     }
   }
