@@ -81,7 +81,7 @@ export function TypeSelector({
         <option value="">{isLoading ? "Chargement..." : placeholder}</option>
         {types.map((type: VehicleType) => (
           <option key={type.type_id} value={type.type_id}>
-            {type.type_name}
+            {type.type_name || ''}
             {type.type_engine_code && ` - ${type.type_engine_code}`}
             {type.type_fuel && ` (${type.type_fuel})`}
             {type.type_power_ps && ` - ${type.type_power_ps}cv`}
@@ -92,7 +92,9 @@ export function TypeSelector({
       {showDetails && selectedType && (
         <div className="mt-2 text-xs text-gray-600 space-y-1">
           <div className="font-medium text-gray-900">
-            {selectedType.type_name}
+            {selectedType.type_name || 
+             `${selectedType.type_fuel || ''} ${selectedType.type_power_ps ? `- ${selectedType.type_power_ps}cv` : ''}`.trim() ||
+             'Motorisation sélectionnée'}
           </div>
           <div className="grid grid-cols-2 gap-2">
             {selectedType.type_engine_code && (

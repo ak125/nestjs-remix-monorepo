@@ -1,5 +1,4 @@
 // 📁 frontend/app/services/api/enhanced-vehicle.api.ts
-import type { VehicleBrand, VehicleModel, VehicleType } from "../../types/vehicle.types";
 // 🚗 Enhanced Vehicle API Service - Utilise le service backend testé 100%
 
 export interface VehicleBrandAPI {
@@ -39,6 +38,15 @@ export interface VehicleBrand {
   is_featured?: boolean;
 }
 
+export interface VehicleModel {
+  modele_id: number;
+  modele_name: string;
+  modele_alias?: string;
+  modele_ful_name?: string;
+  brand_id: number;
+  year_from?: number;
+  year_to?: number;
+}
 
 export interface VehicleType {
   type_id: number;
@@ -67,9 +75,9 @@ class EnhancedVehicleApiService {
   private readonly baseUrl: string;
 
   constructor() {
-    // ✅ Frontend géré par le backend - utilise le même origine
+    // ✅ Utilise le port 3000 pour correspondre au backend NestJS
     this.baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin
+      ? `${window.location.protocol}//${window.location.hostname}:3000`
       : process.env.API_BASE_URL || 'http://localhost:3000';
   }
 

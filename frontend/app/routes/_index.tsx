@@ -1,12 +1,12 @@
 // 📁 frontend/app/routes/_index.optimized.tsx
-// 🎯 VERSION OPTIMISÉE V2 - Combine le meilleur du code existant et proposé avec VehicleSelectorHybrid
+// 🎯 VERSION OPTIMISÉE V2 - Page d'accueil avec sélecteur de véhicule amélioré
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useSearchParams, useLoaderData } from "@remix-run/react";
+import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
 import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
 import { BrandCarousel } from "../components/home/BrandCarousel";
 import { ProductCatalog } from "../components/home/ProductCatalog";
-import { VehicleSelector } from "../components/home/VehicleSelector";
+import VehicleSelector from "../components/home/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
@@ -83,6 +83,39 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function IndexOptimized() {
   const { brands, stats, categories } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // 🚗 Gestion sélection véhicule avec navigation automatique
+  const handleVehicleSelected = (selection: {
+    brand?: any;
+    model?: any;
+    type?: any;
+    year?: number;
+  }) => {
+    // Navigation uniquement si tous les éléments sont sélectionnés
+    if (selection.brand && selection.model && selection.type) {
+      const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
+      const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
+      
+      // Gérer les types sans alias en créant un slug automatique
+      let typeAlias = selection.type.type_alias;
+      if (!typeAlias && selection.type.type_liter && selection.type.type_fuel) {
+        const liter = (parseInt(selection.type.type_liter) / 100).toFixed(1).replace('.', '-');
+        const fuel = selection.type.type_fuel.toLowerCase();
+        typeAlias = `${liter}-${fuel}`;
+      }
+      
+      const typeSlug = `${typeAlias || 'type'}-${selection.type.type_id}.html`;
+      
+      const url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}`;
+      console.log('🎯 Navigation automatique vers:', url);
+      
+      // Délai de 1.5 secondes pour laisser l'utilisateur voir la sélection complète
+      setTimeout(() => {
+        navigate(url);
+      }, 1500);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
@@ -101,7 +134,10 @@ export default function IndexOptimized() {
 
           {/* 🚗 Sélecteur de véhicule hybride avec cascade intelligente */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelector brands={brands as any} />
+            <VehicleSelector 
+              onVehicleSelected={handleVehicleSelected} 
+              showMineSearch={true}
+            />
           </div>
 
           {/* 📊 Statistiques en temps réel */}

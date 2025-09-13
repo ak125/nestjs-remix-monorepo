@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Vehicle Selector</title>
+</head>
+<body>
+    <h1>Test API Vehicle Selector</h1>
+    
+    <div>
+        <h2>Test IVECO Years</h2>
+        <button onclick="testIvecoYears()">Test Get Years for IVECO</button>
+        <div id="years-result"></div>
+    </div>
+    
+    <div>
+        <h2>Test IVECO Models for 1999</h2>
+        <button onclick="testIvecoModels1999()">Test Get Models for IVECO 1999</button>
+        <div id="models-result"></div>
+    </div>
+
+    <script>
+        async function testIvecoYears() {
+            try {
+                console.log('🔍 Testing IVECO years...');
+                const response = await fetch('http://localhost:3000/api/vehicles/brands/84/years');
+                const data = await response.json();
+                console.log('📅 Raw response:', data);
+                
+                if (data.data && Array.isArray(data.data)) {
+                    const years = data.data.map(item => item.year);
+                    console.log('📅 Extracted years:', years);
+                    document.getElementById('years-result').innerHTML = 
+                        `<pre>Success: ${JSON.stringify(years, null, 2)}</pre>`;
+                } else {
+                    document.getElementById('years-result').innerHTML = 
+                        `<pre style="color: red;">Unexpected format: ${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('years-result').innerHTML = 
+                    `<pre style="color: red;">Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testIvecoModels1999() {
+            try {
+                console.log('🔍 Testing IVECO models for 1999...');
+                const response = await fetch('http://localhost:3000/api/vehicles/brands/84/models?year=1999');
+                const data = await response.json();
+                console.log('🚙 Raw response:', data);
+                
+                document.getElementById('models-result').innerHTML = 
+                    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('models-result').innerHTML = 
+                    `<pre style="color: red;">Error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

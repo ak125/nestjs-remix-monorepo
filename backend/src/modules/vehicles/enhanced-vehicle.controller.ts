@@ -64,23 +64,26 @@ export class EnhancedVehicleController {
   @Get('brands/:brandId/models')
   @ApiOperation({ 
     summary: '🚗 Modèles par marque',
-    description: 'Récupère tous les modèles d\'une marque spécifique'
+    description: 'Récupère tous les modèles d\'une marque spécifique, optionnellement filtrés par année'
   })
   @ApiParam({ name: 'brandId', description: 'ID de la marque', example: 1 })
   @ApiQuery({ name: 'page', required: false, type: 'number', example: 0 })
   @ApiQuery({ name: 'limit', required: false, type: 'number', example: 50 })
+  @ApiQuery({ name: 'year', required: false, type: 'number', example: 1999, description: 'Filtrer par année de fabrication' })
   @ApiResponse({ status: 200, description: 'Liste des modèles de la marque' })
   async getModelsByBrand(
     @Param('brandId', ParseIntPipe) brandId: number,
     @Query('page') page: number = 0,
     @Query('limit') limit: number = 50,
+    @Query('year') year?: number,
   ) {
     try {
-      this.logger.debug(`🚗 getModelsByBrand appelé: brandId=${brandId}, page=${page}, limit=${limit}`);
+      this.logger.debug(`🚗 getModelsByBrand appelé: brandId=${brandId}, page=${page}, limit=${limit}, year=${year}`);
       
       const result = await this.vehicleService.getModelsByBrand(brandId, {
         page,
         limit,
+        year,
       });
       
       this.logger.debug(`✅ getModelsByBrand réussi: ${result.data?.length} modèles`);

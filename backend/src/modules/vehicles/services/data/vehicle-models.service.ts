@@ -142,9 +142,9 @@ export class VehicleModelsService extends SupabaseBaseService {
       cacheKey,
       async () => {
         try {
-          this.logger.debug(`🚗 Récupération des modèles pour marque: ${marqueId}`);
+          this.logger.debug(`🚗 Récupération des modèles pour marque: ${marqueId}, options: ${JSON.stringify(options)}`);
 
-          const { page = 0, limit = 50, search } = options;
+          const { page = 0, limit = 50, search, year } = options;
           const offset = page * limit;
 
           let query = this.client
@@ -157,15 +157,56 @@ export class VehicleModelsService extends SupabaseBaseService {
               )
             `)
             .eq('auto_marque.marque_id', marqueId)
-            .eq('modele_display', 1)
-            .limit(limit)
-            .range(offset, offset + limit - 1);
+            .eq('modele_display', 1);
+
+          // 📅 Filtrage par année si spécifiée
+          if (year) {
+            this.logger.debug(`🗓️ Filtrage par année: ${year}`);
+            
+            // Requête pour obtenir les modèles qui ont des motorisations compatibles avec l'année
+            const { data: compatibleModels, error: yearError } = await this.client
+              .from('auto_modele')
+              .select(`
+                modele_id,
+                auto_type!inner(
+                  type_year_from,
+                  type_year_to
+                )
+              `)
+              .eq('auto_marque.marque_id', marqueId)
+              .eq('modele_display', 1)
+              .lte('auto_type.type_year_from', year)
+              .or(`type_year_to.gte.${year},type_year_to.is.null`, { foreignTable: 'auto_type' });
+
+            if (yearError) {
+              this.logger.error('Erreur filtrage par année:', yearError);
+              throw yearError;
+            }
+
+            // Extraire les IDs des modèles compatibles
+            const compatibleIds = [...new Set(compatibleModels?.map(m => m.modele_id) || [])];
+            
+            if (compatibleIds.length === 0) {
+              this.logger.debug(`❌ Aucun modèle compatible avec l'année ${year}`);
+              return { success: true, data: [], total: 0, page, limit };
+            }
+
+            this.logger.debug(`✅ ${compatibleIds.length} modèles compatibles avec l'année ${year}`);
+            
+            // Ajouter le filtre sur les IDs compatibles
+            query = query.in('modele_id', compatibleIds);
+          }
 
           if (search?.trim()) {
             query = query.ilike('modele_name', `%${search}%`);
           }
 
-          const { data, error, count } = await query.order('modele_name');
+          query = query
+            .limit(limit)
+            .range(offset, offset + limit - 1)
+            .order('modele_name');
+
+          const { data, error, count } = await query;
 
           if (error) {
             this.logger.error('Erreur getModelsByBrand:', error);
@@ -173,10 +214,11 @@ export class VehicleModelsService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: data || [],
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur getModelsByBrand ${marqueId}:`, error);

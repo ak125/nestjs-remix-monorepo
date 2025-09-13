@@ -1,5 +1,5 @@
 // 📁 frontend/app/routes/_index.optimized.tsx
-// 🎯 VERSION OPTIMISÉE V2 - Combine le meilleur du code existant et proposé avec VehicleSelectorHybrid
+// 🎯 VERSION OPTIMISÉE V2 - Page d'accueil avec sélecteur de véhicule amélioré
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData } from "@remix-run/react";

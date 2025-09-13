@@ -1,10 +1,31 @@
 import { useFetcher } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
 import { Combobox, type ComboboxItem } from "../ui/combobox";
-import type { VehicleModel, ModelSelectorProps } from "../../types/vehicle.types";
 
-// Garder la compatibilité avec l'ancienne interface Model
-export type Model = VehicleModel;
+export interface Model {
+  modele_id: number;
+  modele_name: string;
+  modele_alias?: string;
+  modele_ful_name?: string;
+  modele_marque_id: number;
+  auto_marque?: {
+    marque_id: number;
+    marque_name: string;
+    marque_alias?: string;
+  };
+}
+
+export interface ModelSelectorProps {
+  value?: string;
+  onValueChange?: (modelId: string, model?: Model) => void;
+  brandId?: number;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  disabled?: boolean;
+  className?: string;
+  allowClear?: boolean;
+  autoLoadOnMount?: boolean;
+}
 
 export function ModelSelector({
   value,

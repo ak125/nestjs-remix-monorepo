@@ -67,28 +67,26 @@ export class VehiclesService extends SupabaseBaseService {
     filters?: VehiclePaginationDto,
   ): Promise<VehicleResponseDto> {
     try {
-      // 🎯 FILTRAGE INTELLIGENT : Si une année est spécifiée, ne retourner que les modèles
-      // qui ont au moins une motorisation disponible pour cette année
+      // 🎯 FILTRAGE OPTIMISÉ : Requête unique pour modèles avec motorisations
       if (filters?.year) {
-        // Récupérer les IDs des modèles qui ont des motorisations pour l'année donnée
-        const { data: modelIds, error: modelIdsError } = await this.client
+        this.logger.debug(
+          `📅 Filtrage optimisé des modèles avec motorisations pour l'année ${filters.year}`,
+        );
+        
+        // Requête optimisée : récupérer les modele_id qui ont des motorisations pour l'année
+        const { data: modelIdsWithTypes, error: typeError } = await this.client
           .from('auto_type')
           .select('type_modele_id')
+          .eq('type_marque_id', brandId)
           .lte('type_year_from', filters.year.toString())
-          .gte('type_year_to', filters.year.toString());
+          .or(`type_year_to.is.null,type_year_to.gte.${filters.year}`);
 
-        if (modelIdsError) {
-          this.logger.error('Erreur récupération modelIds:', modelIdsError);
-          throw modelIdsError;
+        if (typeError) {
+          this.logger.error('Erreur récupération types avec années:', typeError);
+          throw typeError;
         }
 
-        // Extraire les IDs uniques
-        const validModelIds = [
-          ...new Set(modelIds?.map((item) => item.type_modele_id) || []),
-        ];
-
-        // Si aucun modèle n'a de motorisations pour cette année, retourner vide
-        if (validModelIds.length === 0) {
+        if (!modelIdsWithTypes || modelIdsWithTypes.length === 0) {
           return {
             data: [],
             total: 0,
@@ -97,13 +95,40 @@ export class VehiclesService extends SupabaseBaseService {
           };
         }
 
-        // Requête filtrée par les modèles ayant des motorisations
+        // Extraire les IDs uniques des modèles ayant des motorisations
+        const uniqueModelIds = [...new Set(modelIdsWithTypes.map(t => t.type_modele_id))];
+
+        // Récupérer les modèles correspondants avec filtrage par année de production
         let query = this.client
           .from('auto_modele')
-          .select(`*`)
+          .select(`
+            modele_id,
+            modele_parent,
+            modele_marque_id,
+            modele_mdg_id,
+            modele_alias,
+            modele_name,
+            modele_name_url,
+            modele_name_meta,
+            modele_ful_name,
+            modele_month_from,
+            modele_year_from,
+            modele_month_to,
+            modele_year_to,
+            modele_body,
+            modele_pic,
+            modele_relfollow,
+            modele_sitemap,
+            modele_display,
+            modele_display_v1,
+            modele_sort,
+            modele_is_new
+          `,
+          )
           .eq('modele_marque_id', brandId)
-          .in('modele_id', validModelIds)
-          .limit(filters?.limit || 50);
+          .lte('modele_year_from', filters.year)
+          .or(`modele_year_to.gte.${filters.year},modele_year_to.is.null`)
+          .in('modele_id', uniqueModelIds);
 
         if (filters?.search) {
           query = query.ilike('modele_name', `%${filters.search}%`);
@@ -115,13 +140,26 @@ export class VehiclesService extends SupabaseBaseService {
           .range(offset, offset + (filters?.limit || 50) - 1);
 
         if (error) {
-          this.logger.error('Erreur findModelsByBrand avec année:', error);
+          this.logger.error('Erreur findModelsByBrand optimisé:', error);
           throw error;
         }
 
+        // Compter le total pour la pagination
+        const { count } = await this.client
+          .from('auto_modele')
+          .select('modele_id', { count: 'exact' })
+          .eq('modele_marque_id', brandId)
+          .lte('modele_year_from', filters.year)
+          .or(`modele_year_to.gte.${filters.year},modele_year_to.is.null`)
+          .in('modele_id', uniqueModelIds);
+
+        this.logger.debug(
+          `📊 Modèles optimisés pour ${brandId} année ${filters.year}: ${data?.length || 0} (total: ${count || 0})`,
+        );
+
         return {
           data: data || [],
-          total: data?.length || 0,
+          total: count || 0,
           page: filters?.page || 0,
           limit: filters?.limit || 50,
         };
@@ -172,6 +210,7 @@ export class VehiclesService extends SupabaseBaseService {
         .from('auto_type')
         .select(`*`)
         .eq('type_modele_id', modelId)
+        .eq('type_display', 1) // 🎯 Seulement les types affichables
         .limit(filters?.limit || 50);
 
       if (filters?.search) {
@@ -726,26 +765,26 @@ export class VehiclesService extends SupabaseBaseService {
    */
   async findYearsByBrand(brandId: string, filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
     try {
-      // Simplifions d'abord - récupérons les années directement depuis auto_type
+      // 🎯 COHÉRENCE : Utiliser auto_modele comme findModelsByBrand
       const { data, error } = await this.client
-        .from('auto_type')
-        .select('type_year_from, type_year_to')
-        .eq('type_marque_id', parseInt(brandId))
-        .eq('type_display', 1)
-        .not('type_year_from', 'is', null)
-        .limit(100);
+        .from('auto_modele')
+        .select('modele_year_from, modele_year_to')
+        .eq('modele_marque_id', parseInt(brandId))
+        .eq('modele_display', 1)
+        .not('modele_year_from', 'is', null)
+        .limit(1000); // Plus large car on va extraire toutes les années
 
       if (error) {
         this.logger.error('Erreur findYearsByBrand:', error);
         throw error;
       }
 
-      // Extraction des années uniques
+      // Extraction des années uniques depuis auto_modele
       const yearsSet = new Set<number>();
       data?.forEach((item) => {
-        const yearFrom = parseInt(item.type_year_from);
-        const yearTo = item.type_year_to 
-          ? parseInt(item.type_year_to) 
+        const yearFrom = parseInt(item.modele_year_from);
+        const yearTo = item.modele_year_to
+          ? parseInt(item.modele_year_to)
           : new Date().getFullYear();
         
         // Ajouter toutes les années de production

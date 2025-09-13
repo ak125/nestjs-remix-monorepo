@@ -1,7 +1,45 @@
 import { useFetcher } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
-import type { VehicleType, TypeSelectorProps } from "../../types/vehicle.types";
 import { Combobox, type ComboboxItem } from "../ui/combobox";
+
+export interface VehicleType {
+  type_id: number;
+  type_alias?: string;
+  type_name: string;
+  type_engine_code?: string;
+  type_fuel?: string;
+  type_power_ps?: number;
+  type_power_kw?: number;
+  type_liter?: string;
+  type_year_from?: string;
+  type_year_to?: string | null;
+  modele_id: number;
+  auto_modele?: {
+    modele_id: number;
+    modele_name: string;
+    modele_ful_name?: string;
+    auto_marque?: {
+      marque_id: number;
+      marque_name: string;
+      marque_alias?: string;
+    };
+  };
+}
+
+export interface TypeSelectorProps {
+  value?: string;
+  onValueChange?: (typeId: string, type?: VehicleType) => void;
+  modelId?: number;
+  brandId?: number;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  disabled?: boolean;
+  className?: string;
+  allowClear?: boolean;
+  autoLoadOnMount?: boolean;
+  onlyActive?: boolean;
+  showDetails?: boolean;
+}
 
 export function TypeSelector({
   value,
@@ -47,13 +85,7 @@ export function TypeSelector({
     params.append('limit', '200');
 
     const queryString = params.toString();
-    
-    // 🔧 Utilisation de l'API standard qui filtre correctement par année
-    if (modelId) {
-      fetcher.load(`/api/vehicles/models/${modelId}/types?${queryString}`);
-    } else {
-      fetcher.load(`/api/vehicles/forms/types?${queryString}`);
-    }
+    fetcher.load(`/api/vehicles/forms/types?${queryString}`);
   }, [modelId, brandId, onlyActive, fetcher]);
 
   // Charge au montage si activé
@@ -75,21 +107,21 @@ export function TypeSelector({
   const types = Array.isArray(fetcher.data) ? fetcher.data : [];
   const items: ComboboxItem[] = types.map(type => {
     // Construction du label avec détails
-    let label = type.type_name || '';
+    let label = type.type_name;
     
     // Ajoute le code moteur si disponible
     if (type.type_engine_code) {
-      label += (label ? ` - ${type.type_engine_code}` : type.type_engine_code);
+      label += ` - ${type.type_engine_code}`;
     }
     
     // Ajoute le carburant si disponible
     if (type.type_fuel) {
-      label += (label ? ` (${type.type_fuel})` : `(${type.type_fuel})`);
+      label += ` (${type.type_fuel})`;
     }
     
     // Ajoute la puissance en CV si disponible
     if (type.type_power_ps) {
-      label += (label ? ` - ${type.type_power_ps}cv` : `${type.type_power_ps}cv`);
+      label += ` - ${type.type_power_ps}cv`;
     }
     
     // Ajoute le modèle si pas filtré par modelId
@@ -190,9 +222,7 @@ export function TypeSelector({
       {showDetails && selectedType && (
         <div className="mt-2 p-3 bg-gray-50 rounded-md text-xs space-y-1">
           <div className="font-medium text-gray-900">
-            {selectedType.type_name || 
-             `${selectedType.type_fuel || ''} ${selectedType.type_power_ps ? `- ${selectedType.type_power_ps}cv` : ''}`.trim() ||
-             'Motorisation sélectionnée'}
+            {selectedType.type_name}
           </div>
           
           <div className="grid grid-cols-2 gap-2 text-gray-600">

@@ -4,7 +4,6 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Fuel, Settings, Wrench, ShoppingCart } from "lucide-react";
-import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 // 📊 Types de données
 interface VehicleDetail {
@@ -52,19 +51,84 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
   try {
     const { brandId, modelId, typeId } = extractIdsFromParams(brand, model, type);
+    console.log('🔍 IDs extraits:', { brandId, modelId, typeId });
     
-    // 🔍 Récupération des données depuis l'API
-    const [brandsData, modelsData, typesData] = await Promise.all([
-      enhancedVehicleApi.getBrands(),
-      enhancedVehicleApi.getModels(brandId),
-      enhancedVehicleApi.getTypes(modelId)
+    // 🔍 Récupération des données depuis l'API backend directement
+    const baseUrl = process.env.API_URL || 'http://localhost:3000';
+    console.log('🌐 Base URL:', baseUrl);
+    
+    // 📅 D'abord récupérer les types pour obtenir l'année de référence
+    const typesResponse = await fetch(`${baseUrl}/api/vehicles/models/${modelId}/types`).then(r => {
+      console.log('📊 Types API status:', r.status);
+      return r;
+    });
+
+    if (!typesResponse.ok) {
+      console.error('❌ Erreur API types:', typesResponse.status);
+      throw new Response("Erreur API", { status: 500 });
+    }
+
+    const typesResult = await typesResponse.json();
+    const typesData = typesResult.data || typesResult;
+    const selectedType = typesData.find(t => parseInt(t.type_id) === typeId);
+    
+    if (!selectedType) {
+      throw new Response("Type de véhicule non trouvé", { status: 404 });
+    }
+
+    // 📅 Utiliser l'année de début du type pour filtrer les modèles
+    const referenceYear = parseInt(selectedType.type_year_from) || 2011;
+    console.log('📅 Année de référence pour les modèles:', referenceYear);
+    
+    const [brandsResponse, modelsResponse] = await Promise.all([
+      fetch(`${baseUrl}/api/vehicles/brands`).then(r => {
+        console.log('📊 Brands API status:', r.status);
+        return r;
+      }),
+      fetch(`${baseUrl}/api/vehicles/brands/${brandId}/models?year=${referenceYear}`).then(r => {
+        console.log('📊 Models API status:', r.status);
+        return r;
+      })
     ]);
 
-    const vehicleBrand = brandsData.find(b => b.marque_id === brandId);
-    const vehicleModel = modelsData.find(m => m.modele_id === modelId);
-    const vehicleType = typesData.find(t => t.type_id === typeId);
+    if (!brandsResponse.ok || !modelsResponse.ok) {
+      console.error('❌ Erreur API:', {
+        brands: brandsResponse.status,
+        models: modelsResponse.status,
+      });
+      throw new Response("Erreur API", { status: 500 });
+    }
+
+    const [brandsResult, modelsResult] = await Promise.all([
+      brandsResponse.json(),
+      modelsResponse.json()
+    ]);
+
+    const brandsData = brandsResult.data || brandsResult;
+    const modelsData = modelsResult.data || modelsResult;
+
+    const vehicleBrand = brandsData.find(b => parseInt(b.marque_id) === brandId);
+    const vehicleModel = modelsData.find(m => parseInt(m.modele_id) === modelId);
+    const vehicleType = selectedType; // Déjà récupéré plus haut
+
+    console.log('🔍 Recherche données:', {
+      brandId,
+      modelId, 
+      typeId,
+      brandFound: !!vehicleBrand,
+      modelFound: !!vehicleModel,
+      typeFound: !!vehicleType,
+      brandData: vehicleBrand,
+      modelData: vehicleModel,
+      typeData: vehicleType
+    });
 
     if (!vehicleBrand || !vehicleModel || !vehicleType) {
+      console.error('❌ Données manquantes:', {
+        vehicleBrand: !!vehicleBrand,
+        vehicleModel: !!vehicleModel,
+        vehicleType: !!vehicleType
+      });
       throw new Response("Véhicule non trouvé", { status: 404 });
     }
 
@@ -85,6 +149,16 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
   } catch (error) {
     console.error('Erreur loader véhicule:', error);
+    console.error('Paramètres reçus:', { brand, model, type });
+    
+    // Si c'est une erreur de fetch, retournons une page d'erreur plus conviviale
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      return json({ 
+        error: 'Service temporairement indisponible',
+        params: { brand, model, type }
+      }, { status: 503 });
+    }
+    
     throw new Response("Erreur de chargement", { status: 500 });
   }
 };
