@@ -4,7 +4,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData } from "@remix-run/react";
 import { Package, Search, Star, Shield, Clock, Phone, Users, ShoppingCart, TrendingUp, Award } from 'lucide-react';
-import { VehicleSelectorHybrid } from "../components/home/VehicleSelectorHybrid";
+import { VehicleSelector } from "../components/home/VehicleSelector";
 import { BrandCarousel } from "../components/home/BrandCarousel";
 import { ProductCatalog } from "../components/home/ProductCatalog";
 import { Button } from "../components/ui/button";
@@ -101,7 +101,7 @@ export default function IndexOptimized() {
 
           {/* 🚗 Sélecteur de véhicule hybride avec cascade intelligente */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelectorHybrid />
+            <VehicleSelector />
           </div>
 
           {/* 📊 Statistiques en temps réel */}
