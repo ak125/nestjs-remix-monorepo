@@ -19,7 +19,11 @@ test_endpoint() {
     
     if response=$(curl -s --max-time $TIMEOUT "$url"); then
         if echo "$response" | jq -e '.data' > /dev/null 2>&1; then
-            count=$(echo "$response" | jq '.data | length')
+            count=$(echo "$response" | jq '.data | length' 2>/dev/null)
+            # Vérification que count est un nombre valide
+            if [ -z "$count" ] || ! [[ "$count" =~ ^[0-9]+$ ]]; then
+                count=0
+            fi
             echo "✅ OK ($count items)"
             return 0
         else
@@ -63,17 +67,29 @@ echo "🎯 Test du workflow complet..."
 workflow_test() {
     echo "1️⃣ Récupération marques..."
     brands=$(curl -s "$BASE_URL/api/vehicles/brands?limit=3")
-    brand_count=$(echo "$brands" | jq '.data | length')
+    brand_count=$(echo "$brands" | jq '.data | length' 2>/dev/null)
+    # Vérification que brand_count est un nombre valide
+    if [ -z "$brand_count" ] || ! [[ "$brand_count" =~ ^[0-9]+$ ]]; then
+        brand_count=0
+    fi
     echo "   → $brand_count marques trouvées"
     
     # Prendre AUDI (marque_id: 22)
     echo "2️⃣ Test avec AUDI (ID: 22)..."
     years=$(curl -s "$BASE_URL/api/vehicles/brands/22/years")
-    year_count=$(echo "$years" | jq '.data | length')
+    year_count=$(echo "$years" | jq '.data | length' 2>/dev/null)
+    # Vérification que year_count est un nombre valide
+    if [ -z "$year_count" ] || ! [[ "$year_count" =~ ^[0-9]+$ ]]; then
+        year_count=0
+    fi
     echo "   → $year_count années disponibles"
     
     models=$(curl -s "$BASE_URL/api/vehicles/brands/22/models?limit=5")
-    model_count=$(echo "$models" | jq '.data | length')
+    model_count=$(echo "$models" | jq '.data | length' 2>/dev/null)
+    # Vérification que model_count est un nombre valide
+    if [ -z "$model_count" ] || ! [[ "$model_count" =~ ^[0-9]+$ ]]; then
+        model_count=0
+    fi
     echo "   → $model_count modèles trouvés"
     
     if [ "$model_count" -gt 0 ]; then
@@ -82,7 +98,11 @@ workflow_test() {
         echo "3️⃣ Test avec modèle $model_name (ID: $first_model)..."
         
         types=$(curl -s "$BASE_URL/api/vehicles/models/$first_model/types?limit=3")
-        type_count=$(echo "$types" | jq '.data | length')
+        type_count=$(echo "$types" | jq '.data | length' 2>/dev/null)
+        # Vérification que type_count est un nombre valide
+        if [ -z "$type_count" ] || ! [[ "$type_count" =~ ^[0-9]+$ ]]; then
+            type_count=0
+        fi
         echo "   → $type_count types/motorisations trouvés"
         
         if [ "$type_count" -gt 0 ]; then

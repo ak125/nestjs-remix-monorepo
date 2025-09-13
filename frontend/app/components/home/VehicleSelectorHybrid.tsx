@@ -154,12 +154,46 @@ export function VehicleSelectorHybrid({
     }
   };
 
-  // ⚙️ Gestion sélection type (avec navigation optionnelle)
+  // 🌐 Génération URL Automecanik
+  const generateAutomecanikUrl = (brand: VehicleBrand, model: VehicleModel, type: VehicleType): string => {
+    // Nettoyage des noms pour l'URL (slug-friendly)
+    const cleanName = (name: string) => name
+      .toLowerCase()
+      .replace(/[àáâãäå]/g, 'a')
+      .replace(/[èéêë]/g, 'e')
+      .replace(/[ìíîï]/g, 'i')
+      .replace(/[òóôõö]/g, 'o')
+      .replace(/[ùúûü]/g, 'u')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+
+    const brandSlug = `${cleanName(brand.marque_name)}-${brand.marque_id}`;
+    const modelSlug = `${cleanName(model.modele_name)}-${model.modele_id}`;
+    const typeSlug = `${cleanName(type.type_name)}-${type.type_id}`;
+
+    return `https://www.automecanik.com/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+  };
+
+  // ⚙️ Gestion sélection type (avec redirection vers Automecanik)
   const handleTypeSelect = (typeSlug: string) => {
     const type = types.find(t => t.type_slug === typeSlug || t.type_id.toString() === typeSlug);
     setSelectedType(type || null);
     
-    if (navigateOnSelect && typeSlug) {
+    // 🚀 Redirection vers Automecanik si toutes les données sont disponibles
+    if (type && selectedBrand && selectedModel) {
+      const automecanikUrl = generateAutomecanikUrl(selectedBrand, selectedModel, type);
+      console.log('🌐 Redirection vers Automecanik:', automecanikUrl);
+      
+      // Ouvrir dans un nouvel onglet
+      window.open(automecanikUrl, '_blank');
+      
+      // Optionnel : redirection dans le même onglet
+      // window.location.href = automecanikUrl;
+    } else if (navigateOnSelect && typeSlug) {
+      // Fallback vers navigation interne si données incomplètes
       navigate(`/vehicule/${typeSlug}`);
     }
   };
