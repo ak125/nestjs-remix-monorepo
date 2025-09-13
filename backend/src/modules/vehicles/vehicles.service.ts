@@ -720,4 +720,56 @@ export class VehiclesService extends SupabaseBaseService {
       throw error;
     }
   }
+
+  /**
+   * 📅 Récupérer les années de production par marque
+   */
+  async findYearsByBrand(brandId: string, filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
+    try {
+      // Simplifions d'abord - récupérons les années directement depuis auto_type
+      const { data, error } = await this.client
+        .from('auto_type')
+        .select('type_year_from, type_year_to')
+        .eq('type_marque_id', parseInt(brandId))
+        .eq('type_display', 1)
+        .not('type_year_from', 'is', null)
+        .limit(100);
+
+      if (error) {
+        this.logger.error('Erreur findYearsByBrand:', error);
+        throw error;
+      }
+
+      // Extraction des années uniques
+      const yearsSet = new Set<number>();
+      data?.forEach((item) => {
+        const yearFrom = parseInt(item.type_year_from);
+        const yearTo = item.type_year_to 
+          ? parseInt(item.type_year_to) 
+          : new Date().getFullYear();
+        
+        // Ajouter toutes les années de production
+        for (let year = yearFrom; year <= yearTo; year++) {
+          if (year >= 1950 && year <= new Date().getFullYear() + 1) {
+            yearsSet.add(year);
+          }
+        }
+      });
+
+      // Convertir en array et trier par ordre décroissant (plus récent en premier)
+      const years = Array.from(yearsSet)
+        .sort((a, b) => b - a)
+        .map((year) => ({ year, count: 1 })); // Format compatible avec la structure existante
+
+      return {
+        data: years,
+        total: years.length,
+        page: filters?.page || 0,
+        limit: filters?.limit || 50,
+      };
+    } catch (error) {
+      this.logger.error('Exception findYearsByBrand:', error);
+      throw error;
+    }
+  }
 }

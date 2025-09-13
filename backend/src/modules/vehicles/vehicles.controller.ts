@@ -2,6 +2,8 @@ import { Controller, Get, Query, Param } from '@nestjs/common';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
 
+// ✅ VEHICLES CONTROLLER PRINCIPAL - Pour sélecteur véhicule
+// Routes: /api/vehicles
 @Controller('api/vehicles')
 export class VehiclesController {
   constructor(private readonly vehiclesService: VehiclesService) {}
@@ -35,6 +37,16 @@ export class VehiclesController {
     const params = this.parseQueryParams(query);
     params.brandId = brandId;
     return this.vehiclesService.findModelsByBrand(brandId, params);
+  }
+
+  @Get('brands/:brandId/years')
+  async getYearsByBrand(
+    @Param('brandId') brandId: string,
+    @Query() query: any,
+  ) {
+    const params = this.parseQueryParams(query);
+    params.brandId = brandId;
+    return this.vehiclesService.findYearsByBrand(brandId, params);
   }
 
   @Get('models/:modelId/types')

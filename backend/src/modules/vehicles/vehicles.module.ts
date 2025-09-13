@@ -16,11 +16,19 @@ import { CacheModule } from '@nestjs/cache-manager';
 // Controllers
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesFormsController } from './vehicles-forms-simple.controller';
-import { EnhancedVehicleController } from '../catalog/controllers/enhanced-vehicle.controller';
+// import { EnhancedVehicleController } from './enhanced-vehicle.controller'; // 🚫 TEMPORAIREMENT DÉSACTIVÉ
 
 // Services
 import { VehiclesService } from './vehicles.service';
-import { EnhancedVehicleService } from '../catalog/services/enhanced-vehicle.service';
+import { EnhancedVehicleService } from './services/enhanced-vehicle.service';
+// Services modulaires
+import { VehicleCacheService } from './services/core/vehicle-cache.service';
+import { VehicleEnrichmentService } from './services/core/vehicle-enrichment.service';
+import { VehicleSearchService } from './services/search/vehicle-search.service';
+import { VehicleMineService } from './services/search/vehicle-mine.service';
+import { VehicleBrandsService } from './services/data/vehicle-brands.service';
+import { VehicleModelsService } from './services/data/vehicle-models.service';
+import { VehicleTypesService } from './services/data/vehicle-types.service';
 
 @Module({
   imports: [
@@ -31,13 +39,21 @@ import { EnhancedVehicleService } from '../catalog/services/enhanced-vehicle.ser
     }),
   ],
   controllers: [
-    EnhancedVehicleController, // 🚀 PRIORITÉ: API Enhanced pour service optimisé
-    VehiclesController, // ✅ API REST pour la gestion des véhicules (fallback)
+    // EnhancedVehicleController, // � TEMPORAIREMENT DÉSACTIVÉ - Erreurs de compilation
+    VehiclesController, // ✅ API REST principale pour sélecteur véhicule
     VehiclesFormsController, // ✅ API Forms pour remplacer _form.get.car.*.php
   ],
   providers: [
     VehiclesService, // ✅ Service principal de gestion des véhicules
     EnhancedVehicleService, // ✅ Service optimisé combinant proposé + existant
+    // Services modulaires
+    VehicleCacheService,
+    VehicleEnrichmentService,
+    VehicleSearchService,
+    VehicleMineService,
+    VehicleBrandsService,
+    VehicleModelsService,
+    VehicleTypesService,
   ],
   exports: [
     VehiclesService, // ✅ Exporté pour utilisation dans d'autres modules

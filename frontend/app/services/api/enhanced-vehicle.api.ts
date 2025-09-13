@@ -116,14 +116,15 @@ class EnhancedVehicleApiService {
       const data: VehicleResponse<VehicleBrandAPI> = await response.json();
       
       // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      const mappedBrands: VehicleBrandComponent[] = data.success ? data.data.map((brand: VehicleBrandAPI) => ({
-        marque_id: brand.id,
-        marque_name: brand.name,
-        marque_alias: brand.alias,
-        marque_logo: brand.logo,
-        marque_country: brand.country,
+      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
+      const mappedBrands: VehicleBrandComponent[] = data.data ? data.data.map((brand: any) => ({
+        marque_id: brand.marque_id,
+        marque_name: brand.marque_name,
+        marque_alias: brand.marque_alias,
+        marque_logo: brand.marque_logo,
+        marque_country: brand.marque_country,
         products_count: brand.products_count,
-        is_featured: brand.isFavorite
+        is_featured: brand.marque_top === 1
       })) : [];
       
       return mappedBrands;
@@ -167,14 +168,15 @@ class EnhancedVehicleApiService {
       const data: VehicleResponse<any> = await response.json();
       
       // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      const mappedModels = data.success ? data.data.map((model: any) => ({
-        modele_id: model.id,
-        modele_name: model.name,
-        modele_alias: model.alias,
-        modele_ful_name: model.fullName,
-        brand_id: model.brandId,
-        year_from: model.yearFrom,
-        year_to: model.yearTo
+      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
+      const mappedModels = data.data ? data.data.map((model: any) => ({
+        modele_id: model.modele_id,
+        modele_name: model.modele_name,
+        modele_alias: model.modele_alias,
+        modele_ful_name: model.modele_ful_name,
+        brand_id: model.modele_marque_id,
+        year_from: model.modele_year_from,
+        year_to: model.modele_year_to
       })) : [];
       
       return mappedModels;
@@ -203,7 +205,7 @@ class EnhancedVehicleApiService {
       if (options?.fuel) params.append('fuel', options.fuel);
       if (options?.year) params.append('year', options.year.toString());
 
-      const url = `${this.baseUrl}/api/vehicles/models/${modelId}/engines${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `${this.baseUrl}/api/vehicles/models/${modelId}/types${params.toString() ? '?' + params.toString() : ''}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -217,22 +219,21 @@ class EnhancedVehicleApiService {
         return [];
       }
 
-      const data: any = await response.json();
+      const data: VehicleResponse<any> = await response.json();
       
-      // 🔄 L'API engines retourne directement un array (pas de wrapper)
-      // Mapper les données de l'API engines (camelCase) vers le format attendu par le composant (snake_case)
-      const types = Array.isArray(data) ? data : (data.data || []);
-      const mappedTypes = types.map((type: any) => ({
-        type_id: parseInt(type.id || type.type_id),
-        type_name: type.name || type.type_name,
-        type_fuel: type.fuel || type.type_fuel,
-        type_power: type.power ? `${type.power} PS` : (type.type_power_ps ? `${type.type_power_ps} PS` : undefined),
-        type_engine: type.engine || type.type_engine,
-        model_id: parseInt(type.modelId || type.type_modele_id),
-        year_from: type.yearFrom ? parseInt(type.yearFrom) : (type.type_year_from ? parseInt(type.type_year_from) : undefined),
-        year_to: type.yearTo ? parseInt(type.yearTo) : (type.type_year_to ? parseInt(type.type_year_to) : undefined),
-        type_slug: type.engineCode || type.type_alias
-      }));
+      // 🔄 Mapper les données de l'API vers le format attendu par le composant
+      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
+      const mappedTypes = data.data ? data.data.map((type: any) => ({
+        type_id: parseInt(type.type_id),
+        type_name: type.type_name,
+        type_fuel: type.type_fuel,
+        type_power: type.type_power_ps ? `${type.type_power_ps} PS` : undefined,
+        type_engine: type.type_engine,
+        model_id: parseInt(type.type_modele_id),
+        year_from: type.type_year_from ? parseInt(type.type_year_from) : undefined,
+        year_to: type.type_year_to ? parseInt(type.type_year_to) : undefined,
+        type_slug: type.type_alias
+      })) : [];
       
       return mappedTypes;
     } catch (error) {
@@ -260,13 +261,13 @@ class EnhancedVehicleApiService {
 
       const data = await response.json();
       
-      // 🔄 L'API retourne directement un tableau d'années, pas un objet wrapper
-      if (Array.isArray(data)) {
-        return data;
+      // 🔄 Le backend retourne { data: [...], total, page, limit } 
+      if (data.data && Array.isArray(data.data)) {
+        return data.data.map((item: any) => item.year);
       }
       
-      // Fallback pour le format {success: true, data: [...]}
-      return data.success ? data.data : [];
+      // Fallback si format différent
+      return [];
     } catch (error) {
       console.warn(`❌ Erreur getYearsByBrand pour marque ${brandId}:`, error);
       return [];

@@ -17,7 +17,7 @@ import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Mod
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
-import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 NOUVEAU - Module véhicules !
+import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule
 import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
@@ -80,7 +80,8 @@ import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOU
     ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
-    VehiclesModule, // 🚗 NOUVEAU - Module véhicules avec recherche avancée !
+    // 🚗 MODULES VÉHICULES
+    VehiclesModule, // Module vehicle principal pour sélecteur véhicule
     VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
     ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
