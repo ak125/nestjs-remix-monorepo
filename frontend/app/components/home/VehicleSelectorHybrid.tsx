@@ -154,8 +154,8 @@ export function VehicleSelectorHybrid({
     }
   };
 
-  // 🌐 Génération URL Automecanik
-  const generateAutomecanikUrl = (brand: VehicleBrand, model: VehicleModel, type: VehicleType): string => {
+  // 🌐 Génération URL interne pour notre page véhicule
+  const generateVehicleUrl = (brand: VehicleBrand, model: VehicleModel, type: VehicleType): string => {
     // Nettoyage des noms pour l'URL (slug-friendly)
     const cleanName = (name: string) => name
       .toLowerCase()
@@ -174,26 +174,23 @@ export function VehicleSelectorHybrid({
     const modelSlug = `${cleanName(model.modele_name)}-${model.modele_id}`;
     const typeSlug = `${cleanName(type.type_name)}-${type.type_id}`;
 
-    return `https://www.automecanik.com/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+    return `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
   };
 
-  // ⚙️ Gestion sélection type (avec redirection vers Automecanik)
+  // ⚙️ Gestion sélection type (avec navigation vers page véhicule interne)
   const handleTypeSelect = (typeSlug: string) => {
     const type = types.find(t => t.type_slug === typeSlug || t.type_id.toString() === typeSlug);
     setSelectedType(type || null);
     
-    // 🚀 Redirection vers Automecanik si toutes les données sont disponibles
+    // 🚀 Navigation vers notre page véhicule interne si toutes les données sont disponibles
     if (type && selectedBrand && selectedModel) {
-      const automecanikUrl = generateAutomecanikUrl(selectedBrand, selectedModel, type);
-      console.log('🌐 Redirection vers Automecanik:', automecanikUrl);
+      const vehicleUrl = generateVehicleUrl(selectedBrand, selectedModel, type);
+      console.log('🌐 Navigation vers page véhicule:', vehicleUrl);
       
-      // Ouvrir dans un nouvel onglet
-      window.open(automecanikUrl, '_blank');
-      
-      // Optionnel : redirection dans le même onglet
-      // window.location.href = automecanikUrl;
+      // Navigation vers notre page interne
+      navigate(vehicleUrl);
     } else if (navigateOnSelect && typeSlug) {
-      // Fallback vers navigation interne si données incomplètes
+      // Fallback vers navigation générique si données incomplètes
       navigate(`/vehicule/${typeSlug}`);
     }
   };
@@ -565,6 +562,26 @@ export function VehicleSelectorHybrid({
               <Search className="w-5 h-5" />
             </Button>
           </Form>
+        </div>
+      )}
+
+      {/* 📈 Statistiques rapides */}
+      {selectedBrand && (years.length > 0 || models.length > 0 || types.length > 0) && (
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-lg font-bold text-gray-900">{models.length}</div>
+              <div className="text-xs text-gray-600">Modèles</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-gray-900">{types.length}</div>
+              <div className="text-xs text-gray-600">Motorisations</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-gray-900">{years.length}</div>
+              <div className="text-xs text-gray-600">Années</div>
+            </div>
+          </div>
         </div>
       )}
     </div>

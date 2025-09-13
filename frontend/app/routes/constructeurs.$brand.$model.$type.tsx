@@ -4,7 +4,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Fuel, Settings, Wrench, ShoppingCart } from "lucide-react";
-import { enhancedVehicleApi } from "~/services/api/enhanced-vehicle.api";
+import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 // 📊 Types de données
 interface VehicleDetail {
