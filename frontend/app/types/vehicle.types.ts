@@ -300,7 +300,61 @@ export interface ThemeConfig {
 }
 
 // ====================================
-// 🔄 TYPES DE COMPATIBILITÉ
+// � TYPES COMPOSITES POUR COMPOSANTS
+// ====================================
+
+/**
+ * Interface composite pour l'affichage complet d'un véhicule
+ * Utilisée dans les composants qui ont besoin de toutes les infos
+ */
+export interface VehicleData {
+  brand: string;
+  model: string;
+  type: string;
+  year?: number;
+  engine?: string;
+  fuel?: string;
+  power?: string;
+  description?: string;
+  imageUrl?: string;
+  partsCount?: number;
+  // Données additionnelles
+  brandId?: number;
+  modelId?: number;
+  typeId?: number;
+  slug?: string;
+  // Métadonnées
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Interface pour les données de véhicule enrichies
+ * Inclut les relations et statistiques
+ */
+export interface VehicleInfo extends VehicleData {
+  // Relations
+  vehicleBrand?: VehicleBrand;
+  vehicleModel?: VehicleModel;
+  vehicleType?: VehicleType;
+  // Statistiques
+  stats?: {
+    viewCount?: number;
+    partsCount?: number;
+    popularParts?: string[];
+    lastUpdated?: string;
+  };
+  // SEO
+  seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    canonicalUrl?: string;
+  };
+}
+
+// ====================================
+// �🔄 TYPES DE COMPATIBILITÉ
 // ====================================
 
 /**

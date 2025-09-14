@@ -414,7 +414,7 @@ export class SecurityConfigurationService {
   /**
    * 🔒 CHIFFREMENT UTILITAIRES
    */
-  async encryptSensitiveValue(value: string, algorithm = 'aes-256-gcm'): Promise<string> {
+  async encryptSensitiveValue(value: string, algorithm = 'aes-256-cbc'): Promise<string> {
     try {
       const key = crypto.randomBytes(32);
       const iv = crypto.randomBytes(16);
@@ -434,7 +434,6 @@ export class SecurityConfigurationService {
     try {
       const [algorithm, keyHex, ivHex, encrypted] = encryptedValue.split(':');
       const key = Buffer.from(keyHex, 'hex');
-      const iv = Buffer.from(ivHex, 'hex');
       
       const decipher = crypto.createDecipher(algorithm, key);
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');

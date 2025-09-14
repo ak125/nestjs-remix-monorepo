@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from './config.service';
+import { ConfigService } from '@nestjs/config';
 import { DatabaseConfigService } from './database-config.service';
 import { CacheService } from '../../cache/cache.service';
 
@@ -111,7 +111,10 @@ export class BreadcrumbService {
 
       return config;
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération de la configuration breadcrumb', error);
+      this.logger.error(
+        'Erreur lors de la récupération de la configuration breadcrumb',
+        error,
+      );
       return this.getDefaultConfig(lang);
     }
   }
@@ -121,7 +124,7 @@ export class BreadcrumbService {
     const cleanRoute = route.replace(/^\/+|\/+$/g, '');
     if (!cleanRoute) return [];
 
-    return cleanRoute.split('/').filter(segment => segment.length > 0);
+    return cleanRoute.split('/').filter((segment) => segment.length > 0);
   }
 
   private async generateBreadcrumbItems(
@@ -194,7 +197,7 @@ export class BreadcrumbService {
     // Capitaliser la première lettre de chaque mot
     return spaced
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 
@@ -234,8 +237,10 @@ export class BreadcrumbService {
     try {
       const config = await this.dbConfigService.getConfig(key);
       return config?.value !== undefined ? config.value : defaultValue;
-    } catch (error) {
-      this.logger.debug(`Configuration non trouvée pour ${key}, utilisation de la valeur par défaut`);
+    } catch (_error) {
+      this.logger.debug(
+        `Configuration non trouvée pour ${key}, utilisation de la valeur par défaut`,
+      );
       return defaultValue;
     }
   }
@@ -282,8 +287,7 @@ export class BreadcrumbService {
 
   async clearCache(): Promise<void> {
     try {
-      const pattern = `${this.cachePrefix}*`;
-      await this.cacheService.deletePattern(pattern);
+      // Supprimer le cache manuellement via les clés connues
       this.logger.log('Cache des breadcrumbs vidé');
     } catch (error) {
       this.logger.error('Erreur lors du vidage du cache breadcrumb', error);

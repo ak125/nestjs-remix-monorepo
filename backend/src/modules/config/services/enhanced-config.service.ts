@@ -264,10 +264,15 @@ export class EnhancedConfigService extends SupabaseBaseService {
    */
   encryptValue(value: string): string {
     try {
-      const cipher = crypto.createCipher('aes-256-cbc', this.ENCRYPTION_KEY);
+      const iv = crypto.randomBytes(16);
+      const key = this.ENCRYPTION_KEY;
+      const cipher = crypto.createCipher('aes-256-cbc', key);
+      
       let encrypted = cipher.update(value, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      return encrypted;
+      
+      // Format: iv:encryptedData pour compatibilité future
+      return `${iv.toString('hex')}:${encrypted}`;
     } catch (error) {
       this.logger.error('Error encrypting value:', error);
       throw new Error('Failed to encrypt value');
@@ -279,8 +284,18 @@ export class EnhancedConfigService extends SupabaseBaseService {
    */
   decryptValue(encryptedValue: string): string {
     try {
-      const decipher = crypto.createDecipher('aes-256-cbc', this.ENCRYPTION_KEY);
-      let decrypted = decipher.update(encryptedValue, 'hex', 'utf8');
+      const parts = encryptedValue.split(':');
+      let encrypted = encryptedValue;
+      
+      // Si nouveau format avec IV, utiliser la partie encrypted
+      if (parts.length === 2) {
+        encrypted = parts[1];
+      }
+      
+      const key = this.ENCRYPTION_KEY;
+      const decipher = crypto.createDecipher('aes-256-cbc', key);
+      
+      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
     } catch (error) {

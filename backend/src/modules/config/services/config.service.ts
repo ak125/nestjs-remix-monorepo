@@ -15,7 +15,27 @@ import { ConfigSecurityService } from './config-security.service';
 import { ConfigMonitoringService } from './config-monitoring.service';
 import { ConfigValidator } from '../validators/config.validator';
 import { getAppConfig } from '../../../config/app.config';
+import { z } from 'zod';
 import * as crypto from 'crypto';
+
+// 📋 Schémas de validation Zod améliorés
+const ConfigValueSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.array(z.any()),
+  z.record(z.any()),
+  z.null(),
+]);
+
+const ConfigSetSchema = z.object({
+  key: z.string().min(1, 'La clé ne peut pas être vide'),
+  value: ConfigValueSchema,
+  type: z.enum(['string', 'number', 'boolean', 'json', 'array']).optional(),
+  category: z.string().default('general'),
+  isSensitive: z.boolean().default(false),
+  description: z.string().optional(),
+});
 
 export interface ConfigValue {
   key: string;
@@ -117,13 +137,21 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   }
 
   /**
-   * Définit une valeur de configuration
+   * Définit une valeur de configuration avec validation Zod
    */
   async set<T = any>(key: string, value: T, persistent = false): Promise<void> {
     try {
+      // 🔍 Validation Zod améliorée
+      const validationResult = this.validateConfigWithZod(key, value);
+      if (!validationResult.success) {
+        throw new Error(`Validation échouée pour '${key}': ${validationResult.errors.join(', ')}`);
+      }
+
       // Valider la valeur si activé
       if (this.options.validationEnabled) {
-        const isValid = await this.validationService.validateValue(key, value);
+        // Utilisation du service de validation existant
+        const configValidator = new ConfigValidator();
+        const isValid = configValidator.validateConfigValue(key, value);
         if (!isValid) {
           throw new Error(`Valeur invalide pour la clé '${key}'`);
         }
@@ -132,7 +160,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       // Chiffrer si nécessaire
       let finalValue = value;
       if (this.shouldEncrypt(key) && this.options.securityEnabled) {
-        finalValue = await this.securityService.encrypt(value) as T;
+        // Conversion sécurisée pour le chiffrement
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        const encrypted = await this.securityService.encrypt(stringValue);
+        finalValue = encrypted as T;
       }
 
       // Mettre à jour le cache local
@@ -145,12 +176,16 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
 
       // Persister en base si demandé
       if (persistent) {
-        // TODO: Implémenter la persistance via DatabaseConfigService
+        await this.persistConfig(key, finalValue, {
+          type: this.inferType(value),
+          category: this.inferCategory(key),
+          isSensitive: this.shouldEncrypt(key),
+        });
       }
 
       // Logger le changement si monitoring activé
       if (this.options.monitoringEnabled) {
-        await this.monitoringService.logConfigChange(key, value, finalValue);
+        await this.trackConfigChange(key, value, finalValue);
       }
 
       this.logger.debug(`Configuration '${key}' mise à jour`);
@@ -564,5 +599,132 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       }
     }
     return typeof value;
+  }
+
+  /**
+   * 🔍 Validation Zod pour les configurations
+   */
+  private validateConfigWithZod(key: string, value: any): { success: boolean; errors: string[] } {
+    try {
+      // Validation basique de la clé
+      z.string().min(1).parse(key);
+      
+      // Validation de la valeur selon ConfigValueSchema
+      ConfigValueSchema.parse(value);
+      
+      return { success: true, errors: [] };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          errors: error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`),
+        };
+      }
+      return { 
+        success: false, 
+        errors: [(error as Error).message || 'Erreur de validation inconnue'],
+      };
+    }
+  }
+
+  /**
+   * 🎯 Inférer le type d'une valeur
+   */
+  private inferType(value: any): string {
+    if (typeof value === 'number') return 'number';
+    if (typeof value === 'boolean') return 'boolean';
+    if (Array.isArray(value)) return 'array';
+    if (typeof value === 'object' && value !== null) return 'json';
+    return 'string';
+  }
+
+  /**
+   * 📂 Inférer la catégorie d'une clé
+   */
+  private inferCategory(key: string): string {
+    if (key.startsWith('database.')) return 'database';
+    if (key.startsWith('email.')) return 'email';
+    if (key.startsWith('auth.')) return 'auth';
+    if (key.startsWith('ui.')) return 'ui';
+    if (key.startsWith('cache.')) return 'cache';
+    if (key.startsWith('security.')) return 'security';
+    return 'general';
+  }
+
+  /**
+   * 💾 Persister une configuration en base
+   */
+  private async persistConfig(key: string, value: any, options: {
+    type: string;
+    category: string;
+    isSensitive: boolean;
+  }): Promise<void> {
+    try {
+      // Préparer la valeur pour stockage
+      let storedValue = value;
+      if (typeof value === 'object' && value !== null) {
+        storedValue = JSON.stringify(value);
+      }
+
+      const { error } = await this.supabase
+        .from('___config')
+        .upsert({
+          config_key: key,
+          config_value: storedValue,
+          config_type: options.type,
+          category: options.category,
+          is_sensitive: options.isSensitive,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      this.logger.debug(`Configuration '${key}' persistée en base`);
+    } catch (error) {
+      this.logger.error(`Erreur persistance '${key}':`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 Tracker les changements de configuration
+   */
+  private async trackConfigChange(key: string, oldValue: any, newValue: any): Promise<void> {
+    try {
+      // Log simple pour le tracking
+      this.logger.log(`🔄 Config '${key}' changed`, {
+        key,
+        oldValue: typeof oldValue,
+        newValue: typeof newValue,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Si un service de monitoring avancé est disponible, l'utiliser
+      if (this.options.monitoringEnabled) {
+        // Tracking basique intégré
+        const trackingData = {
+          config_key: key,
+          action: 'update',
+          old_value: typeof oldValue === 'object' ? JSON.stringify(oldValue) : String(oldValue),
+          new_value: typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue),
+          timestamp: new Date().toISOString(),
+        };
+
+        // Tentative d'insertion dans une table de tracking (optionnel)
+        try {
+          await this.supabase
+            .from('config_tracking')
+            .insert(trackingData);
+        } catch (error) {
+          // Le tracking ne doit pas faire échouer l'opération principale
+          this.logger.debug('Tracking table non disponible');
+        }
+      }
+    } catch (error) {
+      // Le tracking ne doit jamais faire échouer l'opération principale
+      this.logger.debug(`Erreur tracking pour '${key}':`, error);
+    }
   }
 }

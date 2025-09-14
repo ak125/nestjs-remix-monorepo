@@ -103,15 +103,27 @@ export class EnhancedConfigurationService extends SupabaseBaseService {
    * 🔐 CHIFFREMENT ET SÉCURITÉ
    */
   private encrypt(value: string): string {
+    const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipher('aes-256-cbc', this.encryptionKey);
+    
     let encrypted = cipher.update(value, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return encrypted;
+    
+    // Format avec IV pour compatibilité future
+    return `${iv.toString('hex')}:${encrypted}`;
   }
 
   private decrypt(encryptedValue: string): string {
+    const parts = encryptedValue.split(':');
+    let encrypted = encryptedValue;
+    
+    // Si nouveau format avec IV, utiliser la partie encrypted
+    if (parts.length === 2) {
+      encrypted = parts[1];
+    }
+    
     const decipher = crypto.createDecipher('aes-256-cbc', this.encryptionKey);
-    let decrypted = decipher.update(encryptedValue, 'hex', 'utf8');
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
   }

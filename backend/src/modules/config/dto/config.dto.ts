@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, IsEnum, IsObject } from 'class-validator';
+import { z } from 'zod';
 
+// Export de l'enum depuis les schémas
 export enum ConfigType {
   STRING = 'string',
   NUMBER = 'number',
@@ -9,36 +10,39 @@ export enum ConfigType {
   ARRAY = 'array',
 }
 
-export class ConfigItemDto {
+// Import des schémas et types Zod
+import {
+  CreateConfigSchema,
+  UpdateConfigSchema,
+  ConfigQuerySchema,
+  ConfigItemSchema,
+  type CreateConfigDto as ZodCreateConfigDto,
+  type UpdateConfigDto as ZodUpdateConfigDto,
+  type ConfigQueryDto as ZodConfigQueryDto,
+  type ConfigItemDto as ZodConfigItemDto,
+} from '../schemas/config.schemas';
+
+// Classes pour la documentation Swagger (optionnel, mais utile pour l'API)
+export class ConfigItemDto implements ZodConfigItemDto {
   @ApiProperty({ description: 'Clé de configuration unique' })
-  @IsString()
   key: string;
 
   @ApiProperty({ description: 'Valeur de la configuration' })
   value: any;
 
   @ApiProperty({ enum: ConfigType, description: 'Type de la configuration' })
-  @IsEnum(ConfigType)
   type: ConfigType;
 
   @ApiPropertyOptional({ description: 'Description de la configuration' })
-  @IsOptional()
-  @IsString()
   description?: string;
 
   @ApiPropertyOptional({ description: 'Catégorie de la configuration' })
-  @IsOptional()
-  @IsString()
   category?: string;
 
   @ApiPropertyOptional({ description: 'Configuration publique ou privée' })
-  @IsOptional()
-  @IsBoolean()
   isPublic?: boolean;
 
   @ApiPropertyOptional({ description: 'Configuration en lecture seule' })
-  @IsOptional()
-  @IsBoolean()
   isReadOnly?: boolean;
 
   @ApiPropertyOptional({ description: 'Date de création' })
@@ -48,96 +52,89 @@ export class ConfigItemDto {
   updatedAt?: Date;
 }
 
-export class CreateConfigDto {
+export class CreateConfigDto implements ZodCreateConfigDto {
   @ApiProperty({ description: 'Clé de configuration unique' })
-  @IsString()
   key: string;
 
   @ApiProperty({ description: 'Valeur de la configuration' })
   value: any;
 
   @ApiProperty({ enum: ConfigType, description: 'Type de la configuration' })
-  @IsEnum(ConfigType)
   type: ConfigType;
 
   @ApiPropertyOptional({ description: 'Description de la configuration' })
-  @IsOptional()
-  @IsString()
   description?: string;
 
   @ApiPropertyOptional({ description: 'Catégorie de la configuration' })
-  @IsOptional()
-  @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ description: 'Configuration publique ou privée', default: false })
-  @IsOptional()
-  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Configuration publique ou privée',
+    default: false,
+  })
   isPublic?: boolean;
 
-  @ApiPropertyOptional({ description: 'Configuration en lecture seule', default: false })
-  @IsOptional()
-  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Configuration en lecture seule',
+    default: false,
+  })
   isReadOnly?: boolean;
 }
 
-export class UpdateConfigDto {
+export class UpdateConfigDto implements ZodUpdateConfigDto {
   @ApiPropertyOptional({ description: 'Nouvelle valeur de la configuration' })
-  @IsOptional()
   value?: any;
 
-  @ApiPropertyOptional({ enum: ConfigType, description: 'Type de la configuration' })
-  @IsOptional()
-  @IsEnum(ConfigType)
+  @ApiPropertyOptional({
+    enum: ConfigType,
+    description: 'Type de la configuration',
+  })
   type?: ConfigType;
 
   @ApiPropertyOptional({ description: 'Description de la configuration' })
-  @IsOptional()
-  @IsString()
   description?: string;
 
   @ApiPropertyOptional({ description: 'Catégorie de la configuration' })
-  @IsOptional()
-  @IsString()
   category?: string;
 
   @ApiPropertyOptional({ description: 'Configuration publique ou privée' })
-  @IsOptional()
-  @IsBoolean()
   isPublic?: boolean;
 
   @ApiPropertyOptional({ description: 'Configuration en lecture seule' })
-  @IsOptional()
-  @IsBoolean()
   isReadOnly?: boolean;
 }
 
-export class ConfigQueryDto {
+export class ConfigQueryDto implements ZodConfigQueryDto {
   @ApiPropertyOptional({ description: 'Filtrer par catégorie' })
-  @IsOptional()
-  @IsString()
   category?: string;
 
   @ApiPropertyOptional({ description: 'Filtrer par type' })
-  @IsOptional()
-  @IsEnum(ConfigType)
   type?: ConfigType;
 
-  @ApiPropertyOptional({ description: 'Afficher uniquement les configurations publiques' })
-  @IsOptional()
-  @IsBoolean()
+  @ApiPropertyOptional({
+    description: 'Afficher uniquement les configurations publiques',
+  })
   publicOnly?: boolean;
 
   @ApiPropertyOptional({ description: 'Recherche textuelle' })
-  @IsOptional()
-  @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ description: 'Nombre d\'éléments par page' })
-  @IsOptional()
+  @ApiPropertyOptional({ description: "Nombre d'éléments par page" })
   limit?: number;
 
   @ApiPropertyOptional({ description: 'Décalage pour la pagination' })
-  @IsOptional()
   offset?: number;
 }
+
+// Export des schémas Zod pour la validation
+export {
+  CreateConfigSchema,
+  UpdateConfigSchema,
+  ConfigQuerySchema,
+  ConfigItemSchema,
+};
+
+// Types utilitaires
+export type ValidatedCreateConfigDto = z.infer<typeof CreateConfigSchema>;
+export type ValidatedUpdateConfigDto = z.infer<typeof UpdateConfigSchema>;
+export type ValidatedConfigQueryDto = z.infer<typeof ConfigQuerySchema>;
