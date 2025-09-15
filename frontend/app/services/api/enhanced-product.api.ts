@@ -2,12 +2,30 @@
 // 🔧 Enhanced Product API Service - Utilise ProductsService backend
 
 export interface ProductCategory {
-  gamme_id: number;
-  gamme_name: string;
+  // Propriétés originales (gamme_*)
+  gamme_id?: number;
+  gamme_name?: string;
   gamme_alias?: string;
   gamme_description?: string;
   gamme_image?: string;
+  
+  // Propriétés de la vraie base de données (pg_*)
+  pg_id?: number;
+  pg_name?: string;
+  pg_alias?: string;
+  pg_description?: string;
+  pg_image?: string;
+  pg_pic?: string;
+  pg_img?: string;
+  pg_display?: number;
+  pg_top?: number;
+  
+  // Compteurs compatibles
   products_count?: number;
+  gamme_count?: number;
+  pg_count?: number;
+  
+  // Indicateurs
   is_featured?: boolean;
 }
 
@@ -56,53 +74,153 @@ class EnhancedProductApiService {
       : process.env.API_BASE_URL || 'http://localhost:3000';
   }
 
-  /**
-   * 📂 Récupérer toutes les catégories de produits (gammes)
+    /**
+   * 🏠 Récupère les données complètes pour la page d'accueil
+   * Utilise le nouveau endpoint optimisé du backend
    */
-  async getCategories(options?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    onlyFeatured?: boolean;
-  }): Promise<ProductCategory[]> {
+  async getHomepageData(): Promise<{
+    brands: any;
+    stats: any; 
+    gammes?: ProductCategory[];
+    success: boolean;
+  }> {
     try {
-      const params = new URLSearchParams();
+      console.log('🏠 Récupération données homepage...');
       
-      if (options?.page) params.append('page', options.page.toString());
-      if (options?.limit) params.append('limit', options.limit.toString());
-      if (options?.search) params.append('search', options.search);
-      if (options?.onlyFeatured) params.append('onlyFeatured', 'true');
+      // Appels parallèles aux nouveaux endpoints optimisés
+      const [catalogData, gammesData] = await Promise.allSettled([
+        fetch(`${this.baseUrl}/api/catalog/homepage-data`, {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        fetch(`${this.baseUrl}/api/catalog/gammes/homepage-data?maxCategories=12`, {
+          headers: { 'Content-Type': 'application/json' },
+        })
+      ]);
 
-      const url = `${this.baseUrl}/api/products/gammes${params.toString() ? '?' + params.toString() : ''}`;
+      // Traitement des résultats catalog
+      let catalogResult = { brands: { data: [], count: 0 }, stats: { pieces: 0, brands: 0, models: 0 } };
+      if (catalogData.status === 'fulfilled' && catalogData.value.ok) {
+        const catalogJson = await catalogData.value.json();
+        if (catalogJson.success) {
+          catalogResult = catalogJson.data;
+        }
+      }
+
+      // Traitement des résultats gammes  
+      let gammesResult: ProductCategory[] = [];
+      if (gammesData.status === 'fulfilled' && gammesData.value.ok) {
+        const gammesJson = await gammesData.value.json();
+        gammesResult = this.mapGammesToCategories(gammesJson.featured_gammes || []);
+      }
+
+      console.log(`✅ Homepage data: ${catalogResult.brands.count} marques, ${gammesResult.length} gammes`);
       
-      const response = await fetch(url, {
-        method: 'GET',
+      return {
+        brands: catalogResult.brands,
+        stats: catalogResult.stats,
+        gammes: gammesResult,
+        success: true
+      };
+
+    } catch (error) {
+      console.error('❌ Erreur homepage data:', error);
+      return {
+        brands: { data: [], count: 0 },
+        stats: { pieces: 0, brands: 0, models: 0 },
+        gammes: [],
+        success: false
+      };
+    }
+  }
+
+  /**
+   * 📋 Récupère les catégories (gammes) optimisées  
+   * Utilise le nouveau GammeService
+   */
+  async getCategories(): Promise<ProductCategory[]> {
+    try {
+      console.log('📋 Récupération gammes optimisées...');
+      
+      const response = await fetch(`${this.baseUrl}/api/catalog/gammes/featured?limit=20`, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
-        console.warn(`❌ Erreur récupération catégories: ${response.status}`);
+        console.warn(`❌ Erreur récupération gammes: ${response.status}`);
         return [];
       }
 
       const data = await response.json();
-      // L'API retourne directement un tableau, pas un objet avec success/data
-      return Array.isArray(data) ? data.map(cat => ({
-        gamme_id: parseInt(cat.id),
-        gamme_name: cat.name,
-        gamme_alias: cat.alias,
-        gamme_description: cat.name,
-        gamme_image: cat.image,
-        products_count: 0,
-        is_featured: cat.is_top || false
-      })) : [];
+      
+      if (data.success && Array.isArray(data.data)) {
+        const categories = this.mapGammesToCategories(data.data);
+        console.log(`✅ ${categories.length} gammes récupérées`);
+        return categories;
+      }
+
+      console.warn('⚠️ Format de réponse gammes inattendu');
+      return [];
+
     } catch (error) {
-      console.warn('❌ Erreur getCategories:', error);
+      console.error('❌ Erreur récupération gammes:', error);
       return [];
     }
   }
+
+  /**
+   * 🔥 Récupère les catégories populaires
+   */
+  async getPopularCategories(limit: number = 8): Promise<ProductCategory[]> {
+    try {
+      console.log(`🔥 Récupération ${limit} gammes populaires...`);
+      
+      const response = await fetch(`${this.baseUrl}/api/catalog/gammes/popular?limit=${limit}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`❌ Erreur récupération gammes populaires: ${response.status}`);
+        return [];
+      }
+
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data.data)) {
+        const categories = this.mapGammesToCategories(data.data);
+        console.log(`✅ ${categories.length} gammes populaires récupérées`);
+        return categories;
+      }
+
+      return [];
+
+    } catch (error) {
+      console.error('❌ Erreur récupération gammes populaires:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🔧 Mappe les gammes backend vers le format ProductCategory frontend
+   */
+  private mapGammesToCategories(gammes: any[]): ProductCategory[] {
+    return gammes.map(gamme => ({
+      gamme_id: gamme.gamme_id,
+      gamme_name: gamme.gamme_name,
+      gamme_alias: gamme.gamme_alias,
+      gamme_description: gamme.gamme_description || gamme.gamme_name,
+      gamme_image: gamme.gamme_image,
+      products_count: gamme.products_count || 0,
+      is_featured: gamme.gamme_featured || false
+    }));
+  }
+
+  /**
+   * 📊 Récupère les statistiques globales (fallback vers ancien endpoint)
+   */
 
   /**
    * ⭐ Récupérer les produits populaires/en vedette
@@ -311,7 +429,7 @@ class EnhancedProductApiService {
    */
   async getHomeData() {
     const [categoriesResult, featuredResult, equipmentResult] = await Promise.allSettled([
-      this.getCategories({ limit: 12, onlyFeatured: true }),
+      this.getCategories(),
       this.getFeaturedProducts({ limit: 8 }),
       this.getEquipmentBrands({ limit: 10 }),
     ]);

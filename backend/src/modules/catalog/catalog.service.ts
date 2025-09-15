@@ -1,13 +1,425 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+// 📁 backend/src/modules/catalog/catalog.service.ts
+// 🏗️ Service principal pour le catalogue - Orchestrateur des données
+
+// import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
+import { CatalogFamilyService } from './services/catalog-family.service';
+import { CatalogGammeService } from './services/catalog-gamme.service';
+
+// ========================================
+// 📊 INTERFACES ÉTENDUES
+// ========================================
+
+export interface CatalogItem {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+  piece_count?: number;
+  is_featured?: boolean;
+}
+
+export interface HomeCatalogData {
+  mainCategories: CatalogItem[];
+  featuredCategories: CatalogItem[];
+  quickAccess: any[];
+  stats: {
+    total_categories: number;
+    total_pieces: number;
+    featured_count: number;
+  };
+}
 
 @Injectable()
-export class CatalogService extends SupabaseBaseService {
+export class CatalogService extends SupabaseBaseService implements OnModuleInit {
   protected readonly logger = new Logger(CatalogService.name);
+  
+  // 🗄️ Cache intelligent pour performance
+  private catalogCache: Map<string, any> = new Map();
+  private readonly CACHE_TTL = 3600000; // 1 heure
+
+  constructor(
+    private readonly catalogFamilyService: CatalogFamilyService,
+    private readonly catalogGammeService: CatalogGammeService,
+  ) {
+    super();
+  }
 
   /**
-   * Récupérer toutes les marques automobiles actives
+   * 🚀 Initialisation du module - Préchargement intelligent
    */
+  async onModuleInit() {
+    this.logger.log('🚀 Initialisation CatalogService avec préchargement...');
+    
+    try {
+      // Préchargement parallèle des données critiques
+      await Promise.allSettled([
+        this.preloadMainCategories(),
+        this.preloadAutoBrands(),
+        this.preloadGlobalStats()
+      ]);
+      
+      this.logger.log('✅ Préchargement du catalogue terminé avec succès');
+    } catch (error) {
+      this.logger.error('❌ Erreur préchargement catalogue:', error);
+    }
+  }
+
+  /**
+   * 👨‍👩‍👧‍👦 Récupérer les familles de gammes (utilise catalog_family)
+   */
+  async getGamesFamilies() {
+    this.logger.log('👨‍👩‍👧‍👦 Récupération familles de gammes via CatalogService');
+    return this.catalogFamilyService.getFamiliesWithGammes();
+  }
+
+  /**
+   * 👨‍👩‍👧‍👦 Récupérer toutes les familles formatées comme des gammes (pour homepage)
+   */
+  async getAllFamiliesAsGammes() {
+    this.logger.log('👨‍👩‍👧‍👦 Récupération de toutes les familles comme gammes via CatalogService');
+    return this.catalogFamilyService.getAllFamiliesAsGammes();
+  }
+
+  /**
+   * 🔧 Récupérer les vraies gammes de la table catalog_gamme
+   */
+  async getCatalogGammes() {
+    this.logger.log('🔧 Récupération des vraies gammes catalog_gamme via CatalogService');
+    return this.catalogGammeService.getGammesForDisplay();
+  }
+
+  /**
+   * 🔄 Récupérer les gammes combinées (familles + catalog_gamme)
+   */
+  async getCombinedGammes() {
+    this.logger.log('🔄 Récupération des gammes combinées (familles + catalog_gamme)');
+    
+    try {
+      // Récupérer les deux sources en parallèle
+      const [familiesGammes, catalogGammes] = await Promise.all([
+        this.catalogFamilyService.getAllFamiliesAsGammes(),
+        this.catalogGammeService.getGammesForDisplay()
+      ]);
+
+      return {
+        families: familiesGammes || {},
+        catalog_gammes: catalogGammes || { manufacturers: {}, stats: { total_gammes: 0, total_manufacturers: 0 } },
+        combined_stats: {
+          total_families: Object.keys(familiesGammes || {}).length,
+          total_catalog_gammes: catalogGammes?.stats?.total_gammes || 0,
+          total_manufacturers: catalogGammes?.stats?.total_manufacturers || 0
+        }
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur récupération gammes combinées:', error);
+      return {
+        families: {},
+        catalog_gammes: { manufacturers: {}, stats: { total_gammes: 0, total_manufacturers: 0 } },
+        combined_stats: { total_families: 0, total_catalog_gammes: 0, total_manufacturers: 0 }
+      };
+    }
+  }
+
+  /**
+   * 🏠 Récupère les gammes principales pour la page d'accueil
+   * Version fusionnée optimisée avec cache intelligent
+   */
+  async getHomeCatalog(): Promise<HomeCatalogData> {
+    const cacheKey = 'home_catalog_v2';
+    
+    // Vérifier le cache d'abord
+    if (this.catalogCache.has(cacheKey)) {
+      this.logger.log('🎯 Cache hit - Données homepage catalogue');
+      return this.catalogCache.get(cacheKey);
+    }
+
+    try {
+      this.logger.log('🏠 Génération catalogue homepage avec données réelles...');
+
+      // Exécution parallèle optimisée  
+      const [categoriesResult, statsResult, quickAccessResult] = await Promise.allSettled([
+        this.getMainCategories(),
+        this.getCatalogStats(), 
+        this.getQuickAccessItems()
+      ]);
+
+      // Extraction sécurisée des résultats
+      const mainCategories = categoriesResult.status === 'fulfilled' ? categoriesResult.value : [];
+      const stats = statsResult.status === 'fulfilled' ? statsResult.value : {
+        total_categories: 0,
+        total_pieces: 0,
+        featured_count: 0
+      };
+      const quickAccess = quickAccessResult.status === 'fulfilled' ? quickAccessResult.value : [];
+
+      // Filtrage des catégories featured
+      const featuredCategories = mainCategories.filter(cat => cat.is_featured);
+
+      const result: HomeCatalogData = {
+        mainCategories,
+        featuredCategories,
+        quickAccess,
+        stats: {
+          total_categories: mainCategories.length,
+          total_pieces: stats.total_pieces || 0,
+          featured_count: featuredCategories.length
+        }
+      };
+
+      // Mise en cache avec TTL
+      this.catalogCache.set(cacheKey, result);
+      setTimeout(() => {
+        this.catalogCache.delete(cacheKey);
+        this.logger.log('♻️ Cache homepage catalogue expiré');
+      }, this.CACHE_TTL);
+
+      this.logger.log(`✅ Catalogue homepage: ${mainCategories.length} catégories, ${featuredCategories.length} featured`);
+      return result;
+
+    } catch (error) {
+      this.logger.error('❌ Erreur génération catalogue homepage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📋 Récupère les catégories principales (gammes)
+   */
+  private async getMainCategories(): Promise<CatalogItem[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('pieces_gamme')
+        .select(`
+          pg_id,
+          pg_name,
+          pg_alias,
+          pg_description,
+          pg_image,
+          pg_featured,
+          pg_display,
+          pg_sort
+        `)
+        .eq('pg_display', 1)
+        .order('pg_sort', { ascending: true });
+
+      if (error) {
+        throw error;
+      }
+
+      // Transformation vers interface CatalogItem
+      const catalogItems: CatalogItem[] = (data || []).map(item => ({
+        id: item.pg_id,
+        code: item.pg_alias || `gamme-${item.pg_id}`,
+        name: item.pg_name,
+        description: item.pg_description,
+        image_url: item.pg_image,
+        is_featured: item.pg_featured || false,
+        piece_count: 0 // Sera enrichi par RPC si disponible
+      }));
+
+      // Enrichissement avec compteur de produits
+      return await this.enrichWithProductCounts(catalogItems);
+
+    } catch (error) {
+      this.logger.error('❌ Erreur récupération catégories principales:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🔥 Récupère les éléments d'accès rapide (populaires)
+   */
+  private async getQuickAccessItems(): Promise<any[]> {
+    try {
+      // Essayer d'abord la fonction RPC si disponible
+      const { data, error } = await this.supabase
+        .rpc('get_popular_catalog_items', { limit_count: 10 });
+
+      if (error || !data) {
+        // Fallback sur requête simple
+        this.logger.warn('⚠️ RPC popular items non disponible, fallback sur gammes featured');
+        return await this.getFallbackQuickAccess();
+      }
+
+      return data;
+    } catch (error) {
+      this.logger.warn('⚠️ Erreur accès rapide, fallback utilisé:', error);
+      return await this.getFallbackQuickAccess();
+    }
+  }
+
+  /**
+   * 🔄 Fallback pour accès rapide
+   */
+  private async getFallbackQuickAccess(): Promise<CatalogItem[]> {
+    const { data } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_name, pg_alias, pg_image')
+      .eq('pg_featured', 1)
+      .eq('pg_display', 1)
+      .limit(8);
+
+    return (data || []).map(item => ({
+      id: item.pg_id,
+      code: item.pg_alias,
+      name: item.pg_name,
+      image_url: item.pg_image,
+      is_featured: true,
+      piece_count: 0
+    }));
+  }
+
+  /**
+   * 📊 Enrichit les catégories avec le nombre de produits
+   */
+  private async enrichWithProductCounts(categories: CatalogItem[]): Promise<CatalogItem[]> {
+    if (categories.length === 0) return [];
+
+    try {
+      const categoryIds = categories.map(cat => cat.id);
+      
+      const { data, error } = await this.supabase
+        .rpc('get_products_count_by_gamme', {
+          gamme_ids: categoryIds
+        });
+
+      if (error || !data) {
+        this.logger.warn('⚠️ Enrichissement compteurs produits échoué');
+        return categories;
+      }
+
+      // Créer un map pour lookup rapide
+      const countMap = new Map();
+      data.forEach((item: any) => {
+        countMap.set(item.gamme_id, item.products_count);
+      });
+
+      // Enrichir les catégories
+      return categories.map(cat => ({
+        ...cat,
+        piece_count: countMap.get(cat.id) || 0
+      }));
+
+    } catch (error) {
+      this.logger.warn('⚠️ Erreur enrichissement compteurs:', error);
+      return categories;
+    }
+  }
+
+  /**
+   * 🔍 Recherche dans le catalogue (version améliorée)
+   */
+  async searchCatalog(query: string, filters?: {
+    minPrice?: number;
+    maxPrice?: number;
+    categoryId?: number;
+    brandId?: number;
+    limit?: number;
+  }): Promise<any[]> {
+    try {
+      this.logger.log(`🔍 Recherche catalogue: "${query}" avec filtres`);
+
+      let queryBuilder = this.supabase
+        .from('pieces_gamme')
+        .select(`
+          pg_id,
+          pg_name,
+          pg_alias,
+          pg_description,
+          pg_image,
+          products_pieces!inner(
+            piece_id,
+            piece_name,
+            piece_ref,
+            piece_price,
+            piece_brand,
+            piece_image
+          )
+        `);
+
+      // Recherche textuelle
+      if (query) {
+        queryBuilder = queryBuilder.or(
+          `pg_name.ilike.%${query}%,pg_alias.ilike.%${query}%`
+        );
+      }
+
+      // Appliquer les filtres
+      if (filters?.minPrice) {
+        queryBuilder = queryBuilder.gte('products_pieces.piece_price', filters.minPrice);
+      }
+      if (filters?.maxPrice) {
+        queryBuilder = queryBuilder.lte('products_pieces.piece_price', filters.maxPrice);
+      }
+      if (filters?.categoryId) {
+        queryBuilder = queryBuilder.eq('pg_id', filters.categoryId);
+      }
+
+      const { data, error } = await queryBuilder
+        .limit(filters?.limit || 50);
+
+      if (error) {
+        throw error;
+      }
+
+      this.logger.log(`✅ Recherche: ${(data || []).length} résultats trouvés`);
+      return data || [];
+
+    } catch (error) {
+      this.logger.error('❌ Erreur recherche catalogue:', error);
+      return [];
+    }
+  }
+
+  /**
+   * ♻️ Méthodes de préchargement pour OnModuleInit
+   */
+  private async preloadMainCategories(): Promise<void> {
+    try {
+      await this.getHomeCatalog();
+      this.logger.log('✅ Catégories principales préchargées');
+    } catch (error) {
+      this.logger.error('❌ Erreur préchargement catégories:', error);
+    }
+  }
+
+  private async preloadAutoBrands(): Promise<void> {
+    try {
+      await this.getAutoBrands(50);
+      this.logger.log('✅ Marques automobiles préchargées');
+    } catch (error) {
+      this.logger.error('❌ Erreur préchargement marques:', error);
+    }
+  }
+
+  private async preloadGlobalStats(): Promise<void> {
+    try {
+      await this.getCatalogStats();
+      this.logger.log('✅ Statistiques globales préchargées');
+    } catch (error) {
+      this.logger.error('❌ Erreur préchargement stats:', error);
+    }
+  }
+
+  /**
+   * 🗑️ Invalidation du cache
+   */
+  invalidateCache(pattern?: string): void {
+    if (pattern) {
+      for (const key of this.catalogCache.keys()) {
+        if (key.includes(pattern)) {
+          this.catalogCache.delete(key);
+        }
+      }
+      this.logger.log(`♻️ Cache invalidé pour pattern: ${pattern}`);
+    } else {
+      this.catalogCache.clear();
+      this.logger.log('♻️ Cache complet invalidé');
+    }
+  }
   async getAutoBrands(limit: number = 50) {
     try {
       const { data, error } = await this.supabase
@@ -269,6 +681,200 @@ export class CatalogService extends SupabaseBaseService {
         error: error.message,
         stats: null,
       };
+    }
+  }
+
+  /**
+   * 🏠 Obtient toutes les données nécessaires pour la page d'accueil
+   * Agrège marques, statistiques et gammes en un seul appel optimisé
+   */
+  async getHomepageData() {
+    try {
+      this.logger.log('🏠 Génération données complètes page d\'accueil');
+
+      // Exécution parallèle pour performance optimale
+      const [brandsResult, statsResult] = await Promise.allSettled([
+        this.getAutoBrands(20), // Top 20 marques pour homepage
+        this.getGlobalStats(),
+      ]);
+
+      // Extraction sécurisée des résultats
+      const brands = brandsResult.status === 'fulfilled' ? brandsResult.value : {
+        success: false,
+        data: [],
+        count: 0
+      };
+
+      const stats = statsResult.status === 'fulfilled' ? statsResult.value : {
+        success: false,
+        stats: {
+          brands: 0,
+          models: 0,
+          pieces: 0,
+          lastUpdate: new Date().toISOString()
+        }
+      };
+
+      // Construction de la réponse optimisée
+      const result = {
+        success: true,
+        timestamp: new Date().toISOString(),
+        data: {
+          // 🚗 Marques automobiles populaires
+          brands: {
+            success: brands.success,
+            data: brands.data || [],
+            count: brands.count || 0,
+            featured: (brands.data || [])
+              .filter((brand: any) => brand.marque_top === 1)
+              .slice(0, 8) // Top 8 marques featured
+          },
+          
+          // 📊 Statistiques globales  
+          stats: {
+            success: stats.success,
+            ...stats.stats,
+            // Statistiques enrichies pour homepage
+            formatted: {
+              brands: this.formatNumber(stats.stats?.brands || 0),
+              models: this.formatNumber(stats.stats?.models || 0), 
+              pieces: this.formatNumber(stats.stats?.pieces || 0),
+              satisfaction: '4.8/5' // Valeur statique pour l'exemple
+            }
+          },
+
+          // 🎯 Métadonnées pour le cache et l'affichage
+          cache_info: {
+            generated_at: new Date().toISOString(),
+            ttl_seconds: 1800, // 30 minutes
+            version: '2.0.0'
+          }
+        },
+        message: 'Données homepage générées avec succès'
+      };
+
+      this.logger.log(`✅ Homepage data: ${brands.count} marques, ${stats.stats?.pieces || 0} pièces`);
+      return result;
+
+    } catch (error) {
+      this.logger.error('❌ Erreur génération données homepage:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: null,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  /**
+   * 🔢 Formate les nombres pour l'affichage (ex: 50000 -> "50K+")
+   */
+  private formatNumber(num: number): string {
+    if (num >= 1000000) {
+      return `${Math.floor(num / 1000000)}M+`;
+    } else if (num >= 1000) {
+      return `${Math.floor(num / 1000)}K+`;
+    }
+    return num.toString();
+  }
+
+  /**
+   * 🎯 Obtient les marques optimisées pour le sélecteur de véhicule
+   */
+  async getBrandsForVehicleSelector(limit: number = 50) {
+    try {
+      this.logger.log(`🎯 Récupération marques pour sélecteur (limite: ${limit})`);
+
+      const { data, error } = await this.supabase
+        .from('auto_marque')
+        .select(`
+          marque_id,
+          marque_name,
+          marque_alias,
+          marque_logo,
+          marque_top,
+          marque_display
+        `)
+        .eq('marque_display', 1)
+        .order('marque_top', { ascending: false }) // Featured d'abord
+        .order('marque_sort', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        throw error;
+      }
+
+      // Structurer pour VehicleSelector
+      const structuredBrands = (data || []).map(brand => ({
+        id: brand.marque_id,
+        name: brand.marque_name,
+        slug: brand.marque_alias,
+        logo: brand.marque_logo,
+        isFeatured: brand.marque_top === 1,
+        isActive: brand.marque_display === 1
+      }));
+
+      this.logger.log(`✅ ${structuredBrands.length} marques structurées pour sélecteur`);
+      
+      return {
+        success: true,
+        data: structuredBrands,
+        count: structuredBrands.length,
+        featured_count: structuredBrands.filter(b => b.isFeatured).length
+      };
+
+    } catch (error) {
+      this.logger.error('❌ Erreur marques sélecteur:', error);
+      return {
+        success: false,
+        error: error.message,
+        data: [],
+        count: 0
+      };
+    }
+  }
+
+  /**
+   * 🔍 MÉTHODE TEMPORAIRE - Test d'une table Supabase
+   * Utilisée pour explorer les tables gammes disponibles
+   */
+  async testTable(tableName: string) {
+    this.logger.log(`🔍 Test de la table: ${tableName}`);
+
+    try {
+      // Récupérer quelques échantillons
+      const { data: samples, error: samplesError } = await this.supabase
+        .from(tableName)
+        .select('*')
+        .limit(2);
+
+      if (samplesError) {
+        throw new Error(`Erreur échantillons ${tableName}: ${samplesError.message}`);
+      }
+
+      // Compter le total
+      const { count, error: countError } = await this.supabase
+        .from(tableName)
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) {
+        this.logger.warn(`⚠️ Erreur comptage ${tableName}:`, countError);
+      }
+
+      const columns = samples && samples.length > 0 ? Object.keys(samples[0]) : [];
+
+      this.logger.log(`✅ Table ${tableName}: ${count || 0} enregistrements, ${columns.length} colonnes`);
+
+      return {
+        count: count || 0,
+        columns,
+        sample: samples?.[0] || null
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ Erreur test table ${tableName}:`, error);
+      throw error;
     }
   }
 }

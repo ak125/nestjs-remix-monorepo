@@ -38,7 +38,7 @@ import { ErrorsModule } from './modules/errors/errors.module'; // ❌ NOUVEAU - 
 import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU - API endpoints pour erreurs !
 import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
-// import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
+import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -101,8 +101,8 @@ import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOU
     ErrorsApiModule, // 🔌 ACTIVÉ - API endpoints pour erreurs et redirections !
     AnalyticsModule, // 📊 ACTIVÉ - Module Analytics enhanced avec multi-providers !
 
-    // TODO: Réactiver progressivement
-    // CatalogModule, // ✅ NOUVEAU - Catalogue automobile avec tables existantes !
+    // 🚗 CATALOGUE AUTOMOBILE
+    CatalogModule, // ✅ ACTIVÉ - Catalogue automobile avec tables existantes !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

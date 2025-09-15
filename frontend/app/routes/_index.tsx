@@ -4,14 +4,16 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
 import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
+import BentoCatalog from "../components/home/BentoCatalog";
 import { BrandCarousel } from "../components/home/BrandCarousel";
-import { ProductCatalog } from "../components/home/ProductCatalog";
+import DatabaseFamilyProductCatalog from "../components/home/DatabaseFamilyProductCatalog";
+import FamilyGammeBentoEnhanced from "../components/home/FamilyGammeBentoEnhanced";
+import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import VehicleSelector from "../components/home/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
 // 🚀 Services API améliorés (utilise Enhanced Vehicle Service)
-import { enhancedProductApi } from "../services/api/enhanced-product.api";
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 export const meta: MetaFunction = () => {
@@ -34,32 +36,61 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const selectedModel = url.searchParams.get('modele'); 
     const selectedYear = url.searchParams.get('annee');
 
-    // 📊 Chargement parallèle pour de meilleures performances
-    const [brandsResult, statsResult, productsResult] = await Promise.allSettled([
-      enhancedVehicleApi.getBrands(),
-      enhancedProductApi.getStats(),
-      enhancedProductApi.getCategories()
+    // 🏠 Chargement optimisé avec nouvelle API pieces-gammes
+    const [homepageDataResult, brandsResult] = await Promise.allSettled([
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/pieces-gammes/homepage`).then(res => res.json()),
+      enhancedVehicleApi.getBrands()
     ]);
 
-    // 📈 Extraction sécurisée des résultats
-    const brands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
-    const stats = statsResult.status === 'fulfilled' ? statsResult.value : {
-      totalProducts: 50000,
-      totalBrands: 120,
-      totalOrders: 25000,
-      customerSatisfaction: 4.8
+    // 📈 Extraction sécurisée des résultats avec nouvelle API pieces-gammes
+    const homepageData = homepageDataResult.status === 'fulfilled' ? homepageDataResult.value : {
+      data: {
+        featured_gammes: [],
+        all_gammes: [],
+        stats: { total_gammes: 0, featured_count: 0, displayed_count: 0 }
+      },
+      success: false
     };
-    const categories = productsResult.status === 'fulfilled' ? productsResult.value : [];
 
-    return json({
-      brands,
-      stats,
-      categories,
+    const vehicleBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
+
+    // 🎯 Structure optimisée pour la page d'accueil avec nouvelle API
+    const pageData = {
+      // Marques pour le sélecteur
+      brands: vehicleBrands,
+      
+      // Statistiques enrichies depuis pieces-gammes API
+      stats: {
+        totalProducts: homepageData.data?.stats?.total_gammes || 0,
+        totalBrands: 120, // À récupérer depuis vehicleBrands.length
+        totalModels: 5000,
+        totalOrders: 25000,
+        customerSatisfaction: 4.8,
+        formatted: {
+          brands: '120+',
+          pieces: `${Math.floor((homepageData.data?.stats?.total_gammes || 0) / 1000)}K+`,
+          models: '5K+'
+        }
+      },
+      
+      // Catégories de produits avec vraies données depuis pieces-gammes API
+      categories: homepageData.data?.all_gammes || [],
+      featuredCategories: homepageData.data?.featured_gammes || [],
+      quickAccess: [], // Pas encore implémenté dans la nouvelle API
+      
+      // États du sélecteur
       selectedBrand,
-      selectedModel,
+      selectedModel,  
       selectedYear,
+      
+      // Métadonnées
+      success: homepageData.success,
       timestamp: new Date().toISOString()
-    });
+    };
+
+    console.log(`🏠 Homepage data loaded: ${pageData.categories.length} gammes, ${pageData.brands.length} marques`);
+
+    return json(pageData);
   } catch (error) {
     console.error('Loader error:', error);
     // 🛡️ Fallback data gracieux
@@ -81,7 +112,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { brands, stats, categories } = useLoaderData<typeof loader>();
+  const { brands, stats } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -130,6 +161,23 @@ export default function IndexOptimized() {
             <p className="text-xl md:text-2xl text-blue-100 mb-8">
               Plus de {stats.totalProducts?.toLocaleString() || '50 000'} pièces en stock - Livraison express
             </p>
+            
+            {/* 🔍 SearchBar inspirée du code proposé */}
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Rechercher par référence, marque, modèle..."
+                  className="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32"
+                />
+                <button className="absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Rechercher
+                </button>
+              </div>
+              <p className="text-sm text-blue-200 mt-2">
+                Ou sélectionnez votre véhicule ci-dessous pour un catalogue personnalisé
+              </p>
+            </div>
           </div>
 
           {/* 🚗 Sélecteur de véhicule hybride avec cascade intelligente */}
@@ -168,17 +216,100 @@ export default function IndexOptimized() {
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
             Marques populaires
           </h2>
-                    <BrandCarousel brands={brands as any} />
+          <BrandCarousel brands={brands as any} />
         </div>
       </section>
 
-      {/* 🛒 Catalogue de produits par catégorie */}
+      {/* ⚡ Section Accès rapide inspirée du code proposé */}
+      <section className="py-12 bg-gradient-to-r from-gray-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">
+            Accès rapide
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-4xl mx-auto">
+            <Link to="/catalog/freinage" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">🛑</div>
+                  <p className="font-medium text-sm">Freinage</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/catalog/moteur" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">⚙️</div>
+                  <p className="font-medium text-sm">Moteur</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/catalog/filtration" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">🔧</div>
+                  <p className="font-medium text-sm">Filtration</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/catalog/eclairage" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">💡</div>
+                  <p className="font-medium text-sm">Éclairage</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/catalog/suspension" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">🚗</div>
+                  <p className="font-medium text-sm">Suspension</p>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link to="/catalog/carrosserie" className="group">
+              <Card className="text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="text-3xl mb-2">🔨</div>
+                  <p className="font-medium text-sm">Carrosserie</p>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 🛒 Catalogue de produits par familles */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-            Explorez nos catégories
-          </h2>
-          <ProductCatalog categories={categories} />
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold text-gray-800">
+              Catalogue par familles
+            </h2>
+            <p className="text-gray-600 mt-4">
+              Découvrez nos pièces automobiles organisées par familles techniques. Cliquez sur une famille pour explorer tous les produits disponibles.
+            </p>
+          </div>
+          
+          {/* � Design Bento - Catalogue moderne */}
+          {/* 🎨 Nouveau Design Bento pour Catalogue */}
+          <BentoCatalog />
+          
+          {/* 🏗️ Ancien design hiérarchique (masqué) */}
+          <div className="hidden">
+            <FamilyGammeBentoEnhanced />
+            <FamilyGammeHierarchy />
+          </div>
+          
+          {/* 📋 Ancien composant pour comparaison (masqué) */}
+          <div className="hidden">
+            <div className="mb-8 text-center">
+              <h3 className="text-xl font-semibold text-gray-700">
+                📋 Ancien affichage (familles converties en gammes)
+              </h3>
+            </div>
+            <DatabaseFamilyProductCatalog />
+          </div>
         </div>
       </section>
 

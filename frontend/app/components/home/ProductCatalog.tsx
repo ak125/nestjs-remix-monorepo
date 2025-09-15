@@ -1,32 +1,106 @@
 // 📁 frontend/app/components/home/ProductCatalog.tsx
-// 📂 Catalogue produits par catégories
+// 📂 Catalogue produits par catégories - Version améliorée avec lazy loading
 
 import { Link } from '@remix-run/react';
 import { Package, ChevronRight, Wrench, Car, Zap, Shield } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
+// 🔧 Interface adaptée aux vraies données pieces_gamme
 interface ProductCategory {
-  gamme_id: number;
-  gamme_name: string;
+  pg_id: string | number;
+  pg_name: string;
+  pg_alias?: string;
+  pg_pic?: string;
+  pg_img?: string;
+  is_featured?: boolean;
+  is_displayed?: boolean;
+  products_count?: number;
+  // Rétrocompatibilité avec ancienne interface
+  gamme_id?: number;
+  gamme_name?: string;
   gamme_alias?: string;
   gamme_description?: string;
   gamme_image?: string;
-  products_count?: number;
-  is_featured?: boolean;
+}
+
+// 🔧 Helper functions pour la compatibilité
+function getCategoryName(category: ProductCategory): string {
+  return category.pg_name || category.gamme_name || '';
+}
+
+function getCategoryId(category: ProductCategory): string | number {
+  return category.pg_id || category.gamme_id || '';
+}
+
+function getCategoryAlias(category: ProductCategory): string {
+  return category.pg_alias || category.gamme_alias || getCategoryId(category).toString();
+}
+
+function getCategoryImage(category: ProductCategory): string | undefined {
+  return category.pg_pic || category.pg_img || category.gamme_image;
+}
+
+function getCategoryDescription(category: ProductCategory): string | undefined {
+  return category.gamme_description; // Pas encore dans l'API pieces_gamme
 }
 
 interface ProductCatalogProps {
   categories: ProductCategory[];
+  featuredCategories?: ProductCategory[]; // 🆕 Catégories featured séparées
   showDescription?: boolean;
   maxCategories?: number;
+  showFeaturedSection?: boolean; // 🆕 Option pour section featured séparée
 }
 
 export function ProductCatalog({ 
   categories, 
+  featuredCategories: propFeaturedCategories = [], // 🆕 Catégories featured passées en props
   showDescription = true, 
-  maxCategories = 12 
+  maxCategories = 12,
+  showFeaturedSection = true // 🆕 Inspiré du CatalogGrid
 }: ProductCatalogProps) {
   const [showAll, setShowAll] = useState(false);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set()); // 🆕 Tracking images
+
+  // 🎯 Lazy loading des images inspiré du CatalogGrid proposé
+  useEffect(() => {
+    const imageObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const img = entry.target as HTMLImageElement;
+            const src = img.dataset.src;
+            if (src && !loadedImages.has(src)) {
+              img.src = src;
+              img.classList.add('loaded');
+              setLoadedImages(prev => new Set(prev).add(src));
+              imageObserver.unobserve(img);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '50px 0px', // Commence à charger 50px avant que l'image soit visible
+        threshold: 0.1
+      }
+    );
+
+    // Observer toutes les images lazy
+    const lazyImages = document.querySelectorAll('.lazy-catalog-image[data-src]');
+    lazyImages.forEach(img => imageObserver.observe(img));
+
+    return () => {
+      lazyImages.forEach(img => imageObserver.unobserve(img));
+    };
+  }, [categories, loadedImages]);
+
+  // 🆕 Séparation featured/regular inspirée du CatalogGrid avec données externes  
+  const featuredCategories = showFeaturedSection 
+    ? (propFeaturedCategories.length > 0 ? propFeaturedCategories : categories.filter(cat => cat.is_featured))
+    : [];
+  const regularCategories = showFeaturedSection
+    ? categories.filter(cat => !cat.is_featured)
+    : categories;
   
   // Icônes par catégorie (mapping basé sur les noms communs)
   const getCategoryIcon = (categoryName: string) => {
@@ -59,9 +133,16 @@ export function ProductCatalog({
     return colors[index % colors.length];
   };
 
-  const displayedCategories = showAll 
-    ? categories 
-    : categories.slice(0, maxCategories);
+  // 🎨 Placeholder SVG moderne pour lazy loading
+  const getImagePlaceholder = () => {
+    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120' viewBox='0 0 200 120'%3E%3Crect width='200' height='120' fill='%23f3f4f6'/%3E%3Cpath d='M60 40h80v8H60zM60 60h60v6H60zM60 80h40v4H60z' fill='%23d1d5db'/%3E%3C/svg%3E";
+  };
+
+  // 🎯 Données à afficher selon la logique featured/regular
+  const displayCategories = showFeaturedSection ? regularCategories : categories;
+  const categoriesToShow = showAll 
+    ? displayCategories 
+    : displayCategories.slice(0, maxCategories);
 
   if (categories.length === 0) {
     return (
@@ -85,59 +166,120 @@ export function ProductCatalog({
         </p>
       </div>
 
-      {/* 📂 Grille des catégories */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {displayedCategories.map((category, index) => {
-          const IconComponent = getCategoryIcon(category.gamme_name);
-          const colorClass = getCategoryColor(index);
-          
-          return (
-            <Link
-              key={category.gamme_id}
-              to={`/catalogue?category=${category.gamme_id}`}
-              className="group"
-            >
-              <div className="bg-white rounded-2xl p-6 text-center hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 hover:border-transparent">
-                {/* 🎨 Icône avec gradient */}
-                <div className={`w-20 h-20 mx-auto mb-4 bg-gradient-to-br ${colorClass} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                  <IconComponent className="w-10 h-10 text-white" />
-                </div>
-                
-                {/* 📝 Nom de la catégorie */}
-                <h4 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition-colors">
-                  {category.gamme_name}
-                </h4>
-                
-                {/* 📊 Nombre de produits */}
-                {category.products_count && (
-                  <div className="bg-gray-100 text-gray-700 text-sm py-1 px-3 rounded-full inline-block mb-3 group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors">
-                    {category.products_count.toLocaleString()} produits
+      {/* ⭐ Section Catégories Featured (inspirée du CatalogGrid) */}
+      {showFeaturedSection && featuredCategories.length > 0 && (
+        <div className="mb-12">
+          <h4 className="text-xl font-semibold text-gray-800 mb-6 text-center">
+            🌟 Catégories populaires
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            {featuredCategories.slice(0, 8).map((category, index) => {
+              const IconComponent = getCategoryIcon(getCategoryName(category));
+              const colorClass = getCategoryColor(index);
+              
+              return (
+                <Link
+                  key={`featured-${getCategoryId(category)}`}
+                  to={`/pieces/categories/${getCategoryAlias(category)}`}
+                  className="group"
+                >
+                  <div className="bg-white rounded-xl p-4 text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-orange-200 hover:border-orange-300">
+                    {/* Image avec lazy loading si disponible */}
+                    {getCategoryImage(category) ? (
+                      <img
+                        data-src={getCategoryImage(category)}
+                        src={getImagePlaceholder()}
+                        alt={getCategoryName(category)}
+                        className="lazy-catalog-image w-16 h-16 mx-auto mb-3 rounded-lg object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={`w-16 h-16 mx-auto mb-3 bg-gradient-to-br ${colorClass} rounded-lg flex items-center justify-center shadow-md`}>
+                        <IconComponent className="w-8 h-8 text-white" />
+                      </div>
+                    )}
+                    
+                    <h5 className="font-bold text-gray-900 text-sm mb-1 group-hover:text-orange-600 transition-colors">
+                      {getCategoryName(category)}
+                    </h5>
+                    
+                    {((category as any).products_count || (category as any).gamme_count || (category as any).pg_count) && (
+                      <div className="bg-orange-100 text-orange-700 text-xs py-1 px-2 rounded-full inline-block">
+                        {((category as any).products_count || (category as any).gamme_count || (category as any).pg_count || 0).toLocaleString()}
+                      </div>
+                    )}
                   </div>
-                )}
-                
-                {/* ⭐ Badge catégorie premium */}
-                {category.is_featured && (
-                  <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xs py-1 px-2 rounded-full inline-block mb-3">
-                    ⭐ Populaire
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 📂 Grille des catégories principales */}
+      <div>
+        <h4 className="text-xl font-semibold text-gray-800 mb-6 text-center">
+          📂 {showFeaturedSection ? 'Toutes les catégories' : 'Catalogue complet'}
+        </h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {categoriesToShow.map((category, index) => {
+            const IconComponent = getCategoryIcon(getCategoryName(category));
+            const colorClass = getCategoryColor(index);
+            
+            return (
+              <Link
+                key={getCategoryId(category)}
+                to={`/pieces/categories/${getCategoryAlias(category)}`}
+                className="group"
+              >
+                <div className="bg-white rounded-2xl p-6 text-center hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 hover:border-transparent">
+                  {/* 🎨 Image avec lazy loading ou icône avec gradient */}
+                  {getCategoryImage(category) ? (
+                    <img
+                      data-src={getCategoryImage(category)}
+                      src={getImagePlaceholder()}
+                      alt={getCategoryName(category)}
+                      className="lazy-catalog-image w-20 h-20 mx-auto mb-4 rounded-2xl object-cover shadow-lg"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={`w-20 h-20 mx-auto mb-4 bg-gradient-to-br ${colorClass} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <IconComponent className="w-10 h-10 text-white" />
+                    </div>
+                  )}
+                  
+                  {/* 📝 Nom de la catégorie */}
+                  <h4 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                    {getCategoryName(category)}
+                  </h4>
+                  
+                  {/* 📊 Nombre de produits */}
+                  <div className="text-sm text-gray-600">{(category as any).products_count || (category as any).gamme_count || (category as any).pg_count || 0}</div>
+                  
+                  {/* ⭐ Badge catégorie premium */}
+                  {category.is_featured && !showFeaturedSection && (
+                    <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-xs py-1 px-2 rounded-full inline-block">
+                      ⭐ Premium
+                    </div>
+                  )}
+                  
+                  {/* 📄 Description */}
+                  {showDescription && getCategoryDescription(category) && (
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                      {getCategoryDescription(category)}
+                    </p>
+                  )}
+                  
+                  {/* 🔗 Lien d'action */}
+                  <div className="flex items-center justify-center text-blue-600 font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span>Explorer</span>
+                    <ChevronRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                   </div>
-                )}
-                
-                {/* 📄 Description */}
-                {showDescription && category.gamme_description && (
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                    {category.gamme_description}
-                  </p>
-                )}
-                
-                {/* 🔗 Lien d'action */}
-                <div className="flex items-center justify-center text-blue-600 font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span>Explorer</span>
-                  <ChevronRight className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {/* 📈 Statistiques rapides */}
@@ -163,7 +305,7 @@ export function ProductCatalog({
           </div>
           <div>
             <div className="text-2xl font-bold text-gray-900 mb-1">
-              {Math.round(categories.reduce((total, cat) => total + (cat.products_count || 0), 0) / categories.length).toLocaleString()}
+              {Math.round(categories.reduce((total, cat) => total + (cat.products_count || 0), 0) / categories.length || 0).toLocaleString()}
             </div>
             <div className="text-gray-600 text-sm">Moy. par catégorie</div>
           </div>
@@ -171,7 +313,7 @@ export function ProductCatalog({
       </div>
 
       {/* 🔄 Bouton voir plus/moins */}
-      {categories.length > maxCategories && (
+      {displayCategories.length > maxCategories && (
         <div className="text-center">
           <button
             onClick={() => setShowAll(!showAll)}
@@ -184,7 +326,7 @@ export function ProductCatalog({
               </>
             ) : (
               <>
-                Voir toutes les catégories ({categories.length - maxCategories} de plus)
+                Voir toutes les catégories ({displayCategories.length - maxCategories} de plus)
                 <ChevronRight className="w-5 h-5 ml-2 -rotate-90" />
               </>
             )}
