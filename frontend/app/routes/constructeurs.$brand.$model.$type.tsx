@@ -5,7 +5,7 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Fuel, Settings, Wrench, ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
-import { VehicleSelector } from "../components/vehicle/VehicleSelector";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 
 // 📊 Types de données
 interface VehicleDetail {
@@ -55,7 +55,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const { brandId, modelId, typeId } = extractIdsFromParams(brand, model, type);
     console.log('🔍 IDs extraits:', { brandId, modelId, typeId });
     
-    // 🔍 Récupération des données depuis l'API backend directement
+    // �️ Validation des IDs extraits
+    if (isNaN(brandId) || isNaN(modelId) || isNaN(typeId) || brandId <= 0 || modelId <= 0 || typeId <= 0) {
+      console.error('❌ IDs invalides extraits des paramètres:', { brand, model, type, brandId, modelId, typeId });
+      throw new Response(`Paramètres d'URL invalides: vérifiez le format des paramètres`, { status: 400 });
+    }
+    
+    // �🔍 Récupération des données depuis l'API backend directement
     const baseUrl = process.env.API_URL || 'http://localhost:3000';
     console.log('🌐 Base URL:', baseUrl);
     
@@ -581,28 +587,28 @@ export default function VehicleDetailPage() {
               <VehicleSelector 
                 currentVehicle={{
                   brand: {
-                    id: vehicle.brand.marque_id,
-                    name: vehicle.brand.marque_name,
-                    slug: vehicle.brand.marque_name.toLowerCase().replace(/\s+/g, '-')
+                    marque_id: vehicle.brand.marque_id,
+                    marque_name: vehicle.brand.marque_name,
+                    marque_logo: vehicle.brand.marque_logo
                   },
                   model: {
-                    id: vehicle.model.modele_id,
-                    name: vehicle.model.modele_name,
-                    slug: vehicle.model.modele_name.toLowerCase().replace(/\s+/g, '-')
+                    modele_id: vehicle.model.modele_id,
+                    modele_name: vehicle.model.modele_name,
+                    modele_marque_id: vehicle.brand.marque_id
                   },
                   type: {
-                    id: vehicle.type.type_id,
-                    name: vehicle.type.type_name,
-                    slug: vehicle.type.type_name.toLowerCase().replace(/\s+/g, '-')
+                    type_id: vehicle.type.type_id,
+                    type_name: vehicle.type.type_name,
+                    modele_id: vehicle.model.modele_id
                   }
                 }}
                 onSelectionChange={(selection) => {
-                  if (selection.brandId && selection.modelId && selection.typeData) {
+                  if (selection.brand && selection.model && selection.type) {
                     // Analytics pour tracking changement de véhicule
                     if (typeof window !== 'undefined' && window.gtag) {
                       window.gtag('event', 'vehicle_change', {
                         from_vehicle: `${vehicle.brand.marque_name} ${vehicle.model.modele_name} ${vehicle.type.type_name}`,
-                        to_vehicle: `Brand ${selection.brandId} Model ${selection.modelId}`,
+                        to_vehicle: `${selection.brand.marque_name} ${selection.model.modele_name} ${selection.type.type_name}`,
                         event_category: 'vehicle_selector',
                         event_label: 'detail_page',
                         page_location: window.location.pathname
@@ -618,7 +624,7 @@ export default function VehicleDetailPage() {
                       }, 1000);
                     }
                     
-                    // Navigation vers le nouveau véhicule (format simplifié pour l'instant)
+                    // Navigation vers le nouveau véhicule
                     console.log('🚗 Navigation vers nouveau véhicule:', selection);
                     // TODO: Implémenter la navigation avec les nouvelles données
                   }

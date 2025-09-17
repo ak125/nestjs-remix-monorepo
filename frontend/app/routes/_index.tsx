@@ -9,12 +9,13 @@ import { BrandCarousel } from "../components/home/BrandCarousel";
 import DatabaseFamilyProductCatalog from "../components/home/DatabaseFamilyProductCatalog";
 import FamilyGammeBentoEnhanced from "../components/home/FamilyGammeBentoEnhanced";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
-import VehicleSelector from "../components/home/VehicleSelector";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
 // 🚀 Services API améliorés (utilise Enhanced Vehicle Service)
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
+import { hierarchyApi } from "../services/api/hierarchy.api";
 
 export const meta: MetaFunction = () => {
   return [
@@ -36,59 +37,67 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const selectedModel = url.searchParams.get('modele'); 
     const selectedYear = url.searchParams.get('annee');
 
-    // 🏠 Chargement optimisé avec nouvelle API pieces-gammes
-    const [homepageDataResult, brandsResult] = await Promise.allSettled([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/pieces-gammes/homepage`).then(res => res.json()),
+    // 🏠 Chargement optimisé avec API hiérarchique pour le catalogue
+    const [hierarchyDataResult, brandsResult] = await Promise.allSettled([
+      hierarchyApi.getHomepageData(),
       enhancedVehicleApi.getBrands()
     ]);
 
-    // 📈 Extraction sécurisée des résultats avec nouvelle API pieces-gammes
-    const homepageData = homepageDataResult.status === 'fulfilled' ? homepageDataResult.value : {
-      data: {
-        featured_gammes: [],
-        all_gammes: [],
-        stats: { total_gammes: 0, featured_count: 0, displayed_count: 0 }
+    // 📈 Extraction sécurisée des résultats avec API hiérarchique
+    const hierarchyData = hierarchyDataResult.status === 'fulfilled' ? hierarchyDataResult.value : {
+      families: [],
+      stats: { 
+        total_families: 0, 
+        total_gammes: 0, 
+        total_manufacturers: 0, 
+        families_with_gammes: 0 
       },
-      success: false
+      display_count: 0,
+      total_available: 0
     };
 
     const vehicleBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
 
-    // 🎯 Structure optimisée pour la page d'accueil avec nouvelle API
+    // 🎯 Structure optimisée pour la page d'accueil avec API hiérarchique
     const pageData = {
       // Marques pour le sélecteur
       brands: vehicleBrands,
       
-      // Statistiques enrichies depuis pieces-gammes API
+      // Statistiques enrichies depuis l'API hiérarchique
       stats: {
-        totalProducts: homepageData.data?.stats?.total_gammes || 0,
+        totalProducts: hierarchyData.stats.total_gammes || 0,
         totalBrands: 120, // À récupérer depuis vehicleBrands.length
         totalModels: 5000,
         totalOrders: 25000,
         customerSatisfaction: 4.8,
         formatted: {
           brands: '120+',
-          pieces: `${Math.floor((homepageData.data?.stats?.total_gammes || 0) / 1000)}K+`,
+          pieces: `${Math.floor((hierarchyData.stats.total_gammes || 0) / 100)}K+`,
           models: '5K+'
         }
       },
       
-      // Catégories de produits avec vraies données depuis pieces-gammes API
-      categories: homepageData.data?.all_gammes || [],
-      featuredCategories: homepageData.data?.featured_gammes || [],
-      quickAccess: [], // Pas encore implémenté dans la nouvelle API
+      // Catégories hiérarchiques avec familles et sous-catégories (gammes)
+      categories: hierarchyData.families || [],
+      featuredCategories: hierarchyData.families?.slice(0, 6) || [], // Top 6 familles pour la section featured
+      quickAccess: [], // Accès rapide statique pour le moment
       
       // États du sélecteur
       selectedBrand,
       selectedModel,  
       selectedYear,
       
-      // Métadonnées
-      success: homepageData.success,
+      // Métadonnées hiérarchiques
+      hierarchy: {
+        display_count: hierarchyData.display_count,
+        total_available: hierarchyData.total_available,
+        stats: hierarchyData.stats
+      },
+      success: true,
       timestamp: new Date().toISOString()
     };
 
-    console.log(`🏠 Homepage data loaded: ${pageData.categories.length} gammes, ${pageData.brands.length} marques`);
+    console.log(`🏠 Homepage data loaded: ${hierarchyData.families.length} familles, ${pageData.brands.length} marques`);
 
     return json(pageData);
   } catch (error) {
@@ -112,7 +121,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { brands, stats } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+  const { brands, stats, categories: _familyCategories } = loaderData;
   const [_searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -183,8 +193,9 @@ export default function IndexOptimized() {
           {/* 🚗 Sélecteur de véhicule hybride avec cascade intelligente */}
           <div className="max-w-4xl mx-auto">
             <VehicleSelector 
-              onVehicleSelected={handleVehicleSelected} 
+              onSelectionChange={handleVehicleSelected} 
               showMineSearch={true}
+              compact={true}
             />
           </div>
 
@@ -279,35 +290,37 @@ export default function IndexOptimized() {
         </div>
       </section>
 
-      {/* 🛒 Catalogue de produits par familles */}
+      {/* 🏗️ Catalogue hiérarchique par familles */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold text-gray-800">
-              Catalogue par familles
+              Catalogue hiérarchique par familles
             </h2>
             <p className="text-gray-600 mt-4">
-              Découvrez nos pièces automobiles organisées par familles techniques. Cliquez sur une famille pour explorer tous les produits disponibles.
+              Découvrez nos pièces automobiles organisées par familles techniques avec leurs sous-catégories (gammes).
+              {(loaderData as any).hierarchy && (
+                <span className="block mt-2 text-sm">
+                  {(loaderData as any).hierarchy.stats.total_families} familles • {(loaderData as any).hierarchy.stats.total_gammes} gammes • {(loaderData as any).hierarchy.stats.total_manufacturers} fabricants
+                </span>
+              )}
             </p>
           </div>
           
-          {/* � Design Bento - Catalogue moderne */}
-          {/* 🎨 Nouveau Design Bento pour Catalogue */}
-          <BentoCatalog />
+          {/* 🏗️ Composant hiérarchique principal - charge ses propres données */}
+          <FamilyGammeHierarchy />
           
-          {/* 🏗️ Ancien design hiérarchique (masqué) */}
-          <div className="hidden">
-            <FamilyGammeBentoEnhanced />
-            <FamilyGammeHierarchy />
+          {/* 🎨 Design Bento alternatif */}
+          <div className="mt-12">
+            <h3 className="text-xl font-semibold text-gray-700 text-center mb-6">
+              Vue alternative en grille
+            </h3>
+            <BentoCatalog />
           </div>
           
-          {/* 📋 Ancien composant pour comparaison (masqué) */}
+          {/* 📋 Composants masqués pour référence */}
           <div className="hidden">
-            <div className="mb-8 text-center">
-              <h3 className="text-xl font-semibold text-gray-700">
-                📋 Ancien affichage (familles converties en gammes)
-              </h3>
-            </div>
+            <FamilyGammeBentoEnhanced />
             <DatabaseFamilyProductCatalog />
           </div>
         </div>

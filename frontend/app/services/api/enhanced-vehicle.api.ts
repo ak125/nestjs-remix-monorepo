@@ -1,6 +1,12 @@
 // 📁 frontend/app/services/api/enhanced-vehicle.api.ts
+import { 
+  validateVehicleBrand, 
+  validateVehicleModel, 
+  validateVehicleType,
+  validateYearsList
+} from "../../types/vehicle-validation";
 import type { VehicleBrand, VehicleModel, VehicleType } from "../../types/vehicle.types";
-// 🚗 Enhanced Vehicle API Service - Utilise le service backend testé 100%
+// 🚗 Enhanced Vehicle API Service - Utilise le service backend testé 100% avec validation Zod
 
 export interface VehicleBrandAPI {
   id: number;
@@ -15,7 +21,7 @@ export interface VehicleBrandAPI {
   products_count?: number;
 }
 
-export interface VehicleBrandComponent {
+export interface VehicleBrandComponentData {
   marque_id: number;
   marque_name: string;
   marque_alias?: string;
@@ -25,7 +31,7 @@ export interface VehicleBrandComponent {
   is_featured?: boolean;
 }
 
-export interface VehicleBrand {
+export interface VehicleBrandLocal {
   id: number;
   code: string;
   name: string;
@@ -40,7 +46,7 @@ export interface VehicleBrand {
 }
 
 
-export interface VehicleType {
+export interface VehicleTypeLocal {
   type_id: number;
   type_name: string;
   type_fuel?: string;
@@ -82,7 +88,7 @@ class EnhancedVehicleApiService {
     search?: string;
     onlyFavorites?: boolean;
     onlyActive?: boolean;
-  }): Promise<VehicleBrandComponent[]> {
+  }): Promise<VehicleBrand[]> {
     try {
       const params = new URLSearchParams();
       
@@ -106,19 +112,29 @@ class EnhancedVehicleApiService {
         return [];
       }
 
-      const data: VehicleResponse<VehicleBrandAPI> = await response.json();
+      const data: any = await response.json();
       
       // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedBrands: VehicleBrandComponent[] = data.data ? data.data.map((brand: any) => ({
-        marque_id: brand.marque_id,
-        marque_name: brand.marque_name,
-        marque_alias: brand.marque_alias,
-        marque_logo: brand.marque_logo,
-        marque_country: brand.marque_country,
-        products_count: brand.products_count,
-        is_featured: brand.marque_top === 1
-      })) : [];
+      // ✅ Le backend retourne { data: [...], total, page, limit }
+      const mappedBrands: VehicleBrand[] = data.data ? data.data.map((brand: any) => {
+        const mappedBrand = {
+          marque_id: brand.marque_id,
+          marque_name: brand.marque_name,
+          marque_alias: brand.marque_alias,
+          marque_logo: brand.marque_logo,
+          marque_country: brand.marque_country,
+          products_count: brand.products_count,
+          is_featured: brand.marque_top === 1
+        };
+        
+        // 🛡️ Validation Zod
+        try {
+          return validateVehicleBrand(mappedBrand);
+        } catch (error) {
+          console.warn('❌ Marque invalide ignorée:', mappedBrand, error);
+          return null;
+        }
+      }).filter(Boolean) as VehicleBrand[] : [];
       
       return mappedBrands;
     } catch (error) {
@@ -166,15 +182,25 @@ class EnhancedVehicleApiService {
       
       // 🔄 Mapper les données de l'API vers le format attendu par le composant
       // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedModels = data.data ? data.data.map((model: any) => ({
-        modele_id: model.modele_id,
-        modele_name: model.modele_name,
-        modele_alias: model.modele_alias,
-        modele_ful_name: model.modele_ful_name,
-        brand_id: model.modele_marque_id,
-        year_from: model.modele_year_from,
-        year_to: model.modele_year_to
-      })) : [];
+      const mappedModels: VehicleModel[] = data.data ? data.data.map((model: any) => {
+        const mappedModel = {
+          modele_id: model.modele_id,
+          modele_name: model.modele_name,
+          modele_alias: model.modele_alias,
+          modele_ful_name: model.modele_ful_name,
+          modele_marque_id: model.modele_marque_id || brandId, // Assurer la présence de modele_marque_id
+          modele_year_from: model.modele_year_from,
+          modele_year_to: model.modele_year_to
+        };
+        
+        // 🛡️ Validation Zod
+        try {
+          return validateVehicleModel(mappedModel);
+        } catch (error) {
+          console.warn('❌ Modèle invalide ignoré:', mappedModel, error);
+          return null;
+        }
+      }).filter(Boolean) as VehicleModel[] : [];
       
       return mappedModels;
     } catch (error) {
@@ -220,17 +246,34 @@ class EnhancedVehicleApiService {
       
       // 🔄 Mapper les données de l'API vers le format attendu par le composant
       // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedTypes = data.data ? data.data.map((type: any) => ({
-        type_id: parseInt(type.type_id),
-        type_name: type.type_name,
-        type_fuel: type.type_fuel,
-        type_power: type.type_power_ps ? `${type.type_power_ps} PS` : undefined,
-        type_engine: type.type_engine,
-        model_id: parseInt(type.type_modele_id),
-        year_from: type.type_year_from ? parseInt(type.type_year_from) : undefined,
-        year_to: type.type_year_to ? parseInt(type.type_year_to) : undefined,
-        type_slug: type.type_alias
-      })) : [];
+      const mappedTypes: VehicleType[] = data.data ? data.data.map((type: any) => {
+        const mappedType = {
+          type_id: parseInt(type.type_id),
+          type_name: type.type_name,
+          type_fuel: type.type_fuel,
+          type_power: type.type_power_ps ? `${type.type_power_ps} PS` : undefined,
+          type_power_ps: type.type_power_ps ? parseInt(type.type_power_ps) : undefined,
+          type_power_kw: type.type_power_kw ? parseInt(type.type_power_kw) : undefined,
+          type_liter: type.type_cylindree ? type.type_cylindree.toString() : undefined,
+          type_engine: type.type_engine,
+          type_engine_code: type.type_engine_code,
+          type_alias: type.type_alias,
+          type_slug: type.type_alias,
+          type_year_from: type.type_year_from,
+          type_year_to: type.type_year_to,
+          modele_id: parseInt(type.type_modele_id || modelId), // Assurer la présence de modele_id
+          year_from: type.type_year_from ? parseInt(type.type_year_from) : undefined,
+          year_to: type.type_year_to ? parseInt(type.type_year_to) : undefined
+        };
+        
+        // 🛡️ Validation Zod
+        try {
+          return validateVehicleType(mappedType);
+        } catch (error) {
+          console.warn('❌ Type invalide ignoré:', mappedType, error);
+          return null;
+        }
+      }).filter(Boolean) as VehicleType[] : [];
       
       return mappedTypes;
     } catch (error) {
@@ -270,7 +313,18 @@ class EnhancedVehicleApiService {
       if (data.data && Array.isArray(data.data)) {
         const years = data.data.map((item: any) => item.year);
         console.log(`📅 Extracted years:`, years); // Debug log
-        return years;
+        
+        // 🛡️ Validation Zod des années
+        try {
+          const validatedYears = validateYearsList(years);
+          return validatedYears;
+        } catch (error) {
+          console.warn('❌ Années invalides reçues:', years, error);
+          // Retourner les années valides seulement
+          return years.filter((year: any) => 
+            typeof year === 'number' && year >= 1900 && year <= 2050
+          );
+        }
       }
       
       // Fallback si format différent

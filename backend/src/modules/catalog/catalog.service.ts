@@ -695,7 +695,7 @@ export class CatalogService extends SupabaseBaseService implements OnModuleInit 
       // Exécution parallèle pour performance optimale
       const [brandsResult, statsResult] = await Promise.allSettled([
         this.getAutoBrands(20), // Top 20 marques pour homepage
-        this.getGlobalStats(),
+        this.getCatalogStats(),
       ]);
 
       // Extraction sécurisée des résultats

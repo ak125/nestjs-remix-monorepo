@@ -74,29 +74,26 @@ async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
   }
 }
 
-/**
- * Effectue une redirection 301 si la migration est possible
- */
-async function performRedirection(legacyUrl: string): Promise<Response | null> {
-  const migration = await testUrlMigration(legacyUrl);
-  
-  if (migration.success && migration.new_url) {
-    // Redirection 301 permanente pour le SEO
-    return redirect(migration.new_url, { status: 301 });
-  }
-  
-  return null;
-}
-
 // ====================================
 // 📡 LOADER FUNCTION
 // ====================================
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const legacyUrl = url.pathname;
   
   console.log(`🔄 Interception URL legacy: ${legacyUrl}`);
+  
+  // 🚀 Détecter les URLs de véhicules mal routées (format: /pieces/brand-id/model-id/type-name-id)
+  const vehicleUrlPattern = /^\/pieces\/([^/]+)-(\d+)\/([^/]+)-(\d+)\/([^/]+)-(\d+)$/;
+  const vehicleMatch = legacyUrl.match(vehicleUrlPattern);
+  
+  if (vehicleMatch) {
+    const [, brandName, brandId, modelName, modelId, typeName, typeId] = vehicleMatch;
+    const correctUrl = `/constructeurs/${brandName}-${brandId}/${modelName}-${modelId}/${typeName}-${typeId}.html`;
+    console.log(`🔀 Redirection URL véhicule mal routée: ${legacyUrl} → ${correctUrl}`);
+    return redirect(correctUrl, { status: 301 });
+  }
   
   // Vérifier si c'est bien une URL de pièce ancienne
   if (!legacyUrl.includes('/pieces/') || !legacyUrl.endsWith('.html')) {
