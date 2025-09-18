@@ -6,9 +6,9 @@ import { z } from 'zod';
 
 // 🏷️ Schema Zod pour la validation
 export const AddItemSchema = z.object({
-  product_id: z.string().uuid('ID produit invalide'),
+  product_id: z.union([z.string(), z.number()]).transform((val) => String(val)),
   quantity: z.number().int().positive('La quantité doit être positive'),
-  product_variant_id: z.string().uuid().optional(),
+  product_variant_id: z.string().optional(),
   custom_price: z.number().positive().optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });

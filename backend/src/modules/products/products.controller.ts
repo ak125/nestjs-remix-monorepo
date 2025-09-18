@@ -69,6 +69,117 @@ export class ProductsController {
     return fieldMapping[apiField] || 'piece_name'; // Défaut : piece_name
   }
 
+  // =======================================================
+  // ⚡ ENDPOINTS OPTIMISÉS AVEC CACHE REDIS
+  // =======================================================
+
+  /**
+   * GET /api/products/gammes-cached
+   * Récupérer les gammes avec cache Redis optimisé (filtrage par pg_display)
+   */
+  @Get('gammes-cached')
+  @CacheTTL(1800) // 30 minutes
+  async getGammesCached(@Query('active') activeParam?: string) {
+    const activeOnly = activeParam !== 'false'; // Par défaut: true (seulement actives)
+    return this.productsService.getGammesWithCache(activeOnly);
+  }
+
+  /**
+   * GET /api/products/paginated
+   * Récupérer les produits avec pagination intelligente et cache
+   */
+  @Get('paginated')
+  @CacheTTL(600) // 10 minutes
+  async getPaginatedProducts(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('gammeId') gammeId?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 24;
+    
+    return this.productsService.getPaginatedProducts({
+      page: pageNum,
+      limit: limitNum,
+      search,
+      gammeId,
+    });
+  }
+
+  // =======================================================
+  // 🏠 HOMEPAGE & CATALOG ENDPOINTS (Fusion catalog → products)
+  // =======================================================
+
+  /**
+   * GET /api/products/home-catalog
+   * Données du catalogue pour la homepage (fusion depuis CatalogService)
+   */
+  @Get('home-catalog')
+  @CacheTTL(600) // 10 minutes
+  async getHomeCatalog() {
+    try {
+      return await this.productsService.getHomeCatalog();
+    } catch (error) {
+      this.logger.error('Erreur home-catalog:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération du catalogue homepage',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/products/search-catalog
+   * Recherche avancée dans le catalogue
+   */
+  @Get('search-catalog')
+  async searchCatalog(
+    @Query('query') query: string,
+    @Query('gammeId') gammeId?: number,
+    @Query('brandId') brandId?: number,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    try {
+      return await this.productsService.searchCatalog(query, {
+        gammeId,
+        brandId,
+        limit,
+        offset,
+      });
+    } catch (error) {
+      this.logger.error('Erreur search-catalog:', error);
+      throw new HttpException(
+        'Erreur lors de la recherche dans le catalogue',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/products/vehicle-brands
+   * Marques pour le sélecteur de véhicules
+   */
+  @Get('vehicle-brands')
+  @CacheTTL(3600) // 1 heure
+  async getVehicleBrands(@Query('limit') limit?: string) {
+    try {
+      const limitNum = limit ? parseInt(limit, 10) : 50;
+      return await this.productsService.getBrandsForVehicleSelector(limitNum);
+    } catch (error) {
+      this.logger.error('Erreur vehicle-brands:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des marques',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // =======================================================
+  // 🔧 GAMMES & PRODUCTS (Existant)
+  // =======================================================
+
   /**
    * Debug - Vérifier le contenu des tables
    */
@@ -83,6 +194,39 @@ export class ProductsController {
   @Get('gammes')
   async getGammes() {
     return this.productsService.getGammes();
+  }
+
+  /**
+   * 🎯 Récupérer une gamme spécifique par ID (pour URLs gammes)
+   */
+  @Get('gammes/:gammeId')
+  @CacheTTL(600) // 10 minutes de cache
+  async getGammeById(@Param('gammeId') gammeId: string) {
+    try {
+      this.logger.log(`🔍 Demande gamme ID: ${gammeId}`);
+      const gamme = await this.productsService.getGammeById(gammeId);
+      
+      if (!gamme) {
+        throw new HttpException(
+          `Gamme ${gammeId} non trouvée`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        success: true,
+        data: gamme,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération gamme ${gammeId}:`, error);
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Erreur interne du serveur',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   /**

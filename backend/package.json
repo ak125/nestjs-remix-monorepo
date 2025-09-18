@@ -73,7 +73,7 @@
     "swagger-ui-express": "^4.6.3",
     "undici": "^7.13.0",
     "unix-crypt-td-js": "^1.1.4",
-    "zod": "^4.0.5"
+    "zod": "^4.1.9"
   },
   "devDependencies": {
     "@fafa/eslint-config": "*",

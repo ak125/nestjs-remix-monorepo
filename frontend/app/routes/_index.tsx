@@ -4,7 +4,6 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
 import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
-import BentoCatalog from "../components/home/BentoCatalog";
 import { BrandCarousel } from "../components/home/BrandCarousel";
 import DatabaseFamilyProductCatalog from "../components/home/DatabaseFamilyProductCatalog";
 import FamilyGammeBentoEnhanced from "../components/home/FamilyGammeBentoEnhanced";
@@ -315,12 +314,11 @@ export default function IndexOptimized() {
             <h3 className="text-xl font-semibold text-gray-700 text-center mb-6">
               Vue alternative en grille
             </h3>
-            <BentoCatalog />
+            <FamilyGammeBentoEnhanced />
           </div>
           
           {/* 📋 Composants masqués pour référence */}
           <div className="hidden">
-            <FamilyGammeBentoEnhanced />
             <DatabaseFamilyProductCatalog />
           </div>
         </div>

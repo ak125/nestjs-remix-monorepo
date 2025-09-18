@@ -5,6 +5,7 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Filter, Grid, List } from "lucide-react";
 import { useState } from "react";
+import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 // 📊 Types de données
 interface VehicleInfo {
@@ -26,6 +27,15 @@ interface VehiclePart {
   category: string;
   subcategory?: string;
   compatibility: string[];
+}
+
+interface GammeData {
+  id: string;
+  name: string;
+  slug: string;
+  image?: string;
+  is_active: boolean;
+  is_top: boolean;
 }
 
 interface CategoryInfo {
@@ -158,10 +168,14 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       }))
     ];
 
+    // 🎯 Récupérer les vraies gammes depuis l'API
+    const gammes = await enhancedVehicleApi.getGammes();
+
     return json({
       vehicle: vehicleInfo,
       category: categoryInfo,
       parts: mockParts,
+      gammes: gammes,
       breadcrumb: { brand, model, type, category }
     });
 
@@ -195,7 +209,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
 // 🎨 Composant principal
 export default function VehiclePartsPage() {
-  const { vehicle, category, parts, breadcrumb } = useLoaderData<typeof loader>();
+  const { vehicle, category, parts, gammes, breadcrumb } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
@@ -282,8 +296,81 @@ export default function VehiclePartsPage() {
         </div>
       </div>
 
-      {/* 🛠️ Filtres et options */}
+      {/* 🏷️ Grille des sous-catégories cliquables */}
       <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Grid className="w-5 h-5" />
+            Sous-catégories {category.name}
+          </h2>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+            {category.subcategories.map((subcategory, index) => {
+              // 🎯 Essayer de trouver la gamme correspondante dans les vraies données
+              const matchingGamme = gammes.find(gamme => 
+                gamme.name.toLowerCase().includes(subcategory.toLowerCase()) ||
+                subcategory.toLowerCase().includes(gamme.name.toLowerCase().split(' ')[0])
+              );
+              
+              // 🔄 Utiliser l'ID réel de la gamme si trouvé, sinon fallback avec index
+              const gameId = matchingGamme ? matchingGamme.id : (index + 1).toString();
+              const slug = matchingGamme ? matchingGamme.slug : subcategory
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+                .replace(/[^a-z0-9\s-]/g, '') // Garde seulement lettres, chiffres, espaces et tirets
+                .replace(/\s+/g, '-') // Remplace espaces par tirets
+                .replace(/-+/g, '-') // Évite les tirets multiples
+                .trim();
+              
+              // 🌐 URL finale avec ID réel de la gamme
+              const subcategoryUrl = `/pieces/${slug}-${gameId}.html`;
+              
+              return (
+                <Link
+                  key={subcategory}
+                  to={subcategoryUrl}
+                  className="group p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">
+                      {/* Icônes spécifiques par sous-catégorie */}
+                      {subcategory.includes('huile') && '🛢️'}
+                      {subcategory.includes('air') && '💨'}
+                      {subcategory.includes('carburant') && '⛽'}
+                      {subcategory.includes('habitacle') && '🏠'}
+                      {subcategory.includes('plaquettes') && '🔩'}
+                      {subcategory.includes('disques') && '⚙️'}
+                      {subcategory.includes('liquide') && '💧'}
+                      {subcategory.includes('pot') && '🚗'}
+                      {subcategory.includes('silencieux') && '🔇'}
+                      {subcategory.includes('amortisseurs') && '🔧'}
+                      {subcategory.includes('ressorts') && '🌀'}
+                      {subcategory.includes('phares') && '💡'}
+                      {subcategory.includes('feux') && '🚨'}
+                      {subcategory.includes('pare') && '🪟'}
+                      {subcategory.includes('rétroviseur') && '🪞'}
+                      {!subcategory.match(/(huile|air|carburant|habitacle|plaquettes|disques|liquide|pot|silencieux|amortisseurs|ressorts|phares|feux|pare|rétroviseur)/) && '🔧'}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200 text-sm">
+                      {subcategory}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {matchingGamme ? `ID: ${gameId}` : `Simulé: ${gameId}`} • {Math.floor(Math.random() * 50) + 10} pièces
+                    </p>
+                    {matchingGamme && (
+                      <div className="text-xs text-green-600 mt-1 font-medium">
+                        ✅ Gamme réelle
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 🛠️ Filtres et options */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
             {/* Filtres subcategories */}

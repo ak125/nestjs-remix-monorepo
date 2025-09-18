@@ -11,9 +11,10 @@
  * @author SEO Migration Team
  */
 
-import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock, ExternalLink, Package, Star, ShoppingCart, ArrowLeft } from "lucide-react";
+import { AddToCartModern } from "../components/cart/AddToCartModern";
 
 // ====================================
 // 🎯 INTERFACES & TYPES
@@ -75,7 +76,48 @@ async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
 }
 
 // ====================================
-// 📡 LOADER FUNCTION
+// � ACTION FUNCTION - Ajout au panier
+// ====================================
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+  
+  if (intent === "add") {
+    const productId = formData.get("product_id");
+    const quantity = formData.get("quantity");
+    
+    try {
+      // Appel à l'API backend
+      const response = await fetch(`http://localhost:3000/api/cart/test-add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          quantity: quantity,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        return json({ success: true, message: "Produit ajouté au panier", data: result });
+      } else {
+        return json({ success: false, message: "Erreur lors de l'ajout", error: result }, { status: response.status });
+      }
+    } catch (error) {
+      console.error("Erreur ajout panier:", error);
+      return json({ success: false, message: "Erreur de connexion" }, { status: 500 });
+    }
+  }
+  
+  return json({ success: false, message: "Action non reconnue" }, { status: 400 });
+};
+
+// ====================================
+// �📡 LOADER FUNCTION
 // ====================================
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -83,6 +125,62 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const legacyUrl = url.pathname;
   
   console.log(`🔄 Interception URL legacy: ${legacyUrl}`);
+  
+  // 🎯 Gérer les URLs de gammes au format /pieces/{slug-id}.html
+  const gammeUrlPattern = /^\/pieces\/(.+)-(\d+)\.html$/;
+  const gammeMatch = legacyUrl.match(gammeUrlPattern);
+  
+  if (gammeMatch) {
+    const [, slugPart, gammeId] = gammeMatch;
+    console.log(`🎯 URL de gamme détectée: ${legacyUrl} (ID: ${gammeId})`);
+    
+    try {
+      // 🎯 Utiliser le nouvel endpoint pour récupérer une gamme spécifique
+      const response = await fetch(`http://localhost:3000/api/products/gammes/${gammeId}`);
+      
+      if (response.ok) {
+        const result = await response.json();
+        const gamme = result.data;
+        
+        // Gamme trouvée, servir la page de gamme
+        console.log(`✅ Gamme ${gammeId} trouvée: ${gamme.name}`);
+        
+        // Générer des produits mockés pour cette gamme
+        const mockProducts = Array.from({ length: 12 }, (_, i) => ({
+          id: i + 1,
+          name: `${gamme.name} ${String.fromCharCode(65 + (i % 6))}${Math.floor(i / 6) + 1}`,
+          description: `Pièce ${gamme.name.toLowerCase()} haute qualité avec garantie constructeur`,
+          price: Math.floor(Math.random() * 150) + 25,
+          currency: 'EUR',
+          imageUrl: `/images/parts/${slugPart}.jpg`,
+          availability: ['in-stock', 'low-stock', 'out-of-stock'][Math.floor(Math.random() * 3)],
+          brand: ['BOSCH', 'MANN', 'VALEO', 'FEBI', 'LEMFÖRDER', 'SKF'][Math.floor(Math.random() * 6)],
+          partNumber: `${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+          gamme: gamme.name,
+          compatibility: ['Universel', 'Essence', 'Diesel'][Math.floor(Math.random() * 3)]
+        }));
+
+        return json({
+          type: 'gamme',
+          gamme,
+          products: mockProducts,
+          slug: slugPart,
+          totalProducts: mockProducts.length
+        });
+      } else {
+        // Gamme non trouvée - 404
+        console.log(`❌ Gamme ${gammeId} non trouvée`);
+        throw new Response(`Gamme ${gammeId} non trouvée`, { status: 404 });
+      }
+    } catch (error) {
+      console.error('Erreur récupération gamme:', error);
+      if (error instanceof Response) {
+        throw error; // Re-throw Response errors (404, etc.)
+      }
+      // Pour les autres erreurs, essayer la migration classique
+      console.log('Tentative de migration classique...');
+    }
+  }
   
   // 🚀 Détecter les URLs de véhicules mal routées (format: /pieces/brand-id/model-id/type-name-id)
   const vehicleUrlPattern = /^\/pieces\/([^/]+)-(\d+)\/([^/]+)-(\d+)\/([^/]+)-(\d+)$/;
@@ -131,7 +229,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 // ====================================
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  if (!data || !data.migration.success) {
+  if (!data) {
+    return [
+      { title: "Page déplacée - Redirection en cours" },
+      { name: "description", content: "Cette page a été déplacée vers notre nouvelle structure." },
+      { name: "robots", content: "noindex, nofollow" }
+    ];
+  }
+
+  // Cas des gammes
+  if (data.type === 'gamme') {
+    const { gamme, totalProducts } = data;
+    const title = `${gamme.name} | ${totalProducts} Pièces Auto`;
+    const description = `Découvrez notre gamme ${gamme.name} avec ${totalProducts} pièces automobiles de qualité. Livraison rapide et garantie constructeur.`;
+
+    return [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" }
+    ];
+  }
+
+  // Cas des migrations
+  if (!data.migration.success) {
     return [
       { title: "Page déplacée - Redirection en cours" },
       { name: "description", content: "Cette page a été déplacée vers notre nouvelle structure." },
@@ -156,7 +278,137 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 // ====================================
 
 export default function LegacyPartUrlMigrationPage() {
-  const { migration, redirect_in_seconds, show_manual_redirect } = useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+
+  // 🎯 Page de gamme
+  if ('type' in data && data.type === 'gamme') {
+    const { gamme, products, totalProducts } = data;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* 🍞 Fil d'Ariane */}
+        <div className="bg-white border-b shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <nav className="flex items-center space-x-2 text-sm" aria-label="Fil d'Ariane">
+              <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                🏠 Accueil
+              </Link>
+              <span className="text-gray-400">/</span>
+              <span className="text-blue-600 font-semibold bg-blue-50 px-2 py-1 rounded">
+                {gamme.name}
+              </span>
+            </nav>
+          </div>
+        </div>
+
+        {/* 🎯 En-tête gamme */}
+        <div className="bg-white shadow-lg border-b-2 border-blue-100">
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="text-5xl">📦</div>
+                  <div>
+                    <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
+                      {gamme.name}
+                    </h1>
+                    <p className="text-lg text-gray-600 mt-1">
+                      Gamme professionnelle ID #{gamme.id}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
+                    {totalProducts} pièces disponibles
+                  </span>
+                  {gamme.is_top && (
+                    <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-medium flex items-center gap-1">
+                      ⭐ Gamme populaire
+                    </span>
+                  )}
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full font-medium">
+                    Livraison 24h
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 📦 Grille des produits */}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <div key={product.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 group">
+                {/* Image produit */}
+                <div className="aspect-square bg-gray-100 rounded-xl mb-4 overflow-hidden">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/parts/default.svg';
+                    }}
+                  />
+                </div>
+
+                {/* Infos produit */}
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+                      {product.description}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span className="bg-gray-100 px-2 py-1 rounded">{product.brand}</span>
+                    <span className="bg-gray-100 px-2 py-1 rounded">{product.partNumber}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {product.price.toFixed(2)} {product.currency}
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      product.availability === 'in-stock' ? 'bg-green-100 text-green-800' :
+                      product.availability === 'low-stock' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {product.availability === 'in-stock' ? 'En stock' :
+                       product.availability === 'low-stock' ? 'Stock limité' : 'Rupture'}
+                    </div>
+                  </div>
+
+                  {/* 🛒 Bouton Ajouter au panier moderne */}
+                  <AddToCartModern 
+                    productId={product.id} 
+                    quantity={1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Message si aucun produit */}
+          {products.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📦</div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucun produit disponible</h3>
+              <p className="text-gray-600">Cette gamme sera bientôt approvisionnée.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // 🔄 Page de migration (données héritées)
+  const { migration, redirect_in_seconds, show_manual_redirect } = data as any;
 
   // Page de succès avec redirection automatique
   if (migration.success && migration.new_url) {

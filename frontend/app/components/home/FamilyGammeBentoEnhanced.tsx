@@ -1,8 +1,10 @@
-// 📁 frontend/app/components/home/FamilyGammeBentoEnhanced.tsx
-// 🎨 Design Bento amélioré avec animations et interactions avancées
+// 🎨 Design Bento amélioré avec animations et lazy loading optimisé
 
-import { useState, useEffect } from 'react';
+import { Link } from '@remix-run/react';
+import React, { useState, useEffect } from 'react';
 import { hierarchyApi, type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
+import { LazyCard } from '../ui/LazyCard';
+import LazyImage from '../ui/LazyImage';
 
 export default function FamilyGammeBentoEnhanced() {
   const [families, setFamilies] = useState<FamilyWithGammes[]>([]);
@@ -190,7 +192,7 @@ export default function FamilyGammeBentoEnhanced() {
           const isWide = layout.size === 'wide';
 
           return (
-            <div
+            <LazyCard
               key={family.mf_id}
               className={`
                 ${layout.cols} ${layout.rows} 
@@ -204,21 +206,22 @@ export default function FamilyGammeBentoEnhanced() {
               onMouseEnter={() => setHoveredFamily(family.mf_id)}
               onMouseLeave={() => setHoveredFamily(null)}
               onClick={() => setSelectedFamily(family.mf_id)}
+              animationType="fade"
+              delay={index * 150}
             >
               {/* Background avec dégradé sophistiqué */}
               <div className={`absolute inset-0 bg-gradient-to-br ${theme.bg.replace('from-gradient-to-br ', '')} opacity-95`} />
               
-              {/* Image de fond avec parallax */}
+              {/* Image de fond avec parallax et lazy loading */}
               {familyImage && (
                 <div className="absolute inset-0 overflow-hidden">
-                  <img
+                  <LazyImage
                     src={familyImage}
                     alt={family.mf_name_system}
                     className={`
                       w-full h-full object-cover transition-all duration-1000
                       ${isHovered ? 'scale-110 opacity-40' : 'scale-100 opacity-20'}
                     `}
-                    loading="lazy"
                   />
                 </div>
               )}
@@ -267,16 +270,34 @@ export default function FamilyGammeBentoEnhanced() {
                         🔥 Gammes populaires
                       </div>
                       <div className="space-y-2">
-                        {family.gammes.slice(0, isLarge ? 4 : 2).map((gamme) => (
-                          <div key={gamme.mc_id} className="flex justify-between items-center text-white text-xs">
-                            <span className="truncate opacity-90">
-                              {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
-                            </span>
-                            <span className="text-xs opacity-60 ml-2 bg-white bg-opacity-20 px-2 py-1 rounded-full">
-                              #{gamme.mc_mf_id}
-                            </span>
-                          </div>
-                        ))}
+                        {family.gammes.slice(0, isLarge ? 4 : 2).map((gamme) => {
+                          // 🔄 Générer l'URL pour la gamme
+                          const gammeSlug = (gamme.pg_name || `gamme-${gamme.mc_pg_id}`)
+                            .toLowerCase()
+                            .normalize('NFD')
+                            .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+                            .replace(/[^a-z0-9\s-]/g, '') // Garde seulement lettres, chiffres, espaces et tirets
+                            .replace(/\s+/g, '-') // Remplace espaces par tirets
+                            .replace(/-+/g, '-') // Évite les tirets multiples
+                            .trim();
+                          
+                          const gammeUrl = `/pieces/${gammeSlug}-${gamme.mc_pg_id}.html`;
+                          
+                          return (
+                            <Link 
+                              key={gamme.mc_id} 
+                              to={gammeUrl}
+                              className="flex justify-between items-center text-white text-xs hover:bg-white hover:bg-opacity-20 p-1 rounded transition-colors"
+                            >
+                              <span className="truncate opacity-90 hover:opacity-100">
+                                {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
+                              </span>
+                              <span className="text-xs opacity-60 ml-2 bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                                #{gamme.mc_pg_id}
+                              </span>
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -309,7 +330,7 @@ export default function FamilyGammeBentoEnhanced() {
                 absolute inset-0 bg-gradient-to-br from-white via-transparent to-transparent opacity-0 
                 group-hover:opacity-10 transition-opacity duration-700 rounded-3xl
               `} />
-            </div>
+            </LazyCard>
           );
         })}
       </div>

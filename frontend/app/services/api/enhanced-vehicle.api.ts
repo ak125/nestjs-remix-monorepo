@@ -374,6 +374,54 @@ class EnhancedVehicleApiService {
   }
 
   /**
+   * 🎯 Récupérer les gammes de pièces avec leurs IDs pour les redirections
+   */
+  async getGammes(): Promise<{
+    id: string;
+    name: string;
+    slug: string;
+    image?: string;
+    is_active: boolean;
+    is_top: boolean;
+  }[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/products/gammes`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`❌ Erreur récupération gammes: ${response.status}`);
+        return [];
+      }
+
+      const gammes = await response.json();
+      
+      // 🔄 Mapper et enrichir avec le slug pour les URLs
+      return gammes.map((gamme: any) => ({
+        id: gamme.id,
+        name: gamme.name,
+        slug: gamme.name
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+          .replace(/[^a-z0-9\s-]/g, '') // Garde seulement lettres, chiffres, espaces et tirets
+          .replace(/\s+/g, '-') // Remplace espaces par tirets
+          .replace(/-+/g, '-') // Évite les tirets multiples
+          .trim(),
+        image: gamme.image,
+        is_active: gamme.is_active,
+        is_top: gamme.is_top
+      }));
+    } catch (error) {
+      console.warn('❌ Erreur getGammes:', error);
+      return [];
+    }
+  }
+
+  /**
    * 📊 Récupérer les statistiques véhicules
    */
   async getStats(): Promise<{

@@ -18,6 +18,7 @@ import { CartController } from './cart.controller';
 
 // Services
 import { CartService } from './services/cart.service';
+import { CartMemoryService } from './services/cart-memory.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
 import { PromoService } from './promo.service';
@@ -34,6 +35,7 @@ import { PromoService } from './promo.service';
   providers: [
     // Services modernes
     CartService, // Service principal moderne
+    CartMemoryService, // Service mémoire temporaire
     CartCalculationService, // Service de calculs
     CartValidationService, // Service de validation
     PromoService, // Service de gestion des promotions

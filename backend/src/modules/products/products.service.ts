@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 // DTOs comme interfaces simples (pas de dépendances externes)
 interface CreateProductDto {
@@ -25,20 +27,119 @@ interface SearchProductDto {
 
 /**
  * Service pour la gestion des produits automobiles
- * Utilise les vraies table        // Mapper les produits enrichis
-        enrichedProducts = products.map((product) => {
-          const brand = brandsData.find((b) => b.marque_id === product.piece_pm_id);
-          
-          return {la base de données :
+ * Utilise les vraies tables de la base de données :
  * - pieces (table principale des pièces)
  * - pieces_gamme (gammes de pièces)
  * - pieces_marque (marques de pièces)
  * - auto_marque, auto_modele, auto_type (données automobiles)
+ * 
+ * ✨ NOUVEAUTÉS PERFORMANCES :
+ * - Cache Redis pour gammes et produits populaires
+ * - Pagination intelligente optimisée
+ * - Préchargement des données critiques
  */
 @Injectable()
 export class ProductsService extends SupabaseBaseService {
-  // Pas de constructeur - utilise celui du parent sans ConfigService
-  // Cela évite les dépendances circulaires
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+    super();
+  }
+
+  /**
+   * ⚡ CACHE OPTIMISÉ - Récupérer les gammes avec cache Redis
+   * SANS LIMITE ARTIFICIELLE - utilise pg_display pour filtrer
+   */
+  async getGammesWithCache(activeOnly = true): Promise<any[]> {
+    const cacheKey = `gammes:${activeOnly ? 'active' : 'all'}`;
+    
+    try {
+      // 1. Vérifier le cache d'abord
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`🎯 Cache HIT pour gammes (${activeOnly ? 'actives' : 'toutes'})`);
+        return cached as any[];
+      }
+
+      this.logger.log(`🔄 Cache MISS - Chargement gammes depuis DB`);
+      
+      // 2. Charger depuis la DB si pas en cache
+      const gammes = await this.getGammesFiltered(activeOnly);
+      
+      // 3. Mettre en cache pour 30 minutes (1800 secondes)
+      await this.cacheManager.set(cacheKey, gammes, 1800);
+      
+      return gammes;
+    } catch (error) {
+      this.logger.error('❌ Erreur cache gammes:', error);
+      // Fallback vers DB directe
+      return this.getGammesFiltered(activeOnly);
+    }
+  }
+
+  /**
+   * 🎯 Récupérer gammes filtrées par pg_display
+   */
+  private async getGammesFiltered(activeOnly = true): Promise<any[]> {
+    try {
+      this.logger.log(`🔍 Récupération gammes ${activeOnly ? 'actives (pg_display=1)' : 'toutes'}`);
+
+      let query = this.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias, pg_pic, pg_display, pg_top')
+        .order('pg_name', { ascending: true });
+
+      // Filtrer par pg_display si demandé
+      if (activeOnly) {
+        query = query.eq('pg_display', '1');
+      }
+
+      // Supprimer la limite Supabase par défaut de 1000 lignes
+      // En utilisant range avec une limite très élevée
+      query = query.range(0, 99999);
+
+      const { data: gammes, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      this.logger.log(`✅ ${gammes?.length || 0} gammes récupérées ${activeOnly ? '(actives uniquement)' : '(toutes)'}`);
+
+      // Enrichir avec l'ordre catalog si disponible
+      const { data: catalogOrder } = await this.client
+        .from('catalog_gamme')
+        .select('mc_pg_id, mc_sort');
+
+      const catalogMap = new Map(
+        catalogOrder?.map(c => [c.mc_pg_id, parseInt(c.mc_sort) || 9999]) || []
+      );
+
+      return (gammes || []).map(gamme => {
+        const isActive = gamme.pg_display === '1';
+        const isFeatured = catalogMap.has(gamme.pg_id);
+        const sortOrder = catalogMap.get(gamme.pg_id) || 9999;
+
+        return {
+          id: gamme.pg_id,
+          name: gamme.pg_name || 'Gamme sans nom',
+          alias: gamme.pg_alias || '',
+          image: gamme.pg_pic,
+          is_active: isActive,
+          is_top: !!gamme.pg_top,
+          source: isFeatured ? 'featured' : (isActive ? 'active' : 'hidden'),
+          sort_order: sortOrder,
+        };
+      }).sort((a, b) => {
+        // Tri: featured d'abord, puis par sort_order, puis par nom
+        if (a.source === 'featured' && b.source !== 'featured') return -1;
+        if (b.source === 'featured' && a.source !== 'featured') return 1;
+        if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+        return a.name.localeCompare(b.name);
+      });
+    } catch (error) {
+      this.logger.error('❌ Erreur getGammesFiltered:', error);
+      throw error;
+    }
+  }
 
   /**
    * Récupérer toutes les pièces avec filtres et pagination
@@ -711,35 +812,310 @@ export class ProductsService extends SupabaseBaseService {
   }
 
   /**
-   * Récupérer toutes les gammes de pièces (vraie méthode)
+   * 🎯 LOGIQUE SIMPLIFIÉE - Récupérer toutes les gammes basées sur pieces_gamme
+   * Architecture claire :
+   * 1. pieces_gamme = SOURCE DE VÉRITÉ (9,266 gammes)
+   * 2. pg_display = '1' → Gamme Active, '0' → Gamme Cachée
+   * 3. catalog_gamme = ORDRE D'AFFICHAGE (230 gammes mises en avant)
    */
   async getGammes() {
     try {
-      const { data, error } = await this.client
+      this.logger.log('🎯 Récupération gammes avec logique simplifiée...');
+
+      // 1️⃣ Récupérer TOUTES les gammes depuis pieces_gamme (source de vérité)
+      const { data: allGammes, error: gammesError } = await this.client
         .from('pieces_gamme')
         .select('pg_id, pg_name, pg_alias, pg_pic, pg_display, pg_top')
-        .eq('pg_display', '1')
-        .order('pg_name', { ascending: true })
-        .limit(50);
+        .order('pg_name', { ascending: true });
 
-      if (error) {
-        this.logger.error('Erreur getGammes:', error);
-        throw error;
+      if (gammesError) {
+        this.logger.error('❌ Erreur récupération pieces_gamme:', gammesError);
+        throw gammesError;
       }
 
-      return (
-        data?.map((gamme) => ({
-          id: gamme.pg_id,
-          name: gamme.pg_name,
-          alias: gamme.pg_alias,
-          image: gamme.pg_pic,
-          is_active: gamme.pg_display === '1',
-          is_top: gamme.pg_top === '1',
-        })) || []
+      // 2️⃣ Récupérer l'ordre d'affichage depuis catalog_gamme (optionnel)
+      const { data: catalogOrder, error: catalogError } = await this.client
+        .from('catalog_gamme')
+        .select('mc_pg_id, mc_sort')
+        .not('mc_pg_id', 'is', null);
+
+      if (catalogError) {
+        this.logger.warn(
+          '⚠️ Erreur catalog_gamme (non critique):',
+          catalogError,
+        );
+      }
+
+      // 3️⃣ Créer une map de l'ordre d'affichage
+      const sortOrderMap = new Map();
+      catalogOrder?.forEach((item) => {
+        if (item.mc_pg_id) {
+          sortOrderMap.set(item.mc_pg_id, parseInt(item.mc_sort) || 9999);
+        }
+      });
+
+      // 4️⃣ Traiter toutes les gammes avec la logique simple
+      const finalGammes =
+        allGammes?.map((gamme) => {
+          const isActive = gamme.pg_display === '1';
+          const isFeatured = sortOrderMap.has(gamme.pg_id);
+          const sortOrder = sortOrderMap.get(gamme.pg_id) || 9999;
+
+          return {
+            id: gamme.pg_id,
+            name: gamme.pg_name || 'Gamme sans nom',
+            alias: gamme.pg_alias || '',
+            image: gamme.pg_pic,
+            is_active: isActive,
+            is_top: gamme.pg_top === '1',
+            source: isActive ? (isFeatured ? 'featured' : 'active') : 'hidden',
+            sort_order: isFeatured ? sortOrder : 9999,
+          };
+        }) || [];
+
+      // 5️⃣ Trier par gammes featured en premier, puis ordre alphabétique
+      const result = finalGammes
+        .sort((a, b) => {
+          // Featured en premier
+          if (a.source === 'featured' && b.source !== 'featured') return -1;
+          if (b.source === 'featured' && a.source !== 'featured') return 1;
+
+          // Puis par sort_order pour les featured
+          if (a.source === 'featured' && b.source === 'featured') {
+            return a.sort_order - b.sort_order;
+          }
+
+          // Puis par nom alphabétique
+          return a.name.localeCompare(b.name);
+        })
+        .slice(0, 1000); // Limite à 1000 gammes
+
+      // 6️⃣ Statistiques finales
+      const stats = {
+        total: result.length,
+        featured: result.filter((g) => g.source === 'featured').length,
+        active: result.filter((g) => g.source === 'active').length,
+        hidden: result.filter((g) => g.source === 'hidden').length,
+      };
+
+      this.logger.log(
+        `✅ Gammes récupérées: ${stats.total} (featured: ${stats.featured}, active: ${stats.active}, hidden: ${stats.hidden})`,
       );
+
+      return result;
     } catch (error) {
-      this.logger.error('Erreur dans getGammes:', error);
+      this.logger.error('❌ Erreur dans getGammes:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 🎯 Récupérer une gamme spécifique par ID (pour les URLs gammes)
+   * ⚡ VERSION CACHÉE pour optimiser les performances
+   */
+  async getGammeById(gammeId: string) {
+    const cacheKey = `gamme:${gammeId}`;
+    
+    try {
+      // 1. Vérifier le cache d'abord
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`🎯 Cache HIT pour gamme ${gammeId}`);
+        return cached;
+      }
+
+      this.logger.log(`🔄 Cache MISS - Chargement gamme ${gammeId} depuis DB`);
+      
+      // 2. Charger depuis la DB
+      const gamme = await this.getGammeByIdFromDB(gammeId);
+      
+      if (gamme) {
+        // 3. Mettre en cache pour 1 heure (3600 secondes)
+        await this.cacheManager.set(cacheKey, gamme, 3600);
+      }
+      
+      return gamme;
+    } catch (error) {
+      this.logger.error(`❌ Erreur cache gamme ${gammeId}:`, error);
+      // Fallback vers DB directe
+      return this.getGammeByIdFromDB(gammeId);
+    }
+  }
+
+  /**
+   * ⚡ PAGINATION INTELLIGENTE - Produits avec cache par page
+   */
+  async getPaginatedProducts(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    gammeId?: string;
+  }) {
+    const { page = 1, limit = 24, search = '', gammeId } = options;
+    const cacheKey = `products:page:${page}:limit:${limit}:search:${search}:gamme:${gammeId || 'all'}`;
+    
+    try {
+      // 1. Vérifier le cache
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`🎯 Cache HIT produits page ${page}`);
+        return cached;
+      }
+
+      this.logger.log(`🔄 Cache MISS - Chargement produits page ${page}`);
+      
+      // 2. Construire la requête optimisée SANS relations complexes
+      let query = this.client
+        .from('pieces')
+        .select(`
+          piece_id,
+          piece_name,
+          piece_ref,
+          piece_prix_ht,
+          piece_stock,
+          piece_pic,
+          piece_gamme_id,
+          piece_marque_id
+        `);
+
+      // Filtres
+      if (search) {
+        query = query.or(`piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%`);
+      }
+      
+      if (gammeId) {
+        query = query.eq('piece_gamme_id', gammeId);
+      }
+
+      // Pagination avec count total
+      const offset = (page - 1) * limit;
+      const [{ data: products, error }, { count, error: countError }] = await Promise.all([
+        query
+          .order('piece_name', { ascending: true })
+          .range(offset, offset + limit - 1),
+        this.client
+          .from('pieces')
+          .select('*', { count: 'exact', head: true })
+      ]);
+
+      if (error || countError) {
+        throw new Error(`DB Error: ${error?.message || countError?.message}`);
+      }
+
+      // 3. Enrichir les produits avec les noms de gammes et marques
+      const enrichedProducts = await this.enrichProductsWithRelations(products || []);
+
+      const result = {
+        products: enrichedProducts,
+        pagination: {
+          page,
+          limit,
+          total: count || 0,
+          totalPages: Math.ceil((count || 0) / limit),
+          hasNext: page * limit < (count || 0),
+          hasPrev: page > 1
+        }
+      };
+
+      // 4. Cache pour 10 minutes (600 secondes)
+      await this.cacheManager.set(cacheKey, result, 600);
+      
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur pagination produits:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔄 Enrichir les produits avec les noms de gammes et marques
+   */
+  private async enrichProductsWithRelations(products: any[]) {
+    if (!products || products.length === 0) return [];
+
+    try {
+      // Récupérer les IDs uniques
+      const gammeIds = [...new Set(products.map(p => p.piece_gamme_id).filter(Boolean))];
+      const marqueIds = [...new Set(products.map(p => p.piece_marque_id).filter(Boolean))];
+
+      // Charger les gammes et marques en parallèle
+      const [gammes, marques] = await Promise.all([
+        gammeIds.length > 0 ? this.client
+          .from('pieces_gamme')
+          .select('pg_id, pg_name, pg_alias')
+          .in('pg_id', gammeIds) : Promise.resolve({ data: [] }),
+        marqueIds.length > 0 ? this.client
+          .from('pieces_marque')
+          .select('marque_id, marque_name')
+          .in('marque_id', marqueIds) : Promise.resolve({ data: [] })
+      ]);
+
+      // Créer des maps pour l'lookup rapide
+      const gammeMap = new Map(gammes.data?.map(g => [g.pg_id, g]) || []);
+      const marqueMap = new Map(marques.data?.map(m => [m.marque_id, m]) || []);
+
+      // Enrichir les produits
+      return products.map(product => ({
+        ...product,
+        gamme_name: gammeMap.get(product.piece_gamme_id)?.pg_name || 'Non défini',
+        gamme_alias: gammeMap.get(product.piece_gamme_id)?.pg_alias || '',
+        marque_name: marqueMap.get(product.piece_marque_id)?.marque_name || 'Non défini',
+      }));
+    } catch (error) {
+      this.logger.error('❌ Erreur enrichissement produits:', error);
+      return products; // Retourner les produits sans enrichissement si erreur
+    }
+  }
+
+  /**
+   * 🔍 Méthode interne pour charger depuis la DB (sans cache)
+   */
+  private async getGammeByIdFromDB(gammeId: string) {
+    try {
+      this.logger.log(`🔍 Recherche gamme ID: ${gammeId}`);
+
+      const { data: gamme, error } = await this.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias, pg_pic, pg_display, pg_top')
+        .eq('pg_id', gammeId)
+        .single();
+
+      if (error || !gamme) {
+        this.logger.warn(`❌ Gamme ${gammeId} non trouvée dans pieces_gamme`);
+        return null;
+      }
+
+      // Vérifier si cette gamme est featured (dans catalog_gamme)
+      const { data: catalogEntry } = await this.client
+        .from('catalog_gamme')
+        .select('mc_sort')
+        .eq('mc_pg_id', gammeId)
+        .single();
+
+      const isActive = gamme.pg_display === '1';
+      const isFeatured = !!catalogEntry;
+      const sortOrder = catalogEntry?.mc_sort
+        ? parseInt(catalogEntry.mc_sort)
+        : 9999;
+
+      const result = {
+        id: gamme.pg_id,
+        name: gamme.pg_name || 'Gamme sans nom',
+        alias: gamme.pg_alias || '',
+        image: gamme.pg_pic,
+        is_active: isActive,
+        is_top: gamme.pg_top === '1',
+        source: isActive ? (isFeatured ? 'featured' : 'active') : 'hidden',
+        sort_order: isFeatured ? sortOrder : 9999,
+      };
+
+      this.logger.log(
+        `✅ Gamme ${gammeId} trouvée: ${result.name} (${result.source})`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error(`❌ Erreur recherche gamme ${gammeId}:`, error);
+      return null;
     }
   }
 
@@ -1507,6 +1883,166 @@ export class ProductsService extends SupabaseBaseService {
       return data || [];
     } catch (error) {
       this.logger.error('Erreur dans getProductCriteria:', error);
+      throw error;
+    }
+  }
+
+  // =======================================================
+  // 🏠 HOMEPAGE & CATALOG METHODS (Migrées depuis CatalogService)
+  // =======================================================
+
+  /**
+   * 🏠 Données du catalogue pour la homepage
+   * Migré depuis CatalogService pour éliminer les redondances
+   */
+  async getHomeCatalog() {
+    try {
+      this.logger.log('🏠 Génération catalogue homepage unifié...');
+
+      // Exécution parallèle des requêtes principales
+      const [gammes, stats] = await Promise.allSettled([
+        this.getGammes(),
+        this.getStats(),
+      ]);
+
+      // Extraction sécurisée des résultats
+      const gammesData = gammes.status === 'fulfilled' ? gammes.value : [];
+      const statsData =
+        stats.status === 'fulfilled'
+          ? stats.value
+          : {
+              total_gammes: 0,
+              total_pieces: 0,
+              featured_count: 0,
+            };
+
+      // Séparer featured vs actives
+      const mainCategories = Array.isArray(gammesData) ? gammesData : [];
+      const featuredCategories = mainCategories.filter(
+        (g) => g.is_featured === true,
+      );
+
+      const result = {
+        mainCategories,
+        featuredCategories,
+        quickAccess: featuredCategories.slice(0, 8), // Top 8 pour quick access
+        stats: {
+          total_categories: mainCategories.length,
+          total_pieces:
+            'totalProducts' in statsData ? statsData.totalProducts : 0,
+          featured_count: featuredCategories.length,
+        },
+      };
+
+      this.logger.log(
+        `✅ Homepage catalogue unifié: ${mainCategories.length} gammes, ${featuredCategories.length} featured`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur génération homepage catalog:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 Recherche avancée dans le catalogue
+   * Migré depuis CatalogService avec améliorations
+   */
+  async searchCatalog(
+    query: string,
+    filters?: {
+      gammeId?: number;
+      brandId?: number;
+      limit?: number;
+      offset?: number;
+    },
+  ) {
+    try {
+      this.logger.log(`🔍 Recherche catalogue: "${query}"`);
+
+      let dbQuery = this.client
+        .from('pieces')
+        .select(
+          `
+          piece_id,
+          piece_name,
+          piece_ref,
+          piece_description,
+          piece_prix_unitaire,
+          piece_stock,
+          pieces_gamme!inner(
+            pg_id,
+            pg_name,
+            pg_alias
+          )
+        `,
+        )
+        .limit(filters?.limit || 50);
+
+      // Recherche textuelle
+      if (query?.trim()) {
+        dbQuery = dbQuery.or(
+          `piece_name.ilike.%${query}%,piece_ref.ilike.%${query}%,piece_description.ilike.%${query}%`,
+        );
+      }
+
+      // Filtres additionnels
+      if (filters?.gammeId) {
+        dbQuery = dbQuery.eq('piece_gamme_id', filters.gammeId);
+      }
+
+      const offset = filters?.offset || 0;
+      const { data, error } = await dbQuery
+        .order('piece_name', { ascending: true })
+        .range(offset, offset + (filters?.limit || 50) - 1);
+
+      if (error) {
+        this.logger.error('Erreur recherche catalogue:', error);
+        throw error;
+      }
+
+      return {
+        results: data || [],
+        total: data?.length || 0,
+        query,
+        filters,
+      };
+    } catch (error) {
+      this.logger.error('Erreur dans searchCatalog:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🚗 Récupérer les marques pour le sélecteur de véhicules
+   * Migré depuis CatalogService
+   */
+  async getBrandsForVehicleSelector(limit: number = 50) {
+    try {
+      this.logger.log('🚗 Récupération marques pour vehicle selector');
+
+      const { data, error } = await this.client
+        .from('auto_marque')
+        .select(
+          `
+          marque_id,
+          marque_name,
+          marque_logo,
+          marque_activ
+        `,
+        )
+        .eq('marque_activ', 1)
+        .order('marque_name', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('Erreur getBrandsForVehicleSelector:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      this.logger.error('Erreur dans getBrandsForVehicleSelector:', error);
       throw error;
     }
   }

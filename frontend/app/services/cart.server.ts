@@ -149,22 +149,46 @@ class CartServerService {
     try {
       console.log(`➕ [CartServer] Ajout article ${productId} x${quantity}`);
       
-      // Tentative d'utilisation de l'API service existant
-      if (this.apiService?.cart?.addItem) {
-        return await this.apiService.cart.addItem(request, productId, quantity);
-      }
-
-      // Simulation d'ajout
+      // Test sans appel backend pour isoler le problème
+      console.log("🛒 [addItem] Simulation d'ajout sans backend");
+      
       return {
         success: true,
         message: `Article ${productId} ajouté au panier (x${quantity})`,
-        cart: await this.getCartAsLegacyFormat(request, context)
+        cart: {
+          cart_id: "temp-cart",
+          items: [{ 
+            id: "temp-item",
+            user_id: "temp-user",
+            product_id: productId, 
+            quantity: quantity,
+            price: 100,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            product_name: `Produit ${productId}`,
+            total_price: 100 * quantity
+          }],
+          totals: {
+            total_items: 1,
+            total_price: 100 * quantity,
+            subtotal: 100 * quantity,
+            tax_amount: 0,
+            shipping_cost: 0,
+            currency: "EUR"
+          },
+          metadata: {}
+        }
       };
-
     } catch (error) {
       console.error("❌ [CartServer] Erreur addItem:", error);
       return {
         success: false,
+        error: "Erreur lors de l'ajout au panier"
+      };
+    }
+  }
+
+  /**
         error: "Erreur lors de l'ajout au panier"
       };
     }

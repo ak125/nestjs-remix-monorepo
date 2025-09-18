@@ -188,21 +188,36 @@ export default function FamilyGammeHierarchy({
                       Sous-catégories ({family.gammes_count})
                     </h4>
                     <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                      {family.gammes.slice(0, 10).map((gamme, index) => (
-                        <div
-                          key={gamme.mc_id}
-                          className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors"
-                        >
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium text-gray-700">
-                              {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Fab. {gamme.mc_mf_id}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                      {family.gammes.slice(0, 10).map((gamme, index) => {
+                        // 🔄 Générer l'URL au format /pieces/{slug-id}.html
+                        const gammeSlug = (gamme.pg_name || `gamme-${gamme.mc_pg_id}`)
+                          .toLowerCase()
+                          .normalize('NFD')
+                          .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
+                          .replace(/[^a-z0-9\s-]/g, '') // Garde seulement lettres, chiffres, espaces et tirets
+                          .replace(/\s+/g, '-') // Remplace espaces par tirets
+                          .replace(/-+/g, '-') // Évite les tirets multiples
+                          .trim();
+                        
+                        const gammeUrl = `/pieces/${gammeSlug}-${gamme.mc_pg_id}.html`;
+                        
+                        return (
+                          <Link
+                            key={gamme.mc_id}
+                            to={gammeUrl}
+                            className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors block"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-gray-700 hover:text-blue-600 transition-colors">
+                                {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                ID: {gamme.mc_pg_id}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
                       
                       {family.gammes_count > 10 && (
                         <div className="text-center py-2">

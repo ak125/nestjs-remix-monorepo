@@ -27,7 +27,7 @@ import { useState, useEffect } from "react";
 
 // Imports des modules
 import { useOptionalUser } from "../../root";
-import { CartIcon } from "../cart/CartIcon";
+import { CartIconModern } from "../cart/CartIconModern";
 import { SearchBar } from "../search/SearchBar";
 
 interface HeaderData {
@@ -245,7 +245,7 @@ export function Header({
                 )}
               </div>
 
-              <CartIcon className="p-2 hover:bg-gray-100 rounded-lg" />
+              <CartIconModern className="p-2 hover:bg-gray-100 rounded-lg" />
 
               <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onClick={handleMobileMenuToggle}>
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

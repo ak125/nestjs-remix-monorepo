@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones } from 'lucide-react';
 import { useOptionalUser } from "../root";
-import { CartIcon } from "./cart/CartIcon";
+import { CartIconModern } from "./cart/CartIconModern";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
@@ -37,8 +37,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
       <div className='flex gap-4 items-center'>
         {user && <span className="text-sm">{user.firstName} {user.lastName}</span>}
 
-        {/* Panier avec compteur dynamique */}
-        <CartIcon />
+        {/* Panier avec compteur dynamique moderne */}
+        <CartIconModern />
 
         <Link 
           to='/orders' 
