@@ -72,4 +72,4 @@ dump.rdb
 cache/dump.rdb
 
 # Vite timestamped config artifacts (ne jamais versionner)
-frontend/vite.config.ts.timestamp-*cache/dump.rdb
+frontend/vite.config.ts.timestamp-*
