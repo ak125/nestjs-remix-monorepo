@@ -1,8 +1,14 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaService } from '../prisma/prisma.service';
+import { JwtModule } from '@nestjs/jwt';
+import { DatabaseModule } from '../database/database.module';
+import { CacheModule } from '../cache/cache.module';
+import { UsersModule } from '../modules/users/users.module';
 import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { ProfileController } from './profile.controller';
 import { CookieSerializer } from './cookie-serializer';
+import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
 
@@ -13,14 +19,21 @@ import { LocalStrategy } from './local.strategy';
       property: 'user',
       session: true,
     }),
+    JwtModule.register({
+      secret: process.env.SESSION_SECRET || 'default-secret-key',
+      signOptions: { expiresIn: '24h' },
+    }),
+    DatabaseModule,
+    CacheModule,
+    UsersModule,
   ],
-  controllers: [],
+  controllers: [AuthController, ProfileController],
   providers: [
+    AuthService,
     LocalStrategy,
     LocalAuthGuard,
     CookieSerializer,
-    PrismaService,
-    AuthService,
+    IsAdminGuard,
   ],
   exports: [AuthService],
 })

@@ -1,0 +1,28 @@
+{
+  "copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "plaintext": false,
+    "markdown": true
+  },
+  "copilot.advanced": {
+    "length": 500,
+    "temperature": 0.1,
+    "top_p": 1,
+    "inlineSuggestCount": 3
+  },
+  "copilot.chat.enable": true,
+  "copilot.chat.localeOverride": "fr",
+  "github.copilot.enable": {
+    "*": true,
+    "typescript": true,
+    "javascript": true,
+    "json": true
+  },
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "copilot-chat",
+    "debug.overrideProxyUrl": "",
+    "debug.testOverrideProxyUrl": "",
+    "debug.filterLogCategories": []
+  }
+}

@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:v1.8
+    container_name: fafa_meilisearch
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY:-masterKey123}
+      - MEILI_ENV=${NODE_ENV:-development}
+      - MEILI_DB_PATH=/meili_data
+      - MEILI_HTTP_ADDR=0.0.0.0:7700
+      - MEILI_LOG_LEVEL=INFO
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+      - ./meilisearch/dumps:/dumps
+    restart: unless-stopped
+    networks:
+      - fafa_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fafa_redis
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - fafa_network
+
+volumes:
+  meilisearch_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  fafa_network:
+    external: false

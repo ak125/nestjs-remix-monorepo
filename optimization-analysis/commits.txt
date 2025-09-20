@@ -1,0 +1,1 @@
+8d6cb38 feat: JWT auth fix + architecture cleanup (15+ files removed)

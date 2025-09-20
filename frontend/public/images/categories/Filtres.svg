@@ -1,0 +1,43 @@
+<!-- 📁 frontend/public/images/categories/Filtres.svg -->
+<!-- 🔧 Image pour la catégorie Filtres -->
+<svg width="400" height="225" viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="filtersGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Arrière-plan -->
+  <rect width="400" height="225" fill="url(#filtersGradient)" />
+  
+  <!-- Icônes de filtres -->
+  <g transform="translate(200, 112.5)">
+    <!-- Filtre à huile -->
+    <g transform="translate(-60, -20)">
+      <circle cx="0" cy="0" r="25" fill="#ffffff" opacity="0.9"/>
+      <circle cx="0" cy="0" r="18" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+      <circle cx="0" cy="0" r="5" fill="#1d4ed8"/>
+    </g>
+    
+    <!-- Filtre à air -->
+    <g transform="translate(60, -20)">
+      <rect x="-20" y="-15" width="40" height="30" rx="5" fill="#ffffff" opacity="0.9"/>
+      <rect x="-15" y="-10" width="30" height="20" rx="2" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+      <path d="M-10,-5 L10,-5 M-10,0 L10,0 M-10,5 L10,5" stroke="#1d4ed8" stroke-width="1.5"/>
+    </g>
+    
+    <!-- Filtre carburant -->
+    <g transform="translate(0, 25)">
+      <ellipse cx="0" cy="0" rx="30" ry="15" fill="#ffffff" opacity="0.9"/>
+      <ellipse cx="0" cy="0" rx="20" ry="10" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+      <path d="M-15,0 Q0,-8 15,0 Q0,8 -15,0" fill="none" stroke="#1d4ed8" stroke-width="1.5"/>
+    </g>
+  </g>
+  
+  <!-- Texte -->
+  <text x="200" y="200" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#ffffff">
+    Système de Filtration
+  </text>
+</svg>

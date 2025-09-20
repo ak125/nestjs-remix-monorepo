@@ -1,13 +1,119 @@
 import { Module } from '@nestjs/common';
-import { RemixController } from './remix/remix.controller';
-import { RemixService } from './remix/remix.service';
-import { AuthController } from './auth/auth.controller';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+// import { ScheduleModule } from '@nestjs/schedule'; // Temporairement désactivé
+import { DatabaseModule } from './database/database.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { HealthModule } from './modules/health/health.module';
+import { CartModule } from './modules/cart/cart.module';
 import { AuthModule } from './auth/auth.module';
-import { PrismaService } from './prisma/prisma.service';
+import { UsersModule } from './modules/users/users.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { RemixModule } from './remix/remix.module'; // ✅ RÉACTIVÉ !
+import { SuppliersModule } from './modules/suppliers/suppliers.module'; // ✅ NOUVEAU !
+import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Module admin aligné !
+import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
+import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
+import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
+import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule
+import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
+import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
+import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
+import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
+import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
+import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
+import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
+import { LayoutModule } from './modules/layout/layout.module'; // 🎨 NOUVEAU - Module layout pour gestion des composants UI !
+import { NotificationsModule } from './notifications/notifications.module'; // 📬 NOUVEAU - Module notifications avec WebSocket !
+import { PaymentsModule } from './modules/payments/payments.module'; // 💳 NOUVEAU - Module paiements avec Cyberplus !
+import { CommercialModule } from './modules/commercial/commercial.module'; // 🏢 NOUVEAU - Module commercial et ventes !
+import { StaffModule } from './modules/staff/staff.module'; // 👥 NOUVEAU - Module gestion du personnel !
+import { AnalyticsController } from './controllers/analytics.controller'; // 📊 NOUVEAU - Analytics avancées !
+import { AnalyticsModule } from './modules/analytics/analytics.module'; // 📊 NOUVEAU - Module Analytics enhanced !
+import { CacheModule } from './modules/cache/cache.module'; // ⚡ NOUVEAU - Module cache Redis pour performances !
+import { SupportModule } from './modules/support/support.module'; // 🎯 NOUVEAU - Module support client complet !
+import { ErrorsModule } from './modules/errors/errors.module'; // ❌ NOUVEAU - Module de gestion des erreurs et redirections !
+import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU - API endpoints pour erreurs !
+import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
+import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
+import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
+import { CategoryModule } from './modules/category/category.module'; // 🗂️ NOUVEAU - Module catégories dynamiques !
 
+/**
+ * AppModule - Architecture Modulaire Restaurée
+ * ✅ RemixModule réactivé pour la vraie page d'accueil
+ * ✅ Tous les modules essentiels fonctionnels
+ */
 @Module({
-  imports: [AuthModule],
-  controllers: [AuthController, RemixController],
-  providers: [PrismaService, RemixService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+      expandVariables: true,
+    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60,
+        limit: 100,
+      },
+    ]),
+
+    // Event Emitter global
+    EventEmitterModule.forRoot(),
+
+    // Scheduler pour les tâches CRON (temporairement désactivé)
+    // ScheduleModule.forRoot(),
+
+    // Modules core fonctionnels
+    DatabaseModule,
+    OrdersModule,
+    HealthModule,
+    CartModule,
+    AuthModule,
+    UsersModule,
+    MessagesModule,
+    CacheModule, // ⚡ NOUVEAU - Module cache Redis pour performances !
+    RemixModule, // ✅ RÉACTIVÉ - Votre vraie page d'accueil !
+    SuppliersModule, // ✅ NOUVEAU - Gestion avancée des fournisseurs !
+    AdminModule, // ✅ NOUVEAU - Module admin aligné sur l'architecture !
+    ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
+    DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
+    ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
+    // 🚗 MODULES VÉHICULES
+    VehiclesModule, // Module vehicle principal pour sélecteur véhicule
+    VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
+    ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
+    InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
+    SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
+    SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
+    BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
+    SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
+    LayoutModule, // 🎨 ACTIVÉ - Module layout pour gestion des composants UI !
+    NotificationsModule, // 📬 NOUVEAU - Module notifications avec WebSocket et temps réel !
+    PaymentsModule, // 💳 ACTIVÉ - Module paiements avec Cyberplus et validation !
+    CommercialModule, // 🏢 ACTIVÉ - Module commercial avec CRM et ventes !
+    StaffModule, // 👥 ACTIVÉ - Module gestion du personnel et employés !
+    SupportModule, // 🎯 ACTIVÉ - Module support client complet (contact, legal, reviews, FAQ) !
+    MetadataModule, // 🔍 ACTIVÉ - Module metadata optimisé avec breadcrumbs ! (PRIORITÉ pour /admin/breadcrumbs)
+    CustomConfigModule, // 🔧 ACTIVÉ - Module config enhanced avec gestion dynamique !
+    ErrorsModule, // ❌ ACTIVÉ - Module de gestion des erreurs et redirections avec logs !
+    ErrorsApiModule, // 🔌 ACTIVÉ - API endpoints pour erreurs et redirections !
+    AnalyticsModule, // 📊 ACTIVÉ - Module Analytics enhanced avec multi-providers !
+
+    // 🚗 CATALOGUE AUTOMOBILE
+    CatalogModule, // ✅ ACTIVÉ - Catalogue automobile avec tables existantes !
+    CategoryModule, // 🗂️ ACTIVÉ - Module catégories dynamiques pour pages produits !
+  ],
+  controllers: [
+    AnalyticsController, // 📊 Analytics avancées
+  ], // Plus besoin du controller temporaire
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

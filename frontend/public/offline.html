@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Hors Ligne - Automecanik</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .offline-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .offline-features {
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .feature {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            width: 40px;
+            text-align: center;
+        }
+
+        .retry-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .retry-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .connection-status {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .status-online {
+            background: rgba(76, 175, 80, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(244, 67, 54, 0.3);
+        }
+
+        .tips {
+            margin-top: 2rem;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+        }
+
+        .tips h3 {
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .tips ul {
+            list-style: none;
+        }
+
+        .tips li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .tips li::before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .offline-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1>Mode Hors Ligne</h1>
+        <p class="subtitle">Vous n'êtes pas connecté à Internet, mais certaines fonctionnalités restent disponibles</p>
+
+        <div class="offline-features">
+            <div class="feature">
+                <div class="feature-icon">🔍</div>
+                <div>
+                    <strong>Navigation hors ligne</strong><br>
+                    <small>Parcourez les pages mises en cache</small>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💾</div>
+                <div>
+                    <strong>Données sauvegardées</strong><br>
+                    <small>Vos données locales sont préservées</small>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔄</div>
+                <div>
+                    <strong>Synchronisation automatique</strong><br>
+                    <small>Les données seront synchronisées au retour de la connexion</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="connection-status" id="connectionStatus">
+            <span id="statusIcon">🔴</span>
+            <span id="statusText">Hors ligne</span>
+        </div>
+
+        <button class="retry-button" onclick="location.reload()">
+            🔄 Réessayer la connexion
+        </button>
+
+        <div class="tips">
+            <h3>💡 Conseils pour naviguer hors ligne</h3>
+            <ul>
+                <li>Vérifiez votre connexion WiFi ou données mobiles</li>
+                <li>Essayez de vous rapprocher de votre routeur WiFi</li>
+                <li>Redémarrez votre application si le problème persiste</li>
+                <li>Certaines pages visitées récemment sont disponibles hors ligne</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Monitor connection status
+        function updateConnectionStatus() {
+            const statusIcon = document.getElementById('statusIcon');
+            const statusText = document.getElementById('statusText');
+            const connectionStatus = document.getElementById('connectionStatus');
+
+            if (navigator.onLine) {
+                statusIcon.textContent = '🟢';
+                statusText.textContent = 'Connexion rétablie';
+                connectionStatus.className = 'connection-status status-online';
+                
+                // Auto-reload after a short delay when back online
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                statusIcon.textContent = '🔴';
+                statusText.textContent = 'Hors ligne';
+                connectionStatus.className = 'connection-status status-offline';
+            }
+        }
+
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial status check
+        updateConnectionStatus();
+
+        // Periodic connection check
+        setInterval(() => {
+            // Try to fetch a small resource to check real connectivity
+            fetch('/favicon.ico', { 
+                method: 'HEAD',
+                cache: 'no-cache',
+                mode: 'no-cors'
+            }).then(() => {
+                if (!navigator.onLine) {
+                    // Browser thinks we're offline but we can actually fetch
+                    location.reload();
+                }
+            }).catch(() => {
+                // Unable to fetch, we're truly offline
+            });
+        }, 5000);
+
+        // Service Worker communication
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                // Check for updates
+                registration.update();
+            });
+
+            // Listen for SW updates
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'CACHE_UPDATED') {
+                    const statusText = document.getElementById('statusText');
+                    statusText.textContent = 'Contenu mis à jour disponible';
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

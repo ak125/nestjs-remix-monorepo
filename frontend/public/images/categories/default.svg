@@ -1,0 +1,29 @@
+<!-- 📁 frontend/public/images/categories/default.svg -->
+<!-- 🖼️ Image par défaut pour les catégories sans image -->
+<svg width="400" height="225" viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="defaultGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e5e7eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d1d5db;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Arrière-plan -->
+  <rect width="400" height="225" fill="url(#defaultGradient)" />
+  
+  <!-- Icône centrale -->
+  <g transform="translate(200, 112.5)">
+    <!-- Cercle de fond -->
+    <circle cx="0" cy="0" r="40" fill="#9ca3af" opacity="0.6"/>
+    
+    <!-- Icône engrenage -->
+    <g transform="scale(2.5)" fill="#6b7280">
+      <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97c0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1c0 .33.03.65.07.97L2.46 14.6c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.31.61.22l2.49-1c.52.39 1.06.73 1.69.98l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.25 1.17-.59 1.69-.98l2.49 1c.22.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.63Z"/>
+    </g>
+  </g>
+  
+  <!-- Texte -->
+  <text x="200" y="180" text-anchor="middle" font-family="system-ui, sans-serif" font-size="16" font-weight="500" fill="#6b7280">
+    Catégorie
+  </text>
+</svg>

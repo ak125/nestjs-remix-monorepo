@@ -1,6 +1,5 @@
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -9,17 +8,33 @@ import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
 import { HttpExceptionFilter } from './auth/exception.filter';
+import cors from 'cors';
 
 const redisStoreFactory = RedisStore(session);
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    const app = await NestFactory.create(AppModule, {
       bodyParser: false,
+      logger:
+        process.env.NODE_ENV === 'production'
+          ? ['error', 'warn']
+          : ['error', 'warn', 'log'], // Réduire les logs DEBUG
     });
 
-    await startDevServer(app);
-    console.log('Serveur de développement démarré.');
+    // Les contrôleurs définissent déjà leurs préfixes individuellement
+    // (ex: @Controller('api/users'), @Controller('admin/suppliers'))
+    // Pas besoin de préfixe global qui casserait les routes existantes
+
+    // Cast pour éviter les conflits de types entre les dépendances
+    const expressApp = app as any;
+    const isProd = process.env.NODE_ENV === 'production';
+
+    // Démarrage du serveur Remix uniquement en dev
+    if (!isProd) {
+      await startDevServer(expressApp);
+      console.log('Serveur de développement démarré.');
+    }
 
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     const redisClient = new Redis(redisUrl);
@@ -32,6 +47,11 @@ async function bootstrap() {
       ttl: 86400 * 30,
     });
 
+    // Sécurité de session et cookies selon l'environnement
+    if (isProd && !process.env.SESSION_SECRET) {
+      throw new Error('SESSION_SECRET requis en production');
+    }
+
     app.use(
       session({
         store: redisStore,
@@ -40,14 +60,14 @@ async function bootstrap() {
         secret: process.env.SESSION_SECRET || '123',
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30,
-          sameSite: 'lax',
-          secure: false,
+          sameSite: isProd ? 'strict' : 'lax',
+          secure: isProd,
         },
       }),
     );
     console.log('Middleware de session initialisé.');
 
-    app.useStaticAssets(getPublicDir(), {
+    expressApp.useStaticAssets(getPublicDir(), {
       immutable: true,
       maxAge: '1y',
       index: false,
@@ -58,11 +78,58 @@ async function bootstrap() {
 
     app.use(passport.initialize());
     app.use(passport.session());
-    app.use('/auth/login', urlencoded({ extended: true }));
-    app.use('/auth/login', json());
+
+    // Middleware body-parser global
+    app.use(urlencoded({ extended: true }));
+    app.use(json());
+
     console.log('Passport initialisé.');
 
-    app.set('trust proxy', 1);
+    // Sécurité HTTP avec CSP personnalisée pour Supabase
+    expressApp.set('trust proxy', 1);
+    try {
+      // Import dynamique pour éviter d alourdir le build si non nécessaire
+      const helmet = (await import('helmet')).default;
+      const compression = (await import('compression')).default;
+
+      // Configuration Helmet avec CSP personnalisée pour autoriser Supabase
+      app.use(
+        helmet({
+          contentSecurityPolicy: {
+            directives: {
+              defaultSrc: ["'self'"],
+              styleSrc: ["'self'", "'unsafe-inline'"], // Pour Tailwind CSS
+              scriptSrc: ["'self'", "'unsafe-inline'"], // Pour les scripts Remix
+              imgSrc: [
+                "'self'",
+                'data:',
+                'blob:',
+                'https://cxpojprgwgubzjyqzmoq.supabase.co', // Autoriser les images Supabase
+              ],
+              connectSrc: ["'self'", 'ws:', 'wss:'], // Pour les WebSockets de dev
+              fontSrc: ["'self'", 'data:'],
+              objectSrc: ["'none'"],
+              mediaSrc: ["'self'"],
+              frameSrc: ["'none'"],
+            },
+          },
+        }),
+      );
+
+      app.use(compression());
+    } catch (e) {
+      console.warn('Helmet/compression non chargés:', e);
+    }
+
+    // CORS basique (à restreindre si cross-origin)
+    const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());
+    app.use(
+      cors({
+        origin: corsOrigin && corsOrigin.length > 0 ? corsOrigin : true,
+        credentials: true,
+      }),
+    );
+    expressApp.disable('x-powered-by');
 
     const selectedPort = process.env.PORT || 3000;
     console.log(`Démarrage du serveur sur le port ${selectedPort}...`);

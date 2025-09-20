@@ -1,21 +1,55 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound } from 'lucide-react';
-import { useOptionalUser } from "~/root";
+import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones } from 'lucide-react';
+import { useOptionalUser } from "../root";
+import { CartIcon } from "./cart/CartIcon";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
+  
   return (
     <nav className="px-3 py-2 bg-blue-600 text-white flex justify-between items-center" aria-label="Navigation principale">
-      <img 
-        src={logo}
-        alt="Logo Automecanik"
-        className="w-auto h-12"
-      />
-      <div className='flex gap-4'>
-        {user ? <span>{user.name}</span> : null}
+      <div className="flex items-center gap-4">
+        <Link to="/">
+          <img 
+            src={logo}
+            alt="Logo Automecanik"
+            className="w-auto h-12 hover:opacity-80 transition-opacity"
+          />
+        </Link>
+        
+        {/* Navigation principale */}
+        <div className="hidden md:flex gap-6">
+          <Link to="/catalogue" className="hover:text-blue-200 transition-colors text-sm font-medium">
+            Catalogue
+          </Link>
+          <Link to="/marques" className="hover:text-blue-200 transition-colors text-sm font-medium">
+            Marques
+          </Link>
+          <Link to="/support" className="hover:text-blue-200 transition-colors text-sm font-medium">
+            Support
+          </Link>
+          <Link to="/aide" className="hover:text-blue-200 transition-colors text-sm font-medium">
+            Aide
+          </Link>
+        </div>
+      </div>
+      
+      <div className='flex gap-4 items-center'>
+        {user && <span className="text-sm">{user.firstName} {user.lastName}</span>}
+
+        {/* Panier avec compteur dynamique */}
+        <CartIcon />
 
         <Link 
-          to='/' 
+          to='/orders' 
+          className="hover:text-blue-200 transition-colors"
+          aria-label="Commandes"
+        >
+          <Package className="flex-shrink-0" />
+        </Link>
+
+        <Link 
+          to='/factures' 
           className="hover:text-blue-200 transition-colors"
           aria-label="Factures"
         >
@@ -23,7 +57,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
         </Link>
 
         <Link 
-          to='/' 
+          to='/notifications' 
           className="hover:text-blue-200 transition-colors"
           aria-label="Notifications"
         >
@@ -31,29 +65,50 @@ export const Navbar = ({ logo }: { logo: string }) => {
         </Link>
 
         <Link 
-          to={user ? '/profile' : '/login'} 
+          to='/support' 
           className="hover:text-blue-200 transition-colors"
-          aria-label={user ? "Profil" : "Connexion"}
+          aria-label="Support Client"
+        >
+          <Headphones className="flex-shrink-0" />
+        </Link>
+
+        {/* Lien Admin conditionnel */}
+        {user?.level && user.level >= 7 && (
+          <Link 
+            to='/admin' 
+            className="hover:text-blue-200 transition-colors bg-blue-800 px-2 py-1 rounded text-sm"
+            aria-label="Administration"
+          >
+            <Settings className="flex-shrink-0 h-4 w-4" />
+          </Link>
+        )}
+
+        <Link 
+          to={user ? '/account/dashboard' : '/login'} 
+          className="hover:text-blue-200 transition-colors"
+          aria-label={user ? "Mon compte" : "Connexion"}
         >
           <UserRound className="flex-shrink-0" />
         </Link>
 
+        {/* Système de login/logout simple qui fonctionnait */}
         {user ? (
           <form method='POST' action='/auth/logout'>
             <button 
               type='submit' 
-              className="hover:text-blue-200 transition-colors"
+              className="hover:text-blue-200 transition-colors text-sm px-2 py-1 rounded hover:bg-blue-700"
             >
               Se déconnecter
             </button>
           </form>
         ) : (
-          <>
-            <Link className='text-xs' to='/login'>Connexion</Link>
-            <Link className='text-xs' to='/register'>Inscription</Link>
-          </>
+          <div className="flex gap-2 text-xs">
+            <Link className='hover:text-blue-200 transition-colors' to='/login'>Connexion</Link>
+            <span>|</span>
+            <Link className='hover:text-blue-200 transition-colors' to='/register'>Inscription</Link>
+          </div>
         )}
-            </div>
-        </nav>
-    );
+      </div>
+    </nav>
+  );
 };
