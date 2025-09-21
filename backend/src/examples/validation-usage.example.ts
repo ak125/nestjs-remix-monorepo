@@ -4,14 +4,13 @@ import { z } from 'zod';
 
 @Injectable()
 export class ValidationUsageExample {
-  constructor(
-    private readonly validationService: ConfigValidationService,
-  ) {}
+  constructor(private readonly validationService: ConfigValidationService) {}
 
   async exempleUtilisationValidation() {
     // ✅ Valider la configuration de l'environnement
-    const envValidation = await this.validationService.validateEnvironmentConfig();
-    
+    const envValidation =
+      await this.validationService.validateEnvironmentConfig();
+
     if (envValidation.isValid) {
       console.log('✅ Configuration environnement valide');
     } else {
@@ -21,7 +20,8 @@ export class ValidationUsageExample {
     // 🏷️ Valider les métadonnées d'une page
     const metadataValidation = this.validationService.validatePageMetadata({
       title: 'BMW Série 3 - Voitures Premium',
-      description: 'Découvrez la BMW Série 3, voiture premium alliant performance et élégance',
+      description:
+        'Découvrez la BMW Série 3, voiture premium alliant performance et élégance',
       keywords: ['bmw', 'série 3', 'voiture', 'premium'],
       ogImage: 'https://example.com/bmw-series-3.jpg',
       canonicalUrl: 'https://example.com/products/vehicles/cars/bmw/series-3',
@@ -35,22 +35,26 @@ export class ValidationUsageExample {
     }
 
     // 🧭 Valider la configuration d'un breadcrumb
-    const breadcrumbValidation = this.validationService.validateBreadcrumbConfig({
-      route: '/products/vehicles/cars/bmw',
-      label: 'BMW',
-      icon: 'brand',
-      parent: '/products/vehicles/cars',
-      order: 1,
-      isVisible: true,
-      metadata: {
-        brand: 'BMW',
-        category: 'vehicles',
-        type: 'brand_page',
-      },
-    });
+    const breadcrumbValidation =
+      this.validationService.validateBreadcrumbConfig({
+        route: '/products/vehicles/cars/bmw',
+        label: 'BMW',
+        icon: 'brand',
+        parent: '/products/vehicles/cars',
+        order: 1,
+        isVisible: true,
+        metadata: {
+          brand: 'BMW',
+          category: 'vehicles',
+          type: 'brand_page',
+        },
+      });
 
     if (breadcrumbValidation.isValid) {
-      console.log('✅ Configuration breadcrumb valide:', breadcrumbValidation.data);
+      console.log(
+        '✅ Configuration breadcrumb valide:',
+        breadcrumbValidation.data,
+      );
     } else {
       console.error('❌ Erreurs breadcrumb:', breadcrumbValidation.errors);
     }
@@ -74,19 +78,25 @@ export class ValidationUsageExample {
     );
 
     if (customValidation.isValid) {
-      console.log('✅ Configuration personnalisée valide:', customValidation.data);
+      console.log(
+        '✅ Configuration personnalisée valide:',
+        customValidation.data,
+      );
     } else {
       console.error('❌ Erreurs configuration:', customValidation.errors);
     }
 
     // 🔑 Valider une clé de configuration
-    const keyValidation = this.validationService.validateConfigKey('app.theme.dark_mode');
+    const keyValidation = this.validationService.validateConfigKey(
+      'app.theme.dark_mode',
+    );
     if (!keyValidation.isValid) {
       console.error('❌ Clé invalide:', keyValidation.errors);
     }
 
     // 📂 Valider une catégorie
-    const categoryValidation = this.validationService.validateConfigCategory('user_preferences');
+    const categoryValidation =
+      this.validationService.validateConfigCategory('user_preferences');
     if (!categoryValidation.isValid) {
       console.error('❌ Catégorie invalide:', categoryValidation.errors);
     }
@@ -94,12 +104,15 @@ export class ValidationUsageExample {
 
   // 🛡️ Middleware de validation pour les controllers
   async validateRequestData(data: any, schema: z.ZodSchema) {
-    const validation = await this.validationService.validateConfigValue(data, schema);
-    
+    const validation = await this.validationService.validateConfigValue(
+      data,
+      schema,
+    );
+
     if (!validation.isValid) {
       throw new Error(`Données invalides: ${validation.errors.join(', ')}`);
     }
-    
+
     return validation.data;
   }
 }

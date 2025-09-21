@@ -77,7 +77,7 @@ async function testUrlMigration(legacyUrl: string): Promise<MigrationResult> {
 /**
  * Effectue une redirection 301 si la migration est possible
  */
-async function performRedirection(legacyUrl: string): Promise<Response | null> {
+async function _performRedirection(legacyUrl: string): Promise<Response | null> {
   const migration = await testUrlMigration(legacyUrl);
   
   if (migration.success && migration.new_url) {
@@ -92,18 +92,31 @@ async function performRedirection(legacyUrl: string): Promise<Response | null> {
 // 📡 LOADER FUNCTION
 // ====================================
 
-export const loader = async ({ request, params }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const legacyUrl = url.pathname;
   
-  console.log(`🔄 Interception URL legacy: ${legacyUrl}`);
+  console.log(`🔄 Interception URL: ${legacyUrl}`);
   
-  // Vérifier si c'est bien une URL de pièce ancienne
+  // Vérifier si c'est bien une URL de pièce
   if (!legacyUrl.includes('/pieces/') || !legacyUrl.endsWith('.html')) {
-    throw new Response("URL non reconnue comme ancienne URL de pièce", { status: 404 });
+    throw new Response("URL non reconnue comme URL de pièce", { status: 404 });
   }
   
-  // Tenter la migration
+  // Pattern pour nos nouvelles URLs: /pieces/{alias}-{id}.html
+  // Le pattern doit capturer l'alias (qui peut contenir des tirets) et l'ID numérique à la fin
+  const newPatternMatch = legacyUrl.match(/\/pieces\/(.+)-(\d+)\.html$/);
+  
+  if (newPatternMatch) {
+    const [, alias, gammeId] = newPatternMatch;
+    console.log(`✅ Nouvelle URL détectée (pas de redirection): alias=${alias}, gammeId=${gammeId}`);
+    
+    // NE PAS rediriger ces URLs car elles sont déjà dans le bon format !
+    // Elles seront gérées par pieces.$slug.tsx
+    throw new Response("URL déjà au bon format - gérée par pieces.$slug.tsx", { status: 404 });
+  }
+  
+  // Sinon, tenter la migration avec l'ancien système
   const migration = await testUrlMigration(legacyUrl);
   
   // Si migration réussie, redirection 301 immédiate

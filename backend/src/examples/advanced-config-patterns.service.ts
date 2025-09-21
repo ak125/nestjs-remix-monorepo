@@ -29,7 +29,7 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
         key: 'app.maintenance_mode',
         value: false,
         type: ConfigType.BOOLEAN,
-        description: 'Mode maintenance de l\'application',
+        description: "Mode maintenance de l'application",
         category: 'system',
         isPublic: true,
       },
@@ -58,7 +58,7 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
           animations: true,
         },
         type: ConfigType.JSON,
-        description: 'Configuration du thème de l\'interface',
+        description: "Configuration du thème de l'interface",
         category: 'ui',
         isPublic: true,
       },
@@ -72,7 +72,10 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
           this.logger.log(`✅ Configuration par défaut créée: ${config.key}`);
         }
       } catch (error) {
-        this.logger.warn(`⚠️ Erreur lors de l'initialisation de ${config.key}:`, error.message);
+        this.logger.warn(
+          `⚠️ Erreur lors de l'initialisation de ${config.key}:`,
+          error.message,
+        );
       }
     }
   }
@@ -252,7 +255,11 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
   /**
    * 🔔 Pattern 6: Système d'alertes pour configurations
    */
-  private async sendConfigAlert(key: string, message: string, alertType: string) {
+  private async sendConfigAlert(
+    key: string,
+    message: string,
+    alertType: string,
+  ) {
     this.logger.error(`🚨 ALERTE CONFIG [${alertType}]: ${key} - ${message}`);
 
     // Tracker l'alerte
@@ -278,31 +285,33 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
    * 🛡️ Pattern 7: Configuration avec rollback automatique
    */
   async updateConfigWithRollback(
-    key: string, 
-    newValue: any, 
+    key: string,
+    newValue: any,
     userId?: string,
     rollbackDelay = 300000, // 5 minutes
   ) {
     // Sauvegarder la valeur actuelle
     const currentValue = await this.configService.get(key);
-    
+
     try {
       // Mettre à jour la configuration
       await this.configService.update(key, { value: newValue });
-      
-      this.logger.log(`✅ Configuration ${key} mise à jour, rollback programmé dans ${rollbackDelay}ms`);
+
+      this.logger.log(
+        `✅ Configuration ${key} mise à jour, rollback programmé dans ${rollbackDelay}ms`,
+      );
 
       // Programmer le rollback automatique
       setTimeout(async () => {
         try {
           const currentVal = await this.configService.get(key);
-          
+
           // Vérifier si la valeur n'a pas été modifiée entre temps
           if (JSON.stringify(currentVal) === JSON.stringify(newValue)) {
             await this.configService.update(key, { value: currentValue });
-            
+
             this.logger.warn(`🔄 Rollback automatique effectué pour ${key}`);
-            
+
             await this.analyticsService.trackConfigEvent({
               type: 'config_change',
               category: 'auto_rollback',
@@ -318,7 +327,10 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
             });
           }
         } catch (error) {
-          this.logger.error(`❌ Erreur lors du rollback automatique pour ${key}:`, error);
+          this.logger.error(
+            `❌ Erreur lors du rollback automatique pour ${key}:`,
+            error,
+          );
         }
       }, rollbackDelay);
 
@@ -339,21 +351,27 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
           throw new Error('Rate limit doit être un nombre entre 100 et 10000');
         }
         break;
-      
+
       case 'ui.theme_config':
         const themeValidation = this.validationService.validateConfigValue(
           value,
           // Schéma Zod pour thème
           require('zod').z.object({
-            primaryColor: require('zod').z.string().regex(/^#[0-9A-F]{6}$/i),
-            secondaryColor: require('zod').z.string().regex(/^#[0-9A-F]{6}$/i),
+            primaryColor: require('zod')
+              .z.string()
+              .regex(/^#[0-9A-F]{6}$/i),
+            secondaryColor: require('zod')
+              .z.string()
+              .regex(/^#[0-9A-F]{6}$/i),
             darkMode: require('zod').z.boolean(),
             animations: require('zod').z.boolean(),
           }),
         );
-        
+
         if (!themeValidation.isValid) {
-          throw new Error(`Configuration thème invalide: ${themeValidation.errors.join(', ')}`);
+          throw new Error(
+            `Configuration thème invalide: ${themeValidation.errors.join(', ')}`,
+          );
         }
         break;
     }
@@ -366,7 +384,7 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
   async generateDailyConfigReport() {
     try {
       const metrics = await this.analyticsService.getConfigMetrics('day');
-      
+
       const report = {
         date: new Date().toISOString().split('T')[0],
         totalEvents: metrics.totalEvents,
@@ -377,7 +395,10 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
         healthStatus: await this.getConfigHealthStatus(),
       };
 
-      this.logger.log('📊 Rapport quotidien des configurations:', JSON.stringify(report, null, 2));
+      this.logger.log(
+        '📊 Rapport quotidien des configurations:',
+        JSON.stringify(report, null, 2),
+      );
 
       // Sauvegarder le rapport
       await this.configService.create({
@@ -388,9 +409,11 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
         category: 'reports',
         isPublic: false,
       });
-
     } catch (error) {
-      this.logger.error('❌ Erreur lors de la génération du rapport quotidien:', error);
+      this.logger.error(
+        '❌ Erreur lors de la génération du rapport quotidien:',
+        error,
+      );
     }
   }
 
@@ -400,7 +423,10 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
   private async setupConfigWatchers() {
     // Watcher pour le mode maintenance
     setInterval(async () => {
-      const maintenanceMode = await this.configService.get('app.maintenance_mode', false);
+      const maintenanceMode = await this.configService.get(
+        'app.maintenance_mode',
+        false,
+      );
       if (maintenanceMode) {
         this.logger.warn('⚠️ Application en mode maintenance');
       }
@@ -411,7 +437,11 @@ export class AdvancedConfigPatternsService implements OnModuleInit {
 
   private async getTopAccessedConfigs() {
     // Logique pour récupérer les configs les plus accédées
-    return ['app.maintenance_mode', 'features.new_dashboard', 'ui.theme_config'];
+    return [
+      'app.maintenance_mode',
+      'features.new_dashboard',
+      'ui.theme_config',
+    ];
   }
 
   private async getConfigHealthStatus() {

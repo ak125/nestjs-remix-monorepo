@@ -1,13 +1,79 @@
 import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CatalogService, HomeCatalogData } from './catalog.service';
+import { CatalogFamilyService } from './services/catalog-family.service';
 
 @ApiTags('Catalog - API Complète')
 @Controller('api/catalog')
 export class CatalogController {
   private readonly logger = new Logger(CatalogController.name);
 
-  constructor(private readonly catalogService: CatalogService) {}
+  constructor(
+    private readonly catalogService: CatalogService,
+    private readonly catalogFamilyService: CatalogFamilyService
+  ) {}
+
+  /**
+   * GET /api/catalog/families - Reproduction exacte logique PHP index.php
+   * Pour le composant SimpleCatalogFamilies du frontend
+   */
+  @Get('families')
+  @ApiOperation({ 
+    summary: 'Familles de catalogue avec gammes (logique PHP)',
+    description: 'Reproduction exacte de la logique PHP index.php pour le catalogue de familles avec leurs gammes'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Familles avec gammes récupérées avec succès',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        families: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              mf_id: { type: 'number' },
+              mf_name: { type: 'string' },
+              mf_pic: { type: 'string' },
+              gammes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    pg_id: { type: 'number' },
+                    pg_alias: { type: 'string' },
+                    pg_name: { type: 'string' }
+                  }
+                }
+              }
+            }
+          }
+        },
+        totalFamilies: { type: 'number' },
+        message: { type: 'string' }
+      }
+    }
+  })
+  async getCatalogFamiliesPhpLogic() {
+    this.logger.log('📋 [GET] /api/catalog/families - Logique PHP pour SimpleCatalogFamilies');
+    
+    try {
+      const result = await this.catalogFamilyService.getCatalogFamiliesPhpLogic();
+      
+      this.logger.log(`✅ ${result.totalFamilies} familles récupérées pour le frontend`);
+      return result;
+    } catch (error: any) {
+      this.logger.error('❌ Erreur récupération familles:', error);
+      return {
+        success: false,
+        families: [],
+        totalFamilies: 0,
+        message: 'Erreur lors de la récupération des familles'
+      };
+    }
+  }
 
   /**
    * GET /api/catalog/brands

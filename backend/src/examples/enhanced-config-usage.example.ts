@@ -4,14 +4,12 @@ import { ConfigType } from '../modules/config/schemas/config.schemas';
 
 @Injectable()
 export class ExampleUsageService {
-  constructor(
-    private readonly configService: EnhancedConfigService,
-  ) {}
+  constructor(private readonly configService: EnhancedConfigService) {}
 
   async exempleUtilisationConfig() {
     // 📖 Récupérer une configuration simple
     const appName = await this.configService.get('app.name', 'MonApp');
-    console.log('Nom de l\'application:', appName);
+    console.log("Nom de l'application:", appName);
 
     // 🔒 Récupérer une configuration sécurisée (chiffrée)
     const apiKey = await this.configService.getSecure('api.secret_key');
@@ -44,7 +42,7 @@ export class ExampleUsageService {
     const cachedValue = await this.configService.get(
       'expensive.computation',
       'default',
-      7200 // Cache pendant 2 heures
+      7200, // Cache pendant 2 heures
     );
   }
 }

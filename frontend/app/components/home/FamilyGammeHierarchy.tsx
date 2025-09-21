@@ -7,10 +7,16 @@ import { hierarchyApi, type FamilyWithGammes, type HierarchyStats } from '../../
 
 interface FamilyGammeHierarchyProps {
   className?: string;
+  hierarchyData?: {
+    families: FamilyWithGammes[];
+    stats: HierarchyStats;
+    success: boolean;
+  } | null;
 }
 
 export default function FamilyGammeHierarchy({ 
-  className = ''
+  className = '',
+  hierarchyData
 }: FamilyGammeHierarchyProps) {
   const [families, setFamilies] = useState<FamilyWithGammes[]>([]);
   const [stats, setStats] = useState<HierarchyStats>({
@@ -22,27 +28,89 @@ export default function FamilyGammeHierarchy({
   const [loading, setLoading] = useState(true);
   const [expandedFamilies, setExpandedFamilies] = useState<string[]>([]);
 
-  // Charger les données au montage du composant
+  // Charger les données depuis les props ou faire un appel API
   useEffect(() => {
-    const loadHierarchy = async () => {
-      try {
-        const data = await hierarchyApi.getHomepageData();
-        setFamilies(data.families); // Afficher toutes les familles
-        setStats(data.stats);
+    console.log('🔍 FamilyGammeHierarchy - hierarchyData reçu:', hierarchyData);
+    
+    if (hierarchyData) {
+      // Format de l'API: { success: true, families: [...], stats: {...} }
+      if (hierarchyData.success && hierarchyData.families) {
+        console.log('✅ Format API détecté avec', hierarchyData.families.length, 'familles');
+        setFamilies(hierarchyData.families);
+        setStats(hierarchyData.stats);
         
         // Auto-expand les premières familles pour l'affichage
-        if (data.families.length > 0) {
-          setExpandedFamilies(data.families.slice(0, 3).map(f => f.mf_id));
+        if (hierarchyData.families.length > 0) {
+          setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
         }
-      } catch (error) {
-        console.error('Erreur chargement hiérarchie:', error);
-      } finally {
+        setLoading(false);
+      } else if (Array.isArray(hierarchyData)) {
+        // Format tableau direct
+        console.log('✅ Format tableau détecté avec', hierarchyData.length, 'familles');
+        setFamilies(hierarchyData);
+        setStats({
+          total_families: hierarchyData.length,
+          total_gammes: hierarchyData.reduce((sum, family) => sum + (family.gammes_count || 0), 0),
+          total_manufacturers: hierarchyData.length,
+          families_with_gammes: hierarchyData.filter(f => f.gammes && f.gammes.length > 0).length
+        });
+        
+        // Auto-expand les premières familles pour l'affichage
+        if (hierarchyData.length > 0) {
+          setExpandedFamilies(hierarchyData.slice(0, 3).map(f => f.mf_id));
+        }
+        setLoading(false);
+      } else if (hierarchyData.families) {
+        // Structure alternative avec families wrapper
+        console.log('✅ Format wrapper détecté avec', hierarchyData.families.length, 'familles');
+        setFamilies(hierarchyData.families);
+        setStats(hierarchyData.stats || {
+          total_families: 0,
+          total_gammes: 0,
+          total_manufacturers: 0,
+          families_with_gammes: 0
+        });
+        
+        // Auto-expand les premières familles pour l'affichage
+        if (hierarchyData.families.length > 0) {
+          setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
+        }
+        setLoading(false);
+      } else {
+        // Fallback vide
+        console.log('⚠️ Format de données non reconnu:', hierarchyData);
+        setFamilies([]);
+        setStats({
+          total_families: 0,
+          total_gammes: 0,
+          total_manufacturers: 0,
+          families_with_gammes: 0
+        });
         setLoading(false);
       }
-    };
+    } else {
+      console.log('⚠️ Aucune donnée hierarchyData fournie, fallback vers API');
+      // Fallback : charger via API si pas de données en props
+      const loadHierarchy = async () => {
+        try {
+          const data = await hierarchyApi.getHomepageData();
+          setFamilies(data.families);
+          setStats(data.stats);
+          
+          // Auto-expand les premières familles pour l'affichage
+          if (data.families.length > 0) {
+            setExpandedFamilies(data.families.slice(0, 3).map(f => f.mf_id));
+          }
+        } catch (error) {
+          console.error('Erreur chargement hiérarchie:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    loadHierarchy();
-  }, []); // Plus de dépendance à maxFamilies
+      loadHierarchy();
+    }
+  }, [hierarchyData]);
   
   // Toggle d'expansion d'une famille
   const toggleFamily = (familyId: string) => {
@@ -188,26 +256,42 @@ export default function FamilyGammeHierarchy({
                       Sous-catégories ({family.gammes_count})
                     </h4>
                     <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                      {family.gammes.slice(0, 10).map((gamme, index) => (
-                        <div
-                          key={gamme.mc_id}
-                          className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors"
-                        >
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium text-gray-700">
-                              {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              Fab. {gamme.mc_mf_id}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                                            {family.gammes.slice(0, 10).map((gamme, index) => {
+                        console.log('🔍 Debug gamme:', { 
+                          gamme, 
+                          pgId: gamme.pg_id, 
+                          mcPgId: gamme.mc_pg_id,
+                          name: gamme.pg_name,
+                          alias: gamme.pg_alias
+                        });
+                        
+                        // Générer l'URL directement vers la page gamme au format pieces/{alias}-{id}.html
+                        const categoryUrl = gamme.pg_id && gamme.pg_alias
+                            ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
+                            : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || '')}&gamme=${gamme.pg_id}`;
+                        
+                        return (
+                          <Link
+                            key={gamme.mc_id}
+                            to={categoryUrl}
+                            className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors block"
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-gray-700">
+                                {gamme.pg_name || `Gamme #${gamme.pg_id}`}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Fab. {gamme.mc_mf_id}
+                              </span>
+                            </div>
+                          </Link>
+                        );
+                      })}
                       
                       {family.gammes_count > 10 && (
                         <div className="text-center py-2">
                           <Link
-                            to={`/catalog/family/${family.mf_id}`}
+                            to={`/products/catalog?family=${family.mf_id}`}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           >
                             Voir les {family.gammes_count - 10} autres →
@@ -221,7 +305,7 @@ export default function FamilyGammeHierarchy({
                 {/* Pied de carte */}
                 <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
                   <Link
-                    to={`/catalog/family/${family.mf_id}`}
+                    to={`/products/catalog?family=${family.mf_id}`}
                     className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
                   >
                     Explorer {family.mf_name_system} →

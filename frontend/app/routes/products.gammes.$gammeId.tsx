@@ -135,8 +135,6 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     const url = new URL(request.url);
     const enhanced = url.searchParams.get("enhanced") === "true";
     const search = url.searchParams.get("search") || "";
-    const page = parseInt(url.searchParams.get("page") || "1");
-    const limit = parseInt(url.searchParams.get("limit") || "24");
     const sortBy = url.searchParams.get("sortBy") || "piece_name";
     const sortOrder = url.searchParams.get("sortOrder") || "asc";
     
@@ -146,8 +144,8 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     
     const baseUrl = process.env.API_URL || "http://localhost:3000";
 
-    // Récupérer les produits de la gamme avec pagination
-    const response = await fetch(`${baseUrl}/api/products/gammes/${gammeId}/products?search=${encodeURIComponent(search)}&page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`, {
+    // Récupérer les données de la gamme via notre nouvelle API REST
+    const response = await fetch(`${baseUrl}/api/gamme-rest/${gammeId}`, {
       headers: { 
         'internal-call': 'true',
         'user-role': userRole,
@@ -156,14 +154,53 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Gamme non trouvée');
-      }
-      throw new Error(`Erreur API: ${response.status}`);
+      console.error(`❌ API error ${response.status} for gamme ${gammeId}`);
+      
+      // Au lieu de lancer une erreur, retournons des données par défaut
+      return json<GammeDetailData>({
+        user: {
+          id: user.id,
+          name: userName,
+          level: userLevel,
+          role: userRole
+        },
+        gamme: {
+          id: gammeId,
+          name: `Gamme ${gammeId}`,
+          is_active: true
+        },
+        products: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: 24,
+          totalPages: 0
+        },
+        filters: {
+          search,
+          sortBy,
+          sortOrder
+        },
+        enhanced,
+        error: `Erreur API: ${response.status}`
+      });
     }
 
-    const data = await response.json();
-
+    const apiData = await response.json();
+    
+    // Gérer les redirections spéciales de l'API (comme la gamme 3940)
+    if (!apiData.success && apiData.redirect) {
+      throw new Response(null, {
+        status: apiData.status || 301,
+        headers: {
+          Location: apiData.redirect,
+        },
+      });
+    }
+    
+    // Adapter les données de notre nouvelle API au format attendu
+    const gammeData = apiData.success ? apiData.data : null;
+    
     return json<GammeDetailData>({
       user: {
         id: user.id,
@@ -171,10 +208,24 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         level: userLevel,
         role: userRole
       },
-      gamme: data.gamme,
-      products: data.products || [],
-      pagination: data.pagination,
-      filters: data.filters,
+      gamme: {
+        id: gammeId,
+        name: gammeData?.pg_name_site || `Gamme ${gammeId}`,
+        alias: gammeData?.pg_alias,
+        is_active: true
+      },
+      products: gammeData?.products || [],
+      pagination: {
+        total: gammeData?.products_count || 0,
+        page: 1,
+        limit: 50,
+        totalPages: 1
+      },
+      filters: {
+        search: "",
+        sortBy: "piece_name",
+        sortOrder: "asc"
+      },
       enhanced
     });
 
@@ -570,7 +621,7 @@ export default function ProductsGammeDetail() {
             </p>
             {filters.search && (
               <Button asChild variant="outline">
-                <Link to={`/products/gammes/${gamme.id}`}>
+                <Link to={`/pieces/${gamme.alias || 'gamme'}-${gamme.id}.html`}>
                   Voir tous les produits
                 </Link>
               </Button>

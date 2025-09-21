@@ -10,6 +10,7 @@ import { CatalogGammeController } from './controllers/catalog-gamme.controller';
 import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
 import { GammeUnifiedController } from './controllers/gamme-unified.controller'; // 🎯 NOUVEAU - Controller unifié
 import { ImageProcessingController } from './controllers/image-test.controller'; // 🖼️ Test controller images
+import { EquipementiersController } from './controllers/equipementiers.controller'; // 🏭 NOUVEAU - Controller équipementiers
 // import { GammeController } from './controllers/gamme.controller'; // TEMPORAIREMENT DÉSACTIVÉ
 
 // ========================================
@@ -22,6 +23,7 @@ import { CatalogFamilyService } from './services/catalog-family.service';
 import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 NOUVEAU - Service unifié
+import { EquipementiersService } from './services/equipementiers.service'; // 🏭 NOUVEAU - Service équipementiers
 // import { ImageProcessingService } from './services/image-processing.service'; // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs compilation
 
 // ========================================
@@ -37,13 +39,13 @@ import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
- * 
+ *
  * ✅ Intègre tous les services de catalogue existants
- * ✅ Fournit une API complète pour la page d'accueil  
+ * ✅ Fournit une API complète pour la page d'accueil
  * ✅ Gère les marques, modèles, types et gammes de produits
  * ✅ Cache intelligent pour des performances optimales
  * ✅ Validation Zod et documentation Swagger automatique
- * 
+ *
  * 🔗 ENDPOINTS DISPONIBLES :
  * - GET /api/catalog/brands - Liste des marques automobiles
  * - GET /api/catalog/models/:brandId - Modèles par marque
@@ -51,10 +53,10 @@ import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 
  * - GET /api/catalog/gammes - Gammes de produits
  * - GET /api/catalog/homepage-data - Données complètes pour page d'accueil
  * - GET /api/enhanced-vehicle-catalog/* - API véhicules avancée
- * 
+ *
  * 🎯 OPTIMISÉ POUR :
  * - Page d'accueil avec sélecteur de véhicule
- * - Catalogue de produits par véhicule  
+ * - Catalogue de produits par véhicule
  * - Performance avec cache multi-niveaux
  * - Intégration avec système de migration URLs
  */
@@ -70,6 +72,7 @@ import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 
     FamilyGammeHierarchyController, // 🏗️ NOUVEAU - Contrôleur hiérarchie Familles → Gammes
     GammeUnifiedController, // 🎯 NOUVEAU - Contrôleur unifié simplifié
     ImageProcessingController, // 🖼️ NOUVEAU - Contrôleur traitement images
+    EquipementiersController, // 🏭 NOUVEAU - Contrôleur équipementiers
     // GammeController, // TEMPORAIREMENT DÉSACTIVÉ - utilise GammeService problématique
   ],
   providers: [
@@ -81,8 +84,9 @@ import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 
     CatalogGammeService, // 🔧 NOUVEAU - Service gammes catalog_gamme
     FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Service hiérarchie Familles → Gammes
     GammeUnifiedService, // 🎯 NOUVEAU - Service unifié simplifié
+    EquipementiersService, // 🏭 NOUVEAU - Service équipementiers
     // ImageProcessingService, // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs de compilation
-    
+
     // ⚡ Services de support - TEMPORAIREMENT DÉSACTIVÉS
     // VehicleCacheService,
     // MetadataService,
@@ -90,7 +94,7 @@ import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 
   exports: [
     // 📤 Exports pour autres modules
     CatalogService,
-    EnhancedVehicleCatalogService, 
+    EnhancedVehicleCatalogService,
     // GammeService, // TEMPORAIREMENT DÉSACTIVÉ
     CatalogFamilyService, // 🔧 NOUVEAU - Export service familles
     CatalogGammeService, // 🔧 NOUVEAU - Export service gammes catalog_gamme
@@ -108,15 +112,15 @@ export class CatalogModule {
     description: 'Module catalogue consolidé avec support véhicules et gammes',
     features: [
       'API REST complète pour catalogue véhicules',
-      'Gammes de produits avec cache intelligent', 
-      'Intégration page d\'accueil optimisée',
+      'Gammes de produits avec cache intelligent',
+      "Intégration page d'accueil optimisée",
       'Support migration URLs SEO',
-      'Validation Zod et documentation Swagger'
+      'Validation Zod et documentation Swagger',
     ],
     endpoints: {
       catalog: '/api/catalog/*',
-      enhanced: '/api/enhanced-vehicle-catalog/*'
-    }
+      enhanced: '/api/enhanced-vehicle-catalog/*',
+    },
   };
 
   /**

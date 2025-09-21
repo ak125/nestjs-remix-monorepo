@@ -3,12 +3,40 @@
 
 import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { FamilyGammeHierarchyService } from '../services/family-gamme-hierarchy.service';
+import { CatalogFamilyService } from '../services/catalog-family.service';
 
 @Controller('api/catalog/hierarchy')
 export class FamilyGammeHierarchyController {
   private readonly logger = new Logger(FamilyGammeHierarchyController.name);
 
-  constructor(private readonly hierarchyService: FamilyGammeHierarchyService) {}
+  constructor(
+    private readonly hierarchyService: FamilyGammeHierarchyService,
+    private readonly catalogFamilyService: CatalogFamilyService
+  ) {}
+
+  /**
+   * 📋 GET /api/catalog/hierarchy/php-logic - Reproduction exacte de la logique PHP index.php
+   * Pour le composant SimpleCatalogFamilies du frontend
+   */
+  @Get('php-logic')
+  async getCatalogFamiliesPhpLogic() {
+    this.logger.log('📋 [GET] /api/catalog/hierarchy/php-logic - Logique PHP index.php');
+    
+    try {
+      const result = await this.catalogFamilyService.getCatalogFamiliesPhpLogic();
+      
+      this.logger.log(`✅ Logique PHP: ${result.totalFamilies} familles avec gammes récupérées`);
+      return result;
+    } catch (error: any) {
+      this.logger.error('❌ Erreur logique PHP:', error);
+      return {
+        success: false,
+        families: [],
+        totalFamilies: 0,
+        message: error?.message || 'Erreur lors de la récupération des familles (logique PHP)'
+      };
+    }
+  }
 
   /**
    * 🏗️ GET /api/catalog/hierarchy/full - Hiérarchie complète Familles → Gammes

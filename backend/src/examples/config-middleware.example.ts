@@ -21,18 +21,23 @@ export class MaintenanceModeInterceptor implements NestInterceptor {
     private readonly analyticsService: ConfigAnalyticsService,
   ) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
     // Vérifier le mode maintenance
-    const maintenanceMode = await this.configService.get('app.maintenance_mode', false);
-    
+    const maintenanceMode = await this.configService.get(
+      'app.maintenance_mode',
+      false,
+    );
+
     if (maintenanceMode) {
       // Excepter certaines routes critiques
       const exemptPaths = ['/api/health', '/api/admin/maintenance'];
-      if (!exemptPaths.some(path => request.url.startsWith(path))) {
-        
+      if (!exemptPaths.some((path) => request.url.startsWith(path))) {
         // Tracker l'accès bloqué
         await this.analyticsService.trackConfigEvent({
           type: 'config_access',
@@ -108,14 +113,20 @@ export class MaintenanceModeInterceptor implements NestInterceptor {
  */
 @Injectable()
 export class RateLimitInterceptor implements NestInterceptor {
-  private requestCounts = new Map<string, { count: number; resetTime: number }>();
+  private requestCounts = new Map<
+    string,
+    { count: number; resetTime: number }
+  >();
 
   constructor(private readonly configService: EnhancedConfigService) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
     const clientIp = request.ip;
-    
+
     // Récupérer la limite depuis la configuration
     const rateLimit = await this.configService.get('api.rate_limit', 1000);
     const windowMs = await this.configService.get('api.rate_window', 3600000); // 1 heure
@@ -132,7 +143,7 @@ export class RateLimitInterceptor implements NestInterceptor {
     } else {
       // Incrémenter le compteur
       clientData.count++;
-      
+
       if (clientData.count > rateLimit) {
         throw new HttpException(
           {
@@ -157,9 +168,12 @@ export class RateLimitInterceptor implements NestInterceptor {
 export class UIConfigInterceptor implements NestInterceptor {
   constructor(private readonly configService: EnhancedConfigService) {}
 
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
+  async intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
-    
+
     // Récupérer la configuration UI
     const uiConfig = await this.configService.get('ui.theme_config', {});
     const features = await this.configService.getByCategory('features');
@@ -194,17 +208,20 @@ export class FeatureFlagGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const handler = context.getHandler();
-    
+
     // Récupérer le nom de la feature depuis un décorateur (à implémenter)
     const featureName = Reflect.getMetadata('feature-flag', handler);
-    
+
     if (!featureName) {
       return true; // Pas de feature flag définie
     }
 
     // Vérifier si la feature est activée
-    const isEnabled = await this.configService.get(`features.${featureName}`, false);
-    
+    const isEnabled = await this.configService.get(
+      `features.${featureName}`,
+      false,
+    );
+
     if (!isEnabled) {
       throw new HttpException(
         {
@@ -226,7 +243,8 @@ export class FeatureFlagGuard implements CanActivate {
  */
 import { SetMetadata } from '@nestjs/common';
 
-export const FeatureFlag = (feature: string) => SetMetadata('feature-flag', feature);
+export const FeatureFlag = (feature: string) =>
+  SetMetadata('feature-flag', feature);
 
 /**
  * 📊 Middleware pour collecter des métriques de performance
@@ -243,20 +261,26 @@ export class PerformanceMetricsMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     const startTime = Date.now();
-    
+
     // Vérifier si les métriques sont activées
-    const metricsEnabled = await this.configService.get('monitoring.performance_metrics', true);
-    
+    const metricsEnabled = await this.configService.get(
+      'monitoring.performance_metrics',
+      true,
+    );
+
     if (!metricsEnabled) {
       return next();
     }
 
     res.on('finish', async () => {
       const duration = Date.now() - startTime;
-      
+
       // Seuil de performance configurable
-      const slowThreshold = await this.configService.get('monitoring.slow_request_threshold', 1000);
-      
+      const slowThreshold = await this.configService.get(
+        'monitoring.slow_request_threshold',
+        1000,
+      );
+
       if (duration > slowThreshold) {
         // Tracker les requêtes lentes
         await this.analyticsService.trackConfigEvent({

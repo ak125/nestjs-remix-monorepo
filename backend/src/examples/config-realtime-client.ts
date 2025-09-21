@@ -40,7 +40,7 @@ export class ConfigRealtimeClient {
 
   constructor(
     private serverUrl: string = 'http://localhost:3000',
-    private options: any = {}
+    private options: any = {},
   ) {
     this.connect();
   }
@@ -69,7 +69,7 @@ export class ConfigRealtimeClient {
       console.log('✅ Connecté au serveur de configuration');
       this.reconnectAttempts = 0;
       this.emit('connected');
-      
+
       // Rétablir les abonnements après reconnexion
       this.reestablishSubscriptions();
     });
@@ -148,7 +148,7 @@ export class ConfigRealtimeClient {
   subscribe(key: string): Promise<any> {
     return new Promise((resolve, reject) => {
       this.socket.emit('config:subscribe', { key });
-      
+
       // Écouter la confirmation d'abonnement
       const timeout = setTimeout(() => {
         reject(new Error(`Timeout lors de l'abonnement à ${key}`));
@@ -208,7 +208,9 @@ export class ConfigRealtimeClient {
   /**
    * 📊 Demander les métriques
    */
-  getMetrics(timeframe: 'day' | 'week' | 'month' = 'day'): Promise<ConfigMetrics> {
+  getMetrics(
+    timeframe: 'day' | 'week' | 'month' = 'day',
+  ): Promise<ConfigMetrics> {
     return new Promise((resolve, reject) => {
       this.socket.emit('config:metrics', { timeframe });
 
@@ -253,14 +255,14 @@ export class ConfigRealtimeClient {
    */
   private emit(event: string, data?: any): void {
     const callbacks = this.eventCallbacks.get(event) || [];
-    callbacks.forEach(callback => callback(data));
+    callbacks.forEach((callback) => callback(data));
   }
 
   /**
    * 🔄 Rétablir les abonnements après reconnexion
    */
   private reestablishSubscriptions(): void {
-    this.subscriptions.forEach(key => {
+    this.subscriptions.forEach((key) => {
       this.socket.emit('config:subscribe', { key });
     });
   }
@@ -300,7 +302,10 @@ export class ConfigRealtimeClient {
 export function useConfigRealtime(serverUrl?: string) {
   const client = new ConfigRealtimeClient(serverUrl);
 
-  const subscribe = async (key: string, callback: (event: ConfigEvent) => void) => {
+  const subscribe = async (
+    key: string,
+    callback: (event: ConfigEvent) => void,
+  ) => {
     await client.subscribe(key);
     client.on(`changed:${key}`, callback);
     client.on(`updated:${key}`, callback);
@@ -341,9 +346,9 @@ configClient.on('changed:ui.theme_config', (event: ConfigEvent) => {
 });
 
 // Mettre à jour une configuration
-configClient.updateConfig('ui.theme_config', { 
+configClient.updateConfig('ui.theme_config', {
   primary: '#007bff',
-  secondary: '#6c757d' 
+  secondary: '#6c757d',
 });
 
 // Écouter les alertes

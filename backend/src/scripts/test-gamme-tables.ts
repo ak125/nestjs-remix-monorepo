@@ -4,8 +4,14 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Configuration Supabase (utilise les variables d'environnement si disponibles)
-const supabaseUrl = (process.env.SUPABASE_URL || 'https://your-supabase-url.supabase.co').replace(/"/g, '');
-const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'your-supabase-key').replace(/"/g, '');
+const supabaseUrl = (
+  process.env.SUPABASE_URL || 'https://your-supabase-url.supabase.co'
+).replace(/"/g, '');
+const supabaseKey = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  'your-supabase-key'
+).replace(/"/g, '');
 
 async function testGammeTables() {
   console.log('🔍 Test direct des tables gammes...');
@@ -25,10 +31,15 @@ async function testGammeTables() {
       if (catalogError) {
         console.error('❌ Erreur catalog_gamme:', catalogError.message);
       } else {
-        console.log(`✅ catalog_gamme: ${catalogData?.length || 0} échantillons trouvés`);
+        console.log(
+          `✅ catalog_gamme: ${catalogData?.length || 0} échantillons trouvés`,
+        );
         if (catalogData && catalogData.length > 0) {
           console.log('📊 Colonnes:', Object.keys(catalogData[0]));
-          console.log('📄 Premier enregistrement:', JSON.stringify(catalogData[0], null, 2));
+          console.log(
+            '📄 Premier enregistrement:',
+            JSON.stringify(catalogData[0], null, 2),
+          );
         }
       }
     } catch (error: any) {
@@ -46,10 +57,15 @@ async function testGammeTables() {
       if (piecesError) {
         console.error('❌ Erreur pieces_gamme:', piecesError.message);
       } else {
-        console.log(`✅ pieces_gamme: ${piecesData?.length || 0} échantillons trouvés`);
+        console.log(
+          `✅ pieces_gamme: ${piecesData?.length || 0} échantillons trouvés`,
+        );
         if (piecesData && piecesData.length > 0) {
           console.log('📊 Colonnes:', Object.keys(piecesData[0]));
-          console.log('📄 Premier enregistrement:', JSON.stringify(piecesData[0], null, 2));
+          console.log(
+            '📄 Premier enregistrement:',
+            JSON.stringify(piecesData[0], null, 2),
+          );
         }
       }
     } catch (error: any) {
@@ -58,7 +74,7 @@ async function testGammeTables() {
 
     // Test 3: Comptage
     console.log('\n📊 3. Comptage des enregistrements:');
-    
+
     try {
       const { count: catalogCount } = await supabase
         .from('catalog_gamme')
@@ -76,7 +92,6 @@ async function testGammeTables() {
     } catch (error: any) {
       console.error('❌ Erreur comptage pieces_gamme:', error.message);
     }
-
   } catch (error: any) {
     console.error('❌ Erreur générale:', error.message);
   }

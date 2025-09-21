@@ -39,6 +39,7 @@ import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU
 import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
 import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
+import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -103,6 +104,7 @@ import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU
 
     // 🚗 CATALOGUE AUTOMOBILE
     CatalogModule, // ✅ ACTIVÉ - Catalogue automobile avec tables existantes !
+    GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

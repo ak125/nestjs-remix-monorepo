@@ -12,8 +12,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EnhancedConfigurationService, ConfigItem } from './enhanced-configuration.service';
-import { Client } from 'pg';
-import * as mysql from 'mysql2/promise';
 
 export interface DatabaseConfig {
   host: string;

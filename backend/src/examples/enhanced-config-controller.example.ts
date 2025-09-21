@@ -1,11 +1,11 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Param, 
-  Body, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
   Query,
   HttpException,
   HttpStatus,
@@ -15,7 +15,7 @@ import { EnhancedConfigService } from '../modules/config/services/enhanced-confi
 import { ConfigAnalyticsService } from '../modules/config/services/config-analytics.service';
 import { OptimizedBreadcrumbService } from '../modules/config/services/optimized-breadcrumb.service';
 import { ConfigValidationService } from '../modules/config/services/config-validation.service';
-import { 
+import {
   CreateConfigSchema,
   UpdateConfigSchema,
   ConfigQuerySchema,
@@ -36,7 +36,10 @@ export class EnhancedConfigExampleController {
 
   @Get()
   @ApiOperation({ summary: 'Récupérer toutes les configurations' })
-  @ApiResponse({ status: 200, description: 'Configurations récupérées avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations récupérées avec succès',
+  })
   async getAllConfigs(@Query() query: ConfigQueryDto) {
     try {
       // Valider les paramètres de requête
@@ -125,7 +128,7 @@ export class EnhancedConfigExampleController {
         action: 'create_config',
         label: validatedData.key,
         route: '/api/enhanced-config',
-        metadata: { 
+        metadata: {
           configKey: validatedData.key,
           configType: validatedData.type,
           category: validatedData.category,
@@ -173,7 +176,7 @@ export class EnhancedConfigExampleController {
         action: 'update_config',
         label: key,
         route: `/api/enhanced-config/${key}`,
-        metadata: { 
+        metadata: {
           configKey: key,
           changes: validatedData,
         },
@@ -222,10 +225,12 @@ export class EnhancedConfigExampleController {
 
   @Get('analytics/metrics')
   @ApiOperation({ summary: 'Récupérer les métriques analytics' })
-  async getAnalyticsMetrics(@Query('timeframe') timeframe: 'day' | 'week' | 'month' = 'week') {
+  async getAnalyticsMetrics(
+    @Query('timeframe') timeframe: 'day' | 'week' | 'month' = 'week',
+  ) {
     try {
       const metrics = await this.analyticsService.getConfigMetrics(timeframe);
-      
+
       return {
         success: true,
         data: metrics,

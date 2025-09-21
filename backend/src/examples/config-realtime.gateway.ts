@@ -23,7 +23,9 @@ import { ConfigValidationService } from '../modules/config/services/config-valid
   },
 })
 @Injectable()
-export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class ConfigRealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -67,11 +69,13 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   private async sendInitialConfigs(client: Socket) {
     try {
       // Configurations publiques
-      const publicConfigs = await this.configService.getAll({ publicOnly: true });
-      
+      const publicConfigs = await this.configService.getAll({
+        publicOnly: true,
+      });
+
       // Configurations UI
       const uiConfigs = await this.configService.getByCategory('ui');
-      
+
       // Features activées
       const features = await this.configService.getByCategory('features');
 
@@ -81,9 +85,11 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
         features: features,
         timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
-      this.logger.error('❌ Erreur lors de l\'envoi des configs initiales:', error);
+      this.logger.error(
+        "❌ Erreur lors de l'envoi des configs initiales:",
+        error,
+      );
       client.emit('config:error', {
         message: 'Erreur lors du chargement des configurations',
         error: error.message,
@@ -136,10 +142,9 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
       });
 
       this.logger.log(`📡 Client ${client.id} abonné à ${key}`);
-
     } catch (error) {
       client.emit('config:error', {
-        message: 'Erreur lors de l\'abonnement',
+        message: "Erreur lors de l'abonnement",
         error: error.message,
       });
     }
@@ -155,7 +160,7 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   ) {
     const { key } = data;
     client.leave(`config:${key}`);
-    
+
     client.emit('config:unsubscribed', {
       key,
       timestamp: new Date().toISOString(),
@@ -179,7 +184,8 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
       const canUpdate = await this.checkUpdatePermissions(client, key);
       if (!canUpdate) {
         client.emit('config:error', {
-          message: 'Permissions insuffisantes pour modifier cette configuration',
+          message:
+            'Permissions insuffisantes pour modifier cette configuration',
           key,
         });
         return;
@@ -212,8 +218,9 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
         },
       });
 
-      this.logger.log(`🔄 Configuration ${key} mise à jour via WebSocket par ${client.id}`);
-
+      this.logger.log(
+        `🔄 Configuration ${key} mise à jour via WebSocket par ${client.id}`,
+      );
     } catch (error) {
       client.emit('config:error', {
         message: 'Erreur lors de la mise à jour',
@@ -240,7 +247,6 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
         timeframe,
         timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       client.emit('config:error', {
         message: 'Erreur lors de la récupération des métriques',
@@ -252,7 +258,12 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   /**
    * 🎛️ Diffuser les changements de configuration à tous les clients
    */
-  async broadcastConfigChange(key: string, newValue: any, oldValue: any, userId?: string) {
+  async broadcastConfigChange(
+    key: string,
+    newValue: any,
+    oldValue: any,
+    userId?: string,
+  ) {
     this.server.to(`config:${key}`).emit('config:changed', {
       key,
       value: newValue,
@@ -291,8 +302,8 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   async broadcastMaintenanceMode(isEnabled: boolean) {
     this.server.emit('config:maintenance', {
       enabled: isEnabled,
-      message: isEnabled 
-        ? 'Application en mode maintenance' 
+      message: isEnabled
+        ? 'Application en mode maintenance'
         : 'Mode maintenance désactivé',
       timestamp: new Date().toISOString(),
     });
@@ -301,10 +312,13 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   /**
    * 🔐 Vérifier les permissions de mise à jour (à personnaliser)
    */
-  private async checkUpdatePermissions(client: Socket, key: string): Promise<boolean> {
+  private async checkUpdatePermissions(
+    client: Socket,
+    key: string,
+  ): Promise<boolean> {
     // Ici vous pouvez implémenter votre logique de permissions
     // Par exemple, vérifier le token JWT, les rôles utilisateur, etc.
-    
+
     const publicConfigs = ['ui.theme_config', 'features.new_dashboard'];
     return publicConfigs.includes(key);
   }
@@ -312,9 +326,14 @@ export class ConfigRealtimeGateway implements OnGatewayConnection, OnGatewayDisc
   /**
    * 🔄 Méthodes utilitaires pour intégration avec les services
    */
-  
+
   // Appelée par EnhancedConfigService lors d'une mise à jour
-  async onConfigUpdated(key: string, newValue: any, oldValue: any, userId?: string) {
+  async onConfigUpdated(
+    key: string,
+    newValue: any,
+    oldValue: any,
+    userId?: string,
+  ) {
     await this.broadcastConfigChange(key, newValue, oldValue, userId);
   }
 

@@ -62,8 +62,8 @@ export class ProductsController {
       sku: 'piece_ref',
       price: 'piece_price',
       stock_quantity: 'piece_stock',
-      created_at: 'piece_created',
-      updated_at: 'piece_updated',
+      created_at: 'piece_id', // Utiliser piece_id comme proxy pour l'ordre de création
+      updated_at: 'piece_id', // Utiliser piece_id comme proxy
     };
 
     return fieldMapping[apiField] || 'piece_name'; // Défaut : piece_name
@@ -98,7 +98,7 @@ export class ProductsController {
   ) {
     try {
       this.logger.log(
-        `Recherche produits pour gamme ${gammeId} avec filtres:`,
+        `🔍 [DEBUG] Recherche produits pour gamme ID: "${gammeId}" (type: ${typeof gammeId}) avec filtres:`,
         queryParams,
       );
 

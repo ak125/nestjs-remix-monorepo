@@ -3,9 +3,7 @@ import { OptimizedBreadcrumbService } from '../modules/config/services/optimized
 
 @Injectable()
 export class BreadcrumbUsageExample {
-  constructor(
-    private readonly breadcrumbService: OptimizedBreadcrumbService,
-  ) {}
+  constructor(private readonly breadcrumbService: OptimizedBreadcrumbService) {}
 
   async exempleUtilisationBreadcrumb() {
     // 🧭 Générer un breadcrumb pour une route

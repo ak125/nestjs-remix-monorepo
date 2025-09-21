@@ -4,11 +4,12 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
 import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
-import BentoCatalog from "../components/home/BentoCatalog";
-import { BrandCarousel } from "../components/home/BrandCarousel";
+import { AboutSection } from "../components/home/AboutSection";
 import DatabaseFamilyProductCatalog from "../components/home/DatabaseFamilyProductCatalog";
+import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeBentoEnhanced from "../components/home/FamilyGammeBentoEnhanced";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
+import { TopGammes } from "../components/home/TopGammes";
 import VehicleSelector from "../components/home/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -36,10 +37,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const selectedModel = url.searchParams.get('modele'); 
     const selectedYear = url.searchParams.get('annee');
 
-    // 🏠 Chargement optimisé avec nouvelle API pieces-gammes
-    const [homepageDataResult, brandsResult] = await Promise.allSettled([
+    // 🏠 Chargement optimisé avec toutes les APIs nécessaires
+    const [homepageDataResult, brandsResult, hierarchyResult, topGammesResult, equipementiersResult] = await Promise.allSettled([
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/pieces-gammes/homepage`).then(res => res.json()),
-      enhancedVehicleApi.getBrands()
+      enhancedVehicleApi.getBrands(),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/hierarchy/homepage`).then(res => res.json()),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/top`).then(res => res.json()),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json())
     ]);
 
     // 📈 Extraction sécurisée des résultats avec nouvelle API pieces-gammes
@@ -52,12 +56,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
       success: false
     };
 
-    const vehicleBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
+    const rawBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
+    const hierarchyData = hierarchyResult.status === 'fulfilled' ? hierarchyResult.value : null;
+    const topGammesData = topGammesResult.status === 'fulfilled' ? topGammesResult.value : null;
+    const equipementiersData = equipementiersResult.status === 'fulfilled' ? equipementiersResult.value : null;
+
+    // Transformation des données des marques pour le carousel
+    const brands = rawBrands.map(brand => ({
+      id: brand.marque_id,
+      code: brand.marque_name.toLowerCase().replace(/\s+/g, '-'),
+      name: brand.marque_name,
+      logo: brand.marque_logo ? `/upload/logos/marques/${brand.marque_logo}` : '/upload/logos/marques/default.webp',
+      isActive: true,
+      isFavorite: brand.is_featured || false,
+      displayOrder: brand.marque_id
+    }));
+
+    console.log('📊 Hierarchy data loaded in loader:', hierarchyData);
+    console.log('🌟 TopGammes data loaded:', topGammesData?.stats);
+    console.log('🏭 Equipementiers data loaded:', equipementiersData?.stats);
+    console.log('🚗 Brands transformed:', brands.length, 'brands with logos');
 
     // 🎯 Structure optimisée pour la page d'accueil avec nouvelle API
     const pageData = {
-      // Marques pour le sélecteur
-      brands: vehicleBrands,
+      // Marques pour le carousel (marques transformées)
+      brands,
+      
+      // Données de hiérarchie pour le catalogue
+      hierarchyData,
       
       // Statistiques enrichies depuis pieces-gammes API
       stats: {
@@ -78,6 +104,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       featuredCategories: homepageData.data?.featured_gammes || [],
       quickAccess: [], // Pas encore implémenté dans la nouvelle API
       
+      // Nouvelles données pour les composants supplémentaires
+      topGammesData,
+      equipementiersData,
+      
       // États du sélecteur
       selectedBrand,
       selectedModel,  
@@ -89,6 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
 
     console.log(`🏠 Homepage data loaded: ${pageData.categories.length} gammes, ${pageData.brands.length} marques`);
+    console.log(`🌟 TopGammes: ${topGammesData?.stats?.total_top_gammes || 0}, 🏭 Equipementiers: ${equipementiersData?.stats?.total_equipementiers || 0}`);
 
     return json(pageData);
   } catch (error) {
@@ -96,6 +127,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // 🛡️ Fallback data gracieux
     return json({
       brands: [],
+      hierarchyData: null,
       stats: {
         totalProducts: 50000,
         totalBrands: 120,
@@ -103,6 +135,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         customerSatisfaction: 4.8
       },
       categories: [],
+      topGammesData: null,
+      equipementiersData: null,
       selectedBrand: null,
       selectedModel: null,
       selectedYear: null,
@@ -112,7 +146,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { brands, stats } = useLoaderData<typeof loader>();
+  const { stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -210,16 +244,6 @@ export default function IndexOptimized() {
         </div>
       </section>
 
-      {/* 🎠 Carousel des marques populaires */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
-            Marques populaires
-          </h2>
-          <BrandCarousel brands={brands as any} />
-        </div>
-      </section>
-
       {/* ⚡ Section Accès rapide inspirée du code proposé */}
       <section className="py-12 bg-gradient-to-r from-gray-50 to-blue-50">
         <div className="container mx-auto px-4">
@@ -291,14 +315,12 @@ export default function IndexOptimized() {
             </p>
           </div>
           
-          {/* � Design Bento - Catalogue moderne */}
-          {/* 🎨 Nouveau Design Bento pour Catalogue */}
-          <BentoCatalog />
+          {/* 🏗️ Catalogue simple reproduisant la logique PHP */}
+          <FamilyGammeHierarchy hierarchyData={hierarchyData} />
           
-          {/* 🏗️ Ancien design hiérarchique (masqué) */}
+          {/* � Autres designs (masqués) */}
           <div className="hidden">
             <FamilyGammeBentoEnhanced />
-            <FamilyGammeHierarchy />
           </div>
           
           {/* 📋 Ancien composant pour comparaison (masqué) */}
@@ -309,6 +331,101 @@ export default function IndexOptimized() {
               </h3>
             </div>
             <DatabaseFamilyProductCatalog />
+          </div>
+        </div>
+      </section>
+
+      {/* 🌟 Section gammes TOP - Section 4 PHP */}
+      <TopGammes topGammesData={topGammesData} />
+
+      {/* 📋 Section À propos - Section 5 PHP */}
+      <AboutSection />
+
+      {/* 🏭 Section Équipementiers - Section 6 PHP */}
+      <EquipementiersCarousel equipementiersData={equipementiersData} />
+
+      {/* 🛍️ Section Catalogue de pièces */}
+      <section className="py-16 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-white mb-12">
+            <h2 className="text-3xl font-bold mb-4">
+              Catalogue complet de pièces détachées
+            </h2>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+              Plus de 50,000 pièces automobiles disponibles. Recherche avancée par catégorie, marque et véhicule.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
+            {/* Catégories principales */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-red-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🛑</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Freinage</h3>
+                <p className="text-blue-100 text-sm">8,743 pièces</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-blue-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">⚙️</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Moteur</h3>
+                <p className="text-blue-100 text-sm">12,456 pièces</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-green-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🔧</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Suspension</h3>
+                <p className="text-blue-100 text-sm">6,521 pièces</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-yellow-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">⚡</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Électrique</h3>
+                <p className="text-blue-100 text-sm">4,892 pièces</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-orange-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🚗</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Carrosserie</h3>
+                <p className="text-blue-100 text-sm">9,876 pièces</p>
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 hover:bg-white/20 transition-all cursor-pointer border border-white/20">
+              <div className="text-center">
+                <div className="bg-purple-500/20 rounded-full p-3 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🛠️</span>
+                </div>
+                <h3 className="text-white font-semibold mb-2">Accessoires</h3>
+                <p className="text-blue-100 text-sm">3,214 pièces</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Button asChild size="lg" className="bg-white text-blue-900 hover:bg-blue-50">
+              <Link to="/pieces/catalogue">
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Explorer le catalogue complet
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -388,9 +505,9 @@ export default function IndexOptimized() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-900">
-              <Link to="/catalogue">
+              <Link to="/pieces/catalogue">
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                Voir le catalogue
+                Catalogue pièces détachées
               </Link>
             </Button>
           </div>

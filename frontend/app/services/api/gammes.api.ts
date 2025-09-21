@@ -7,10 +7,13 @@ export interface CatalogGamme {
   mc_id: string;
   mc_mf_id: string;        // ID fabricant/marque
   mc_mf_prime: string;     // Priorité fabricant
-  mc_pg_id: string;        // ID gamme produit
+  mc_pg_id: string;        // ID gamme produit (catalog_gamme)
   mc_sort: string;         // Ordre de tri
-  pg_name?: string;        // Nom réel de la gamme (depuis pieces_gamme)
-  pg_image?: string;       // Image de la gamme (depuis pieces_gamme)
+  // Champs enrichis depuis pieces_gamme (JOIN)
+  pg_id?: string;          // ID réel pieces_gamme (pour les liens)
+  pg_name?: string;        // Nom réel de la gamme
+  pg_alias?: string;       // Alias URL de la gamme
+  pg_image?: string;       // Image de la gamme
 }
 
 export interface GammesByManufacturer {

@@ -16,16 +16,14 @@ import { EnhancedConfigExampleController } from './enhanced-config-controller.ex
       cacheTTL: 3600,
       enableValidation: true,
     }),
-    
+
     // Ou pour la production:
     // ConfigModule.forProduction(),
-    
+
     // Ou pour les tests:
     // ConfigModule.forTesting(),
   ],
-  controllers: [
-    EnhancedConfigExampleController,
-  ],
+  controllers: [EnhancedConfigExampleController],
   providers: [
     ExampleUsageService,
     AnalyticsUsageExample,
@@ -46,17 +44,17 @@ export class ConfigExamplesModule {
 
 /**
  * 📚 GUIDE D'UTILISATION RAPIDE
- * 
+ *
  * 1. **Installation**
  *    - Importez ConfigModule dans votre app.module.ts
  *    - Choisissez le mode: forRoot(), forProduction(), forTesting()
- * 
+ *
  * 2. **Services disponibles**
  *    - EnhancedConfigService: Gestion avancée des configurations
  *    - ConfigAnalyticsService: Tracking et métriques
  *    - OptimizedBreadcrumbService: Navigation optimisée
  *    - ConfigValidationService: Validation Zod
- * 
+ *
  * 3. **Injection dans vos services**
  *    ```typescript
  *    constructor(
@@ -64,7 +62,7 @@ export class ConfigExamplesModule {
  *      private readonly analyticsService: ConfigAnalyticsService,
  *    ) {}
  *    ```
- * 
+ *
  * 4. **APIs REST disponibles**
  *    - GET /api/enhanced-config - Liste des configurations
  *    - GET /api/enhanced-config/:key - Configuration spécifique
@@ -73,17 +71,17 @@ export class ConfigExamplesModule {
  *    - DELETE /api/enhanced-config/:key - Supprimer
  *    - GET /api/enhanced-config/analytics/metrics - Métriques
  *    - GET /api/enhanced-config/breadcrumb/:path - Breadcrumb
- * 
+ *
  * 5. **Validation automatique**
  *    - Tous les DTOs utilisent des schémas Zod
  *    - Validation des clés, valeurs, et métadonnées
  *    - Messages d'erreur français détaillés
- * 
+ *
  * 6. **Cache intelligent**
  *    - Cache Redis intégré avec TTL configurables
  *    - Invalidation automatique lors des modifications
  *    - Statistiques de cache hit rate
- * 
+ *
  * 7. **Analytics intégrés**
  *    - Tracking automatique de tous les événements
  *    - Métriques en temps réel
