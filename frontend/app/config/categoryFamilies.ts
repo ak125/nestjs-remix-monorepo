@@ -30,9 +30,8 @@ export const CATEGORY_FAMILIES: CategoryFamily[] = [
       'habitacle'
     ]
   },
-  export const CATEGORY_FAMILIES: CategoryFamily[] = [
   {
-    id: 'filtration',
+    id: 'filtration-bis',
     name: 'Système de filtration',
     description: 'Tous les filtres pour maintenir la propreté des fluides',
     icon: '🔍',
@@ -305,8 +304,7 @@ export const CATEGORY_FAMILIES: CategoryFamily[] = [
       'turbo',
       'turbocompresseur'
     ]
-  }
-];
+  },
   {
     id: 'transmission',
     name: 'Courroie, galet, poulie et chaîne',
