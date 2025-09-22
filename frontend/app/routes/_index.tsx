@@ -29,18 +29,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const selectedModel = url.searchParams.get('modele'); 
     const selectedYear = url.searchParams.get('annee');
 
-    const [homepageDataResult, brandsResult, hierarchyResult, topGammesResult, equipementiersResult] = await Promise.allSettled([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/pieces-gammes/homepage`).then(res => res.json()),
+    const [brandsResult, hierarchyResult, topGammesResult, equipementiersResult] = await Promise.allSettled([
       enhancedVehicleApi.getBrands(),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/hierarchy/homepage`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/top`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json())
     ]);
-
-    const homepageData = homepageDataResult.status === 'fulfilled' ? homepageDataResult.value : {
-      data: { featured_gammes: [], all_gammes: [], stats: { total_gammes: 0, featured_count: 0, displayed_count: 0 } },
-      success: false
-    };
 
     const rawBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
     const hierarchyData = hierarchyResult.status === 'fulfilled' ? hierarchyResult.value : null;
@@ -61,26 +55,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands,
       hierarchyData,
       stats: {
-        totalProducts: homepageData.data?.stats?.total_gammes || 0,
+        totalProducts: hierarchyData?.stats?.total_gammes || 0,
         totalBrands: 120,
         totalModels: 5000,
         totalOrders: 25000,
         customerSatisfaction: 4.8,
         formatted: {
           brands: '120+',
-          pieces: `${Math.floor((homepageData.data?.stats?.total_gammes || 0) / 1000)}K+`,
+          pieces: `${Math.floor((hierarchyData?.stats?.total_gammes || 0) / 1000)}K+`,
           models: '5K+'
         }
       },
-      categories: homepageData.data?.all_gammes || [],
-      featuredCategories: homepageData.data?.featured_gammes || [],
+      categories: hierarchyData?.families || [],
+      featuredCategories: topGammesData?.data?.gammes || [],
       quickAccess: [],
       topGammesData,
       equipementiersData,
       selectedBrand,
       selectedModel,  
       selectedYear,
-      success: homepageData.success,
+      success: hierarchyData?.success || false,
       timestamp: new Date().toISOString()
     });
   } catch (error) {

@@ -14,7 +14,7 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
  * - Blog advice (__blog_advice)
  */
 @Controller('api/gamme-rest')
-export class GammeRestController extends SupabaseBaseService {
+export class GammeRestPhpExactController extends SupabaseBaseService {
 
   @Get(':pgId/page-data')
   async getPageData(@Param('pgId') pgId: string) {
@@ -82,81 +82,13 @@ export class GammeRestController extends SupabaseBaseService {
     }
 
     // ========================================
-    // 4-11. RÉCUPÉRATION PARALLÉLISÉE DE TOUTES LES DONNÉES
+    // 4. MF DATA (CATALOG_GAMME + CATALOG_FAMILY)
     // ========================================
-    const [
-      catalogDataResult,
-      seoDataResult,
-      conseilsDataResult, 
-      informationsDataResult,
-      crossGammeDataResult,
-      equipGammeDataResult,
-      blogDataResult
-    ] = await Promise.all([
-      // 4. MF DATA (CATALOG_GAMME + CATALOG_FAMILY)
-      this.client
-        .from('catalog_gamme')
-        .select('mc_mf_prime')
-        .eq('mc_pg_id', pgIdNum)
-        .single(),
-      
-      // 5. SEO & CONTENT (__SEO_GAMME)
-      this.client
-        .from('__seo_gamme')
-        .select('sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
-        .eq('sg_pg_id', pgIdNum)
-        .single(),
-      
-      // 6. CONSEILS (__SEO_GAMME_CONSEIL)
-      this.client
-        .from('__seo_gamme_conseil')
-        .select('sgc_id, sgc_title, sgc_content')
-        .eq('sgc_pg_id', pgIdNum)
-        .order('sgc_id', { ascending: true }),
-      
-      // 7. INFORMATIONS (__SEO_GAMME_INFO)
-      this.client
-        .from('__seo_gamme_info')
-        .select('sgi_content')
-        .eq('sgi_pg_id', pgIdNum)
-        .order('sgi_id', { ascending: true }),
-      
-      // 9. MOTORISATIONS (__CROSS_GAMME_CAR_NEW)
-      this.client
-        .from('__cross_gamme_car_new')
-        .select('cgc_type_id, cgc_id, cgc_modele_id')
-        .eq('cgc_pg_id', pgIdNum.toString())
-        .eq('cgc_level', '1')
-        .order('cgc_id', { ascending: true }),
-      
-      // 10. ÉQUIPEMENTIERS (__SEO_EQUIP_GAMME)
-      this.client
-        .from('__seo_equip_gamme')
-        .select('seg_pm_id, seg_content')
-        .eq('seg_pg_id', pgIdNum)
-        .not('seg_content', 'is', null)
-        .order('seg_id', { ascending: true })
-        .limit(4),
-      
-      // 11. BLOG ADVICE (__BLOG_ADVICE)
-      this.client
-        .from('__blog_advice')
-        .select('ba_id, ba_h1, ba_alias, ba_preview, ba_wall, ba_update')
-        .eq('ba_pg_id', pgIdNum)
-        .order('ba_update', { ascending: false })
-        .order('ba_create', { ascending: false })
-        .limit(1)
-        .single()
-    ]);
-
-    // Traitement des résultats
-    const { data: catalogData } = catalogDataResult;
-    const { data: seoData } = seoDataResult;
-    const { data: conseilsData } = conseilsDataResult;
-    const { data: informationsData } = informationsDataResult;
-    const { data: crossGammeData } = crossGammeDataResult;
-    const { data: equipGammeData } = equipGammeDataResult;
-    const { data: blogData, error: blogError } = blogDataResult;
+    const { data: catalogData } = await this.client
+      .from('catalog_gamme')
+      .select('mc_mf_prime')
+      .eq('mc_pg_id', pgIdNum)
+      .single();
 
     let mfId = null;
     if (catalogData) {
@@ -183,6 +115,12 @@ export class GammeRestController extends SupabaseBaseService {
     // ========================================
     // 5. SEO & CONTENT (__SEO_GAMME) - exactement comme PHP
     // ========================================
+    const { data: seoData } = await this.client
+      .from('__seo_gamme')
+      .select('sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
+      .eq('sg_pg_id', pgIdNum)
+      .single();
+
     let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
 
     if (seoData) {
@@ -432,7 +370,7 @@ export class GammeRestController extends SupabaseBaseService {
     }
 
     // ========================================
-    // 12. STRUCTURE FINALE EXACTEMENT COMME PHP HTML
+    // 12. STRUCTURE FINALE EXACTEMENT COMME PHP
     // ========================================
     return {
       status: 200,
@@ -452,78 +390,14 @@ export class GammeRestController extends SupabaseBaseService {
         pg_pic: pgPic,
         pg_wall: pgWall,
       },
-      // Section Guide/Blog (comme "Comment changer un filtre à huile")
-      guide: guide ? {
-        id: guide.id,
-        title: guide.title,
-        alias: guide.alias,
-        preview: guide.preview,
-        wall: guide.wall,
-        date: guide.date,
-        image: `/upload/articles/gammes-produits/catalogue/${pgAlias}.webp`,
-        link: `/blog-pieces-auto/conseils/${pgAlias}`,
-        h2_content: guide.h2_content
-      } : null,
-      // Section "Catalogue [Nom Gamme]" (comme "Catalogue Filtres")
-      catalogueMameFamille: catalogueFiltres.length > 0 ? {
-        title: `Catalogue ${pgNameSite}s`,
-        items: catalogueFiltres.map(item => ({
-          name: item.name,
-          link: item.link,
-          image: `/upload/articles/gammes-produits/catalogue/${item.alias}.webp`,
-          description: `Automecanik vous conseils de contrôlez l'état du ${item.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
-          meta_description: `${item.name} pas cher à contrôler régulièrement, changer si encrassé`
-        }))
-      } : null,
-      // Section "Les motorisations les plus consultées"  
-      motorisations: motorisations.length > 0 ? {
-        title: 'Les motorisations les plus consultées',
-        items: motorisations.map(moto => ({
-          title: `${pgNameSite} prix bas ${moto.marque_name} ${moto.modele_name} ${moto.motorisation}, changer si encrassé`,
-          marque_name: moto.marque_name,
-          modele_name: moto.modele_name,
-          type_name: moto.motorisation,
-          puissance: moto.puissance,
-          periode: moto.description,
-          image: `/upload/constructeurs-automobiles/marques-modeles/${moto.marque_name.toLowerCase()}/${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}.webp`,
-          link: `/pieces/${pgAlias}-${pgIdNum}/${moto.marque_name.toLowerCase()}-${moto.marque_name.toLowerCase()}-${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}/${moto.motorisation.toLowerCase().replace(/\s+/g, '-')}.html`,
-          description: `contrôler si témoin allumé les ${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance} et changer si encrassé, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur.`,
-          advice: `${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance}`
-        }))
-      } : null,
-      // Section "Équipementiers [Nom Gamme]" 
-      equipementiers: equipementiers.length > 0 ? {
-        title: `Équipementiers ${pgNameSite}`,
-        items: equipementiers.map(eq => ({
-          pm_id: eq.pm_id,
-          pm_name: eq.pm_name,
-          pm_logo: eq.pm_logo,
-          title: `${pgNameSite} ${eq.pm_name}`,
-          image: `/upload/equipementiers-automobiles/${eq.pm_name.toLowerCase()}.webp`,
-          description: eq.description
-        }))
-      } : null,
-      // Section "Conseils pour [Nom Gamme]" - Format comme sections
-      conseils: conseils.length > 0 ? {
-        title: `Conseils pour ${pgNameSite}`,
-        content: conseils.map(c => `<h3>${c.title}</h3><p>${c.content}</p>`).join(''),
-        items: conseils
-      } : null,
-      // Section "Informations sur les [Nom Gamme]" 
-      informations: informations.length > 0 ? {
-        title: `Informations sur les ${pgNameSite}`,
-        content: informations.map(info => `<p>- ${info}</p>`).join(''),
-        items: informations
-      } : null,
-      // Stats pour affichage frontend
-      performance: {
-        motorisations_count: motorisations.length,
-        catalogue_famille_count: catalogueFiltres.length,
-        equipementiers_count: equipementiers.length,
-        conseils_count: conseils.length,
-        informations_count: informations.length,
-        guide_available: guide ? 1 : 0
+      sections: {
+        conseils,
+        informations,
       },
+      catalogueFiltres,
+      motorisations,
+      equipementiers,
+      guide,
       debug: {
         pgIdNum,
         mfId,

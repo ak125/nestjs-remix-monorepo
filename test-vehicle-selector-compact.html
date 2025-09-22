@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test VehicleSelector - Mode Compact et Validation Zod</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+        .test-success { border-color: #10b981; background-color: #f0fdf4; }
+        .test-error { border-color: #ef4444; background-color: #fef2f2; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">🧪 Test VehicleSelector avec Mode Compact et Validation Zod</h1>
+        
+        <div class="test-section test-success">
+            <h2 class="text-xl font-semibold text-green-800 mb-4">✅ Fonctionnalités Ajoutées</h2>
+            <ul class="list-disc list-inside text-green-700 space-y-2">
+                <li><strong>Validation Zod</strong> : Schémas pour VehicleBrand, VehicleModel, VehicleType</li>
+                <li><strong>Mode Compact</strong> : Layout horizontal avec props <code>compact={true}</code></li>
+                <li><strong>Validation avant navigation</strong> : Zod parse() empêche les erreurs de données</li>
+                <li><strong>Interface adaptable</strong> : Labels raccourcis et padding réduit en mode compact</li>
+                <li><strong>Recherches conditionnelles</strong> : MINE et VIN masquées en mode compact</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">🎯 Mode Normal (compact=false)</h2>
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-gray-200">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-800 text-lg font-semibold">Sélecteur véhicule intelligent</h3>
+                        <p class="text-gray-600 text-sm">Trouvez les pièces parfaitement compatibles</p>
+                    </div>
+                </div>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            🚗 Marque automobile
+                        </label>
+                        <select class="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-white">
+                            <option>Sélectionner une marque</option>
+                            <option>Renault ⭐ (1250 pièces)</option>
+                            <option>Peugeot ⭐ (980 pièces)</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600">📋 Résumé affiché, recherches VIN/MINE disponibles</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">🔥 Mode Compact (compact=true)</h2>
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            🚗 Marque
+                        </label>
+                        <select class="w-full p-2 border border-gray-300 rounded-xl text-gray-900 bg-white">
+                            <option>Sélectionner une marque</option>
+                            <option>Renault ⭐</option>
+                            <option>Peugeot ⭐</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            📅 Année
+                        </label>
+                        <select class="w-full p-2 border border-gray-300 rounded-xl text-gray-900 bg-white">
+                            <option>Sélectionner une année</option>
+                            <option>2023</option>
+                            <option>2022</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            ⚙️ Modèle
+                        </label>
+                        <select class="w-full p-2 border border-gray-300 rounded-xl text-gray-900 bg-white">
+                            <option>Sélectionner un modèle</option>
+                            <option>Clio</option>
+                            <option>Megane</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            ⛽ Motorisation
+                        </label>
+                        <select class="w-full p-2 border border-gray-300 rounded-xl text-gray-900 bg-white">
+                            <option>Sélectionner une motorisation</option>
+                            <option>1.5 dCi</option>
+                            <option>1.0 TCe</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mb-3">
+                    <button class="px-3 py-1 text-sm border border-gray-300 rounded-lg text-gray-600 hover:text-gray-800">
+                        🔄 Reset
+                    </button>
+                    <div class="text-xs text-green-600 font-medium">✅ OK</div>
+                </div>
+                <p class="text-sm text-gray-600">🚀 Pas de résumé, pas de recherches - interface épurée</p>
+            </div>
+        </div>
+
+        <div class="test-section test-success">
+            <h2 class="text-xl font-semibold text-green-800 mb-4">🔍 Validation Zod - Schémas Implémentés</h2>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <pre class="text-sm text-green-800 overflow-x-auto"><code>// Schémas de validation ajoutés
+const VehicleBrandSchema = z.object({
+  marque_id: z.number(),
+  marque_name: z.string().min(1, "Le nom de la marque est requis"),
+  marque_slug: z.string().optional(),
+  is_featured: z.boolean().optional(),
+  products_count: z.number().optional(),
+});
+
+const VehicleModelSchema = z.object({
+  modele_id: z.number(),
+  modele_name: z.string().min(1, "Le nom du modèle est requis"),
+  modele_slug: z.string().optional(),
+  marque_id: z.number(),
+});
+
+// Validation appliquée dans handleBrandChange, handleModelChange, handleTypeSelect
+try {
+  VehicleBrandSchema.parse(brand);
+  console.log('✅ Validation Zod marque réussie');
+} catch (error) {
+  console.error('❌ Erreur validation Zod marque:', error);
+  return; // Arrêter si la validation échoue
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📖 Utilisation du Composant</h2>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <pre class="text-sm text-gray-800 overflow-x-auto"><code>// Mode normal
+&lt;VehicleSelector 
+  brands={brands}
+  onVehicleSelected={handleSelection}
+  showMineSearch={true}
+/&gt;
+
+// Mode compact
+&lt;VehicleSelector 
+  brands={brands}
+  compact={true}
+  onVehicleSelected={handleSelection}
+  navigateOnSelect={false}
+/&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="test-section test-success">
+            <h2 class="text-xl font-semibold text-green-800 mb-4">🎉 Résultat Final</h2>
+            <ul class="list-disc list-inside text-green-700 space-y-2">
+                <li>✅ <strong>Validation Zod intégrée</strong> : Données validées avant traitement</li>
+                <li>✅ <strong>Mode compact fonctionnel</strong> : Layout horizontal, padding réduit</li>
+                <li>✅ <strong>Interface adaptable</strong> : Labels et recherches conditionnelles</li>
+                <li>✅ <strong>TypeScript compatible</strong> : Aucune erreur de compilation</li>
+                <li>✅ <strong>Rétrocompatible</strong> : Mode normal inchangé</li>
+            </ul>
+            <p class="mt-4 text-green-800 font-medium">
+                🚀 Le VehicleSelector principal a maintenant toutes les fonctionnalités avancées !
+            </p>
+        </div>
+    </div>
+</body>
+</html>

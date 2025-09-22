@@ -3,7 +3,41 @@
 
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
-import { hierarchyApi, type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
+import { type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
+
+// 🎨 Fonctions utilitaires locales pour éviter les imports API redondants
+const getFamilyIcon = (family: FamilyWithGammes): string => {
+  const iconMap: { [id: string]: string } = {
+    '1': '🔧', // Système de filtration
+    '2': '🛠️', // Système de freinage
+    '3': '⚙️', // Système d'échappement
+    '4': '🔌', // Système électrique
+    '5': '🏁', // Performance
+    '6': '🛡️', // Protection
+    '7': '💡', // Éclairage
+    '8': '🌡️', // Refroidissement
+    '9': '🚗', // Carrosserie
+    '10': '🔩', // Visserie
+  };
+  return iconMap[family.mf_id] || '🔧';
+};
+
+const getFamilyColor = (family: FamilyWithGammes): string => {
+  const colors = [
+    'bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500',
+    'bg-yellow-500', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
+  ];
+  const index = parseInt(family.mf_id) % colors.length;
+  return colors[index];
+};
+
+const getFamilyImage = (family: FamilyWithGammes): string => {
+  if (!family.mf_pic) {
+    return '/images/categories/default.svg';
+  }
+  const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/';
+  return `${supabaseStorageUrl}${family.mf_pic}`;
+};
 
 interface FamilyGammeHierarchyProps {
   className?: string;
@@ -28,87 +62,32 @@ export default function FamilyGammeHierarchy({
   const [loading, setLoading] = useState(true);
   const [expandedFamilies, setExpandedFamilies] = useState<string[]>([]);
 
-  // Charger les données depuis les props ou faire un appel API
+  // Charger les données depuis les props (pas de fallback API pour éviter les doublons)
   useEffect(() => {
     console.log('🔍 FamilyGammeHierarchy - hierarchyData reçu:', hierarchyData);
     
-    if (hierarchyData) {
+    if (hierarchyData && hierarchyData.success && hierarchyData.families) {
       // Format de l'API: { success: true, families: [...], stats: {...} }
-      if (hierarchyData.success && hierarchyData.families) {
-        console.log('✅ Format API détecté avec', hierarchyData.families.length, 'familles');
-        setFamilies(hierarchyData.families);
-        setStats(hierarchyData.stats);
-        
-        // Auto-expand les premières familles pour l'affichage
-        if (hierarchyData.families.length > 0) {
-          setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
-        }
-        setLoading(false);
-      } else if (Array.isArray(hierarchyData)) {
-        // Format tableau direct
-        console.log('✅ Format tableau détecté avec', hierarchyData.length, 'familles');
-        setFamilies(hierarchyData);
-        setStats({
-          total_families: hierarchyData.length,
-          total_gammes: hierarchyData.reduce((sum, family) => sum + (family.gammes_count || 0), 0),
-          total_manufacturers: hierarchyData.length,
-          families_with_gammes: hierarchyData.filter(f => f.gammes && f.gammes.length > 0).length
-        });
-        
-        // Auto-expand les premières familles pour l'affichage
-        if (hierarchyData.length > 0) {
-          setExpandedFamilies(hierarchyData.slice(0, 3).map(f => f.mf_id));
-        }
-        setLoading(false);
-      } else if (hierarchyData.families) {
-        // Structure alternative avec families wrapper
-        console.log('✅ Format wrapper détecté avec', hierarchyData.families.length, 'familles');
-        setFamilies(hierarchyData.families);
-        setStats(hierarchyData.stats || {
-          total_families: 0,
-          total_gammes: 0,
-          total_manufacturers: 0,
-          families_with_gammes: 0
-        });
-        
-        // Auto-expand les premières familles pour l'affichage
-        if (hierarchyData.families.length > 0) {
-          setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
-        }
-        setLoading(false);
-      } else {
-        // Fallback vide
-        console.log('⚠️ Format de données non reconnu:', hierarchyData);
-        setFamilies([]);
-        setStats({
-          total_families: 0,
-          total_gammes: 0,
-          total_manufacturers: 0,
-          families_with_gammes: 0
-        });
-        setLoading(false);
+      console.log('✅ Données reçues avec', hierarchyData.families.length, 'familles');
+      setFamilies(hierarchyData.families);
+      setStats(hierarchyData.stats);
+      
+      // Auto-expand les premières familles pour l'affichage
+      if (hierarchyData.families.length > 0) {
+        setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
       }
+      setLoading(false);
     } else {
-      console.log('⚠️ Aucune donnée hierarchyData fournie, fallback vers API');
-      // Fallback : charger via API si pas de données en props
-      const loadHierarchy = async () => {
-        try {
-          const data = await hierarchyApi.getHomepageData();
-          setFamilies(data.families);
-          setStats(data.stats);
-          
-          // Auto-expand les premières familles pour l'affichage
-          if (data.families.length > 0) {
-            setExpandedFamilies(data.families.slice(0, 3).map(f => f.mf_id));
-          }
-        } catch (error) {
-          console.error('Erreur chargement hiérarchie:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadHierarchy();
+      // Pas de données valides - affichage vide sans appel API redondant
+      console.log('⚠️ Aucune donnée hierarchyData valide - affichage vide');
+      setFamilies([]);
+      setStats({
+        total_families: 0,
+        total_gammes: 0,
+        total_manufacturers: 0,
+        families_with_gammes: 0
+      });
+      setLoading(false);
     }
   }, [hierarchyData]);
   
@@ -194,9 +173,9 @@ export default function FamilyGammeHierarchy({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {families.map((family) => {
             const isExpanded = expandedFamilies.includes(family.mf_id);
-            const familyIcon = hierarchyApi.getFamilyIcon(family);
-            const familyColor = hierarchyApi.getFamilyColor(family);
-            const familyImage = hierarchyApi.getFamilyImage(family);
+            const familyIcon = getFamilyIcon(family);
+            const familyColor = getFamilyColor(family);
+            const familyImage = getFamilyImage(family);
             
             return (
               <div key={family.mf_id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">

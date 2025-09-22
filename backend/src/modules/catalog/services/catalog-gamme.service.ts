@@ -33,28 +33,7 @@ export class CatalogGammeService extends SupabaseBaseService {
     try {
       this.logger.log('🔧 Récupération des gammes de catalogue...');
 
-      // APPROCHE PHP REPRODUITE: 2 requêtes séparées avec jointure manuelle
-      // Équivalent de: SELECT DISTINCT PG_ID, PG_ALIAS, PG_NAME, PG_IMG
-      //                FROM PIECES_GAMME JOIN CATALOG_GAMME ON MC_PG_ID = PG_ID
-      //                WHERE PG_DISPLAY = 1 AND PG_LEVEL = 1
-
-      // 1. Récupérer catalog_gamme (mapping et tri)
-      const { data: catalogGammes, error: catalogError } = await this.supabase
-        .from('catalog_gamme')
-        .select('mc_id, mc_mf_id, mc_mf_prime, mc_pg_id, mc_sort')
-        .order('mc_sort', { ascending: true });
-
-      if (catalogError) {
-        this.logger.error(
-          '❌ Erreur récupération catalog_gamme:',
-          catalogError,
-        );
-        throw new BadRequestException(
-          `Erreur catalog_gamme: ${catalogError.message}`,
-        );
-      }
-
-      // 2. Récupérer pieces_gamme avec filtres PHP (PG_DISPLAY=1, PG_LEVEL=1)
+      // OPTIMISATION 1: Récupérer d'abord pieces_gamme avec filtres (plus restrictif)
       const { data: piecesGammes, error: piecesError } = await this.supabase
         .from('pieces_gamme')
         .select('pg_id, pg_name, pg_alias, pg_img')
@@ -68,21 +47,36 @@ export class CatalogGammeService extends SupabaseBaseService {
         );
       }
 
-      // 3. Jointure manuelle: catalog_gamme.mc_pg_id = pieces_gamme.pg_id
+      // Créer un Set pour des lookups plus rapides
+      const validPgIds = new Set((piecesGammes || []).map((p) => p.pg_id));
+
+      // OPTIMISATION 2: Filtrer catalog_gamme pour ne prendre que ceux avec pg_id valides
+      const { data: catalogGammes, error: catalogError } = await this.supabase
+        .from('catalog_gamme')
+        .select('mc_id, mc_mf_id, mc_mf_prime, mc_pg_id, mc_sort')
+        .in('mc_pg_id', Array.from(validPgIds))
+        .order('mc_sort', { ascending: true });
+
+      if (catalogError) {
+        this.logger.error(
+          '❌ Erreur récupération catalog_gamme:',
+          catalogError,
+        );
+        throw new BadRequestException(
+          `Erreur catalog_gamme: ${catalogError.message}`,
+        );
+      }
+
+      // 3. Jointure optimisée avec Map pour O(1) lookup
       const piecesMap = new Map();
       (piecesGammes || []).forEach((piece) => {
         piecesMap.set(piece.pg_id, piece);
       });
 
-      // 4. Enrichir catalog_gamme avec données pieces_gamme (JOIN logique)
-      const enrichedGammes: CatalogGamme[] = (catalogGammes || [])
-        .map((catalog) => {
+      // 4. Construire le résultat (tous les catalog ont une correspondance maintenant)
+      const enrichedGammes: CatalogGamme[] = (catalogGammes || []).map(
+        (catalog) => {
           const piece = piecesMap.get(catalog.mc_pg_id);
-          if (!piece) {
-            // Si pas de correspondance dans pieces_gamme, ignorer (comme dans le JOIN)
-            return null;
-          }
-
           return {
             mc_id: catalog.mc_id,
             mc_mf_id: catalog.mc_mf_id,
@@ -95,11 +89,11 @@ export class CatalogGammeService extends SupabaseBaseService {
             pg_alias: piece.pg_alias,
             pg_image: piece.pg_img,
           } as CatalogGamme;
-        })
-        .filter((item): item is CatalogGamme => item !== null); // Type guard
+        },
+      );
 
       this.logger.log(
-        `✅ ${enrichedGammes?.length || 0} gammes enrichies (${catalogGammes?.length || 0} catalog, ${piecesGammes?.length || 0} pieces)`,
+        `✅ ${enrichedGammes?.length || 0} gammes récupérées (optimisé: ${piecesGammes?.length || 0} pieces, ${catalogGammes?.length || 0} catalog)`,
       );
       return enrichedGammes;
     } catch (error) {

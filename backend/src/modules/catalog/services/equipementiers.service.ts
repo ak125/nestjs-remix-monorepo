@@ -16,8 +16,8 @@ export interface Equipementier {
 @Injectable()
 export class EquipementiersService extends SupabaseBaseService {
   /**
-   * 🏭 Récupère tous les équipementiers - LOGIQUE PHP REPRODUITE
-   * Équivalent PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque
+   * 🏭 Récupère tous les équipementiers - LOGIQUE PHP REPRODUITE avec filtrage display et tri optimisé
+   * Équivalent PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque WHERE pm_display = 1 ORDER BY pm_top DESC, pm_sort ASC, pm_name ASC
    */
   async getEquipementiers(): Promise<{
     data: Equipementier[];
@@ -25,13 +25,18 @@ export class EquipementiersService extends SupabaseBaseService {
     success: boolean;
   }> {
     try {
-      this.logger.log('🏭 Récupération des équipementiers (pieces_marque)...');
+      this.logger.log(
+        '🏭 Récupération des équipementiers (pieces_marque avec pm_display=1)...',
+      );
 
-      // Requête EXACTE de la logique PHP - seulement les colonnes de base
+      // Requête optimisée avec filtrage pm_display = 1 et tri par priorité
       const { data: equipementiers, error } = await this.supabase
         .from('pieces_marque')
-        .select('pm_id, pm_name')
-        .order('pm_name', { ascending: true });
+        .select('pm_id, pm_name, pm_top, pm_sort')
+        .eq('pm_display', '1') // Filtrer seulement les équipementiers à afficher (string car text field)
+        .order('pm_top', { ascending: false }) // TOP en premier
+        .order('pm_sort', { ascending: true }) // Puis par ordre de tri
+        .order('pm_name', { ascending: true }); // Puis alphabétique
 
       if (error) {
         this.logger.error('❌ Erreur récupération équipementiers:', error);
@@ -46,7 +51,10 @@ export class EquipementiersService extends SupabaseBaseService {
         .reduce((acc, current) => {
           // Déduplication par nom (DISTINCT)
           if (!acc.find((item) => item.pm_name === current.pm_name)) {
-            acc.push(current);
+            acc.push({
+              pm_id: current.pm_id,
+              pm_name: current.pm_name,
+            });
           }
           return acc;
         }, [] as Equipementier[]);
@@ -60,7 +68,7 @@ export class EquipementiersService extends SupabaseBaseService {
       };
 
       this.logger.log(
-        `✅ ${result.stats.total_equipementiers} équipementiers récupérés`,
+        `✅ ${result.stats.total_equipementiers} équipementiers récupérés (avec pm_display=1, triés par priorité)`,
       );
       return result;
     } catch (error) {
