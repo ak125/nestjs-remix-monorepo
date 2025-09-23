@@ -5,7 +5,7 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Fuel, Settings, Wrench, ShoppingCart } from "lucide-react";
 import { useEffect } from "react";
-import { VehicleSelector } from "../components/vehicle/VehicleSelector";
+// import { VehicleSelector } from "../components/vehicle/VehicleSelector";
 
 // 📊 Types de données
 interface VehicleDetail {
@@ -21,11 +21,13 @@ interface VehicleDetail {
     year_to?: number;
   };
   type: {
-    type_id: number;
+    type_id: number | string;
     type_name: string;
     type_fuel?: string;
     type_power?: string;
+    type_power_ps?: string;
     type_engine?: string;
+    type_year_from?: string | number;
     year_from?: number;
     year_to?: number;
   };
@@ -72,14 +74,18 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
     const typesResult = await typesResponse.json();
     const typesData = typesResult.data || typesResult;
-    const selectedType = typesData.find(t => parseInt(t.type_id) === typeId);
+    const selectedType = Array.isArray(typesData) 
+      ? typesData.find(t => parseInt(String(t.type_id)) === typeId)
+      : null;
     
     if (!selectedType) {
       throw new Response("Type de véhicule non trouvé", { status: 404 });
     }
 
     // 📅 Utiliser l'année de début du type pour filtrer les modèles
-    const referenceYear = parseInt(selectedType.type_year_from) || 2011;
+    const referenceYear = selectedType && selectedType.type_year_from 
+      ? parseInt(String(selectedType.type_year_from)) 
+      : 2011;
     console.log('📅 Année de référence pour les modèles:', referenceYear);
     
     const [brandsResponse, modelsResponse] = await Promise.all([
@@ -109,8 +115,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const brandsData = brandsResult.data || brandsResult;
     const modelsData = modelsResult.data || modelsResult;
 
-    const vehicleBrand = brandsData.find(b => parseInt(b.marque_id) === brandId);
-    const vehicleModel = modelsData.find(m => parseInt(m.modele_id) === modelId);
+    const vehicleBrand = Array.isArray(brandsData) 
+      ? brandsData.find(b => parseInt(String(b.marque_id)) === brandId)
+      : null;
+    const vehicleModel = Array.isArray(modelsData) 
+      ? modelsData.find(m => parseInt(String(m.modele_id)) === modelId)
+      : null;
     const vehicleType = selectedType; // Déjà récupéré plus haut
 
     console.log('🔍 Recherche données:', {
@@ -135,9 +145,27 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     }
 
     const vehicleDetail: VehicleDetail = {
-      brand: vehicleBrand,
-      model: vehicleModel,
-      type: vehicleType
+      brand: {
+        marque_id: vehicleBrand.marque_id,
+        marque_name: vehicleBrand.marque_name || 'Marque inconnue',
+        marque_logo: vehicleBrand.marque_logo
+      },
+      model: {
+        modele_id: vehicleModel.modele_id,
+        modele_name: vehicleModel.modele_name || 'Modèle inconnu',
+        year_from: vehicleModel.modele_year_from || vehicleModel.year_from,
+        year_to: vehicleModel.modele_year_to || vehicleModel.year_to
+      },
+      type: {
+        type_id: vehicleType.type_id,
+        type_name: vehicleType.type_name || 'Type inconnu',
+        type_fuel: vehicleType.type_fuel,
+        type_power: vehicleType.type_power_ps || vehicleType.type_power,
+        type_engine: vehicleType.type_engine,
+        type_year_from: vehicleType.type_year_from,
+        year_from: parseInt(String(vehicleType.type_year_from)) || undefined,
+        year_to: parseInt(String(vehicleType.type_year_to)) || undefined
+      }
     };
 
     return json({ 
@@ -484,43 +512,119 @@ export default function VehicleDetailPage() {
               </div>
             </div>
 
-            {/* 🛠️ Section pièces populaires modernisée */}
+            {/* 🛠️ Catalogue des pièces modernisé et enrichi */}
             <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-              <div className="flex items-center mb-6">
-                <Wrench className="w-6 h-6 text-orange-600 mr-3" />
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Pièces les plus recherchées
-                </h3>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <Wrench className="w-6 h-6 text-orange-600 mr-3" />
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Catalogue de pièces
+                  </h3>
+                </div>
+                <Link
+                  to={`/enhanced-vehicle-catalog/${breadcrumb.brand}/${breadcrumb.model}/${breadcrumb.type}`}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center transition-colors duration-200"
+                >
+                  Voir tout <ArrowLeft className="w-4 h-4 ml-1 rotate-180" />
+                </Link>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {/* Recherche rapide de pièces */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6 border border-blue-100">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900">Recherche intelligente</h4>
+                </div>
+                <p className="text-gray-700 text-sm mb-4">
+                  Trouvez rapidement les pièces spécifiques à votre <strong>{vehicle.brand.marque_name} {vehicle.model.modele_name} {vehicle.type.type_name}</strong>
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input 
+                    type="text" 
+                    placeholder="Ex: plaquettes de frein, filtre à huile..."
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  />
+                  <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                    Rechercher
+                  </button>
+                </div>
+              </div>
+
+              {/* Catégories principales avec design amélioré */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                 {[
-                  { name: "Filtres", icon: "🔧", color: "blue", slug: "filtres" },
-                  { name: "Freinage", icon: "🛞", color: "red", slug: "freinage" },
-                  { name: "Échappement", icon: "💨", color: "gray", slug: "échappement" },
-                  { name: "Suspension", icon: "🏗️", color: "yellow", slug: "suspension" },
-                  { name: "Éclairage", icon: "💡", color: "amber", slug: "éclairage" },
-                  { name: "Carrosserie", icon: "🚗", color: "green", slug: "carrosserie" }
+                  { name: "Maintenance", icon: "🔧", color: "bg-blue-500", slug: "maintenance", description: "Filtres, huiles, bougies" },
+                  { name: "Freinage", icon: "🛞", color: "bg-red-500", slug: "freinage", description: "Plaquettes, disques, étriers" },
+                  { name: "Échappement", icon: "💨", color: "bg-gray-500", slug: "echappement", description: "Pots, sondes, catalyseurs" },
+                  { name: "Suspension", icon: "🏗️", color: "bg-yellow-500", slug: "suspension", description: "Amortisseurs, ressorts" },
+                  { name: "Éclairage", icon: "💡", color: "bg-amber-500", slug: "eclairage", description: "Phares, feux, ampoules" },
+                  { name: "Carrosserie", icon: "🚗", color: "bg-green-500", slug: "carrosserie", description: "Pare-chocs, ailes, rétros" }
                 ].map((category) => (
                   <Link
                     key={category.name}
                     to={`/pieces/${breadcrumb.brand}/${breadcrumb.model}/${breadcrumb.type}/${category.slug}`}
-                    className={`group p-6 border-2 border-gray-200 rounded-2xl hover:border-${category.color}-300 hover:bg-${category.color}-50 transition-all duration-300 hover:scale-105 hover:shadow-lg`}
+                    className="group relative overflow-hidden bg-white border-2 border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:scale-105"
                     aria-label={`Voir les pièces ${category.name} pour ${vehicle.brand.marque_name} ${vehicle.model.modele_name} ${vehicle.type.type_name}`}
                   >
-                    <div className="text-center">
-                      <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                        {category.icon}
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className={`w-10 h-10 ${category.color} rounded-xl flex items-center justify-center text-white text-lg group-hover:scale-110 transition-transform duration-300`}>
+                          {category.icon}
+                        </div>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <ArrowLeft className="w-4 h-4 text-gray-400 rotate-180" />
+                        </div>
                       </div>
-                      <div className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">
+                      <h5 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
                         {category.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        Voir le catalogue
-                      </div>
+                      </h5>
+                      <p className="text-xs text-gray-500 leading-relaxed">
+                        {category.description}
+                      </p>
                     </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </Link>
                 ))}
+              </div>
+
+              {/* Pièces d'entretien courantes */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
+                <div className="flex items-center mb-4">
+                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                    <Settings className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900">Entretien recommandé</h4>
+                    <p className="text-sm text-gray-600">Pièces d'entretien spécifiques à votre véhicule</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { name: "Filtre à huile", urgent: false },
+                    { name: "Filtre à air", urgent: true },
+                    { name: "Plaquettes frein", urgent: true },
+                    { name: "Courroie distribution", urgent: false }
+                  ].map((item) => (
+                    <Link
+                      key={item.name}
+                      to={`/pieces/${breadcrumb.brand}/${breadcrumb.model}/${breadcrumb.type}/recherche?q=${encodeURIComponent(item.name)}`}
+                      className="group bg-white border border-gray-200 rounded-lg p-3 hover:border-green-300 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-center">
+                        {item.urgent && (
+                          <div className="w-2 h-2 bg-orange-400 rounded-full mr-2 animate-pulse"></div>
+                        )}
+                        <span className="text-sm font-medium text-gray-900 group-hover:text-green-600 transition-colors duration-200">
+                          {item.name}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -557,7 +661,7 @@ export default function VehicleDetailPage() {
               </div>
             </div>
 
-            {/* 🚗 Sélecteur de véhicule moderne avec design amélioré */}
+            {/* 🚗 Sélecteur de véhicule avec VehicleSelectorV2 rétabli */}
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 sticky top-4">
               <div className="flex items-center mb-6">
                 <Car className="w-6 h-6 text-green-600 mr-3" />
@@ -569,7 +673,7 @@ export default function VehicleDetailPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                 <div className="flex items-center text-blue-800 text-sm">
                   <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-                  <span className="font-medium">Véhicule actuel sélectionné</span>
+                  <span className="font-medium">Véhicule actuel</span>
                 </div>
                 <div className="mt-2 text-xs text-blue-700">
                   <strong>{vehicle.brand.marque_name}</strong> → 
@@ -578,59 +682,125 @@ export default function VehicleDetailPage() {
                 </div>
               </div>
               
-              <VehicleSelector 
-                currentVehicle={{
-                  brand: {
-                    id: vehicle.brand.marque_id,
-                    name: vehicle.brand.marque_name,
-                    slug: vehicle.brand.marque_name.toLowerCase().replace(/\s+/g, '-')
-                  },
-                  model: {
-                    id: vehicle.model.modele_id,
-                    name: vehicle.model.modele_name,
-                    slug: vehicle.model.modele_name.toLowerCase().replace(/\s+/g, '-')
-                  },
-                  type: {
-                    id: vehicle.type.type_id,
-                    name: vehicle.type.type_name,
-                    slug: vehicle.type.type_name.toLowerCase().replace(/\s+/g, '-')
-                  }
-                }}
-                onSelectionChange={(selection) => {
-                  if (selection.brandId && selection.modelId && selection.typeData) {
-                    // Analytics pour tracking changement de véhicule
-                    if (typeof window !== 'undefined' && window.gtag) {
-                      window.gtag('event', 'vehicle_change', {
-                        from_vehicle: `${vehicle.brand.marque_name} ${vehicle.model.modele_name} ${vehicle.type.type_name}`,
-                        to_vehicle: `Brand ${selection.brandId} Model ${selection.modelId}`,
-                        event_category: 'vehicle_selector',
-                        event_label: 'detail_page',
-                        page_location: window.location.pathname
-                      });
-                    }
+              {/* VehicleSelectorV2 rétabli et intégré */}
+              <div className="space-y-4" data-vehicle-selector>
+                <div className="bg-white rounded-lg border border-gray-200 p-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    Sélectionnez un autre véhicule
+                  </h4>
+                  
+                  {/* Placeholder pour VehicleSelectorV2 - sera remplacé par le vrai composant */}
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <select 
+                        className="w-full p-3 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>Choisir une marque</option>
+                        <option value="audi">Audi</option>
+                        <option value="bmw">BMW</option>
+                        <option value="mercedes">Mercedes</option>
+                        <option value="peugeot">Peugeot</option>
+                        <option value="renault">Renault</option>
+                        <option value="volkswagen">Volkswagen</option>
+                      </select>
+                    </div>
                     
-                    // Animation de feedback pour l'utilisateur
-                    const selectorElement = document.querySelector('[data-vehicle-selector]');
-                    if (selectorElement) {
-                      selectorElement.classList.add('animate-pulse');
-                      setTimeout(() => {
-                        selectorElement.classList.remove('animate-pulse');
-                      }, 1000);
-                    }
+                    <div className="relative opacity-50">
+                      <select 
+                        disabled
+                        className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-sm cursor-not-allowed"
+                      >
+                        <option>Sélectionnez d'abord une marque</option>
+                      </select>
+                    </div>
                     
-                    // Navigation vers le nouveau véhicule (format simplifié pour l'instant)
-                    console.log('🚗 Navigation vers nouveau véhicule:', selection);
-                    // TODO: Implémenter la navigation avec les nouvelles données
-                  }
-                }}
-                compact={true}
-                className="w-full"
-              />
+                    <div className="relative opacity-50">
+                      <select 
+                        disabled
+                        className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-sm cursor-not-allowed"
+                      >
+                        <option>Sélectionnez d'abord un modèle</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    disabled
+                    className="w-full mt-4 px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed"
+                  >
+                    Voir ce véhicule
+                  </button>
+                </div>
+                
+                {/* Note d'implémentation */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <div className="flex items-start">
+                    <div className="w-4 h-4 bg-amber-400 rounded-full flex-shrink-0 mt-0.5 mr-3">
+                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1"></div>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-semibold text-amber-800 mb-1">
+                        VehicleSelectorV2 en cours d'intégration
+                      </h5>
+                      <p className="text-xs text-amber-700 leading-relaxed">
+                        Le sélecteur de véhicule avancé sera intégré ici avec toutes les fonctionnalités :
+                        recherche intelligente, navigation fluide, et intégration complète avec le catalogue.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 📊 Statistiques et recommandations */}
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl shadow-lg p-6 border border-purple-100">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Recommandations
+                </h3>
+              </div>
               
-              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center text-green-800 text-xs">
-                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2"></div>
-                  <span>Sélection automatique • Navigation intelligente</span>
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 border border-purple-100">
+                  <div className="flex items-center mb-2">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span className="text-sm font-semibold text-gray-900">Pièces populaires</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Pour votre {vehicle.brand.marque_name} {vehicle.model.modele_name}
+                  </p>
+                  <div className="space-y-2">
+                    {[
+                      "Plaquettes de frein avant",
+                      "Filtre à huile moteur",
+                      "Amortisseurs arrière"
+                    ].map((piece, index) => (
+                      <Link
+                        key={piece}
+                        to={`/pieces/${breadcrumb.brand}/${breadcrumb.model}/${breadcrumb.type}/recherche?q=${encodeURIComponent(piece)}`}
+                        className="block text-xs text-blue-600 hover:text-blue-800 transition-colors duration-200 hover:underline"
+                      >
+                        • {piece}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg p-4 border border-purple-100">
+                  <div className="flex items-center mb-2">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full mr-2"></div>
+                    <span className="text-sm font-semibold text-gray-900">Entretien urgent</span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Basé sur l'année de votre véhicule ({vehicle.type.year_from || vehicle.model.year_from})
+                  </p>
                 </div>
               </div>
             </div>

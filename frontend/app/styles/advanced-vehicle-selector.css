@@ -1,0 +1,319 @@
+/* 📁 frontend/app/styles/advanced-vehicle-selector.css */
+/* 🚗 Styles pour le sélecteur de véhicule avancé */
+/* Version 2.0 - Basé sur l'analyse des améliorations PHP */
+
+.advanced-vehicle-selector {
+  @apply bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* 🎨 Header du sélecteur */
+.selector-header {
+  @apply flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white;
+}
+
+.selector-title {
+  @apply flex items-center gap-2 text-lg font-semibold m-0;
+}
+
+.title-icon {
+  @apply text-blue-200;
+}
+
+.mode-toggle {
+  @apply flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md transition-colors duration-200 text-sm font-medium border border-white/20;
+}
+
+.mode-toggle.active {
+  @apply bg-white text-blue-600;
+}
+
+/* 🔍 Mode recherche type mine */
+.type-mine-search-mode {
+  @apply p-6;
+}
+
+.search-container {
+  @apply mb-4;
+}
+
+.input-group {
+  @apply relative;
+}
+
+.input-icon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400;
+}
+
+.type-mine-input {
+  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 text-base;
+}
+
+.type-mine-input.compact {
+  @apply py-2 text-sm;
+}
+
+.search-help {
+  @apply mt-2 text-sm text-gray-600 italic;
+}
+
+/* 📋 Résultats de recherche type mine */
+.type-mine-results {
+  @apply border border-gray-200 rounded-lg max-h-80 overflow-y-auto bg-white shadow-lg;
+}
+
+.type-mine-results.compact {
+  @apply max-h-60 text-sm;
+}
+
+.result-item {
+  @apply p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition-colors duration-150;
+}
+
+.result-item:last-child {
+  @apply border-b-0;
+}
+
+.result-item.compact {
+  @apply p-3;
+}
+
+.result-header {
+  @apply flex items-center gap-3 mb-2;
+}
+
+.type-mine-badge {
+  @apply inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-mono font-bold rounded;
+}
+
+.vehicle-name {
+  @apply font-semibold text-gray-900;
+}
+
+.result-details {
+  @apply flex flex-wrap gap-2 text-sm text-gray-600;
+}
+
+.result-main {
+  @apply flex items-center justify-between flex-1;
+}
+
+.vehicle-info {
+  @apply flex-1 text-gray-700;
+}
+
+.power {
+  @apply px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium;
+}
+
+.fuel {
+  @apply px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded font-medium;
+}
+
+.years {
+  @apply px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded font-medium;
+}
+
+.no-results {
+  @apply p-6 text-center text-gray-500 italic;
+}
+
+/* 🔄 Mode cascade */
+.cascade-selector {
+  @apply p-6 space-y-6;
+}
+
+.selector-step {
+  @apply space-y-3;
+}
+
+.step-label {
+  @apply flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase tracking-wide;
+}
+
+.label-icon {
+  @apply text-blue-600;
+}
+
+.selector-select {
+  @apply w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 appearance-none bg-white text-base;
+}
+
+.selector-select:disabled {
+  @apply bg-gray-50 text-gray-400 cursor-not-allowed;
+}
+
+.select-icon {
+  @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none;
+}
+
+/* ⚙️ Grille des types */
+.types-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.type-card {
+  @apply p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer bg-white;
+}
+
+.type-card.selected {
+  @apply border-blue-500 bg-blue-50 ring-2 ring-blue-200;
+}
+
+.type-header {
+  @apply flex items-center justify-between mb-3;
+}
+
+.type-name {
+  @apply font-semibold text-gray-900 text-sm;
+}
+
+.type-power {
+  @apply px-2 py-1 bg-green-100 text-green-800 text-xs rounded font-medium;
+}
+
+.type-details {
+  @apply flex flex-wrap gap-2 mb-3;
+}
+
+.type-fuel {
+  @apply px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded;
+}
+
+.type-engine {
+  @apply px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded font-mono;
+}
+
+.type-mine {
+  @apply text-xs text-gray-600 font-mono;
+}
+
+.type-period {
+  @apply text-xs text-gray-500 mb-2;
+}
+
+.parts-count {
+  @apply text-xs text-blue-600 font-medium;
+}
+
+/* 🚨 Messages d'erreur */
+.error-message {
+  @apply text-red-600 text-sm mt-1 p-2 bg-red-50 border border-red-200 rounded;
+}
+
+/* 🔄 Loading overlay */
+.loading-overlay {
+  @apply absolute inset-0 bg-white/75 flex items-center justify-center gap-3 text-gray-600;
+}
+
+.loading-spinner {
+  @apply w-6 h-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin;
+}
+
+/* 📱 Mode compact */
+.advanced-vehicle-selector.compact {
+  @apply shadow-none border-0 bg-transparent;
+}
+
+.compact-search-container {
+  @apply p-0;
+}
+
+.type-mine-search {
+  @apply relative;
+}
+
+/* 🎨 Responsive design */
+@media (max-width: 768px) {
+  .selector-header {
+    @apply flex-col gap-3 text-center;
+  }
+  
+  .mode-toggle {
+    @apply w-full justify-center;
+  }
+  
+  .cascade-selector {
+    @apply p-4 space-y-4;
+  }
+  
+  .types-grid {
+    @apply grid-cols-1;
+  }
+  
+  .type-card {
+    @apply p-3;
+  }
+  
+  .result-header {
+    @apply flex-col items-start gap-1;
+  }
+  
+  .vehicle-name {
+    @apply text-sm;
+  }
+}
+
+/* 🎯 Focus states */
+.type-mine-input:focus,
+.selector-select:focus {
+  @apply outline-none ring-2 ring-blue-500 border-blue-500;
+}
+
+.type-card:focus {
+  @apply outline-none ring-2 ring-blue-500;
+}
+
+/* 🚀 Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selector-step {
+  animation: slideIn 0.3s ease-out;
+}
+
+.type-mine-results {
+  animation: slideIn 0.2s ease-out;
+}
+
+/* 🎨 Hover effects */
+.type-card:hover {
+  @apply transform scale-105;
+}
+
+.result-item:hover {
+  @apply scale-105;
+}
+
+/* 📐 Utility classes */
+.text-ellipsis {
+  @apply truncate;
+}
+
+.badge {
+  @apply inline-block px-2 py-1 text-xs font-medium rounded;
+}
+
+.badge-blue {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.badge-green {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-orange {
+  @apply bg-orange-100 text-orange-800;
+}
+
+.badge-gray {
+  @apply bg-gray-100 text-gray-800;
+}
