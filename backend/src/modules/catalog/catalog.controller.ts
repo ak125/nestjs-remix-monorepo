@@ -2,6 +2,7 @@ import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { CatalogService, HomeCatalogData } from './catalog.service';
 import { CatalogFamilyService } from './services/catalog-family.service';
+import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service';
 
 @ApiTags('Catalog - API Complète')
 @Controller('api/catalog')
@@ -10,7 +11,8 @@ export class CatalogController {
 
   constructor(
     private readonly catalogService: CatalogService,
-    private readonly catalogFamilyService: CatalogFamilyService
+    private readonly catalogFamilyService: CatalogFamilyService,
+    private readonly vehicleFilteredCatalogService: VehicleFilteredCatalogService,
   ) {}
 
   /**
@@ -71,6 +73,49 @@ export class CatalogController {
         families: [],
         totalFamilies: 0,
         message: 'Erreur lors de la récupération des familles'
+      };
+    }
+  }
+
+  /**
+   * GET /api/catalog/families/vehicle/:typeId - Familles filtrées par véhicule
+   * Utilise cross_gamme_car pour ne montrer que les pièces compatibles
+   */
+  @Get('families/vehicle/:typeId')
+  @ApiOperation({ 
+    summary: 'Familles de catalogue filtrées par véhicule',
+    description: 'Récupère uniquement les familles de catalogue qui ont des pièces compatibles avec le véhicule spécifié (utilise cross_gamme_car)'
+  })
+  @ApiParam({
+    name: 'typeId',
+    description: 'ID du type de véhicule (type_id)',
+    example: 115277
+  })
+  async getCatalogFamiliesForVehicle(@Param('typeId') typeId: string) {
+    this.logger.log(`🚗 [GET] /api/catalog/families/vehicle/${typeId} - Catalogue filtré par véhicule`);
+    
+    try {
+      const typeIdNum = parseInt(typeId, 10);
+      if (isNaN(typeIdNum)) {
+        return {
+          success: false,
+          families: [],
+          totalFamilies: 0,
+          message: 'type_id invalide'
+        };
+      }
+
+      const result = await this.vehicleFilteredCatalogService.getCatalogFamiliesForVehicle(typeIdNum);
+      
+      this.logger.log(`✅ ${result.totalFamilies} familles compatibles avec véhicule ${typeId}`);
+      return result;
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur catalogue filtré pour véhicule ${typeId}:`, error);
+      return {
+        success: false,
+        families: [],
+        totalFamilies: 0,
+        message: 'Erreur lors de la récupération du catalogue filtré'
       };
     }
   }

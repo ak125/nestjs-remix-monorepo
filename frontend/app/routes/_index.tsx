@@ -1,13 +1,13 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
-import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
+import { Shield, Clock, Phone, Users, ShoppingCart, Award, Car } from 'lucide-react';
 import { AboutSection } from "../components/home/AboutSection";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import { TopGammes } from "../components/home/TopGammes";
-import VehicleSelector from "../components/home/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 export const meta: MetaFunction = () => {
@@ -109,7 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
+  const { brands, stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -177,10 +177,67 @@ export default function IndexOptimized() {
 
           {/* Sélecteur de véhicule hybride */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelector 
-              onVehicleSelected={handleVehicleSelected} 
-              showMineSearch={true}
+            <VehicleSelectorV2 
+              mode="full"
+              context="homepage"
+              showVinSearch={false}
+              onVehicleSelect={handleVehicleSelected}
+              redirectOnSelect={true}
+              redirectTo="vehicle-page"
+              variant="card"
+              className="bg-white/95 backdrop-blur-sm"
             />
+          </div>
+
+          {/* Logos des constructeurs populaires */}
+          <div className="max-w-6xl mx-auto mt-12">
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Marques automobiles populaires
+              </h3>
+              <p className="text-blue-200">
+                Cliquez sur une marque pour accéder directement à son catalogue
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+              {brands?.filter(brand => brand.isFavorite || brand.isActive)
+                .slice(0, 16)
+                .map(brand => (
+                <Link
+                  key={brand.id}
+                  to={`/constructeurs/${brand.code}-${brand.id}`}
+                  className="group flex flex-col items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105"
+                  title={`Pièces ${brand.name}`}
+                >
+                  <div className="w-12 h-12 md:w-16 md:h-16 mb-2 bg-white rounded-lg p-2 flex items-center justify-center group-hover:shadow-lg transition-shadow">
+                    <img
+                      src={brand.logo}
+                      alt={`Logo ${brand.name}`}
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/upload/logos/marques/default.webp';
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs md:text-sm font-medium text-white text-center group-hover:text-blue-100 transition-colors">
+                    {brand.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            
+            {/* Lien vers tous les constructeurs */}
+            <div className="text-center mt-8">
+              <Link
+                to="/constructeurs"
+                className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300"
+              >
+                <Car className="w-5 h-5 mr-2" />
+                Voir tous les constructeurs
+              </Link>
+            </div>
           </div>
 
           {/* Statistiques en temps réel */}

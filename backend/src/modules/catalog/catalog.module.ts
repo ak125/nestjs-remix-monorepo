@@ -24,6 +24,7 @@ import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 NOUVEAU - Service unifié
 import { EquipementiersService } from './services/equipementiers.service'; // 🏭 NOUVEAU - Service équipementiers
+import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service'; // 🚗 NOUVEAU - Service catalogue filtré par véhicule
 // import { ImageProcessingService } from './services/image-processing.service'; // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs compilation
 
 // ========================================
@@ -85,6 +86,7 @@ import { EquipementiersService } from './services/equipementiers.service'; // �
     FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Service hiérarchie Familles → Gammes
     GammeUnifiedService, // 🎯 NOUVEAU - Service unifié simplifié
     EquipementiersService, // 🏭 NOUVEAU - Service équipementiers
+    VehicleFilteredCatalogService, // 🚗 NOUVEAU - Service catalogue filtré par véhicule
     // ImageProcessingService, // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs de compilation
 
     // ⚡ Services de support - TEMPORAIREMENT DÉSACTIVÉS

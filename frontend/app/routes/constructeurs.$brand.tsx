@@ -2,8 +2,7 @@
 // 🏭 Page marque constructeur - Version modernisée reproduisant la structure originale
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { useEffect } from "react";
+import { useLoaderData, Link, Outlet } from "@remix-run/react";
 
 // 🎨 Composants modernisés
 import VehicleCard from "../components/constructeurs/VehicleCard";
@@ -95,21 +94,39 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response("Marque non spécifiée", { status: 400 });
   }
   
-  // Cette route gère les pages de marque : /constructeurs/bmw
-  // Les pages de détail véhicule avec plus de segments sont gérées par les routes enfant
-  // On ne doit PAS rejeter les URLs avec plus de segments ici car elles sont pour les routes enfant
+    // Analyser l'URL pour détecter s'il s'agit d'une route de détail véhicule
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+  console.log('🔍 Path segments:', pathSegments);
+  
+  // Stratégie optimisée : gérer seulement les routes à exactement 2 segments
+  if (pathSegments.length !== 2) {
+    console.log('🔀 Route avec', pathSegments.length, 'segments - délégation à la route enfant');
+    
+    // Retourner des données vides pour permettre à la route enfant de fonctionner
+    return json({
+      brand: null,
+      seo: { title: '', descrip: '', keywords: '', canonical: '' },
+      popularVehicles: [],
+      popularParts: [],
+      blogContent: { h1: '', title: '', content: '' }
+    });
+  }
 
   try {
     // Pour l'instant, utilisons des données mockées pour éviter les problèmes d'API
     // TODO: Réintégrer l'API une fois le problème résolu
+    const brandAlias = brand.includes('-') ? brand.split('-')[0] : brand;
+    const brandId = brand.includes('-') ? parseInt(brand.split('-').pop() || '0') : 0;
+    const brandName = brandAlias.charAt(0).toUpperCase() + brandAlias.slice(1).toLowerCase();
+    
     const mockBrandData: BrandData = {
-      marque_id: brand === 'audi' ? 22 : 140,
-      marque_alias: brand,
-      marque_name: brand.toUpperCase(),
-      marque_name_meta: brand.toUpperCase(),
-      marque_name_meta_title: brand.toUpperCase(),
-      marque_logo: `${brand}.webp`,
-      marque_wall: `${brand}.jpg`,
+      marque_id: brandId || (brand === 'audi' ? 22 : 47),
+      marque_alias: brandAlias,
+      marque_name: brandName === 'Dacia' ? 'DACIA' : brandName.toUpperCase(),
+      marque_name_meta: brandName === 'Dacia' ? 'DACIA' : brandName.toUpperCase(),
+      marque_name_meta_title: brandName === 'Dacia' ? 'DACIA' : brandName.toUpperCase(),
+      marque_logo: `${brandAlias}.webp`,
+      marque_wall: `${brandAlias}.jpg`,
       marque_relfollow: 1,
       marque_sitemap: 1,
       marque_display: 1,
@@ -175,7 +192,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 // 🏷️ Métadonnées SEO
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  if (!data) {
+  if (!data || !data.brand || !data.seo) {
     return [
       { title: "Marque non trouvée" },
       { name: "description", content: "La marque demandée n'a pas été trouvée." }
@@ -185,14 +202,14 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const { seo } = data;
 
   return [
-    { title: seo.title },
-    { name: "description", content: seo.descrip },
-    { name: "keywords", content: seo.keywords },
-    { property: "og:title", content: seo.title },
-    { property: "og:description", content: seo.descrip },
+    { title: seo.title || "Marque" },
+    { name: "description", content: seo.descrip || "" },
+    { name: "keywords", content: seo.keywords || "" },
+    { property: "og:title", content: seo.title || "Marque" },
+    { property: "og:description", content: seo.descrip || "" },
     { property: "og:type", content: "website" },
     { name: "robots", content: "index,follow" },
-    { link: { rel: "canonical", href: seo.canonical } }
+    { link: { rel: "canonical", href: seo.canonical || "" } }
   ];
 };
 
@@ -200,40 +217,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function BrandPage() {
   const data = useLoaderData<typeof loader>();
 
-  // 📊 Analytics et suivi de performance
-  useEffect(() => {
-    const { brand } = data;
-    
-    // Analytics page view
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'page_view', {
-        page_title: `${brand.marque_name} - Constructeur`,
-        page_location: window.location.pathname,
-        brand_name: brand.marque_name,
-        brand_id: brand.marque_id,
-        event_category: 'brand_page'
-      });
-    }
-
-    // Configuration lazy loading pour les images
-    const lazyImages = document.querySelectorAll('img[data-src]');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target as HTMLImageElement;
-          img.src = img.dataset.src || '';
-          img.classList.remove('lazy');
-          observer.unobserve(img);
-        }
-      });
-    });
-
-    lazyImages.forEach(img => imageObserver.observe(img));
-
-    return () => {
-      lazyImages.forEach(img => imageObserver.unobserve(img));
-    };
-  }, [data]);
+  // Si pas de données ou brand null, c'est probablement une route enfant qui se charge
+  if (!data || !data.brand) {
+    console.log('🔀 BrandPage: pas de données ou brand null, on affiche juste l\'Outlet pour la route enfant');
+    return <Outlet />;
+  }
 
   const { brand, popularVehicles } = data;
 
