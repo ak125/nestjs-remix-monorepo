@@ -25,6 +25,7 @@
   "dependencies": {
     "@conform-to/react": "^1.8.2",
     "@conform-to/zod": "^1.8.2",
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bullmq": "^11.0.3",
     "@nestjs/cache-manager": "^2.0.0",
     "@nestjs/common": "^10.0.0",
@@ -59,7 +60,7 @@
     "eventemitter2": "^6.4.9",
     "express-session": "^1.17.3",
     "helmet": "^8.1.0",
-    "ioredis": "^5.7.0",
+    "ioredis": "^5.8.0",
     "meilisearch": "^0.52.0",
     "nestjs-zod": "^4.3.1",
     "passport": "^0.7.0",

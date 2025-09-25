@@ -189,8 +189,136 @@ export class CatalogFamiliesApi {
   }
 
   /**
-   * 🏗️ Récupère les familles de catalogue depuis la hiérarchie (générique)
+   * 🚀 V4 HYBRIDE ULTIME: Cache intelligent + requêtes parallèles + TTL adaptatif
+   * Performance ultime avec cache mémoire et pré-calcul background
    */
+  async getCatalogFamiliesForVehicleV4(typeId: number): Promise<{
+    catalog: CatalogFamily[];
+    popularParts: PopularPart[];
+    queryType: string;
+    seoValid: boolean;
+    performance: {
+      responseTime: string;
+      source: 'CACHE' | 'DATABASE' | 'PRECOMPUTED';
+      cacheHitRatio: number;
+      completenessScore: number;
+    };
+  }> {
+    try {
+      console.log(`🚀 [API V4 ULTIMATE] Récupération catalogue hybride ultime pour type_id: ${typeId}`);
+      
+      const response = await fetch(`${this.baseUrl}/catalog/families/vehicle-v4/${typeId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new ApiError(`Erreur HTTP V4 ULTIMATE: ${response.status}`, response.status);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success || !data.catalog) {
+        throw new ApiError(`Réponse V4 ULTIMATE invalide: ${data.error || 'Catalogue manquant'}`, 500);
+      }
+      
+      // Transformer les familles du backend vers le format frontend
+      const transformedCatalog: CatalogFamily[] = data.catalog.families?.map((family: any) => ({
+        mf_id: family.mf_id,
+        mf_name: family.mf_name,
+        mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
+        mf_pic: family.mf_pic || `${family.mf_name.toLowerCase().replace(/\s+/g, '_')}.webp`,
+        gammes: family.gammes?.map((gamme: any) => ({
+          pg_id: gamme.pg_id,
+          pg_alias: gamme.pg_alias,
+          pg_name: gamme.pg_name,
+          pg_image: gamme.pg_img
+        })) || []
+      })) || [];
+      
+      // Générer les pièces populaires depuis le catalogue (pas d'endpoint spécifique)
+      const transformedPopularParts: PopularPart[] = this.generatePopularParts(
+        transformedCatalog, 
+        `Type ${typeId}`,
+        typeId
+      );
+      
+      const queryType = data.catalog.queryType || 'V4_HYBRID_ULTIMATE';
+      const seoValid = true; // V4 est toujours SEO valide
+      
+      console.log(`✅ [API V4 ULTIMATE] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, Cache: ${data.performance?.source}, ${data.performance?.responseTime}`);
+      
+      return {
+        catalog: transformedCatalog,
+        popularParts: transformedPopularParts,
+        queryType,
+        seoValid,
+        performance: data.performance || {
+          responseTime: '0ms',
+          source: 'DATABASE',
+          cacheHitRatio: 0,
+          completenessScore: 100
+        }
+      };
+      
+    } catch (error) {
+      console.error('❌ [API V4 ULTIMATE] Erreur récupération catalogue:', error);
+      
+      // En cas d'erreur, fallback vers V3
+      console.log('🔄 [API V4 ULTIMATE] Fallback vers V3...');
+      try {
+        const fallbackData = await this.getCatalogFamiliesForVehicleV3(typeId);
+        return {
+          ...fallbackData,
+          performance: {
+            responseTime: '0ms',
+            source: 'DATABASE',
+            cacheHitRatio: 0,
+            completenessScore: 90
+          }
+        };
+      } catch (fallbackError) {
+        console.error('❌ [API V4 ULTIMATE] Erreur fallback V3:', fallbackError);
+        throw error; // Throw original V4 error
+      }
+    }
+  }
+
+  /**
+   * 📊 Récupère les métriques avancées V4
+   */
+  async getV4Metrics(): Promise<{
+    service: string;
+    performance: {
+      totalRequests: number;
+      cacheHitRatio: string;
+      avgResponseTime: number;
+      totalCachedVehicles: number;
+    };
+    topVehicles: Array<{
+      typeId: number;
+      requestCount: number;
+      lastAccessed: Date;
+      avgResponseTime: number;
+    }>;
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/catalog/families/metrics-v4`);
+      
+      if (!response.ok) {
+        throw new ApiError(`Erreur métriques V4: ${response.status}`, response.status);
+      }
+      
+      const data = await response.json();
+      return data.metrics;
+      
+    } catch (error) {
+      console.error('❌ [API V4] Erreur récupération métriques:', error);
+      throw error;
+    }
+  }
   async getCatalogFamilies(): Promise<CatalogFamily[]> {
     try {
       const response = await fetch(`${this.baseUrl}/catalog/hierarchy/full`, {

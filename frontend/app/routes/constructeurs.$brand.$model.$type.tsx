@@ -251,9 +251,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   let seoValid = false;
   
   try {
-    // 🚀 NOUVEAU V3: Approche hybride avec index composite + validation FK
-    console.log(`🚀 [V3 HYBRIDE] Récupération des familles pour type_id: ${type_id}...`);
-    const hybridResult = await catalogFamiliesApi.getCatalogFamiliesForVehicleV3(type_id);
+    // 🚀 NOUVEAU V4: Service hybride ultime avec cache intelligent + requêtes parallèles
+    console.log(`🚀 [V4 ULTIMATE] Récupération des familles pour type_id: ${type_id}...`);
+    const hybridResult = await catalogFamiliesApi.getCatalogFamiliesForVehicleV4(type_id);
     
     // Extraction des données hybrides
     catalogFamilies = hybridResult.catalog.map((family: ApiCatalogFamily) => ({
@@ -280,10 +280,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     queryType = hybridResult.queryType;
     seoValid = hybridResult.seoValid;
       
-    console.log(`✅ [V3 HYBRIDE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}`);
+    console.log(`✅ [V4 ULTIMATE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}, Cache: ${hybridResult.performance?.source || 'N/A'}`);
     
   } catch (error) {
-    console.error('❌ [V3 HYBRIDE] Erreur, fallback vers données simulées:', error);
+    console.error('❌ [V4 ULTIMATE] Erreur, fallback vers données simulées:', error);
     
     // Fallback vers les données simulées en cas d'erreur totale
     queryType = 'SIMULATION_FALLBACK';
