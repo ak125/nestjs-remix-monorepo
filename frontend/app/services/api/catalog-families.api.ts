@@ -1,5 +1,10 @@
 // 🏗️ Service API pour récupérer les vraies familles de catalogue
-// Utilise l'endpoint /api/catalog/hierarchy/full qui fonctionne
+// Utilise les endpoints backend avec tables minuscules pour Supabase
+
+// ✅ CORRECTION : URL absolue pour éviter l'erreur "Invalid URL"
+const API_BASE_URL = typeof window === 'undefined' 
+  ? 'http://localhost:3000/api'  // Côté serveur (SSR)
+  : '/api';  // Côté client (navigateur)
 
 export class ApiError extends Error {
   constructor(message: string, public status?: number) {
@@ -47,30 +52,30 @@ export interface HierarchyResponse {
         pg_name: string;
         pg_image?: string;
       }>;
-      stats: {
-        total_gammes: number;
-      };
     };
   };
+  success: boolean;
   stats: {
-    total_families: number;
-    total_gammes: number;
+    totalFamilies: number;
+    totalGammes: number;
   };
 }
 
+/**
+ * 🎯 Service API pour les familles de catalogue
+ * Centralise tous les appels vers le backend
+ */
 export class CatalogFamiliesApi {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = 'http://localhost:3000') {
-    this.baseUrl = baseUrl;
-  }
+  private baseUrl = API_BASE_URL;
 
   /**
-   * 🚗 Récupère les familles de catalogue filtrées par véhicule
+   * 🚗 V2: Récupère les familles de catalogue filtrées par véhicule
    */
   async getCatalogFamiliesForVehicle(typeId: number): Promise<CatalogFamily[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/catalog/families/vehicle/${typeId}`, {
+      console.log(`🚗 [API V2] Récupération catalogue filtré pour type_id: ${typeId}`);
+      
+      const response = await fetch(`${this.baseUrl}/catalog/families/vehicle/${typeId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -84,16 +89,102 @@ export class CatalogFamiliesApi {
       const data = await response.json();
       
       if (!data.success) {
-        console.warn(`⚠️ Catalogue filtré: ${data.message}`);
+        console.warn(`⚠️ Catalogue V2 filtré: ${data.message}`);
         return []; // Retour vide si pas de pièces compatibles
       }
 
-      console.log(`✅ ${data.totalFamilies} familles filtrées récupérées pour type_id: ${typeId}`);
+      console.log(`✅ [API V2] ${data.totalFamilies} familles filtrées récupérées`);
       return data.families || [];
 
     } catch (error) {
-      console.error('❌ Erreur récupération catalogue filtré:', error);
+      console.error('❌ [API V2] Erreur récupération catalogue filtré:', error);
       throw error;
+    }
+  }
+
+  /**
+   * 🚗 V3 HYBRIDE: Récupère le catalogue filtré par véhicule avec approche hybride optimisée
+   * Utilise index composite + validation FK pour performance + intégrité
+   */
+  async getCatalogFamiliesForVehicleV3(typeId: number): Promise<{
+    catalog: CatalogFamily[];
+    popularParts: PopularPart[];
+    queryType: string;
+    seoValid: boolean;
+  }> {
+    try {
+      console.log(`🚗 [API V3 HYBRIDE] Récupération catalogue avec approche hybride pour type_id: ${typeId}`);
+      
+      const response = await fetch(`${this.baseUrl}/catalog/families/vehicle-v3/${typeId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new ApiError(`Erreur HTTP V3 HYBRIDE: ${response.status}`, response.status);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success || !data.catalog) {
+        throw new ApiError(`Réponse V3 HYBRIDE invalide: ${data.message || 'Catalogue manquant'}`, 500);
+      }
+      
+      // Transformer les familles du backend vers le format frontend
+      const transformedCatalog: CatalogFamily[] = data.catalog.families?.map((family: any) => ({
+        mf_id: family.mf_id,
+        mf_name: family.mf_name,
+        mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
+        mf_pic: family.mf_pic || `${family.mf_name.toLowerCase().replace(/\s+/g, '_')}.webp`,
+        gammes: family.gammes?.map((gamme: any) => ({
+          pg_id: gamme.pg_id,
+          pg_alias: gamme.pg_alias,
+          pg_name: gamme.pg_name,
+          pg_image: gamme.pg_img
+        })) || []
+      })) || [];
+      
+      // Transformer les pièces populaires (si disponibles)
+      const transformedPopularParts: PopularPart[] = data.popularParts?.map((part: any) => ({
+        cgc_pg_id: part.cgc_pg_id || part.pg_id,
+        pg_alias: part.pg_alias,
+        pg_name: part.pg_name,
+        pg_name_meta: part.pg_name_meta || part.pg_name.toLowerCase(),
+        pg_img: part.pg_img || 'no.png',
+        addon_content: `Trouvez ${part.pg_name} pas cher, d'origine à prix bas.`
+      })) || [];
+      
+      const queryType = data.catalog.queryType || 'UNKNOWN';
+      const seoValid = data.catalog.seoValid || false;
+      
+      console.log(`✅ [API V3 HYBRIDE] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, SEO: ${seoValid}`);
+      
+      return {
+        catalog: transformedCatalog,
+        popularParts: transformedPopularParts,
+        queryType,
+        seoValid
+      };
+      
+    } catch (error) {
+      console.error('❌ [API V3 HYBRIDE] Erreur récupération catalogue:', error);
+      
+      // En cas d'erreur, fallback vers V2
+      console.log('🔄 [API V3 HYBRIDE] Fallback vers V2...');
+      try {
+        const fallbackData = await this.getCatalogFamiliesForVehicle(typeId);
+        return {
+          catalog: fallbackData,
+          popularParts: [],
+          queryType: 'V2_FALLBACK',
+          seoValid: false
+        };
+      } catch (fallbackError) {
+        console.error('❌ [API V3 HYBRIDE] Erreur fallback V2:', fallbackError);
+        throw error; // Throw original V3 error
+      }
     }
   }
 
@@ -102,7 +193,7 @@ export class CatalogFamiliesApi {
    */
   async getCatalogFamilies(): Promise<CatalogFamily[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/catalog/hierarchy/full`, {
+      const response = await fetch(`${this.baseUrl}/catalog/hierarchy/full`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -190,5 +281,5 @@ export class CatalogFamiliesApi {
   }
 }
 
-// Instance exportée
+// Instance singleton pour l'export
 export const catalogFamiliesApi = new CatalogFamiliesApi();

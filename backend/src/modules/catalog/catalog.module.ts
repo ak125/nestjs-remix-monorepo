@@ -11,6 +11,7 @@ import { FamilyGammeHierarchyController } from './controllers/family-gamme-hiera
 import { GammeUnifiedController } from './controllers/gamme-unified.controller'; // 🎯 NOUVEAU - Controller unifié
 import { ImageProcessingController } from './controllers/image-test.controller'; // 🖼️ Test controller images
 import { EquipementiersController } from './controllers/equipementiers.controller'; // 🏭 NOUVEAU - Controller équipementiers
+import { VehicleFilteredCatalogV3Controller } from './controllers/vehicle-filtered-catalog-v3.controller'; // 🚗 V3 - Controller catalogue filtré
 // import { GammeController } from './controllers/gamme.controller'; // TEMPORAIREMENT DÉSACTIVÉ
 
 // ========================================
@@ -24,7 +25,8 @@ import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 NOUVEAU - Service unifié
 import { EquipementiersService } from './services/equipementiers.service'; // 🏭 NOUVEAU - Service équipementiers
-import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service'; // 🚗 NOUVEAU - Service catalogue filtré par véhicule
+import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service'; // 🚗 V2 - Service catalogue filtré par véhicule
+import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service'; // 🚗 V3 - Service avec logique PHP complète
 // import { ImageProcessingService } from './services/image-processing.service'; // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs compilation
 
 // ========================================
@@ -74,6 +76,7 @@ import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catal
     GammeUnifiedController, // 🎯 NOUVEAU - Contrôleur unifié simplifié
     ImageProcessingController, // 🖼️ NOUVEAU - Contrôleur traitement images
     EquipementiersController, // 🏭 NOUVEAU - Contrôleur équipementiers
+    VehicleFilteredCatalogV3Controller, // 🚗 V3 - NOUVEAU - Contrôleur catalogue véhicule PHP exact
     // GammeController, // TEMPORAIREMENT DÉSACTIVÉ - utilise GammeService problématique
   ],
   providers: [
@@ -86,7 +89,8 @@ import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catal
     FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Service hiérarchie Familles → Gammes
     GammeUnifiedService, // 🎯 NOUVEAU - Service unifié simplifié
     EquipementiersService, // 🏭 NOUVEAU - Service équipementiers
-    VehicleFilteredCatalogService, // 🚗 NOUVEAU - Service catalogue filtré par véhicule
+    VehicleFilteredCatalogService, // 🚗 V2 - Service catalogue filtré par véhicule
+    VehicleFilteredCatalogServiceV3, // 🚗 V3 - Service avec logique PHP complète
     // ImageProcessingService, // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs de compilation
 
     // ⚡ Services de support - TEMPORAIREMENT DÉSACTIVÉS
@@ -101,6 +105,8 @@ import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catal
     CatalogFamilyService, // 🔧 NOUVEAU - Export service familles
     CatalogGammeService, // 🔧 NOUVEAU - Export service gammes catalog_gamme
     FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Export service hiérarchie
+    VehicleFilteredCatalogService, // 🚗 V2 - Export service catalogue filtré
+    VehicleFilteredCatalogServiceV3, // 🚗 V3 - Export service avec logique PHP complète
     // VehicleCacheService, // TEMPORAIREMENT DÉSACTIVÉ
   ],
 })

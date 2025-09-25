@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/
 import { CatalogService, HomeCatalogData } from './catalog.service';
 import { CatalogFamilyService } from './services/catalog-family.service';
 import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service';
+import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service';
 
 @ApiTags('Catalog - API Complète')
 @Controller('api/catalog')
@@ -13,6 +14,7 @@ export class CatalogController {
     private readonly catalogService: CatalogService,
     private readonly catalogFamilyService: CatalogFamilyService,
     private readonly vehicleFilteredCatalogService: VehicleFilteredCatalogService,
+    private readonly vehicleFilteredCatalogServiceV3: VehicleFilteredCatalogServiceV3, // 🚗 V3: Service avec logique PHP complète
   ) {}
 
   /**
@@ -469,7 +471,99 @@ export class CatalogController {
   }
 
   /**
-   * 🔍 ENDPOINT TEMPORAIRE - Test des tables gammes
+   * � V3: Récupère le catalogue complet filtré par véhicule avec logique PHP
+   * PIECES_RELATION_TYPE → CROSS_GAMME_CAR → GENERIC_HIERARCHY
+   */
+  @Get('families/vehicle-v3/:typeId')
+  @ApiOperation({ 
+    summary: '[V3] Catalogue filtré par véhicule avec logique PHP complète',
+    description: 'Utilise pieces_relation_type avec fallback vers __cross_gamme_car_new puis hiérarchie générique. Tables en minuscules pour Supabase.'
+  })
+  @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type de véhicule' })
+  @ApiResponse({
+    status: 200,
+    description: 'Catalogue complet récupéré avec succès',
+    schema: {
+      type: 'object',
+      properties: {
+        catalog: {
+          type: 'object',
+          properties: {
+            families: { type: 'array' },
+            success: { type: 'boolean' },
+            totalFamilies: { type: 'number' },
+            totalGammes: { type: 'number' },
+            seoValid: { type: 'boolean' },
+            queryType: { type: 'string', enum: ['PIECES_RELATION_TYPE', 'CROSS_GAMME_CAR', 'GENERIC_HIERARCHY'] }
+          }
+        },
+        popularParts: { type: 'array' }
+      }
+    }
+  })
+  async getVehicleCatalogV3(@Param('typeId') typeId: string) {
+    this.logger.log(`🚗 [V3] GET /api/catalog/families/vehicle-v3/${typeId}`);
+    
+    const typeIdNum = parseInt(typeId);
+    if (isNaN(typeIdNum)) {
+      throw new Error('typeId doit être un nombre valide');
+    }
+    
+    try {
+      const result = await this.vehicleFilteredCatalogServiceV3.getVehicleCatalogWithPopularParts(typeIdNum);
+      
+      this.logger.log(`✅ [V3] Succès: ${result.catalog.totalFamilies} familles (${result.catalog.queryType}), ${result.popularParts.length} pièces populaires`);
+      
+      return {
+        success: true,
+        catalog: result.catalog,
+        popularParts: result.popularParts,
+        meta: {
+          typeId: typeIdNum,
+          queryType: result.catalog.queryType,
+          seoValid: result.catalog.seoValid,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+    } catch (error: any) {
+      this.logger.error(`❌ [V3] Erreur pour type_id ${typeId}:`, error);
+      throw new Error(`Erreur récupération catalogue V3: ${error.message}`);
+    }
+  }
+
+  /**
+   * 🔍 DIAGNOSTIC: Vérifie les type_ids disponibles dans pieces_relation_type
+   * GET /api/catalog/diagnostic/pieces-relation-type
+   */
+  @Get('diagnostic/pieces-relation-type')
+  @ApiOperation({ 
+    summary: '🔍 Diagnostic des données pieces_relation_type',
+    description: 'Vérifie quels type_ids sont disponibles dans la table pieces_relation_type pour tester le V3'
+  })
+  async diagnosticPiecesRelationType() {
+    this.logger.log(`🔍 [DIAGNOSTIC] Analyse de pieces_relation_type...`);
+    
+    try {
+      // Déléguer au service V3 qui a accès à Supabase
+      const diagnostic = await this.vehicleFilteredCatalogServiceV3.diagnosticPiecesRelationType();
+      
+      this.logger.log(`✅ [DIAGNOSTIC] Résultats: ${diagnostic.available_type_ids?.length || 0} type_ids trouvés`);
+      
+      return diagnostic;
+
+    } catch (error: any) {
+      this.logger.error(`❌ [DIAGNOSTIC] Erreur: ${error.message}`);
+      return { 
+        success: false, 
+        error: error.message,
+        recommendations: ['Vérifier la connexion à Supabase', 'Vérifier que la table pieces_relation_type existe']
+      };
+    }
+  }
+
+  /**
+   * �🔍 ENDPOINT TEMPORAIRE - Test des tables gammes
    * GET /api/catalog/test-gamme-tables
    */
   @Get('test-gamme-tables')

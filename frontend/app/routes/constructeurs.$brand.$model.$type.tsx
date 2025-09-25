@@ -244,53 +244,50 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // === GÉNÉRATION CANONIQUE (logique PHP) ===
   const canonicalLink = `https://domain.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
 
-  // === GÉNÉRATION DES CATALOGUES (logique PHP adaptée avec vraies données FILTRÉES) ===
+  // === GÉNÉRATION DES CATALOGUES V3 HYBRIDE (approche optimisée 3-étapes) ===
   let catalogFamilies: CatalogFamily[] = [];
+  let popularParts: PopularPart[] = [];
+  let queryType = 'UNKNOWN';
+  let seoValid = false;
   
   try {
-    // � NOUVEAU: Récupération des familles FILTRÉES par véhicule (CGC_LEVEL=3)
-    console.log(`� Récupération des familles FILTRÉES pour type_id: ${type_id}...`);
-    const vehicleFilteredFamilies = await catalogFamiliesApi.getCatalogFamiliesForVehicle(type_id);
+    // 🚀 NOUVEAU V3: Approche hybride avec index composite + validation FK
+    console.log(`🚀 [V3 HYBRIDE] Récupération des familles pour type_id: ${type_id}...`);
+    const hybridResult = await catalogFamiliesApi.getCatalogFamiliesForVehicleV3(type_id);
     
-    if (vehicleFilteredFamilies.length > 0) {
-      // Conversion vers le format attendu par le frontend
-      catalogFamilies = vehicleFilteredFamilies.map((family: ApiCatalogFamily) => ({
-        mf_id: family.mf_id,
-        mf_name: family.mf_name,
-        mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
-        mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
-        gammes: family.gammes.map(gamme => ({
-          pg_id: gamme.pg_id,
-          pg_alias: gamme.pg_alias,
-          pg_name: gamme.pg_name
-        }))
-      }));
+    // Extraction des données hybrides
+    catalogFamilies = hybridResult.catalog.map((family: ApiCatalogFamily) => ({
+      mf_id: family.mf_id,
+      mf_name: family.mf_name,
+      mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
+      mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
+      gammes: family.gammes.map(gamme => ({
+        pg_id: gamme.pg_id,
+        pg_alias: gamme.pg_alias,
+        pg_name: gamme.pg_name
+      }))
+    }));
+    
+    popularParts = hybridResult.popularParts.map((part: any) => ({
+      cgc_pg_id: part.cgc_pg_id,
+      pg_alias: part.pg_alias,
+      pg_name: part.pg_name,
+      pg_name_meta: part.pg_name_meta,
+      pg_img: part.pg_img || 'no.webp', // ✅ Ajout de la propriété manquante
+      addon_content: part.addon_content
+    }));
+    
+    queryType = hybridResult.queryType;
+    seoValid = hybridResult.seoValid;
       
-      console.log(`✅ ${catalogFamilies.length} familles FILTRÉES récupérées pour le véhicule`);
-    } else {
-      console.log('⚠️ Aucune famille filtrée, fallback vers catalogue générique...');
-      
-      // 🔄 Fallback: Si pas de pièces spécifiques, utiliser le catalogue générique
-      const genericFamilies = await catalogFamiliesApi.getCatalogFamilies();
-      catalogFamilies = genericFamilies.map((family: ApiCatalogFamily) => ({
-        mf_id: family.mf_id,
-        mf_name: family.mf_name,
-        mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
-        mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
-        gammes: family.gammes.map(gamme => ({
-          pg_id: gamme.pg_id,
-          pg_alias: gamme.pg_alias,
-          pg_name: gamme.pg_name
-        }))
-      }));
-      
-      console.log(`🔄 Fallback: ${catalogFamilies.length} familles génériques récupérées`);
-    }
+    console.log(`✅ [V3 HYBRIDE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}`);
     
   } catch (error) {
-    console.error('❌ Erreur récupération catalogue filtré, fallback vers données simulées:', error);
+    console.error('❌ [V3 HYBRIDE] Erreur, fallback vers données simulées:', error);
     
     // Fallback vers les données simulées en cas d'erreur totale
+    queryType = 'SIMULATION_FALLBACK';
+    seoValid = false;
     catalogFamilies = [
       {
         mf_id: 1,
@@ -299,37 +296,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         mf_pic: "freinage.webp",
         gammes: [
           { pg_id: 101, pg_alias: "disques-frein", pg_name: "Disques de frein" },
-          { pg_id: 102, pg_alias: "plaquettes-frein", pg_name: "Plaquettes de frein" },
-          { pg_id: 103, pg_alias: "tambours-frein", pg_name: "Tambours de frein" }
+          { pg_id: 102, pg_alias: "plaquettes", pg_name: "Plaquettes de frein" }
         ]
       },
       {
         mf_id: 2,
         mf_name: "Moteur",
-        mf_description: "Pièces moteur",
+        mf_description: "Système moteur",
         mf_pic: "moteur.webp",
         gammes: [
           { pg_id: 201, pg_alias: "filtres-huile", pg_name: "Filtres à huile" },
-          { pg_id: 202, pg_alias: "courroies", pg_name: "Courroies" },
-          { pg_id: 203, pg_alias: "bougies", pg_name: "Bougies d'allumage" }
-        ]
-      },
-      {
-        mf_id: 3,
-        mf_name: "Suspension",
-        mf_description: "Système de suspension", 
-        mf_pic: "suspension.webp",
-        gammes: [
-          { pg_id: 301, pg_alias: "amortisseurs", pg_name: "Amortisseurs" },
-          { pg_id: 302, pg_alias: "ressorts", pg_name: "Ressorts" }
+          { pg_id: 202, pg_alias: "bougies", pg_name: "Bougies d'allumage" }
         ]
       }
     ];
-    
-    console.log(`🔄 Fallback final: ${catalogFamilies.length} familles simulées`);
   }
 
-  // Simulation des pièces populaires (basé sur la requête PHP cross_gamme_car avec vraies données)
+  // === CONSTRUCTION DU CONTENU SEO ET DES DONNÉES ===
   const generateSeoContent = (pgName: string, vehicleData: VehicleData, typeId: number): string => {
     const switches = ["Achetez", "Trouvez", "Commandez", "Choisissez"];
     const qualities = ["d'origine", "de qualité", "certifiées", "garanties"];
@@ -339,43 +322,45 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return `${switches[switchIndex]} ${pgName} ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}, ${qualities[qualityIndex]} à prix bas.`;
   };
 
-  // Générer les pièces populaires depuis les vraies familles
-  let popularParts: PopularPart[] = [];
-  
-  try {
-    const vehicleName = `${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
-    popularParts = catalogFamiliesApi.generatePopularParts(catalogFamilies, vehicleName, type_id);
-    console.log(`✅ ${popularParts.length} pièces populaires générées depuis les vraies données`);
-  } catch (error) {
-    console.error('❌ Erreur génération pièces populaires, fallback:', error);
+  // 🎯 Fallback pièces populaires si l'API V3 hybride n'en a pas fourni
+  if (popularParts.length === 0) {
+    console.log('⚠️ [V3 HYBRIDE] Aucune pièce populaire reçue, génération fallback...');
     
-    // Fallback manuel
-    popularParts = [
-      {
-        cgc_pg_id: 101,
-        pg_alias: "disques-frein",
-        pg_name: "Disques de frein",
-        pg_name_meta: "disques de frein",
-        pg_img: "disques-frein.webp",
-        addon_content: generateSeoContent("disques de frein", vehicleData, type_id)
-      },
-      {
-        cgc_pg_id: 201,
-        pg_alias: "filtres-huile",
-        pg_name: "Filtres à huile",
-        pg_name_meta: "filtres à huile",
-        pg_img: "filtres-huile.webp",
-        addon_content: generateSeoContent("filtres à huile", vehicleData, type_id + 1)
-      },
-      {
-        cgc_pg_id: 301,
-        pg_alias: "amortisseurs",
-        pg_name: "Amortisseurs",
-        pg_name_meta: "amortisseurs",
-        pg_img: "amortisseurs.webp",
-        addon_content: generateSeoContent("amortisseurs", vehicleData, type_id + 2)
-      }
-    ];
+    try {
+      const vehicleName = `${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
+      popularParts = catalogFamiliesApi.generatePopularParts(catalogFamilies, vehicleName, type_id);
+      console.log(`✅ [FALLBACK] ${popularParts.length} pièces populaires générées depuis les familles`);
+    } catch (error) {
+      console.error('❌ [FALLBACK] Erreur génération pièces populaires:', error);
+      
+      // Fallback manuel total
+      popularParts = [
+        {
+          cgc_pg_id: 101,
+          pg_alias: "disques-frein",
+          pg_name: "Disques de frein",
+          pg_name_meta: "disques de frein",
+          pg_img: "disques-frein.webp",
+          addon_content: generateSeoContent("disques de frein", vehicleData, type_id)
+        },
+        {
+          cgc_pg_id: 201,
+          pg_alias: "filtres-huile",
+          pg_name: "Filtres à huile",
+          pg_name_meta: "filtres à huile",
+          pg_img: "filtres-huile.webp",
+          addon_content: generateSeoContent("filtres à huile", vehicleData, type_id + 1)
+        },
+        {
+          cgc_pg_id: 301,
+          pg_alias: "amortisseurs",
+          pg_name: "Amortisseurs",
+          pg_name_meta: "amortisseurs",
+          pg_img: "amortisseurs.webp",
+          addon_content: generateSeoContent("amortisseurs", vehicleData, type_id + 2)
+        }
+      ];
+    }
   }
 
   // === CONSTRUCTION DES DONNÉES FINALES ===
