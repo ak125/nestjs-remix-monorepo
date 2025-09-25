@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://MASSDOC_owner:Fv4Eang6HxBb@ep-young-haze-a2gss4oh-pooler.eu-central-1.aws.neon.tech/MASSDOC?sslmode=require"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sessions  Session[]
+}
+
+model Session {
+  id           String  @id @default(cuid())
+  userId       String
+  ipAddress    String?
+  userAgent    String?
+  sessionToken String  @unique
+  user         User    @relation(fields: [userId], references: [id])
+}

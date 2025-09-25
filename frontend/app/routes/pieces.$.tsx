@@ -103,17 +103,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     throw new Response("URL non reconnue comme URL de pièce", { status: 404 });
   }
   
-  // Pattern pour nos nouvelles URLs: /pieces/{alias}-{id}.html
-  // Le pattern doit capturer l'alias (qui peut contenir des tirets) et l'ID numérique à la fin
+  // Vérifier si c'est une URL de pièces avec véhicule (4 segments)
+  const vehiclePattern = /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+$/;
+  if (vehiclePattern.test(legacyUrl)) {
+    console.log('🔧 [PIECES V4] URL pièces avec véhicule détectée, laissant passer pour pieces.$gamme.$marque.$modele.$type.tsx');
+    throw new Response("URL pièces avec véhicule - gérée par la route spécialisée", { status: 404 });
+  }
+  
+  // Pattern pour nos nouvelles URLs gamme simple: /pieces/{alias}-{id}.html
   const newPatternMatch = legacyUrl.match(/\/pieces\/(.+)-(\d+)\.html$/);
   
   if (newPatternMatch) {
     const [, alias, gammeId] = newPatternMatch;
-    console.log(`✅ Nouvelle URL détectée (pas de redirection): alias=${alias}, gammeId=${gammeId}`);
-    
-    // NE PAS rediriger ces URLs car elles sont déjà dans le bon format !
-    // Elles seront gérées par pieces.$slug.tsx
-    throw new Response("URL déjà au bon format - gérée par pieces.$slug.tsx", { status: 404 });
+    console.log(`✅ [PIECES V4] URL gamme simple détectée: alias=${alias}, gammeId=${gammeId}`);
+    // URL gamme simple - rediriger vers pieces.$slug.tsx
+    throw new Response("URL gamme simple - gérée par pieces.$slug.tsx", { status: 404 });
   }
   
   // Sinon, tenter la migration avec l'ancien système
