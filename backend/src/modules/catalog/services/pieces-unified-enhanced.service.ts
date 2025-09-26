@@ -20,12 +20,12 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   protected readonly logger = new Logger(PiecesUnifiedEnhancedService.name);
 
-  // 🔧 Configuration par défaut
+  // 🔧 Configuration par défaut - FALLBACKS DÉSACTIVÉS pour éviter les faux résultats
   private readonly DEFAULT_CONFIG = {
     maxPiecesPerQuery: 150,
     cacheEnabled: true,
     performanceLogging: true,
-    fallbackEnabled: true,
+    fallbackEnabled: false, // ❌ DÉSACTIVÉ - Pas de fausses pièces
     parallelQueries: true,
   };
 

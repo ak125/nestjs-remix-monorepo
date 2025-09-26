@@ -1,9 +1,9 @@
 // 🔧 Route pièces avec véhicule - Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useLocation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
-import { catalogFamiliesApi } from "../services/api/catalog-families.api";
+// import { catalogFamiliesApi } from "../services/api/catalog-families.api"; // 🚫 SUPPRIMÉ - Plus de fallback
 import { piecesPhpExactApi, type PHPExactPiece } from "../services/api/pieces-php-exact.api"; // 🎯 NOUVEAU - API logique PHP exacte
 
 // 📝 Types étendus (inspirés de la structure PHP)
@@ -209,74 +209,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
     console.error('❌ [PHP-EXACT-LOADER] Erreur récupération pièces PHP:', error);
   }
   
-  // Fallback vers données V4 si aucune pièce trouvée avec PHP exact
+  // 🚫 PAS DE FALLBACK - Si aucune pièce PHP exacte, on vérifie la disponibilité
   if (pieces.length === 0) {
-    console.log(`🔄 [PIECES-DB-LOADER] Fallback vers données V4 pour type_id: ${typeId}`);
+    console.log(`� [PIECES-DB-LOADER] Aucune pièce PHP exacte pour type_id: ${typeId}, pg_id: ${pgId}`);
     
-    try {
-      const v4Response = await catalogFamiliesApi.getCatalogFamiliesForVehicleV4(typeId);
-      
-      if (v4Response?.catalog?.length > 0) {
-        const targetGamme = v4Response.catalog.find(cat => 
-          cat.gammes?.some(g => 
-            g.pg_alias === gammeAlias || 
-            g.pg_name?.toLowerCase().includes(gammeAlias.replace(/-/g, ' ').toLowerCase())
-          )
-        );
-        
-        if (targetGamme) {
-          const gammeData = targetGamme.gammes?.find(g => 
-            g.pg_alias === gammeAlias || 
-            g.pg_name?.toLowerCase().includes(gammeAlias.replace(/-/g, ' ').toLowerCase())
-          );
-          
-          if (gammeData) {
-            const marques = ['BOSCH', 'VALEO', 'MANN-FILTER', 'FEBI BILSTEIN', 'SACHS', 'GATES'];
-            const piecesCount = Math.max(8, Math.min(20, 12)); // Nombre fixe par défaut
-            
-            pieces = Array.from({ length: piecesCount }, (_, i) => {
-              const marque = marques[i % marques.length];
-              const basePrice = 19.90; // Prix de base par défaut
-              const priceVariation = basePrice * (0.8 + Math.random() * 0.4);
-              const finalPrice = Math.round(priceVariation * 100) / 100;
-              
-              return {
-                id: gammeData.pg_id * 1000 + i,
-                name: `${gammeData.pg_name} ${vehicle.marque} ${vehicle.modele}`,
-                price: `${finalPrice}€`,
-                brand: marque,
-                stock: i % 4 === 0 ? 'Sur commande (2-3j)' : 'En stock',
-                reference: `${marque.substring(0,3)}-${gammeData.pg_id}-${vehicle.typeId}-${String(i+1).padStart(3, '0')}`,
-                qualite: marque === 'BOSCH' ? 'OES' : 'AFTERMARKET'
-              };
-            });
-            
-            gammeCarCountArticle = pieces.length;
-            gammeCarMinPrice = Math.min(...pieces.map(p => parseFloat(p.price.replace('€', ''))));
-            
-            console.log(`🎯 [PIECES-DB-LOADER] ${pieces.length} pièces générées depuis gamme V4 (fallback)`);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('❌ [PIECES-DB-LOADER] Erreur fallback V4:', error);
+    // Vérifier si le véhicule existe
+    if (!typeId || typeId === 0) {
+      console.log(`❌ [PIECES-DB-LOADER] Type de véhicule invalide: ${typeId}`);
+      throw new Response("Type de véhicule invalide", { status: 412 }); // Precondition Failed
     }
-  }
-  
-  // Dernier fallback vers pièce générique
-  if (pieces.length === 0) {
-    console.log(`⚠️ [PIECES-DB-LOADER] Fallback ultime vers pièce générique pour ${gamme.name}`);
-    pieces = [{
-      id: 1,
-      name: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
-      price: '24.90€',
-      brand: 'BOSCH',
-      stock: 'En stock',
-      reference: `REF-${pgId}-${typeId}-001`,
-      qualite: 'OES'
-    }];
-    gammeCarCountArticle = 1;
-    gammeCarMinPrice = 24.90;
+    
+    // Vérifier si la gamme existe  
+    if (!pgId || pgId === 0 || isNaN(pgId)) {
+      console.log(`❌ [PIECES-DB-LOADER] Gamme inexistante: ${pgId}`);
+      throw new Response("Gamme de pièces non trouvée", { status: 404 }); // Not Found
+    }
+    
+    // Si véhicule et gamme existent mais pas de compatibilité
+    console.log(`❌ [PIECES-DB-LOADER] Aucune compatibilité entre type_id ${typeId} et pg_id ${pgId}`);
+    throw new Response(`Aucune pièce ${gamme.name} compatible avec ce véhicule`, { 
+      status: 410,  // Gone - Pièce discontinuée ou non compatible
+      statusText: "Pièces non compatibles" 
+    });
   }
   
   // === SEO DYNAMIQUE (comme la logique PHP complexe) ===
@@ -766,6 +720,50 @@ export default function PiecesVehiculePage() {
               <li>• Notice incluse</li>
               <li>• Support technique 6j/7</li>
             </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 🚨 Gestion d'erreur transparente sans fallback trompeur
+export function ErrorBoundary() {
+  const location = useLocation();
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md mx-auto text-center">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <div className="text-6xl mb-4">🔍</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Pièces non disponibles
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Aucune pièce compatible n'a été trouvée pour cette combinaison véhicule/gamme.
+            Cela peut signifier :
+          </p>
+          <ul className="text-left text-sm text-gray-500 mb-6 space-y-2">
+            <li>• La pièce n'est pas compatible avec ce véhicule</li>
+            <li>• La gamme a été discontinuée</li>
+            <li>• Le modèle n'existe pas dans notre base</li>
+          </ul>
+          <div className="space-y-3">
+            <a 
+              href="/" 
+              className="block w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+            >
+              🏠 Retour à l'accueil
+            </a>
+            <a 
+              href="/contact" 
+              className="block w-full bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors"
+            >
+              💬 Nous contacter
+            </a>
+          </div>
+          <div className="mt-4 text-xs text-gray-400">
+            URL: {location.pathname}
           </div>
         </div>
       </div>
