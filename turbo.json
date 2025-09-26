@@ -6,10 +6,12 @@
         "persistent": true
       },
       "build": {
-        "outputs": ["backend/dist/**", "frontend/build/**"],
+        "outputs": ["backend/dist/**", "frontend/build/**", "packages/*/dist/**"],
         "dependsOn": ["^build"]
       },
-      "typecheck": {},
+      "typecheck": {
+        "dependsOn": ["^build"]
+      },
       "lint": {
         "cache": false
       }

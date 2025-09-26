@@ -38,7 +38,8 @@ import { ErrorsModule } from './modules/errors/errors.module'; // ❌ NOUVEAU - 
 import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU - API endpoints pour erreurs !
 import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
-import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ NOUVEAU - Catalogue automobile !
+import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ - Catalogue automobile complet !
+// import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 
 /**
@@ -103,7 +104,8 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     AnalyticsModule, // 📊 ACTIVÉ - Module Analytics enhanced avec multi-providers !
 
     // 🚗 CATALOGUE AUTOMOBILE
-    CatalogModule, // ✅ ACTIVÉ - Catalogue automobile avec tables existantes !
+    CatalogModule, // ✅ ACTIVÉ - Catalogue automobile complet avec logique PHP exacte !
+    // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
   ],
   controllers: [

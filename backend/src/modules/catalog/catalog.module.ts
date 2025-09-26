@@ -8,39 +8,35 @@ import { CatalogController } from './catalog.controller';
 import { EnhancedVehicleCatalogController } from './controllers/enhanced-vehicle-catalog.controller';
 import { CatalogGammeController } from './controllers/catalog-gamme.controller';
 import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
-import { GammeUnifiedController } from './controllers/gamme-unified.controller'; // 🎯 NOUVEAU - Controller unifié
-import { ImageProcessingController } from './controllers/image-test.controller'; // 🖼️ Test controller images
-import { EquipementiersController } from './controllers/equipementiers.controller'; // 🏭 NOUVEAU - Controller équipementiers
-import { VehicleFilteredCatalogV3Controller } from './controllers/vehicle-filtered-catalog-v3.controller'; // 🚗 V3 - Controller catalogue filtré
-import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller'; // 🚀 V4 - Controller hybride ultime
-// import { GammeController } from './controllers/gamme.controller'; // TEMPORAIREMENT DÉSACTIVÉ
+import { GammeUnifiedController } from './controllers/gamme-unified.controller';
+import { ImageProcessingController } from './controllers/image-test.controller';
+import { EquipementiersController } from './controllers/equipementiers.controller';
+import { VehicleFilteredCatalogV3Controller } from './controllers/vehicle-filtered-catalog-v3.controller';
+import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
+import { PiecesCleanController } from './controllers/pieces-clean.controller';
+// import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
+import { PiecesRealController } from '../../pieces/pieces-real.controller';
 
 // ========================================
 // 🔧 SERVICES PRINCIPAUX - Logique métier
 // ========================================
 import { CatalogService } from './catalog.service';
 import { EnhancedVehicleCatalogService } from './services/enhanced-vehicle-catalog.service';
-// import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
 import { CatalogFamilyService } from './services/catalog-family.service';
 import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
-import { GammeUnifiedService } from './services/gamme-unified.service'; // 🎯 NOUVEAU - Service unifié
-import { EquipementiersService } from './services/equipementiers.service'; // 🏭 NOUVEAU - Service équipementiers
-import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service'; // 🚗 V2 - Service catalogue filtré par véhicule
-import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service'; // 🚗 V3 - Service avec logique PHP complète
-import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service'; // 🚀 V4 - Service hybride ultime
-// import { ImageProcessingService } from './services/image-processing.service'; // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs compilation
-
-// ========================================
-// 🚗 SERVICES VÉHICULES - Importation du module véhicules (TEMPORAIREMENT DÉSACTIVÉ)
-// ========================================
-// import { VehiclesModule } from '../vehicles/vehicles.module';
-
-// ========================================
-// ⚡ SERVICES TRANSVERSAUX - Cache et métadonnées (TEMPORAIREMENT DÉSACTIVÉ)
-// ========================================
-// import { VehicleCacheService } from '../vehicles/services/core/vehicle-cache.service';
-// import { MetadataService } from '../config/services/metadata.service';
+import { GammeUnifiedService } from './services/gamme-unified.service';
+import { EquipementiersService } from './services/equipementiers.service';
+import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service';
+import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service';
+import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
+import { PiecesV4WorkingService } from './services/pieces-v4-working.service';
+import { PiecesPhpLogicService } from './services/pieces-php-logic.service';
+import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
+import { PiecesEnhancedService } from './services/pieces-enhanced.service';
+import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
+import { PiecesDbService } from '../../pieces/pieces-db.service-simple';
+import { PiecesRealService } from '../../pieces/pieces-real.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -73,46 +69,45 @@ import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filter
   controllers: [
     CatalogController,
     EnhancedVehicleCatalogController,
-    CatalogGammeController, // 🔧 NOUVEAU - Contrôleur gammes catalog_gamme
-    FamilyGammeHierarchyController, // 🏗️ NOUVEAU - Contrôleur hiérarchie Familles → Gammes
-    GammeUnifiedController, // 🎯 NOUVEAU - Contrôleur unifié simplifié
-    ImageProcessingController, // 🖼️ NOUVEAU - Contrôleur traitement images
-    EquipementiersController, // 🏭 NOUVEAU - Contrôleur équipementiers
-    VehicleFilteredCatalogV3Controller, // 🚗 V3 - NOUVEAU - Contrôleur catalogue véhicule PHP exact
-    VehicleFilteredCatalogV4Controller, // 🚀 V4 - NOUVEAU - Contrôleur hybride ultime avec cache Redis
-    // GammeController, // TEMPORAIREMENT DÉSACTIVÉ - utilise GammeService problématique
+    CatalogGammeController,
+    FamilyGammeHierarchyController,
+    GammeUnifiedController,
+    ImageProcessingController,
+    EquipementiersController,
+    VehicleFilteredCatalogV3Controller,
+    VehicleFilteredCatalogV4Controller,
+    PiecesCleanController,
+    // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
     // 🔧 Services principaux
     CatalogService,
     EnhancedVehicleCatalogService,
-    // GammeService, // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
-    CatalogFamilyService, // 🔧 NOUVEAU - Service familles de catalogue
-    CatalogGammeService, // 🔧 NOUVEAU - Service gammes catalog_gamme
-    FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Service hiérarchie Familles → Gammes
-    GammeUnifiedService, // 🎯 NOUVEAU - Service unifié simplifié
-    EquipementiersService, // 🏭 NOUVEAU - Service équipementiers
-    VehicleFilteredCatalogService, // 🚗 V2 - Service catalogue filtré par véhicule
-    VehicleFilteredCatalogServiceV3, // 🚗 V3 - Service avec logique PHP complète
-    VehicleFilteredCatalogV4HybridService, // 🚀 V4 - Service hybride ultime avec cache Redis
-    // ImageProcessingService, // 🖼️ TEMPORAIREMENT DÉSACTIVÉ - erreurs de compilation
-
-    // ⚡ Services de support - TEMPORAIREMENT DÉSACTIVÉS
-    // VehicleCacheService,
-    // MetadataService,
+    CatalogFamilyService,
+    CatalogGammeService,
+    FamilyGammeHierarchyService,
+    GammeUnifiedService,
+    EquipementiersService,
+    VehicleFilteredCatalogService,
+    VehicleFilteredCatalogServiceV3,
+    VehicleFilteredCatalogV4HybridService,
+    PiecesV4WorkingService,
+    PiecesPhpLogicService,
+    PiecesPhpLogicCompleteService,
+    PiecesEnhancedService,
+    PiecesUltraEnhancedService,
+    PiecesDbService,
+    PiecesRealService,
   ],
   exports: [
-    // 📤 Exports pour autres modules
     CatalogService,
     EnhancedVehicleCatalogService,
-    // GammeService, // TEMPORAIREMENT DÉSACTIVÉ
-    CatalogFamilyService, // 🔧 NOUVEAU - Export service familles
-    CatalogGammeService, // 🔧 NOUVEAU - Export service gammes catalog_gamme
-    FamilyGammeHierarchyService, // 🏗️ NOUVEAU - Export service hiérarchie
-    VehicleFilteredCatalogService, // 🚗 V2 - Export service catalogue filtré
-    VehicleFilteredCatalogServiceV3, // 🚗 V3 - Export service avec logique PHP complète
-    VehicleFilteredCatalogV4HybridService, // 🚀 V4 - Export service hybride ultime avec cache Redis
-    // VehicleCacheService, // TEMPORAIREMENT DÉSACTIVÉ
+    CatalogFamilyService,
+    CatalogGammeService,
+    FamilyGammeHierarchyService,
+    VehicleFilteredCatalogService,
+    VehicleFilteredCatalogServiceV3,
+    VehicleFilteredCatalogV4HybridService,
   ],
 })
 export class CatalogModule {

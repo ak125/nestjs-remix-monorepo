@@ -319,6 +319,96 @@ export class CatalogFamiliesApi {
       throw error;
     }
   }
+
+  /**
+   * 🔧 NOUVEAU - Récupère les VRAIES PIÈCES avec prix et détails
+   * Reproduction exacte de la logique PHP
+   */
+  async getRealPiecesForVehicleGamme(params: {
+    typeId: number;
+    pgId: number;
+    marqueId: number;
+    modeleId: number;
+  }): Promise<{
+    success: boolean;
+    pieces: Array<{
+      piece_id: number;
+      piece_name: string;
+      piece_ref: string;
+      pm_name: string;
+      pm_quality: string;
+      pm_nb_stars: number;
+      price_formatted: string;
+      price_pv_ttc: number;
+      price_cs_ttc: number;
+      photo_link: string;
+      technical_criteria: Array<{
+        criteria: string;
+        value: string;
+        unit: string;
+      }>;
+    }>;
+    filters: {
+      equipementiers: Array<{
+        pm_name: string;
+        pm_alias: string;
+        count: number;
+      }>;
+      quality_filters: Array<{
+        quality_name: string;
+      }>;
+    };
+    statistics: {
+      total_count: number;
+      returned_count: number;
+      min_price: number;
+      response_time: string;
+    };
+  }> {
+    try {
+      console.log(`🔧 [API REAL PIECES] Récupération pièces pour type_id: ${params.typeId}, pg_id: ${params.pgId}`);
+      
+      const response = await fetch(
+        `${this.baseUrl}/catalog/pieces/vehicle/${params.typeId}/gamme/${params.pgId}?marqueId=${params.marqueId}&modeleId=${params.modeleId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new ApiError(`Erreur HTTP REAL PIECES: ${response.status}`, response.status);
+      }
+
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new ApiError(`Réponse REAL PIECES invalide: ${data.error || 'Données manquantes'}`, 500);
+      }
+      
+      console.log(`✅ [API REAL PIECES] ${data.data.pieces.length} pièces récupérées, prix min: ${data.data.statistics.min_price}€`);
+      
+      return {
+        success: data.success,
+        pieces: data.data.pieces || [],
+        filters: data.data.filters || { equipementiers: [], quality_filters: [] },
+        statistics: data.data.statistics || { total_count: 0, returned_count: 0, min_price: 0, response_time: '0ms' }
+      };
+      
+    } catch (error) {
+      console.error('❌ [API REAL PIECES] Erreur récupération vraies pièces:', error);
+      
+      // Retour données vides en cas d'erreur
+      return {
+        success: false,
+        pieces: [],
+        filters: { equipementiers: [], quality_filters: [] },
+        statistics: { total_count: 0, returned_count: 0, min_price: 0, response_time: '0ms' }
+      };
+    }
+  }
   async getCatalogFamilies(): Promise<CatalogFamily[]> {
     try {
       const response = await fetch(`${this.baseUrl}/catalog/hierarchy/full`, {

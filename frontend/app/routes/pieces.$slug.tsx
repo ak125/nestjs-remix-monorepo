@@ -9,7 +9,7 @@ import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
 import PerformanceIndicator from "../components/pieces/PerformanceIndicator";
-import VehicleSelectorGamme from "../components/pieces/VehicleSelectorGamme";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 
 interface LoaderData {
   status: number;
@@ -169,13 +169,43 @@ export default function PiecesDetailPage() {
         <PerformanceIndicator performance={data.performance} />
 
         {/* Vehicle Selector pour trouver des pièces compatibles */}
-        <VehicleSelectorGamme
-          currentGamme={{
-            name: data.content?.pg_name || 'gammes',
-            id: data.guide?.id || 0
-          }}
-          className="mb-8"
-        />        {/* Hero Section */}
+        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+          <h2 className="text-xl font-bold mb-4 text-gray-800">
+            Sélectionnez votre véhicule pour cette gamme
+          </h2>
+          <VehicleSelectorV2
+            mode="full"
+            variant="card"
+            context="homepage"
+            redirectOnSelect={false}
+            onVehicleSelect={(selection) => {
+              // Navigation vers la page pièces avec véhicule
+              if (selection.brand && selection.model && selection.type && data?.content) {
+                const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
+                const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
+                
+                // Gérer les types sans alias
+                let typeAlias = selection.type.type_alias;
+                if (!typeAlias && selection.type.type_liter && selection.type.type_fuel) {
+                  const liter = (parseInt(selection.type.type_liter) / 100).toFixed(1).replace('.', '-');
+                  const fuel = selection.type.type_fuel.toLowerCase();
+                  typeAlias = `${liter}-${fuel}`;
+                }
+                
+                const typeSlug = `${typeAlias || 'type'}-${selection.type.type_id}.html`;
+                const url = `/pieces/${data.content.pg_alias}/${brandSlug}/${modelSlug}/${typeSlug}`;
+                
+                console.log('🚀 Navigation vers:', url);
+                
+                // Navigation avec délai
+                setTimeout(() => {
+                  window.location.href = url;
+                }, 1500);
+              }
+            }}
+            className="bg-gray-50 p-4 rounded-md"
+          />
+        </div>        {/* Hero Section */}
         <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
           <div className="relative">
             {data.content?.pg_wall && (

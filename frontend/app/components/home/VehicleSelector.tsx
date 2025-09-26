@@ -5,7 +5,7 @@ import { Form, useNavigate } from '@remix-run/react';
 import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
-import type { VehicleBrand, VehicleModel, VehicleType } from "../../types/vehicle.types";
+import type { VehicleBrand, VehicleModel, VehicleType } from "@monorepo/shared-types";
 import { Button } from "../ui/button";
 
 
@@ -121,7 +121,11 @@ export default function VehicleSelector({
       setLoadingModels(true);
       try {
         // 🗓️ Passer l'année pour le filtrage côté backend si supporté
-        const modelsData = await enhancedVehicleApi.getModels(selectedBrand.marque_id, { year });
+        const modelsData = await enhancedVehicleApi.getModels(selectedBrand.marque_id, { 
+          year, 
+          page: 1, 
+          limit: 100 
+        });
         setModels(modelsData);
       } catch (error) {
         console.warn('Erreur chargement modèles:', error);

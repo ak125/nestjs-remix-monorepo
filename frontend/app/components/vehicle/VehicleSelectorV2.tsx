@@ -5,7 +5,7 @@ import { Form, useNavigate } from '@remix-run/react';
 import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
-import type { VehicleBrand, VehicleModel, VehicleType } from "../../types/vehicle.types";
+import type { VehicleBrand, VehicleModel, VehicleType } from "@monorepo/shared-types";
 import { Button } from "../ui/button";
 
 interface VehicleSelectorV2Props {
@@ -177,7 +177,7 @@ export default function VehicleSelectorV2({
     
     setSelectedType(type);
     
-    // 📞 Callback si fourni
+    // 📞 Callback si fourni - toujours appeler même si redirectOnSelect est false
     if (selectedYear && onVehicleSelect) {
       onVehicleSelect({
         brand: selectedBrand,

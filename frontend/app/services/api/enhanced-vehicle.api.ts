@@ -1,354 +1,241 @@
-// 📁 frontend/app/services/api/enhanced-vehicle.api.ts
-import type { VehicleBrand, VehicleModel, VehicleType } from "../../types/vehicle.types";
-// 🚗 Enhanced Vehicle API Service - Utilise le service backend testé 100%
+/**
+ * Enhanced Vehicle API Service (v2)
+ * - Unifié: utilisable côté Remix (client/loader) et côté Nest si besoin
+ * - Typage via @monorepo/shared-types
+ * - Backend retourne { data, page, limit, total } (sans "success") → mapping standardisé
+ */
 
-export interface VehicleBrandAPI {
-  id: number;
-  code: string;
-  name: string;
-  alias?: string;
-  logo?: string;
-  country?: string;
-  isActive: boolean;
-  isFavorite: boolean;
-  displayOrder: number;
-  products_count?: number;
-}
+import type {
+  VehicleBrand,
+  VehicleModel,
+  VehicleType,
+  ApiResponse,
+  PaginationOptions
+} from '@monorepo/shared-types';
 
-export interface VehicleBrandComponent {
-  marque_id: number;
-  marque_name: string;
-  marque_alias?: string;
-  marque_logo?: string;
-  marque_country?: string;
-  products_count?: number;
-  is_featured?: boolean;
-}
-
-export interface VehicleBrand {
-  id: number;
-  code: string;
-  name: string;
-  alias?: string;
-  logo?: string;
-  country?: string;
-  isActive: boolean;
-  isFavorite: boolean;
-  displayOrder: number;
-  products_count?: number;
-  is_featured?: boolean;
-}
-
-
-export interface VehicleType {
-  type_id: number;
-  type_name: string;
-  type_fuel?: string;
-  type_power?: string;
-  type_engine?: string;
-  model_id: number;
-  year_from?: number;
-  year_to?: number;
-}
-
-export interface VehicleResponse<T> {
-  success: boolean;
-  data: T[];
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+type VehicleResponse<T> = {
+  data?: T;
+  page?: number;
+  limit?: number;
+  total?: number;
   message?: string;
+  // Pas de "success" attendu côté backend
+};
+
+// --- Helpers ---
+
+const DEFAULT_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
+const DEFAULT_TIMEOUT_MS = 15000;
+
+function resolveBaseUrl(): string {
+  // Côté browser, même origine
+  if (typeof window !== 'undefined') return window.location.origin;
+  // Côté serveur (loaders Remix, scripts), utilisez une env si différent
+  return process.env.API_BASE_URL || 'http://localhost:3000';
 }
+
+async function httpJSON<T>(
+  url: string,
+  init?: RequestInit,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<T> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { headers: DEFAULT_HEADERS, signal: controller.signal, ...init });
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status} ${res.statusText} for ${url}`);
+    }
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+function toSearchParams(opts?: Record<string, string | number | boolean | undefined>) {
+  const sp = new URLSearchParams();
+  if (!opts) return sp;
+  for (const [k, v] of Object.entries(opts)) {
+    if (v === undefined || v === null) continue;
+    sp.append(k, String(v));
+  }
+  return sp;
+}
+
+// --- Mapping utilitaires (backend → types unifiés) ---
+
+function mapBrand(raw: any): VehicleBrand {
+  return {
+    marque_id: Number(raw.marque_id),
+    marque_name: String(raw.marque_name),
+    marque_alias: String(raw.marque_alias ?? raw.marque_name?.toLowerCase().replace(/\s+/g, '-')),
+    marque_display: Number(raw.marque_display ?? 1),
+    marque_relfollow: Number(raw.marque_relfollow ?? 1),
+    marque_sitemap: Number(raw.marque_sitemap ?? 1),
+    is_featured: raw.is_featured ?? raw.marque_top === 1,
+    marque_logo: raw.marque_logo,
+    marque_country: raw.marque_country,
+    products_count: raw.products_count
+  } as VehicleBrand;
+}
+
+function mapModel(raw: any): VehicleModel {
+  return {
+    modele_id: Number(raw.modele_id),
+    modele_marque_id: Number(raw.modele_marque_id ?? raw.brand_id),
+    modele_name: String(raw.modele_name),
+    modele_alias: String(raw.modele_alias ?? raw.modele_name?.toLowerCase().replace(/\s+/g, '-')),
+    modele_ful_name: raw.modele_ful_name,
+    year_from: raw.modele_year_from ? Number(raw.modele_year_from) : undefined,
+    year_to: raw.modele_year_to ? Number(raw.modele_year_to) : undefined
+  } as VehicleModel;
+}
+
+function mapType(raw: any): VehicleType {
+  return {
+    type_id: Number(raw.type_id),
+    type_name: String(raw.type_name),
+    modele_id: Number(raw.type_modele_id ?? raw.modele_id),
+    type_alias: String(raw.type_alias ?? raw.type_name?.toLowerCase().replace(/\s+/g, '-')),
+    type_fuel: raw.type_fuel,
+    type_power_ps: raw.type_power_ps ? Number(raw.type_power_ps) : undefined,
+    type_liter: raw.type_liter ? Number(raw.type_liter) : undefined,
+    type_engine: raw.type_engine,
+    year_from: raw.type_year_from ? Number(raw.type_year_from) : undefined,
+    year_to: raw.type_year_to ? Number(raw.type_year_to) : undefined
+  } as VehicleType;
+}
+
+// --- Service ---
 
 class EnhancedVehicleApiService {
   private readonly baseUrl: string;
+  private readonly apiPrefix = '/api/vehicles';
 
   constructor() {
-    // ✅ Frontend géré par le backend - utilise le même origine
-    this.baseUrl = typeof window !== 'undefined' 
-      ? window.location.origin
-      : process.env.API_BASE_URL || 'http://localhost:3000';
+    this.baseUrl = resolveBaseUrl();
   }
 
-  /**
-   * 🏷️ Récupérer toutes les marques avec Enhanced Vehicle Service
-   */
-  async getBrands(options?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    onlyFavorites?: boolean;
-    onlyActive?: boolean;
-  }): Promise<VehicleBrandComponent[]> {
-    try {
-      const params = new URLSearchParams();
-      
-      if (options?.page) params.append('page', options.page.toString());
-      if (options?.limit) params.append('limit', options.limit.toString());
-      if (options?.search) params.append('search', options.search);
-      if (options?.onlyFavorites) params.append('onlyFavorites', 'true');
-      if (options?.onlyActive) params.append('onlyActive', 'true');
+  // -------- Brands --------
 
-      const url = `${this.baseUrl}/api/vehicles/brands${params.toString() ? '?' + params.toString() : ''}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`❌ Erreur récupération marques: ${response.status}`);
-        return [];
-      }
-
-      const data: VehicleResponse<VehicleBrandAPI> = await response.json();
-      
-      // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedBrands: VehicleBrandComponent[] = data.data ? data.data.map((brand: any) => ({
-        marque_id: brand.marque_id,
-        marque_name: brand.marque_name,
-        marque_alias: brand.marque_alias,
-        marque_logo: brand.marque_logo,
-        marque_country: brand.marque_country,
-        products_count: brand.products_count,
-        is_featured: brand.marque_top === 1
-      })) : [];
-      
-      return mappedBrands;
-    } catch (error) {
-      console.warn('❌ Erreur getBrands:', error);
-      return [];
-    }
+  async getBrands(options?: PaginationOptions & { search?: string; onlyFavorites?: boolean; onlyActive?: boolean; }): Promise<VehicleBrand[]> {
+    const params = toSearchParams({
+      page: options?.page,
+      limit: options?.limit,
+      search: options?.search,
+      onlyFavorites: options?.onlyFavorites,
+      onlyActive: options?.onlyActive
+    });
+    const url = `${this.baseUrl}${this.apiPrefix}/brands${params.toString() ? `?${params}` : ''}`;
+    const res = await httpJSON<VehicleResponse<any[]>>(url);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    return rows.map(mapBrand);
   }
 
-  /**
-   * 🚙 Récupérer les modèles d'une marque
-   */
-  async getModels(brandId: number, options?: {
-    year?: number;
-    page?: number;
-    limit?: number;
-    search?: string;
-  }): Promise<VehicleModel[]> {
-    try {
-      const params = new URLSearchParams();
-      
-      if (options?.year) params.append('year', options.year.toString());
-      if (options?.page) params.append('page', options.page.toString());
-      if (options?.limit) params.append('limit', options.limit.toString());
-      if (options?.search) params.append('search', options.search);
-
-      const url = `${this.baseUrl}/api/vehicles/brands/${brandId}/models${params.toString() ? '?' + params.toString() : ''}`;
-      
-      console.log(`🚙 API Call: ${url}`); // Debug log
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`❌ Erreur récupération modèles pour marque ${brandId}: ${response.status}`);
-        return [];
-      }
-
-      const data: VehicleResponse<any> = await response.json();
-      
-      console.log(`📊 Modèles reçus pour marque ${brandId}:`, data); // Debug log
-      
-      // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedModels = data.data ? data.data.map((model: any) => ({
-        modele_id: model.modele_id,
-        modele_name: model.modele_name,
-        modele_alias: model.modele_alias,
-        modele_ful_name: model.modele_ful_name,
-        brand_id: model.modele_marque_id,
-        year_from: model.modele_year_from,
-        year_to: model.modele_year_to
-      })) : [];
-      
-      return mappedModels;
-    } catch (error) {
-      console.warn(`❌ Erreur getModels pour marque ${brandId}:`, error);
-      return [];
-    }
+  async getFeaturedBrands(): Promise<VehicleBrand[]> {
+    const url = `${this.baseUrl}${this.apiPrefix}/brands/featured`;
+    const res = await httpJSON<VehicleResponse<any[]>>(url);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    return rows.map(mapBrand);
   }
 
-  /**
-   * ⚙️ Récupérer les types/motorisations d'un modèle
-   */
-  async getTypes(modelId: number, options?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    fuel?: string;
-    year?: number;
-  }): Promise<VehicleType[]> {
-    try {
-      const params = new URLSearchParams();
-      
-      if (options?.page) params.append('page', options.page.toString());
-      if (options?.limit) params.append('limit', options.limit.toString());
-      if (options?.search) params.append('search', options.search);
-      if (options?.fuel) params.append('fuel', options.fuel);
-      if (options?.year) params.append('year', options.year.toString());
+  // -------- Models --------
 
-      const url = `${this.baseUrl}/api/vehicles/models/${modelId}/types${params.toString() ? '?' + params.toString() : ''}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`❌ Erreur récupération types pour modèle ${modelId}: ${response.status}`);
-        return [];
-      }
-
-      const data: VehicleResponse<any> = await response.json();
-      
-      // 🔄 Mapper les données de l'API vers le format attendu par le composant
-      // ✅ Le backend retourne { data: [...], total, page, limit } sans propriété success
-      const mappedTypes = data.data ? data.data.map((type: any) => ({
-        type_id: parseInt(type.type_id),
-        type_name: type.type_name,
-        type_fuel: type.type_fuel,
-        type_power: type.type_power_ps ? `${type.type_power_ps} PS` : undefined,
-        type_engine: type.type_engine,
-        model_id: parseInt(type.type_modele_id),
-        year_from: type.type_year_from ? parseInt(type.type_year_from) : undefined,
-        year_to: type.type_year_to ? parseInt(type.type_year_to) : undefined,
-        type_slug: type.type_alias
-      })) : [];
-      
-      return mappedTypes;
-    } catch (error) {
-      console.warn(`❌ Erreur getTypes pour modèle ${modelId}:`, error);
-      return [];
-    }
+  async getModels(brandId: number, options?: { year?: number } & PaginationOptions & { search?: string }): Promise<VehicleModel[]> {
+    const params = toSearchParams({
+      year: options?.year,
+      page: options?.page,
+      limit: options?.limit,
+      search: options?.search
+    });
+    const url = `${this.baseUrl}${this.apiPrefix}/brands/${brandId}/models${params.toString() ? `?${params}` : ''}`;
+    const res = await httpJSON<VehicleResponse<any[]>>(url);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    return rows.map(mapModel);
   }
 
-  /**
-   * 📅 Récupérer les années disponibles pour une marque
-   */
-  async getYearsByBrand(brandId: number): Promise<number[]> {
-    try {
-      const url = `${this.baseUrl}/api/vehicles/brands/${brandId}/years`;
-      console.log(`📅 API Call: ${url}`); // Debug log
-      console.log(`📅 baseUrl: ${this.baseUrl}`); // Debug baseUrl
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log(`📅 Response status: ${response.status}`); // Debug status
-      console.log(`📅 Response ok: ${response.ok}`); // Debug ok
-
-      if (!response.ok) {
-        console.warn(`❌ Erreur récupération années pour marque ${brandId}: ${response.status}`);
-        return [];
-      }
-
-      const data = await response.json();
-      console.log(`📅 Raw response:`, data); // Debug log
-      
-      // 🔄 Le backend retourne { data: [...], total, page, limit } 
-      if (data.data && Array.isArray(data.data)) {
-        const years = data.data.map((item: any) => item.year);
-        console.log(`📅 Extracted years:`, years); // Debug log
-        return years;
-      }
-      
-      // Fallback si format différent
-      console.warn(`❌ Format de données inattendu:`, data);
-      return [];
-    } catch (error) {
-      console.warn(`❌ Erreur getYearsByBrand pour marque ${brandId}:`, error);
-      return [];
-    }
+  async searchModels(brandId: number, query: string): Promise<VehicleModel[]> {
+    const params = toSearchParams({ brandId, q: query });
+    const url = `${this.baseUrl}${this.apiPrefix}/models/search?${params}`;
+    const res = await httpJSON<VehicleResponse<any[]>>(url);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    return rows.map(mapModel);
   }
 
-  /**
-   * 🔍 Rechercher des véhicules
-   */
-  async searchVehicles(query: string, options?: {
-    type?: 'brand' | 'model' | 'type' | 'all';
-    limit?: number;
-  }): Promise<{
+  // -------- Types --------
+
+  async getTypes(modelId: number, options?: { page?: number; limit?: number; search?: string; fuel?: string; year?: number }): Promise<VehicleType[]> {
+    const params = toSearchParams(options);
+    const url = `${this.baseUrl}${this.apiPrefix}/models/${modelId}/types${params.toString() ? `?${params}` : ''}`;
+    const res = await httpJSON<VehicleResponse<any[]>>(url);
+    const rows = Array.isArray(res.data) ? res.data : [];
+    return rows.map(mapType);
+  }
+
+  // -------- Search / VIN --------
+
+  async searchVehicles(query: string, options?: { type?: 'brand' | 'model' | 'type' | 'all'; limit?: number }): Promise<{
     brands: VehicleBrand[];
     models: VehicleModel[];
     types: VehicleType[];
   }> {
-    try {
-      const params = new URLSearchParams();
-      params.append('query', query);
-      if (options?.type) params.append('type', options.type);
-      if (options?.limit) params.append('limit', options.limit.toString());
-
-      const response = await fetch(`${this.baseUrl}/api/vehicles/search?${params.toString()}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(`❌ Erreur recherche véhicules: ${response.status}`);
-        return { brands: [], models: [], types: [] };
-      }
-
-      const data = await response.json();
-      return data.success ? data.data : { brands: [], models: [], types: [] };
-    } catch (error) {
-      console.warn('❌ Erreur searchVehicles:', error);
-      return { brands: [], models: [], types: [] };
-    }
+    const params = toSearchParams({ query, type: options?.type, limit: options?.limit });
+    const url = `${this.baseUrl}${this.apiPrefix}/search?${params}`;
+    const res = await httpJSON<{
+      success?: boolean;
+      data?: { brands?: any[]; models?: any[]; types?: any[] };
+    }>(url);
+    const data = res.data ?? {};
+    return {
+      brands: (data.brands ?? []).map(mapBrand),
+      models: (data.models ?? []).map(mapModel),
+      types: (data.types ?? []).map(mapType)
+    };
   }
 
-  /**
-   * 📊 Récupérer les statistiques véhicules
-   */
-  async getStats(): Promise<{
-    totalBrands: number;
-    totalModels: number;
-    totalTypes: number;
-    featuredBrands: number;
-  }> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/vehicles/stats`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  async searchByVin(vin: string): Promise<VehicleType | null> {
+    const url = `${this.baseUrl}${this.apiPrefix}/vin/${encodeURIComponent(vin)}`;
+    const res = await httpJSON<VehicleResponse<any | null>>(url);
+    return res.data ? mapType(res.data) : null;
+  }
 
-      if (!response.ok) {
-        console.warn(`❌ Erreur récupération stats véhicules: ${response.status}`);
-        return { totalBrands: 0, totalModels: 0, totalTypes: 0, featuredBrands: 0 };
-      }
+  // -------- Years / Stats --------
 
-      const data = await response.json();
-      return data.success ? data.data : { totalBrands: 0, totalModels: 0, totalTypes: 0, featuredBrands: 0 };
-    } catch (error) {
-      console.warn('❌ Erreur getStats:', error);
-      return { totalBrands: 0, totalModels: 0, totalTypes: 0, featuredBrands: 0 };
-    }
+  async getYearsByBrand(brandId: number): Promise<number[]> {
+    const url = `${this.baseUrl}${this.apiPrefix}/brands/${brandId}/years`;
+    const res = await httpJSON<VehicleResponse<{ year: number }[] | number[]>>(url);
+    const payload = res.data ?? [];
+    if (Array.isArray(payload) && typeof payload[0] === 'number') return payload as number[];
+    return (payload as { year: number }[]).map((r) => Number(r.year));
+  }
+
+  async getStats(): Promise<{ totalBrands: number; totalModels: number; totalTypes: number; featuredBrands: number; }> {
+    const url = `${this.baseUrl}${this.apiPrefix}/stats`;
+    const res = await httpJSON<VehicleResponse<{
+      totalBrands: number; totalModels: number; totalTypes: number; featuredBrands: number;
+    }>>(url);
+    return res.data ?? { totalBrands: 0, totalModels: 0, totalTypes: 0, featuredBrands: 0 };
+  }
+
+  // -------- Utils --------
+
+  generateVehicleUrl(vehicle: { brand: VehicleBrand; model: VehicleModel; type: VehicleType }): string {
+    const brandSlug = vehicle.brand.marque_alias || vehicle.brand.marque_name.toLowerCase().replace(/\s+/g, '-');
+    const modelSlug = vehicle.model.modele_name.toLowerCase().replace(/\s+/g, '-');
+    const typeSlug = vehicle.type.type_name.toLowerCase().replace(/\s+/g, '-');
+    return `/vehicules/${brandSlug}/${modelSlug}/${typeSlug}`;
+  }
+
+  isValidBrand(obj: unknown): obj is VehicleBrand {
+    return !!obj && typeof obj === 'object' && 'marque_id' in obj && 'marque_name' in obj && 'marque_display' in obj;
+  }
+  isValidModel(obj: unknown): obj is VehicleModel {
+    return !!obj && typeof obj === 'object' && 'modele_id' in obj && 'modele_name' in obj && 'modele_marque_id' in obj;
+  }
+  isValidType(obj: unknown): obj is VehicleType {
+    return !!obj && typeof obj === 'object' && 'type_id' in obj && 'type_name' in obj && 'modele_id' in obj;
   }
 }
 
-// Export singleton
 export const enhancedVehicleApi = new EnhancedVehicleApiService();
+export type { VehicleBrand, VehicleModel, VehicleType } from '@monorepo/shared-types';
