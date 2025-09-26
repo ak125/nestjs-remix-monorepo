@@ -1,0 +1,25 @@
+{
+  "name": "@monorepo/shared-types",
+  "version": "1.0.0",
+  "description": "Types TypeScript partagés entre backend et frontend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./pieces": "./dist/pieces.types.js",
+    "./vehicle": "./dist/vehicle.types.js",
+    "./catalog": "./dist/catalog.types.js",
+    "./api": "./dist/api.types.js"
+  }
+}

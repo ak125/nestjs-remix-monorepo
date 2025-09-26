@@ -25,6 +25,7 @@
   "dependencies": {
     "@conform-to/react": "^1.8.2",
     "@conform-to/zod": "^1.8.2",
+    "@monorepo/shared-types": "^1.0.0",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bullmq": "^11.0.3",
     "@nestjs/cache-manager": "^2.0.0",
