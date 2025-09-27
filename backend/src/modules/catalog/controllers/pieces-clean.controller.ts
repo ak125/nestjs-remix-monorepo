@@ -3,6 +3,7 @@ import { PiecesV4WorkingService } from '../services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { PiecesPhpLogicCompleteService } from '../services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from '../services/pieces-enhanced.service';
+import { PricingServiceV5UltimateFinal } from '../../products/pricing-service-v5-ultimate-final.service';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ
@@ -20,6 +21,7 @@ export class PiecesCleanController {
     private readonly piecesV4Service: PiecesV4WorkingService,
     private readonly piecesCompleteService: PiecesPhpLogicCompleteService,
     private readonly piecesEnhancedService: PiecesEnhancedService,
+    private readonly pricingService: PricingServiceV5UltimateFinal,
   ) {}
 
   /**
@@ -245,18 +247,25 @@ export class PiecesCleanController {
       const relations = relationsResult.data || [];
       const pieceId = relations[0]?.rtp_piece_id;
 
-      let prices = [];
+      // Variables pour compatibilité ancienne structure
+      let enhancedPricing = null;
+      let rawPrices = [];
       let criterias = [];
       let images = [];
       
       if (pieceId) {
-        // 2. Prix (table corrigée)
+        // 🎯 V5 ULTIMATE PRICING SERVICE - Plus besoin de logique manuelle !
+        enhancedPricing = await this.pricingService.getAdvancedPricing(
+          pieceId.toString(),
+        );
+        
+        // Récupération des données pour compatibilité (optionnel pour debug)
         const pricesResult = await this.piecesCompleteService['client']
           .from('pieces_price')
           .select('*')
           .eq('pri_piece_id', pieceId)
           .limit(5);
-        prices = pricesResult.data || [];
+        rawPrices = pricesResult.data || [];
 
         // 3. Critères
         const criteriasResult = await this.piecesCompleteService['client']
@@ -277,16 +286,22 @@ export class PiecesCleanController {
 
       return {
         success: true,
+        // 🎯 V5 ULTIMATE DATA - Pricing avancé intégré !
+        enhanced_pricing: enhancedPricing,
         debug: {
           relations_count: relations.length,
           first_relation: relations[0] || null,
           piece_id: pieceId,
-          prices_count: prices.length,
-          prices_sample: prices.slice(0, 2),
+          // Anciennes données pour compatibilité
+          raw_prices_count: rawPrices?.length || 0,
+          raw_prices_sample: rawPrices?.slice(0, 2) || [],
           criterias_count: criterias.length,
           criterias_sample: criterias.slice(0, 2),
           images_count: images.length,
           images_sample: images.slice(0, 2),
+          // ✨ Nouveau : Service V5 Ultimate utilisé
+          v5_ultimate_active: true,
+          pricing_service: 'PricingServiceV5UltimateFinal',
         },
       };
     } catch (error: any) {
