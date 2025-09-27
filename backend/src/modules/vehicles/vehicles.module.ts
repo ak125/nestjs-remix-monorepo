@@ -1,63 +1,86 @@
 /**
- * 🚗 MODULE VEHICLES OPTIMAL - Architecture alignée sur ProductsModule
- *
- * Module véhicules avec stratégie optimale :
- * ✅ Pas d'imports de ConfigModule ou DatabaseModule
- * ✅ VehiclesService hérite de SupabaseBaseService
- * ✅ Configuration via getAppConfig() en fallback
- * ✅ Évite toute dépendance circulaire
- * ✅ Service léger et performant pour automobiles
+ * 🚗 VehiclesModule — version nettoyée et optimisée
+ * - API REST principale (VehiclesController) + Forms (VehiclesFormsController)
+ * - Services : VehiclesService (principal), EnhancedVehicleService (orchestrateur),
+ *   services core/data/search (cache, enrichment, brands, models, types, search, mine)
+ * - Cache configurable via ENV (VEHICLES_CACHE_TTL, VEHICLES_CACHE_MAX)
+ * - Imports stricts, pas de doublons ni de dépendances circulaires
  */
 
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 
 // Controllers
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesFormsController } from './vehicles-forms-simple.controller';
-// import { EnhancedVehicleController } from './enhanced-vehicle.controller'; // 🚫 TEMPORAIREMENT DÉSACTIVÉ
+// import { VehiclesEnhancedController } from './vehicles-enhanced.controller'; // 👉 Décommente si présent et compilable
 
-// Services
+// Services principaux
 import { VehiclesService } from './vehicles.service';
 import { EnhancedVehicleService } from './services/enhanced-vehicle.service';
-// Services modulaires
+
+// Services core
 import { VehicleCacheService } from './services/core/vehicle-cache.service';
 import { VehicleEnrichmentService } from './services/core/vehicle-enrichment.service';
-import { VehicleSearchService } from './services/search/vehicle-search.service';
-import { VehicleMineService } from './services/search/vehicle-mine.service';
+
+// Services data
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
 
+// Services search
+import { VehicleSearchService } from './services/search/vehicle-search.service';
+import { VehicleMineService } from './services/search/vehicle-mine.service';
+
 @Module({
   imports: [
-    ConfigModule, // ✅ Ajout du ConfigModule pour injection ConfigService
-    CacheModule.register({
-      ttl: 300, // 5 minutes
-      max: 100, // max 100 items in cache
+    ConfigModule,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        // TTL défaut 300s, max 100 éléments — surchargés via ENV
+        ttl: Number(config.get('VEHICLES_CACHE_TTL', 300)),
+        max: Number(config.get('VEHICLES_CACHE_MAX', 100)),
+        // keyPrefix: 'vehicles:', // 👉 active si besoin d’isoler les clés
+        // store: await redisStore({ url: config.get('REDIS_URL') }), // 👉 switch Redis en prod
+      }),
     }),
   ],
   controllers: [
-    // EnhancedVehicleController, // � TEMPORAIREMENT DÉSACTIVÉ - Erreurs de compilation
-    VehiclesController, // ✅ API REST principale pour sélecteur véhicule
-    VehiclesFormsController, // ✅ API Forms pour remplacer _form.get.car.*.php
+    VehiclesController,
+    VehiclesFormsController,
+    // VehiclesEnhancedController,
   ],
   providers: [
-    VehiclesService, // ✅ Service principal de gestion des véhicules
-    EnhancedVehicleService, // ✅ Service optimisé combinant proposé + existant
-    // Services modulaires
+    // Services principaux
+    VehiclesService,
+    EnhancedVehicleService,
+
+    // Core
     VehicleCacheService,
     VehicleEnrichmentService,
-    VehicleSearchService,
-    VehicleMineService,
+
+    // Data
     VehicleBrandsService,
     VehicleModelsService,
     VehicleTypesService,
+
+    // Search
+    VehicleSearchService,
+    VehicleMineService,
   ],
   exports: [
-    VehiclesService, // ✅ Exporté pour utilisation dans d'autres modules
-    EnhancedVehicleService, // ✅ Service optimisé exporté
+    VehiclesService,
+    EnhancedVehicleService,
+    // (optionnel) export si consommés ailleurs :
+    VehicleBrandsService,
+    VehicleModelsService,
+    VehicleTypesService,
+    VehicleSearchService,
+    VehicleMineService,
+    VehicleCacheService,
   ],
 })
 export class VehiclesModule {}

@@ -1,11 +1,11 @@
 import { Controller, Get, Param, ParseIntPipe, Query, Logger } from '@nestjs/common';
-import { PiecesDbSimpleService } from './pieces-db-simple.service';
+import { PiecesDbService } from './pieces-db.service';
 
 @Controller('pieces-db')
 export class PiecesDbController {
   private readonly logger = new Logger(PiecesDbController.name);
 
-  constructor(private readonly piecesDbService: PiecesDbSimpleService) {}
+  constructor(private readonly piecesDbService: PiecesDbService) {}
 
   /**
    * Récupère les vraies pièces de la base de données pour un véhicule et une gamme

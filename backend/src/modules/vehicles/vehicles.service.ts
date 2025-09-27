@@ -7,20 +7,271 @@ import {
   VehicleFilterDto,
 } from './dto/vehicles.dto';
 
+// Types enrichis inspirés de la proposition utilisateur
+export interface VehicleDetailsEnhanced {
+  type_id: number;
+  type_name: string;
+  type_name_meta?: string;
+  type_alias: string;
+  type_power_ps?: number;
+  type_power_kw?: number;
+  type_engine?: string;
+  type_fuel?: string;
+  type_year_from?: string;
+  type_year_to?: string;
+  type_month_from?: string;
+  type_month_to?: string;
+  type_display: boolean;
+  
+  // Relations enrichies
+  auto_marque: {
+    marque_id: number;
+    marque_name: string;
+    marque_name_meta?: string;
+    marque_alias: string;
+    marque_logo?: string;
+    marque_relfollow: boolean;
+  };
+  
+  auto_modele: {
+    modele_id: number;
+    modele_name: string;
+    modele_name_meta?: string;
+    modele_alias: string;
+    modele_relfollow: boolean;
+    modele_year_from?: string;
+    modele_year_to?: string;
+  };
+  
+  auto_type_motor_code?: Array<{
+    tmc_code: string;
+    tmc_description?: string;
+  }>;
+}
+
 /**
- * 🚗 SERVICE VEHICLES OPTIMAL - Meilleure approche
+ * 🚗 SERVICE VEHICLES OPTIMAL AMÉLIORÉ - Version finale
  *
- * Utilise les vraies tables de la base de données qui fonctionnent :
- * - auto_marque (40 marques actives)
- * - auto_modele (5745 modèles)
- * - auto_type (48918 types/motorisations)
- *
- * Amélioration : Recherche avancée + Filtrage optimisé + Gestion d'erreurs
+ * Combine le meilleur du service existant avec les améliorations proposées :
+ * - Architecture SupabaseBaseService validée (évite dépendances circulaires)
+ * - Tables auto_* optimisées et validées en production
+ * - Méthodes getVehicleDetails enrichies avec relations complètes
+ * - Cache intelligent intégré avec TTL
+ * - Gestion d'erreurs robuste et logging détaillé
+ * - Types TypeScript stricts pour meilleure maintenance
+ * 
+ * Tables utilisées :
+ * - auto_marque (40 marques actives avec logos et SEO)
+ * - auto_modele (5745 modèles avec périodes de production)
+ * - auto_type (48918 types/motorisations avec spécifications complètes)
+ * - auto_type_motor_code (codes moteur détaillés)
  */
 @Injectable()
 export class VehiclesService extends SupabaseBaseService {
   // Pas de constructeur - utilise celui du parent sans ConfigService
   // Cela évite les dépendances circulaires
+  
+  // Cache en mémoire simple pour éviter les requêtes répétitives
+  private cache = new Map<string, { data: any; expires: number }>();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * 🎯 Cache intelligent avec TTL
+   */
+  private getCached<T>(key: string): T | null {
+    const cached = this.cache.get(key);
+    if (cached && cached.expires > Date.now()) {
+      return cached.data;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private setCache<T>(key: string, data: T): void {
+    this.cache.set(key, {
+      data,
+      expires: Date.now() + this.CACHE_TTL,
+    });
+  }
+
+  /**
+   * 🚗 NOUVELLE MÉTHODE - Récupérer les détails complets d'un véhicule
+   * Version améliorée de la méthode proposée par l'utilisateur
+   * Intègre cache intelligent et relations complètes
+   */
+  async getVehicleDetails(
+    marqueId: number,
+    modeleId: number,
+    typeId: number,
+  ): Promise<VehicleDetailsEnhanced> {
+    const cacheKey = `vehicle_details_${marqueId}_${modeleId}_${typeId}`;
+    const cached = this.getCached<VehicleDetailsEnhanced>(cacheKey);
+    if (cached) {
+      this.logger.debug(`🔄 Cache hit pour véhicule ${typeId}`);
+      return cached;
+    }
+
+    try {
+      this.logger.debug(
+        `🔍 Récupération détails véhicule: marque=${marqueId}, modele=${modeleId}, type=${typeId}`,
+      );
+
+      const { data, error } = await this.client
+        .from('auto_type')
+        .select(`
+          type_id,
+          type_name,
+          type_name_meta,
+          type_alias,
+          type_power_ps,
+          type_power_kw,
+          type_engine,
+          type_fuel,
+          type_year_from,
+          type_year_to,
+          type_month_from,
+          type_month_to,
+          type_display,
+          type_marque_id,
+          type_modele_id,
+          auto_marque!inner (
+            marque_id,
+            marque_name,
+            marque_name_meta,
+            marque_alias,
+            marque_logo,
+            marque_relfollow
+          ),
+          auto_modele!inner (
+            modele_id,
+            modele_name,
+            modele_name_meta,
+            modele_alias,
+            modele_relfollow,
+            modele_year_from,
+            modele_year_to
+          ),
+          auto_type_motor_code (
+            tmc_code,
+            tmc_description
+          )
+        `)
+        .eq('type_id', typeId)
+        .eq('type_marque_id', marqueId)
+        .eq('type_modele_id', modeleId)
+        .eq('type_display', true)
+        .single();
+
+      if (error) {
+        this.logger.error(`❌ Erreur getVehicleDetails:`, error);
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error(
+          `Véhicule non trouvé: marque=${marqueId}, modele=${modeleId}, type=${typeId}`,
+        );
+      }
+
+      this.logger.debug(
+        `✅ Détails véhicule trouvés: ${data.auto_marque[0]?.marque_name} ${data.auto_modele[0]?.modele_name} ${data.type_name}`,
+      );
+
+      // Mise en cache
+      this.setCache(cacheKey, {
+        ...data,
+        auto_marque: data.auto_marque[0],
+        auto_modele: data.auto_modele[0],
+      });
+
+      return {
+        ...data,
+        auto_marque: data.auto_marque[0],
+        auto_modele: data.auto_modele[0],
+      };
+    } catch (error) {
+      this.logger.error(`💥 Exception getVehicleDetails:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🏭 NOUVELLE MÉTHODE - Récupérer les véhicules d'une marque (version optimisée)
+   * Amélioration de la méthode proposée avec cache et relations complètes
+   */
+  async getVehiclesByMarque(marqueId: number): Promise<VehicleResponseDto> {
+    const cacheKey = `vehicles_by_marque_${marqueId}`;
+    const cached = this.getCached<VehicleResponseDto>(cacheKey);
+    if (cached) {
+      this.logger.debug(`🔄 Cache hit pour marque ${marqueId}`);
+      return cached;
+    }
+
+    try {
+      this.logger.debug(`🔍 Récupération véhicules marque ${marqueId}`);
+
+      const { data, error } = await this.client
+        .from('auto_modele')
+        .select(`
+          modele_id,
+          modele_name,
+          modele_alias,
+          modele_ful_name,
+          modele_year_from,
+          modele_year_to,
+          modele_display,
+          auto_type!inner(
+            type_id,
+            type_name,
+            type_alias,
+            type_power_ps,
+            type_fuel,
+            type_year_from,
+            type_year_to,
+            type_display
+          )
+        `)
+        .eq('modele_marque_id', marqueId)
+        .eq('modele_display', true)
+        .eq('auto_type.type_display', true)
+        .order('modele_name')
+        .limit(100);
+
+      if (error) {
+        this.logger.error(`❌ Erreur getVehiclesByMarque:`, error);
+        throw error;
+      }
+
+      const result = {
+        data: data || [],
+        total: data?.length || 0,
+        page: 0,
+        limit: 100,
+        meta: { marqueId },
+      };
+
+      this.logger.debug(
+        `✅ Trouvé ${result.total} véhicules pour marque ${marqueId}`,
+      );
+
+      // Mise en cache
+      this.setCache(cacheKey, result);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`💥 Exception getVehiclesByMarque:`, error);
+      return {
+        data: [],
+        total: 0,
+        page: 0,
+        limit: 100,
+        meta: { 
+          marqueId, 
+          error: error instanceof Error ? error.message : 'Erreur inconnue' 
+        },
+      };
+    }
+  }
 
   /**
    * Récupérer toutes les marques avec pagination
@@ -763,7 +1014,10 @@ export class VehiclesService extends SupabaseBaseService {
   /**
    * 📅 Récupérer les années de production par marque
    */
-  async findYearsByBrand(brandId: string, filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
+  async findYearsByBrand(
+    brandId: string,
+    filters?: VehiclePaginationDto,
+  ): Promise<VehicleResponseDto> {
     try {
       // 🎯 COHÉRENCE : Utiliser auto_modele comme findModelsByBrand
       const { data, error } = await this.client
@@ -810,5 +1064,55 @@ export class VehiclesService extends SupabaseBaseService {
       this.logger.error('Exception findYearsByBrand:', error);
       throw error;
     }
+  }
+
+  /**
+   * 🧹 NOUVELLE MÉTHODE - Nettoyage du cache
+   */
+  clearCache(pattern?: string): number {
+    if (!pattern) {
+      const size = this.cache.size;
+      this.cache.clear();
+      this.logger.log(`🧹 Cache complet nettoyé: ${size} entrées supprimées`);
+      return size;
+    }
+
+    let deleted = 0;
+    for (const [key] of this.cache) {
+      if (key.includes(pattern)) {
+        this.cache.delete(key);
+        deleted++;
+      }
+    }
+
+    this.logger.log(`🧹 Cache partiel nettoyé: ${deleted} entrées avec pattern "${pattern}"`);
+    return deleted;
+  }
+
+  /**
+   * 📊 NOUVELLE MÉTHODE - État du cache
+   */
+  getCacheStats() {
+    const now = Date.now();
+    let active = 0;
+    let expired = 0;
+
+    for (const [, cached] of this.cache) {
+      if (cached.expires > now) {
+        active++;
+      } else {
+        expired++;
+      }
+    }
+
+    return {
+      totalEntries: this.cache.size,
+      activeEntries: active,
+      expiredEntries: expired,
+      memoryUsage: `${Math.round(JSON.stringify([...this.cache]).length / 1024)}KB`,
+      ttl: this.CACHE_TTL / 1000 + 's',
+      service: 'VehiclesService Enhanced',
+      version: '2.0.0-improved',
+    };
   }
 }

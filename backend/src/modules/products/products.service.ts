@@ -13,7 +13,9 @@ interface CreateProductDto {
   is_active?: boolean;
 }
 
-interface UpdateProductDto extends Partial<CreateProductDto> {}
+interface UpdateProductDto extends Partial<CreateProductDto> {
+  id?: string; // Ajout d'un champ id pour différencier de CreateProductDto
+}
 
 interface SearchProductDto {
   search?: string;
@@ -406,7 +408,7 @@ export class ProductsService extends SupabaseBaseService {
    */
   async remove(id: string) {
     try {
-      const { data, error } = await this.client
+      const { data: _data, error } = await this.client
         .from('products')
         .update({
           is_active: false,
@@ -537,7 +539,7 @@ export class ProductsService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('Erreur debug:', error);
-      return { error: error.message };
+      return { error: (error as Error).message };
     }
   }
 
@@ -684,7 +686,7 @@ export class ProductsService extends SupabaseBaseService {
 
       const rangeCounts: any = {};
       for (const range of ranges) {
-        const { count, error } = await this.client
+        const { count, error: _error } = await this.client
           .from('pieces')
           .select('*', { count: 'exact', head: true })
           .eq('piece_display', true)
@@ -805,7 +807,7 @@ export class ProductsService extends SupabaseBaseService {
       }
 
       // Enrichir les produits avec les informations des marques
-      let enrichedProducts = [];
+      let enrichedProducts: any[] = [];
       if (products && products.length > 0) {
         // Récupérer tous les IDs de marques uniques
         const brandIds = [
@@ -899,40 +901,6 @@ export class ProductsService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error('Erreur dans findProductsByGamme:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * @deprecated Utiliser getGammes() à la place
-   * Récupérer toutes les gammes de produits (utilise la vraie structure)
-   */
-  async getProductRanges() {
-    try {
-      const { data, error } = await this.client
-        .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_pic, pg_display, pg_top')
-        .eq('pg_display', '1')
-        .order('pg_name', { ascending: true })
-        .limit(50);
-
-      if (error) {
-        this.logger.error('Erreur getProductRanges:', error);
-        throw error;
-      }
-
-      return (
-        data?.map((range) => ({
-          id: range.pg_id,
-          name: range.pg_name,
-          alias: range.pg_alias,
-          image: range.pg_pic,
-          is_active: range.pg_display === '1',
-          is_top: range.pg_top === '1',
-        })) || []
-      );
-    } catch (error) {
-      this.logger.error('Erreur dans getProductRanges:', error);
       throw error;
     }
   }

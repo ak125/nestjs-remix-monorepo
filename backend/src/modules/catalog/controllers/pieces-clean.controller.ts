@@ -1,14 +1,14 @@
 import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { PiecesV4WorkingService } from '../services/pieces-v4-working.service';
-import { PiecesPhpLogicService } from '../services/pieces-php-logic.service';
+import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { PiecesPhpLogicCompleteService } from '../services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from '../services/pieces-enhanced.service';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ
- * 
+ *
  * Contient uniquement les endpoints essentiels avec les services finaux :
- * - PiecesPhpLogicService : Service final avec logique PHP complète
+ * - VehiclePiecesCompatibilityService : Service de compatibilité pièces/véhicules
  * - PiecesV4WorkingService : Service de référence validé
  */
 @Controller('api/catalog/pieces')
@@ -16,27 +16,27 @@ export class PiecesCleanController {
   private readonly logger = new Logger(PiecesCleanController.name);
 
   constructor(
-    private readonly piecesPhpService: PiecesPhpLogicService,
+    private readonly vehiclePiecesService: VehiclePiecesCompatibilityService,
     private readonly piecesV4Service: PiecesV4WorkingService,
     private readonly piecesCompleteService: PiecesPhpLogicCompleteService,
     private readonly piecesEnhancedService: PiecesEnhancedService,
   ) {}
 
   /**
-   * 🎯 SERVICE FINAL - Logique PHP complète
+   * 🎯 SERVICE FINAL - Logique de compatibilité pièces/véhicules
    * GET /api/catalog/pieces/php-logic/:typeId/:pgId
    */
   @Get('php-logic/:typeId/:pgId')
-  async phpLogicComplete(
+  async phpLogic(
     @Param('typeId') typeId: string,
     @Param('pgId') pgId: string,
   ) {
     const startTime = Date.now();
-    
+
     try {
-      this.logger.log(`🎯 [PHP-LOGIC] type_id=${typeId}, pg_id=${pgId}`);
-      
-      const result = await this.piecesPhpService.getPiecesExactPHP(
+      this.logger.log(`🎯 [COMPATIBILITY] type_id=${typeId}, pg_id=${pgId}`);
+
+      const result = await this.vehiclePiecesService.getPiecesExactPHP(
         parseInt(typeId),
         parseInt(pgId),
       );
@@ -127,8 +127,14 @@ export class PiecesCleanController {
       this.logger.log(`🔍 [COMPARE] type_id=${typeId}, pg_id=${pgId}`);
       
       const [phpResult, v4Result] = await Promise.all([
-        this.piecesPhpService.getPiecesExactPHP(parseInt(typeId), parseInt(pgId)),
-        this.piecesV4Service.getPiecesV4Working(parseInt(typeId), parseInt(pgId))
+        this.vehiclePiecesService.getPiecesExactPHP(
+          parseInt(typeId),
+          parseInt(pgId),
+        ),
+        this.piecesV4Service.getPiecesV4Working(
+          parseInt(typeId),
+          parseInt(pgId),
+        ),
       ]);
       
       const responseTime = Date.now() - startTime;

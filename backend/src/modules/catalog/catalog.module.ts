@@ -31,11 +31,11 @@ import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catal
 import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
 import { PiecesV4WorkingService } from './services/pieces-v4-working.service';
-import { PiecesPhpLogicService } from './services/pieces-php-logic.service';
+import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
 import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
-import { PiecesDbService } from '../../pieces/pieces-db.service-simple';
+import { PiecesDbService } from '../../pieces/pieces-db.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 
 /**
@@ -92,7 +92,7 @@ import { PiecesRealService } from '../../pieces/pieces-real.service';
     VehicleFilteredCatalogServiceV3,
     VehicleFilteredCatalogV4HybridService,
     PiecesV4WorkingService,
-    PiecesPhpLogicService,
+    VehiclePiecesCompatibilityService,
     PiecesPhpLogicCompleteService,
     PiecesEnhancedService,
     PiecesUltraEnhancedService,

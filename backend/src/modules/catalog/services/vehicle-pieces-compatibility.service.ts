@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+/**
+ * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES
+ *
+ * Anciennement PiecesPhpLogicService - Renommé pour plus de clarté
+ * Gère la compatibilité entre pièces automobiles et véhicules spécifiques
+ */
 @Injectable()
-export class PiecesPhpLogicService extends SupabaseBaseService {
+export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
   /**
    * 🎯 LOGIQUE PHP EXACTE INTÉGRÉE - Version finale fonctionnelle
    * Extrait du fichier PHP analysé et optimisé avec l'approche V4 hybride
@@ -149,10 +155,14 @@ export class PiecesPhpLogicService extends SupabaseBaseService {
       // 4️⃣ TRANSFORMATION DES DONNÉES SELON LOGIQUE PHP EXACTE
       const pieces = piecesData.map((piece) => {
         const relation = relationsMap.get(piece.piece_id);
-        const marqueEquip = marquesMap.get(
-          relation?.rtp_pm_id || piece.piece_pm_id,
-        );
-        const price = pricesMap.get(piece.piece_id);
+        
+        // � Conversion en string pour correspondre aux clés de marquesMap
+        const marqueKey = (
+          relation?.rtp_pm_id || piece.piece_pm_id
+        )?.toString();
+        
+        const marqueEquip = marquesMap.get(marqueKey);
+        const price = pricesMap.get(piece.piece_id.toString()); // 🔧 Conversion en string
         const filtre = filtresMap.get(relation?.rtp_psf_id);
 
         // Calcul du prix total (logique PHP EXACTE avec debug)
@@ -172,9 +182,9 @@ export class PiecesPhpLogicService extends SupabaseBaseService {
           );
         }
 
-        // Détermination de la qualité (logique PHP exacte)
+        // Détermination de la qualité selon pm_oes
         let qualite = 'AFTERMARKET';
-        if (marqueEquip?.pm_oes === '1' || marqueEquip?.pm_oes === 'O') {
+        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O') {
           qualite = 'OES';
         }
         if (prixConsigne > 0) {
