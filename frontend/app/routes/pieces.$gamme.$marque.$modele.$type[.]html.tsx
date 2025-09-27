@@ -574,6 +574,14 @@ export default function UnifiedPiecesPage() {
   });
 
   const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "brand">("name");
+  
+  // 🆕 États avancés V5+
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "comparison">("grid");
+  const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
+  const [showRecommendations, setShowRecommendations] = useState(true);
+  const [_priceHistory, _setPriceHistory] = useState<Record<number, {currentPrice: number, previousPrice?: number, trend?: 'up' | 'down' | 'stable'}>>({});
+  const [_favoritesPieces, setFavoritesPieces] = useState<number[]>([]);
+  const [_showAdvancedFilters, _setShowAdvancedFilters] = useState(false);
 
   // 🔍 Filtrage optimisé
   const finalFilteredProducts = useMemo(() => {
@@ -656,6 +664,41 @@ export default function UnifiedPiecesPage() {
     const brands = new Set(data.pieces.map(p => p.brand));
     return Array.from(brands).sort();
   }, [data.pieces]);
+
+  // 🆕 Fonctions avancées V5+
+  const togglePieceSelection = (pieceId: number) => {
+    setSelectedPieces(prev => 
+      prev.includes(pieceId) 
+        ? prev.filter(id => id !== pieceId)
+        : [...prev, pieceId]
+    );
+  };
+
+  const _toggleFavorite = (pieceId: number) => {
+    setFavoritesPieces(prev => 
+      prev.includes(pieceId)
+        ? prev.filter(id => id !== pieceId)
+        : [...prev, pieceId]
+    );
+  };
+
+  const getRecommendedPieces = useMemo(() => {
+    if (!showRecommendations) return [];
+    
+    // Logique de recommandation intelligente
+    return finalFilteredProducts
+      .filter(piece => piece.quality === 'OES' && piece.stars && piece.stars >= 4)
+      .slice(0, 3);
+  }, [finalFilteredProducts, showRecommendations]);
+
+  const clearAllSelections = () => {
+    setSelectedPieces([]);
+    setFavoritesPieces([]);
+  };
+
+  const _getSelectedPiecesData = useMemo(() => {
+    return data.pieces.filter(piece => selectedPieces.includes(piece.id));
+  }, [data.pieces, selectedPieces]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -840,87 +883,354 @@ export default function UnifiedPiecesPage() {
           <div className="flex-1">
             {/* Tri */}
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-gray-600">
-                    {finalFilteredProducts.length} produit{finalFilteredProducts.length > 1 ? 's' : ''} trouvé{finalFilteredProducts.length > 1 ? 's' : ''}
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-gray-600 font-medium">
+                    {finalFilteredProducts.length} pièce{finalFilteredProducts.length > 1 ? 's' : ''} trouvée{finalFilteredProducts.length > 1 ? 's' : ''}
                   </span>
                   {data.minPrice > 0 && (
-                    <span className="text-sm text-gray-500 ml-2">
-                      • À partir de {data.minPrice.toFixed(2)}€
+                    <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                      À partir de {data.minPrice.toFixed(2)}€
+                    </span>
+                  )}
+                  {selectedPieces.length > 0 && (
+                    <span className="text-sm text-blue-600 bg-blue-100 px-3 py-1 rounded-full font-medium">
+                      {selectedPieces.length} sélectionnée{selectedPieces.length > 1 ? 's' : ''}
                     </span>
                   )}
                 </div>
                 
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="name">Trier par nom</option>
-                  <option value="price-asc">Prix croissant</option>
-                  <option value="price-desc">Prix décroissant</option>
-                  <option value="brand">Par marque</option>
-                </select>
-              </div>
-            </div>
+                <div className="flex items-center gap-3">
+                  {/* Modes d'affichage */}
+                  <div className="flex bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                        viewMode === 'grid' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      🔲 Grille
+                    </button>
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                        viewMode === 'list' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      📋 Liste
+                    </button>
+                    <button
+                      onClick={() => setViewMode('comparison')}
+                      className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                        viewMode === 'comparison' ? 'bg-white text-blue-600 shadow' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                      disabled={selectedPieces.length < 2}
+                    >
+                      ⚖️ Comparaison
+                    </button>
+                  </div>
 
-            {/* Grille des produits */}
-            {finalFilteredProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {finalFilteredProducts.map(piece => (
-                  <div key={piece.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 transform hover:scale-105">
-                    <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
-                      <div className="text-4xl text-gray-400">🔧</div>
-                    </div>
-                    
-                    <h3 className="font-medium text-lg mb-2 line-clamp-2">{piece.name}</h3>
-                    
-                    <div className="space-y-2 text-sm text-gray-600 mb-4">
-                      <div>Réf: {piece.reference}</div>
-                      <div>Marque: {piece.brand}</div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          piece.stock === "En stock" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {piece.stock}
-                        </span>
-                        {piece.quality && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                            {piece.quality}
-                          </span>
-                        )}
-                        {piece.stars && piece.stars > 0 && (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                            {'★'.repeat(piece.stars)}
-                          </span>
-                        )}
-                        {piece.side && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">
-                            {piece.side}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-lg font-bold text-blue-600">
-                        {piece.priceFormatted}
-                      </div>
-                      <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
-                        Ajouter
+                  {/* Actions sélection */}
+                  {selectedPieces.length > 0 && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={clearAllSelections}
+                        className="text-sm bg-gray-200 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        🗑️ Effacer ({selectedPieces.length})
+                      </button>
+                      <button className="text-sm bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 transition-colors">
+                        🛒 Ajouter au panier
                       </button>
                     </div>
-                    
-                    {piece.delaiLivraison && (
-                      <div className="text-xs text-gray-500 mt-2">
-                        Livraison: {piece.delaiLivraison} jour{piece.delaiLivraison > 1 ? 's' : ''}
-                      </div>
-                    )}
+                  )}
+                  
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="name">Nom A-Z</option>
+                    <option value="price-asc">Prix croissant</option>
+                    <option value="price-desc">Prix décroissant</option>
+                    <option value="brand">Marque A-Z</option>
+                  </select>
+                </div>
+              </div>
+              
+              {/* Recommandations intelligentes */}
+              {getRecommendedPieces.length > 0 && (
+                <div className="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-orange-800 flex items-center gap-2">
+                      <span>⭐</span>
+                      Nos recommandations pour votre {data.vehicle.marque} {data.vehicle.modele}
+                    </h4>
+                    <button
+                      onClick={() => setShowRecommendations(!showRecommendations)}
+                      className="text-xs text-orange-600 hover:text-orange-800"
+                    >
+                      {showRecommendations ? 'Masquer' : 'Afficher'}
+                    </button>
                   </div>
-                ))}
+                  <div className="flex gap-3 overflow-x-auto">
+                    {getRecommendedPieces.map(piece => (
+                      <div key={piece.id} className="flex-shrink-0 bg-white rounded-lg p-3 shadow-sm border min-w-48">
+                        <h5 className="font-medium text-sm text-gray-900 mb-1 line-clamp-2">{piece.name}</h5>
+                        <div className="text-xs text-gray-600 mb-2">{piece.brand}</div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-green-600">{piece.priceFormatted}</span>
+                          <button
+                            onClick={() => togglePieceSelection(piece.id)}
+                            className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+                          >
+                            Sélectionner
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Grilles des produits avec vues avancées */}
+            {finalFilteredProducts.length > 0 ? (
+              <div>
+                {viewMode === 'grid' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {finalFilteredProducts.map(piece => (
+                      <div key={piece.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 transform hover:scale-105 relative">
+                        {/* Checkbox sélection */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedPieces.includes(piece.id)}
+                            onChange={() => togglePieceSelection(piece.id)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                        </div>
+                        
+                        <div className="aspect-square bg-gray-100 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="text-4xl text-gray-400">🔧</div>
+                        </div>
+                        
+                        <h3 className="font-medium text-lg mb-2 line-clamp-2">{piece.name}</h3>
+                        
+                        <div className="space-y-2 text-sm text-gray-600 mb-4">
+                          <div>Réf: {piece.reference}</div>
+                          <div>Marque: {piece.brand}</div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              piece.stock === "En stock" 
+                                ? "bg-green-100 text-green-800" 
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}>
+                              {piece.stock}
+                            </span>
+                            {piece.quality && (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                {piece.quality}
+                              </span>
+                            )}
+                            {piece.stars && piece.stars > 0 && (
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
+                                {'★'.repeat(piece.stars)}
+                              </span>
+                            )}
+                            {piece.side && (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">
+                                {piece.side}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="text-lg font-bold text-blue-600">
+                            {piece.priceFormatted}
+                          </div>
+                          <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors">
+                            Ajouter
+                          </button>
+                        </div>
+                        
+                        {piece.delaiLivraison && (
+                          <div className="text-xs text-gray-500 mt-2">
+                            Livraison: {piece.delaiLivraison} jour{piece.delaiLivraison > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'list' && (
+                  <div className="space-y-4">
+                    {finalFilteredProducts.map(piece => (
+                      <div key={piece.id} className="bg-white rounded-lg shadow-sm p-6 flex items-center gap-6 hover:shadow-md transition-shadow">
+                        <input
+                          type="checkbox"
+                          checked={selectedPieces.includes(piece.id)}
+                          onChange={() => togglePieceSelection(piece.id)}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <span className="text-2xl text-gray-400">🔧</span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-lg mb-1">{piece.name}</h3>
+                          <div className="text-sm text-gray-600 mb-2">
+                            Réf: {piece.reference} • Marque: {piece.brand}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              piece.stock === "En stock" 
+                                ? "bg-green-100 text-green-800" 
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}>
+                              {piece.stock}
+                            </span>
+                            {piece.quality && (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                {piece.quality}
+                              </span>
+                            )}
+                            {piece.stars && piece.stars > 0 && (
+                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
+                                {'★'.repeat(piece.stars)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-blue-600 mb-2">
+                            {piece.priceFormatted}
+                          </div>
+                          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            Ajouter au panier
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'comparison' && selectedPieces.length >= 2 && (
+                  <div className="bg-white rounded-lg shadow-sm p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                      <span>⚖️</span>
+                      Comparaison des pièces sélectionnées ({selectedPieces.length})
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-3 font-semibold">Critère</th>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <th key={piece.id} className="text-center p-3 font-semibold min-w-40">
+                                  {piece.brand}
+                                </th>
+                              ))
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="p-3 font-medium">Nom</td>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <td key={piece.id} className="p-3 text-center text-sm">
+                                  {piece.name}
+                                </td>
+                              ))
+                            }
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-3 font-medium">Prix</td>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <td key={piece.id} className="p-3 text-center">
+                                  <span className="font-bold text-lg text-blue-600">
+                                    {piece.priceFormatted}
+                                  </span>
+                                </td>
+                              ))
+                            }
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-3 font-medium">Qualité</td>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <td key={piece.id} className="p-3 text-center">
+                                  <span className={`px-2 py-1 rounded text-xs ${
+                                    piece.quality === 'OES' 
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {piece.quality}
+                                  </span>
+                                </td>
+                              ))
+                            }
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-3 font-medium">Disponibilité</td>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <td key={piece.id} className="p-3 text-center">
+                                  <span className={`px-2 py-1 rounded text-xs ${
+                                    piece.stock === "En stock" 
+                                      ? "bg-green-100 text-green-800" 
+                                      : "bg-yellow-100 text-yellow-800"
+                                  }`}>
+                                    {piece.stock}
+                                  </span>
+                                </td>
+                              ))
+                            }
+                          </tr>
+                          <tr>
+                            <td className="p-3 font-medium">Note</td>
+                            {finalFilteredProducts
+                              .filter(p => selectedPieces.includes(p.id))
+                              .map(piece => (
+                                <td key={piece.id} className="p-3 text-center">
+                                  {piece.stars && piece.stars > 0 ? (
+                                    <span className="text-yellow-500">
+                                      {'★'.repeat(piece.stars)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400">Non noté</span>
+                                  )}
+                                </td>
+                              ))
+                            }
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="mt-6 flex justify-center gap-4">
+                      {finalFilteredProducts
+                        .filter(p => selectedPieces.includes(p.id))
+                        .map(piece => (
+                          <button 
+                            key={piece.id}
+                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+                          >
+                            Choisir {piece.brand}
+                          </button>
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
@@ -937,6 +1247,52 @@ export default function UnifiedPiecesPage() {
                 </button>
               </div>
             )}
+            
+            {/* 🆕 STATISTIQUES AVANCÉES V5+ */}
+            <div className="bg-gradient-to-r from-blue-50 via-white to-green-50 rounded-xl shadow-sm p-6 mb-8">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span>📊</span>
+                Statistiques du catalogue pour {data.vehicle.marque} {data.vehicle.modele}
+              </h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-2xl font-bold text-blue-600">{data.count}</div>
+                  <div className="text-sm text-gray-600">Pièces disponibles</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-2xl font-bold text-green-600">{uniqueBrands.length}</div>
+                  <div className="text-sm text-gray-600">Marques partenaires</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-2xl font-bold text-orange-600">{data.minPrice.toFixed(0)}€</div>
+                  <div className="text-sm text-gray-600">Prix minimum</div>
+                </div>
+                <div className="text-center p-4 bg-white rounded-lg shadow-sm">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {Math.round(((data.pieces.filter(p => p.stock === 'En stock').length) / data.count) * 100)}%
+                  </div>
+                  <div className="text-sm text-gray-600">En stock immédiat</div>
+                </div>
+              </div>
+              
+              {/* Répartition par marque (top 5) */}
+              <div className="mt-6">
+                <h3 className="font-semibold text-gray-800 mb-3">🏭 Répartition par marque (Top 5)</h3>
+                <div className="grid grid-cols-5 gap-2">
+                  {uniqueBrands.slice(0, 5).map(brand => {
+                    const brandCount = data.pieces.filter(p => p.brand === brand).length;
+                    const percentage = Math.round((brandCount / data.count) * 100);
+                    return (
+                      <div key={brand} className="text-center p-2 bg-white rounded border">
+                        <div className="font-semibold text-sm">{brand}</div>
+                        <div className="text-xs text-gray-600">{brandCount} pièces</div>
+                        <div className="text-xs text-blue-600">{percentage}%</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
             
             {/* 🆕 SECTIONS ENRICHIES */}
             
