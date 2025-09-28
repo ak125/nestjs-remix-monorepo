@@ -509,19 +509,20 @@ export const testApi = {
       { name: "Statistiques", test: () => enhancedVehicleCatalogApi.getServiceStats() },
     ];
 
-    const results = [];
+    const results: Array<{name: string, duration: number, success: boolean, error?: string}> = [];
 
-    for (const { name, test } of tests) {
-      const start = Date.now();
+    for (const testConfig of tests) {
+      const start = performance.now();
       try {
-        await test();
-        const duration = Date.now() - start;
-        results.push({ name, duration, success: true });
-        console.log(`✅ ${name}: ${duration}ms`);
+        await testConfig.test();
+        const duration = Math.round(performance.now() - start);
+        results.push({ name: testConfig.name, duration, success: true });
+        console.log(`✅ ${testConfig.name}: ${duration}ms`);
       } catch (error) {
-        const duration = Date.now() - start;
-        results.push({ name, duration, success: false, error: error.message });
-        console.log(`❌ ${name}: ${duration}ms (ERROR: ${error.message})`);
+        const duration = Math.round(performance.now() - start);
+        const err = error as Error;
+        results.push({ name: testConfig.name, duration, success: false, error: err.message });
+        console.log(`❌ ${testConfig.name}: ${duration}ms (ERROR: ${err.message})`);
       }
     }
 
@@ -536,5 +537,5 @@ export const testApi = {
 };
 
 // Export des types pour utilisation externe
-export type { VehicleCatalogOptions, PopularPartsOptions };
+// Types exportés via les interfaces définies ci-dessus
 export { ApiError };

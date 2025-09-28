@@ -74,14 +74,6 @@ interface GuideContent {
   warnings?: string[];
 }
 
-// Interface pour les données cross-selling
-interface CrossSellingGamme {
-  PG_ID: number;
-  PG_NAME: string;
-  PG_ALIAS: string;
-  PG_IMAGE?: string;
-}
-
 interface LoaderData {
   vehicle: VehicleData;
   gamme: GammeData;
@@ -101,9 +93,9 @@ interface LoaderData {
     notes: string[];
   };
   
-  // 🆕 Sections PHP cross-selling et blog - VRAIES DONNÉES
-  crossSellingGammes: CrossSellingGamme[];
-  blogArticle?: BlogArticle;
+  // 🆕 Données dynamiques des sections PHP
+  crossSellingGammes: any[];
+  blogArticle: any;
   
   seo: {
     title: string;
@@ -154,19 +146,58 @@ function parseUrlParam(param: string): {alias: string, id: number} {
  * Formatage intelligent des noms de gammes
  */
 function formatGammeName(gamme: GammeData): string {
-  if (!gamme.name) return '';
-  
-  // Mappage pour les noms commerciaux intelligents 
+  // Mappings pour améliorer les noms techniques
   const nameMap: Record<string, string> = {
-    'Filtres à huile': 'Filtres à huile',
-    'Plaquettes de frein': 'Plaquettes de frein',
-    'Disques de frein': 'Disques de frein',
-    'Filtres à air': 'Filtres à air',
-    'Courroies d\'accessoires': 'Courroies d\'accessoires',
-    'Amortisseurs': 'Amortisseurs'
+    'Courroie D Accessoire 10': 'Courroies d\'accessoires',
+    'Courroie D Accessoire 90': 'Courroies d\'accessoires', 
+    'Plaquette De Frein 402': 'Plaquettes de frein',
+    'courroie-d-accessoire': 'Courroies d\'accessoires',
+    'plaquette-de-frein': 'Plaquettes de frein',
+    'disques-de-frein': 'Disques de frein',
+    'filtres-a-huile': 'Filtres à huile',
+    'filtres-a-air': 'Filtres à air',
+    'kit-de-distribution': 'Kits de distribution',
+    'amortisseurs': 'Amortisseurs',
+    'freinage': 'Système de freinage'
   };
   
-  return nameMap[gamme.name] || gamme.name;
+  // Utiliser le mapping s'il existe, sinon nettoyer le nom
+  const mappedName = nameMap[gamme.name] || nameMap[gamme.alias];
+  if (mappedName) return mappedName;
+  
+  // Nettoyage intelligent du nom pour les formats de base de données
+  let cleanName = gamme.name;
+  
+  // Nettoyer les patterns courants de la base de données
+  cleanName = cleanName
+    .replace(/\b\d+\b/g, '') // Supprimer les nombres isolés
+    .replace(/\s+/g, ' ') // Normaliser les espaces
+    .replace(/\bDe\b/gi, 'de') // Corriger "De" en "de"
+    .replace(/\bD\b/gi, 'd\'') // Corriger "D" en "d'"
+    .trim();
+  
+  // Formatage spécialisé pour les pièces automobiles
+  const specialFormats: Record<string, string> = {
+    'plaquette de frein': 'Plaquettes de frein',
+    'courroie d accessoire': 'Courroies d\'accessoires',
+    'disque de frein': 'Disques de frein',
+    'filtre a huile': 'Filtres à huile',
+    'filtre a air': 'Filtres à air',
+    'kit de distribution': 'Kits de distribution'
+  };
+  
+  const normalizedName = cleanName.toLowerCase();
+  for (const [pattern, replacement] of Object.entries(specialFormats)) {
+    if (normalizedName.includes(pattern)) {
+      return replacement;
+    }
+  }
+  
+  // Formatage par défaut avec capitalisation
+  return cleanName
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 /**
@@ -174,22 +205,23 @@ function formatGammeName(gamme: GammeData): string {
  */
 function generateSEOContent(vehicle: VehicleData, gamme: GammeData): SEOEnrichedContent {
   const brandModel = `${vehicle.marque} ${vehicle.modele} ${vehicle.type}`;
+  const cleanGammeName = formatGammeName(gamme);
   
   return {
-    h1: `${gamme.name} pour ${brandModel} - Guide Complet 2024`,
+    h1: `${cleanGammeName} pour ${brandModel} - Guide Complet 2024`,
     h2Sections: [
-      `Pourquoi choisir nos ${gamme.name} ?`,
+      `Pourquoi choisir nos ${cleanGammeName} ?`,
       `Installation et compatibilité ${brandModel}`,
-      `Guide d'achat ${gamme.name}`,
+      `Guide d'achat ${cleanGammeName}`,
       `Conseils d'entretien professionnel`,
       `Questions fréquentes`
     ],
     longDescription: `
-      Découvrez notre sélection exclusive de ${gamme.name} spécialement conçus pour ${brandModel}. 
+      Découvrez notre sélection exclusive de ${cleanGammeName} spécialement conçus pour ${brandModel}. 
       Notre catalogue propose plus de 50 références de qualité OEM et aftermarket premium, 
       garantissant une compatibilité parfaite et des performances optimales pour votre véhicule.
       
-      Nos ${gamme.name} sont rigoureusement sélectionnés auprès des meilleurs fabricants européens 
+      Nos ${cleanGammeName} sont rigoureusement sélectionnés auprès des meilleurs fabricants européens 
       (BOSCH, MANN-FILTER, FEBI BILSTEIN, VALEO) et bénéficient de garanties constructeur étendues. 
       Profitez de tarifs jusqu'à 40% moins chers qu'en concession, sans aucun compromis sur la qualité.
     `.trim(),
@@ -201,7 +233,7 @@ function generateSEOContent(vehicle: VehicleData, gamme: GammeData): SEOEnriched
       'Support technique spécialisé 6j/7'
     ],
     compatibilityNotes: `
-      Ces ${gamme.name} sont spécifiquement adaptés à votre ${brandModel}. 
+      Ces ${cleanGammeName} sont spécifiquement adaptés à votre ${brandModel}. 
       Notre équipe technique vérifie la compatibilité par numéro de châssis (VIN) 
       pour garantir un ajustement parfait et éviter tout risque d'erreur.
     `.trim(),
@@ -220,24 +252,25 @@ function generateSEOContent(vehicle: VehicleData, gamme: GammeData): SEOEnriched
  */
 function generateFAQ(vehicle: VehicleData, gamme: GammeData): FAQItem[] {
   const brandModel = `${vehicle.marque} ${vehicle.modele}`;
+  const cleanGammeName = formatGammeName(gamme);
   
   return [
     {
       id: 'compatibility',
-      question: `Ces ${gamme.name} sont-ils garantis compatibles avec mon ${brandModel} ?`,
-      answer: `Absolument ! Tous nos ${gamme.name} sont rigoureusement sélectionnés et testés pour votre ${brandModel}. Notre équipe technique vérifie la compatibilité par numéro de châssis pour éliminer tout risque d'erreur.`,
+      question: `Ces ${cleanGammeName} sont-ils garantis compatibles avec mon ${brandModel} ?`,
+      answer: `Absolument ! Tous nos ${cleanGammeName} sont rigoureusement sélectionnés et testés pour votre ${brandModel}. Notre équipe technique vérifie la compatibilité par numéro de châssis pour éliminer tout risque d'erreur.`,
       schema: true
     },
     {
       id: 'quality',
-      question: `Quelle garantie sur la qualité de vos ${gamme.name} ?`,
-      answer: `Nos ${gamme.name} proviennent exclusivement de fabricants OEM et aftermarket premium (BOSCH, MANN-FILTER, FEBI). Garantie constructeur 2 ans minimum + garantie satisfait ou remboursé 30 jours.`,
+      question: `Quelle garantie sur la qualité de vos ${cleanGammeName} ?`,
+      answer: `Nos ${cleanGammeName} proviennent exclusivement de fabricants OEM et aftermarket premium (BOSCH, MANN-FILTER, FEBI). Garantie constructeur 2 ans minimum + garantie satisfait ou remboursé 30 jours.`,
       schema: true
     },
     {
       id: 'delivery',
       question: `Quels sont vos délais de livraison ?`,
-      answer: `Expédition sous 24h pour 90% de nos ${gamme.name} en stock. Livraison express 24-48h en France métropolitaine. Livraison gratuite dès 50€ d'achat.`,
+      answer: `Expédition sous 24h pour 90% de nos ${cleanGammeName} en stock. Livraison express 24-48h en France métropolitaine. Livraison gratuite dès 50€ d'achat.`,
       schema: true
     }
   ];
@@ -248,12 +281,13 @@ function generateFAQ(vehicle: VehicleData, gamme: GammeData): FAQItem[] {
  */
 function generateRelatedArticles(vehicle: VehicleData, gamme: GammeData): BlogArticle[] {
   const brandModel = `${vehicle.marque} ${vehicle.modele}`;
+  const cleanGammeName = formatGammeName(gamme);
   
   return [
     {
       id: 'maintenance-guide',
-      title: `Guide d'entretien ${gamme.name} ${brandModel} : Les secrets des pros`,
-      excerpt: `Découvrez les techniques d'entretien professionnelles pour maximiser la durée de vie de vos ${gamme.name} et éviter les pannes coûteuses.`,
+      title: `Guide d'entretien ${cleanGammeName} ${brandModel} : Les secrets des pros`,
+      excerpt: `Découvrez les techniques d'entretien professionnelles pour maximiser la durée de vie de vos ${cleanGammeName} et éviter les pannes coûteuses.`,
       slug: `entretien-${gamme.alias}-${vehicle.marque.toLowerCase()}-${vehicle.modele.toLowerCase()}`,
       image: `/blog/images/guide-${gamme.alias}-maintenance.webp`,
       date: new Date().toISOString().split('T')[0],
@@ -261,7 +295,7 @@ function generateRelatedArticles(vehicle: VehicleData, gamme: GammeData): BlogAr
     },
     {
       id: 'diagnostic-problems',
-      title: `Diagnostic des pannes ${gamme.name} : Symptômes et solutions`,
+      title: `Diagnostic des pannes ${cleanGammeName} : Symptômes et solutions`,
       excerpt: `Apprenez à identifier les premiers signes d'usure et les pannes courantes sur ${brandModel}. Guide complet avec photos et solutions.`,
       slug: `diagnostic-pannes-${gamme.alias}`,
       image: `/blog/images/diagnostic-${gamme.alias}.webp`,
@@ -275,9 +309,11 @@ function generateRelatedArticles(vehicle: VehicleData, gamme: GammeData): BlogAr
  * Génère le guide d'achat
  */
 function generateBuyingGuide(vehicle: VehicleData, gamme: GammeData): GuideContent {
+  const cleanGammeName = formatGammeName(gamme);
+  
   return {
-    title: `Guide d'achat ${gamme.name}`,
-    content: `Pour choisir les bons ${gamme.name} pour votre ${vehicle.marque} ${vehicle.modele}, suivez nos conseils d'experts.`,
+    title: `Guide d'achat ${cleanGammeName}`,
+    content: `Pour choisir les bons ${cleanGammeName} pour votre ${vehicle.marque} ${vehicle.modele}, suivez nos conseils d'experts.`,
     tips: [
       'Vérifiez la compatibilité avec votre numéro de châssis',
       'Privilégiez les marques reconnues pour la fiabilité',
@@ -386,7 +422,8 @@ async function resolveGammeId(gammeParam: string): Promise<number> {
     "plaquettes-de-frein": 402,
     "disques-de-frein": 403,
     "amortisseurs": 85,
-    "courroies": 90
+    "courroies": 90,
+    "courroie-d-accessoire": 90
   };
   
   const gammeId = knownGammeMap[gamme.alias];
@@ -401,9 +438,61 @@ async function resolveGammeId(gammeParam: string): Promise<number> {
 }
 
 /**
+ * Récupère les gammes cross-selling dynamiquement depuis l'API
+ */
+async function fetchCrossSelling(typeId: number, gammeId: number): Promise<any[]> {
+  try {
+    console.log(`🔄 [CROSS-SELLING] Récupération pour type_id=${typeId}, gamme_id=${gammeId}`);
+    
+    const response = await fetch(`http://localhost:3000/api/catalog/cross-selling/${typeId}/${gammeId}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.data?.length > 0) {
+        console.log(`✅ [CROSS-SELLING] ${data.data.length} gammes cross trouvées`);
+        return data.data;
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ [CROSS-SELLING] API failed, using fallback:', error);
+  }
+  
+  // Fallback avec les gammes communes
+  return [
+    { PG_ID: 403, PG_NAME: 'Disques de frein', PG_ALIAS: 'disques-de-frein' },
+    { PG_ID: 75, PG_NAME: 'Filtres à huile', PG_ALIAS: 'filtres-a-huile' },
+    { PG_ID: 90, PG_NAME: 'Courroies d\'accessoires', PG_ALIAS: 'courroie-d-accessoire' },
+    { PG_ID: 85, PG_NAME: 'Amortisseurs', PG_ALIAS: 'amortisseurs' }
+  ];
+}
+
+/**
+ * Récupère les articles de blog dynamiquement depuis l'API
+ */
+async function fetchBlogArticle(gammeId: number): Promise<any> {
+  try {
+    console.log(`📖 [BLOG] Récupération article pour gamme_id=${gammeId}`);
+    
+    const response = await fetch(`http://localhost:3000/api/blog/advice/${gammeId}`);
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.success && data.data) {
+        console.log(`✅ [BLOG] Article trouvé: ${data.data.BA_H1}`);
+        return data.data;
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ [BLOG] API failed, using fallback:', error);
+  }
+  
+  return null;
+}
+
+/**
  * Récupération des pièces via API réelle avec transformation
  */
-async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces: PieceData[], count: number, minPrice: number, maxPrice: number}> {
+async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces: PieceData[], count: number, minPrice: number, maxPrice: number, realVehicleData?: any, realGammeData?: any, crossSellingData?: any[], blogArticleData?: any}> {
   try {
     console.log(`🎯 [V5-API] Récupération PHP Logic: type_id=${typeId}, pg_id=${gammeId}`);
     
@@ -432,11 +521,47 @@ async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces
         
         console.log(`✅ [V5-API] ${pieces.length} pièces récupérées avec succès`);
         
+        // 🆕 Récupération des vraies données pour le SEO et sections dynamiques
+        let realVehicleData = null;
+        let realGammeData = null;
+        let crossSellingData: any[] = [];
+        let blogArticleData = null;
+        
+        try {
+          // Récupérer toutes les données en parallèle
+          const [vehicleResponse, gammeResponse, crossSelling, blogArticle] = await Promise.all([
+            fetch(`http://localhost:3000/api/vehicles/types/${typeId}`),
+            fetch(`http://localhost:3000/api/catalog/gammes/${gammeId}`),
+            fetchCrossSelling(typeId, gammeId),
+            fetchBlogArticle(gammeId)
+          ]);
+          
+          if (vehicleResponse.ok) {
+            const vehicleData = await vehicleResponse.json();
+            realVehicleData = vehicleData.data;
+          }
+          
+          if (gammeResponse.ok) {
+            const gammeDataResponse = await gammeResponse.json();
+            realGammeData = gammeDataResponse.data;
+          }
+          
+          crossSellingData = crossSelling || [];
+          blogArticleData = blogArticle || null;
+          
+        } catch (error) {
+          console.warn('⚠️ [REAL-DATA] Erreur récupération données réelles:', error);
+        }
+        
         return {
           pieces,
           count: pieces.length,
           minPrice: prices.length > 0 ? Math.min(...prices) : 0,
-          maxPrice: prices.length > 0 ? Math.max(...prices) : 0
+          maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
+          realVehicleData,
+          realGammeData,
+          crossSellingData,
+          blogArticleData
         };
       }
     }
@@ -446,7 +571,10 @@ async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces
     console.error('❌ [V5-API] Erreur:', error);
   }
   
-  // Données de fallback enrichies
+  // Données de fallback enrichies avec cross-selling et blog
+  const fallbackCrossSelling = await fetchCrossSelling(typeId, gammeId);
+  const fallbackBlogArticle = await fetchBlogArticle(gammeId);
+  
   return {
     pieces: [
       {
@@ -466,180 +594,12 @@ async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces
     ],
     count: 1,
     minPrice: 47.69,
-    maxPrice: 47.69
+    maxPrice: 47.69,
+    realVehicleData: null,
+    realGammeData: null,
+    crossSellingData: fallbackCrossSelling,
+    blogArticleData: fallbackBlogArticle
   };
-}
-
-// ========================================
-// 🎯 NOUVELLES FONCTIONS API - CROSS-SELLING ET BLOG
-// ========================================
-
-/**
- * 🔄 Récupération des gammes cross-selling depuis l'API réelle
- */
-async function fetchCrossSellingGammes(typeId: number, gammeId: number): Promise<CrossSellingGamme[]> {
-  try {
-    // Essai avec l'endpoint principal cross-selling
-    let response = await fetch(`http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`);
-    
-    // Si 404, essayer l'endpoint alternatif
-    if (response.status === 404) {
-      console.log(`🔄 Essai endpoint alternatif cross-selling`);
-      response = await fetch(`http://localhost:3000/api/products/loader-v5-test/cross-selling/${gammeId}/${typeId}`);
-    }
-    
-    if (!response.ok) {
-      console.warn(`❌ Cross-selling API non disponible: ${response.status}`);
-      // Fallback avec quelques gammes de test pour démonstration
-      return [
-        { PG_ID: 403, PG_NAME: 'Disques de frein', PG_ALIAS: 'disques-de-frein', PG_IMAGE: 'pieces-403.webp' },
-        { PG_ID: 402, PG_NAME: 'Plaquettes de frein', PG_ALIAS: 'plaquettes-de-frein', PG_IMAGE: 'pieces-402.webp' },
-        { PG_ID: 85, PG_NAME: 'Amortisseurs', PG_ALIAS: 'amortisseurs', PG_IMAGE: 'pieces-85.webp' },
-        { PG_ID: 90, PG_NAME: 'Courroies d\'accessoires', PG_ALIAS: 'courroie-d-accessoire', PG_IMAGE: 'pieces-90.webp' }
-      ];
-    }
-    
-    const data = await response.json();
-    console.log(`✅ Cross-selling data:`, data);
-    
-    // Transformation des données API vers le format attendu
-    if (data && Array.isArray(data.gammes)) {
-      return data.gammes.map((gamme: any) => ({
-        PG_ID: gamme.PG_ID || gamme.id,
-        PG_NAME: gamme.PG_NAME || gamme.name,
-        PG_ALIAS: gamme.PG_ALIAS || gamme.alias || slugify(gamme.PG_NAME || gamme.name || ''),
-        PG_IMAGE: gamme.PG_IMAGE || `pieces-${gamme.PG_ID || gamme.id}.webp`
-      }));
-    }
-    
-    // Si structure différente, essayer d'adapter
-    if (data && typeof data === 'object' && !Array.isArray(data.gammes)) {
-      console.log(`🔄 Adaptation structure cross-selling`);
-      return Object.values(data).filter((item: any) => item && item.PG_ID).map((gamme: any) => ({
-        PG_ID: gamme.PG_ID || gamme.id,
-        PG_NAME: gamme.PG_NAME || gamme.name,
-        PG_ALIAS: gamme.PG_ALIAS || gamme.alias || slugify(gamme.PG_NAME || gamme.name || ''),
-        PG_IMAGE: gamme.PG_IMAGE || `pieces-${gamme.PG_ID || gamme.id}.webp`
-      }));
-    }
-    
-    return [];
-  } catch (error) {
-    console.error('❌ Erreur fetchCrossSellingGammes:', error);
-    return [];
-  }
-}
-
-/**
- * 📝 Récupération d'un article de blog depuis l'API réelle
- */
-async function fetchBlogArticle(gamme: GammeData, _vehicle: VehicleData): Promise<BlogArticle | null> {
-  try {
-    // Essai 1: Recherche par gamme spécifique
-    let response = await fetch(`http://localhost:3000/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`);
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog search data:`, data);
-      
-      // Validation robuste des données
-      if (data && typeof data === 'object') {
-        const articles = data.articles || data.data || data.results || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
-
-    // Essai 2: Article populaire général auto
-    response = await fetch(`http://localhost:3000/api/blog/popular?limit=1&category=entretien`);
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog popular data:`, data);
-      
-      // Validation robuste des données populaires
-      if (data && typeof data === 'object') {
-        const articles = data.articles || data.data || data.results || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-popular-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
-    
-    // Essai 3: Endpoint blog homepage
-    response = await fetch(`http://localhost:3000/api/blog/homepage`);
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Blog homepage data:`, data);
-      
-      if (data && typeof data === 'object') {
-        const articles = data.recentArticles || data.articles || data.data || [];
-        if (Array.isArray(articles) && articles.length > 0) {
-          const article = articles[0];
-          if (article && article.title) {
-            return {
-              id: article.id || article.slug || 'blog-homepage-' + Date.now(),
-              title: article.title,
-              excerpt: article.excerpt || article.description || article.content?.substring(0, 200) || '',
-              slug: article.slug || article.url || '',
-              image: article.image || article.thumbnail || article.featured_image || undefined,
-              date: article.created_at || article.date || article.published_at || new Date().toISOString(),
-              readTime: article.reading_time || article.read_time || 5
-            };
-          }
-        }
-      }
-    }
-
-    // Fallback: article générique
-    console.log(`🔄 Fallback blog article générique`);
-    return {
-      id: 'blog-fallback-' + gamme.id,
-      title: `Guide d'entretien pour ${gamme.name}`,
-      excerpt: `Découvrez nos conseils d'experts pour l'entretien et le remplacement de vos ${gamme.name.toLowerCase()}. Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`,
-      slug: 'guide-entretien-' + gamme.alias,
-      image: undefined,
-      date: new Date().toISOString(),
-      readTime: 5
-    };
-    
-  } catch (error) {
-    console.error('❌ Erreur fetchBlogArticle:', error);
-    return null;
-  }
-}
-
-/**
- * 🔧 Utilitaire pour slugifier les textes
- */
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
 }
 
 // ========================================
@@ -688,31 +648,39 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // 🔄 ÉTAPE 2: Récupération des pièces
     const piecesData = await fetchRealPieces(vehicleIds.typeId, gammeId);
 
-    // 🔄 ÉTAPE 3: Construction des données de base
+    // 🔄 ÉTAPE 3: Construction des données de retour avec vraies données formatées
+    console.log('🔍 [REAL-DATA-DEBUG]', {
+      realVehicleData: piecesData.realVehicleData?.[0],
+      realGammeData: piecesData.realGammeData?.[0]
+    });
+
+    // Extraire les vraies données depuis les API responses
+    const realVehicle = piecesData.realVehicleData?.[0];
+    const realGamme = piecesData.realGammeData?.[0];
+
     const vehicle: VehicleData = {
       typeId: vehicleIds.typeId,
-      type: toTitleCaseFromSlug(typeAlias),
+      // 🆕 Utiliser les vraies données avec la structure correcte
+      type: realVehicle?.type_name || toTitleCaseFromSlug(typeAlias),
       marqueId: vehicleIds.marqueId,
-      marque: toTitleCaseFromSlug(marqueAlias),
+      marque: realVehicle?.auto_modele?.auto_marque?.marque_name || toTitleCaseFromSlug(marqueAlias),
       modeleId: vehicleIds.modeleId,
-      modele: toTitleCaseFromSlug(modeleAlias)
+      modele: realVehicle?.auto_modele?.modele_name || toTitleCaseFromSlug(modeleAlias)
     };
 
     const gamme: GammeData = {
       id: gammeId,
-      name: toTitleCaseFromSlug(gammeAlias),
+      // 🆕 Utiliser le vrai nom de gamme avec formatage intelligent
+      name: realGamme?.mc_name || realGamme?.pg_name || toTitleCaseFromSlug(gammeAlias),
       alias: gammeAlias,
       image: `pieces-${gammeId}.webp`,
-      description: `Pièces ${gammeAlias.replace(/-/g, " ")} de qualité pour votre véhicule`
+      description: `Pièces ${formatGammeName({
+        id: gammeId,
+        name: realGamme?.mc_name || realGamme?.pg_name || toTitleCaseFromSlug(gammeAlias),
+        alias: gammeAlias,
+        description: ''
+      })} de qualité pour votre véhicule`
     };
-
-    // 🆕 ÉTAPE 3.5: Récupération données cross-selling et blog depuis VRAIES APIs
-    const [crossSellingGammes, blogArticle] = await Promise.all([
-      fetchCrossSellingGammes(vehicleIds.typeId, gammeId),
-      fetchBlogArticle(gamme, vehicle)
-    ]);
-
-    console.log(`✅ [LOADER-UNIFIÉ] Cross-selling: ${crossSellingGammes.length} gammes, Blog: ${blogArticle ? 'trouvé' : 'aucun'}`);
 
     // 🆕 ÉTAPE 4: Génération du contenu enrichi
     const seoContent = generateSEOContent(vehicle, gamme);
@@ -745,9 +713,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
         ]
       },
       
-      // 🆕 Sections PHP cross-selling et blog - VRAIES DONNÉES
-      crossSellingGammes,
-      blogArticle: blogArticle || undefined,
+      // 🆕 Données dynamiques des sections PHP
+      crossSellingGammes: piecesData.crossSellingData || [],
+      blogArticle: piecesData.blogArticleData,
       
       seo: {
         title: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
@@ -757,7 +725,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       
       performance: {
         loadTime,
-        source: 'unified-api-v5-with-cross-selling',
+        source: 'unified-api-v5',
         cacheHit: false
       }
     });
@@ -1509,51 +1477,7 @@ export default function UnifiedPiecesPage() {
               </div>
             </div>
             
-            {/* 🆕 SECTIONS ENRICHIES */}
-            
-            {/* Section SEO et Description détaillée */}
-            {data.seoContent && (
-              <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
-                <div className="prose max-w-none">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    {data.seoContent.h2Sections[0]}
-                  </h2>
-                  <div className="text-gray-700 leading-relaxed whitespace-pre-line">
-                    {data.seoContent.longDescription}
-                  </div>
-                  
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        📋 Spécifications techniques
-                      </h3>
-                      <ul className="space-y-2">
-                        {data.seoContent.technicalSpecs.map((spec, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-green-600 mt-1">•</span>
-                            <span className="text-gray-700">{spec}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                        🔧 Conseils d'installation
-                      </h3>
-                      <ul className="space-y-2">
-                        {data.seoContent.installationTips.map((tip, index) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-1">•</span>
-                            <span className="text-gray-700">{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* 🆕 SECTIONS ENRICHIES COMPLÉMENTAIRES */}
             
             {/* Guide d'achat */}
             {data.buyingGuide && (
@@ -1649,149 +1573,6 @@ export default function UnifiedPiecesPage() {
               </div>
             )}
             
-            {/* 🆕 SECTIONS PHP ADAPTÉES - VRAIES DONNÉES DE L'API */}
-            
-            {/* 📝 SECTION 1: Informations sur les [gamme] - Adaptation 100% fidèle du PHP original avec contenu technique spécialisé */}
-            <div className="container-fluid containerwhitePage bg-white p-6 mt-6 rounded-lg">
-              <div className="container-fluid mymaxwidth">
-                <div className="row">
-                  <div className="col-12">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">
-                      Informations sur les {formatGammeName(data.gamme)} de la {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}
-                    </h2>
-                    <div className="divh2 border-b border-gray-200 mb-4"></div>
-                  </div>
-                  <div className="col-12">
-                    <p className="text-gray-700 leading-relaxed">
-                      Automecanik vous conseille de vérifier régulièrement les {formatGammeName(data.gamme)} de votre {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type} 
-                      pour assurer une bonne qualité d'huile lubrifiante et garantir le bon fonctionnement du moteur.
-                      <br/><br/>
-                      Le {formatGammeName(data.gamme)} de votre {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type} va filtrer l'huile des impuretés 
-                      pour une lubrification optimale de votre moteur. Un entretien régulier de cette pièce est essentiel pour préserver la longévité de votre véhicule.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* 🔄 SECTION CROSS-SELLING - Pièces à contrôler lors du remplacement - Adaptation 100% fidèle du PHP MultiCarousel */}
-            {data.crossSellingGammes && data.crossSellingGammes.length > 0 && (
-              <div className="container-fluid containerwhitePage mt-6 rounded-lg" style={{backgroundColor: '#f8f9fa', paddingTop: '40px', paddingBottom: '40px'}}>
-                <div className="container-fluid mymaxwidth">
-                  <div className="row">
-                    <div className="col-12">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4">
-                        Pièces à contrôler lors du remplacement des {formatGammeName(data.gamme)}
-                      </h2>
-                      <div className="divh2 border-b border-gray-300 mb-6"></div>
-                    </div>
-                    <div className="col-12">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="McCgcGamme">
-                        {data.crossSellingGammes.map((crossGamme: CrossSellingGamme) => {
-                          // Variables exactes du PHP original
-                          const thisPgId = crossGamme.PG_ID;
-                          const thisPgNameSite = crossGamme.PG_NAME;
-                          const thisPgAlias = crossGamme.PG_ALIAS || 'gamme';
-                          
-                          // Image adaptée (logique PHP)
-                          const thisPgImg = crossGamme.PG_IMAGE || `pieces-${thisPgId}.webp`;
-                          
-                          // URL construite comme en PHP
-                          const crossSellingUrl = `/pieces/${thisPgAlias}/${data.vehicle.marque.toLowerCase()}/${data.vehicle.modele.toLowerCase().replace(/ /g, '-')}/${data.vehicle.type.toLowerCase().replace(/ /g, '-')}.html`;
-
-                          return (
-                            <div key={thisPgId} className="item">
-                              <div className="p-4">
-                                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full hover:shadow-md transition-shadow">
-                                  <div className="relative pb-16 overflow-hidden" style={{paddingBottom: '60%'}}>
-                                    <img 
-                                      src={`/images/gammes/${thisPgImg}`}
-                                      alt={thisPgNameSite}
-                                      className="absolute inset-0 w-full h-full object-cover"
-                                      onError={(e) => {
-                                        // Fallback image PHP logic
-                                        (e.target as HTMLImageElement).src = `/images/gammes/pieces-default.webp`;
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="p-4 text-center">
-                                    <h5 className="text-sm font-bold text-gray-900 mb-3 min-h-10 flex items-center justify-center">
-                                      {thisPgNameSite}
-                                    </h5>
-                                    <a 
-                                      href={crossSellingUrl} 
-                                      className="inline-block bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-2 rounded transition-colors"
-                                    >
-                                      Voir les pièces
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 📝 SECTION 3: Article de blog - Adaptation 100% fidèle du PHP original */}
-            <div className="container-fluid containerwhitePage bg-white p-6 mt-6 rounded-lg">
-              <div className="container-fluid mymaxwidth">
-                <div className="row">
-                  <div className="col-12">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">
-                      Guide d'entretien pour {data.vehicle.marque} {data.vehicle.modele}
-                    </h2>
-                    <div className="divh2 border-b border-gray-200 mb-4"></div>
-                  </div>
-                  <div className="col-12">
-                    <div className="blog-article-preview border border-gray-200 rounded-lg overflow-hidden mt-4 hover:shadow-md transition-shadow">
-                      {/* Image de l'article (conditionnelle comme en PHP) */}
-                      {data.blogArticle?.image && (
-                        <div className="relative pb-16 overflow-hidden bg-gray-100" style={{paddingBottom: '40%'}}>
-                          <img
-                            src={data.blogArticle.image}
-                            alt={data.blogArticle.title}
-                            className="absolute inset-0 w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback si pas d'image (logique PHP)
-                              (e.target as HTMLImageElement).style.display = 'none';
-                              (e.target as HTMLImageElement).parentElement!.style.paddingBottom = '0';
-                            }}
-                          />
-                        </div>
-                      )}
-                      
-                      {/* Contenu de l'article */}
-                      <div className="p-5">
-                        <h3 className="text-lg font-bold text-gray-900 mb-3">
-                          {data.blogArticle?.title || `Comment choisir les bonnes pièces pour votre ${data.vehicle.marque} ${data.vehicle.modele}`}
-                        </h3>
-                        <p className="text-gray-600 mb-4 leading-relaxed">
-                          {data.blogArticle?.excerpt || `Découvrez nos conseils d'experts pour sélectionner les pièces adaptées à votre véhicule. 
-                          Qualité, compatibilité et prix : tous nos secrets pour un entretien réussi.`}
-                        </p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">
-                            📅 {data.blogArticle?.date ? new Date(data.blogArticle.date).toLocaleDateString('fr-FR') : 'Publié récemment'} • ⏱️ {data.blogArticle?.readTime || 5} min de lecture
-                          </span>
-                          <a 
-                            href={data.blogArticle?.slug ? `/blog/${data.blogArticle.slug}` : '/blog/guide-entretien-automobile'} 
-                            className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-2 rounded transition-colors"
-                          >
-                            Lire l'article
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             {/* Informations de compatibilité */}
             {data.compatibilityInfo && (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mt-6">
@@ -1818,6 +1599,300 @@ export default function UnifiedPiecesPage() {
                 </div>
               </div>
             )}
+
+            {/* 📝 SECTION 1: Informations sur les [gamme] - Adaptation 100% fidèle du PHP original avec contenu technique spécialisé */}
+            <div className="container-fluid containerwhitePage">
+              <div className="container-fluid mymaxwidth">
+                <div className="row">
+                  <div className="col-12">
+                    <h2>Informations sur les {formatGammeName(data.gamme)} de la {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}</h2>
+                    <div className="divh2"></div>
+                  </div>
+                  <div className="col-12">
+                    {(() => {
+                      // Génération de contenu technique spécialisé basé sur la gamme
+                      const generateTechnicalContent = (gamme: GammeData, vehicle: VehicleData) => {
+                        const gammeId = gamme.id;
+                        const gammeFormatted = formatGammeName(gamme);
+                        const vehicleComplete = `${vehicle.marque} ${vehicle.modele} ${vehicle.type}`;
+                        
+                        // Contenu spécialisé par gamme (comme dans le PHP original)
+                        const technicalContentMap: Record<number, {preview: string, content: string}> = {
+                          75: { // Filtres à huile
+                            preview: `Automecanik vous conseille de vérifier si fumée blanche les ${gammeFormatted} ${vehicleComplete} et changer si fumée blanche, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur...`,
+                            content: `Le ${gammeFormatted} de votre ${vehicleComplete} va filtrer l'huile des impuretés pour une lubrification optimale de votre moteur. Automecanik met en ligne des ${gammeFormatted.toLowerCase()} coût mini pour ${vehicle.marque} ${vehicle.modele} qui doit être vérifié si encrassé. Choisissez le ${gammeFormatted.toLowerCase()} selon le type du filtre (élément filtrant ou cartouche) monté sur votre ${vehicleComplete} pour avoir une huile moteur bien filtrée. Nous vous conseillons lors du changement du ${gammeFormatted.toLowerCase()} de faire un entretien complet de votre voiture pour assurer un fonctionnement optimal du moteur.`
+                          },
+                          402: { // Plaquettes de frein  
+                            preview: `Automecanik vous conseille de contrôler si grincent les ${gammeFormatted} ${vehicleComplete} et changer si usées, pour assurer une qualité de freinage optimale et garantir votre sécurité...`,
+                            content: `Les ${gammeFormatted} de votre ${vehicleComplete} vont assurer le freinage en appuyant contre les disques de frein. Automecanik propose des ${gammeFormatted.toLowerCase()} prix réduit pour ${vehicle.marque} ${vehicle.modele} qui doivent être vérifiées si elles grincent. Choisissez les ${gammeFormatted.toLowerCase()} selon le type de conduite (urbaine, autoroute, sportive) pour votre ${vehicleComplete} pour avoir un freinage efficace et progressif.`
+                          },
+                          403: { // Disques de frein
+                            preview: `Automecanik vous conseille de vérifier si rayés les ${gammeFormatted} ${vehicleComplete} et changer si voilés, pour maintenir une distance de freinage optimale et garantir votre sécurité...`,
+                            content: `Les ${gammeFormatted} de votre ${vehicleComplete} vont permettre le freinage par friction avec les plaquettes. Automecanik met en ligne des ${gammeFormatted.toLowerCase()} tarif mini pour ${vehicle.marque} ${vehicle.modele} qui doivent être contrôlés si rayés. Vérifiez l'épaisseur minimum des ${gammeFormatted.toLowerCase()} et l'absence de voile pour votre ${vehicleComplete} pour assurer un freinage sûr.`
+                          },
+                          76: { // Filtres à air
+                            preview: `Automecanik vous conseille de contrôler si encrassé les ${gammeFormatted} ${vehicleComplete} et changer lors de la révision, pour avoir un air de qualité et bien filtré...`,
+                            content: `Le ${gammeFormatted} de votre ${vehicleComplete} va filtrer l'air entrant dans le moteur des impuretés et poussières. Automecanik propose des ${gammeFormatted.toLowerCase()} coût réduit pour ${vehicle.marque} ${vehicle.modele} qui doivent être vérifiés si encrassés. Un ${gammeFormatted.toLowerCase()} sale réduit les performances et augmente la consommation de votre ${vehicleComplete}.`
+                          },
+                          77: { // Filtres à carburant
+                            preview: `Automecanik vous conseille de contrôler si défectueux les ${gammeFormatted} ${vehicleComplete} et changer pour une meilleure filtration, afin d'assurer la filtration du carburant entrant dans le moteur...`,
+                            content: `Le ${gammeFormatted} de votre ${vehicleComplete} va protéger le moteur contre les saletés, les impuretés et l'eau provenant du réservoir à carburant. Automecanik met en ligne des ${gammeFormatted.toLowerCase()} prix mini pour ${vehicle.marque} ${vehicle.modele} qui doivent être remplacés lors de la vidange.`
+                          },
+                          85: { // Amortisseurs
+                            preview: `Automecanik vous conseille de vérifier si fuient les ${gammeFormatted} ${vehicleComplete} et changer par paire, pour assurer une tenue de route optimale et votre confort de conduite...`,
+                            content: `Les ${gammeFormatted} de votre ${vehicleComplete} vont absorber les chocs et vibrations de la route. Automecanik propose des ${gammeFormatted.toLowerCase()} tarif réduit pour ${vehicle.marque} ${vehicle.modele} qui doivent être contrôlés si ils fuient. Un amortisseur défaillant augmente la distance de freinage et réduit l'adhérence de votre ${vehicleComplete}.`
+                          }
+                        };
+                        
+                        // Contenu par défaut si gamme non mappée
+                        const defaultContent = {
+                          preview: `Automecanik vous conseille de vérifier régulièrement les ${gammeFormatted} ${vehicleComplete} et changer selon les préconisations constructeur, pour assurer un fonctionnement optimal de votre véhicule...`,
+                          content: `Les ${gammeFormatted} de votre ${vehicleComplete} sont des pièces essentielles pour le bon fonctionnement de votre véhicule. Automecanik propose des ${gammeFormatted.toLowerCase()} prix compétitifs pour ${vehicle.marque} ${vehicle.modele} avec garantie constructeur. Contrôlez et remplacez les pièces selon les intervalles fixés par le constructeur automobile ${vehicle.marque}.`
+                        };
+                        
+                        return technicalContentMap[gammeId] || defaultContent;
+                      };
+                      
+                      const technicalContent = generateTechnicalContent(data.gamme, data.vehicle);
+                      
+                      return (
+                        <p>
+                          {technicalContent.preview}
+                          <br/>
+                          {technicalContent.content}
+                          <br/>
+                          Contrôlez et remplacez les {formatGammeName(data.gamme).toLowerCase()} selon les intervalles fixés par le constructeur automobile {data.vehicle.marque}.
+                        </p>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 🔄 SECTION 2: Cross-selling EXACT - Adaptation 100% fidèle du PHP MultiCarousel */}
+            {data.crossSellingGammes && data.crossSellingGammes.length > 0 && (
+              <div className="container-fluid containerwhitePage">
+                <div className="container-fluid mymaxwidth">
+                  <div className="row">
+                    <div className="col-12">
+                      <h2>Pièces à contrôler lors du remplacement des {formatGammeName(data.gamme)}</h2>
+                      <div className="divh2"></div>
+                    </div>
+                    <div className="col-12">
+                      <div className="MultiCarousel" data-items="1,2,3,4" data-slide="1" id="McCgcGamme" data-interval="1000">
+                        <div className="MultiCarousel-inner">
+                          {data.crossSellingGammes.map((crossGamme: any) => {
+                            // Variables exactes du PHP original
+                            const thisPgId = crossGamme.PG_ID;
+                            const thisPgNameSite = crossGamme.PG_NAME;
+                            const thisPgAlias = crossGamme.PG_ALIAS || 'gamme';
+                            
+                            // Image adaptée (logique PHP)
+                            const thisPgImg = `pieces-${thisPgId}.webp`;
+                            const thisPgPic = `/upload/articles/gammes-produits/catalogue/${thisPgImg}`;
+                            
+                            // Lien exact du PHP original
+                            const linkGammeCarPgIdLink = `/pieces/${thisPgAlias}-${thisPgId}/${data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modele.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.modeleId}/${data.vehicle.type.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.typeId}.html`;
+                            
+                            // Génération du contenu SEO dynamique comme dans le PHP
+                            const generateSEOContent = (pgId: number, pgName: string) => {
+                              const seoContentMap: Record<number, {content: string, advice: string}> = {
+                                403: {
+                                  content: `vérifier si rayés les ${pgName} et changer si voilés, pour maintenir une distance de freinage optimale et garantir votre sécurité`,
+                                  advice: `Vérifiez l'épaisseur minimum et l'état des surfaces de contact`
+                                },
+                                75: {
+                                  content: `vérifier si fumée blanche les ${pgName} et changer si fumée blanche, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur`,
+                                  advice: `Changement recommandé à chaque vidange ou intervention majeure`
+                                },
+                                90: {
+                                  content: `contrôler si craquelée les ${pgName} et changer si trop tendue, pour assurer une transmission optimal du mouvement du vilebrequin aux différents poulies des organes du moteur`,
+                                  advice: `Contrôlez la tension et l'absence de fissures ou effilochage`
+                                },
+                                85: {
+                                  content: `vérifier si fuient les ${pgName} et changer par paire, pour assurer une tenue de route optimale et votre confort de conduite`,
+                                  advice: `Test de rebond et contrôle d'étanchéité recommandés`
+                                }
+                              };
+                              
+                              return seoContentMap[pgId] || {
+                                content: `contrôler régulièrement les ${pgName} et changer selon les préconisations constructeur, pour assurer un fonctionnement optimal de votre véhicule`,
+                                advice: `Contrôlez régulièrement selon les préconisations constructeur`
+                              };
+                            };
+                            
+                            // Génération du prix pas cher (équivalent #PrixPasCher#)
+                            const prixPasChers = ['mini tarif', 'prix réduit', 'coût mini', 'tarif mini', 'moins cher', 'petit tarif', 'coût réduit', 'tarif réduit', 'meilleur prix', 'bon tarif'];
+                            const prixPasCherIndex = ((thisPgId % 100) + data.vehicle.typeId + 1) % prixPasChers.length;
+                            const prixPasCher = prixPasChers[prixPasCherIndex];
+                            
+                            const seoContent = generateSEOContent(thisPgId, thisPgNameSite);
+                            
+                            return (
+                              <div key={thisPgId} className="item">
+                                <div className="pad15">
+                                  <img 
+                                    src={thisPgPic} 
+                                    alt={`${thisPgNameSite} ${data.vehicle.marque} ${data.vehicle.modele}`}
+                                    className="img-fluid"
+                                  />
+                                  <h4>
+                                    {thisPgNameSite} pour {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}
+                                  </h4>
+                                  <p>
+                                    {seoContent.content}
+                                    <br/><br/>
+                                    <strong>💡 {seoContent.advice}</strong>
+                                    <br/><br/>
+                                    {thisPgNameSite} {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type} {prixPasCher}, remplacer {seoContent.advice.includes('chaque vidange') ? 'lors de la vidange' : 'si nécessaire'}
+                                  </p>
+                                  <p>
+                                    <a href={linkGammeCarPgIdLink}>
+                                      Voir les {thisPgNameSite}
+                                    </a>
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+                    {data.crossSellingGammes.slice(0, 4).map((crossGamme: any) => {
+                      // Génération dynamique des liens avec vraies données
+                      const gammeLink = `/pieces/${crossGamme.PG_ALIAS || 'gamme'}-${crossGamme.PG_ID}/${data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modele.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.modeleId}/${data.vehicle.type.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.typeId}.html`;
+                      
+                      // Icônes dynamiques basées sur la gamme
+                      const getGammeIcon = (gammeId: number) => {
+                        const iconMap: Record<number, string> = {
+                          403: '🛞', // Disques de frein
+                          75: '🛢️', // Filtres à huile
+                          90: '🔗', // Courroies
+                          85: '🔧', // Amortisseurs
+                          128: '⚙️', // Kit distribution
+                          76: '🌬️', // Filtres à air
+                        };
+                        return iconMap[gammeId] || '�';
+                      };
+                      
+                      // Conseils dynamiques basés sur la gamme
+                      const getGammeAdvice = (gammeId: number, gammeName: string) => {
+                        const adviceMap: Record<number, string> = {
+                          403: 'Vérifiez l\'épaisseur minimum et l\'état des surfaces de contact',
+                          75: 'Changement recommandé à chaque vidange ou intervention majeure',
+                          90: 'Contrôlez la tension et l\'absence de fissures ou effilochage',
+                          85: 'Test de rebond et contrôle d\'étanchéité recommandés',
+                          128: 'Vérifiez l\'état de la courroie de distribution en même temps',
+                          76: 'Contrôlez l\'encrassement lors de l\'entretien du moteur',
+                        };
+                        return adviceMap[gammeId] || `Contrôlez l'état des ${gammeName.toLowerCase()} régulièrement`;
+                      };
+                      
+                      return (
+                        <div key={crossGamme.PG_ID} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                          <div className="p-6">
+                            <div className="text-center mb-4">
+                              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                                {getGammeIcon(crossGamme.PG_ID)}
+                              </div>
+                              <h3 className="font-bold text-lg text-gray-900 mb-2">
+                                {formatGammeName({id: crossGamme.PG_ID, name: crossGamme.PG_NAME, alias: crossGamme.PG_ALIAS || '', description: ''})} pour {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}
+                              </h3>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                              Contrôlez l'état de vos {formatGammeName({id: crossGamme.PG_ID, name: crossGamme.PG_NAME, alias: crossGamme.PG_ALIAS || '', description: ''})} lors du remplacement des {formatGammeName(data.gamme)}. 
+                              Une maintenance préventive complète garantit la sécurité et la fiabilité de votre véhicule.
+                            </p>
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-4">
+                              <p className="text-yellow-800 text-xs font-medium">
+                                💡 {getGammeAdvice(crossGamme.PG_ID, crossGamme.PG_NAME)}
+                              </p>
+                            </div>
+                            <a 
+                              href={gammeLink}
+                              className="block w-full bg-blue-600 text-white text-center py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                            >
+                              Voir les {formatGammeName({id: crossGamme.PG_ID, name: crossGamme.PG_NAME, alias: crossGamme.PG_ALIAS || '', description: ''})}
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="text-center mt-8">
+                    <p className="text-gray-600 max-w-3xl mx-auto">
+                      <strong>Conseil professionnel :</strong> Lors du remplacement de vos {formatGammeName(data.gamme)}, 
+                      c'est le moment idéal pour contrôler l'état des autres composants du système de freinage et de suspension. 
+                      Cette approche préventive vous permet d'éviter les pannes futures et d'optimiser la sécurité de votre véhicule.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 📖 SECTION 3: Blog/Conseils - Adaptation 100% fidèle du PHP original */}
+            {data.blogArticle && (
+              <div className="container-fluid containerwhitePage">
+                <div className="container-fluid mymaxwidth">
+                  <div className="row">
+                    <div className="col-sm-6 col-md-4 col-lg-3 text-center text-sm-left align-self-center">
+                      {(() => {
+                        // Logique fidèle au PHP original pour l'image
+                        const blogWall = data.blogArticle.BA_WALL;
+                        let imageLink = '';
+                        
+                        if (blogWall === 'no.jpg') {
+                          // Utilise l'image de la gamme principale si pas d'image blog
+                          imageLink = `/upload/articles/gammes-produits/catalogue/pieces-${data.gamme.id}.webp`;
+                        } else {
+                          // Image spécifique de l'article blog
+                          imageLink = `/upload/blog/conseils/mini/${blogWall}`;
+                        }
+                        
+                        return (
+                          <img 
+                            src={imageLink}
+                            alt={data.blogArticle.BA_H1 || `Guide ${formatGammeName(data.gamme)}`}
+                            width="225" 
+                            height="165" 
+                            className="mw-100 img-fluid"
+                          />
+                        );
+                      })()}
+                    </div>
+                    <div className="col-sm-6 col-md-8 col-lg-9 align-self-center">
+                      <h2>{data.blogArticle.BA_H1 || `Guide complet : Entretien des ${formatGammeName(data.gamme)} sur ${data.vehicle.marque} ${data.vehicle.modele}`}</h2>
+                      <div className="divh2"></div>
+                      <i>Publié le {data.blogArticle.BA_UPDATE ? new Date(data.blogArticle.BA_UPDATE).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric'}) : new Date().toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit', year: 'numeric'})}</i>
+                      <p>
+                        <a 
+                          href={`/blog/entretien/${data.gamme.alias}`} 
+                          className="blog-z-read-more" 
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {data.blogArticle.BA_PREVIEW || `Découvrez tous nos conseils d'experts pour l'entretien et le remplacement de vos ${formatGammeName(data.gamme)} sur ${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}. Ce guide complet vous accompagne pas à pas dans la maintenance préventive de votre véhicule.`}
+                        </a>
+                        {data.blogArticle.BA2_CONTENT && (
+                          <>
+                            <br/>
+                            <span dangerouslySetInnerHTML={{ 
+                              __html: data.blogArticle.BA2_CONTENT.replace(/<(?!\/?(?:b|ul|li|br)\b)[^>]*>/gi, '') 
+                            }} />
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             
           </div>
         </div>
@@ -1825,7 +1900,3 @@ export default function UnifiedPiecesPage() {
     </div>
   );
 }
-
-// ========================================
-// 🔧 FONCTIONS UTILITAIRES
-// ========================================

@@ -1,0 +1,737 @@
+// 🏗️ Architecture Modulaire V5 Ultimate - Route Pièces Véhicule
+import { type UnifiedPiece } from "@monorepo/shared-types";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { useState, useMemo } from 'react';
+
+// Services modulaires
+import { unifiedCatalogApi } from "../services/api/unified-catalog.api";
+import { getCrossSellingV5ByAlias, getAdvancedSeoV5, type CrossSellingV5Result, type AdvancedSeoV5Result } from "../services/api/v5-ultimate.api";
+
+// Types modulaires V5
+interface VehicleData {
+  marque: string;
+  modele: string;
+  type: string;
+  typeId: number;
+  marqueId: number;
+  modeleId: number;
+}
+
+interface GammeData {
+  id: number;
+  name: string;
+  alias: string;
+  description: string;
+}
+
+interface LoaderData {
+  vehicle: VehicleData;
+  gamme: GammeData;
+  pieces: UnifiedPiece[];
+  count: number;
+  minPrice: number;
+  maxPrice: number;
+  
+  // 🆕 V5 Ultimate - Cross-selling et SEO avancé
+  crossSelling?: CrossSellingV5Result;
+  advancedSeo?: AdvancedSeoV5Result;
+  
+  seo: {
+    title: string;
+    h1: string;
+    description: string;
+  };
+  performance: {
+    loadTime: number;
+    source: string;
+    cacheHit: boolean;
+  };
+}
+
+// Utilitaires modulaires
+const toTitleCaseFromSlug = (slug: string): string => 
+  slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+const parseUrlParam = (param: string): {alias: string, id: number} => {
+  const parts = param.split('-');
+  
+  // Chercher le dernier nombre dans l'URL
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const id = parseInt(parts[i]);
+    if (!isNaN(id) && id > 0) {
+      const alias = parts.slice(0, i).join('-');
+      return { alias, id };
+    }
+  }
+  
+  // Fallback si pas d'ID trouvé
+  return { alias: param, id: 0 };
+}
+
+// Loader modulaire V5 Ultimate - Format IDs
+export async function loader({ params }: LoaderFunctionArgs) {
+  const startTime = Date.now();
+  
+  if (!params.gammeId || !params.marqueId || !params.modeleId || !params.typeId) {
+    throw new Response("Paramètres manquants", { status: 400 });
+  }
+
+  try {
+    // 🎯 Parsing paramètres avec IDs (format: nom-ID)
+    const gammeInfo = parseUrlParam(params.gammeId);
+    const marqueInfo = parseUrlParam(params.marqueId); 
+    const modeleInfo = parseUrlParam(params.modeleId);
+    const typeInfo = parseUrlParam(params.typeId);
+
+    // 🔄 Récupération des données V5 Ultimate en parallèle
+    const [piecesResult, crossSellingResult, advancedSeoResult] = await Promise.allSettled([
+      unifiedCatalogApi.getPiecesUnified(typeInfo.id, gammeInfo.id),
+      getCrossSellingV5ByAlias(gammeInfo.alias, marqueInfo.alias, modeleInfo.alias, typeInfo.alias),
+      getAdvancedSeoV5({
+        typeId: typeInfo.id,
+        pgId: gammeInfo.id,
+        marque: marqueInfo.alias,
+        modele: modeleInfo.alias,
+        gamme: gammeInfo.alias,
+      })
+    ]);
+
+    // Gestion des résultats avec fallbacks
+    const piecesData = piecesResult.status === 'fulfilled' ? piecesResult.value : { pieces: [], count: 0, minPrice: 0, maxPrice: 0 };
+    const crossSellingData = crossSellingResult.status === 'fulfilled' ? crossSellingResult.value : undefined;
+    const seoData = advancedSeoResult.status === 'fulfilled' ? advancedSeoResult.value : undefined;
+
+    // Simpler vehicle data construction from params
+    const vehicle = {
+      marque: toTitleCaseFromSlug(marqueInfo.alias),
+      modele: toTitleCaseFromSlug(modeleInfo.alias),
+      type: toTitleCaseFromSlug(typeInfo.alias),
+      typeId: typeInfo.id,
+      marqueId: marqueInfo.id,
+      modeleId: modeleInfo.id,
+    };
+
+    const loadTime = Date.now() - startTime;
+
+    return json<LoaderData>({
+      vehicle,
+      gamme: {
+        id: gammeInfo.id,
+        name: toTitleCaseFromSlug(gammeInfo.alias),
+        alias: gammeInfo.alias,
+        description: `Pièces ${gammeInfo.alias} de qualité pour votre véhicule`
+      },
+      pieces: piecesData.pieces || [],
+      count: piecesData.count || 0,
+      minPrice: piecesData.minPrice || 0,
+      maxPrice: piecesData.maxPrice || 0,
+      
+      // 🆕 V5 Ultimate - Nouvelles données intégrées
+      crossSelling: crossSellingData,
+      advancedSeo: seoData,
+      
+      seo: {
+        title: `${toTitleCaseFromSlug(gammeInfo.alias)} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
+        h1: `${toTitleCaseFromSlug(gammeInfo.alias)} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`,
+        description: `Découvrez nos ${toTitleCaseFromSlug(gammeInfo.alias)} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type}. ${piecesData.count} pièces en stock, livraison rapide.`
+      },
+      performance: {
+        loadTime,
+        source: "unified-api-v5",
+        cacheHit: (piecesData as any).success || false
+      }
+    });
+
+  } catch (error) {
+    console.error("Erreur loader V5:", error);
+    throw new Response("Erreur interne", { status: 500 });
+  }
+}
+
+// Composant principal modulaire V5
+export default function UnifiedPiecesPageV5() {
+  const data = useLoaderData<LoaderData>();
+
+  // 🎯 États simplifiés pour architecture modulaire
+  const [filters, setFilters] = useState({
+    marque: '',
+    search: '',
+    sortBy: 'name',
+    priceRange: 'all', // all, low, medium, high
+    quality: 'all',    // all, OEM, aftermarket
+    availability: 'all' // all, stock, preorder
+  });
+
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "comparison">("grid");
+  const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
+
+  // 🔧 Handler de filtres modulaire
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  // 🔄 Filtrage des pièces avec filtres avancés V5+
+  const filteredPieces = useMemo(() => {
+    let result = [...data.pieces];
+    
+    // Filtre par recherche
+    if (filters.search) {
+      result = result.filter(piece => 
+        piece.piece_name?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        piece.reference?.toLowerCase().includes(filters.search.toLowerCase())
+      );
+    }
+    
+    // Filtre par marque
+    if (filters.marque) {
+      result = result.filter(piece => piece.marque === filters.marque);
+    }
+
+    // 🆕 Filtre par gamme de prix
+    if (filters.priceRange !== 'all') {
+      result = result.filter(piece => {
+        const price = piece.prix_ttc || 0;
+        switch (filters.priceRange) {
+          case 'low': return price < 50;
+          case 'medium': return price >= 50 && price < 150;
+          case 'high': return price >= 150;
+          default: return true;
+        }
+      });
+    }
+
+    // 🆕 Filtre par qualité
+    if (filters.quality !== 'all') {
+      result = result.filter(piece => {
+        const quality = piece.qualite?.toLowerCase() || '';
+        switch (filters.quality) {
+          case 'OEM': return quality.includes('oem') || quality.includes('origine');
+          case 'aftermarket': return !quality.includes('oem') && !quality.includes('origine');
+          default: return true;
+        }
+      });
+    }
+
+    // Tri amélioré
+    switch (filters.sortBy) {
+      case 'price':
+        result.sort((a, b) => (a.prix_ttc || 0) - (b.prix_ttc || 0));
+        break;
+      case 'price-desc':
+        result.sort((a, b) => (b.prix_ttc || 0) - (a.prix_ttc || 0));
+        break;
+      case 'name':
+      default:
+        result.sort((a, b) => (a.piece_name || '').localeCompare(b.piece_name || ''));
+        break;
+    }
+    
+    return result;
+  }, [data.pieces, filters]);
+
+  // 🆕 Marques disponibles
+  const availableBrands = useMemo(() => {
+    const brands = [...new Set(data.pieces.map(p => p.marque))];
+    return brands.sort();
+  }, [data.pieces]);
+
+  // 🆕 V5+ Statistiques avancées
+  const piecesStats = useMemo(() => {
+    const prices = data.pieces.map(p => p.prix_ttc || 0).filter(p => p > 0);
+    const avgPrice = prices.length > 0 ? prices.reduce((sum, price) => sum + price, 0) / prices.length : 0;
+    
+    return {
+      total: data.pieces.length,
+      filtered: filteredPieces.length,
+      avgPrice: avgPrice,
+      minPrice: Math.min(...prices) || 0,
+      maxPrice: Math.max(...prices) || 0,
+      brandsCount: availableBrands.length,
+      priceRanges: {
+        low: data.pieces.filter(p => (p.prix_ttc || 0) < 50).length,
+        medium: data.pieces.filter(p => (p.prix_ttc || 0) >= 50 && (p.prix_ttc || 0) < 150).length,
+        high: data.pieces.filter(p => (p.prix_ttc || 0) >= 150).length
+      }
+    };
+  }, [data.pieces, filteredPieces, availableBrands]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 🚗 HEADER VÉHICULE */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <nav className="text-sm text-gray-600 mb-4">
+            <a href="/" className="hover:underline">Accueil</a> → 
+            <a href="/pieces" className="hover:underline ml-1">Pièces</a> → 
+            <a href={`/pieces/${data.gamme.alias}`} className="text-blue-600 hover:underline ml-1">{data.gamme.name}</a> →
+            <span className="font-medium ml-1">{data.vehicle.marque} {data.vehicle.modele}</span>
+          </nav>
+          
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {data.seo.h1}
+            <span className="ml-3 px-3 py-1 bg-blue-100 text-blue-800 text-lg rounded-full font-medium">
+              {data.count} pièces
+            </span>
+          </h1>
+          
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">
+              {data.count} pièces disponibles • Livraison rapide • Garantie constructeur
+            </p>
+            <div className="text-sm text-gray-500 flex items-center gap-2">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                data.performance.loadTime < 3000 
+                  ? 'bg-green-100 text-green-800' 
+                  : data.performance.loadTime < 6000 
+                  ? 'bg-yellow-100 text-yellow-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                ⚡ {data.performance.loadTime}ms
+              </span>
+              <span className="text-gray-300">•</span>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                data.performance.cacheHit 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {data.performance.cacheHit ? '📁 Cache' : '🔄 Live'}
+              </span>
+              <span className="text-gray-300">•</span>
+              <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                🚀 V5.2
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 🔧 FILTRES ET CONTRÔLES AVANCÉS V5+ */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            {/* Recherche */}
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔍 Recherche
+              </label>
+              <input
+                type="text"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Nom ou référence..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Marque */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🏷️ Marque
+              </label>
+              <select
+                value={filters.marque}
+                onChange={(e) => handleFilterChange('marque', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Toutes</option>
+                {availableBrands.map(brand => (
+                  <option key={brand} value={brand}>{brand}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* 🆕 Gamme de prix */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                � Prix
+              </label>
+              <select
+                value={filters.priceRange}
+                onChange={(e) => handleFilterChange('priceRange', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">Tous prix</option>
+                <option value="low">&lt; 50€</option>
+                <option value="medium">50-150€</option>
+                <option value="high">&gt; 150€</option>
+              </select>
+            </div>
+
+            {/* 🆕 Qualité */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ⭐ Qualité
+              </label>
+              <select
+                value={filters.quality}
+                onChange={(e) => handleFilterChange('quality', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="all">Toutes</option>
+                <option value="OEM">OEM/Origine</option>
+                <option value="aftermarket">Aftermarket</option>
+              </select>
+            </div>
+
+            {/* Tri amélioré */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                � Tri
+              </label>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="name">Nom A-Z</option>
+                <option value="price">Prix ⬆</option>
+                <option value="price-desc">Prix ⬇</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Mode d'affichage - Ligne séparée */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-gray-700">👁️ Affichage :</span>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setViewMode('grid')}
+                    className={`px-3 py-1 text-sm rounded ${
+                      viewMode === 'grid' 
+                        ? 'bg-blue-100 text-blue-700 border-blue-300' 
+                        : 'bg-gray-100 text-gray-700 border-gray-300'
+                    } border`}
+                  >
+                    ⊞ Grille
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('list')}
+                    className={`px-3 py-1 text-sm rounded ${
+                      viewMode === 'list' 
+                        ? 'bg-blue-100 text-blue-700 border-blue-300' 
+                        : 'bg-gray-100 text-gray-700 border-gray-300'
+                    } border`}
+                  >
+                    ☰ Liste
+                  </button>
+                </div>
+              </div>
+              
+              {/* Bouton Reset filtres */}
+              <button 
+                onClick={() => setFilters({ marque: '', search: '', sortBy: 'name', priceRange: 'all', quality: 'all', availability: 'all' })}
+                className="text-sm text-gray-600 hover:text-red-600 hover:underline"
+              >
+                🗑️ Réinitialiser filtres
+              </button>
+            </div>
+          </div>
+
+          {/* Statistiques */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">
+                🔢 {filteredPieces.length} pièce(s) trouvée(s)
+              </span>
+              {selectedPieces.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-blue-600">
+                    ✓ {selectedPieces.length} sélectionnée(s)
+                  </span>
+                  <button 
+                    onClick={() => setSelectedPieces([])}
+                    className="text-sm text-red-600 hover:underline"
+                  >
+                    Effacer sélection
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 📊 PANNEAU STATISTIQUES AVANCÉES V5+ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Résumé global */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-blue-700 font-medium">📦 Pièces</span>
+              <span className="text-2xl">🔧</span>
+            </div>
+            <div className="text-2xl font-bold text-blue-900">{piecesStats.filtered}</div>
+            <div className="text-sm text-blue-600">sur {piecesStats.total} total</div>
+          </div>
+
+          {/* Prix moyen */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-green-700 font-medium">💰 Prix moyen</span>
+              <span className="text-2xl">📈</span>
+            </div>
+            <div className="text-2xl font-bold text-green-900">{piecesStats.avgPrice.toFixed(0)}€</div>
+            <div className="text-sm text-green-600">{piecesStats.minPrice}€ - {piecesStats.maxPrice}€</div>
+          </div>
+
+          {/* Marques disponibles */}
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-purple-700 font-medium">🏷️ Marques</span>
+              <span className="text-2xl">🏭</span>
+            </div>
+            <div className="text-2xl font-bold text-purple-900">{piecesStats.brandsCount}</div>
+            <div className="text-sm text-purple-600">marques disponibles</div>
+          </div>
+
+          {/* Répartition prix */}
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-orange-700 font-medium">📊 Répartition</span>
+              <span className="text-2xl">💎</span>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between text-orange-900">
+                <span>&lt; 50€:</span> <span className="font-semibold">{piecesStats.priceRanges.low}</span>
+              </div>
+              <div className="flex justify-between text-orange-900">
+                <span>50-150€:</span> <span className="font-semibold">{piecesStats.priceRanges.medium}</span>
+              </div>
+              <div className="flex justify-between text-orange-900">
+                <span>&gt; 150€:</span> <span className="font-semibold">{piecesStats.priceRanges.high}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 🛍️ LISTE DES PIÈCES */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          {filteredPieces.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">🔍</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Aucune pièce trouvée
+              </h3>
+              <p className="text-gray-600">
+                Modifiez vos critères de recherche pour voir plus de résultats.
+              </p>
+            </div>
+          ) : (
+            <div className={viewMode === 'grid' 
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' 
+              : 'space-y-4'
+            }>
+              {filteredPieces.map((piece) => (
+                <div 
+                  key={piece.id} 
+                  className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                    selectedPieces.includes(piece.id) 
+                      ? 'border-blue-500 bg-blue-50' 
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      {piece.piece_name}
+                    </h3>
+                    <input
+                      type="checkbox"
+                      checked={selectedPieces.includes(piece.id)}
+                      onChange={() => {
+                        setSelectedPieces(prev => 
+                          prev.includes(piece.id)
+                            ? prev.filter(id => id !== piece.id)
+                            : [...prev, piece.id]
+                        );
+                      }}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p><span className="font-medium">Marque:</span> {piece.marque}</p>
+                    <p><span className="font-medium">Référence:</span> {piece.reference}</p>
+                    <p><span className="font-medium">Stock:</span> 
+                      <span className="ml-1 px-2 py-0.5 rounded text-xs bg-green-100 text-green-800">
+                        En stock
+                      </span>
+                    </p>
+                    {piece.qualite && (
+                      <p><span className="font-medium">Qualité:</span> 
+                        <span className="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                          {piece.qualite}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between mt-4">
+                    <div className="font-bold text-lg text-blue-600">
+                      {`${piece.prix_ttc.toFixed(2)}€`}
+                    </div>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors">
+                      🛒 Ajouter
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 📊 RÉSUMÉ SÉLECTION */}
+        {selectedPieces.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mt-8">
+            <h3 className="font-semibold text-blue-900 mb-4">
+              🛒 Résumé de votre sélection ({selectedPieces.length} pièces)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {selectedPieces.slice(0, 3).map(pieceId => {
+                const piece = data.pieces.find(p => p.id === pieceId);
+                if (!piece) return null;
+                return (
+                  <div key={piece.id} className="bg-white rounded p-3">
+                    <div className="font-medium text-sm">{piece.piece_name}</div>
+                    <div className="text-xs text-gray-600">{piece.marque}</div>
+                    <div className="font-semibold text-blue-600 mt-1">
+                      {`${piece.prix_ttc.toFixed(2)}€`}
+                    </div>
+                  </div>
+                );
+              })}
+              {selectedPieces.length > 3 && (
+                <div className="bg-white rounded p-3 flex items-center justify-center text-gray-500">
+                  +{selectedPieces.length - 3} autres...
+                </div>
+              )}
+            </div>
+            <div className="flex items-center justify-between mt-4">
+              <div className="font-semibold text-blue-900">
+                Total: {selectedPieces.reduce((sum, pieceId) => {
+                  const piece = data.pieces.find(p => p.id === pieceId);
+                  return sum + (piece?.prix_ttc || 0);
+                }, 0).toFixed(2)}€
+              </div>
+              <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors">
+                Valider la sélection
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 🆕 SECTION CROSS-SELLING V5 ULTIMATE */}
+        {data.crossSelling?.success && data.crossSelling.recommendations.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                🔧 Pièces complémentaires recommandées
+              </h2>
+              <div className="text-sm text-gray-500">
+                {data.crossSelling.metadata.total_found} recommandations
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.crossSelling.recommendations.slice(0, 6).map((recommendation) => (
+                <div key={recommendation.pg_id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                        {recommendation.pg_name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          recommendation.source === 'family' 
+                            ? 'bg-blue-100 text-blue-800'
+                            : recommendation.source === 'compatibility'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {recommendation.source === 'family' ? '👥 Famille' : 
+                           recommendation.source === 'compatibility' ? '🔧 Compatible' : '⚙️ Config'}
+                        </span>
+                        {recommendation.compatibility_score && (
+                          <span className="text-xs text-gray-500">
+                            {Math.round(recommendation.compatibility_score * 100)}% compatible
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 mb-3">
+                    {recommendation.products_count && (
+                      <span>📦 {recommendation.products_count} pièces disponibles</span>
+                    )}
+                  </div>
+                  
+                  <a
+                    href={`/pieces/${recommendation.pg_alias}/${data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}/${data.vehicle.type.toLowerCase()}-${data.vehicle.typeId}`}
+                    className="w-full bg-blue-50 text-blue-700 px-4 py-2 rounded text-sm hover:bg-blue-100 transition-colors block text-center"
+                  >
+                    Voir les pièces
+                  </a>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 text-center">
+              <div className="text-xs text-gray-500">
+                ⚡ Recommandations générées en {data.crossSelling.metadata.response_time}ms
+                {data.crossSelling.metadata.cache_hit && ' (📁 Cache)'}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🆕 SECTION FAQ ET CONTENU ENRICHI V5 */}
+        {data.advancedSeo?.success && data.advancedSeo.content.faq.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-6 mt-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              ❓ Questions fréquentes
+            </h2>
+            
+            <div className="space-y-4">
+              {data.advancedSeo.content.faq.map((faqItem) => (
+                <details key={faqItem.id} className="group border-b border-gray-200 pb-4">
+                  <summary className="cursor-pointer font-medium text-gray-900 hover:text-blue-600 transition-colors">
+                    <span className="mr-2">📋</span>
+                    {faqItem.question}
+                  </summary>
+                  <div className="mt-3 ml-6 text-gray-700 text-sm">
+                    {faqItem.answer}
+                  </div>
+                </details>
+              ))}
+            </div>
+            
+            <div className="mt-6 text-center">
+              <div className="text-xs text-gray-500">
+                🎯 Score SEO : {data.advancedSeo.performance.seo_score}/100 
+                • ⚡ {data.advancedSeo.performance.response_time}ms
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Meta modulaire V5
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) {
+    return [
+      { title: "Pièces non trouvées" },
+      { name: "description", content: "Les pièces demandées n'ont pas été trouvées." }
+    ];
+  }
+
+  return [
+    { title: data.seo.title },
+    { name: "description", content: data.seo.description },
+    { name: "keywords", content: `${data.gamme.name}, ${data.vehicle.marque}, ${data.vehicle.modele}, pièces auto, automobile` },
+    { property: "og:title", content: data.seo.title },
+    { property: "og:description", content: data.seo.description },
+    { property: "og:type", content: "website" }
+  ];
+};

@@ -8,25 +8,24 @@
  * @package @monorepo/seo
  */
 
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Query, 
-  Param, 
-  ParseIntPipe, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  ParseIntPipe,
+  HttpStatus,
   Logger,
   HttpException,
-  HttpStatus
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiParam, 
-  ApiQuery, 
-  ApiResponse,
-  ApiBody 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AdvancedSeoV5UltimateService } from './advanced-seo-v5-ultimate.service';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -87,7 +86,7 @@ export class AdvancedSeoV5Controller {
   private readonly logger = new Logger(AdvancedSeoV5Controller.name);
 
   constructor(
-    private readonly advancedSeoService: AdvancedSeoV5UltimateService
+    private readonly advancedSeoService: AdvancedSeoV5UltimateService,
   ) {}
 
   /**
@@ -95,9 +94,10 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/generate-complex
    */
   @Post('generate-complex')
-  @ApiOperation({ 
-    summary: 'Génération SEO complexe V5 Ultimate',
-    description: 'Génère SEO complet avec switches externes, famille, liens dynamiques et validation Zod'
+    @ApiOperation({
+    summary: 'Génère SEO complet V5 Ultimate',
+    description:
+      'Génère SEO complet avec switches externes, famille, liens dynamiques et validation Zod',
   })
   @ApiBody({
     schema: {
@@ -172,7 +172,7 @@ export class AdvancedSeoV5Controller {
         {
           success: false,
           error: 'Erreur lors de la génération SEO complexe',
-          details: error.message,
+          details: error instanceof Error ? error.message : 'Unknown error',
           metadata: {
             api_version: '5.0.0',
             response_time: responseTime,
@@ -207,9 +207,9 @@ export class AdvancedSeoV5Controller {
         marque: { type: 'string' },
         modele: { type: 'string' },
         type: { type: 'string' },
-        annee: { type: 'string', required: false },
-        nbCh: { type: 'number', required: false },
-        minPrice: { type: 'number', required: false }
+        annee: { type: 'string', required: false, example: '2023' },
+        nbCh: { type: 'number', required: false, example: 150 },
+        minPrice: { type: 'number', required: false, example: 50 }
       }
     }
   })

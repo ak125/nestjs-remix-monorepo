@@ -1,18 +1,184 @@
 /**
- * 🎯 SERVICE API V5 ULTIMATE - Frontend Integration
+ * 🔧 API Catalogue Unifié
  * 
- * Intégration des services V5 Ultimate côté frontend :
- * - PricingServiceV5UltimateFinal
- * - TechnicalDataServiceV5Ultimate  
- * - ProductsEnhancementServiceV5Ultimate
+ * Service pour récupérer les pièces via l'API NestJS backend 
+ * en utilisant les types partagés du monorepo
  * 
- * Applique la méthodologie "vérifier existant avant et utiliser le meilleur et améliorer"
+ * @package @monorepo/frontend
  */
 
 // Configuration API Base URL
 const API_BASE = typeof window !== 'undefined' 
   ? '/api' // Côté client: utilisation relative
   : process.env.API_BASE_URL || 'http://localhost:3000'; // Côté serveur
+
+// Types pour les résultats cross-selling
+export interface CrossSellingV5Result {
+  success: boolean;
+  crossSelling?: {
+    recommendations: Array<{
+      id: number;
+      name: string;
+      brand: string;
+      price: number;
+      priceFormatted: string;
+      reference: string;
+      quality: string;
+      description?: string;
+    }>;
+    relatedProducts: Array<{
+      id: number;
+      name: string;
+      brand: string;
+      price: number;
+      category: string;
+    }>;
+  };
+  metadata: {
+    source: string;
+    responseTime: number;
+    alias: string;
+  };
+}
+
+// Types pour le SEO V5
+export interface AdvancedSeoV5Result {
+  success: boolean;
+  seo?: {
+    title: string;
+    h1: string;
+    description: string;
+    longDescription: string;
+    technicalSpecs: string[];
+    faqItems: Array<{
+      id: string;
+      question: string;
+      answer: string;
+    }>;
+  };
+  metadata: {
+    source: string;
+    responseTime: number;
+    gamme: string;
+    marque: string;
+    modele: string;
+    type: string;
+  };
+}
+
+/**
+ * 🎯 CROSS-SELLING V5 PAR ALIAS
+ * @param alias Alias de la gamme de pièces
+ * @returns Recommandations de cross-selling
+ */
+export async function getCrossSellingV5ByAlias(alias: string): Promise<CrossSellingV5Result> {
+  try {
+    const response = await fetch(`${API_BASE}/cross-selling/v5/by-alias/${encodeURIComponent(alias)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      crossSelling: {
+        recommendations: data.recommendations || [],
+        relatedProducts: data.relatedProducts || [],
+      },
+      metadata: {
+        source: 'v5-ultimate-cross-selling',
+        responseTime: data.responseTime || 0,
+        alias,
+      },
+    };
+  } catch (error) {
+    console.error('Erreur cross-selling V5 Ultimate:', error);
+    return {
+      success: false,
+      metadata: {
+        source: 'v5-ultimate-cross-selling-error',
+        responseTime: 0,
+        alias,
+      },
+    };
+  }
+}
+
+/**
+ * 📝 SEO AVANCÉ V5
+ * @param params Paramètres pour le SEO (gamme, marque, modele, type)
+ * @returns Contenu SEO optimisé
+ */
+export async function getAdvancedSeoV5(params: {
+  gamme: string;
+  marque: string;
+  modele: string;
+  type: string;
+}): Promise<AdvancedSeoV5Result> {
+  try {
+    const queryParams = new URLSearchParams({
+      gamme: params.gamme,
+      marque: params.marque,
+      modele: params.modele,
+      type: params.type,
+    });
+
+    const response = await fetch(`${API_BASE}/advanced-seo-v5/generate-complex-seo?${queryParams}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      success: true,
+      seo: {
+        title: data.seo?.title || `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
+        h1: data.seo?.h1 || `${params.gamme} pour ${params.marque} ${params.modele} ${params.type}`,
+        description: data.seo?.description || `Pièces ${params.gamme} compatibles avec ${params.marque} ${params.modele} ${params.type}`,
+        longDescription: data.seo?.longDescription || '',
+        technicalSpecs: data.seo?.technicalSpecs || [],
+        faqItems: data.seo?.faqItems || [],
+      },
+      metadata: {
+        source: 'v5-ultimate-seo',
+        responseTime: data.responseTime || 0,
+        gamme: params.gamme,
+        marque: params.marque,
+        modele: params.modele,
+        type: params.type,
+      },
+    };
+  } catch (error) {
+    console.error('Erreur SEO V5 Ultimate:', error);
+    return {
+      success: false,
+      metadata: {
+        source: 'v5-ultimate-seo-error',
+        responseTime: 0,
+        gamme: params.gamme,
+        marque: params.marque,
+        modele: params.modele,
+        type: params.type,
+      },
+    };
+  }
+}
 
 export interface V5UltimateSearchResult {
   success: boolean;

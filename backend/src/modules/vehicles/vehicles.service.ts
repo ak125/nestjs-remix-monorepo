@@ -974,37 +974,61 @@ export class VehiclesService extends SupabaseBaseService {
    */
   async getTypeById(typeId: number) {
     try {
-      const { data, error } = await this.client
+      // 🎯 Requête simple pour récupérer les détails du type
+      const { data: typeData, error: typeError } = await this.client
         .from('auto_type')
-        .select(
-          `
-          type_id,
-          type_nom_moteur,
-          type_code_moteur,
-          type_pf_deb,
-          type_pf_fin,
-          type_modele_id,
-          auto_modele!inner(
-            modele_id,
-            modele_name,
-            modele_ful_name,
-            auto_marque!inner(
-              marque_id,
-              marque_name
-            )
-          )
-        `,
-        )
+        .select('*')
         .eq('type_id', typeId)
         .eq('type_display', 1)
         .single();
 
-      if (error) {
-        this.logger.error('Erreur getTypeById:', error);
-        return { data: null, error };
+      if (typeError || !typeData) {
+        this.logger.error('Erreur getTypeById - type:', typeError);
+        return { data: null, error: typeError };
       }
 
-      return { data: [data], error: null };
+      // 🔄 Récupérer les infos du modèle
+      const { data: modelData, error: modelError } = await this.client
+        .from('auto_modele')
+        .select(`
+          modele_id,
+          modele_name,
+          modele_ful_name,
+          modele_marque_id
+        `)
+        .eq('modele_id', typeData.type_modele_id)
+        .single();
+
+      if (modelError || !modelData) {
+        this.logger.error('Erreur getTypeById - model:', modelError);
+        return { data: null, error: modelError };
+      }
+
+      // 🏷️ Récupérer les infos de la marque
+      const { data: brandData, error: brandError } = await this.client
+        .from('auto_marque')
+        .select(`
+          marque_id,
+          marque_name
+        `)
+        .eq('marque_id', modelData.modele_marque_id)
+        .single();
+
+      if (brandError || !brandData) {
+        this.logger.error('Erreur getTypeById - brand:', brandError);
+        return { data: null, error: brandError };
+      }
+
+      // 📦 Assembler la réponse complète
+      const enrichedData = {
+        ...typeData,
+        auto_modele: {
+          ...modelData,
+          auto_marque: brandData
+        }
+      };
+
+      return { data: [enrichedData], error: null };
     } catch (error) {
       this.logger.error('Exception getTypeById:', error);
       throw error;

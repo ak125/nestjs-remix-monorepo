@@ -91,6 +91,11 @@ export class VehiclesController {
     return this.vehiclesService.searchByCnit(cnitCode);
   }
 
+  @Get('types/:typeId')
+  async getVehicleType(@Param('typeId') typeId: string) {
+    return this.vehiclesService.getTypeById(parseInt(typeId));
+  }
+
   @Get('mines/model/:id')
   async getMinesByModel(@Param('id') modelId: string) {
     return this.vehiclesService.getMinesByModel(modelId);
