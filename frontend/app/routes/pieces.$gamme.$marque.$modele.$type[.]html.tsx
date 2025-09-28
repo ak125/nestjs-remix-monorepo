@@ -916,33 +916,92 @@ export default function UnifiedPiecesPage() {
   }, [data.pieces, selectedPieces]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <nav className="text-sm text-gray-600 mb-2">
-                <a href="/" className="hover:underline">Accueil</a> → 
-                <a href="/pieces" className="hover:underline ml-1">Pièces</a> → 
-                <a href={`/pieces/${data.gamme.alias}`} className="text-blue-600 hover:underline ml-1">{data.gamme.name}</a> →
-                <span className="font-medium ml-1">{data.vehicle.marque} {data.vehicle.modele}</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header moderne avec gradient */}
+      <div className="relative overflow-hidden">
+        {/* Gradient de fond */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"></div>
+        <div className="absolute inset-0 opacity-10">
+          <div className="w-full h-full" style={{backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 2px, transparent 2px)', backgroundSize: '30px 30px'}}></div>
+        </div>
+        
+        {/* Contenu du header */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex-1">
+              {/* Breadcrumb moderne */}
+              <nav className="flex items-center space-x-2 text-sm text-blue-100 mb-4">
+                <a href="/" className="hover:text-white transition-colors flex items-center">
+                  <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                  Accueil
+                </a>
+                <span className="text-blue-300">→</span>
+                <a href="/pieces" className="hover:text-white transition-colors">Pièces</a>
+                <span className="text-blue-300">→</span>
+                <a href={`/pieces/${data.gamme.alias}`} className="text-white font-medium hover:text-blue-200 transition-colors">{data.gamme.name}</a>
+                <span className="text-blue-300">→</span>
+                <span className="text-blue-200">{data.vehicle.marque} {data.vehicle.modele}</span>
               </nav>
               
-              <h1 className="text-2xl font-bold text-gray-900">
-                {data.gamme.name} pour {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {data.count} pièces disponibles • Livraison rapide • Garantie constructeur
-              </p>
+              {/* Titre principal */}
+              <div className="mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1">
+                    <span className="text-white text-sm font-medium">Pièces automobile</span>
+                  </div>
+                </div>
+                <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">
+                  {data.gamme.name}
+                </h1>
+                <p className="text-xl text-blue-100 mb-4">
+                  Pour <span className="font-semibold text-white">{data.vehicle.marque} {data.vehicle.modele}</span>
+                  <span className="text-blue-200"> • {data.vehicle.type}</span>
+                </p>
+              </div>
+              
+              {/* Badges informatifs */}
+              <div className="flex flex-wrap gap-3">
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                  <svg className="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                  <span className="text-white font-medium">{data.count} pièces</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                  <svg className="w-4 h-4 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-white font-medium">Qualité garantie</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                  <svg className="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-white font-medium">Livraison rapide</span>
+                </div>
+                {data.performance && (
+                  <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
+                    <svg className="w-4 h-4 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="text-white text-sm">{data.performance.source} • {data.performance.loadTime}ms</span>
+                  </div>
+                )}
+              </div>
             </div>
             
+            {/* Action buttons */}
             <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-500">
-                🚀 {data.performance.source} • {data.performance.loadTime}ms
-              </div>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                🚗 Changer de véhicule
+              <button className="bg-white/10 backdrop-blur-sm border border-white/20 text-white px-6 py-3 rounded-xl font-medium hover:bg-white/20 transition-all duration-200 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Changer de véhicule
               </button>
             </div>
           </div>
@@ -951,147 +1010,226 @@ export default function UnifiedPiecesPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex gap-6">
-          {/* Sidebar Filtres */}
-          <div className="w-80 bg-white rounded-lg shadow-sm p-6 h-fit">
-            <h3 className="font-bold text-lg mb-4">🔍 Filtres</h3>
-            
-            {/* Recherche */}
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={activeFilters.searchText}
-                onChange={(e) => setActiveFilters(prev => ({...prev, searchText: e.target.value}))}
-                className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Marques */}
-            {uniqueBrands.length > 1 && (
-              <div className="mb-6">
-                <h4 className="font-semibold text-gray-800 mb-3">Marques</h4>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {uniqueBrands.map(brand => (
-                    <label key={brand} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="mr-2"
-                        checked={activeFilters.brands.includes(brand)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setActiveFilters(prev => ({
-                              ...prev,
-                              brands: [...prev.brands, brand]
-                            }));
-                          } else {
-                            setActiveFilters(prev => ({
-                              ...prev,
-                              brands: prev.brands.filter(b => b !== brand)
-                            }));
-                          }
-                        }}
-                      />
-                      <span className="text-sm">{brand}</span>
-                    </label>
-                  ))}
+          {/* Sidebar Filtres moderne */}
+          <div className="w-80 space-y-6">
+            {/* Card principale des filtres */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
+                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+                  </svg>
+                  Filtres
+                </h3>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* Recherche moderne */}
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Rechercher</label>
+                  <div className="relative">
+                    <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Rechercher une pièce..."
+                      value={activeFilters.searchText}
+                      onChange={(e) => setActiveFilters(prev => ({...prev, searchText: e.target.value}))}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Prix */}
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-800 mb-3">Prix</h4>
-              <div className="space-y-2">
-                {[
-                  { id: 'all', label: 'Tous les prix', desc: '' },
-                  { id: 'low', label: 'Moins de 50€', desc: '(économique)' },
-                  { id: 'medium', label: '50€ - 150€', desc: '(standard)' },
-                  { id: 'high', label: 'Plus de 150€', desc: '(premium)' }
-                ].map(price => (
-                  <label key={price.id} className="flex items-center">
-                    <input 
-                      type="radio" 
-                      name="priceRange"
-                      className="mr-2"
-                      checked={activeFilters.priceRange === price.id}
-                      onChange={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          priceRange: price.id as any
-                        }));
-                      }}
-                    />
-                    <span className="text-sm">
-                      {price.label} 
-                      {price.desc && <span className="text-xs text-gray-500 ml-1">{price.desc}</span>}
-                    </span>
-                  </label>
-                ))}
+                {/* Marques */}
+                {uniqueBrands.length > 1 && (
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Marques ({uniqueBrands.length})
+                    </h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                      {uniqueBrands.map(brand => {
+                        const isSelected = activeFilters.brands.includes(brand);
+                        const brandCount = data.pieces.filter(p => p.brand === brand).length;
+                        return (
+                          <label key={brand} className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
+                            isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                          }`}>
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mr-3"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setActiveFilters(prev => ({
+                                      ...prev,
+                                      brands: [...prev.brands, brand]
+                                    }));
+                                  } else {
+                                    setActiveFilters(prev => ({
+                                      ...prev,
+                                      brands: prev.brands.filter(b => b !== brand)
+                                    }));
+                                  }
+                                }}
+                              />
+                              <span className={`text-sm ${
+                                isSelected ? 'font-medium text-blue-900' : 'text-gray-700'
+                              }`}>{brand}</span>
+                            </div>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                              {brandCount}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Prix moderne */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Prix
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'all', label: 'Tous les prix', desc: '', color: 'border-gray-200' },
+                      { id: 'low', label: 'Moins de 50€', desc: '(économique)', color: 'border-green-200 bg-green-50' },
+                      { id: 'medium', label: '50€ - 150€', desc: '(standard)', color: 'border-blue-200 bg-blue-50' },
+                      { id: 'high', label: 'Plus de 150€', desc: '(premium)', color: 'border-purple-200 bg-purple-50' }
+                    ].map(price => {
+                      const isSelected = activeFilters.priceRange === price.id;
+                      return (
+                        <label key={price.id} className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                          isSelected ? `${price.color} border-opacity-100` : 'border-gray-100 hover:bg-gray-50'
+                        }`}>
+                          <input 
+                            type="radio" 
+                            name="priceRange"
+                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                            checked={isSelected}
+                            onChange={() => {
+                              setActiveFilters(prev => ({
+                                ...prev,
+                                priceRange: price.id as any
+                              }));
+                            }}
+                          />
+                          <div>
+                            <span className={`text-sm ${isSelected ? 'font-medium' : ''}`}>
+                              {price.label} 
+                            </span>
+                            {price.desc && (
+                              <span className="text-xs text-gray-500 block">{price.desc}</span>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Qualité moderne */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                    </svg>
+                    Qualité
+                  </h4>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'all', label: 'Toutes qualités', icon: '🔧' },
+                      { id: 'OES', label: 'OES (Origine)', icon: '🏆' },
+                      { id: 'AFTERMARKET', label: 'Aftermarket', icon: '⭐' },
+                      { id: 'Echange Standard', label: 'Échange Standard', icon: '🔄' }
+                    ].map(quality => {
+                      const isSelected = activeFilters.quality === quality.id;
+                      return (
+                        <label key={quality.id} className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                          isSelected ? 'border-blue-200 bg-blue-50' : 'border-gray-100 hover:bg-gray-50'
+                        }`}>
+                          <input 
+                            type="radio" 
+                            name="quality"
+                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                            checked={isSelected}
+                            onChange={() => {
+                              setActiveFilters(prev => ({
+                                ...prev,
+                                quality: quality.id as any
+                              }));
+                            }}
+                          />
+                          <span className={`text-sm flex items-center gap-2 ${isSelected ? 'font-medium' : ''}`}>
+                            <span>{quality.icon}</span>
+                            {quality.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Disponibilité moderne */}
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Disponibilité
+                  </h4>
+                  <div className="space-y-2">
+                    <label className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                      activeFilters.availability === "all" ? 'border-blue-200 bg-blue-50' : 'border-gray-100 hover:bg-gray-50'
+                    }`}>
+                      <input 
+                        type="radio" 
+                        name="availability"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                        checked={activeFilters.availability === "all"}
+                        onChange={() => setActiveFilters(prev => ({...prev, availability: "all"}))}
+                      />
+                      <span className="text-sm">Toutes disponibilités</span>
+                    </label>
+                    <label className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                      activeFilters.availability === "stock" ? 'border-green-200 bg-green-50' : 'border-gray-100 hover:bg-gray-50'
+                    }`}>
+                      <input 
+                        type="radio" 
+                        name="availability"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                        checked={activeFilters.availability === "stock"}
+                        onChange={() => setActiveFilters(prev => ({...prev, availability: "stock"}))}
+                      />
+                      <span className="text-sm flex items-center gap-2">
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                        En stock uniquement
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Bouton reset moderne */}
+                <button
+                  onClick={resetAllFilters}
+                  className="w-full bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Réinitialiser les filtres
+                </button>
               </div>
             </div>
-
-            {/* Qualité */}
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-800 mb-3">Qualité</h4>
-              <div className="space-y-2">
-                {[
-                  { id: 'all', label: 'Toutes qualités' },
-                  { id: 'OES', label: '🏆 OES (Origine)' },
-                  { id: 'AFTERMARKET', label: '⭐ Aftermarket' },
-                  { id: 'Echange Standard', label: '🔄 Échange Standard' }
-                ].map(quality => (
-                  <label key={quality.id} className="flex items-center">
-                    <input 
-                      type="radio" 
-                      name="quality"
-                      className="mr-2"
-                      checked={activeFilters.quality === quality.id}
-                      onChange={() => {
-                        setActiveFilters(prev => ({
-                          ...prev,
-                          quality: quality.id as any
-                        }));
-                      }}
-                    />
-                    <span className="text-sm">{quality.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Disponibilité */}
-            <div className="mb-6">
-              <h4 className="font-semibold text-gray-800 mb-3">Disponibilité</h4>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input 
-                    type="radio" 
-                    name="availability"
-                    className="mr-2"
-                    checked={activeFilters.availability === "all"}
-                    onChange={() => setActiveFilters(prev => ({...prev, availability: "all"}))}
-                  />
-                  <span className="text-sm">Toutes disponibilités</span>
-                </label>
-                <label className="flex items-center">
-                  <input 
-                    type="radio" 
-                    name="availability"
-                    className="mr-2"
-                    checked={activeFilters.availability === "stock"}
-                    onChange={() => setActiveFilters(prev => ({...prev, availability: "stock"}))}
-                  />
-                  <span className="text-sm">✅ En stock uniquement</span>
-                </label>
-              </div>
-            </div>
-
-            <button
-              onClick={resetAllFilters}
-              className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 transition-colors"
-            >
-              🗑️ Réinitialiser
-            </button>
           </div>
 
           {/* Contenu principal */}
