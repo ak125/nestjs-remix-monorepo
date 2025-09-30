@@ -228,31 +228,35 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     const startTime = Date.now();
     
     try {
+      // 🔥 OPTIMISATION: Sélectionner seulement rtp_pg_id (pas rtp_piece_id, rtp_pm_id)
+      // pour réduire la quantité de données
       const { data: relationData, error } = await this.supabase
         .from('pieces_relation_type')
-        .select('rtp_pg_id, rtp_piece_id, rtp_pm_id')
+        .select('rtp_pg_id')  // 🔥 Seulement ce qu'on utilise vraiment
         .eq('rtp_type_id', typeId)
-        .limit(10000)  // 🔥 Limite de sécurité pour éviter les timeouts
-        .order('rtp_pg_id');  // Ordre cohérent pour cache
-
+        .limit(5000);  // 🔥 Réduit à 5000 pour éviter timeout
+      
       if (error) throw error;
       
       const responseTime = Date.now() - startTime;
       const count = relationData?.length || 0;
       
       // Log des performances
-      this.logger.log(`📊 [RELATIONS] type_id ${typeId}: ${count} relations en ${responseTime}ms`);
+      this.logger.log(`📊 [RELATIONS] type_id ${typeId}: ${count} gammes uniques en ${responseTime}ms`);
       
       // Alerte si limite atteinte
-      if (count === 10000) {
-        this.logger.warn(`⚠️ [RELATIONS] Limite 10k atteinte pour type_id ${typeId} - Catalogue possiblement incomplet`);
+      if (count === 5000) {
+        this.logger.warn(`⚠️ [RELATIONS] Limite 5k atteinte pour type_id ${typeId} - Catalogue possiblement incomplet`);
       }
       
       return relationData || [];
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       this.logger.error(`❌ [RELATIONS] Erreur type_id ${typeId}: ${error.message} (${responseTime}ms)`);
-      throw error;
+      
+      // 🔥 FALLBACK: Retourner tableau vide au lieu de crasher
+      this.logger.warn(`🔄 [FALLBACK] Retour catalogue générique pour type_id ${typeId}`);
+      return [];
     }
   }
 

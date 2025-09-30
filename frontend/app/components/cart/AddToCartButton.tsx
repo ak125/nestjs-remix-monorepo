@@ -70,10 +70,10 @@ export function AddToCartButton({
           setIsSuccess(true);
           onSuccess?.();
           
-          // Réinitialiser le succès après 2 secondes
+          // 🔥 Recharger la page pour synchroniser la session et le compteur panier
           setTimeout(() => {
-            setIsSuccess(false);
-          }, 2000);
+            window.location.reload();
+          }, 1000);
         } else {
           const errorData = await response.json().catch(() => ({}));
           const error = errorData.message || "Erreur lors de l'ajout au panier";
