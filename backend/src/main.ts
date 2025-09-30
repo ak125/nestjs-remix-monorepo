@@ -56,15 +56,15 @@ async function bootstrap() {
       session({
         store: redisStore,
         resave: false,
-        saveUninitialized: true,  // 🔥 Créer session même si vide
+        saveUninitialized: true,  // ✅ Créer session même si vide (résout pb panier)
         secret: process.env.SESSION_SECRET || '123',
-        name: 'connect.sid',  // 🔥 Nom explicite du cookie
+        name: 'connect.sid',  // ✅ Nom explicite du cookie
         cookie: {
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-          sameSite: 'lax',  // 🔥 Toujours lax (même en prod pour compatibilité)
-          secure: false,  // 🔥 false en dev pour http://
-          httpOnly: true,  // 🔥 Protection XSS
-          path: '/',  // 🔥 Cookie valide pour tout le site
+          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
+          sameSite: 'lax',  // ✅ Compatible navigation cross-site
+          secure: false,  // ⚠️ DEV: false (HTTP). TODO: passer à isProd quand Caddy (HTTPS) sera en place
+          httpOnly: true,  // ✅ Protection XSS
+          path: '/',  // ✅ Cookie valide pour tout le site
         },
       }),
     );
