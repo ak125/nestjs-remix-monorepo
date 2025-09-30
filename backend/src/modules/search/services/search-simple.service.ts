@@ -408,6 +408,8 @@ export class SearchSimpleService extends SupabaseBaseService {
         brandId: p.piece_pm_id,
         category: gammeMap.get(p.piece_pg_id) ?? '',
         categoryId: p.piece_pg_id,
+        price: p._priceVenteTTC ?? null, // ✅ Exposer le prix pour le frontend
+        inStock: (p._priceVenteTTC ?? 0) > 0, // ✅ En stock si prix > 0
         _isOEM: !!p._isOEM,
         _oemRef: p._oemRef ?? null,
         _qualityLevel: qualityLevel,

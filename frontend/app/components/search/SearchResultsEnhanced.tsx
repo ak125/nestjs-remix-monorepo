@@ -9,9 +9,11 @@
  * - Marques OES prioritaires (badge doré)
  */
 
+import { Package, Zap, Award, AlertCircle } from "lucide-react";
+
+import { AddToCartButton } from "../cart/AddToCartButton";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
-import { Package, ShoppingCart, Zap, Award, AlertCircle } from "lucide-react";
 
 interface SearchResultItem {
   id: string;
@@ -103,6 +105,22 @@ export function SearchResultsEnhanced({
       default:
         return null;
     }
+  };
+
+  // Helper pour mapper SearchResultItem vers PieceData pour AddToCartButton
+  const mapToPieceData = (item: SearchResultItem) => {
+    const price = item.price || 0;
+    const pieceData = {
+      id: parseInt(item.id) || 0,
+      name: item.reference,
+      price: price,
+      priceFormatted: formatPrice(price),
+      brand: getBrandName(item.brand),
+      stock: item.inStock !== false ? 'available' : 'unavailable',
+      reference: item.reference
+    };
+    console.log('🛒 mapToPieceData:', { original: item, mapped: pieceData });
+    return pieceData;
   };
 
   const renderGridView = () => (
@@ -200,15 +218,12 @@ export function SearchResultsEnhanced({
                     )}
                   </div>
                   
-                  <button 
-                    className="bg-primary hover:bg-primary/90 text-white p-2 rounded-lg transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // TODO: Ajouter au panier
-                    }}
-                  >
-                    <ShoppingCart className="h-5 w-5" />
-                  </button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <AddToCartButton 
+                      piece={mapToPieceData(item)}
+                      variant="small"
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -317,16 +332,12 @@ export function SearchResultsEnhanced({
                         </>
                       )}
                       
-                      <button 
-                        className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // TODO: Ajouter au panier
-                        }}
-                      >
-                        <ShoppingCart className="h-5 w-5" />
-                        Ajouter
-                      </button>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AddToCartButton 
+                          piece={mapToPieceData(item)}
+                          variant="default"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
