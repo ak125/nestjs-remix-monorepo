@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones } from 'lucide-react';
+import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones, BookOpen } from 'lucide-react';
 import { useOptionalUser } from "../root";
 import { CartIcon } from "./cart/CartIcon";
 
@@ -24,6 +24,16 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </Link>
           <Link to="/marques" className="hover:text-blue-200 transition-colors text-sm font-medium">
             Marques
+          </Link>
+          <Link 
+            to="/blog" 
+            className="hover:text-blue-200 transition-colors text-sm font-medium flex items-center gap-1.5"
+          >
+            <BookOpen className="w-4 h-4" />
+            Blog
+            <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+              Nouveau
+            </span>
           </Link>
           <Link to="/support" className="hover:text-blue-200 transition-colors text-sm font-medium">
             Support
