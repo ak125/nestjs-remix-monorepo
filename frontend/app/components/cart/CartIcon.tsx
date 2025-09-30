@@ -23,18 +23,17 @@ export function CartIcon({ className = "" }: CartIconProps) {
 
   // ✅ APPROCHE OPTIMISÉE : Utiliser useFetcher pour récupérer via notre nouveau service
   useEffect(() => {
+    // DÉSACTIVÉ TEMPORAIREMENT : Éviter la surcharge de logs
+    /*
     const fetchCartCount = () => {
       // Utiliser fetcher pour appeler le loader de /cart
       fetcher.load('/cart');
     };
 
+    // Charger une fois au montage
     fetchCartCount();
-    
-    // Rafraîchir périodiquement le compteur
-    const interval = setInterval(fetchCartCount, 30000); // Toutes les 30 secondes
-    
-    return () => clearInterval(interval);
-  }, [fetcher]);
+    */
+  }, []);
 
   // Mettre à jour le compteur quand les données arrivent
   useEffect(() => {

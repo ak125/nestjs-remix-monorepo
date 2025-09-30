@@ -35,6 +35,7 @@ import { Request } from 'express';
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
+import { CartDataService } from '../../database/services/cart-data.service';
 import { validateAddItem } from './dto/add-item.dto';
 import { validateUpdateItem } from './dto/update-item.dto';
 import { validateApplyPromo } from './dto/apply-promo.dto';
@@ -65,6 +66,7 @@ export class CartController {
     private readonly cartService: CartService,
     private readonly cartCalculationService: CartCalculationService,
     private readonly cartValidationService: CartValidationService,
+    private readonly cartDataService: CartDataService,
   ) {}
 
   /**
@@ -99,20 +101,59 @@ export class CartController {
   })
   async getCart(@Req() req: RequestWithUser) {
     try {
-      // Test basique sans session d'abord
-      return {
-        id: 'test-cart',
-        sessionId: 'test-session',
-        userId: null,
-        items: [],
-        metadata: {
-          subtotal: 0,
-          promo_code: null,
-          shipping_address: null,
+      // Obtenir l'ID utilisateur ou session (MÊME LOGIQUE QUE L'AJOUT)
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      // 🔍 DEBUG: Identifier l'origine des appels répétés
+      const referer = req.headers.referer || 'Unknown';
+      this.logger.log(
+        `🔍 Cart GET Request - Session: ${sessionId}, User: ${userId}, Referer: ${referer}`,
+      );
+
+      this.logger.debug(
+        `Récupération panier pour: session=${sessionId}, user=${userId}`,
+      );
+
+      // Récupérer le panier complet avec métadonnées et prix enrichis
+      const cartData =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+
+      // 🔍 DEBUG: Voir ce qui revient du CartDataService
+      this.logger.log('🔍 CartData brut:', JSON.stringify(cartData, null, 2));
+      
+      if (cartData.items?.length > 0) {
+        this.logger.log('🔍 Premier item:', JSON.stringify(cartData.items[0], null, 2));
+      }
+
+      // Reformater au format API attendu par le frontend
+      const cart = {
+        cart_id: `cart_${userIdForCart}`,
+        user_id: userId || null,
+        session_id: sessionId,
+        items: cartData.items,
+        totals: {
+          total_items: cartData.stats.totalQuantity,
+          item_count: cartData.stats.totalQuantity,
+          subtotal: cartData.stats.subtotal,
+          tax: 0,
+          shipping: 0,
+          discount: cartData.stats.promoDiscount,
+          total: cartData.stats.total,
         },
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        metadata: {
+          currency: 'EUR',
+          last_updated: new Date().toISOString(),
+        },
+        created_at: new Date(),
+        updated_at: new Date(),
       };
+
+      this.logger.log(
+        `✅ Panier récupéré: ${cart.totals.total_items} articles, total: ${cart.totals.total.toFixed(2)}€`,
+      );
+      return cart;
     } catch (error) {
       this.logger.error(
         `Erreur récupération panier: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -143,24 +184,47 @@ export class CartController {
   })
   async addItem(@Body() body: unknown, @Req() req: RequestWithUser) {
     try {
+      // 🔍 DEBUG: Voir ce qui est reçu
+      this.logger.log(`🔍 Raw body received:`, JSON.stringify(body, null, 2));
+      
       const addItemDto = validateAddItem(body);
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
 
-      // this.logger.debug(
-      //   `Ajout article au panier - session: ${sessionId}, product: ${addItemDto.product_id}`,
-      // );
-
-      // Utiliser les méthodes existantes du service
-      const result = await this.cartService.addToCart(
-        sessionId,
-        addItemDto.product_id,
-        addItemDto.quantity,
-        addItemDto.custom_price || 0, // Le service va récupérer le prix réel
-        userId,
+      this.logger.debug(
+        `Ajout article au panier - session: ${sessionId}, product: ${addItemDto.product_id}`,
       );
 
-      return result;
+      // Utiliser CartDataService directement avec les IDs numériques
+      const productIdNum = parseInt(String(addItemDto.product_id), 10);
+      const userIdForCart = userId || sessionId;
+      
+      // Vérifier si c'est une mise à jour de quantité (flag replace dans le body)
+      const isReplace = (body as any)?.replace === true;
+      
+      // Récupérer les données produit enrichies si fournies depuis le frontend
+      const productData = (body as any)?.productData;
+
+      const result = await this.cartDataService.addCartItem(
+        userIdForCart,
+        productIdNum,
+        addItemDto.quantity,
+        addItemDto.custom_price,
+        isReplace,
+        productData,
+      );
+
+      this.logger.log(
+        `✅ Article ajouté: ${productIdNum} x${addItemDto.quantity}`,
+      );
+
+      return {
+        success: true,
+        message: `Article ajouté au panier`,
+        item: result,
+        productId: productIdNum,
+        quantity: addItemDto.quantity,
+      };
     } catch (error) {
       this.logger.error(
         `Erreur ajout article: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -175,6 +239,19 @@ export class CartController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * ➕ Alias pour ajouter un article au panier (compatibilité frontend)
+   */
+  @Post('add')
+  @ApiOperation({
+    summary: 'Ajouter un article au panier (alias)',
+    description: 'Alias de POST /items pour compatibilité frontend',
+  })
+  async addItemAlias(@Body() body: unknown, @Req() req: RequestWithUser) {
+    // Rediriger vers la méthode principale
+    return this.addItem(body, req);
   }
 
   /**
@@ -265,27 +342,34 @@ export class CartController {
     try {
       const itemId = parseInt(itemIdStr, 10);
       if (isNaN(itemId)) {
-        throw new BadRequestException('ID item invalide');
+        throw new BadRequestException('ID item invalide (doit être un nombre)');
       }
 
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
 
       this.logger.debug(
-        `Suppression article - session: ${sessionId}, itemId: ${itemId}`,
+        `Suppression article - session: ${sessionId}, productId: ${itemId}`,
       );
 
-      const result = await this.cartService.removeFromCart(
-        sessionId,
-        itemId.toString(),
-        userId,
-      );
+      // Utiliser CartDataService pour supprimer directement avec l'ID du produit
+      await this.cartDataService.removeCartItem(userIdForCart, itemId);
 
-      return result;
+      return {
+        success: true,
+        message: 'Article supprimé avec succès',
+        productId: itemId,
+      };
     } catch (error) {
       this.logger.error(
         `Erreur suppression article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
       throw new HttpException(
         "Erreur lors de la suppression de l'article",
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -358,15 +442,20 @@ export class CartController {
     try {
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
 
-      this.logger.debug(`Vidage du panier - session: ${sessionId}`);
+      this.logger.debug(
+        `Vidage du panier - session: ${sessionId}, user: ${userId}`,
+      );
 
-      await this.cartService.clearCart(sessionId, userId);
+      // Utiliser CartDataService (Redis) au lieu de CartService (Supabase)
+      await this.cartDataService.clearUserCart(userIdForCart);
 
       return {
         message: 'Panier vidé avec succès',
         sessionId,
         userId,
+        success: true,
       };
     } catch (error) {
       this.logger.error(
@@ -380,14 +469,25 @@ export class CartController {
   }
 
   /**
-   * 🔑 Utilitaire : obtenir l'identifiant de session
+   * 🔑 Utilitaire : obtenir l'identifiant de session depuis le cookie userSession
    */
   private getSessionId(req: RequestWithUser): string {
+    // 1. PRIORITÉ : Cookie personnalisé userSession (utilisé par Remix)
+    const cookies = req.headers.cookie?.split(';') || [];
+    const userSessionCookie = cookies
+      .find((c) => c.trim().startsWith('userSession='))
+      ?.split('=')[1];
+    
+    if (userSessionCookie) {
+      return userSessionCookie.trim();
+    }
+
+    // 2. Fallback vers express sessionID si disponible
     if (req.sessionID) {
       return req.sessionID;
     }
 
-    // Fallback : générer un ID temporaire
+    // 3. Fallback final : générer un ID temporaire
     const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.logger.warn(
       `Aucune session trouvée, utilisation d'un ID temporaire: ${tempId}`,

@@ -15,12 +15,14 @@ import { ShippingModule } from '../shipping/shipping.module';
 
 // Controllers
 import { CartController } from './cart.controller';
+import { TestSupabaseController } from './test-supabase.controller';
 
 // Services
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
 import { PromoService } from './promo.service';
+import { CartDataService } from '../../database/services/cart-data.service';
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { PromoService } from './promo.service';
   ],
   controllers: [
     CartController, // Controller principal
+    TestSupabaseController, // Controller de test debug
   ],
   providers: [
     // Services modernes
@@ -37,12 +40,14 @@ import { PromoService } from './promo.service';
     CartCalculationService, // Service de calculs
     CartValidationService, // Service de validation
     PromoService, // Service de gestion des promotions
+    CartDataService, // Service d'accès aux données
   ],
   exports: [
     CartService, // Service moderne exporté
     CartCalculationService, // Service calculs exporté
     CartValidationService, // Service validation exporté
     PromoService, // Service promotions exporté
+    CartDataService, // Service données exporté
   ],
 })
 export class CartModule {}

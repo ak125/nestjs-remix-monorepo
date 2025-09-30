@@ -246,15 +246,38 @@ class CartServerService {
     try {
       console.log("🧹 [CartServer] Vidage du panier");
       
-      // Tentative d'utilisation de l'API service existant
-      if (this.apiService?.cart?.clearCart) {
-        return await this.apiService.cart.clearCart(request);
+      // Faire un appel direct au backend avec les cookies de la requête
+      const url = new URL(request.url);
+      const baseUrl = `${url.protocol}//${url.host}`;
+      
+      const response = await fetch(`${baseUrl}/api/cart`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          // Transmettre TOUS les cookies de la requête originale
+          'Cookie': request.headers.get('Cookie') || '',
+          'User-Agent': request.headers.get('User-Agent') || 'RemixServer',
+          // Copier les headers d'authentification s'ils existent
+          ...(request.headers.get('authorization') && {
+            'authorization': request.headers.get('authorization')!
+          })
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error: errorData.message || `Erreur HTTP ${response.status}`
+        };
       }
 
-      // Simulation de vidage
+      const result = await response.json();
+      console.log("✅ [CartServer] Panier vidé:", result);
+      
       return {
         success: true,
-        message: "Panier vidé",
+        message: result.message || "Panier vidé avec succès",
         cart: {
           cart_id: "empty-cart",
           items: [],
@@ -274,7 +297,7 @@ class CartServerService {
       console.error("❌ [CartServer] Erreur clearCart:", error);
       return {
         success: false,
-        error: "Erreur lors du vidage du panier"
+        error: error instanceof Error ? error.message : "Erreur lors du vidage du panier"
       };
     }
   }
@@ -346,6 +369,7 @@ class CartServerService {
         product_name: item.product_name || item.name || `Produit ${item.product_id}`,
         product_sku: item.product_sku || item.sku,
         product_ref: item.product_ref || item.product_sku || item.sku,
+        product_brand: item.product_brand || null, // 🔧 AJOUT: Mapper la marque depuis le backend
         product_image: item.product_image || item.image_url || "/images/no-image.png",
         stock_available: item.stock_available || 999,
         weight: item.weight || 0,

@@ -13,6 +13,7 @@ export interface CartItem {
   product_name?: string;
   product_sku?: string;
   product_ref?: string; // Référence produit
+  product_brand?: string; // 🔧 AJOUT: Marque du produit
   product_image?: string; // URL image produit
   weight?: number;
   stock_available?: number; // Stock disponible

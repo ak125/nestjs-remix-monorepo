@@ -76,7 +76,7 @@ class SearchApiService {
     this.baseUrl = baseUrl || 
       (typeof window !== 'undefined' 
         ? window.ENV?.API_BASE_URL || '' 
-        : 'http://localhost:3001'); // Valeur par défaut côté serveur
+        : process.env.INTERNAL_API_BASE_URL || 'http://localhost:3000'); // Corrigé: port 3000
   }
 
   /**
@@ -117,32 +117,39 @@ class SearchApiService {
     const url = new URL(`${this.baseUrl}/api/search/instant`);
     url.searchParams.set('q', query);
 
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Timeout pour recherche instantanée
+        signal: AbortSignal.timeout(2000),
+      });
 
-    if (!response.ok) {
-      console.warn(`Instant search failed: ${response.status}`);
+      if (!response.ok) {
+        console.warn(`Instant search failed: ${response.status}`);
+        return { suggestions: [], products: [], query };
+      }
+
+      const result = await response.json();
+      
+      return {
+        suggestions: result.suggestions || [],
+        products: result.items?.map((item: any) => ({
+          id: item.id,
+          reference: item.reference || `${item.brand} ${item.model}`,
+          designation: item.designation || `${item.brand} ${item.model} ${item.year || ''}`,
+          price: item.price || 0,
+          image: item.image,
+          type: item.source || item.type || 'product',
+        })) || [],
+        query,
+      };
+    } catch (error) {
+      console.warn('Instant search error:', error);
       return { suggestions: [], products: [], query };
     }
-
-    const result = await response.json();
-    
-    return {
-      suggestions: result.suggestions || [],
-      products: result.items?.map((item: any) => ({
-        id: item.id,
-        reference: item.reference || `${item.brand} ${item.model}`,
-        designation: item.designation || `${item.brand} ${item.model} ${item.year || ''}`,
-        price: item.price || 0,
-        image: item.image,
-        type: item.source || item.type || 'product',
-      })) || [],
-      query,
-    };
   }
 
   /**
@@ -204,7 +211,27 @@ class SearchApiService {
   }
 
   /**
-   * 📊 Statistiques de recherche (admin)
+   * � Vérifier la santé du service de recherche
+   */
+  async healthCheck(): Promise<{ status: string; service: string; timestamp: string }> {
+    const url = new URL(`${this.baseUrl}/api/search/health`);
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Service de recherche indisponible: ${response.status}`);
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * �📊 Statistiques de recherche (admin)
    */
   async getSearchStats(): Promise<any> {
     const url = new URL(`${this.baseUrl}/api/search/stats`);

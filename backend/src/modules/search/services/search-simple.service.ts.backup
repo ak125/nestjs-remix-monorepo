@@ -1,0 +1,540 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RedisCacheService } from '../../../database/services/redis-cache.service';
+
+@Injectable()
+export class SearchSimpleService extends SupabaseBaseService {
+  protected readonly logger = new Logger(SearchSimpleService.name);
+
+  // 🔑 Configuration cache Redis pour recherche OEM
+  private readonly OEM_CACHE_PREFIX = 'search:oem:';
+  private readonly OEM_CACHE_TTL = 3600; // 1 heure
+  private readonly GENERAL_CACHE_TTL = 1800; // 30 minutes
+
+  constructor(private readonly redisCache: RedisCacheService) {
+    super();
+  }
+
+  // Dictionnaire des mots-clés de catégories
+  private readonly CATEGORY_KEYWORDS = {
+    plaquette: ['plaquette', 'plaquettes', 'frein', 'freins'],
+    filtre: ['filtre', 'filtres', 'air', 'huile', 'carburant'],
+    kit: ['kit', 'distribution', 'courroie', 'timing'],
+    disque: ['disque', 'disques', 'frein', 'freinage'],
+    amortisseur: ['amortisseur', 'amortisseurs', 'suspension'],
+    bougie: ['bougie', 'bougies', 'allumage'],
+    demarreur: ['demarreur', 'démarreur', 'starter'],
+    alternateur: ['alternateur', 'alternateurs'],
+    radiateur: ['radiateur', 'refroidissement'],
+    pompe: ['pompe', 'eau', 'carburant'],
+  };
+
+  /**
+   * Extrait les mots-clés de catégorie d'une query
+   * Ex: "325 plaquette" → {refPart: "325", keyword: "plaquette"}
+   */
+  private extractCategoryKeywords(query: string): {
+    refPart: string;
+    keyword: string | null;
+  } {
+    const lowerQuery = query.toLowerCase();
+    const words = lowerQuery.split(/\s+/);
+
+    // Chercher un mot-clé de catégorie
+    for (const [category, keywords] of Object.entries(
+      this.CATEGORY_KEYWORDS,
+    )) {
+      for (const keyword of keywords) {
+        if (words.includes(keyword)) {
+          // Retirer le mot-clé de la query pour garder la référence
+          const refPart = query
+            .replace(new RegExp(`\\b${keyword}\\b`, 'gi'), '')
+            .trim();
+          this.logger.log(
+            `✂️ Séparation: "${query}" → REF="${refPart}" + CATÉGORIE="${keyword}"`,
+          );
+          return { refPart, keyword };
+        }
+      }
+    }
+
+    return { refPart: query, keyword: null };
+  }
+
+  /**
+   * Nettoie une référence en enlevant tirets, points, espaces
+   * Ex: "77-11-130-071" → "7711130071"
+   */
+  private cleanReference(ref: string): string {
+    return ref.replace(/[\s\-\.]/g, '');
+  }
+
+  /**
+   * 🔍 Détermine le niveau de qualité d'une pièce
+   * 1 = OES (Original Equipment Supplier)
+   * 2 = Aftermarket
+   * 3 = Échange Standard (consigne > 0) - TODO: nécessite pri_consigne_ttc
+   * 4 = Adaptable/Autre
+   */
+  private getQualityLevel(
+    marqueOes: string | null,
+    _priceConsigne: number | null,
+  ): number {
+    if (marqueOes === 'O' || marqueOes === 'OES') return 1; // OES
+    if (marqueOes === 'A') return 2; // Aftermarket
+    // TODO: Charger pri_consigne_ttc depuis pieces_price pour détecter Échange Standard
+    // if (priceConsigne && priceConsigne > 0) return 3;
+    return 4; // Adaptable
+  }
+
+  /**
+   * 🔍 Détermine si une référence est une vraie OEM constructeur
+   * 
+   * Vraies OEM constructeurs :
+   * - Majoritairement numériques : 7701468168, 077115130071
+   * - Alpha+numérique avec chiffres en début : 1K0698451J, 8E0698451
+   * 
+   * Références équipementiers (à exclure) :
+   * - Commencent par lettres : K015212, TCKH221, GK015212
+   * - Format code produit : lettres + chiffres
+   */
+  private isRealOemReference(ref: string): boolean {
+    const cleaned = this.cleanReference(ref);
+    
+    // Si commence par 2+ lettres → équipementier (K015212, TCKH221)
+    if (/^[a-z]{2,}/i.test(cleaned)) {
+      return false;
+    }
+    
+    // Si commence par 1 lettre + chiffre → équipementier (K015212, k015212)
+    if (/^[a-z]\d/i.test(cleaned)) {
+      return false;
+    }
+    
+    // Compter chiffres vs lettres
+    const digitCount = (cleaned.match(/\d/g) || []).length;
+    const letterCount = (cleaned.match(/[a-z]/gi) || []).length;
+    
+    // Vraie OEM si :
+    // 1. Que des chiffres (7701468168)
+    // 2. Commence par chiffre (1K0698451J, 8E0698451)
+    // 3. Beaucoup plus de chiffres que de lettres (ratio > 3:1)
+    return (
+      /^\d/.test(cleaned) &&
+      (digitCount === 0 || digitCount / Math.max(letterCount, 1) > 3)
+    );
+  }
+
+  /**
+   * 🔍 Recherche SIMPLE et DIRECTE dans pieces.piece_ref + pieces_ref_search
+   * Avec support OEM, tri OES prioritaire, et optimisations
+   */
+  async search(params: {
+    query: string;
+    filters?: {
+      marqueIds?: number[];
+      gammeIds?: number[];
+    };
+    pagination?: {
+      page?: number;
+      limit?: number;
+    };
+  }) {
+    const startTime = Date.now();
+    const { query, filters, pagination } = params;
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 20;
+    const offset = (page - 1) * limit;
+
+    const cleanQuery = query.trim();
+
+    // 🔑 CACHE REDIS: Clé de cache unique par recherche
+    const cacheKey = `${this.OEM_CACHE_PREFIX}${cleanQuery}:p${page}:l${limit}:f${JSON.stringify(filters || {})}`;
+
+    try {
+      // Vérifier si la recherche est déjà en cache
+      try {
+        const cachedResult = await this.redisCache.get(cacheKey);
+        if (cachedResult) {
+          this.logger.log(
+            `⚡ Cache HIT pour "${cleanQuery}" (${Date.now() - startTime}ms)`,
+          );
+          return {
+            ...cachedResult,
+            executionTime: Date.now() - startTime,
+            cached: true,
+          };
+        }
+      } catch (cacheError) {
+        this.logger.warn(
+          `⚠️ Erreur lecture cache Redis (recherche continue):`,
+          cacheError,
+        );
+      }
+
+      // 🎯 DÉTECTION RECHERCHE COMBINÉE : "325 plaquette", "kh22 kit"
+      const categoryKeywords = this.extractCategoryKeywords(cleanQuery);
+      let refQuery = cleanQuery;
+      let categoryFilter: string | null = null;
+
+      if (categoryKeywords.keyword) {
+        refQuery = categoryKeywords.refPart;
+        categoryFilter = categoryKeywords.keyword;
+        this.logger.log(
+          `🎯 Recherche combinée: REF="${refQuery}" + CATÉGORIE="${categoryFilter}"`,
+        );
+      }
+
+      // 🎯 LOGIQUE PHP EXACTE
+      // Nettoyer la recherche : UPPERCASE + trim (comme PHP)
+      const cleanedForSearch = refQuery.trim().toUpperCase();
+
+      this.logger.log(
+        `🔍 Recherche: "${refQuery}" → cleaned: "${cleanedForSearch}"`,
+      );
+
+      // ÉTAPE 1: Chercher dans pieces_ref_search avec prs_search (comme le PHP)
+      // WHERE PRS_SEARCH = '$questCleaned'
+      const searchRefsResult = await this.client
+        .from('pieces_ref_search')
+        .select('prs_piece_id, prs_ref, prs_search')
+        .eq('prs_search', cleanedForSearch)
+        .limit(500);
+
+        const searchRefs = searchRefsResult.data || [];
+        this.logger.log(`� ${searchRefs.length} références trouvées dans pieces_ref_search`);
+
+        if (searchRefs.length === 0) {
+          // Aucun résultat trouvé
+          return this.processResults(
+            [],
+            refQuery,
+            filters,
+            page,
+            limit,
+            offset,
+            startTime,
+            categoryFilter,
+            cacheKey,
+          );
+        }
+
+        // ÉTAPE 2: Récupérer toutes les pièces avec ces IDs
+        const pieceIds = [...new Set(searchRefs.map((ref: any) => ref.prs_piece_id))];
+        const piecesResult = await this.client
+          .from('pieces')
+          .select('piece_id, piece_ref, piece_pg_id, piece_pm_id')
+          .in('piece_id', pieceIds)
+          .limit(500);
+
+        const allPieces = piecesResult.data || [];
+        this.logger.log(`� ${allPieces.length} pièces récupérées`);
+
+        // ÉTAPE 3: Marquer les pièces avec leurs OEM refs
+        const oemRefMap = new Map<string, string>();
+        searchRefs.forEach((ref: any) => {
+          oemRefMap.set(ref.prs_piece_id.toString(), ref.prs_ref);
+        });
+
+        const markedPieces = allPieces.map((p) => {
+          const oemRef = oemRefMap.get(p.piece_id.toString());
+          return {
+            ...p,
+            _isVariantMatch: false,
+            _isOEM: true,
+            _oemRef: oemRef,
+            _score: 90,
+          };
+        });
+
+
+        // Retourner les résultats
+        return this.processResults(
+          markedPieces,
+          refQuery,
+          filters,
+          page,
+          limit,
+          offset,
+          startTime,
+          categoryFilter,
+          cacheKey,
+        );
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur: ${error instanceof Error ? error.message : 'Unknown'}`,
+      );
+      throw error;
+    }
+  }
+
+  private async processResults(
+    pieces: any[],
+    cleanQuery: string,
+    filters: any,
+    page: number,
+    limit: number,
+    offset: number,
+    startTime: number,
+    categoryFilter: string | null = null,
+    cacheKey: string, // NOUVEAU: clé cache Redis
+  ) {
+    if (!pieces || pieces.length === 0) {
+      this.logger.log(`❌ 0 résultat pour "${cleanQuery}"`);
+      return {
+        success: true,
+        data: {
+          items: [],
+          total: 0,
+          page,
+          limit,
+          pages: 0,
+          executionTime: Date.now() - startTime,
+          facets: [],
+        },
+      };
+    }
+
+    // Appliquer filtres marque/gamme
+    let filteredPieces = pieces;
+
+    if (filters?.marqueIds && filters.marqueIds.length > 0) {
+      filteredPieces = filteredPieces.filter((p) =>
+        filters.marqueIds.includes(p.piece_pm_id),
+      );
+    }
+
+    if (filters?.gammeIds && filters.gammeIds.length > 0) {
+      filteredPieces = filteredPieces.filter((p) =>
+        filters.gammeIds.includes(p.piece_pg_id),
+      );
+    }
+
+    this.logger.log(`✅ ${filteredPieces.length} pièces (après filtres)`);
+
+    // Charger marques (avec qualité OES) et gammes
+    const marqueIds = [
+      ...new Set(filteredPieces.map((p) => p.piece_pm_id).filter(Boolean)),
+    ];
+    const gammeIds = [
+      ...new Set(filteredPieces.map((p) => p.piece_pg_id).filter(Boolean)),
+    ];
+
+    const [marquesResult, gammesResult] = await Promise.all([
+      marqueIds.length > 0
+        ? this.client
+            .from('pieces_marque')
+            .select('pm_id, pm_name, pm_oes') // #5 Charger pm_oes pour tri OES
+            .in('pm_id', marqueIds.map(String))
+        : Promise.resolve({ data: [] }),
+      gammeIds.length > 0
+        ? this.client
+            .from('pieces_gamme')
+            .select('pg_id, pg_name')
+            .in('pg_id', gammeIds.map(String))
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const marqueMap = new Map(
+      (marquesResult.data || []).map((m: any) => [
+        parseInt(m.pm_id),
+        { name: m.pm_name, oes: m.pm_oes },
+      ]),
+    );
+    const gammeMap = new Map(
+      (gammesResult.data || []).map((g: any) => [parseInt(g.pg_id), g.pg_name]),
+    );
+
+    // Formater
+    const allItems = filteredPieces.map((piece) => {
+      const marqueData = marqueMap.get(piece.piece_pm_id);
+
+      // ✨ #5: Déterminer la qualité (3 niveaux implémentés, Échange Standard = TODO)
+      // 1 = OES (Original Equipment Supplier - meilleure qualité)
+      // 2 = Aftermarket
+      // 3 = Échange Standard (TODO: nécessite pri_consigne_ttc depuis pieces_price)
+      // 4 = Adaptable/Autre
+      const qualityLevel = this.getQualityLevel(marqueData?.oes || null, null);
+
+      return {
+        id: piece.piece_id?.toString() || '',
+        reference: piece.piece_ref || '',
+        brand: marqueData?.name || '',
+        brandId: piece.piece_pm_id,
+        category: gammeMap.get(piece.piece_pg_id) || '',
+        categoryId: piece.piece_pg_id,
+        _isVariantMatch: piece._isVariantMatch || false,
+        _isExactMatch: piece._isExactMatch || false,
+        _isOEM: piece._isOEM || false,
+        _oemRef: piece._oemRef || null, // #6 Référence OEM trouvée
+        _qualityLevel: qualityLevel, // #5 Niveau de qualité (1=OES, 2=Aftermarket, 4=Adaptable)
+      };
+    });
+
+    // 🎯 Filtrer par catégorie si mot-clé détecté (ex: "325 plaquette")
+    let itemsToSort = allItems;
+    if (categoryFilter) {
+      itemsToSort = allItems.filter((item) =>
+        item.category.toLowerCase().includes(categoryFilter.toLowerCase()),
+      );
+      this.logger.log(
+        `🔎 Filtre catégorie "${categoryFilter}": ${itemsToSort.length}/${allItems.length} résultats`,
+      );
+    }
+
+    // Tri par pertinence :
+    // #5 Si recherche OEM: prioriser par qualité (1=OES, 2=Aftermarket, 3=Echange, 4=Adaptable)
+    // 1) Exact match, 2) Qualité (si OEM), 3) Variante match, 4) Starts with, 5) Alpha
+    const isOEMSearch = itemsToSort.some((item) => item._isOEM);
+    
+    const sortedItems = itemsToSort.sort((a, b) => {
+      // Priorité 1: EXACT match absolu (ex: "325" pour query "325")
+      if (a._isExactMatch && !b._isExactMatch) return -1;
+      if (!a._isExactMatch && b._isExactMatch) return 1;
+      
+      // Priorité 2: Qualité prioritaire pour recherches OEM (#5)
+      // 1 = OES > 2 = Aftermarket > 3 = Echange Standard > 4 = Adaptable
+      if (isOEMSearch && a._isOEM && b._isOEM) {
+        if (a._qualityLevel !== b._qualityLevel) {
+          return a._qualityLevel - b._qualityLevel; // Plus petit = meilleur
+        }
+      }
+      
+      // Priorité 3: Variante match (ex: "KH 22" pour query "kh22")
+      if (a._isVariantMatch && !b._isVariantMatch) return -1;
+      if (!a._isVariantMatch && b._isVariantMatch) return 1;
+      
+      // Priorité 4: Commence par la query (ex: "325A" avant "0 325")
+      const aStarts = a.reference
+        .toLowerCase()
+        .startsWith(cleanQuery.toLowerCase());
+      const bStarts = b.reference
+        .toLowerCase()
+        .startsWith(cleanQuery.toLowerCase());
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+      
+      // Priorité 5: Alphabétique
+      return a.reference.localeCompare(b.reference);
+    });
+
+    // Retirer les flags internes avant retour
+    sortedItems.forEach((item: any) => {
+      delete item._isVariantMatch;
+      delete item._isExactMatch;
+      delete item._qualityLevel;
+      // Garder _isOEM et _oemRef pour l'affichage (#6)
+      // ✅ Ne pas afficher oemRef si :
+      // 1. C'est la même que la référence de la pièce
+      // 2. C'est une référence équipementier (pas une vraie OEM constructeur)
+      if (item._oemRef) {
+        const cleanOemRef = this.cleanReference(item._oemRef);
+        const cleanPieceRef = this.cleanReference(item.reference);
+        
+        // Afficher uniquement si :
+        // 1. Différent de la référence de la pièce actuelle
+        // 2. C'est une vraie référence OEM constructeur (majoritairement numérique)
+        if (cleanOemRef !== cleanPieceRef && this.isRealOemReference(item._oemRef)) {
+          item.oemRef = item._oemRef; // Exposer publiquement
+        }
+      }
+      delete item._isOEM;
+      delete item._oemRef;
+    });
+
+    // Facettes
+    const facets = this.generateFacets(sortedItems);
+
+    // Pagination
+    const paginatedItems = sortedItems.slice(offset, offset + limit);
+    const total = sortedItems.length;
+
+    this.logger.log(
+      `✅ Retour: ${paginatedItems.length}/${total} en ${Date.now() - startTime}ms`,
+    );
+
+    const result = {
+      success: true,
+      data: {
+        items: paginatedItems,
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+        executionTime: Date.now() - startTime,
+        facets,
+      },
+    };
+
+    // 💾 REDIS: Mettre en cache le résultat pour 1 heure (OEM) ou 30 min (général)
+    try {
+      const isOEMQuery = sortedItems.some((item) => item._isOEM);
+      const cacheTTL = isOEMQuery ? this.OEM_CACHE_TTL : this.GENERAL_CACHE_TTL;
+      await this.redisCache.set(cacheKey, result, cacheTTL);
+      this.logger.log(
+        `💾 Résultat mis en cache (TTL: ${cacheTTL}s, clé: ${cacheKey.substring(0, 50)}...)`,
+      );
+    } catch (cacheError) {
+      this.logger.warn(`⚠️ Erreur sauvegarde cache Redis:`, cacheError);
+    }
+
+    return result;
+  }
+
+  private generateFacets(items: any[]) {
+    // Facet MARQUE
+    const marqueMap = new Map<number, { label: string; count: number }>();
+    items.forEach((item) => {
+      if (item.brandId && item.brand) {
+        const existing = marqueMap.get(item.brandId);
+        if (existing) {
+          existing.count++;
+        } else {
+          marqueMap.set(item.brandId, { label: item.brand, count: 1 });
+        }
+      }
+    });
+
+    const marqueValues = Array.from(marqueMap.entries())
+      .map(([id, data]) => ({
+        value: id.toString(),
+        label: data.label,
+        count: data.count,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Facet GAMME
+    const gammeMap = new Map<number, { label: string; count: number }>();
+    items.forEach((item) => {
+      if (item.categoryId && item.category) {
+        const existing = gammeMap.get(item.categoryId);
+        if (existing) {
+          existing.count++;
+        } else {
+          gammeMap.set(item.categoryId, { label: item.category, count: 1 });
+        }
+      }
+    });
+
+    const gammeValues = Array.from(gammeMap.entries())
+      .map(([id, data]) => ({
+        value: id.toString(),
+        label: data.label,
+        count: data.count,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    return [
+      {
+        field: 'marque',
+        label: 'Marque',
+        values: marqueValues,
+      },
+      {
+        field: 'gamme',
+        label: 'Gamme',
+        values: gammeValues,
+      },
+    ];
+  }
+}

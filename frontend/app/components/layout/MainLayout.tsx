@@ -18,7 +18,7 @@ import { useEffect, useState, Suspense } from "react";
 import { FooterEnhanced } from "./FooterEnhanced";
 import { GlobalSearch } from "./GlobalSearch";
 import { Header } from "./Header";
-import { NotificationCenter } from "./NotificationCenter";
+// import { NotificationCenter } from "./NotificationCenter";
 
 export interface LayoutProps {
   children: React.ReactNode;
@@ -207,11 +207,11 @@ export function MainLayout({
       )}
 
       {/* Centre de notifications */}
-      {config.enableNotifications && (
+      {/* {config.enableNotifications && (
         <Suspense fallback={null}>
           <NotificationCenter />
         </Suspense>
-      )}
+      )} */}
 
       {/* Contenu principal avec gestion des widgets */}
       <main className="main-content" role="main">

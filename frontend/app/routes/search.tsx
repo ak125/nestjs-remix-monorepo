@@ -17,8 +17,7 @@ import { NoResults } from "../components/search/NoResults";
 import { SearchBar } from "../components/search/SearchBar";
 import { SearchFilters } from "../components/search/SearchFilters";
 import { SearchPagination } from "../components/search/SearchPagination";
-import { SearchResults } from "../components/search/SearchResults";
-import { searchApi } from "../services/api/search.api";
+import { SearchResultsEnhanced } from "../components/search/SearchResultsEnhanced";
 
 // ===============================
 // TYPES ET INTERFACES
@@ -50,8 +49,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   
   // Extraction et validation des paramètres
   const query = searchParams.q?.trim() || "";
-  const type = (searchParams.type as 'v7' | 'v8') || "v8";
-  const version = type; // Alias pour compatibilité
   const page = Math.max(1, parseInt(searchParams.page || "1"));
   const limit = Math.min(50, Math.max(10, parseInt(searchParams.limit || "20")));
   
@@ -60,8 +57,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json<SearchPageData>({ 
       results: null, 
       query: "",
-      type,
-      version,
+      type: "v8",
+      version: "v8",
       filters: {},
       hasError: false,
       performance: {
@@ -71,65 +68,47 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    // Construction des filtres avancés
-    const filters = {
-      // Filtres de base
-      brandId: searchParams.brand ? parseInt(searchParams.brand) : undefined,
-      categoryId: searchParams.category ? parseInt(searchParams.category) : undefined,
-      
-      // Filtres de prix avec validation
-      priceMin: searchParams.priceMin ? Math.max(0, parseFloat(searchParams.priceMin)) : undefined,
-      priceMax: searchParams.priceMax ? Math.max(0, parseFloat(searchParams.priceMax)) : undefined,
-      
-      // Filtres booléens
-      inStock: searchParams.inStock === "true",
-      onSale: searchParams.onSale === "true",
-      isNew: searchParams.isNew === "true",
-      
-      // Filtres de véhicule (pour pièces auto)
-      vehicleBrand: searchParams.vehicleBrand,
-      vehicleModel: searchParams.vehicleModel,
-      vehicleYear: searchParams.vehicleYear ? parseInt(searchParams.vehicleYear) : undefined,
-      
-      // Filtres de compatibilité
-      oeNumber: searchParams.oeNumber,
-      reference: searchParams.reference,
-    };
-
-    // Options de recherche avancées
-    const searchOptions = {
-      highlight: true,
-      facets: true,
-      suggestions: true,
-      analytics: true,
-      personalization: true,
-      fuzzyMatch: searchParams.fuzzy !== "false", // Activé par défaut
-      semanticSearch: searchParams.semantic === "true",
-    };
-
-    // Appel API avec gestion d'erreur intégrée
-    const results = await searchApi.search({
-      query,
-      type,
-      filters,
-      pagination: { 
-        page, 
-        limit
-      },
-      options: searchOptions,
-      sort: {
-        field: (searchParams.sort as 'relevance' | 'price' | 'name' | 'date') || 'relevance',
-        order: (searchParams.direction as 'asc' | 'desc') || 'desc',
+    // ✅ APPEL DIRECT À L'ENDPOINT SEARCH-EXISTING (Enhanced avec tables PHP)
+    const apiUrl = new URL('http://localhost:3000/api/search-existing/search');
+    apiUrl.searchParams.set('query', query);
+    apiUrl.searchParams.set('page', page.toString());
+    apiUrl.searchParams.set('limit', limit.toString());
+    
+    // Ajouter filtres multi-valeurs (marque[], gamme[])
+    const marqueValues = url.searchParams.getAll('marque');
+    marqueValues.forEach(m => apiUrl.searchParams.append('marque', m));
+    
+    const gammeValues = url.searchParams.getAll('gamme');
+    gammeValues.forEach(g => apiUrl.searchParams.append('gamme', g));
+    
+    // Autres filtres simples
+    if (searchParams.priceMin) apiUrl.searchParams.set('priceMin', searchParams.priceMin);
+    if (searchParams.priceMax) apiUrl.searchParams.set('priceMax', searchParams.priceMax);
+    if (searchParams.inStock) apiUrl.searchParams.set('inStock', searchParams.inStock);
+    
+    const response = await fetch(apiUrl.toString(), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
     });
+    
+    if (!response.ok) {
+      throw new Error(`Erreur API: ${response.status}`);
+    }
+    
+    const apiResponse = await response.json();
+    
+    // ✅ Extraire .data de la réponse encapsulée {success, data}
+    const results = apiResponse.data || apiResponse;
 
     const loadTime = Date.now() - startTime;
 
     return json<SearchPageData>({ 
       results, 
       query,
-      type,
-      version,
+      type: "v8",
+      version: "v8",
       filters: searchParams,
       hasError: false,
       performance: {
@@ -145,8 +124,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json<SearchPageData>({
       results: null,
       query,
-      type,
-      version,
+      type: "v8",
+      version: "v8",
       filters: searchParams,
       hasError: true,
       errorMessage: error instanceof Error ? error.message : 'Erreur inconnue',
@@ -165,7 +144,6 @@ export default function SearchPage() {
   const { 
     results, 
     query, 
-    version,
     filters, 
     hasError, 
     errorMessage,
@@ -177,17 +155,8 @@ export default function SearchPage() {
   
   // États locaux pour l'interface
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [searchVersion, setSearchVersion] = useState<'v7' | 'v8'>(version);
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState(searchParams.get('sort') || 'relevance');
-
-  // Gestion du changement de version
-  const handleVersionChange = (newVersion: 'v7' | 'v8') => {
-    setSearchVersion(newVersion);
-    const params = new URLSearchParams(searchParams);
-    params.set('type', newVersion);
-    navigate(`?${params.toString()}`, { replace: true });
-  };
 
   // Gestion du tri
   const handleSortChange = (newSort: string) => {
@@ -202,10 +171,9 @@ export default function SearchPage() {
   useEffect(() => {
     localStorage.setItem('search_preferences', JSON.stringify({
       viewMode,
-      version: searchVersion,
       sortOption,
     }));
-  }, [viewMode, searchVersion, sortOption]);
+  }, [viewMode, sortOption]);
 
   // Restauration des préférences
   useEffect(() => {
@@ -242,19 +210,6 @@ export default function SearchPage() {
               Chargement: {performance.loadTime}ms
               {performance.searchTime && ` • Recherche: ${performance.searchTime}ms`}
             </div>
-            
-            {/* Sélecteur de version */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Version:</span>
-              <select
-                value={searchVersion}
-                onChange={(e) => handleVersionChange(e.target.value as 'v7' | 'v8')}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="v7">V7 (Legacy)</option>
-                <option value="v8">V8 (Optimisée)</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -262,7 +217,7 @@ export default function SearchPage() {
         <div className="mb-6">
           <SearchBar 
             initialQuery={query}
-            version={searchVersion}
+            version="v8"
             placeholder="Rechercher une pièce, une référence, un véhicule..."
           />
         </div>
@@ -295,11 +250,15 @@ export default function SearchPage() {
                     const params = new URLSearchParams();
                     Object.entries(newFilters).forEach(([key, value]) => {
                       if (value !== undefined && value !== null && value !== '') {
-                        params.set(key, String(value));
+                        if (Array.isArray(value)) {
+                          // Pour les arrays, ajouter chaque valeur séparément
+                          value.forEach(v => params.append(key, String(v)));
+                        } else {
+                          params.set(key, String(value));
+                        }
                       }
                     });
                     if (query) params.set('q', query);
-                    params.set('type', searchVersion);
                     navigate(`?${params.toString()}`);
                   }}
                 />
@@ -314,18 +273,12 @@ export default function SearchPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <h2 className="text-xl font-semibold truncate">
-                      {results.total.toLocaleString()} résultats pour "{query}"
+                      {(results.total || 0).toLocaleString()} résultats pour "{query}"
                     </h2>
                     <div className="text-sm text-gray-600 mt-1 flex items-center gap-4">
-                      <span>Recherche {results.version}</span>
+                      <span>Recherche Enhanced</span>
                       <span>•</span>
-                      <span>{results.executionTime}ms</span>
-                      {results.cached && (
-                        <>
-                          <span>•</span>
-                          <span className="text-green-600">📱 En cache</span>
-                        </>
-                      )}
+                      <span>{results.executionTime || 0}ms</span>
                     </div>
                   </div>
                   
@@ -394,7 +347,7 @@ export default function SearchPage() {
                       {results.suggestions.map((suggestion: string, index: number) => (
                         <a
                           key={`${suggestion}-${index}`}
-                          href={`?q=${encodeURIComponent(suggestion)}&type=${searchVersion}`}
+                          href={`?q=${encodeURIComponent(suggestion)}`}
                           className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm transition-colors duration-200"
                         >
                           {suggestion}
@@ -405,13 +358,12 @@ export default function SearchPage() {
                 )}
               </div>
 
-              {/* Résultats de recherche */}
-              <SearchResults 
+              {/* Résultats de recherche avec design amélioré */}
+              <SearchResultsEnhanced 
                 items={results.items}
                 viewMode={viewMode}
-                highlights={true}
-                showRelevanceScore={searchVersion === 'v8'}
-                enableQuickView={true}
+                isCached={results.cached || false}
+                executionTime={results.executionTime}
                 onItemClick={(_item) => {
                   // Analytics: track click (à implémenter)
                   // if (results.sessionId) {
@@ -460,7 +412,6 @@ export default function SearchPage() {
             onSuggestionClick={(suggestion) => {
               const params = new URLSearchParams();
               params.set('q', suggestion);
-              params.set('type', searchVersion);
               navigate(`?${params.toString()}`);
             }}
           />

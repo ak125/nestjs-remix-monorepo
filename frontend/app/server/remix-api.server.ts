@@ -334,7 +334,7 @@ export async function getRemixApiService(
     clearCartForRemix: async (userId: string) => {
       try {
         console.log('[clearCartForRemix] Clearing cart for user:', userId);
-        const response = await fetch(`${baseUrl}/api/cart/clear`, {
+        const response = await fetch(`${baseUrl}/api/cart`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

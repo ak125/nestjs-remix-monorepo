@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CacheModule } from '../modules/cache/cache.module';
 
 // Services métier spécialisés (architecture modulaire)
 import { CartDataService } from './services/cart-data.service';
@@ -23,7 +24,7 @@ import { RedisCacheService } from './services/redis-cache.service';
  * ✅ Services critiques migré vers SupabaseBaseService
  */
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, CacheModule],
   providers: [
     // Services de données spécialisés (architecture modulaire)
     CartDataService,

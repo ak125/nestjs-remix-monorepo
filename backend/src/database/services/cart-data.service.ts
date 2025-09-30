@@ -1,20 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { z } from 'zod';
+import { CacheService } from '../../modules/cache/cache.service';
 
 /**
  * 📊 INTERFACES ET TYPES OPTIMISÉS
  */
 
 export const CartItemSchema = z.object({
-  id: z.number().optional(),
-  user_id: z.number(),
-  product_id: z.number(),
+  id: z.string().optional(), // UUID
+  user_id: z.string(), // TEXT - peut être UUID ou chaîne
+  product_id: z.string(), // TEXT - ID produit converti en string
   quantity: z.number().min(1).max(99),
   price: z.number().min(0),
+  created_at: z.string().optional(), // ISO timestamp
+  updated_at: z.string().optional(), // ISO timestamp
   options: z.record(z.string(), z.any()).optional(),
   product_name: z.string().optional(),
   product_sku: z.string().optional(),
+  product_brand: z.string().optional(), // Marque du produit
+  product_description: z.string().optional(), // Description
+  product_image: z.string().optional(), // URL image
   weight: z.number().min(0).optional(),
 });
 
@@ -33,286 +39,153 @@ export type CartItem = z.infer<typeof CartItemSchema>;
 export type CartMetadata = z.infer<typeof CartMetadataSchema>;
 
 /**
+ * 🔧 CONSTANTES REDIS POUR LES PANIERS
+ */
+
+const CART_REDIS_PREFIX = 'cart:';
+const CART_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 jours comme les sessions PHP
+
+/**
  * 🛒 CART DATA SERVICE OPTIMISÉ
  *
- * Service spécialisé avec nouvelle structure SQL:
- * - Tables cart_items et cart_metadata séparées
- * - Triggers automatiques pour calculs
- * - Cache et optimisations intégrées
- * - Analytics et monitoring
+ * Service reproduisant l'ancien système PHP:
+ * - Panier géré en session (pas de tables dédiées)
+ * - Utilisation directe des tables existantes
+ * - Validation produits via table 'pieces'
+ * - Calculs en temps réel comme l'ancien système
  */
 @Injectable()
 export class CartDataService extends SupabaseBaseService {
   protected readonly logger = new Logger(CartDataService.name);
+
+  constructor(private readonly cacheService: CacheService) {
+    super();
+  }
+
   /**
-   * 🛒 Récupérer le panier complet avec métadonnées et statistiques
+   * 🔑 Générer la clé Redis pour un panier
    */
-  async getCartWithMetadata(userId: string | number) {
+  private getCartKey(sessionId: string): string {
+    return `${CART_REDIS_PREFIX}${sessionId}`;
+  }
+
+  /**
+   * 💾 Sauvegarder le panier dans Redis via CacheService (avec TTL)
+   */
+  private async saveCartToRedis(
+    sessionId: string,
+    cartItems: CartItem[],
+  ): Promise<void> {
+    const key = this.getCartKey(sessionId);
+    await this.cacheService.set(key, cartItems, CART_EXPIRY_SECONDS);
+    this.logger.debug(
+      `💾 Panier sauvé Redis: ${sessionId} (${cartItems.length} items)`,
+    );
+  }
+
+  /**
+   * 🔍 Récupérer le panier depuis Redis via CacheService
+   */
+  private async getCartFromRedis(sessionId: string): Promise<CartItem[]> {
+    const key = this.getCartKey(sessionId);
     try {
-      const userIdNum =
-        typeof userId === 'string' ? parseInt(userId, 10) : userId;
-      this.logger.log(`🛒 Récupération panier complet user ${userIdNum}`);
+      const data = await this.cacheService.get<CartItem[]>(key);
+      return data || [];
+    } catch (error) {
+      this.logger.error(`❌ Erreur parsing panier Redis ${sessionId}:`, error);
+      return [];
+    }
+  }
 
-      // Récupérer métadonnées du panier
-      const { data: metadata } = await this.client
-        .from('cart_metadata')
-        .select('*')
-        .eq('user_id', userIdNum)
-        .maybeSingle();
-
-      // Récupérer items avec infos produits enrichies
-      const { data: items, error: itemsError } = await this.client
-        .from('cart_items')
-        .select(
-          `
-          *,
-          pieces:product_id (
-            id,
-            reference,
-            name,
-            price_ttc,
-            stock_quantity,
-            weight,
-            active,
-            pieces_marque:brand_id (
-              name
-            ),
-            pieces_media_img!left (
-              url
-            )
-          )
-        `,
-        )
-        .eq('user_id', userIdNum)
-        .order('created_at', { ascending: false });
-
-      if (itemsError) throw itemsError;
-
-      // Récupérer statistiques via fonction SQL
-      const { data: statsData } = await this.client.rpc('get_cart_stats', {
-        p_user_id: userIdNum,
-      });
-
-      const stats = statsData?.[0] || {
-        item_count: 0,
-        total_quantity: 0,
-        subtotal: 0,
-        total: 0,
-        has_promo: false,
-        promo_discount: 0,
+  /**
+   * 🛒 Récupérer le panier depuis Redis (comme l'ancien système PHP mais persistant)
+   */
+  async getCartWithMetadata(sessionId: string) {
+    try {
+      this.logger.log(`🛒 Récupération panier Redis: ${sessionId}`);
+      
+      // Récupérer items du panier depuis Redis
+      const cartItems = await this.getCartFromRedis(sessionId);
+      
+      // LOG DE DEBUG pour voir ce qui est stocké
+      this.logger.log(
+        `📦 Items bruts depuis Redis:`,
+        JSON.stringify(cartItems, null, 2),
+      );
+      
+      // Enrichir avec les données produits depuis les tables existantes
+      const enrichedItems = await Promise.all(
+        cartItems.map(async (item) => {
+          try {
+            const product = await this.getProductWithAllData(
+              parseInt(item.product_id),
+            );
+            // S'assurer que la marque est bien transmise
+            const brandName =
+              product.piece_marque && product.piece_marque !== 'MARQUE INCONNUE'
+                ? product.piece_marque
+                : 'Non spécifiée';
+            
+            return {
+              ...item,
+              product_name: product.piece_name || item.product_name,
+              product_sku: product.piece_ref || item.product_sku,
+              product_brand: brandName, // Toujours définir la marque
+              product_description:
+                product.piece_des || item.product_description,
+              weight: product.piece_weight_kgm || item.weight,
+              // Prix depuis produit si pas défini dans l'item
+              price: item.price || product.price_ttc || 0,
+            };
+          } catch (error) {
+            this.logger.warn(
+              `⚠️ Impossible d'enrichir l'item ${item.product_id}:`,
+              error,
+            );
+            // Utiliser les données stockées dans l'item si disponibles
+            const fallbackBrand =
+              item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
+                ? item.product_brand
+                : 'Non spécifiée';
+            
+            return {
+              ...item,
+              product_brand: fallbackBrand,
+            };
+          }
+        }),
+      );
+      
+      // Calculer statistiques comme l'ancien système PHP
+      const stats = {
+        itemCount: enrichedItems.length,
+        totalQuantity: enrichedItems.reduce(
+          (sum, item) => sum + item.quantity,
+          0,
+        ),
+        subtotal: enrichedItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0,
+        ),
+        total: 0, // Calculé avec frais de port
+        hasPromo: false,
+        promoDiscount: 0,
       };
+      
+      stats.total = stats.subtotal; // Simplifié pour l'instant
 
       return {
-        metadata: metadata || { user_id: userIdNum, subtotal: 0, total: 0 },
-        items: items || [],
-        stats: {
-          itemCount: stats.item_count,
-          totalQuantity: stats.total_quantity,
+        metadata: {
+          user_id: sessionId,
           subtotal: stats.subtotal,
           total: stats.total,
-          hasPromo: stats.has_promo,
-          promoDiscount: stats.promo_discount,
         },
-      };
-    } catch (error) {
-      this.logger.error(`❌ Erreur récupération panier user ${userId}`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * 📋 Méthode de compatibilité - récupérer items uniquement
-   */
-  async getCartItems(userId: string) {
-    const result = await this.getCartWithMetadata(userId);
-    return result.items;
-  }
-
-  /**
-   * ➕ Ajouter un item au panier avec upsert intelligent
-   */
-  async addCartItem(cartItem: {
-    user_id: string | number;
-    product_id: number;
-    quantity: number;
-    price?: number;
-    options?: Record<string, any>;
-  }) {
-    try {
-      const userIdNum =
-        typeof cartItem.user_id === 'string'
-          ? parseInt(cartItem.user_id, 10)
-          : cartItem.user_id;
-
-      // Récupérer les infos produit pour enrichir
-      const product = await this.getProductById(cartItem.product_id);
-
-      const { data, error } = await this.client
-        .from('cart_items')
-        .upsert(
-          {
-            user_id: userIdNum,
-            product_id: cartItem.product_id,
-            quantity: cartItem.quantity,
-            price: cartItem.price || product?.price_ttc || 0,
-            options: cartItem.options || {},
-            product_name: product?.name,
-            product_sku: product?.reference,
-            weight: product?.weight,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'user_id,product_id,options',
-          },
-        )
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Log analytics
-      await this.logCartEvent(userIdNum, 'add', {
-        product_id: cartItem.product_id,
-        quantity: cartItem.quantity,
-        price: cartItem.price || product?.price_ttc || 0,
-      });
-
-      return data;
-    } catch (error) {
-      this.logger.error('❌ Erreur ajout item panier', error);
-      throw error;
-    }
-  }
-  async getProductById(productId: number) {
-    const { data, error } = await this.client
-      .from('pieces')
-      .select('id, reference, name, price_ttc, stock_quantity, weight, active')
-      .eq('id', productId)
-      .eq('active', true)
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Vérifier si un produit est déjà dans le panier
-   */
-  async getCartItemByUserAndProduct(userId: string, productId: number) {
-    const { data, error } = await this.client
-      .from('cart_items')
-      .select('id, quantity')
-      .eq('user_id', userId)
-      .eq('product_id', productId)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * 📝 Mettre à jour un article du panier (méthode optimisée)
-   */
-  async updateCartItem(
-    itemId: number,
-    updates: { quantity?: number; price?: number },
-  ) {
-    const { data, error } = await this.client
-      .from('cart_items')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', itemId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Supprimer un article du panier
-   */
-  async deleteCartItem(itemId: number, userId: string) {
-    const { error, count } = await this.client
-      .from('cart_items')
-      .delete()
-      .eq('id', itemId)
-      .eq('user_id', userId);
-
-    if (error) throw error;
-    return (count || 0) > 0;
-  }
-
-  /**
-   * Vider le panier d'un utilisateur
-   */
-  async clearUserCart(userId: string) {
-    const { error } = await this.client
-      .from('cart_items')
-      .delete()
-      .eq('user_id', userId);
-
-    if (error) throw error;
-    return true;
-  }
-
-  /**
-   * Vérifier qu'un article appartient à l'utilisateur
-   */
-  async getCartItemByIdAndUser(itemId: number, userId: string) {
-    const { data, error } = await this.client
-      .from('cart_items')
-      .select('id, product_id, quantity')
-      .eq('id', itemId)
-      .eq('user_id', userId)
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * 📊 Calcule les totaux du panier avec nouvelle structure
-   */
-  async calculateCartTotals(userId: string) {
-    try {
-      const cart = await this.getCartWithMetadata(userId);
-
-      // Les totaux sont automatiquement calculés par les triggers SQL
-      // Mais on peut forcer un recalcul si nécessaire
-      const subtotal = cart.items.reduce(
-        (sum: number, item: any) =>
-          sum + (item.pieces?.price_ttc || item.price || 0) * item.quantity,
-        0,
-      );
-
-      const tax = subtotal * 0.2; // TVA 20%
-      const shipping = subtotal >= 50 ? 0 : 6.9; // Gratuit > 50€
-      const discount = cart.metadata?.promo_discount || 0;
-      const total = subtotal + tax + shipping - discount;
-
-      // Mettre à jour les métadonnées si nécessaire
-      await this.updateCartMetadata(userId, {
-        subtotal: Math.round(subtotal * 100) / 100,
-        tax_amount: Math.round(tax * 100) / 100,
-        shipping_cost: Math.round(shipping * 100) / 100,
-        total: Math.round(total * 100) / 100,
-      });
-
-      return {
-        user_id: userId,
-        items: cart.items,
-        subtotal: Math.round(subtotal * 100) / 100,
-        tax: Math.round(tax * 100) / 100,
-        shipping: Math.round(shipping * 100) / 100,
-        discount: Math.round(discount * 100) / 100,
-        total: Math.round(total * 100) / 100,
+        items: enrichedItems,
+        stats,
       };
     } catch (error) {
       this.logger.error(
-        `❌ Erreur calcul totaux panier user ${userId}:`,
+        `❌ Erreur récupération panier session ${sessionId}`,
         error,
       );
       throw error;
@@ -320,48 +193,280 @@ export class CartDataService extends SupabaseBaseService {
   }
 
   /**
-   * 🔧 Mettre à jour les métadonnées du panier
+   * 📋 Récupérer items du panier depuis Redis (comme l'ancien système PHP mais persistant)
    */
-  private async updateCartMetadata(
-    userId: string,
-    metadata: Partial<CartMetadata>,
-  ) {
-    const userIdNum =
-      typeof userId === 'string' ? parseInt(userId, 10) : userId;
-
-    const { error } = await this.client.from('cart_metadata').upsert({
-      user_id: userIdNum,
-      ...metadata,
-      updated_at: new Date().toISOString(),
-    });
-
-    if (error) throw error;
+  async getCartItems(sessionId: string): Promise<CartItem[]> {
+    try {
+      this.logger.log(`🛒 Récupération items panier Redis: ${sessionId}`);
+      
+      const cartItems = await this.getCartFromRedis(sessionId);
+      this.logger.log(`✅ Panier trouvé: ${cartItems.length} items`);
+      
+      return cartItems;
+    } catch (error) {
+      this.logger.error('Erreur getCartItems:', error);
+      return [];
+    }
   }
 
   /**
-   * 📊 Logger les événements analytics
+   * ➕ Ajouter un item au panier en session (reproduction système PHP)
    */
-  private async logCartEvent(
-    userId: number,
-    eventType: string,
-    eventData: {
-      product_id?: number;
-      quantity?: number;
-      price?: number;
-    },
-  ): Promise<void> {
+  async addCartItem(
+    sessionId: string,
+    productId: number,
+    quantity: number,
+    customPrice?: number,
+    replace: boolean = false,
+  ): Promise<CartItem> {
     try {
-      await this.client.from('cart_analytics').insert({
-        user_id: userId,
-        event_type: eventType,
-        product_id: eventData.product_id,
-        quantity: eventData.quantity,
-        price: eventData.price,
+      // 1. Récupérer le produit avec TOUTES les vraies données
+      const product = await this.getProductWithAllData(productId);
+      if (!product) {
+        throw new Error(`Produit ${productId} introuvable`);
+      }
+
+      // 2. Récupérer le panier existant depuis Redis
+      const cartItems = await this.getCartFromRedis(sessionId);
+      
+      // 3. Vérifier si le produit est déjà dans le panier
+      const existingItemIndex = cartItems.findIndex(
+        (item) => item.product_id === productId.toString(),
+      );
+      
+      const newItem: CartItem = {
+        id: `${sessionId}-${productId}-${Date.now()}`,
+        user_id: sessionId,
+        product_id: productId.toString(),
+        quantity: quantity,
+        price: customPrice || (product as any).price_ttc || 0,
         created_at: new Date().toISOString(),
-      });
+        updated_at: new Date().toISOString(),
+        product_name: product.piece_name,
+        product_sku: product.piece_ref,
+        product_brand: product.piece_marque || 'Non spécifiée', // S'assurer qu'il y a toujours une valeur
+        product_description: product.piece_des,
+        weight: product.piece_weight_kgm,
+      };
+      
+      if (existingItemIndex >= 0) {
+        // 4a. Mettre à jour la quantité si produit déjà présent
+        const updatedItems = [...cartItems];
+        
+        if (replace) {
+          // Remplacer la quantité (pour les contrôles +/- du frontend)
+          updatedItems[existingItemIndex].quantity = quantity;
+          this.logger.log(
+            `🔄 Quantité remplacée Redis: ${product.piece_name} (${quantity})`,
+          );
+        } else {
+          // Additionner la quantité (pour l'ajout de nouveaux articles)
+          updatedItems[existingItemIndex].quantity += quantity;
+          this.logger.log(
+            `🔄 Quantité additionnée Redis: ${product.piece_name} (${updatedItems[existingItemIndex].quantity})`,
+          );
+        }
+        
+        updatedItems[existingItemIndex].updated_at = new Date().toISOString();
+        await this.saveCartToRedis(sessionId, updatedItems);
+        return updatedItems[existingItemIndex];
+      } else {
+        // 4b. Ajouter nouveau produit
+        const updatedItems = [...cartItems, newItem];
+        await this.saveCartToRedis(sessionId, updatedItems);
+        this.logger.log(
+          `➕ Nouveau produit ajouté Redis: ${product.piece_name} (${quantity})`,
+        );
+        return newItem;
+      }
     } catch (error) {
-      // Ne pas faire échouer l'opération principale
-      this.logger.warn(`⚠️ Erreur analytics user ${userId}`, error);
+      this.logger.error('Erreur addCartItem:', error);
+      throw error;
+    }
+  }
+  /**
+   * 🔍 Récupérer un produit avec TOUTES ses données (marque, prix, etc.)
+   */
+  async getProductWithAllData(productId: number) {
+    try {
+      this.logger.log(`🔍 Récupération complète produit ID ${productId}...`);
+      
+      // REQUÊTE SIMPLE POUR RÉCUPÉRER LA PIÈCE
+      const { data: pieceData, error: pieceError } = await this.client
+        .from('pieces')
+        .select('*')
+        .eq('piece_id', productId)
+        .single();
+
+      if (pieceError || !pieceData) {
+        this.logger.error(`❌ Pièce ${productId} introuvable:`, pieceError);
+        throw new Error(`Produit ${productId} introuvable`);
+      }
+
+      // LOG DEBUG pour voir les vraies valeurs de marque
+      this.logger.log(
+        `🔍 DONNÉES MARQUE pour ${productId}:`,
+        {
+          piece_pm_id: pieceData.piece_pm_id,
+          type_piece_pm_id: typeof pieceData.piece_pm_id,
+        },
+      );
+      
+      // REQUÊTE SÉPARÉE POUR LES PRIX
+      const { data: priceData, error: priceError } = await this.client
+        .from('pieces_price')
+        .select('*')
+        .eq('pri_piece_id', productId)
+        .limit(1);
+
+      // REQUÊTE POUR LA MARQUE SI piece_pm_id existe
+      let brandName = 'MARQUE INCONNUE'; // fallback par défaut
+      
+      if (pieceData.piece_pm_id) {
+        try {
+          this.logger.log(
+            `🔍 Recherche marque pour piece_pm_id: ${pieceData.piece_pm_id}`,
+          );
+          
+          // Rechercher dans pieces_marque avec pm_id
+          const { data: brandData, error: brandError } = await this.client
+            .from('pieces_marque')
+            .select('pm_name, pm_alias, pm_id, pm_sort')
+            .eq('pm_id', pieceData.piece_pm_id.toString())
+            .single();
+          
+          this.logger.log(`🔍 Résultat recherche marque:`, {
+            piece_pm_id: pieceData.piece_pm_id,
+            brandData,
+            brandError,
+          });
+          
+          if (!brandError && brandData) {
+            brandName = brandData.pm_name || brandData.pm_alias || `ID-${pieceData.piece_pm_id}`;
+            this.logger.log(
+              `🏷️ Marque trouvée: ${brandName} (ID: ${brandData.pm_id}, Sort: ${brandData.pm_sort})`,
+            );
+          } else {
+            this.logger.warn(
+              `⚠️ Marque non trouvée pour piece_pm_id: ${pieceData.piece_pm_id}`,
+              brandError,
+            );
+            brandName = `ID-${pieceData.piece_pm_id}`; // Utiliser l'ID comme nom de fallback
+          }
+        } catch (brandError) {
+          this.logger.warn(
+            `⚠️ Erreur recherche marque piece_pm_id ${pieceData.piece_pm_id}:`,
+            brandError,
+          );
+          brandName = `ID-${pieceData.piece_pm_id}`; // Utiliser l'ID comme nom de fallback
+        }
+      } else {
+        this.logger.log(`🔍 Aucun piece_pm_id défini pour le produit ${productId}`);
+      }
+
+      let priceTTC = 0;
+      if (!priceError && priceData && priceData.length > 0) {
+        priceTTC = parseFloat(priceData[0]?.pri_vente_ttc) || 0;
+      }
+      
+      this.logger.log(
+        `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€`,
+      );
+      
+      return {
+        ...pieceData,
+        piece_marque: brandName, // Nom de marque complet
+        price_ttc: priceTTC,
+        pieces_price: priceData || [],
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération produit ${productId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🗑️ Supprimer un item du panier Redis
+   */
+  async deleteCartItem(itemId: string, sessionId: string) {
+    const cartItems = await this.getCartFromRedis(sessionId);
+    const filteredItems = cartItems.filter((item) => item.id !== itemId);
+    await this.saveCartToRedis(sessionId, filteredItems);
+    this.logger.log(`🗑️ Item supprimé Redis: ${itemId}`);
+    return true;
+  }
+
+  /**
+   * 🧹 Vider le panier Redis d'une session via CacheService
+   */
+  async clearUserCart(sessionId: string) {
+    const key = this.getCartKey(sessionId);
+    await this.cacheService.del(key);
+    this.logger.log(`🧹 Panier vidé Redis: ${sessionId}`);
+    return true;
+  }
+
+  /**
+   * �️ Supprimer un item du panier basé sur l'ID produit
+   */
+  async removeCartItem(sessionId: string, productId: number): Promise<void> {
+    try {
+      this.logger.log(
+        `🗑️ Suppression produit ${productId} du panier session: ${sessionId}`,
+      );
+      
+      // Récupérer le panier existant
+      const cartItems = await this.getCartFromRedis(sessionId);
+      
+      // Filtrer pour retirer le produit
+      const updatedItems = cartItems.filter(
+        (item) => item.product_id !== productId.toString(),
+      );
+      
+      // Sauvegarder le panier mis à jour
+      await this.saveCartToRedis(sessionId, updatedItems);
+      
+      this.logger.log(
+        `✅ Produit ${productId} supprimé du panier ${sessionId}`,
+      );
+    } catch (error) {
+      this.logger.error(`❌ Erreur suppression produit ${productId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * �📊 Calculer les totaux du panier (comme l'ancien système PHP)
+   */
+  async calculateCartTotals(sessionId: string) {
+    try {
+      const cart = await this.getCartWithMetadata(sessionId);
+      const items = cart.items;
+
+      // Calculs comme l'ancien système PHP
+      const subtotal = items.reduce(
+        (sum: number, item: any) => sum + item.price * item.quantity,
+        0,
+      );
+
+      const tax = subtotal * 0.2; // TVA 20%
+      const shipping = subtotal >= 50 ? 0 : 6.9; // Gratuit > 50€
+      const total = subtotal + tax + shipping;
+
+      return {
+        user_id: sessionId,
+        items,
+        subtotal: Math.round(subtotal * 100) / 100,
+        tax: Math.round(tax * 100) / 100,
+        shipping: Math.round(shipping * 100) / 100,
+        total: Math.round(total * 100) / 100,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur calcul totaux panier session ${sessionId}:`,
+        error,
+      );
+      throw error;
     }
   }
 }

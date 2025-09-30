@@ -1,5 +1,6 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Query, Delete } from '@nestjs/common';
 import { StockManagementService } from '../services/stock-management.service';
+import { CacheService } from '../../cache/services/cache.service';
 
 @Controller('api/admin/stock-test')
 export class StockTestController {

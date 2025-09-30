@@ -225,16 +225,33 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    * 🚀 RÉCUPÉRATION RELATIONS OPTIMISÉE
    */
   private async getCompleteRelations(typeId: number): Promise<any[]> {
+    const startTime = Date.now();
+    
     try {
       const { data: relationData, error } = await this.supabase
         .from('pieces_relation_type')
         .select('rtp_pg_id, rtp_piece_id, rtp_pm_id')
-        .eq('rtp_type_id', typeId);
+        .eq('rtp_type_id', typeId)
+        .limit(10000)  // 🔥 Limite de sécurité pour éviter les timeouts
+        .order('rtp_pg_id');  // Ordre cohérent pour cache
 
       if (error) throw error;
+      
+      const responseTime = Date.now() - startTime;
+      const count = relationData?.length || 0;
+      
+      // Log des performances
+      this.logger.log(`📊 [RELATIONS] type_id ${typeId}: ${count} relations en ${responseTime}ms`);
+      
+      // Alerte si limite atteinte
+      if (count === 10000) {
+        this.logger.warn(`⚠️ [RELATIONS] Limite 10k atteinte pour type_id ${typeId} - Catalogue possiblement incomplet`);
+      }
+      
       return relationData || [];
     } catch (error: any) {
-      this.logger.error(`❌ [RELATIONS] Erreur type_id ${typeId}: ${error.message}`);
+      const responseTime = Date.now() - startTime;
+      this.logger.error(`❌ [RELATIONS] Erreur type_id ${typeId}: ${error.message} (${responseTime}ms)`);
       throw error;
     }
   }

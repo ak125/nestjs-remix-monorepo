@@ -10,20 +10,22 @@
  */
 
 import { Form, useNavigate, useSearchParams } from '@remix-run/react';
-import { Search, X, Clock, TrendingUp, Loader2 } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { cn } from '../../lib/utils';
-import { searchApi, useSearchWithDebounce } from '../../services/api/search.api';
+import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
 
 interface SearchBarProps {
   initialQuery?: string;
-  version?: 'v7' | 'v8';
+  version?: 'v7' | 'v8' | 'enhanced';
   placeholder?: string;
   className?: string;
   autoFocus?: boolean;
   showSuggestions?: boolean;
   showHistory?: boolean;
+  enableEnhanced?: boolean;
+  showMetrics?: boolean;
   onSearch?: (query: string) => void;
 }
 
@@ -37,12 +39,14 @@ interface Suggestion {
 
 export function SearchBar({
   initialQuery = '',
-  version = 'v8',
+  version = 'enhanced',
   placeholder = 'Rechercher une pièce, référence, véhicule...',
   className,
   autoFocus = false,
   showSuggestions = true,
   showHistory = true,
+  enableEnhanced = true,
+  showMetrics = false,
   onSearch,
 }: SearchBarProps) {
   const navigate = useNavigate();
@@ -51,17 +55,48 @@ export function SearchBar({
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // État local
-  const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
+  const [enhancedMode, setEnhancedMode] = useState(enableEnhanced);
+  const [metrics, setMetrics] = useState<any>(null);
 
-  // Hook de recherche avec debounce
-  const { debouncedQuery, isSearching } = useSearchWithDebounce(query, 300);
+  // Hook de recherche Enhanced avec debounce
+  const { 
+    query, 
+    setQuery, 
+    debouncedQuery, 
+    loading: isSearching, 
+    results, 
+    error 
+  } = useEnhancedSearchWithDebounce(initialQuery, 300);
+
+  // Hook d'autocomplete Enhanced
+  const { suggestions: autocompleteSuggestions } = useEnhancedAutocomplete(query);
 
   // Historique local (localStorage)
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+
+  // Charger les métriques si activé
+  const loadMetrics = useCallback(async () => {
+    if (!showMetrics || !enhancedMode) return;
+    
+    try {
+      const response = await fetch('/api/search-enhanced/metrics');
+      const data = await response.json();
+      setMetrics(data);
+    } catch (error) {
+      console.warn('Erreur métriques:', error);
+    }
+  }, [showMetrics, enhancedMode]);
+
+  // Charger métriques au focus
+  useEffect(() => {
+    if (isFocused && showMetrics) {
+      loadMetrics();
+    }
+  }, [isFocused, showMetrics, loadMetrics]);
 
   // Charger l'historique au montage
   useEffect(() => {
@@ -86,40 +121,77 @@ export function SearchBar({
 
     setLoading(true);
     try {
-      const result = await searchApi.instantSearch(searchQuery);
-      
-      const newSuggestions: Suggestion[] = [];
+      // Utiliser le service enhanced si activé
+      if (enhancedMode && version === 'enhanced') {
+        const [autocompleteResult, instantResult] = await Promise.allSettled([
+          fetch(`/api/search-enhanced/autocomplete?q=${encodeURIComponent(searchQuery)}`).then(r => r.json()),
+          searchApi.instantSearch(searchQuery)
+        ]);
+        
+        const newSuggestions: Suggestion[] = [];
+        
+        // Suggestions enhanced
+        if (autocompleteResult.status === 'fulfilled') {
+          autocompleteResult.value.suggestions?.forEach((text: string) => {
+            newSuggestions.push({
+              type: 'suggestion',
+              text,
+              icon: <Sparkles className="w-4 h-4 text-purple-500" />,
+            });
+          });
+        }
+        
+        // Résultats instantanés
+        if (instantResult.status === 'fulfilled') {
+          instantResult.value.products.slice(0, 3).forEach(product => {
+            newSuggestions.push({
+              type: product.type as 'product' | 'vehicle',
+              text: product.designation,
+              category: product.type === 'vehicle' ? 'Véhicule Enhanced' : 'Pièce Enhanced',
+              icon: <Zap className="w-4 h-4 text-amber-500" />,
+              data: product,
+            });
+          });
+        }
+        
+        setSuggestions(newSuggestions);
+      } else {
+        // Utiliser le service standard
+        const result = await searchApi.instantSearch(searchQuery);
+        
+        const newSuggestions: Suggestion[] = [];
 
-      // Ajouter les suggestions textuelles
-      result.suggestions.forEach(text => {
-        newSuggestions.push({
-          type: 'suggestion',
-          text,
-          icon: <TrendingUp className="w-4 h-4 text-blue-500" />,
+        // Ajouter les suggestions textuelles
+        result.suggestions.forEach(text => {
+          newSuggestions.push({
+            type: 'suggestion',
+            text,
+            icon: <TrendingUp className="w-4 h-4 text-blue-500" />,
+          });
         });
-      });
 
-      // Ajouter les produits/véhicules
-      result.products.slice(0, 3).forEach(product => {
-        newSuggestions.push({
-          type: product.type as 'product' | 'vehicle',
-          text: product.designation,
-          category: product.type === 'vehicle' ? 'Véhicule' : 'Pièce',
-          icon: product.type === 'vehicle' 
-            ? <Search className="w-4 h-4 text-green-500" />
-            : <Search className="w-4 h-4 text-orange-500" />,
-          data: product,
+        // Ajouter les produits/véhicules
+        result.products.slice(0, 3).forEach(product => {
+          newSuggestions.push({
+            type: product.type as 'product' | 'vehicle',
+            text: product.designation,
+            category: product.type === 'vehicle' ? 'Véhicule' : 'Pièce',
+            icon: product.type === 'vehicle' 
+              ? <Search className="w-4 h-4 text-green-500" />
+              : <Search className="w-4 h-4 text-orange-500" />,
+            data: product,
+          });
         });
-      });
 
-      setSuggestions(newSuggestions);
+        setSuggestions(newSuggestions);
+      }
     } catch (error) {
       console.warn('Erreur suggestions:', error);
       setSuggestions([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enhancedMode, version]);
 
   // Déclencher la recherche de suggestions
   useEffect(() => {
@@ -219,7 +291,15 @@ export function SearchBar({
   const navigateToSearch = (searchQuery: string) => {
     const params = new URLSearchParams(searchParams);
     params.set('q', searchQuery);
-    params.set('type', version);
+    
+    // Utiliser enhanced si activé
+    if (enhancedMode && version === 'enhanced') {
+      params.set('type', 'enhanced');
+      params.set('enhanced', 'true');
+    } else {
+      params.set('type', version);
+    }
+    
     params.delete('page'); // Reset pagination
     
     navigate(`/search?${params.toString()}`);
@@ -286,6 +366,23 @@ export function SearchBar({
                 <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
               )}
               
+              {/* Toggle Enhanced Mode */}
+              {enableEnhanced && (
+                <button
+                  type="button"
+                  onClick={() => setEnhancedMode(!enhancedMode)}
+                  className={cn(
+                    "p-1 rounded-full transition-colors",
+                    enhancedMode 
+                      ? "text-purple-600 bg-purple-100 hover:bg-purple-200" 
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                  )}
+                  title={enhancedMode ? "Désactiver le mode Enhanced" : "Activer le mode Enhanced"}
+                >
+                  <Sparkles className="w-4 h-4" />
+                </button>
+              )}
+              
               {query && (
                 <button
                   type="button"
@@ -302,8 +399,16 @@ export function SearchBar({
           </div>
 
           {/* Badge version */}
-          <div className="absolute -top-2 right-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-            {version.toUpperCase()}
+          <div className={cn(
+            "absolute -top-2 right-2 px-2 py-1 text-xs font-medium rounded-full",
+            version === 'enhanced' || enhancedMode
+              ? "bg-purple-100 text-purple-800"
+              : "bg-blue-100 text-blue-800"
+          )}>
+            {enhancedMode && version === 'enhanced' ? 'ENHANCED' : version.toUpperCase()}
+            {enhancedMode && (
+              <Sparkles className="w-3 h-3 inline ml-1" />
+            )}
           </div>
         </div>
 
@@ -368,9 +473,31 @@ export function SearchBar({
             )}
 
             {/* Footer avec stats */}
-            {version === 'v8' && visibleSuggestions.length > 0 && (
-              <div className="px-4 py-2 bg-gray-50 border-t text-xs text-gray-500 text-center">
-                Recherche IA optimisée • {visibleSuggestions.length} suggestions
+            {visibleSuggestions.length > 0 && (
+              <div className="px-4 py-2 bg-gray-50 border-t text-xs text-gray-500">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <span>
+                      {enhancedMode && version === 'enhanced' ? (
+                        <>
+                          <Sparkles className="w-3 h-3 inline mr-1" />
+                          Recherche Enhanced IA
+                        </>
+                      ) : (
+                        `Recherche ${version.toUpperCase()} optimisée`
+                      )}
+                    </span>
+                    <span>• {visibleSuggestions.length} suggestions</span>
+                  </div>
+                  
+                  {showMetrics && metrics && (
+                    <div className="flex items-center space-x-2 text-xs">
+                      <span>Avg: {metrics.averageResponseTime}ms</span>
+                      <span>• {metrics.totalSearches} recherches</span>
+                      <span>• {metrics.cacheHitRate.toFixed(1)}% cache</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

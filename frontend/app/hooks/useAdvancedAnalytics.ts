@@ -251,32 +251,34 @@ export function useAdvancedAnalytics() {
     })
   }, []) // Pas de dépendances car utilise des APIs natives
 
-  // Batch processing des événements (optimisation performance)
+  // Batch processing des événements (optimisation performance) - DÉSACTIVÉ
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (eventQueue.length > 0) {
-        // En production, envoyer à service analytics (Mixpanel, PostHog, etc.)
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-          console.log(`📊 Batch Analytics: ${eventQueue.length} events`)
-        }
+    // DÉSACTIVÉ : Éviter la surcharge de logs
+    // const interval = setInterval(() => {
+    //   if (eventQueue.length > 0) {
+    //     // En production, envoyer à service analytics (Mixpanel, PostHog, etc.)
+    //     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    //       console.log(`📊 Batch Analytics: ${eventQueue.length} events`)
+    //     }
         
-        // Calculer insights à partir des événements
-        const newInsights = calculateInsights(eventQueue)
-        setInsights(newInsights)
+    //     // Calculer insights à partir des événements
+    //     const newInsights = calculateInsights(eventQueue)
+    //     setInsights(newInsights)
         
-        // Clear queue après envoi
-        setEventQueue([])
-      }
-    }, 5000) // Batch toutes les 5 secondes
+    //     // Clear queue après envoi
+    //     setEventQueue([])
+    //   }
+    // }, 5000) // Batch toutes les 5 secondes
 
-    return () => clearInterval(interval)
+    // return () => clearInterval(interval)
   }, [eventQueue, calculateInsights])
 
-  // Monitoring performance périodique
+  // Monitoring performance périodique - DÉSACTIVÉ TEMPORAIREMENT
   useEffect(() => {
     monitorPerformance()
-    const interval = setInterval(monitorPerformance, 10000) // Toutes les 10 secondes
-    return () => clearInterval(interval)
+    // DÉSACTIVÉ : Éviter la surcharge de logs
+    // const interval = setInterval(monitorPerformance, 10000) // Toutes les 10 secondes
+    // return () => clearInterval(interval)
   }, [monitorPerformance])
 
   // Hooks d'optimisation en temps réel

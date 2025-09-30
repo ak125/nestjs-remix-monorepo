@@ -27,6 +27,9 @@ export function SearchFilters({
   resultCount,
   onFilterChange 
 }: SearchFiltersProps) {
+  // 🛡️ Protection: s'assurer que facets est bien un array
+  const safeFacets = Array.isArray(facets) ? facets : [];
+  
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['category', 'brand', 'price']) // Sections ouvertes par défaut
   );
@@ -43,11 +46,41 @@ export function SearchFilters({
 
   const handleFilterChange = (field: string, value: any) => {
     const newFilters = { ...currentFilters };
-    if (value === null || value === undefined || value === '') {
-      delete newFilters[field];
+    
+    // Pour les facettes marque/gamme, supporter sélection multiple
+    if (field === 'marque' || field === 'gamme') {
+      const currentValues = Array.isArray(newFilters[field]) 
+        ? newFilters[field] 
+        : newFilters[field] ? [newFilters[field]] : [];
+      
+      if (value === null || value === undefined || value === '') {
+        // Désélection
+        delete newFilters[field];
+      } else {
+        // Toggle de la valeur
+        const valueIndex = currentValues.indexOf(value);
+        if (valueIndex > -1) {
+          // Déjà sélectionné, on retire
+          currentValues.splice(valueIndex, 1);
+          if (currentValues.length === 0) {
+            delete newFilters[field];
+          } else {
+            newFilters[field] = currentValues;
+          }
+        } else {
+          // Pas encore sélectionné, on ajoute
+          newFilters[field] = [...currentValues, value];
+        }
+      }
     } else {
-      newFilters[field] = value;
+      // Pour les autres filtres, comportement simple
+      if (value === null || value === undefined || value === '') {
+        delete newFilters[field];
+      } else {
+        newFilters[field] = value;
+      }
     }
+    
     onFilterChange?.(newFilters);
   };
 
@@ -183,7 +216,11 @@ export function SearchFilters({
       </div>
 
       {/* Facettes dynamiques */}
-      {facets.map((facet) => (
+      {safeFacets.map((facet) => {
+        // 🛡️ Protection supplémentaire pour les values
+        const safeValues = Array.isArray(facet.values) ? facet.values : [];
+        
+        return (
         <div key={facet.field} className="mb-6">
           <button
             onClick={() => toggleSection(facet.field)}
@@ -197,42 +234,51 @@ export function SearchFilters({
             </span>
           </button>
           
-          {expandedSections.has(facet.field) && (
+          {expandedSections.has(facet.field) && safeValues.length > 0 && (
             <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
-              {facet.values.slice(0, 10).map((option) => (
-                <label key={option.value} className="flex items-center justify-between">
+              {safeValues.slice(0, 10).map((option) => {
+                // Vérifier si cette option est sélectionnée (support multi-valeurs)
+                const currentValue = currentFilters[facet.field];
+                const isSelected = Array.isArray(currentValue)
+                  ? currentValue.includes(option.value)
+                  : currentValue === option.value;
+                
+                return (
+                <label key={option.value} className="flex items-center justify-between hover:bg-gray-50 px-1 py-1 rounded cursor-pointer">
                   <div className="flex items-center flex-1 min-w-0">
                     <input
                       type="checkbox"
-                      checked={currentFilters[facet.field] === option.value}
+                      checked={isSelected}
                       onChange={(e) => handleFilterChange(
                         facet.field, 
-                        e.target.checked ? option.value : ''
+                        e.target.checked ? option.value : option.value
                       )}
-                      className="rounded border-gray-300 flex-shrink-0"
+                      className="rounded border-gray-300 flex-shrink-0 text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="ml-2 text-sm truncate" title={option.label}>
-                      {option.label}
+                    <span className="ml-2 text-sm truncate" title={String(option.label)}>
+                      {String(option.label)}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                  <span className="text-xs text-gray-500 ml-2 flex-shrink-0 bg-gray-100 px-2 py-0.5 rounded-full">
                     {option.count}
                   </span>
                 </label>
-              ))}
-              {facet.values.length > 10 && (
-                <button className="text-xs text-blue-600 hover:text-blue-800">
-                  Voir plus ({facet.values.length - 10})
+                );
+              })}
+              {safeValues.length > 10 && (
+                <button className="text-xs text-blue-600 hover:text-blue-800 mt-2">
+                  Voir plus ({safeValues.length - 10})
                 </button>
               )}
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       {/* Résumé */}
       <div className="pt-4 border-t text-xs text-gray-500">
-        {resultCount.toLocaleString()} résultats trouvés
+        {(resultCount || 0).toLocaleString()} résultats trouvés
       </div>
     </div>
   );
