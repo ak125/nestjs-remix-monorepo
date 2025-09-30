@@ -5,6 +5,7 @@ import { AboutSection } from "../components/home/AboutSection";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import { TopGammes } from "../components/home/TopGammes";
+import { SearchBarEnhancedHomepage } from "../components/search/SearchBarEnhancedHomepage";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
@@ -157,20 +158,17 @@ export default function IndexOptimized() {
               Plus de {stats.totalProducts?.toLocaleString() || '50 000'} pièces en stock - Livraison express
             </p>
             
-            {/* Barre de recherche */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Rechercher par référence, marque, modèle..."
-                  className="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32"
-                />
-                <button className="absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                  Rechercher
-                </button>
-              </div>
-              <p className="text-sm text-blue-200 mt-2">
+            {/* Barre de recherche Enhanced Premium */}
+            <div className="max-w-3xl mx-auto mb-8">
+              <SearchBarEnhancedHomepage 
+                placeholder="Recherchez des pièces auto par référence, marque ou catégorie..."
+                className="mb-3"
+                autoFocus={false}
+              />
+              <p className="text-sm text-blue-200 mt-3 flex items-center justify-center gap-2">
+                <span className="inline-block w-1 h-1 bg-blue-300 rounded-full"></span>
                 Ou sélectionnez votre véhicule ci-dessous pour un catalogue personnalisé
+                <span className="inline-block w-1 h-1 bg-blue-300 rounded-full"></span>
               </p>
             </div>
           </div>
