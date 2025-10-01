@@ -303,12 +303,57 @@ export class BlogService {
       const article = await this.transformAdviceToArticleWithSections(data);
       // Ajouter le pg_alias qu'on connaît déjà depuis le paramètre
       article.pg_alias = pg_alias;
+      
+      // Charger les articles croisés (related articles)
+      article.relatedArticles = await this.getRelatedArticles(data.ba_id);
+      
       return article;
     } catch (error) {
       this.logger.error(
         `❌ Erreur recherche article par gamme ${pg_alias}: ${(error as Error).message}`,
       );
       return null;
+    }
+  }
+
+  /**
+   * 📰 Charger les articles croisés (sidebar "On vous propose")
+   */
+  async getRelatedArticles(ba_id: number): Promise<BlogArticle[]> {
+    try {
+      this.logger.log(`📰 Chargement articles croisés pour BA_ID: ${ba_id}`);
+
+      const { data: crossData } = await this.supabaseService.client
+        .from('__blog_advice_cross')
+        .select('bac_ba_id_cross')
+        .eq('bac_ba_id', ba_id);
+
+      if (!crossData || crossData.length === 0) {
+        return [];
+      }
+
+      // Récupérer les IDs des articles croisés
+      const crossIds = crossData.map((c) => c.bac_ba_id_cross);
+
+      // Charger les articles complets
+      const { data: articles } = await this.supabaseService.client
+        .from('__blog_advice')
+        .select('*')
+        .in('ba_id', crossIds)
+        .order('ba_update', { ascending: false });
+
+      if (!articles) return [];
+
+      // Transformer et enrichir avec pg_alias
+      const transformed = articles.map((item) =>
+        this.transformAdviceToArticle(item),
+      );
+      return await this.enrichWithPgAlias(transformed);
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur articles croisés pour BA_ID ${ba_id}: ${(error as Error).message}`,
+      );
+      return [];
     }
   }
 
@@ -622,6 +667,9 @@ export class BlogService {
         title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2 || ''),
         content: BlogCacheService.decodeHtmlEntities(h2.ba2_content || ''),
         anchor: this.generateAnchor(h2.ba2_h2),
+        cta_anchor: h2.ba2_cta_anchor || null,
+        cta_link: h2.ba2_cta_link || null,
+        wall: h2.ba2_wall || null,
       });
       
       // Ajouter les H3 qui appartiennent à ce H2
@@ -632,6 +680,9 @@ export class BlogService {
             title: BlogCacheService.decodeHtmlEntities(h3.ba3_h3 || ''),
             content: BlogCacheService.decodeHtmlEntities(h3.ba3_content || ''),
             anchor: this.generateAnchor(h3.ba3_h3),
+            cta_anchor: h3.ba3_cta_anchor || null,
+            cta_link: h3.ba3_cta_link || null,
+            wall: h3.ba3_wall || null,
           });
         }
       });
@@ -657,6 +708,8 @@ export class BlogService {
       sections, // Sections chargées depuis les tables
       legacy_id: advice.ba_id,
       legacy_table: '__blog_advice',
+      cta_anchor: advice.ba_cta_anchor || null,
+      cta_link: advice.ba_cta_link || null,
       seo_data: {
         meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
         meta_description: BlogCacheService.decodeHtmlEntities(

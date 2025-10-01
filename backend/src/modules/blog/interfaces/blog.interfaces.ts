@@ -8,6 +8,9 @@ export interface BlogSection {
   title: string;
   content: string;
   anchor: string;
+  cta_anchor?: string | null; // Texte du bouton CTA
+  cta_link?: string | null;   // URL du bouton CTA
+  wall?: string | null;       // Image de la section
 }
 
 export interface BlogArticle {
@@ -29,6 +32,10 @@ export interface BlogArticle {
   sections: BlogSection[];
   legacy_id: number;
   legacy_table: string;
+  cta_anchor?: string | null; // Texte du bouton CTA principal
+  cta_link?: string | null;   // URL du bouton CTA principal
+  relatedArticles?: BlogArticle[]; // Articles croisés (sidebar "On vous propose")
+  compatibleVehicles?: any[]; // Véhicules compatibles (à implémenter)
   seo_data?: {
     meta_title: string;
     meta_description: string;

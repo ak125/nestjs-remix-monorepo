@@ -28,12 +28,14 @@ import {
   Tag
 } from 'lucide-react';
 import { useState } from "react";
+import CTAButton from "~/components/blog/CTAButton";
 
 // Types
 interface _BlogArticle {
   id: string;
   title: string;
   slug: string;
+  pg_alias?: string | null;
   excerpt: string;
   content: string;
   h1: string;
@@ -44,6 +46,9 @@ interface _BlogArticle {
   updatedAt: string;
   viewsCount: number;
   sections: BlogSection[];
+  cta_anchor?: string | null;
+  cta_link?: string | null;
+  relatedArticles?: _BlogArticle[];
   seo_data: {
     meta_title: string;
     meta_description: string;
@@ -55,6 +60,9 @@ interface BlogSection {
   title: string;
   content: string;
   anchor: string;
+  cta_anchor?: string | null;
+  cta_link?: string | null;
+  wall?: string | null;
 }
 
 // Loader
@@ -222,6 +230,14 @@ export default function LegacyBlogArticle() {
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
 
+                {/* CTA Principal (après le contenu principal) */}
+                {article.cta_link && article.cta_anchor && (
+                  <CTAButton 
+                    anchor={article.cta_anchor} 
+                    link={article.cta_link}
+                  />
+                )}
+
                 {/* Sections H2/H3 */}
                 {article.sections.map((section, index) => (
                   <section key={index} id={section.anchor} className="mb-8">
@@ -244,6 +260,15 @@ export default function LegacyBlogArticle() {
                         prose-li:text-gray-700`}
                       dangerouslySetInnerHTML={{ __html: section.content }}
                     />
+
+                    {/* CTA de section (si présent) */}
+                    {section.cta_link && section.cta_anchor && (
+                      <CTAButton 
+                        anchor={section.cta_anchor} 
+                        link={section.cta_link}
+                        className={section.level === 3 ? 'ml-4' : ''}
+                      />
+                    )}
                   </section>
                 ))}
 
@@ -295,21 +320,36 @@ export default function LegacyBlogArticle() {
               </div>
             )}
 
-            {/* Articles similaires */}
-            <div className="bg-white rounded-lg shadow-lg">
-              <div className="p-6">
-                <h3 className="text-lg font-semibold mb-2">Articles similaires</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Découvrez d'autres articles sur le même thème
-                </p>
-                <Link 
-                  to="/blog"
-                  className="block w-full px-4 py-2 text-center text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Voir tous les articles
-                </Link>
+            {/* Articles Croisés - "On vous propose" */}
+            {article.relatedArticles && article.relatedArticles.length > 0 && (
+              <div className="bg-white rounded-lg shadow-lg">
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    📰 On vous propose
+                  </h3>
+                  <div className="space-y-4">
+                    {article.relatedArticles.map((related) => (
+                      <Link
+                        key={related.id}
+                        to={related.pg_alias ? `/blog-pieces-auto/conseils/${related.pg_alias}` : `/blog/article/${related.slug}`}
+                        className="block group hover:bg-gray-50 rounded-lg p-3 transition-colors"
+                      >
+                        <h4 className="font-medium text-sm text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-2">
+                          {related.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                          {related.excerpt}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Eye className="w-3 h-3" />
+                          <span>{related.viewsCount.toLocaleString()} vues</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
           </aside>
         </div>
