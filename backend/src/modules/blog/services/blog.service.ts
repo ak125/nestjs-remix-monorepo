@@ -307,6 +307,9 @@ export class BlogService {
       // Charger les articles croisés (related articles)
       article.relatedArticles = await this.getRelatedArticles(data.ba_id);
       
+      // Charger les véhicules compatibles avec cette gamme de pièce
+      article.compatibleVehicles = await this.getCompatibleVehicles(gammeData.pg_id, 12);
+      
       return article;
     } catch (error) {
       this.logger.error(
@@ -329,11 +332,13 @@ export class BlogService {
         .eq('bac_ba_id', ba_id);
 
       if (!crossData || crossData.length === 0) {
+        this.logger.log(`   ℹ️  Aucun article croisé trouvé pour BA_ID: ${ba_id}`);
         return [];
       }
 
       // Récupérer les IDs des articles croisés
       const crossIds = crossData.map((c) => c.bac_ba_id_cross);
+      this.logger.log(`   ✅ ${crossIds.length} articles croisés trouvés (IDs: ${crossIds.join(', ')})`);
 
       // Charger les articles complets
       const { data: articles } = await this.supabaseService.client
@@ -348,7 +353,9 @@ export class BlogService {
       const transformed = articles.map((item) =>
         this.transformAdviceToArticle(item),
       );
-      return await this.enrichWithPgAlias(transformed);
+      const enriched = await this.enrichWithPgAlias(transformed);
+      this.logger.log(`   ✅ Articles croisés enrichis: ${enriched.map(a => a.pg_alias || a.slug).join(', ')}`);
+      return enriched;
     } catch (error) {
       this.logger.error(
         `❌ Erreur articles croisés pour BA_ID ${ba_id}: ${(error as Error).message}`,
@@ -358,7 +365,123 @@ export class BlogService {
   }
 
   /**
-   * �📄 Récupération d'un article par slug
+   * 🚗 Charger les véhicules compatibles avec une gamme de pièce
+   * Utilise REST API (pas de foreign keys nécessaires)
+   */
+  async getCompatibleVehicles(pg_id: number, limit = 12): Promise<any[]> {
+    try {
+      this.logger.log(`🚗 Chargement véhicules compatibles pour PG_ID: ${pg_id}`);
+
+      // Étape 1 : Récupérer les TYPE_ID compatibles depuis __cross_gamme_car_new
+      const { data: crossData, error: crossError } =
+        await this.supabaseService.client
+          .from('__cross_gamme_car_new')
+          .select('cgc_type_id')
+          .eq('cgc_pg_id', pg_id)
+          .eq('cgc_level', 2)
+          .limit(limit);
+
+      if (crossError || !crossData || crossData.length === 0) {
+        this.logger.log(
+          `   ℹ️  Aucun véhicule compatible trouvé pour PG_ID: ${pg_id}`,
+        );
+        return [];
+      }
+
+      const typeIds = crossData.map((item) => item.cgc_type_id);
+      this.logger.log(`   📋 ${typeIds.length} TYPE_ID trouvés: ${typeIds.slice(0, 5).join(', ')}...`);
+
+      // Étape 2 : Charger les données des véhicules (AUTO_TYPE)
+      const { data: typesData, error: typesError } =
+        await this.supabaseService.client
+          .from('auto_type')
+          .select('*')
+          .in('type_id', typeIds)
+          .eq('type_display', 1)
+          .limit(limit);
+
+      if (typesError || !typesData || typesData.length === 0) {
+        this.logger.warn('Aucun type trouvé dans auto_type');
+        return [];
+      }
+
+      // Étape 3 : Charger les modèles (AUTO_MODELE)
+      const modeleIds = [
+        ...new Set(typesData.map((t) => t.type_modele_id).filter((id) => id)),
+      ];
+      const { data: modelesData } = await this.supabaseService.client
+        .from('auto_modele')
+        .select('*')
+        .in('modele_id', modeleIds)
+        .eq('modele_display', 1);
+
+      // Étape 4 : Charger les marques (AUTO_MARQUE)
+      const marqueIds = [
+        ...new Set(
+          modelesData?.map((m) => m.modele_marque_id).filter((id) => id) || [],
+        ),
+      ];
+      const { data: marquesData } = await this.supabaseService.client
+        .from('auto_marque')
+        .select('*')
+        .in('marque_id', marqueIds)
+        .eq('marque_display', 1);
+
+      // Créer des maps pour accès rapide
+      const modelesMap = new Map(modelesData?.map((m) => [m.modele_id, m]));
+      const marquesMap = new Map(marquesData?.map((m) => [m.marque_id, m]));
+
+      // Étape 5 : Assembler les données
+      const vehicles = typesData
+        .map((type) => {
+          const modele = modelesMap.get(type.type_modele_id);
+          const marque = modele ? marquesMap.get(modele.modele_marque_id) : null;
+
+          if (!modele || !marque) return null;
+
+          // Période de production
+          let period = '';
+          if (type.type_year_to) {
+            period = `${type.type_month_from}/${type.type_year_from} - ${type.type_month_to}/${type.type_year_to}`;
+          } else {
+            period = `depuis ${type.type_month_from}/${type.type_year_from}`;
+          }
+
+          return {
+            type_id: type.type_id,
+            type_alias: type.type_alias,
+            type_name: type.type_name,
+            type_power: type.type_power_ps,
+            type_fuel: type.type_fuel,
+            type_body: type.type_body,
+            period,
+            modele_id: modele.modele_id,
+            modele_alias: modele.modele_alias,
+            modele_name: modele.modele_name,
+            modele_pic: modele.modele_pic,
+            marque_id: marque.marque_id,
+            marque_alias: marque.marque_alias,
+            marque_name: marque.marque_name,
+            marque_logo: marque.marque_logo,
+            // URL vers la page catalogue
+            catalog_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`,
+          };
+        })
+        .filter((v) => v !== null);
+
+      this.logger.log(`   ✅ ${vehicles.length} véhicules compatibles assemblés`);
+      return vehicles;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur véhicules compatibles PG_ID ${pg_id}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * 📄 Récupération d'un article par slug
    */
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
     try {
