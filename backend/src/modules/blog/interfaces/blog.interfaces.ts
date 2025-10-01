@@ -15,6 +15,7 @@ export interface BlogArticle {
   type: 'advice' | 'guide' | 'constructeur' | 'glossaire';
   title: string;
   slug: string;
+  pg_alias?: string | null; // Alias de la gamme (pieces_gamme.pg_alias) pour URL legacy
   excerpt: string;
   content: string;
   h1?: string;

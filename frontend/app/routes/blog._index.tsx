@@ -434,7 +434,7 @@ export default function BlogIndex() {
                       
                       <div className="flex items-center justify-between">
                         <Link 
-                          to={`/blog/article/${article.slug || article.alias}`}
+                          to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`}
                           className="text-blue-600 hover:text-blue-800 font-semibold group-hover:underline inline-flex items-center"
                         >
                           Lire l'article
@@ -463,7 +463,7 @@ export default function BlogIndex() {
                               if (navigator.share) {
                                 navigator.share({
                                   title: article.title,
-                                  url: `/blog/article/${article.slug || article.alias}`
+                                  url: article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`
                                 });
                               }
                             }}

@@ -300,7 +300,10 @@ export class BlogService {
       this.logger.log(
         `✅ Article trouvé: ${data.ba_h1} (slug: ${data.ba_alias})`,
       );
-      return await this.transformAdviceToArticleWithSections(data);
+      const article = await this.transformAdviceToArticleWithSections(data);
+      // Ajouter le pg_alias qu'on connaît déjà depuis le paramètre
+      article.pg_alias = pg_alias;
+      return article;
     } catch (error) {
       this.logger.error(
         `❌ Erreur recherche article par gamme ${pg_alias}: ${(error as Error).message}`,
@@ -579,7 +582,8 @@ export class BlogService {
         .order('ba_visit', { ascending: false })
         .limit(limit);
 
-      return data?.map((item) => this.transformAdviceToArticle(item)) || [];
+      const articles = data?.map((item) => this.transformAdviceToArticle(item)) || [];
+      return await this.enrichWithPgAlias(articles);
     } catch (error) {
       this.logger.error(
         `❌ Erreur articles populaires: ${(error as Error).message}`,
@@ -588,9 +592,6 @@ export class BlogService {
     }
   }
 
-  /**
-   * 🔄 Transformation advice → BlogArticle
-   */
   /**
    * 🔄 Transformation advice → BlogArticle AVEC sections H2/H3 depuis tables séparées
    */
@@ -641,6 +642,7 @@ export class BlogService {
       type: 'advice',
       title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
+      pg_alias: null, // Sera enrichi par enrichWithPgAlias() si besoin
       excerpt: BlogCacheService.decodeHtmlEntities(
         advice.ba_preview || advice.ba_descrip || '',
       ),
@@ -665,11 +667,12 @@ export class BlogService {
   }
 
   private transformAdviceToArticle(advice: any): BlogArticle {
-    return {
+    const article: any = {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
       title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
+      pg_alias: null, // Sera enrichi par enrichWithPgAlias()
       excerpt: BlogCacheService.decodeHtmlEntities(
         advice.ba_preview || advice.ba_descrip || '',
       ),
@@ -690,7 +693,10 @@ export class BlogService {
           advice.ba_descrip || '',
         ),
       },
+      ba_pg_id: advice.ba_pg_id, // Garder temporairement pour enrichWithPgAlias()
     };
+    
+    return article;
   }
 
   /**
@@ -821,8 +827,9 @@ export class BlogService {
 
       const articles =
         data?.map((item) => this.transformAdviceToArticle(item)) || [];
-      await this.blogCacheService.set(cacheKey, articles, 1000);
-      return articles;
+      const enriched = await this.enrichWithPgAlias(articles);
+      await this.blogCacheService.set(cacheKey, enriched, 1000);
+      return enriched;
     } catch (error) {
       this.logger.error('Erreur getRecentArticles:', error);
       return [];
@@ -944,7 +951,44 @@ export class BlogService {
   }
 
   /**
-   * 🗑️ Invalider les caches liés
+   * � Enrichir les articles avec pg_alias depuis pieces_gamme
+   */
+  private async enrichWithPgAlias(articles: BlogArticle[]): Promise<BlogArticle[]> {
+    if (!articles || articles.length === 0) return articles;
+
+    try {
+      // Récupérer tous les ba_pg_id uniques
+      const pgIds = [...new Set(
+        articles
+          .map(a => (a as any).ba_pg_id)
+          .filter(id => id != null)
+      )];
+
+      if (pgIds.length === 0) return articles;
+
+      // Charger tous les pg_alias en une seule requête
+      const { data: gammes } = await this.supabaseService.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias')
+        .in('pg_id', pgIds);
+
+      // Créer un map pour accès rapide
+      const pgAliasMap = new Map();
+      gammes?.forEach(g => pgAliasMap.set(g.pg_id, g.pg_alias));
+
+      // Enrichir chaque article
+      return articles.map(article => ({
+        ...article,
+        pg_alias: pgAliasMap.get((article as any).ba_pg_id) || null,
+      }));
+    } catch (error) {
+      this.logger.warn('Erreur enrichWithPgAlias:', error);
+      return articles;
+    }
+  }
+
+  /**
+   * �🗑️ Invalider les caches liés
    */
   private async invalidateRelatedCaches(keys: string[]): Promise<void> {
     for (const key of keys) {
