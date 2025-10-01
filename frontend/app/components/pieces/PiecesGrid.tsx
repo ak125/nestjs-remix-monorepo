@@ -1,4 +1,5 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
+// ✅ Images WebP optimisées automatiquement
 import React, { useState, useMemo } from 'react';
 import { Link } from "@remix-run/react";
 
@@ -235,15 +236,44 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
 };
 
 // Composant Carte Pièce
+// 🖼️ Helper pour optimiser les URLs d'images en WebP
+const optimizeImageUrl = (imageUrl: string | undefined, width: number = 400): string => {
+  if (!imageUrl) return '';
+  
+  // Si c'est une URL Supabase, utiliser la transformation d'image
+  if (imageUrl.includes('supabase.co/storage')) {
+    const match = imageUrl.match(/\/public\/(.+?)(?:\?|$)/);
+    if (match) {
+      const path = match[1];
+      const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+      return `${SUPABASE_URL}/storage/v1/render/image/public/${path}?format=webp&width=${width}&quality=85`;
+    }
+  }
+  
+  return imageUrl;
+};
+
+const generateSrcSet = (imageUrl: string | undefined): string => {
+  if (!imageUrl) return '';
+  
+  return [300, 400, 600]
+    .map(width => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
+    .join(', ');
+};
+
 const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
   <div className="bg-white rounded-xl shadow-sm border hover:shadow-lg transition-all duration-300 overflow-hidden group">
-    {/* Image */}
+    {/* Image - ✅ OPTIMISÉE WEBP */}
     <div className="aspect-square bg-gray-100 relative overflow-hidden">
       {piece.image_url ? (
         <img
-          src={piece.image_url}
+          src={optimizeImageUrl(piece.image_url, 400)}
+          srcSet={generateSrcSet(piece.image_url)}
+          sizes="(max-width: 640px) 300px, 400px"
           alt={piece.pie_designation}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+          decoding="async"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">

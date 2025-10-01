@@ -258,7 +258,59 @@ export class BlogService {
   }
 
   /**
-   * 📄 Récupération d'un article par slug
+   * � Récupération d'un article par gamme (pieces_gamme alias) - Legacy URL support
+   * Exemple: alternateur → trouve l'article lié à cette gamme
+   */
+  async getArticleByGamme(pg_alias: string): Promise<BlogArticle | null> {
+    try {
+      this.logger.log(`🔄 Recherche article par gamme: ${pg_alias}`);
+
+      // 1. Trouver le pg_id depuis pieces_gamme
+      const { data: gammeData } = await this.supabaseService.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_name')
+        .eq('pg_alias', pg_alias)
+        .single();
+
+      if (!gammeData) {
+        this.logger.warn(`⚠️ Gamme non trouvée: ${pg_alias}`);
+        return null;
+      }
+
+      this.logger.log(
+        `✅ Gamme trouvée: ${gammeData.pg_name} (ID: ${gammeData.pg_id})`,
+      );
+
+      // 2. Trouver l'article le plus récent pour cette gamme
+      const { data, error } = await this.supabaseService.client
+        .from('__blog_advice')
+        .select('*')
+        .eq('ba_pg_id', gammeData.pg_id)
+        .order('ba_update', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        this.logger.warn(
+          `⚠️ Aucun article trouvé pour la gamme ID: ${gammeData.pg_id}`,
+        );
+        return null;
+      }
+
+      this.logger.log(
+        `✅ Article trouvé: ${data.ba_h1} (slug: ${data.ba_alias})`,
+      );
+      return await this.transformAdviceToArticleWithSections(data);
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur recherche article par gamme ${pg_alias}: ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * �📄 Récupération d'un article par slug
    */
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
     try {

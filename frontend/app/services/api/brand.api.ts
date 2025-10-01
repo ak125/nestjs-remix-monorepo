@@ -111,6 +111,7 @@ class BrandApiService {
 
   /**
    * Génère l'URL de l'image de logo (conventions Supabase)
+   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
    */
   private generateLogoUrl(logoFilename?: string): string | undefined {
     if (!logoFilename) return undefined;
@@ -120,11 +121,18 @@ class BrandApiService {
       ? logoFilename.replace('.webp', '.png')
       : logoFilename;
     
-    return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${finalLogo}`;
+    // 🚀 NOUVELLE VERSION: Utilise la transformation d'image Supabase pour WebP
+    const path = `constructeurs-automobiles/marques-logos/${finalLogo}`;
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    const STORAGE_BUCKET = 'uploads';
+    
+    // Transformation WebP automatique avec redimensionnement
+    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=200&quality=90`;
   }
 
   /**
    * Génère l'URL de l'image de modèle
+   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
    */
   private generateModelImageUrl(brandAlias: string, modelPic?: string): string {
     if (!modelPic) {
@@ -135,11 +143,17 @@ class BrandApiService {
       ? modelPic.replace('.webp', '.jpg')
       : modelPic;
     
-    return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`;
+    // 🚀 NOUVELLE VERSION: Transformation WebP automatique
+    const path = `constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`;
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    const STORAGE_BUCKET = 'uploads';
+    
+    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=800&quality=85`;
   }
 
   /**
    * Génère l'URL de l'image de pièce
+   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
    */
   private generatePartImageUrl(partImg?: string): string {
     if (!partImg) {
@@ -150,7 +164,12 @@ class BrandApiService {
       ? partImg.replace('.webp', '.jpg')
       : partImg;
     
-    return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${finalImage}`;
+    // 🚀 NOUVELLE VERSION: Transformation WebP automatique
+    const path = `articles/gammes-produits/catalogue/${finalImage}`;
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    const STORAGE_BUCKET = 'uploads';
+    
+    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=600&quality=85`;
   }
 
   /**

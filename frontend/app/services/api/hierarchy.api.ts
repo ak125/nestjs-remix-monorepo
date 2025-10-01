@@ -170,17 +170,20 @@ class HierarchyApiService {
 
   /**
    * 🖼️ Obtient l'URL de l'image d'une famille
+   * ✅ OPTIMISÉ WEBP - Conversion automatique sans re-upload !
    */
   getFamilyImage(family: FamilyWithGammes): string {
     if (!family.mf_pic) {
       return '/images/categories/default.svg';
     }
     
-    // URL de base Supabase Storage pour les images des familles
-    const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/';
+    // 🚀 NOUVELLE VERSION: Transformation WebP automatique via Supabase
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+    const STORAGE_BUCKET = 'uploads';
+    const path = `articles/familles-produits/${family.mf_pic}`;
     
-    // Utiliser l'image depuis Supabase Storage
-    return `${supabaseStorageUrl}${family.mf_pic}`;
+    // Utilise render/image pour la transformation automatique en WebP
+    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=800&quality=90`;
   }
 
   /**

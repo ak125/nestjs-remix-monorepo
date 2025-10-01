@@ -1,14 +1,13 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
-import { Shield, Clock, Phone, Users, ShoppingCart, Award, Car } from 'lucide-react';
+import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
 import { AboutSection } from "../components/home/AboutSection";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import { TopGammes } from "../components/home/TopGammes";
-import { SearchBarEnhancedHomepage } from "../components/search/SearchBarEnhancedHomepage";
+import VehicleSelector from "../components/home/VehicleSelector";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 export const meta: MetaFunction = () => {
@@ -30,12 +29,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const selectedModel = url.searchParams.get('modele'); 
     const selectedYear = url.searchParams.get('annee');
 
-    const [brandsResult, hierarchyResult, topGammesResult, equipementiersResult] = await Promise.allSettled([
+    const [homepageDataResult, brandsResult, hierarchyResult, topGammesResult, equipementiersResult] = await Promise.allSettled([
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/pieces-gammes/homepage`).then(res => res.json()),
       enhancedVehicleApi.getBrands(),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/hierarchy/homepage`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/top`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json())
     ]);
+
+    const homepageData = homepageDataResult.status === 'fulfilled' ? homepageDataResult.value : {
+      data: { featured_gammes: [], all_gammes: [], stats: { total_gammes: 0, featured_count: 0, displayed_count: 0 } },
+      success: false
+    };
 
     const rawBrands = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
     const hierarchyData = hierarchyResult.status === 'fulfilled' ? hierarchyResult.value : null;
@@ -56,26 +61,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands,
       hierarchyData,
       stats: {
-        totalProducts: hierarchyData?.stats?.total_gammes || 0,
+        totalProducts: homepageData.data?.stats?.total_gammes || 0,
         totalBrands: 120,
         totalModels: 5000,
         totalOrders: 25000,
         customerSatisfaction: 4.8,
         formatted: {
           brands: '120+',
-          pieces: `${Math.floor((hierarchyData?.stats?.total_gammes || 0) / 1000)}K+`,
+          pieces: `${Math.floor((homepageData.data?.stats?.total_gammes || 0) / 1000)}K+`,
           models: '5K+'
         }
       },
-      categories: hierarchyData?.families || [],
-      featuredCategories: topGammesData?.data?.gammes || [],
+      categories: homepageData.data?.all_gammes || [],
+      featuredCategories: homepageData.data?.featured_gammes || [],
       quickAccess: [],
       topGammesData,
       equipementiersData,
       selectedBrand,
       selectedModel,  
       selectedYear,
-      success: hierarchyData?.success || false,
+      success: homepageData.success,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -110,7 +115,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { brands, stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
+  const { stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -120,6 +125,8 @@ export default function IndexOptimized() {
     type?: any;
     year?: number;
   }) => {
+    console.log('🚗 Selection reçue:', selection);
+    
     // Navigation uniquement si tous les éléments sont sélectionnés
     if (selection.brand && selection.model && selection.type) {
       const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
@@ -127,20 +134,23 @@ export default function IndexOptimized() {
       
       // Gérer les types sans alias en créant un slug automatique
       let typeAlias = selection.type.type_alias;
+      console.log('🔧 Type alias initial:', typeAlias);
+      
       if (!typeAlias && selection.type.type_liter && selection.type.type_fuel) {
         const liter = (parseInt(selection.type.type_liter) / 100).toFixed(1).replace('.', '-');
         const fuel = selection.type.type_fuel.toLowerCase();
         typeAlias = `${liter}-${fuel}`;
+        console.log('🔧 Type alias généré:', typeAlias);
       }
       
       const typeSlug = `${typeAlias || 'type'}-${selection.type.type_id}.html`;
+      console.log('🔧 Type slug final:', typeSlug);
       
       const url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}`;
+      console.log('🌐 URL générée:', url);
       
-      // Délai de 1.5 secondes pour laisser l'utilisateur voir la sélection complète
-      setTimeout(() => {
-        navigate(url);
-      }, 1500);
+      // Navigation immédiate vers la page véhicule
+      navigate(url);
     }
   };
 
@@ -158,84 +168,31 @@ export default function IndexOptimized() {
               Plus de {stats.totalProducts?.toLocaleString() || '50 000'} pièces en stock - Livraison express
             </p>
             
-            {/* Barre de recherche Enhanced Premium */}
-            <div className="max-w-3xl mx-auto mb-8">
-              <SearchBarEnhancedHomepage 
-                placeholder="Recherchez des pièces auto par référence, marque ou catégorie..."
-                className="mb-3"
-                autoFocus={false}
-              />
-              <p className="text-sm text-blue-200 mt-3 flex items-center justify-center gap-2">
-                <span className="inline-block w-1 h-1 bg-blue-300 rounded-full"></span>
+            {/* Barre de recherche */}
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Rechercher par référence, marque, modèle..."
+                  className="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32"
+                />
+                <button className="absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                  Rechercher
+                </button>
+              </div>
+              <p className="text-sm text-blue-200 mt-2">
                 Ou sélectionnez votre véhicule ci-dessous pour un catalogue personnalisé
-                <span className="inline-block w-1 h-1 bg-blue-300 rounded-full"></span>
               </p>
             </div>
           </div>
 
           {/* Sélecteur de véhicule hybride */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelectorV2 
-              mode="full"
-              context="homepage"
-              showVinSearch={false}
-              onVehicleSelect={handleVehicleSelected}
-              redirectOnSelect={true}
-              redirectTo="vehicle-page"
-              variant="card"
-              className="bg-white/95 backdrop-blur-sm"
+            <VehicleSelector 
+              onVehicleSelected={handleVehicleSelected} 
+              showMineSearch={true}
+              navigateOnSelect={false}
             />
-          </div>
-
-          {/* Logos des constructeurs populaires */}
-          <div className="max-w-6xl mx-auto mt-12">
-            <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Marques automobiles populaires
-              </h3>
-              <p className="text-blue-200">
-                Cliquez sur une marque pour accéder directement à son catalogue
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-              {brands?.filter(brand => brand.isFavorite || brand.isActive)
-                .slice(0, 16)
-                .map(brand => (
-                <Link
-                  key={brand.id}
-                  to={`/constructeurs/${brand.code}-${brand.id}`}
-                  className="group flex flex-col items-center p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105"
-                  title={`Pièces ${brand.name}`}
-                >
-                  <div className="w-12 h-12 md:w-16 md:h-16 mb-2 bg-white rounded-lg p-2 flex items-center justify-center group-hover:shadow-lg transition-shadow">
-                    <img
-                      src={brand.logo}
-                      alt={`Logo ${brand.name}`}
-                      className="max-w-full max-h-full object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/upload/logos/marques/default.webp';
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs md:text-sm font-medium text-white text-center group-hover:text-blue-100 transition-colors">
-                    {brand.name}
-                  </span>
-                </Link>
-              ))}
-            </div>
-            
-            {/* Lien vers tous les constructeurs */}
-            <div className="text-center mt-8">
-              <Link
-                to="/constructeurs"
-                className="inline-flex items-center px-6 py-3 bg-white/10 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300"
-              >
-                <Car className="w-5 h-5 mr-2" />
-                Voir tous les constructeurs
-              </Link>
-            </div>
           </div>
 
           {/* Statistiques en temps réel */}

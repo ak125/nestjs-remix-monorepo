@@ -123,6 +123,43 @@ export class BlogController {
   }
 
   /**
+   * 🔄 Récupérer un article par gamme (legacy URL support)
+   * GET /api/blog/article/by-gamme/:pg_alias
+   * Exemple: /api/blog/article/by-gamme/alternateur
+   */
+  @Get('article/by-gamme/:pg_alias')
+  @UseGuards(OptionalAuthGuard)
+  async getArticleByGamme(@Param('pg_alias') pg_alias: string) {
+    try {
+      this.logger.log(`🔄 Legacy URL - Gamme: ${pg_alias}`);
+      
+      const article = await this.blogService.getArticleByGamme(pg_alias);
+
+      if (!article) {
+        throw new HttpException(
+          `Article non trouvé pour la gamme "${pg_alias}"`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        success: true,
+        data: article,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      this.logger.error(`❌ Erreur gamme ${pg_alias}:`, error);
+      throw new HttpException(
+        'Erreur lors de la récupération de l\'article par gamme',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * � Récupérer un article par son slug
    * GET /api/blog/article/:slug
    */
