@@ -334,13 +334,27 @@ export class BlogService {
       );
 
       // Étape 1 : Récupérer les TYPE_ID compatibles depuis __cross_gamme_car_new
-      const { data: crossData, error: crossError } =
-        await this.supabaseService.client
+      // Niveau 1 = Véhicules les plus populaires (ventes les plus importantes)
+      // On essaie niveau 1 d'abord, puis niveaux 2, 3, 4 si nécessaire
+      let crossData = null;
+      let crossError = null;
+      
+      for (const level of [1, 2, 3, 4]) {
+        const result = await this.supabaseService.client
           .from('__cross_gamme_car_new')
-          .select('cgc_type_id')
+          .select('cgc_type_id, cgc_level')
           .eq('cgc_pg_id', pg_id)
-          .eq('cgc_level', 2)
+          .eq('cgc_level', level)
+          .order('cgc_id', { ascending: false })
           .limit(limit);
+        
+        if (result.data && result.data.length > 0) {
+          crossData = result.data;
+          crossError = result.error;
+          this.logger.log(`   ℹ️  Utilisation niveau ${level} (${result.data.length} véhicules trouvés)`);
+          break;
+        }
+      }
 
       if (crossError) {
         this.logger.error(`   ❌ Erreur Supabase cross_gamme_car:`, crossError);
