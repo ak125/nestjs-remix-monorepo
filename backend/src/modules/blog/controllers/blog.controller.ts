@@ -123,7 +123,43 @@ export class BlogController {
   }
 
   /**
-   * 📊 Tableau de bord - Vue d'ensemble
+   * � Récupérer un article par son slug
+   * GET /api/blog/article/:slug
+   */
+  @Get('article/:slug')
+  @UseGuards(OptionalAuthGuard)
+  async getArticleBySlug(@Param('slug') slug: string) {
+    try {
+      this.logger.log(`📄 Récupération article: ${slug}`);
+      
+      const article = await this.blogService.getArticleBySlug(slug);
+
+      if (!article) {
+        throw new HttpException(
+          `Article "${slug}" non trouvé`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return {
+        success: true,
+        data: article,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      this.logger.error(`❌ Erreur article ${slug}:`, error);
+      throw new HttpException(
+        'Erreur lors de la récupération de l\'article',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * �📊 Tableau de bord - Vue d'ensemble
    * GET /api/blog/dashboard
    */
   @Get('dashboard')

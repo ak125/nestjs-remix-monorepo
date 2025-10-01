@@ -284,7 +284,7 @@ export class BlogService {
         return null;
       }
 
-      return this.transformAdviceToArticle(data);
+      return await this.transformAdviceToArticleWithSections(data);
     } catch (error) {
       this.logger.error(
         `❌ Erreur récupération article ${slug}: ${(error as Error).message}`,
@@ -539,6 +539,79 @@ export class BlogService {
   /**
    * 🔄 Transformation advice → BlogArticle
    */
+  /**
+   * 🔄 Transformation advice → BlogArticle AVEC sections H2/H3 depuis tables séparées
+   */
+  private async transformAdviceToArticleWithSections(
+    advice: any,
+  ): Promise<BlogArticle> {
+    // Charger les sections H2 et H3 en parallèle
+    const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
+      this.supabaseService.client
+        .from('__blog_advice_h2')
+        .select('*')
+        .eq('ba2_ba_id', advice.ba_id)
+        .order('ba2_id'),
+      this.supabaseService.client
+        .from('__blog_advice_h3')
+        .select('*')
+        .eq('ba3_ba_id', advice.ba_id)
+        .order('ba3_id'),
+    ]);
+
+    // Construire les sections avec structure hiérarchique
+    const sections: BlogSection[] = [];
+    
+    // Traiter chaque H2
+    h2Sections?.forEach((h2: any) => {
+      sections.push({
+        level: 2,
+        title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2 || ''),
+        content: BlogCacheService.decodeHtmlEntities(h2.ba2_content || ''),
+        anchor: this.generateAnchor(h2.ba2_h2),
+      });
+      
+      // Ajouter les H3 qui appartiennent à ce H2
+      h3Sections?.forEach((h3: any) => {
+        if (h3.ba3_ba2_id === h2.ba2_id) {
+          sections.push({
+            level: 3,
+            title: BlogCacheService.decodeHtmlEntities(h3.ba3_h3 || ''),
+            content: BlogCacheService.decodeHtmlEntities(h3.ba3_content || ''),
+            anchor: this.generateAnchor(h3.ba3_h3),
+          });
+        }
+      });
+    });
+
+    return {
+      id: `advice_${advice.ba_id}`,
+      type: 'advice',
+      title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+      slug: advice.ba_alias,
+      excerpt: BlogCacheService.decodeHtmlEntities(
+        advice.ba_preview || advice.ba_descrip || '',
+      ),
+      content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
+      h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
+      h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+      keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
+      tags: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
+      publishedAt: advice.ba_create,
+      updatedAt: advice.ba_update,
+      viewsCount: parseInt(advice.ba_visit) || 0,
+      sections, // Sections chargées depuis les tables
+      legacy_id: advice.ba_id,
+      legacy_table: '__blog_advice',
+      seo_data: {
+        meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+        meta_description: BlogCacheService.decodeHtmlEntities(
+          advice.ba_descrip || '',
+        ),
+      },
+    };
+  }
+
   private transformAdviceToArticle(advice: any): BlogArticle {
     return {
       id: `advice_${advice.ba_id}`,
@@ -556,7 +629,7 @@ export class BlogService {
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
-      sections: this.extractSectionsFromContent(advice),
+      sections: [], // Pas de sections pour les listes
       legacy_id: advice.ba_id,
       legacy_table: '__blog_advice',
       seo_data: {
