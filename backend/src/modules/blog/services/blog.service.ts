@@ -381,7 +381,12 @@ export class BlogService {
           .eq('cgc_level', 2)
           .limit(limit);
 
-      if (crossError || !crossData || crossData.length === 0) {
+      if (crossError) {
+        this.logger.error(`   ❌ Erreur Supabase cross_gamme_car:`, crossError);
+        return [];
+      }
+
+      if (!crossData || crossData.length === 0) {
         this.logger.log(
           `   ℹ️  Aucun véhicule compatible trouvé pour PG_ID: ${pg_id}`,
         );
@@ -389,7 +394,9 @@ export class BlogService {
       }
 
       const typeIds = crossData.map((item) => item.cgc_type_id);
-      this.logger.log(`   📋 ${typeIds.length} TYPE_ID trouvés: ${typeIds.slice(0, 5).join(', ')}...`);
+      this.logger.log(
+        `   📋 ${typeIds.length} TYPE_ID trouvés: ${typeIds.slice(0, 5).join(', ')}...`,
+      );
 
       // Étape 2 : Charger les données des véhicules (AUTO_TYPE)
       const { data: typesData, error: typesError } =
@@ -400,10 +407,19 @@ export class BlogService {
           .eq('type_display', 1)
           .limit(limit);
 
-      if (typesError || !typesData || typesData.length === 0) {
-        this.logger.warn('Aucun type trouvé dans auto_type');
+      if (typesError) {
+        this.logger.error(`   ❌ Erreur auto_type:`, typesError);
         return [];
       }
+
+      if (!typesData || typesData.length === 0) {
+        this.logger.warn(
+          `   ⚠️  Aucun type trouvé dans auto_type pour ${typeIds.length} IDs`,
+        );
+        return [];
+      }
+
+      this.logger.log(`   ✅ ${typesData.length} types chargés depuis auto_type`);
 
       // Étape 3 : Charger les modèles (AUTO_MODELE)
       const modeleIds = [
