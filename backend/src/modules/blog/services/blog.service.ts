@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
@@ -77,48 +77,7 @@ export class BlogService {
     }
   }
 
-  /**
-   * � Recherche unifiée dans tout le contenu blog
-   */
-  /**
-   * 🔍 Recherche unifiée dans tout le contenu blog
-   */
-  async searchBlog(
-    query: string,
-    type: 'all' | 'advice' | 'guide' | 'constructeur' | 'glossaire' = 'all',
-    page: number = 1,
-    limit: number = 20,
-  ): Promise<BlogSearchResult> {
-    try {
-      this.logger.log(`🔍 Recherche "${query}"`);
 
-      // Recherche simple dans les conseils pour le moment
-      const { data } = await this.supabaseService.client
-        .from('__blog_advice')
-        .select('*')
-        .ilike('ba_title', `%${query}%`)
-        .range((page - 1) * limit, page * limit - 1);
-
-      const results =
-        data?.map((item) => this.transformAdviceToArticle(item)) || [];
-
-      this.logger.log(`🔍 Recherche "${query}": ${results.length} résultats`);
-
-      return {
-        query,
-        type,
-        results,
-        total: results.length,
-        page,
-        limit,
-      };
-    } catch (error) {
-      this.logger.error(
-        `❌ Erreur recherche blog: ${(error as Error).message}`,
-      );
-      return { query, type, results: [], total: 0, page, limit };
-    }
-  }
 
   /**
    * 📝 Créer un nouvel article - VERSION AMÉLIORÉE
@@ -366,11 +325,13 @@ export class BlogService {
 
   /**
    * 🚗 Charger les véhicules compatibles avec une gamme de pièce
-   * Utilise REST API (pas de foreign keys nécessaires)
+   * Version simplifiée : requête directe sans multiples étapes
    */
   async getCompatibleVehicles(pg_id: number, limit = 12): Promise<any[]> {
     try {
-      this.logger.log(`🚗 Chargement véhicules compatibles pour PG_ID: ${pg_id}`);
+      this.logger.log(
+        `🚗 Chargement véhicules compatibles pour PG_ID: ${pg_id}`,
+      );
 
       // Étape 1 : Récupérer les TYPE_ID compatibles depuis __cross_gamme_car_new
       const { data: crossData, error: crossError } =
@@ -393,7 +354,8 @@ export class BlogService {
         return [];
       }
 
-      const typeIds = crossData.map((item) => item.cgc_type_id);
+      // ⚠️  IMPORTANT: cgc_type_id est TEXT, mais type_id est INTEGER
+      const typeIds = crossData.map((item) => parseInt(item.cgc_type_id, 10)).filter((id) => !isNaN(id));
       this.logger.log(
         `   📋 ${typeIds.length} TYPE_ID trouvés: ${typeIds.slice(0, 5).join(', ')}...`,
       );
@@ -425,35 +387,87 @@ export class BlogService {
       const modeleIds = [
         ...new Set(typesData.map((t) => t.type_modele_id).filter((id) => id)),
       ];
-      const { data: modelesData } = await this.supabaseService.client
+      this.logger.log(`   📋 ${modeleIds.length} MODELE_ID uniques: ${modeleIds.slice(0, 5).join(', ')}...`);
+      
+      const { data: modelesData, error: modelesError } = await this.supabaseService.client
         .from('auto_modele')
         .select('*')
         .in('modele_id', modeleIds)
         .eq('modele_display', 1);
 
+      if (modelesError) {
+        this.logger.error(`   ❌ Erreur auto_modele:`, modelesError);
+        return [];
+      }
+
+      this.logger.log(`   ✅ ${modelesData?.length || 0} modèles chargés depuis auto_modele`);
+      
+      // 🔍 DEBUG: Afficher les modele_ids réellement chargés
+      const loadedModeleIds = modelesData?.map(m => m.modele_id).slice(0, 5) || [];
+      this.logger.log(`   🔍 Modèles chargés (IDs réels): ${loadedModeleIds.join(', ')}...`);
+      this.logger.log(`   🔍 Modèles recherchés (type_modele_id): ${modeleIds.slice(0, 5).join(', ')}...`);
+
+      if (!modelesData || modelesData.length === 0) {
+        this.logger.warn(`   ⚠️  Aucun modèle trouvé - arrêt assemblage`);
+        return [];
+      }
+
       // Étape 4 : Charger les marques (AUTO_MARQUE)
       const marqueIds = [
         ...new Set(
-          modelesData?.map((m) => m.modele_marque_id).filter((id) => id) || [],
+          modelesData.map((m) => m.modele_marque_id).filter((id) => id),
         ),
       ];
-      const { data: marquesData } = await this.supabaseService.client
+      this.logger.log(`   📋 ${marqueIds.length} MARQUE_ID uniques: ${marqueIds.slice(0, 5).join(', ')}...`);
+      const { data: marquesData, error: marquesError } = await this.supabaseService.client
         .from('auto_marque')
         .select('*')
         .in('marque_id', marqueIds)
         .eq('marque_display', 1);
 
+      if (marquesError) {
+        this.logger.error(`   ❌ Erreur auto_marque:`, marquesError);
+        return [];
+      }
+
+      this.logger.log(`   ✅ ${marquesData?.length || 0} marques chargées depuis auto_marque`);
+
+      if (!marquesData || marquesData.length === 0) {
+        this.logger.warn(`   ⚠️  Aucune marque trouvée - arrêt assemblage`);
+        return [];
+      }
+
       // Créer des maps pour accès rapide
       const modelesMap = new Map(modelesData?.map((m) => [m.modele_id, m]));
       const marquesMap = new Map(marquesData?.map((m) => [m.marque_id, m]));
 
+      this.logger.log(`   🗺️  Maps créées: ${modelesMap.size} modèles, ${marquesMap.size} marques`);
+
+      // 🔍 DEBUG: Vérifier les types de données
+      const firstType = typesData[0];
+      const firstModele = modelesData?.[0];
+      this.logger.log(`   🔍 Type de type_modele_id: ${typeof firstType?.type_modele_id} (valeur: ${firstType?.type_modele_id})`);
+      this.logger.log(`   🔍 Type de modele_id: ${typeof firstModele?.modele_id} (valeur: ${firstModele?.modele_id})`);
+
       // Étape 5 : Assembler les données
+      let skipped = 0;
       const vehicles = typesData
         .map((type) => {
-          const modele = modelesMap.get(type.type_modele_id);
+          // ⚠️  IMPORTANT: Convertir type_modele_id (string) en number pour lookup
+          const modeleId = typeof type.type_modele_id === 'string' 
+            ? parseInt(type.type_modele_id, 10) 
+            : type.type_modele_id;
+          
+          const modele = modelesMap.get(modeleId);
           const marque = modele ? marquesMap.get(modele.modele_marque_id) : null;
 
-          if (!modele || !marque) return null;
+          if (!modele || !marque) {
+            skipped++;
+            if (skipped <= 3) {
+              this.logger.warn(`   ⚠️  Type ${type.type_id} skipped: modele=${!!modele}, marque=${!!marque}, modeleId=${modeleId}`);
+            }
+            return null;
+          }
 
           // Période de production
           let period = '';
@@ -715,6 +729,7 @@ export class BlogService {
         },
         popular: await this.getPopularArticles(5),
         lastUpdated: new Date().toISOString(),
+        success: true,
       };
 
       await this.cacheManager.set(cacheKey, dashboard, 3600 * 1000); // 1h TTL
@@ -1097,9 +1112,15 @@ export class BlogService {
    */
   private async generateUniqueSlug(
     title: string,
-    excludeId?: number,
+    _excludeId?: number,
   ): Promise<string> {
-    const slug = this.slugifyTitle(BlogCacheService.decodeHtmlEntities(title));
+    // Slugify simple: minuscules, espaces → tirets, remove accents
+    const slug = BlogCacheService.decodeHtmlEntities(title)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
     let counter = 0;
     let uniqueSlug = slug;
 

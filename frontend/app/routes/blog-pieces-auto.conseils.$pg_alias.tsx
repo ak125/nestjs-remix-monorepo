@@ -29,8 +29,28 @@ import {
 } from 'lucide-react';
 import { useState } from "react";
 import CTAButton from "~/components/blog/CTAButton";
+import VehicleCarousel from "~/components/blog/VehicleCarousel";
 
 // Types
+interface CompatibleVehicle {
+  type_id: number;
+  type_alias: string;
+  type_name: string;
+  type_power: number;
+  type_fuel: string;
+  type_body: string;
+  period: string;
+  modele_id: number;
+  modele_alias: string;
+  modele_name: string;
+  modele_pic: string | null;
+  marque_id: number;
+  marque_alias: string;
+  marque_name: string;
+  marque_logo: string | null;
+  catalog_url: string;
+}
+
 interface _BlogArticle {
   id: string;
   title: string;
@@ -49,6 +69,7 @@ interface _BlogArticle {
   cta_anchor?: string | null;
   cta_link?: string | null;
   relatedArticles?: _BlogArticle[];
+  compatibleVehicles?: CompatibleVehicle[];
   seo_data: {
     meta_title: string;
     meta_description: string;
@@ -291,6 +312,13 @@ export default function LegacyBlogArticle() {
                 </div>
             </div>
           </article>
+
+          {/* Véhicules Compatibles (Pleine largeur, après l'article) */}
+          {article.compatibleVehicles && article.compatibleVehicles.length > 0 && (
+            <div className="lg:col-span-3">
+              <VehicleCarousel vehicles={article.compatibleVehicles} />
+            </div>
+          )}
 
           {/* Sidebar (1/3) */}
           <aside className="space-y-6">
