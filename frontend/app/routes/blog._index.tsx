@@ -42,6 +42,7 @@ interface BlogArticle {
   title: string;
   slug: string;
   alias?: string;
+  pg_alias?: string | null; // Alias de la gamme pour URL legacy
   excerpt: string;
   content?: string;
   type: 'advice' | 'guide' | 'constructeur' | 'glossaire';
@@ -573,7 +574,7 @@ export default function BlogIndex() {
                         </div>
                         
                         <Link 
-                          to={`/blog/article/${article.slug || article.alias}`}
+                          to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`}
                           className="text-blue-600 hover:text-blue-800 font-medium group-hover:underline inline-flex items-center"
                         >
                           Lire la suite
@@ -631,7 +632,7 @@ export default function BlogIndex() {
                           <div className="flex items-center justify-between text-xs text-gray-500">
                             <span>{formatReadingTime(article.readingTime)}</span>
                             <Link 
-                              to={`/blog/article/${article.slug || article.alias}`}
+                              to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`}
                               className="text-blue-600 hover:text-blue-800 font-medium"
                             >
                               Lire →
