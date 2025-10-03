@@ -7,27 +7,43 @@ import {
 } from '@nestjs/common';
 import { AdviceService } from '../services/advice.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
+import { BlogCacheService } from '../services/blog-cache.service';
 
 /**
  * 🏗️ Contrôleur pour la hiérarchie des conseils par famille
+ * ⚡ Avec cache optimisé (TTL: 5 min)
  */
 @Controller('api/blog/advice-hierarchy')
 export class AdviceHierarchyController {
   private readonly logger = new Logger(AdviceHierarchyController.name);
+  private readonly CACHE_KEY = 'advice_hierarchy:all';
+  private readonly CACHE_TTL = 300; // 5 minutes
 
   constructor(
     private readonly adviceService: AdviceService,
     private readonly supabaseService: SupabaseIndexationService,
+    private readonly cacheService: BlogCacheService,
   ) {}
 
   /**
    * 📦 Récupérer tous les conseils groupés par famille du catalogue
    * GET /api/blog/advice-hierarchy
+   * ⚡ Avec cache Redis (5 min TTL)
    */
   @Get()
   async getAdviceByFamily() {
     try {
-      this.logger.log('📦 Récupération conseils par famille...');
+      // 🔍 Check cache first
+      const cached = await this.cacheService.get<any>(
+        this.CACHE_KEY,
+        this.CACHE_TTL,
+      );
+      if (cached) {
+        this.logger.log('✅ Cache HIT - hierarchy');
+        return cached;
+      }
+
+      this.logger.log('📦 Cache MISS - Récupération conseils par famille...');
 
       // 1. Récupérer tous les conseils
       const adviceResult = await this.adviceService.getAllAdvice({
@@ -165,7 +181,7 @@ export class AdviceHierarchyController {
 
       this.logger.log(`✅ ${result.length} familles trouvées`);
 
-      return {
+      const response = {
         success: true,
         data: {
           families: result,
@@ -173,6 +189,12 @@ export class AdviceHierarchyController {
           totalFamilies: result.length,
         },
       };
+
+      // 💾 Store in cache (5 minutes)
+      await this.cacheService.set(this.CACHE_KEY, response, this.CACHE_TTL);
+      this.logger.log('💾 Hierarchy cached for 5 minutes');
+
+      return response;
     } catch (error) {
       this.logger.error(
         `❌ Erreur advice-hierarchy: ${(error as Error).message}`,
@@ -181,6 +203,19 @@ export class AdviceHierarchyController {
         'Erreur lors de la récupération de la hiérarchie',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  /**
+   * 🗑️ Invalider le cache de la hiérarchie
+   * Utilisé après création/modification d'un conseil
+   */
+  async invalidateCache(): Promise<void> {
+    try {
+      await this.cacheService.del(this.CACHE_KEY);
+      this.logger.log('🗑️ Cache hierarchy invalidé');
+    } catch (error) {
+      this.logger.warn('⚠️ Erreur invalidation cache:', error);
     }
   }
 }
