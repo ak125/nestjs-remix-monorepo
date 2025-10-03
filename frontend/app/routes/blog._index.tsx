@@ -10,24 +10,28 @@ import {
   useFetcher, 
   Form 
 } from "@remix-run/react";
-import { 
-  BookOpen, 
-  Clock, 
-  Eye, 
-  ArrowRight, 
+import {
+  BookOpen,
+  Clock,
+  Eye,
+  ArrowRight,
   Search,
   Sparkles,
   TrendingUp,
   Star,
   ChevronRight,
   Calendar,
-  User,
   Hash,
   ExternalLink,
   Share2,
-  Bookmark
-} from 'lucide-react';
-import { useState, useMemo } from "react";
+  Bookmark,
+  Zap,
+  Wrench,
+  Award,
+  MessageCircle,
+  Mail,
+} from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 
 // UI Components
 import { Button } from "~/components/ui/button";
@@ -215,6 +219,50 @@ export default function BlogIndex() {
   const fetcher = useFetcher();
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [selectedType, setSelectedType] = useState(searchParams.type || '');
+  const [animatedStats, setAnimatedStats] = useState({
+    articles: 0,
+    advice: 0,
+    guides: 0,
+    views: 0
+  });
+
+  // Animation des statistiques au chargement
+  useEffect(() => {
+    if (!blogData.stats) return;
+
+    // L'API retourne stats avec overview, mais le type ne le reflète pas
+    const stats = blogData.stats as any;
+    const overview = stats.overview || stats;
+
+    const duration = 2000; // 2 secondes
+    const steps = 60;
+    const interval = duration / steps;
+
+    let currentStep = 0;
+    const timer = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+
+      setAnimatedStats({
+        articles: Math.floor((overview.totalArticles || 0) * progress),
+        advice: Math.floor((overview.totalAdvice || 0) * progress),
+        guides: Math.floor((overview.totalGuides || 0) * progress),
+        views: Math.floor((overview.totalViews || 0) * progress)
+      });
+
+      if (currentStep >= steps) {
+        clearInterval(timer);
+        setAnimatedStats({
+          articles: overview.totalArticles || 0,
+          advice: overview.totalAdvice || 0,
+          guides: overview.totalGuides || 0,
+          views: overview.totalViews || 0
+        });
+      }
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [blogData.stats]);
 
   // Fonctions utilitaires optimisées
   const formatReadingTime = (minutes: number) => {
@@ -333,25 +381,43 @@ export default function BlogIndex() {
             {blogData.success && blogData.stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
                 {[
-                  { label: 'Articles', value: blogData.stats.totalArticles, icon: BookOpen },
-                  { label: 'Conseils', value: blogData.stats.totalAdvice, icon: Sparkles },
-                  { label: 'Guides', value: blogData.stats.totalGuides, icon: Star },
-                  { label: 'Vues', value: blogData.stats.totalViews, icon: Eye, format: true },
-                ].map((stat, index) => (
-                  <div
-                    key={stat.label}
-                    className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-105 transition-transform duration-200"
-                  >
-                    <stat.icon className="w-6 h-6 mx-auto mb-2 text-blue-200" />
-                    <div className="text-3xl font-bold text-white mb-1">
-                      {stat.format && stat.value > 1000 
-                        ? formatViews(stat.value)
-                        : `${stat.value}+`
-                      }
+                  { label: 'Articles', value: animatedStats.articles, icon: BookOpen, link: null },
+                  { label: 'Conseils', value: animatedStats.advice, icon: Sparkles, link: '/blog-pieces-auto/conseils' },
+                  { label: 'Guides', value: animatedStats.guides, icon: Star, link: null },
+                  { label: 'Vues', value: animatedStats.views, icon: Eye, format: true, link: null },
+                ].map((stat, index) => {
+                  const content = (
+                    <>
+                      <stat.icon className="w-6 h-6 mx-auto mb-2 text-blue-200" />
+                      <div className="text-3xl md:text-4xl font-bold text-white mb-1 tabular-nums">
+                        {stat.format && (stat.value || 0) > 1000 
+                          ? formatViews(stat.value || 0)
+                          : `${(stat.value || 0).toLocaleString()}+`
+                        }
+                      </div>
+                      <div className="text-blue-200 text-sm font-medium">{stat.label}</div>
+                    </>
+                  );
+
+                  return stat.link ? (
+                    <Link
+                      key={stat.label}
+                      to={stat.link}
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-110 hover:bg-white/20 transition-all duration-300 animate-fade-in cursor-pointer group"
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <div
+                      key={stat.label}
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-110 hover:bg-white/20 transition-all duration-300 animate-fade-in"
+                    >
+                      {content}
                     </div>
-                    <div className="text-blue-200 text-sm">{stat.label}</div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -444,7 +510,7 @@ export default function BlogIndex() {
                         
                         <div className="flex items-center gap-2">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             className="p-2 hover:bg-blue-50"
                             onClick={() => {
@@ -457,7 +523,7 @@ export default function BlogIndex() {
                             <Bookmark className="w-4 h-4" />
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             className="p-2 hover:bg-blue-50"
                             onClick={() => {
@@ -482,8 +548,65 @@ export default function BlogIndex() {
         </section>
       )}
 
+      {/* Section Thématiques Populaires */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2">
+              <Hash className="w-4 h-4 mr-2" />
+              Thématiques
+            </Badge>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Explorez par sujet
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Trouvez rapidement les articles qui vous intéressent
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
+            {[
+              { label: 'Entretien', icon: Wrench, count: blogData.stats?.totalAdvice || 0, color: 'blue' },
+              { label: 'Diagnostic', icon: Zap, count: Math.floor((blogData.stats?.totalGuides || 0) * 0.4), color: 'orange' },
+              { label: 'Réparation', icon: Award, count: Math.floor((blogData.stats?.totalAdvice || 0) * 0.6), color: 'green' },
+              { label: 'Pièces détachées', icon: Star, count: Math.floor((blogData.stats?.totalArticles || 0) * 0.3), color: 'purple' },
+              { label: 'Constructeurs', icon: BookOpen, count: blogData.stats?.totalConstructeurs || 12, color: 'red' },
+              { label: 'Tutoriels', icon: TrendingUp, count: blogData.stats?.totalGuides || 0, color: 'indigo' },
+            ].map((theme) => (
+              <Link
+                key={theme.label}
+                to={`/blog?q=${theme.label.toLowerCase()}`}
+                className={`
+                  group flex items-center gap-3 px-6 py-3 rounded-full
+                  bg-${theme.color}-50 hover:bg-${theme.color}-100
+                  border-2 border-${theme.color}-200 hover:border-${theme.color}-400
+                  transition-all duration-200 hover:scale-105 hover:shadow-md
+                `}
+              >
+                <theme.icon className={`w-5 h-5 text-${theme.color}-600`} />
+                <span className={`font-semibold text-${theme.color}-900`}>{theme.label}</span>
+                <Badge className={`bg-${theme.color}-200 text-${theme.color}-800 hover:bg-${theme.color}-300`}>
+                  {theme.count}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+
+          {/* Bouton "Voir tous les conseils" */}
+          <div className="text-center mt-8">
+            <Link to="/blog-pieces-auto/conseils">
+              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all">
+                <BookOpen className="w-5 h-5 mr-2" />
+                Tous les conseils par catégorie
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Contenu principal avec tabs */}
-      <section className="py-20">
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-slate-50">
         <div className="container mx-auto px-4">
           <Tabs defaultValue="popular" className="w-full">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
@@ -698,60 +821,144 @@ export default function BlogIndex() {
         </div>
       </section>
 
-      {/* Newsletter et Call to Action */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Restez informé de nos derniers articles
-          </h2>
-          <p className="text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-            Recevez nos derniers conseils d'experts, guides pratiques et actualités 
-            directement dans votre boîte mail. Plus de 10 000 professionnels nous font confiance.
-          </p>
-          
-          {/* Newsletter form */}
-          <div className="max-w-md mx-auto mb-12">
-            <Form className="flex gap-3">
-              <Input
-                type="email"
-                placeholder="Votre adresse email"
-                className="flex-1 bg-white/90 text-gray-900 border-0"
-                required
-              />
-              <Button 
-                type="submit"
-                className="bg-orange-500 hover:bg-orange-600 px-6"
-              >
-                S'abonner
-              </Button>
-            </Form>
-            <p className="text-xs text-blue-200 mt-2">
-              Pas de spam, désabonnement en un clic
-            </p>
-          </div>
+      {/* Section Articles les Plus Consultés */}
+      {blogData.popular && blogData.popular.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <Badge className="mb-4 bg-white/20 text-white backdrop-blur-sm px-6 py-2">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Les plus consultés
+                  </Badge>
+                  <h2 className="text-4xl font-bold mb-2">
+                    Articles tendances
+                  </h2>
+                  <p className="text-blue-200 text-lg">
+                    Découvrez les articles les plus populaires de notre communauté
+                  </p>
+                </div>
+                <Link to="/blog?tab=popular">
+                  <Button variant="outline" className="hidden md:flex border-white/30 text-white hover:bg-white/10">
+                    Voir tout
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link to="/contact">
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-white border-2 border-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-xl text-lg font-semibold group"
-              >
-                <User className="w-5 h-5 mr-2" />
-                Contacter nos experts
-                <ExternalLink className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link to="/catalogue">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-8 py-4 rounded-xl text-lg font-semibold group"
-              >
-                Explorer le catalogue
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {blogData.popular.slice(0, 3).map((article) => (
+                  <Link
+                    key={article.id}
+                    to={article.pg_alias ? `/blog-pieces-auto/conseils/${article.pg_alias}` : `/blog/article/${article.slug || article.alias}`}
+                    className="group"
+                  >
+                    <Card className="h-full bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 overflow-hidden">
+                      <CardContent className="p-5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                            {getTypeLabel(article.type)}
+                          </Badge>
+                          <Badge className="bg-orange-500/90 text-white">
+                            <Eye className="w-3 h-3 mr-1" />
+                            {formatViews(article.viewsCount)}
+                          </Badge>
+                        </div>
+                        <h3 className="font-bold text-white mb-3 line-clamp-2 group-hover:text-blue-200 transition-colors text-lg">
+                          {article.title}
+                        </h3>
+                        <p className="text-blue-200 text-sm line-clamp-2 mb-4">
+                          {article.excerpt}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-blue-300">
+                          <div className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Newsletter et Call to Action */}
+      <section className="py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-600 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-3xl mx-auto">
+            <Mail className="w-16 h-16 mx-auto mb-6 animate-bounce" />
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ne manquez aucun article !
+            </h2>
+            <p className="text-xl mb-8 leading-relaxed text-white/90">
+              Rejoignez <strong className="font-bold">plus de 10 000 passionnés d'automobile</strong> et 
+              recevez nos meilleurs conseils, guides exclusifs et actualités directement dans votre boîte mail.
+            </p>
+            
+            {/* Newsletter form amélioré */}
+            <div className="max-w-md mx-auto mb-8">
+              <Form className="flex flex-col sm:flex-row gap-3">
+                <Input
+                  type="email"
+                  placeholder="Votre adresse email"
+                  className="flex-1 bg-white text-gray-900 border-0 shadow-lg py-6 text-lg"
+                  required
+                />
+                <Button 
+                  type="submit"
+                  size="lg"
+                  className="bg-gray-900 hover:bg-black text-white px-8 py-6 text-lg font-bold shadow-2xl"
+                >
+                  <Mail className="w-5 h-5 mr-2" />
+                  Je m'abonne
+                </Button>
+              </Form>
+              <div className="flex items-center justify-center gap-6 mt-4 text-sm text-white/80">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  Gratuit
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  1 email/semaine
+                </div>
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Sans spam
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mt-8">
+              <Link to="/contact">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-white border-2 border-white hover:bg-white hover:text-pink-600 px-8 py-4 rounded-xl text-lg font-semibold group"
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Contacter nos experts
+                  <ExternalLink className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/catalogue">
+                <Button 
+                  size="lg" 
+                  className="bg-gradient-to-r from-white to-blue-50 text-pink-600 hover:shadow-2xl px-8 py-4 rounded-xl text-lg font-semibold group"
+                >
+                  Explorer le catalogue
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

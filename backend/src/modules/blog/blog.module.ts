@@ -4,6 +4,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 // Controllers - API endpoints pour chaque type de contenu blog
 import { BlogController } from './controllers/blog.controller';
 import { AdviceController } from './controllers/advice.controller';
+import { AdviceHierarchyController } from './controllers/advice-hierarchy.controller';
 import { ContentController } from './controllers/content.controller';
 
 // Services - Logique métier spécialisée pour chaque type
@@ -54,6 +55,7 @@ import { SearchModule } from '../search/search.module';
   controllers: [
     BlogController, // API générale blog et recherche
     AdviceController, // Endpoints spécifiques conseils
+    AdviceHierarchyController, // Hiérarchie conseils par famille catalogue
     ContentController, // Endpoints guides, constructeurs, glossaire
   ],
   providers: [

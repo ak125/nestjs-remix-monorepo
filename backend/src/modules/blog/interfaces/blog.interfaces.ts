@@ -19,6 +19,8 @@ export interface BlogArticle {
   title: string;
   slug: string;
   pg_alias?: string | null; // Alias de la gamme (pieces_gamme.pg_alias) pour URL legacy
+  pg_id?: number | null; // ID de la gamme (pieces_gamme.pg_id) pour récupérer SEO switches et conseils
+  ba_pg_id?: string | null; // ID de gamme (string) depuis __blog_advice - pour catégorisation frontend
   excerpt: string;
   content: string;
   h1?: string;
@@ -29,6 +31,7 @@ export interface BlogArticle {
   updatedAt?: string;
   viewsCount: number;
   readingTime?: number;
+  featuredImage?: string | null; // URL de l'image d'en-tête (ex: /uploads/blog/articles/20.jpg)
   sections: BlogSection[];
   legacy_id: number;
   legacy_table: string;

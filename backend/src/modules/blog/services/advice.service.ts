@@ -218,8 +218,11 @@ export class AdviceService {
         }
       }
 
+      // Enrichir avec pg_alias en une seule requête (optimisation)
+      const enrichedItems = await this.enrichArticlesWithPgAlias(items);
+
       const result = {
-        items,
+        items: enrichedItems,
         total: count || 0,
         page,
         limit,
@@ -525,6 +528,9 @@ export class AdviceService {
         type: 'advice' as const,
         title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
         slug: advice.ba_alias,
+        pg_alias: null, // Sera enrichi après
+        pg_id: null, // Sera enrichi après
+        ba_pg_id: advice.ba_pg_id || null,
         excerpt: BlogCacheService.decodeHtmlEntities(
           advice.ba_preview || advice.ba_descrip || '',
         ),
@@ -745,5 +751,54 @@ export class AdviceService {
     success: boolean;
   }> {
     return this.getStats();
+  }
+
+  /**
+   * 🔗 Enrichir les articles avec pg_alias depuis pieces_gamme
+   * Optimisé avec une seule requête pour tous les articles
+   */
+  private async enrichArticlesWithPgAlias(
+    articles: BlogArticle[],
+  ): Promise<BlogArticle[]> {
+    if (!articles || articles.length === 0) return articles;
+
+    try {
+      // Récupérer tous les ba_pg_id uniques
+      const pgIds = [
+        ...new Set(
+          articles
+            .map((a) => (a as any).ba_pg_id)
+            .filter((id) => id != null),
+        ),
+      ];
+
+      if (pgIds.length === 0) return articles;
+
+      // Charger tous les pg_alias en une seule requête
+      const { data: gammes } = await this.supabaseService.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias')
+        .in('pg_id', pgIds);
+
+      // Créer un map pour accès rapide
+      const pgAliasMap = new Map();
+      gammes?.forEach((g) => pgAliasMap.set(g.pg_id, g.pg_alias));
+
+      // Enrichir chaque article
+      return articles.map((article) => {
+        const ba_pg_id = (article as any).ba_pg_id;
+        const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
+
+        return {
+          ...article,
+          pg_id: pg_id, // Convertir ba_pg_id (string) en pg_id (number) pour l'interface
+          pg_alias: pgAliasMap.get(ba_pg_id) || null,
+          ba_pg_id: ba_pg_id, // Garder aussi ba_pg_id pour le frontend
+        };
+      });
+    } catch (error) {
+      this.logger.warn('Erreur enrichArticlesWithPgAlias:', error);
+      return articles;
+    }
   }
 }
