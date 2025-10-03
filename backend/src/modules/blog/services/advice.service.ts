@@ -792,15 +792,10 @@ export class AdviceService {
       if (pgIds.length === 0) return articles;
 
       // Charger tous les pg_alias ET pg_img en une seule requête
-      const { data: gammes, error } = await this.supabaseService.client
+      const { data: gammes } = await this.supabaseService.client
         .from('pieces_gamme')
         .select('pg_id, pg_alias, pg_img')
         .in('pg_id', pgIds);
-
-      console.log('🔍 [enrichArticlesWithPgAlias] pgIds:', pgIds.slice(0, 5));
-      console.log('🔍 [enrichArticlesWithPgAlias] gammes count:', gammes?.length);
-      console.log('🔍 [enrichArticlesWithPgAlias] gammes sample:', gammes?.[0]);
-      console.log('🔍 [enrichArticlesWithPgAlias] error:', error);
 
       // Créer des maps avec clés integers pour accès O(1)
       // ATTENTION : pg_id revient en STRING de Supabase, on doit convertir
@@ -813,10 +808,6 @@ export class AdviceService {
           pgDataMap.set(pgIdInt, { alias: g.pg_alias, img: g.pg_img });
         }
       }
-      console.log(
-        '🔍 [enrichArticlesWithPgAlias] pgDataMap size:',
-        pgDataMap.size,
-      );
 
       // Enrichir chaque article en une seule passe
       return articles.map((article) => {

@@ -242,12 +242,25 @@ export class GlobalErrorFilter implements ExceptionFilter {
     code: string,
     exception: unknown,
   ) {
-    // Enregistrer l'erreur
+    // Vérifier si les headers ont déjà été envoyés
+    if (response.headersSent) {
+      this.logger.warn(
+        `Headers already sent for ${request.method} ${request.url} - Cannot send error response`,
+      );
+      return;
+    }
+
+    // Enregistrer l'erreur (async mais sans bloquer)
     if (exception instanceof Error) {
-      this.errorService.logError(exception, request, {
-        status,
-        handled_by: 'GlobalErrorFilter',
-      });
+      this.errorService
+        .logError(exception, request, {
+          status,
+          handled_by: 'GlobalErrorFilter',
+        })
+        .catch((err) => {
+          // Si l'enregistrement échoue (ex: Redis down), on ne bloque pas la réponse
+          this.logger.error('Failed to log error to service:', err.message);
+        });
     }
 
     // Logger l'erreur
@@ -266,7 +279,11 @@ export class GlobalErrorFilter implements ExceptionFilter {
       error: code,
     };
 
-    response.status(status).json(errorResponse);
+    try {
+      response.status(status).json(errorResponse);
+    } catch (err) {
+      this.logger.error('Failed to send error response:', err);
+    }
   }
 
   /**

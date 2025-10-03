@@ -30,6 +30,8 @@ interface VehicleData {
   type_month_to: string | null;
   type_year_to: string | null;
   type_relfollow: number;
+  power: string;
+  date: string;
 }
 
 interface CatalogFamily {
@@ -53,6 +55,18 @@ interface PopularPart {
   pg_name_meta: string;
   pg_img: string;
   addon_content: string;
+}
+
+interface MetaTagsAriane {
+  mta_id: number;
+  mta_title: string;
+  mta_descrip: string;
+  mta_keywords: string;
+  mta_ariane: string;
+  mta_h1: string;
+  mta_content: string;
+  mta_alias: string;
+  mta_relfollow: number;
 }
 
 interface SEOData {
@@ -105,55 +119,81 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const brandParts = brand.split('-');
   const marque_id = parseInt(brandParts[brandParts.length - 1]) || 0;
   const marque_alias = brandParts.slice(0, -1).join('-');
-  const marque_name = marque_alias.toUpperCase();
 
   const modelParts = model.split('-');
   const modele_id = parseInt(modelParts[modelParts.length - 1]) || 0;
   const modele_alias = modelParts.slice(0, -1).join('-');
-  const modele_name = modelParts.slice(0, -1).join('-').toUpperCase().replace(/-/g, ' ')
-    .replace(/SERIE/g, 'Série')
-    .replace(/CLASSE/g, 'Classe')
-    .replace(/F\d+/g, (match) => `(${match})`)
-    .replace(/\s+/g, ' ')
-    .trim();
 
   const typeParts = type.replace('.html', '').split('-');
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
   const type_alias = type.replace('.html', '');
-  const type_name_raw = typeParts.slice(0, -1).join(' ').toUpperCase();
-  const type_name = type_name_raw
-    .replace(/(\d+)([A-Z])/g, '$1 $2')
-    .replace(/(\d)(\d)(\w)/g, '$1.$2 $3')
-    .replace(/DCI/g, 'dCi')
-    .replace(/HDI/g, 'HDi')
-    .replace(/TDI/g, 'TDI')
-    .replace(/TSI/g, 'TSI')
-    .trim();
 
-  // === SIMULATION DES DONNÉES VÉHICULE (structure PHP) ===
-  const type_power_ps = type_name_raw.includes('114') ? '95' :
-                       type_name_raw.includes('116') ? '116' :
-                       type_name_raw.includes('118') ? '143' :
-                       type_name_raw.includes('120') ? '177' :
-                       type_name_raw.includes('20') ? '150' :
-                       type_name_raw.includes('16') ? '110' :
-                       type_name_raw.includes('15') ? '90' :
-                       type_name_raw.includes('10') ? '75' : '100';
+  // === APPEL API POUR RÉCUPÉRER LES VRAIES DONNÉES ===
+  console.log(`🔍 Appel API pour type_id=${type_id}`);
+  const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+  
+  const vehicleResponse = await fetch(
+    `${baseUrl}/api/vehicles/types/${type_id}`,
+    { headers: { 'internal-call': 'true' } }
+  );
 
-  const type_fuel = type_name_raw.includes('DCI') || type_name_raw.includes('HDI') || 
-                   type_name_raw.includes('JTDM') || type_name_raw.includes('TDI') ? 'Diesel' : 'Essence';
+  if (!vehicleResponse.ok) {
+    console.error('❌ API error:', vehicleResponse.status);
+    throw new Response("Véhicule non trouvé", { status: 404 });
+  }
 
-  const type_body = marque_name.includes('BMW') && model.includes('serie') ? 'Berline' :
-                   model.includes('duster') ? 'SUV' :
-                   model.includes('a3') ? 'Berline' : 'Berline';
+  const apiData = await vehicleResponse.json();
+  console.log('✅ Données API reçues:', JSON.stringify(apiData, null, 2));
 
-  // === GÉNÉRATION DATE (logique PHP exacte) ===
-  const type_month_from = "1";
-  const type_year_from = "2010";
-  const type_month_to = null;
-  const type_year_to = null;
+  // === APPEL API POUR RÉCUPÉRER LES META TAGS ARIANE ===
+  let metaTagsData: MetaTagsAriane | null = null;
+  try {
+    const metaTagsResponse = await fetch(
+      `${baseUrl}/api/vehicles/meta-tags/${type_id}`,
+      { headers: { 'internal-call': 'true' } }
+    );
 
-  // Logique de formatage des dates (reprend exactement le PHP)
+    if (metaTagsResponse.ok) {
+      const metaTagsJson = await metaTagsResponse.json();
+      metaTagsData = metaTagsJson.data;
+      console.log('✅ Meta tags ariane trouvés:', metaTagsData);
+    } else {
+      console.log('ℹ️ Pas de meta tags ariane pour ce véhicule');
+    }
+  } catch (error) {
+    console.log('⚠️ Erreur récupération meta tags:', error);
+  }
+
+  // L'API retourne un tableau - prendre le premier élément
+  const vehicleRecord = apiData.data?.[0];
+  
+  if (!vehicleRecord) {
+    console.error('❌ Aucun véhicule trouvé dans la réponse API');
+    throw new Response("Véhicule non trouvé", { status: 404 });
+  }
+
+  // === EXTRACTION DES VRAIES DONNÉES (comme le PHP) ===
+  const marque_name = vehicleRecord.auto_modele?.auto_marque?.marque_name;
+  const modele_name = vehicleRecord.auto_modele?.modele_name;
+  const type_name = vehicleRecord.type_name;
+  const type_power_ps = vehicleRecord.type_power_ps;
+  const type_fuel = vehicleRecord.type_fuel;
+  const type_body = vehicleRecord.type_body;
+  const type_month_from = vehicleRecord.type_month_from;
+  const type_year_from = vehicleRecord.type_year_from;
+  const type_month_to = vehicleRecord.type_month_to;
+  const type_year_to = vehicleRecord.type_year_to;
+
+  // Vérification des données critiques
+  if (!marque_name || !modele_name || !type_name || !type_power_ps) {
+    console.error('❌ Données API incomplètes:', {
+      marque_name, modele_name, type_name, type_power_ps,
+      fullResponse: apiData
+    });
+    throw new Response("Données véhicule incomplètes", { status: 500 });
+  }
+
+  // === FORMATAGE DE LA DATE (logique PHP exacte) ===
   let type_date = "";
   if (!type_year_to) {
     type_date = `du ${type_month_from}/${type_year_from}`;
@@ -161,7 +201,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     type_date = `de ${type_year_from} à ${type_year_to}`;
   }
 
-  // === DONNÉES VÉHICULE SELON STRUCTURE PHP ===
+  // === DONNÉES VÉHICULE SELON STRUCTURE PHP (avec power et date pour affichage) ===
   const vehicleData: VehicleData = {
     marque_id,
     marque_alias,
@@ -186,7 +226,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     type_year_from,
     type_month_to,
     type_year_to,
-    type_relfollow: 1
+    type_relfollow: 1,
+    power: type_power_ps,
+    date: type_date
   };
 
   // === SYSTÈME SEO AVEC SWITCH DYNAMIQUE (logique PHP adaptée) ===
@@ -204,21 +246,41 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return options[index];
   };
 
-  // SEO avec système de switch (reprend la logique PHP exacte)
-  const comp_switch_title = getSeoSwitch(1, type_id);
-  const comp_switch_desc = getSeoSwitch(2, type_id);
-  const comp_switch_content1 = getSeoSwitch(10, type_id);
-  const comp_switch_content2 = getSeoSwitch(11, type_id);
-  const comp_switch_content3 = getSeoSwitch(12, type_id);
+  // === META TAGS ARIANE - PRIORITÉ SUR LES VALEURS PAR DÉFAUT ===
+  let seoTitle: string;
+  let seoDescription: string;
+  let seoKeywords: string;
+  let h1: string;
+  let content: string;
+  let content2: string;
 
-  const seoTitle = `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${comp_switch_title}`;
-  const seoDescription = `Catalogue pièces détachées pour ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${vehicleData.type_power_ps} ch ${type_date} neuves ${comp_switch_desc}`;
-  const seoKeywords = `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}, ${vehicleData.type_power_ps} ch, ${type_date}`;
+  if (metaTagsData) {
+    // Utiliser les meta tags de la table ___meta_tags_ariane
+    console.log('🏷️ Utilisation des meta tags ariane personnalisés');
+    seoTitle = metaTagsData.mta_title || `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
+    seoDescription = metaTagsData.mta_descrip || '';
+    seoKeywords = metaTagsData.mta_keywords || `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
+    h1 = metaTagsData.mta_h1 || `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
+    content = metaTagsData.mta_content || '';
+    content2 = ''; // La table n'a qu'un seul champ content
+  } else {
+    // SEO avec système de switch (reprend la logique PHP exacte)
+    console.log('📝 Génération des meta tags par défaut avec système de switch');
+    const comp_switch_title = getSeoSwitch(1, type_id);
+    const comp_switch_desc = getSeoSwitch(2, type_id);
+    const comp_switch_content1 = getSeoSwitch(10, type_id);
+    const comp_switch_content2 = getSeoSwitch(11, type_id);
+    const comp_switch_content3 = getSeoSwitch(12, type_id);
 
-  // H1 et contenu (logique PHP exacte)
-  const h1 = `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
-  const content = `${comp_switch_content1} pour le modèle <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_body}</b> <strong>${type_date}</strong> de motorisation <strong>${vehicleData.type_name} ${vehicleData.type_power_ps}</strong> ch.`;
-  const content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
+    seoTitle = `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${comp_switch_title}`;
+    seoDescription = `Catalogue pièces détachées pour ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${vehicleData.type_power_ps} ch ${type_date} neuves ${comp_switch_desc}`;
+    seoKeywords = `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}, ${vehicleData.type_power_ps} ch, ${type_date}`;
+
+    // H1 et contenu (logique PHP exacte)
+    h1 = `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
+    content = `${comp_switch_content1} pour le modèle <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_body}</b> <strong>${type_date}</strong> de motorisation <strong>${vehicleData.type_name} ${vehicleData.type_power_ps}</strong> ch.`;
+    content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
+  }
 
   // === VALIDATION ROBOTS (logique PHP) ===
   const mockFamilyCount = 4; // Simule le résultat de la requête catalog_family
@@ -441,10 +503,9 @@ export default function VehicleDetailPage() {
             {/* Informations véhicule */}
             <div className="flex-1">
               <nav className="text-blue-200 text-sm mb-4">
-                <span>Constructeur</span> → 
-                <span className="mx-1">{breadcrumb.brand}</span> → 
-                <span className="mx-1">{breadcrumb.model}</span> → 
-                <span className="text-white">{breadcrumb.type}</span>
+                <a href="/" className="hover:text-white transition-colors">Accueil</a> → 
+                <a href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} className="mx-1 hover:text-white transition-colors">{breadcrumb.brand}</a> → 
+                <span className="text-white">{breadcrumb.model} {breadcrumb.type}</span>
               </nav>
               
               <h1 className="text-3xl font-bold mb-2" dangerouslySetInnerHTML={{ __html: seo.h1 }} />

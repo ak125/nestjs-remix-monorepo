@@ -107,9 +107,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       category: family.familyName as string,
       categorySlug: (family.familyName as string).toLowerCase().replace(/\s+/g, "-"),
       count: family.count as number,
-      articles: (family.articles as BlogArticle[]).sort(
-        (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-      ),
+      // Garder l'ordre de l'API (trié par mc_sort dans le backend)
+      articles: family.articles as BlogArticle[],
     }));
 
     const totalArticles: number = data.data.totalArticles ?? groupedArticles.reduce((s, g) => s + g.count, 0);

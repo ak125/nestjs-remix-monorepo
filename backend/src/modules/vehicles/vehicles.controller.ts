@@ -124,4 +124,9 @@ export class VehiclesController {
       };
     }
   }
+
+  @Get('meta-tags/:typeId')
+  async getMetaTagsByTypeId(@Param('typeId') typeId: string) {
+    return this.vehiclesService.getMetaTagsByTypeId(parseInt(typeId));
+  }
 }

@@ -1,11 +1,11 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useSearchParams, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useSearchParams, useLoaderData } from "@remix-run/react";
 import { Shield, Clock, Phone, Users, ShoppingCart, Award } from 'lucide-react';
 import { AboutSection } from "../components/home/AboutSection";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import { TopGammes } from "../components/home/TopGammes";
-import VehicleSelector from "../components/home/VehicleSelector";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
@@ -115,43 +115,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function IndexOptimized() {
-  const { stats, hierarchyData, topGammesData, equipementiersData } = useLoaderData<typeof loader>();
+  const { stats, hierarchyData, topGammesData, equipementiersData, brands } = useLoaderData<typeof loader>();
   const [_searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const handleVehicleSelected = (selection: {
-    brand?: any;
-    model?: any;
-    type?: any;
-    year?: number;
+    brand: any;
+    model: any;
+    type: any;
+    year: number;
   }) => {
-    console.log('🚗 Selection reçue:', selection);
-    
-    // Navigation uniquement si tous les éléments sont sélectionnés
-    if (selection.brand && selection.model && selection.type) {
-      const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
-      const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
-      
-      // Gérer les types sans alias en créant un slug automatique
-      let typeAlias = selection.type.type_alias;
-      console.log('🔧 Type alias initial:', typeAlias);
-      
-      if (!typeAlias && selection.type.type_liter && selection.type.type_fuel) {
-        const liter = (parseInt(selection.type.type_liter) / 100).toFixed(1).replace('.', '-');
-        const fuel = selection.type.type_fuel.toLowerCase();
-        typeAlias = `${liter}-${fuel}`;
-        console.log('🔧 Type alias généré:', typeAlias);
-      }
-      
-      const typeSlug = `${typeAlias || 'type'}-${selection.type.type_id}.html`;
-      console.log('🔧 Type slug final:', typeSlug);
-      
-      const url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}`;
-      console.log('🌐 URL générée:', url);
-      
-      // Navigation immédiate vers la page véhicule
-      navigate(url);
-    }
+    console.log('🚗 Sélection reçue via VehicleSelectorV2:', selection);
+    // La navigation est gérée automatiquement par VehicleSelectorV2 avec redirectOnSelect={true}
   };
 
   return (
@@ -186,13 +160,53 @@ export default function IndexOptimized() {
             </div>
           </div>
 
-          {/* Sélecteur de véhicule hybride */}
+          {/* Sélecteur de véhicule V2 moderne */}
           <div className="max-w-4xl mx-auto">
-            <VehicleSelector 
-              onVehicleSelected={handleVehicleSelected} 
-              showMineSearch={true}
-              navigateOnSelect={false}
+            <VehicleSelectorV2 
+              mode="full"
+              variant="card"
+              context="homepage"
+              showVinSearch={true}
+              redirectOnSelect={true}
+              redirectTo="vehicle-page"
+              onVehicleSelect={handleVehicleSelected}
             />
+          </div>
+
+          {/* Liens marques populaires */}
+          <div className="max-w-4xl mx-auto mt-8">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+              <h3 className="text-center text-lg font-semibold text-gray-800 mb-4">
+                🏭 Accès rapide par constructeur
+              </h3>
+              <div className="flex flex-wrap justify-center gap-3">
+                {brands.filter(b => b.isFavorite).slice(0, 12).map((brand) => (
+                  <Link
+                    key={brand.id}
+                    to={`/constructeurs/${brand.code}-${brand.id}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg transition-all duration-200 border border-blue-200 hover:border-blue-300 hover:shadow-md group"
+                  >
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">
+                      {brand.name}
+                    </span>
+                    <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
+              <div className="text-center mt-4">
+                <Link
+                  to="/constructeurs"
+                  className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                >
+                  Voir tous les constructeurs
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
           </div>
 
           {/* Statistiques en temps réel */}

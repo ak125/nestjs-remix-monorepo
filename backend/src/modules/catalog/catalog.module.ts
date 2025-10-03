@@ -11,7 +11,6 @@ import { FamilyGammeHierarchyController } from './controllers/family-gamme-hiera
 import { GammeUnifiedController } from './controllers/gamme-unified.controller';
 import { ImageProcessingController } from './controllers/image-test.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
-import { VehicleFilteredCatalogV3Controller } from './controllers/vehicle-filtered-catalog-v3.controller';
 import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
@@ -27,8 +26,6 @@ import { CatalogGammeService } from './services/catalog-gamme.service';
 import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
-import { VehicleFilteredCatalogService } from './services/vehicle-filtered-catalog-v2.service';
-import { VehicleFilteredCatalogServiceV3 } from './services/vehicle-filtered-catalog-v3-simple.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
 import { PiecesV4WorkingService } from './services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
@@ -75,7 +72,6 @@ import { PricingServiceV5UltimateFinal } from '../products/pricing-service-v5-ul
     GammeUnifiedController,
     ImageProcessingController,
     EquipementiersController,
-    VehicleFilteredCatalogV3Controller,
     VehicleFilteredCatalogV4Controller,
     PiecesCleanController,
     // PiecesDbController, // DÉSACTIVÉ - service manquant
@@ -89,8 +85,6 @@ import { PricingServiceV5UltimateFinal } from '../products/pricing-service-v5-ul
     FamilyGammeHierarchyService,
     GammeUnifiedService,
     EquipementiersService,
-    VehicleFilteredCatalogService,
-    VehicleFilteredCatalogServiceV3,
     VehicleFilteredCatalogV4HybridService,
     PiecesV4WorkingService,
     VehiclePiecesCompatibilityService,
@@ -108,8 +102,6 @@ import { PricingServiceV5UltimateFinal } from '../products/pricing-service-v5-ul
     CatalogFamilyService,
     CatalogGammeService,
     FamilyGammeHierarchyService,
-    VehicleFilteredCatalogService,
-    VehicleFilteredCatalogServiceV3,
     VehicleFilteredCatalogV4HybridService,
   ],
 })

@@ -1139,4 +1139,35 @@ export class VehiclesService extends SupabaseBaseService {
       version: '2.0.0-improved',
     };
   }
+
+  /**
+   * 🏷️ NOUVELLE MÉTHODE - Récupérer les meta tags ariane pour un type
+   */
+  async getMetaTagsByTypeId(typeId: number) {
+    try {
+      this.logger.log(`🏷️ Recherche meta tags ariane pour type_id: ${typeId}`);
+
+      const { data, error } = await this.supabase
+        .from('___meta_tags_ariane')
+        .select('*')
+        .ilike('mta_alias', `%-${typeId}`)
+        .limit(1);
+
+      if (error) {
+        this.logger.error('❌ Erreur récupération meta tags:', error);
+        return { data: null, error: error.message };
+      }
+
+      if (!data || data.length === 0) {
+        this.logger.log(`ℹ️ Aucun meta tag trouvé pour type_id: ${typeId}`);
+        return { data: null, error: null };
+      }
+
+      this.logger.log(`✅ Meta tags trouvés pour type_id ${typeId}`);
+      return { data: data[0], error: null };
+    } catch (error) {
+      this.logger.error('❌ Exception meta tags:', error);
+      return { data: null, error: String(error) };
+    }
+  }
 }

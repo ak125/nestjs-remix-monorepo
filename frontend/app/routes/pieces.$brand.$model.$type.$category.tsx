@@ -2,7 +2,7 @@
 // 🔧 Page de catalogue de pièces par catégorie pour un véhicule spécifique
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useNavigate } from "@remix-run/react";
+import { useLoaderData, Link, useNavigate, useParams } from "@remix-run/react";
 import { ArrowLeft, Filter, Grid, List } from "lucide-react";
 import { useState } from "react";
 
@@ -113,6 +113,31 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       }
     };
 
+    // 📚 Extraire pg_id du paramètre category et charger les conseils
+    const categoryParts = category.split('-');
+    const pg_id = categoryParts[categoryParts.length - 1];
+    
+    let conseils: Array<{ title: string; content: string }> = [];
+    try {
+      const conseilResponse = await fetch(
+        `http://localhost:3000/api/blog/conseil/${pg_id}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+          },
+        }
+      );
+      
+      if (conseilResponse.ok) {
+        const conseilData = await conseilResponse.json();
+        conseils = conseilData.conseils || [];
+        console.log(`[Catalog] ✅ ${conseils.length} conseils chargés pour pg_id=${pg_id}`);
+      }
+    } catch (error) {
+      console.error('[Catalog] ❌ Erreur chargement conseils:', error);
+      // Continue sans conseils
+    }
+
     // 🔧 Données mockées pour les pièces (à remplacer par vraie API)
     const mockParts: VehiclePart[] = [
       {
@@ -158,14 +183,18 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       }))
     ];
 
-    return json({
-      vehicle: vehicleInfo,
-      category: categoryInfo,
-      parts: mockParts,
-      breadcrumb: { brand, model, type, category }
-    });
-
-  } catch (error) {
+  return json({
+    vehicle: vehicleInfo,
+    category: categoryInfo,
+    parts: mockParts,
+    conseils,
+    breadcrumb: [
+      { label: 'Accueil', path: '/' },
+      { label: vehicleInfo.brand.name, path: `/pieces/${brand}` },
+      { label: vehicleInfo.model.name, path: `/pieces/${brand}/${model}` },
+      { label: categoryInfo.name, path: `/pieces/${brand}/${model}/${type}/${category}` },
+    ],
+  });  } catch (error) {
     console.error('Erreur loader pièces:', error);
     throw new Response("Erreur de chargement", { status: 500 });
   }
@@ -194,8 +223,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 // 🎨 Composant principal
-export default function VehiclePartsPage() {
-  const { vehicle, category, parts, breadcrumb } = useLoaderData<typeof loader>();
+export default function CatalogPage() {
+  const { vehicle, category, parts, conseils } = useLoaderData<typeof loader>();
+  const params = useParams();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('all');
@@ -227,7 +257,7 @@ export default function VehiclePartsPage() {
             </Link>
             <span className="text-gray-400">/</span>
             <Link 
-              to={`/constructeurs/${breadcrumb.brand}/${breadcrumb.model}/${breadcrumb.type}`}
+              to={`/constructeurs/${params.brand}/${params.model}/${params.type}`}
               className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
             >
               {vehicle.brand.name} {vehicle.model.name}
@@ -371,6 +401,81 @@ export default function VehiclePartsPage() {
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune pièce trouvée</h3>
             <p className="text-gray-600">Essayez de modifier vos filtres ou contactez notre support.</p>
+          </div>
+        )}
+
+        {/* 📚 Guides et conseils de remplacement */}
+        {conseils && conseils.length > 0 && (
+          <div className="mt-16 space-y-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Guide de remplacement</h2>
+              <p className="text-gray-600">Tout ce que vous devez savoir pour remplacer cette pièce</p>
+            </div>
+
+            {conseils.map((conseil, index) => {
+              // Définir les couleurs selon le type de conseil
+              const isSymptome = conseil.title.toLowerCase().includes('symptôme') || 
+                               conseil.title.toLowerCase().includes('défaillance') ||
+                               conseil.title.toLowerCase().includes('quand changer') ||
+                               conseil.title.toLowerCase().includes('rôle');
+              const isProcedure = conseil.title.toLowerCase().includes('démontage') || 
+                                conseil.title.toLowerCase().includes('remontage') ||
+                                conseil.title.toLowerCase().includes('changement');
+
+              let colorClasses = {
+                gradient: 'from-blue-50 to-indigo-50',
+                border: 'border-blue-200',
+                iconColor: 'text-blue-600',
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )
+              };
+
+              if (isSymptome) {
+                colorClasses = {
+                  gradient: 'from-orange-50 to-red-50',
+                  border: 'border-orange-200',
+                  iconColor: 'text-orange-600',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  )
+                };
+              } else if (isProcedure) {
+                colorClasses = {
+                  gradient: 'from-green-50 to-emerald-50',
+                  border: 'border-green-200',
+                  iconColor: 'text-green-600',
+                  icon: (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )
+                };
+              }
+
+              return (
+                <div 
+                  key={index}
+                  className={`p-6 bg-gradient-to-r ${colorClasses.gradient} rounded-xl border-2 ${colorClasses.border} shadow-lg`}
+                >
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                    <span className={colorClasses.iconColor}>
+                      {colorClasses.icon}
+                    </span>
+                    {conseil.title}
+                  </h3>
+                  <div 
+                    className="prose prose-lg max-w-none text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: conseil.content }}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

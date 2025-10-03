@@ -115,109 +115,118 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   }
 
   /**
-   * 🏃‍♂️ CONSTRUCTION CATALOGUE EN PARALLÈLE
+   * 🏃‍♂️ CONSTRUCTION CATALOGUE COMPLET - SANS FILTRAGE
+   * 💡 Philosophie: Afficher TOUT le catalogue, filtrage sur page produit
    */
   private async buildCatalogParallel(typeId: number): Promise<any> {
-    // 🚀 Étape 1: Relations complètes (requête principale)
-    const relations = await this.getCompleteRelations(typeId);
-    
-    if (!relations || relations.length === 0) {
-      this.logger.warn(`⚠️ [PARALLEL] Aucune relation pour type_id ${typeId}`);
-      return this.getGenericCatalog(typeId);
-    }
+    this.logger.log(`� [V4 SIMPLE] Catalogue complet (SANS filtrage) pour type_id ${typeId}`);
 
-    const allPgIds = [...new Set(relations.map((r: any) => r.rtp_pg_id))];
-
-    // 🚀 Étape 2: REQUÊTES PARALLÈLES (gain x3-5 en vitesse)
-    const [gammeData, catalogGammeData, familiesData] = await Promise.all([
-      // Requête gammes (toutes en une fois)
-      this.supabase
-        .from('pieces_gamme')
-        .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img, pg_display')
-        .in('pg_id', allPgIds),
-      
-      // Requête liaisons gamme→famille
-      this.supabase
-        .from('catalog_gamme')
-        .select('mc_pg_id, mc_mf_id')
-        .in('mc_pg_id', allPgIds),
-        
-      // Requête familles (toutes d'un coup)
+    // 🚀 3 requêtes parallèles ultra-simples
+    const [familiesData, catalogGammeData, gammeData] = await Promise.all([
+      // 1️⃣ Toutes les familles visibles
       this.supabase
         .from('catalog_family')
-        .select('mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort, mf_display')
+        .select('mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort')
+        .eq('mf_display', '1')
+        .order('mf_sort', { ascending: true }),
+        
+      // 2️⃣ Toutes les liaisons famille↔gamme
+      this.supabase
+        .from('catalog_gamme')
+        .select('mc_pg_id, mc_mf_id, mc_sort')
+        .order('mc_sort', { ascending: true }),
+      
+      // 3️⃣ Toutes les gammes visibles
+      this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img')
+        .eq('pg_display', '1')
+        .order('pg_id', { ascending: true })
     ]);
 
-    // Vérification erreurs parallèles
-    if (gammeData.error) throw gammeData.error;
-    if (catalogGammeData.error) throw catalogGammeData.error;
+    // Vérification erreurs
     if (familiesData.error) throw familiesData.error;
+    if (catalogGammeData.error) throw catalogGammeData.error;
+    if (gammeData.error) throw gammeData.error;
 
-    this.logger.log(`🚀 [PARALLEL] ${gammeData.data.length} gammes, ${catalogGammeData.data.length} liaisons, ${familiesData.data.length} familles`);
+    this.logger.log(
+      `✅ [V4 SIMPLE] ${familiesData.data.length} familles, ` +
+      `${gammeData.data.length} gammes, ` +
+      `${catalogGammeData.data.length} liaisons`
+    );
 
-    // 🔗 Étape 3: Construction optimisée des familles
-    return this.buildFamiliesOptimized(
-      gammeData.data,
+    // 🔗 Construction simple des familles
+    return this.buildCompleteCatalog(
+      familiesData.data,
       catalogGammeData.data,
-      familiesData.data
+      gammeData.data
     );
   }
 
   /**
-   * 🏗️ CONSTRUCTION OPTIMISÉE DES FAMILLES
+   * 🏗️ CONSTRUCTION CATALOGUE COMPLET - VERSION SIMPLIFIÉE
+   * 💡 Pas de filtrage, juste assemblage des données
    */
-  private buildFamiliesOptimized(gammes: any[], liaisons: any[], families: any[]): any {
-    // Map pour performance O(1) lookup
-    const gammeMap = new Map(gammes.map(g => [g.pg_id, g]));
-    const familyMap = new Map(families.map(f => [f.mf_id, f]));
+  private buildCompleteCatalog(families: any[], liaisons: any[], gammes: any[]): any {
+    // Map pour lookup rapide O(1)
+    const gammeMap = new Map(gammes.map((g) => [g.pg_id, g]));
     
-    // Groupement liaisons par famille
-    const familyGammes = new Map<number, any[]>();
+    // Grouper gammes par famille
+    const familyGammesMap = new Map<number, any[]>();
     
-    liaisons.forEach(liaison => {
+    liaisons.forEach((liaison) => {
       const gamme = gammeMap.get(liaison.mc_pg_id);
-      if (gamme) {
-        if (!familyGammes.has(liaison.mc_mf_id)) {
-          familyGammes.set(liaison.mc_mf_id, []);
-        }
-        familyGammes.get(liaison.mc_mf_id)!.push({
-          ...gamme,
-          pg_sort: parseInt(gamme.pg_display) || 0  // Utiliser pg_display comme sort
-        });
+      if (!gamme) return; // Skip si gamme n'existe pas
+      
+      const familyId = liaison.mc_mf_id;
+      if (!familyGammesMap.has(familyId)) {
+        familyGammesMap.set(familyId, []);
       }
+      
+      familyGammesMap.get(familyId)!.push({
+        pg_id: gamme.pg_id,
+        pg_alias: gamme.pg_alias,
+        pg_name: gamme.pg_name,
+        pg_name_meta: gamme.pg_name_meta,
+        pg_img: gamme.pg_img,
+        pg_sort: parseInt(liaison.mc_sort) || 0,
+      });
     });
 
-    // Construction finale des familles avec gammes triées
-    const finalFamilies = Array.from(familyGammes.entries())
-      .map(([mfId, familyGammes]) => {
-        const family = familyMap.get(mfId);
-        if (!family) return null;
-
-        // Tri gammes par pg_display (comme V3)
-        const sortedGammes = familyGammes.sort((a, b) => (a.pg_display || 0) - (b.pg_display || 0));
+    // Construire les familles finales
+    const finalFamilies = families
+      .map((family) => {
+        const familyGammes = familyGammesMap.get(family.mf_id) || [];
+        
+        // Trier gammes par mc_sort
+        const sortedGammes = familyGammes.sort((a, b) => a.pg_sort - b.pg_sort);
 
         return {
           mf_id: family.mf_id,
           mf_name: family.mf_name,
           mf_name_system: family.mf_name_system,
-          mf_description: family.mf_description,
-          mf_pic: family.mf_pic,
+          mf_description: family.mf_description || `Système ${family.mf_name}`,
+          mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
           mf_sort: parseInt(family.mf_sort) || 0,
           gammes_count: sortedGammes.length,
-          gammes: sortedGammes
+          gammes: sortedGammes,
         };
       })
-      .filter(family => family !== null)
+      .filter((family) => family.gammes_count > 0) // Seulement familles avec gammes
       .sort((a, b) => a.mf_sort - b.mf_sort);
 
     const totalGammes = finalFamilies.reduce((sum, f) => sum + f.gammes_count, 0);
 
+    this.logger.log(
+      `✅ [CATALOG BUILD] ${finalFamilies.length} familles, ${totalGammes} gammes TOTAL`
+    );
+
     return {
-      queryType: 'DIRECT_SUCCESS_V4',
+      queryType: 'COMPLETE_CATALOG_V4_NO_FILTER',
       families: finalFamilies,
       totalFamilies: finalFamilies.length,
       totalGammes,
-      optimizationLevel: 'V4_HYBRID_PARALLEL'
+      optimizationLevel: 'V4_SIMPLE_COMPLETE',
     };
   }
 
