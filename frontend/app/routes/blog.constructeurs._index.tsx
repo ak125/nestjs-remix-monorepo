@@ -2,7 +2,18 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
 
-// Données de démo pour les constructeurs automobiles
+const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
+// Liste complète des constructeurs (pour la sidebar)
+const ALL_BRANDS = [
+  'ALFA ROMEO', 'AUDI', 'BMW', 'CHEVROLET', 'CHRYSLER', 'CITROËN', 'DACIA', 'DAEWOO',
+  'FIAT', 'FORD', 'HONDA', 'HYUNDAI', 'IVECO', 'JEEP', 'KIA', 'LADA', 'LANCIA',
+  'LAND ROVER', 'MAZDA', 'MERCEDES', 'MINI', 'MITSUBISHI', 'NISSAN', 'OPEL', 'PEUGEOT',
+  'PORSCHE', 'RENAULT', 'SAAB', 'SEAT', 'SKODA', 'SMART', 'SUZUKI', 'TOYOTA',
+  'VOLKSWAGEN', 'VOLVO'
+].sort();
+
+// Données de démo FALLBACK si API fail
 const DEMO_CONSTRUCTEURS = [
   {
     id: "constructeur_1",
@@ -224,7 +235,56 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const sortBy = url.searchParams.get('sortBy') || 'name';
   const limit = 24;
 
-  console.log('[DEMO] Constructeurs loader with params:', { page, search, letter, brand, sortBy });
+  console.log('[API] Constructeurs loader with params:', { page, search, letter, brand, sortBy });
+
+  // Essayer de récupérer depuis l'API
+  try {
+    const apiUrl = new URL(`${API_BASE_URL}/api/blog/constructeurs`);
+    apiUrl.searchParams.set('page', page.toString());
+    apiUrl.searchParams.set('limit', limit.toString());
+    if (search) apiUrl.searchParams.set('search', search);
+    if (letter) apiUrl.searchParams.set('letter', letter);
+    if (brand) apiUrl.searchParams.set('brand', brand);
+    if (sortBy) apiUrl.searchParams.set('sortBy', sortBy);
+
+    const response = await fetch(apiUrl.toString(), {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(5000) // 5s timeout
+    });
+
+    if (response.ok) {
+      const apiData = await response.json();
+      console.log('[API] Success:', apiData.items?.length || 0, 'constructeurs');
+      
+      // Enrichir avec les données manquantes
+      return json({
+        constructeurs: apiData.items || [],
+        total: apiData.total || 0,
+        page: apiData.page || page,
+        totalPages: apiData.totalPages || 1,
+        search,
+        letter,
+        brand,
+        sortBy,
+        letters: Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)),
+        featuredConstructeurs: (apiData.items || []).slice(0, 6),
+        popularBrands: ALL_BRANDS.slice(0, 10).map(name => ({ name, count: 1, totalViews: 0 })),
+        stats: {
+          totalViews: apiData.total * 1500,
+          avgViews: 1500,
+          totalConstructeurs: apiData.total || 0,
+          totalModels: apiData.total * 15
+        },
+        success: true,
+        source: 'api'
+      });
+    }
+  } catch (error) {
+    console.warn('[API] Error, using fallback data:', error);
+  }
+
+  // FALLBACK: Utiliser les données de démo
+  console.log('[DEMO] Using fallback data');
 
   // Filtrage des données de démo
   let filteredConstructeurs = DEMO_CONSTRUCTEURS;
@@ -562,6 +622,19 @@ export default function ConstructeursHomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-3">
+          <nav className="flex text-sm text-gray-600">
+            <Link to="/" className="hover:text-blue-600">Automecanik</Link>
+            <span className="mx-2">›</span>
+            <Link to="/blog" className="hover:text-blue-600">Blog automobile</Link>
+            <span className="mx-2">›</span>
+            <span className="text-gray-900 font-medium">Constructeurs automobile</span>
+          </nav>
+        </div>
+      </div>
+
       {/* Header avec gradient */}
       <div className="bg-gradient-to-r from-blue-900 to-blue-700 text-white">
         <div className="container mx-auto px-4 py-12">
@@ -603,7 +676,31 @@ export default function ConstructeursHomePage() {
         </section>
       )}
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 lg:flex lg:gap-8">
+        {/* Sidebar avec toutes les marques */}
+        <aside className="hidden lg:block lg:w-64 flex-shrink-0">
+          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+            <h3 className="font-bold text-lg mb-4 uppercase">Marques des constructeurs</h3>
+            <div className="space-y-1 max-h-[600px] overflow-y-auto">
+              {ALL_BRANDS.map((brandName) => (
+                <button
+                  key={brandName}
+                  onClick={() => handleFilterChange('brand', brandName)}
+                  className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${
+                    brand === brandName
+                      ? 'bg-blue-500 text-white font-semibold'
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                >
+                  {brandName}
+                </button>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Contenu principal */}
+        <div className="flex-1">
         {/* Barre de recherche et filtres */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -805,25 +902,66 @@ export default function ConstructeursHomePage() {
         </div>
       </section>
 
-      {/* Section marques populaires */}
-      {popularBrands.length > 0 && (
-        <section className="container mx-auto px-4 py-12">
-          <h2 className="text-2xl font-bold mb-6">Marques les plus consultées</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {popularBrands.slice(0, 10).map((brand) => (
-              <button
-                key={brand.name}
-                onClick={() => handleFilterChange('brand', brand.name)}
-                className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center border border-gray-200 hover:border-blue-300"
-              >
-                <div className="font-semibold text-gray-900">{brand.name}</div>
-                <div className="text-sm text-gray-600">{brand.count} articles</div>
-                <div className="text-xs text-gray-500">{brand.totalViews.toLocaleString()} vues</div>
-              </button>
-            ))}
+        {/* Section marques populaires */}
+        {popularBrands.length > 0 && (
+          <section className="py-12">
+            <h2 className="text-2xl font-bold mb-6">Marques les plus consultées</h2>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {popularBrands.slice(0, 10).map((brand) => (
+                <button
+                  key={brand.name}
+                  onClick={() => handleFilterChange('brand', brand.name)}
+                  className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-center border border-gray-200 hover:border-blue-300"
+                >
+                  <div className="font-semibold text-gray-900">{brand.name}</div>
+                  <div className="text-sm text-gray-600">{brand.count} articles</div>
+                  <div className="text-xs text-gray-500">{brand.totalViews.toLocaleString()} vues</div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+      
+      {/* Section OEM comme sur la page actuelle */}
+      <section className="bg-white py-12 border-t">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">Les pièces autos d'origine OEM</h2>
+            <div className="prose prose-lg max-w-none text-gray-700 space-y-4">
+              <p className="text-lg">
+                <strong>OEM</strong> abréviation de : <em>Original Equipment Manufacturer</em>.
+              </p>
+              <p>
+                Un producteur tiers sous contrat fournit des pièces OEM qui portent la marque du constructeur automobile. 
+                Le fabricant OEM procède au poinçonnage de l'article avec le logo de la marque du manufacturier, 
+                puis emballé et étiqueté dans le packaging de ce dernier.
+              </p>
+              <p>
+                Les pièces OEM en tout point identiques aux pièces notifiées première monte, c'est-à-dire celle qui 
+                équipait votre véhicule à sa sortie d'usine après la chaîne d'assemblage se vend exclusivement à travers 
+                le réseau des manufacturiers automobiles. Elles sont les seules à être conditionnées dans un emballage 
+                de la marque avec le logo du constructeur en question.
+              </p>
+              <p>
+                Dans le cadre du contrat entre le constructeur et l'équipementier, le producteur est autorisé par son 
+                partenaire à composer sa propre gamme de pièces auto. Cependant, les articles n'endossent pas le label 
+                du constructeur automobile. Au lieu de cela, ils portent la marque de l'équipementier auto qui les a élaborés.
+              </p>
+              <p>
+                Le composant à l'identique sans le logo constructeur, fabriqué par la même usine d'équipement, est disponible 
+                dans le commerce. Ces accessoires sont connus sous le nom de <strong>pièces OES</strong>. Les pièces détachées 
+                OES sont des pièces d'origine sans la marque du constructeur automobile et sont fabriquées avec les machines 
+                et la même précision que les pièces d'origine, ce qui garantit un fonctionnement parfait.
+              </p>
+              <p className="text-sm text-gray-600 italic">
+                Il est à noter que les concessionnaires se réservent une gamme nommée : pièces captives, 
+                affectées uniquement aux concessionnaires automobiles.
+              </p>
+            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 }
