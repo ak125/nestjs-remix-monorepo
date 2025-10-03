@@ -78,11 +78,18 @@ export class AdviceHierarchyController {
       const familyMap = new Map();
       if (familiesResult.data) {
         for (const f of familiesResult.data) {
-          familyMap.set(f.mf_id, { id: f.mf_id, name: f.mf_name });
+          familyMap.set(f.mf_id, {
+            id: f.mf_id,
+            name: f.mf_name,
+            sort: f.mf_sort,
+          });
         }
       }
 
-      const pgToFamily = new Map<string, { id: number; name: string }>();
+      const pgToFamily = new Map<
+        string,
+        { id: number; name: string; sort: number }
+      >();
       if (catalogResult.data) {
         for (const mapping of catalogResult.data) {
           const family = familyMap.get(mapping.mc_mf_prime);
@@ -95,7 +102,12 @@ export class AdviceHierarchyController {
       // 5. Grouper les articles par famille
       const familyGroups = new Map<
         string,
-        { familyId: number; familyName: string; articles: any[] }
+        {
+          familyId: number;
+          familyName: string;
+          familySort: number;
+          articles: any[];
+        }
       >();
 
       articles.forEach((article: any) => {
@@ -107,6 +119,7 @@ export class AdviceHierarchyController {
             familyGroups.set(family.name, {
               familyId: family.id,
               familyName: family.name,
+              familySort: family.sort,
               articles: [],
             });
           }
@@ -117,6 +130,7 @@ export class AdviceHierarchyController {
             familyGroups.set('Autres', {
               familyId: 999,
               familyName: 'Autres',
+              familySort: 999,
               articles: [],
             });
           }
@@ -124,7 +138,7 @@ export class AdviceHierarchyController {
         }
       });
 
-      // 6. Convertir en array et trier par nombre d'articles
+      // 6. Convertir en array et trier par mf_sort (ordre database)
       const result = Array.from(familyGroups.values())
         .map((group) => ({
           ...group,
@@ -134,7 +148,7 @@ export class AdviceHierarchyController {
             0,
           ),
         }))
-        .sort((a, b) => b.totalViews - a.totalViews);
+        .sort((a, b) => a.familySort - b.familySort);
 
       this.logger.log(`✅ ${result.length} familles trouvées`);
 
