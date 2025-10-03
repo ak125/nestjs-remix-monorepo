@@ -2,7 +2,7 @@
 import * as React from "react";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles } from "lucide-react";
+import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles, Clock } from "lucide-react";
 import { Card, CardContent } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -82,51 +82,6 @@ const FAMILY_ICONS: Record<string, string> = {
   "Transmission": "🔧", "Support moteur": "🏗️", "Accessoires": "🛠️", "Amortisseur et suspension": "🔵",
   "Turbo": "🚀", "Autres": "📦",
 };
-
-/* ===========================
-   Image produit avec fallback
-=========================== */
-function ProductImage({
-  pgAlias,
-  title,
-  category,
-  icon,
-  colors,
-}: {
-  pgAlias: string | null;
-  title: string;
-  category: string;
-  icon: string;
-  colors: { gradient: string; bg: string; text: string; border: string; badge: string };
-}) {
-  const [imageError, setImageError] = React.useState(false);
-  const imageUrl = pgAlias ? `/gammes-produits/catalogue/${pgAlias}.webp` : null;
-
-  if (!imageUrl || imageError) {
-    return (
-      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${colors.gradient} flex items-center justify-center`}>
-        <div className="text-white text-center p-4">
-          <div className="text-4xl mb-2">{icon}</div>
-          <p className="text-xs font-medium opacity-90 line-clamp-2">{category}</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative h-40 overflow-hidden bg-gray-100">
-      <img
-        src={imageUrl}
-        alt={title}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        loading="lazy"
-        onError={() => setImageError(true)}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    </div>
-  );
-}
-
 /* ===========================
    Loader
 =========================== */
@@ -202,7 +157,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
    Page
 =========================== */
 export default function BlogConseilsIndex() {
-  const { groupedArticles, familyGroups, totalArticles, stats } = useLoaderData<typeof loader>();
+  const { groupedArticles, totalArticles, stats } = useLoaderData<typeof loader>();
 
   const formatViews = (views: number) => {
     if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
@@ -308,7 +263,7 @@ export default function BlogConseilsIndex() {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto space-y-24">
             {groupedArticles.length > 0 ? (
-              groupedArticles.map((group, groupIndex) => {
+              groupedArticles.map((group, _groupIndex) => {
                 const colors = getFamilyColor(group.category);
                 const icon = FAMILY_ICONS[group.category] || "📦";
                 const groupViews = group.articles.reduce((s, a) => s + (a.viewsCount || 0), 0);
@@ -334,60 +289,87 @@ export default function BlogConseilsIndex() {
                     </div>
 
                     {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {group.articles.map((article) => (
                         <Link
                           key={article.id}
                           to={`/blog-pieces-auto/conseils/${article.pg_alias || article.slug}`}
                           className="group block"
                         >
-                          <Card className="h-full hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-blue-400 bg-white">
-                            <ProductImage
-                              pgAlias={article.pg_alias}
-                              title={article.title}
-                              category={group.category}
-                              icon={icon}
-                              colors={colors}
-                            />
-
-                            <CardContent className="p-5">
-                              <div className="flex items-center justify-between mb-3">
-                                <Badge variant="secondary" className="text-xs">
-                                  <span className="mr-1">{icon}</span>
-                                  {group.category}
-                                </Badge>
-                                {article.viewsCount > 0 && (
-                                  <div className="flex items-center gap-1 text-gray-500 text-xs">
-                                    <Eye className="w-3.5 h-3.5" />
-                                    <span>{formatViews(article.viewsCount)}</span>
+                          <Card className="h-full hover:shadow-2xl hover:shadow-blue-100/50 transition-all duration-300 border-2 border-gray-100 hover:border-blue-300 bg-white overflow-hidden group-hover:-translate-y-1">
+                            {/* Layout horizontal: image à gauche + contenu à droite */}
+                            <div className="flex flex-row h-full">
+                              {/* Image à gauche - fixe 160px */}
+                              <div className="relative w-40 flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
+                                {article.featuredImage ? (
+                                  <img
+                                    src={article.featuredImage}
+                                    alt={article.title}
+                                    className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className={`h-full flex items-center justify-center bg-gradient-to-br ${colors.gradient}`}>
+                                    <span className="text-5xl opacity-50 drop-shadow-sm">{icon}</span>
+                                  </div>
+                                )}
+                                
+                                {/* Nom de la pièce en bas avec glassmorphism */}
+                                {article.pg_alias && (
+                                  <div className="absolute bottom-0 left-0 right-0 p-2">
+                                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg px-2.5 py-1.5 text-center">
+                                      <p className="text-xs font-bold text-gray-900 truncate capitalize">
+                                        {article.pg_alias.replace(/-/g, ' ')}
+                                      </p>
+                                    </div>
                                   </div>
                                 )}
                               </div>
 
-                              <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight">
-                                {article.title}
-                              </h3>
-
-                              <p className="text-gray-600 text-sm line-clamp-3 mb-4">{article.excerpt}</p>
-
-                              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                <div className="flex items-center gap-1 text-xs text-gray-500">
-                                  <Calendar className="w-3.5 h-3.5" />
-                                  <span>
-                                    {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    })}
-                                  </span>
+                              {/* Contenu à droite */}
+                              <CardContent className="p-5 flex-1 flex flex-col min-w-0">
+                                {/* Header avec vues */}
+                                <div className="flex items-start justify-between gap-3 mb-3">
+                                  <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight flex-1">
+                                    {article.title}
+                                  </h3>
+                                  {article.viewsCount > 0 && (
+                                    <Badge variant="secondary" className="flex items-center gap-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0 px-2.5 py-1">
+                                      <Eye className="w-3.5 h-3.5" />
+                                      <span>{formatViews(article.viewsCount)}</span>
+                                    </Badge>
+                                  )}
                                 </div>
 
-                                <div className="flex items-center gap-1 text-blue-600 font-semibold text-sm group-hover:gap-2 transition-all">
-                                  <span>Lire</span>
-                                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                {/* Description */}
+                                <p className="text-muted-foreground text-sm line-clamp-2 mb-4 leading-relaxed">
+                                  {article.excerpt}
+                                </p>
+
+                                {/* Footer avec design amélioré */}
+                                <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100 mt-auto">
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+                                    <div className="p-1 bg-gray-100 rounded-md">
+                                      <Calendar className="w-3.5 h-3.5 text-gray-600" />
+                                    </div>
+                                    <span>
+                                      {new Date(article.publishedAt).toLocaleDateString("fr-FR", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                      })}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-primary font-bold text-sm group-hover:gap-3 transition-all">
+                                    <span>Lire l'article</span>
+                                    <div className="p-1 bg-blue-50 rounded-md group-hover:bg-blue-100 transition-colors">
+                                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            </CardContent>
+                              </CardContent>
+                            </div>
                           </Card>
                         </Link>
                       ))}

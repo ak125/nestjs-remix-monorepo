@@ -26,12 +26,44 @@ import {
 @Injectable()
 export class BlogService {
   private readonly logger = new Logger(BlogService.name);
+  private readonly SUPABASE_URL = process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+  private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
 
   constructor(
     private readonly supabaseService: SupabaseIndexationService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly blogCacheService: BlogCacheService,
   ) {}
+
+  /**
+   * 🖼️ Construire l'URL CDN complète pour une image
+   */
+  private buildImageUrl(
+    filename: string | null, 
+    folder: string, 
+    marqueAlias?: string
+  ): string | null {
+    // 🔍 DEBUG avec LOG (pas debug)
+    this.logger.log(`   🖼️  buildImageUrl() appelé: filename="${filename}", folder="${folder}", marque="${marqueAlias || 'N/A'}"`);
+    
+    if (!filename) {
+      this.logger.log(`   🖼️  → Retourne NULL (filename vide)`);
+      return null;
+    }
+    
+    if (filename.startsWith('http://') || filename.startsWith('https://')) {
+      this.logger.log(`   🖼️  → Retourne tel quel (déjà URL): ${filename}`);
+      return filename;
+    }
+    
+    // Si marqueAlias fourni, utiliser structure marques-modeles/{marque}/{modele}.webp
+    const url = marqueAlias 
+      ? `${this.CDN_BASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${filename}`
+      : `${this.CDN_BASE_URL}/${folder}/${filename}`;
+    
+    this.logger.log(`   🖼️  → URL construite: ${url}`);
+    return url;
+  }
 
   /**
    * 🏠 Page d'accueil du blog (remplace blog.index.php) - VERSION AMÉLIORÉE
@@ -260,14 +292,25 @@ export class BlogService {
         `✅ Article trouvé: ${data.ba_h1} (slug: ${data.ba_alias})`,
       );
       const article = await this.transformAdviceToArticleWithSections(data);
-      // Ajouter le pg_alias qu'on connaît déjà depuis le paramètre
+      // Ajouter le pg_alias et pg_id qu'on connaît déjà depuis la gamme
       article.pg_alias = pg_alias;
+      article.pg_id = gammeData.pg_id;
+      
+      // Ajouter l'image featured basée sur le pg_alias
+      article.featuredImage = pg_alias
+        ? this.buildImageUrl(`${pg_alias}.webp`, 'articles/gammes-produits/catalogue')
+        : null;
       
       // Charger les articles croisés (related articles)
       article.relatedArticles = await this.getRelatedArticles(data.ba_id);
       
       // Charger les véhicules compatibles avec cette gamme de pièce
-      article.compatibleVehicles = await this.getCompatibleVehicles(gammeData.pg_id, 12);
+      // Limite: 1000 véhicules (quasi illimité)
+      article.compatibleVehicles = await this.getCompatibleVehicles(
+        gammeData.pg_id,
+        1000,
+        pg_alias,
+      );
       
       return article;
     } catch (error) {
@@ -326,8 +369,15 @@ export class BlogService {
   /**
    * 🚗 Charger les véhicules compatibles avec une gamme de pièce
    * Version simplifiée : requête directe sans multiples étapes
+   * @param pg_id - ID de la pièce générique
+   * @param limit - Nombre max de véhicules (défaut: 1000 = quasi illimité)
+   * @param pg_alias - Alias de la gamme pour construire l'URL
    */
-  async getCompatibleVehicles(pg_id: number, limit = 12): Promise<any[]> {
+  async getCompatibleVehicles(
+    pg_id: number,
+    limit = 1000,
+    pg_alias = '',
+  ): Promise<any[]> {
     try {
       this.logger.log(
         `🚗 Chargement véhicules compatibles pour PG_ID: ${pg_id}`,
@@ -336,6 +386,11 @@ export class BlogService {
       // Étape 1 : Récupérer les TYPE_ID compatibles depuis __cross_gamme_car_new
       // Niveau 1 = Véhicules les plus populaires (ventes les plus importantes)
       // On essaie niveau 1 d'abord, puis niveaux 2, 3, 4 si nécessaire
+      //
+      // 🎯 TRI PAR POPULARITÉ DANS CHAQUE NIVEAU :
+      // - order('cgc_id', DESC) = Les associations les plus récentes/populaires en premier
+      // - Les cgc_id élevés = Véhicules qui achètent LE PLUS cette pièce
+      // - Exemple: FIAT PUNTO, VW GOLF (grand public) avant AUDI A6, BMW (premium)
       let crossData = null;
       let crossError = null;
       
@@ -345,7 +400,7 @@ export class BlogService {
           .select('cgc_type_id, cgc_level')
           .eq('cgc_pg_id', pg_id)
           .eq('cgc_level', level)
-          .order('cgc_id', { ascending: false })
+          .order('cgc_id', { ascending: true }) // 🔥 TEST: ID ASC = Plus anciens/premiers ajoutés
           .limit(limit);
         
         if (result.data && result.data.length > 0) {
@@ -491,6 +546,12 @@ export class BlogService {
             period = `depuis ${type.type_month_from}/${type.type_year_from}`;
           }
 
+          // 🔍 DEBUG: Logger les valeurs brutes de la DB (premier véhicule seulement)
+          if (!modele._logged) {
+            this.logger.debug(`   🖼️  DB RAW - ${marque.marque_name}: marque_logo="${marque.marque_logo}", modele_pic="${modele.modele_pic}"`);
+            modele._logged = true;
+          }
+
           return {
             type_id: type.type_id,
             type_alias: type.type_alias,
@@ -502,13 +563,25 @@ export class BlogService {
             modele_id: modele.modele_id,
             modele_alias: modele.modele_alias,
             modele_name: modele.modele_name,
-            modele_pic: modele.modele_pic,
+            // 🖼️ URL CDN complète pour l'image du modèle (structure: marques-modeles/{marque}/{fichier})
+            // On utilise modele_pic de la DB qui contient le vrai nom de fichier
+            modele_pic: this.buildImageUrl(
+              modele.modele_pic,
+              'unused',
+              marque.marque_alias,
+            ),
             marque_id: marque.marque_id,
             marque_alias: marque.marque_alias,
             marque_name: marque.marque_name,
-            marque_logo: marque.marque_logo,
-            // URL vers la page catalogue
-            catalog_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`,
+            // 🖼️ URL CDN complète pour le logo de la marque
+            marque_logo: this.buildImageUrl(
+              marque.marque_logo,
+              'constructeurs-automobiles/marques-logos',
+            ),
+            // URL vers la gamme du véhicule (avec pg_alias si disponible)
+            catalog_url: pg_alias
+              ? `/pieces/${pg_alias}-${pg_id}/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`
+              : `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`,
           };
         })
         .filter((v) => v !== null);
@@ -811,19 +884,26 @@ export class BlogService {
   private async transformAdviceToArticleWithSections(
     advice: any,
   ): Promise<BlogArticle> {
-    // Charger les sections H2 et H3 en parallèle
-    const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
-      this.supabaseService.client
-        .from('__blog_advice_h2')
-        .select('*')
-        .eq('ba2_ba_id', advice.ba_id)
-        .order('ba2_id'),
-      this.supabaseService.client
+    // Charger d'abord les H2
+    const { data: h2Sections } = await this.supabaseService.client
+      .from('__blog_advice_h2')
+      .select('*')
+      .eq('ba2_ba_id', advice.ba_id)
+      .order('ba2_id');
+
+    // Récupérer les IDs des H2 pour charger leurs H3
+    const h2Ids = h2Sections?.map((h2: any) => h2.ba2_id) || [];
+    
+    // Charger les H3 qui appartiennent à ces H2
+    let h3Sections: any[] = [];
+    if (h2Ids.length > 0) {
+      const { data: h3Data } = await this.supabaseService.client
         .from('__blog_advice_h3')
         .select('*')
-        .eq('ba3_ba_id', advice.ba_id)
-        .order('ba3_id'),
-    ]);
+        .in('ba3_ba2_id', h2Ids)
+        .order('ba3_id');
+      h3Sections = h3Data || [];
+    }
 
     // Construire les sections avec structure hiérarchique
     const sections: BlogSection[] = [];
@@ -873,6 +953,11 @@ export class BlogService {
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
+      categorySlug: advice.pg_alias,
+      vehicles: [],
+      featuredImage: advice.pg_alias 
+        ? this.buildImageUrl(`${advice.pg_alias}.webp`, 'articles/gammes-produits/catalogue')
+        : null,
       sections, // Sections chargées depuis les tables
       legacy_id: advice.ba_id,
       legacy_table: '__blog_advice',
@@ -905,6 +990,7 @@ export class BlogService {
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
+      featuredImage: null, // pg_alias pas disponible ici, sera enrichi après
       sections: [], // Pas de sections pour les listes
       legacy_id: advice.ba_id,
       legacy_table: '__blog_advice',
@@ -938,6 +1024,7 @@ export class BlogService {
       keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       tags: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       publishedAt: guide.bg_create,
+      featuredImage: null, // Les guides n'ont pas de gamme, pas d'image featured
       updatedAt: guide.bg_update,
       viewsCount: parseInt(guide.bg_visit) || 0,
       sections: [],
@@ -1204,10 +1291,17 @@ export class BlogService {
       gammes?.forEach(g => pgAliasMap.set(g.pg_id, g.pg_alias));
 
       // Enrichir chaque article
-      return articles.map(article => ({
-        ...article,
-        pg_alias: pgAliasMap.get((article as any).ba_pg_id) || null,
-      }));
+      return articles.map(article => {
+        const ba_pg_id = (article as any).ba_pg_id;
+        const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
+        
+        return {
+          ...article,
+          pg_id: pg_id, // Convertir ba_pg_id (string) en pg_id (number) pour l'interface
+          pg_alias: pgAliasMap.get(ba_pg_id) || null,
+          ba_pg_id: ba_pg_id, // Garder aussi ba_pg_id pour le frontend
+        };
+      });
     } catch (error) {
       this.logger.warn('Erreur enrichWithPgAlias:', error);
       return articles;
@@ -1292,5 +1386,350 @@ export class BlogService {
   ): Promise<BlogArticle | null> {
     // Pour l'instant retourne null, à implémenter quand les tables modernes seront créées
     return null;
+  }
+
+  /**
+   * 👀 Incrémenter les vues d'un article
+   * POST /api/blog/article/:slug/increment-views
+   */
+  async incrementArticleViews(slug: string): Promise<{ success: boolean; views: number }> {
+    try {
+      this.logger.log(`👀 Incrémentation vues pour: ${slug}`);
+
+      // 1. Trouver l'article pour identifier sa table et son ID
+      const article = await this.getArticleBySlug(slug);
+      
+      if (!article) {
+        throw new Error(`Article non trouvé: ${slug}`);
+      }
+
+      const { legacy_table, legacy_id } = article;
+      
+      if (!legacy_table || !legacy_id) {
+        throw new Error(`Article sans legacy_table/legacy_id: ${slug}`);
+      }
+
+      // 2. Déterminer le champ de compteur selon la table
+      let viewField = '';
+      let idField = '';
+      
+      switch (legacy_table) {
+        case '__blog_advice':
+          viewField = 'ba_visit';
+          idField = 'ba_id';
+          break;
+        case '__blog_guide':
+          viewField = 'bg_visit';
+          idField = 'bg_id';
+          break;
+        case '__blog_constructeur':
+          viewField = 'bc_visit';
+          idField = 'bc_id';
+          break;
+        case '__blog_glossaire':
+          viewField = 'bgl_visit';
+          idField = 'bgl_id';
+          break;
+        default:
+          throw new Error(`Table non supportée: ${legacy_table}`);
+      }
+
+      // 3. Incrémenter avec UPDATE classique (RPC optionnelle pour plus tard)
+      this.logger.log(
+        `📊 Incrémentation de ${viewField} pour ${idField}=${legacy_id}`,
+      );
+
+      // Récupérer la valeur actuelle
+      const { data: currentData } = await this.supabaseService.client
+        .from(legacy_table)
+        .select(viewField)
+        .eq(idField, legacy_id)
+        .single();
+
+      const currentViews = parseInt(
+        String((currentData as any)?.[viewField] || '0'),
+        10,
+      );
+      const newViews = currentViews + 1;
+
+      // Mettre à jour
+      const { error: updateError } = await this.supabaseService.client
+        .from(legacy_table)
+        .update({ [viewField]: newViews })
+        .eq(idField, legacy_id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      this.logger.log(`✅ Vues incrémentées: ${currentViews} → ${newViews}`);
+      return { success: true, views: newViews };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur incrémentation vues: ${(error as Error).message}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * ⬅️➡️ Récupérer les articles adjacents (précédent/suivant)
+   * Utilisé pour la navigation entre articles
+   */
+  async getAdjacentArticles(
+    slug: string,
+  ): Promise<{ previous: BlogArticle | null; next: BlogArticle | null }> {
+    try {
+      this.logger.log(`⬅️➡️ Recherche articles adjacents pour: ${slug}`);
+
+      // 1. Récupérer l'article actuel
+      const currentArticle = await this.getArticleBySlug(slug);
+      
+      if (!currentArticle) {
+        return { previous: null, next: null };
+      }
+
+      const { legacy_table } = currentArticle;
+
+      // 2. Déterminer les champs selon la table
+      let dateField = '';
+      let pgIdField: string | null = '';
+
+      switch (legacy_table) {
+        case '__blog_advice':
+          dateField = 'ba_create';
+          pgIdField = 'ba_pg_id';
+          break;
+        case '__blog_guide':
+          dateField = 'bg_create';
+          pgIdField = null; // Les guides n'ont pas de gamme
+          break;
+        default:
+          // Constructeurs et glossaire n'ont pas d'adjacents logiques
+          return { previous: null, next: null };
+      }
+
+      // 3. Construire la requête de base
+      let baseQuery = this.supabaseService.client.from(legacy_table).select('*');
+
+      // Filtrer par gamme si disponible (pour advice)
+      if (pgIdField && (currentArticle as any).ba_pg_id) {
+        baseQuery = baseQuery.eq(pgIdField, (currentArticle as any).ba_pg_id);
+      }
+
+      // 4. Article précédent (date < current, ORDER BY date DESC, LIMIT 1)
+      const { data: previousData } = await baseQuery
+        .lt(dateField, (currentArticle as any)[dateField.replace('ba_', '').replace('bg_', '')] || currentArticle.publishedAt)
+        .order(dateField, { ascending: false })
+        .limit(1)
+        .single();
+
+      // 5. Article suivant (date > current, ORDER BY date ASC, LIMIT 1)
+      baseQuery = this.supabaseService.client.from(legacy_table).select('*');
+      if (pgIdField && (currentArticle as any).ba_pg_id) {
+        baseQuery = baseQuery.eq(pgIdField, (currentArticle as any).ba_pg_id);
+      }
+
+      const { data: nextData } = await baseQuery
+        .gt(dateField, (currentArticle as any)[dateField.replace('ba_', '').replace('bg_', '')] || currentArticle.publishedAt)
+        .order(dateField, { ascending: true })
+        .limit(1)
+        .single();
+
+      // 6. Transformer en BlogArticle
+      const previous = previousData
+        ? legacy_table === '__blog_advice'
+          ? this.transformAdviceToArticle(previousData)
+          : this.transformGuideToArticle(previousData)
+        : null;
+
+      const next = nextData
+        ? legacy_table === '__blog_advice'
+          ? this.transformAdviceToArticle(nextData)
+          : this.transformGuideToArticle(nextData)
+        : null;
+
+      this.logger.log(
+        `✅ Articles adjacents: previous=${previous?.slug || 'none'}, next=${next?.slug || 'none'}`,
+      );
+
+      return { previous, next };
+
+    } catch (error) {
+      this.logger.error(`❌ Erreur articles adjacents: ${(error as Error).message}`);
+      return { previous: null, next: null };
+    }
+  }
+
+  /**
+   * 🔤 Récupérer les switches SEO item pour une gamme
+   * @param pg_id ID de la gamme
+   * @returns Array de switches avec alias et contenu
+   */
+  async getSeoItemSwitches(pg_id: number): Promise<any[]> {
+    try {
+      this.logger.log(`🔤 Récupération switches SEO pour pg_id=${pg_id}`);
+
+      const { data, error } = await this.supabaseService.client
+        .from('__seo_item_switch')
+        .select('*')
+        .eq('sis_pg_id', pg_id.toString())
+        .order('sis_alias', { ascending: true });
+
+      if (error) {
+        this.logger.error(`❌ Erreur Supabase: ${error.message}`);
+        return [];
+      }
+
+      if (!data || data.length === 0) {
+        this.logger.warn(`⚠️  Aucun switch trouvé pour pg_id=${pg_id}`);
+        return [];
+      }
+
+      this.logger.log(`✅ ${data.length} switches récupérés`);
+      return data;
+
+    } catch (error) {
+      this.logger.error(`❌ Erreur getSeoItemSwitches: ${(error as Error).message}`);
+      return [];
+    }
+  }
+
+  /**
+   * 📋 Récupérer les conseils de remplacement pour une gamme
+   * @param pg_id ID de la gamme
+   * @returns Array de conseils avec titre et contenu
+   */
+  async getGammeConseil(
+    pg_id: number,
+  ): Promise<Array<{ title: string; content: string }>> {
+    try {
+      this.logger.log(
+        `📋 Récupération conseils de remplacement pour pg_id=${pg_id}`,
+      );
+
+      const { data, error } = await this.supabaseService.client
+        .from('__seo_gamme_conseil')
+        .select('*')
+        .eq('sgc_pg_id', pg_id.toString())
+        .order('sgc_id', { ascending: true });
+
+      if (error) {
+        this.logger.error(`❌ Erreur Supabase: ${error.message}`);
+        return [];
+      }
+
+      if (!data || data.length === 0) {
+        this.logger.warn(`⚠️  Aucun conseil trouvé pour pg_id=${pg_id}`);
+        return [];
+      }
+
+      this.logger.log(
+        `✅ ${data.length} conseils récupérés: ${data.map((c) => c.sgc_title).join(', ')}`,
+      );
+
+      return data.map((item) => ({
+        title: item.sgc_title || '',
+        content: item.sgc_content || '',
+      }));
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur getGammeConseil: ${(error as Error).message}`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * 🔍 DEBUG - Vérifier les sections h2/h3 d'un article
+   */
+  async debugArticleSections(ba_id: number) {
+    try {
+      this.logger.log(`🔍 Debug sections pour ba_id=${ba_id}`);
+
+      // Charger les H2
+      const { data: h2Data } = await this.supabaseService.client
+        .from('__blog_advice_h2')
+        .select('*')
+        .eq('ba2_ba_id', ba_id)
+        .order('ba2_id');
+
+      // Récupérer les IDs des H2
+      const h2Ids = h2Data?.map((h2) => h2.ba2_id) || [];
+
+      // Charger les H3 qui appartiennent à ces H2
+      let h3Data: any[] = [];
+      if (h2Ids.length > 0) {
+        const { data } = await this.supabaseService.client
+          .from('__blog_advice_h3')
+          .select('*')
+          .in('ba3_ba2_id', h2Ids)
+          .order('ba3_id');
+        h3Data = data || [];
+      }
+
+      return {
+        ba_id,
+        h2_count: h2Data?.length || 0,
+        h3_count: h3Data.length,
+        h2_sections: h2Data?.map((h2) => ({
+          id: h2.ba2_id,
+          title: h2.ba2_h2,
+        })),
+        h3_sections: h3Data.map((h3) => ({
+          id: h3.ba3_id,
+          ba2_id: h3.ba3_ba2_id,
+          title: h3.ba3_h3,
+        })),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur debug: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 DEBUG - Trouver les articles qui ont des H3
+   */
+  async findArticlesWithH3() {
+    try {
+      this.logger.log(`🔍 Recherche des articles avec H3`);
+
+      // Récupérer quelques H3
+      const { data: h3Samples } = await this.supabaseService.client
+        .from('__blog_advice_h3')
+        .select('ba3_ba2_id, ba3_h3')
+        .limit(10);
+
+      if (!h3Samples || h3Samples.length === 0) {
+        return {
+          message: 'Aucun H3 trouvé dans la base',
+          count: 0,
+        };
+      }
+
+      // Récupérer les ba2_id uniques
+      const ba2Ids = [...new Set(h3Samples.map((h3) => h3.ba3_ba2_id))];
+
+      // Récupérer les H2 correspondants pour avoir les ba_id
+      const { data: h2Data } = await this.supabaseService.client
+        .from('__blog_advice_h2')
+        .select('ba2_id, ba2_ba_id, ba2_h2')
+        .in('ba2_id', ba2Ids);
+
+      return {
+        message: `${h3Samples.length} H3 trouvés`,
+        h3_samples: h3Samples,
+        h2_parents: h2Data,
+        articles_with_h3: [
+          ...new Set(h2Data?.map((h2) => h2.ba2_ba_id) || []),
+        ],
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur findArticlesWithH3: ${(error as Error).message}`,
+      );
+      throw error;
+    }
   }
 }

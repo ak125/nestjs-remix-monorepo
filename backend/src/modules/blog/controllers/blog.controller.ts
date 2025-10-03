@@ -42,6 +42,101 @@ export class BlogController {
   ) {}
 
   /**
+   * 🔤 Récupérer les switches SEO pour une gamme
+   * GET /api/blog/seo-switches/:pg_id
+   */
+  @Get('seo-switches/:pg_id')
+  async getSeoSwitches(@Param('pg_id') pg_id: string) {
+    try {
+      this.logger.log(`🔤 Récupération des switches SEO pour pg_id=${pg_id}`);
+      const switches = await this.blogService.getSeoItemSwitches(parseInt(pg_id));
+      
+      return {
+        success: true,
+        data: switches,
+        count: switches.length
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération switches SEO: ${error.message}`);
+      throw new HttpException(
+        'Erreur lors de la récupération des switches SEO',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📋 Récupérer les conseils de remplacement pour une gamme
+   * GET /api/blog/conseil/:pg_id
+   */
+  @Get('conseil/:pg_id')
+  async getGammeConseil(@Param('pg_id') pg_id: string) {
+    try {
+      this.logger.log(`📋 Récupération des conseils pour pg_id=${pg_id}`);
+      const conseil = await this.blogService.getGammeConseil(parseInt(pg_id));
+
+      return {
+        success: true,
+        data: conseil,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur récupération conseils: ${(error as Error).message}`,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération des conseils',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 Debug - Vérifier les sections h2/h3 d'un article
+   * GET /api/blog/debug/sections/:ba_id
+   */
+  @Get('debug/sections/:ba_id')
+  async debugSections(@Param('ba_id') ba_id: string) {
+    try {
+      const result = await this.blogService.debugArticleSections(
+        parseInt(ba_id),
+      );
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur debug sections: ${(error as Error).message}`,
+      );
+      throw new HttpException(
+        'Erreur lors du debug des sections',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 Debug - Lister les articles qui ont des H3
+   * GET /api/blog/debug/articles-with-h3
+   */
+  @Get('debug/articles-with-h3')
+  async debugArticlesWithH3() {
+    try {
+      const result = await this.blogService.findArticlesWithH3();
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur debug articles with H3: ${(error as Error).message}`,
+      );
+      throw new HttpException(
+        'Erreur lors du debug des articles avec H3',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }  /**
    * 🏠 Page d'accueil du blog avec contenu complet
    * GET /api/blog/homepage
    */

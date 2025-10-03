@@ -51,42 +51,46 @@ export class AdviceHierarchyController {
         ),
       ];
 
-      const { data: catalogMapping, error: catalogError } =
-        await this.supabaseService.client
+      // Optimisation: Exécuter les 2 requêtes en parallèle
+      const [catalogResult, familiesResult] = await Promise.all([
+        this.supabaseService.client
           .from('catalog_gamme')
           .select('mc_pg_id, mc_mf_prime')
-          .in('mc_pg_id', pgIds);
-
-      if (catalogError) {
-        this.logger.error('Erreur catalog_gamme:', catalogError.message);
-      }
-
-      // 3. Récupérer les noms des familles
-      const mfIds = [
-        ...new Set(catalogMapping?.map((m) => m.mc_mf_prime) || []),
-      ];
-      const { data: families, error: familiesError } =
-        await this.supabaseService.client
+          .in('mc_pg_id', pgIds),
+        this.supabaseService.client
           .from('catalog_family')
           .select('mf_id, mf_name, mf_sort')
-          .in('mf_id', mfIds)
-          .order('mf_sort');
+          .order('mf_sort'),
+      ]);
 
-      if (familiesError) {
-        this.logger.error('Erreur catalog_family:', familiesError.message);
+      if (catalogResult.error) {
+        this.logger.error('Erreur catalog_gamme:', catalogResult.error.message);
       }
 
-      // 4. Créer un mapping pg_id → famille
-      const pgToFamily = new Map<string, { id: number; name: string }>();
-      catalogMapping?.forEach((mapping) => {
-        const family = families?.find((f) => f.mf_id === mapping.mc_mf_prime);
-        if (family) {
-          pgToFamily.set(mapping.mc_pg_id.toString(), {
-            id: family.mf_id,
-            name: family.mf_name,
-          });
+      if (familiesResult.error) {
+        this.logger.error(
+          'Erreur catalog_family:',
+          familiesResult.error.message,
+        );
+      }
+
+      // 3. Créer des Maps pour accès O(1)
+      const familyMap = new Map();
+      if (familiesResult.data) {
+        for (const f of familiesResult.data) {
+          familyMap.set(f.mf_id, { id: f.mf_id, name: f.mf_name });
         }
-      });
+      }
+
+      const pgToFamily = new Map<string, { id: number; name: string }>();
+      if (catalogResult.data) {
+        for (const mapping of catalogResult.data) {
+          const family = familyMap.get(mapping.mc_mf_prime);
+          if (family) {
+            pgToFamily.set(mapping.mc_pg_id.toString(), family);
+          }
+        }
+      }
 
       // 5. Grouper les articles par famille
       const familyGroups = new Map<

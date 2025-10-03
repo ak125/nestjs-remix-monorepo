@@ -52,6 +52,8 @@ export interface AdviceFilters {
 @Injectable()
 export class AdviceService {
   private readonly logger = new Logger(AdviceService.name);
+  private readonly SUPABASE_URL = process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+  private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
 
   constructor(
     private readonly blogService: BlogService,
@@ -508,20 +510,32 @@ export class AdviceService {
           .order('ba3_id'),
       ]);
 
-      const sections: BlogSection[] = [
-        ...(h2Sections?.map((s: any) => ({
-          level: 2,
-          title: BlogCacheService.decodeHtmlEntities(s.ba2_h2 || ''),
-          content: BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
-          anchor: this.createAnchor(s.ba2_h2),
-        })) || []),
-        ...(h3Sections?.map((s: any) => ({
-          level: 3,
-          title: BlogCacheService.decodeHtmlEntities(s.ba3_h3 || ''),
-          content: BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
-          anchor: this.createAnchor(s.ba3_h3),
-        })) || []),
-      ];
+      // Optimisation: Combiner les sections en une seule boucle
+      const sections: BlogSection[] = [];
+      
+      if (h2Sections) {
+        for (const s of h2Sections) {
+          const title = s.ba2_h2 || '';
+          sections.push({
+            level: 2,
+            title: BlogCacheService.decodeHtmlEntities(title),
+            content: BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
+            anchor: this.createAnchor(title),
+          });
+        }
+      }
+      
+      if (h3Sections) {
+        for (const s of h3Sections) {
+          const title = s.ba3_h3 || '';
+          sections.push({
+            level: 3,
+            title: BlogCacheService.decodeHtmlEntities(title),
+            content: BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
+            anchor: this.createAnchor(title),
+          });
+        }
+      }
 
       return {
         id: `advice_${advice.ba_id}`,
@@ -763,37 +777,86 @@ export class AdviceService {
     if (!articles || articles.length === 0) return articles;
 
     try {
-      // Récupérer tous les ba_pg_id uniques
+      // Récupérer tous les ba_pg_id uniques et les convertir en integers
       const pgIds = [
         ...new Set(
           articles
-            .map((a) => (a as any).ba_pg_id)
+            .map((a) => {
+              const id = (a as any).ba_pg_id;
+              return id ? parseInt(id, 10) : null;
+            })
             .filter((id) => id != null),
         ),
       ];
 
       if (pgIds.length === 0) return articles;
 
-      // Charger tous les pg_alias en une seule requête
-      const { data: gammes } = await this.supabaseService.client
+      // Charger tous les pg_alias ET pg_img en une seule requête
+      const { data: gammes, error } = await this.supabaseService.client
         .from('pieces_gamme')
-        .select('pg_id, pg_alias')
+        .select('pg_id, pg_alias, pg_img')
         .in('pg_id', pgIds);
 
-      // Créer un map pour accès rapide
-      const pgAliasMap = new Map();
-      gammes?.forEach((g) => pgAliasMap.set(g.pg_id, g.pg_alias));
+      console.log('🔍 [enrichArticlesWithPgAlias] pgIds:', pgIds.slice(0, 5));
+      console.log('🔍 [enrichArticlesWithPgAlias] gammes count:', gammes?.length);
+      console.log('🔍 [enrichArticlesWithPgAlias] gammes sample:', gammes?.[0]);
+      console.log('🔍 [enrichArticlesWithPgAlias] error:', error);
 
-      // Enrichir chaque article
+      // Créer des maps avec clés integers pour accès O(1)
+      // ATTENTION : pg_id revient en STRING de Supabase, on doit convertir
+      const pgDataMap = new Map();
+      if (gammes) {
+        for (const g of gammes) {
+          // Convertir pg_id string → integer pour matcher parseInt(ba_pg_id)
+          const pgIdInt =
+            typeof g.pg_id === 'string' ? parseInt(g.pg_id, 10) : g.pg_id;
+          pgDataMap.set(pgIdInt, { alias: g.pg_alias, img: g.pg_img });
+        }
+      }
+      console.log(
+        '🔍 [enrichArticlesWithPgAlias] pgDataMap size:',
+        pgDataMap.size,
+      );
+
+      // Enrichir chaque article en une seule passe
       return articles.map((article) => {
         const ba_pg_id = (article as any).ba_pg_id;
-        const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
+        if (!ba_pg_id) {
+          // Pas de ba_pg_id, retourner l'article tel quel avec valeurs nulles
+          return {
+            ...article,
+            pg_id: null,
+            pg_alias: null,
+            ba_pg_id: null,
+            featuredImage: null,
+          };
+        }
+        
+        const pg_id = parseInt(ba_pg_id, 10);
+        const pgData = pgDataMap.get(pg_id);
+        
+        // Construire l'URL de l'image si on a les données
+        let featuredImage = null;
+        let pg_alias = null;
+        
+        if (pgData) {
+          pg_alias = pgData.alias;
+          const pg_image = pgData.img;
+          
+          // pg_image prioritaire, sinon pg_alias.webp
+          const imageFilename =
+            pg_image || (pg_alias ? `${pg_alias}.webp` : null);
+          if (imageFilename) {
+            featuredImage = `${this.CDN_BASE_URL}/articles/gammes-produits/catalogue/${imageFilename}`;
+          }
+        }
 
         return {
           ...article,
-          pg_id: pg_id, // Convertir ba_pg_id (string) en pg_id (number) pour l'interface
-          pg_alias: pgAliasMap.get(ba_pg_id) || null,
-          ba_pg_id: ba_pg_id, // Garder aussi ba_pg_id pour le frontend
+          pg_id: pg_id,
+          pg_alias: pg_alias,
+          ba_pg_id: ba_pg_id,
+          featuredImage: featuredImage,
         };
       });
     } catch (error) {
