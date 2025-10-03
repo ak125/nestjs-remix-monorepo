@@ -52,7 +52,8 @@ export interface AdviceFilters {
 @Injectable()
 export class AdviceService {
   private readonly logger = new Logger(AdviceService.name);
-  private readonly SUPABASE_URL = process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+  private readonly SUPABASE_URL =
+    process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
   private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
 
   constructor(
@@ -211,14 +212,10 @@ export class AdviceService {
         throw error;
       }
 
-      // Transformer en articles avec décodage HTML
-      const items: BlogArticle[] = [];
-      if (data) {
-        for (const advice of data) {
-          const article = await this.transformAdviceToArticle(advice);
-          if (article) items.push(article);
-        }
-      }
+      // ⚡ Transformation batch optimisée (2 requêtes au lieu de N×2)
+      const items: BlogArticle[] = data
+        ? await this.transformAdvicesToArticles(data)
+        : [];
 
       // Enrichir avec pg_alias en une seule requête (optimisation)
       const enrichedItems = await this.enrichArticlesWithPgAlias(items);
@@ -289,13 +286,10 @@ export class AdviceService {
         throw error;
       }
 
-      const advices: BlogArticle[] = [];
-      if (data) {
-        for (const advice of data) {
-          const article = await this.transformAdviceToArticle(advice);
-          if (article) advices.push(article);
-        }
-      }
+      // ⚡ Transformation batch optimisée
+      const advices: BlogArticle[] = data
+        ? await this.transformAdvicesToArticles(data)
+        : [];
 
       const result = { gamme, advices, success: true };
       await this.blogCacheService.set(cacheKey, result, 2000);
@@ -346,13 +340,10 @@ export class AdviceService {
         return [];
       }
 
-      const articles: BlogArticle[] = [];
-      if (data) {
-        for (const advice of data) {
-          const article = await this.transformAdviceToArticle(advice);
-          if (article) articles.push(article);
-        }
-      }
+      // ⚡ Transformation batch optimisée
+      const articles: BlogArticle[] = data
+        ? await this.transformAdvicesToArticles(data)
+        : [];
 
       await this.blogCacheService.set(cacheKey, articles, 1500);
       return articles;
@@ -492,7 +483,145 @@ export class AdviceService {
   // === MÉTHODES UTILITAIRES ===
 
   /**
+   * ⚡ Batch transformation optimisée pour plusieurs conseils
+   * Réduit 85×2 requêtes DB en 2 requêtes totales
+   */
+  private async transformAdvicesToArticles(
+    advices: any[],
+  ): Promise<BlogArticle[]> {
+    if (!advices || advices.length === 0) return [];
+
+    try {
+      const adviceIds = advices.map((a) => a.ba_id);
+
+      // ⚡ OPTIMISATION: Batch H2/H3 en 2 requêtes au lieu de N×2
+      const [{ data: allH2Sections }, { data: allH3Sections }] =
+        await Promise.all([
+          this.supabaseService.client
+            .from('__blog_advice_h2')
+            .select('*')
+            .in('ba2_ba_id', adviceIds)
+            .order('ba2_id'),
+          this.supabaseService.client
+            .from('__blog_advice_h3')
+            .select('*')
+            .in('ba3_ba_id', adviceIds)
+            .order('ba3_id'),
+        ]);
+
+      // Grouper par ba_id pour accès O(1)
+      const h2ByAdviceId = new Map<number, any[]>();
+      const h3ByAdviceId = new Map<number, any[]>();
+
+      allH2Sections?.forEach((s) => {
+        if (!h2ByAdviceId.has(s.ba2_ba_id)) h2ByAdviceId.set(s.ba2_ba_id, []);
+        h2ByAdviceId.get(s.ba2_ba_id)!.push(s);
+      });
+
+      allH3Sections?.forEach((s) => {
+        if (!h3ByAdviceId.has(s.ba3_ba_id)) h3ByAdviceId.set(s.ba3_ba_id, []);
+        h3ByAdviceId.get(s.ba3_ba_id)!.push(s);
+      });
+
+      // Transformation parallèle avec Promise.all
+      return Promise.all(
+        advices.map((advice) => {
+          const h2 = h2ByAdviceId.get(advice.ba_id) || [];
+          const h3 = h3ByAdviceId.get(advice.ba_id) || [];
+          return this.transformAdviceToArticleWithSections(advice, h2, h3);
+        }),
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur transformAdvicesToArticles: ${(error as Error).message}`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * 🔄 Transformation advice → BlogArticle avec sections pré-chargées
+   */
+  private transformAdviceToArticleWithSections(
+    advice: any,
+    h2Sections: any[],
+    h3Sections: any[],
+  ): BlogArticle {
+    try {
+      const sections: BlogSection[] = [];
+
+      // Combiner H2 sections
+      for (const s of h2Sections) {
+        const title = s.ba2_h2 || '';
+        sections.push({
+          level: 2,
+          title: BlogCacheService.decodeHtmlEntities(title),
+          content: BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
+          anchor: this.createAnchor(title),
+        });
+      }
+
+      // Combiner H3 sections
+      for (const s of h3Sections) {
+        const title = s.ba3_h3 || '';
+        sections.push({
+          level: 3,
+          title: BlogCacheService.decodeHtmlEntities(title),
+          content: BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
+          anchor: this.createAnchor(title),
+        });
+      }
+
+      return {
+        id: `advice_${advice.ba_id}`,
+        type: 'advice' as const,
+        title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+        slug: advice.ba_alias,
+        pg_alias: null,
+        pg_id: null,
+        ba_pg_id: advice.ba_pg_id || null,
+        excerpt: BlogCacheService.decodeHtmlEntities(
+          advice.ba_preview || advice.ba_descrip || '',
+        ),
+        content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
+        h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
+        h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+        keywords: advice.ba_keywords
+          ? advice.ba_keywords.split(',').map((k: string) => k.trim())
+          : [],
+        tags: advice.ba_keywords
+          ? advice.ba_keywords.split(',').map((k: string) => k.trim())
+          : [],
+        publishedAt: advice.ba_create,
+        updatedAt: advice.ba_update,
+        viewsCount: parseInt(advice.ba_visit) || 0,
+        readingTime: this.calculateReadingTime(
+          advice.ba_content || advice.ba_descrip,
+        ),
+        sections,
+        legacy_id: parseInt(advice.ba_id),
+        legacy_table: '__blog_advice',
+        seo_data: {
+          meta_title: BlogCacheService.decodeHtmlEntities(
+            advice.ba_title || advice.ba_h1 || '',
+          ),
+          meta_description: BlogCacheService.decodeHtmlEntities(
+            advice.ba_descrip || advice.ba_preview || '',
+          ),
+          keywords: advice.ba_keywords || '',
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur transformAdviceToArticleWithSections (${advice.ba_id}): ${(error as Error).message}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * 🔄 Transformation optimisée advice → BlogArticle avec gestion des sections
+   * ⚠️ Utilisée pour les transformations unitaires (détail, etc.)
    */
   private async transformAdviceToArticle(advice: any): Promise<BlogArticle> {
     try {
@@ -512,7 +641,7 @@ export class AdviceService {
 
       // Optimisation: Combiner les sections en une seule boucle
       const sections: BlogSection[] = [];
-      
+
       if (h2Sections) {
         for (const s of h2Sections) {
           const title = s.ba2_h2 || '';
@@ -524,7 +653,7 @@ export class AdviceService {
           });
         }
       }
-      
+
       if (h3Sections) {
         for (const s of h3Sections) {
           const title = s.ba3_h3 || '';
@@ -822,18 +951,18 @@ export class AdviceService {
             featuredImage: null,
           };
         }
-        
+
         const pg_id = parseInt(ba_pg_id, 10);
         const pgData = pgDataMap.get(pg_id);
-        
+
         // Construire l'URL de l'image si on a les données
         let featuredImage = null;
         let pg_alias = null;
-        
+
         if (pgData) {
           pg_alias = pgData.alias;
           const pg_image = pgData.img;
-          
+
           // pg_image prioritaire, sinon pg_alias.webp
           const imageFilename =
             pg_image || (pg_alias ? `${pg_alias}.webp` : null);
