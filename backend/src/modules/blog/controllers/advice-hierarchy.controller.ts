@@ -55,7 +55,7 @@ export class AdviceHierarchyController {
       const [catalogResult, familiesResult] = await Promise.all([
         this.supabaseService.client
           .from('catalog_gamme')
-          .select('mc_pg_id, mc_mf_prime')
+          .select('mc_pg_id, mc_mf_prime, mc_sort')
           .in('mc_pg_id', pgIds),
         this.supabaseService.client
           .from('catalog_family')
@@ -88,13 +88,16 @@ export class AdviceHierarchyController {
 
       const pgToFamily = new Map<
         string,
-        { id: number; name: string; sort: number }
+        { id: number; name: string; sort: number; gammeSort: number }
       >();
       if (catalogResult.data) {
         for (const mapping of catalogResult.data) {
           const family = familyMap.get(mapping.mc_mf_prime);
           if (family) {
-            pgToFamily.set(mapping.mc_pg_id.toString(), family);
+            pgToFamily.set(mapping.mc_pg_id.toString(), {
+              ...family,
+              gammeSort: mapping.mc_sort || 999,
+            });
           }
         }
       }
@@ -123,7 +126,11 @@ export class AdviceHierarchyController {
               articles: [],
             });
           }
-          familyGroups.get(family.name)!.articles.push(article);
+          // Ajouter gammeSort à l'article pour tri ultérieur
+          familyGroups.get(family.name)!.articles.push({
+            ...article,
+            gammeSort: family.gammeSort,
+          });
         } else {
           // Famille "Autres" pour articles sans famille
           if (!familyGroups.has('Autres')) {
@@ -138,10 +145,16 @@ export class AdviceHierarchyController {
         }
       });
 
-      // 6. Convertir en array et trier par mf_sort (ordre database)
+      // 6. Convertir en array et trier familles + articles
       const result = Array.from(familyGroups.values())
         .map((group) => ({
           ...group,
+          // Trier les articles par mc_sort (ordre du catalogue)
+          articles: group.articles.sort((a, b) => {
+            const sortA = a.gammeSort || 999;
+            const sortB = b.gammeSort || 999;
+            return sortA - sortB;
+          }),
           count: group.articles.length,
           totalViews: group.articles.reduce(
             (sum, a) => sum + (a.viewsCount || 0),
