@@ -30,6 +30,7 @@ import { UserShipmentController } from './controllers/user-shipment.controller';
 
 // Services métier spécialisés
 import { UsersService } from './users.service';
+import { ProfileService } from './services/profile.service';
 import { PasswordService } from './services/password.service';
 import { AddressesService } from './services/addresses.service';
 import { UserShipmentService } from './services/user-shipment.service';
@@ -62,6 +63,7 @@ import { UserShipmentService } from './services/user-shipment.service';
   providers: [
     // Services existants modernisés
     UsersService,
+    ProfileService, // ✅ Service moderne de gestion des profils (Phase 2.3)
     PasswordService, // ✅ Service moderne de gestion des mots de passe
     AddressesService, // ✅ Service moderne de gestion des adresses
     UserShipmentService, // ✅ Service de suivi des expéditions utilisateur
@@ -80,6 +82,7 @@ import { UserShipmentService } from './services/user-shipment.service';
   exports: [
     // Services pour autres modules
     UsersService,
+    ProfileService, // ✅ Service de profils exporté (Phase 2.3)
     PasswordService, // ✅ Service de mots de passe exporté
     AddressesService, // ✅ Service d'adresses exporté
     UserShipmentService, // ✅ Service de suivi des expéditions exporté

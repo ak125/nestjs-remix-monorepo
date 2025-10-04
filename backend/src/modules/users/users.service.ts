@@ -37,6 +37,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { AuthService } from '../../auth/auth.service';
 import { MessagesService } from '../messages/messages.service';
+import { ProfileService } from './services/profile.service';
 
 @Injectable()
 export class UsersService extends SupabaseBaseService {
@@ -48,6 +49,7 @@ export class UsersService extends SupabaseBaseService {
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
     private readonly messagesService: MessagesService,
+    private readonly profileService: ProfileService,
   ) {
     super(configService);
   }
@@ -140,59 +142,45 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Récupérer le profil d'un utilisateur
    */
+  /**
+   * Récupérer profil utilisateur
+   * ✅ DÉLÉGUÉ vers ProfileService.getProfile()
+   */
   async getProfile(userId: number): Promise<UserResponseDto> {
-    console.log('👤 UsersService.getProfile:', userId);
+    console.log(
+      '👤 UsersService.getProfile → délégation ProfileService:',
+      userId,
+    );
 
     try {
-      // Simulation de récupération utilisateur
-      const mockUsers = await this.getMockUsers();
-      const user = mockUsers.find((u) => Number(u.id) === userId);
-
-      if (!user) {
-        throw new NotFoundException('Utilisateur non trouvé');
-      }
-
-      console.log('✅ Profil récupéré:', user.email);
-      return user;
+      // Déléguer vers ProfileService (conversion number → string)
+      return await this.profileService.getProfile(String(userId));
     } catch (error: any) {
       console.error('❌ Erreur récupération profil:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération du profil',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error; // Propager erreur de ProfileService
     }
   }
 
   /**
    * Mettre à jour le profil
+   * ✅ DÉLÉGUÉ vers ProfileService.updateProfile()
    */
   async updateProfile(
     userId: number,
     updateDto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
-    console.log('✏️ UsersService.updateProfile:', userId, updateDto);
+    console.log(
+      '✏️ UsersService.updateProfile → délégation ProfileService:',
+      userId,
+      updateDto,
+    );
 
     try {
-      // Trouver l'utilisateur existant
-      const user = await this.getProfile(userId);
-
-      // Mettre à jour les champs
-      const updatedUser: UserResponseDto = {
-        ...user,
-        firstName: updateDto.firstName || user.firstName,
-        lastName: updateDto.lastName || user.lastName,
-        tel: updateDto.phone || user.tel,
-        updatedAt: new Date(),
-      };
-
-      console.log('✅ Profil mis à jour:', user.email);
-      return updatedUser;
+      // Déléguer vers ProfileService (conversion number → string)
+      return await this.profileService.updateProfile(String(userId), updateDto);
     } catch (error: any) {
       console.error('❌ Erreur mise à jour profil:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la mise à jour du profil',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error; // Propager erreur de ProfileService
     }
   }
 
@@ -750,52 +738,38 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Trouver un utilisateur par email
    */
+  /**
+   * Trouver utilisateur par email
+   * ✅ DÉLÉGUÉ vers ProfileService.findByEmail()
+   */
   async findByEmail(email: string): Promise<UserResponseDto | null> {
-    console.log('📧 UsersService.findByEmail:', email);
+    console.log(
+      '📧 UsersService.findByEmail → délégation ProfileService:',
+      email,
+    );
 
     try {
-      const users = await this.getMockUsers();
-      const user = users.find((u) => u.email === email);
-      return user || null;
+      // Déléguer vers ProfileService
+      return await this.profileService.findByEmail(email);
     } catch (error: any) {
       console.error('❌ Erreur recherche par email:', error);
-      return null;
+      return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
 
   /**
-   * Trouver un utilisateur par ID
+   * Trouver utilisateur par ID
+   * ✅ DÉLÉGUÉ vers ProfileService.findById()
    */
   async findById(id: string): Promise<UserResponseDto | null> {
-    console.log('🔍 UsersService.findById:', id);
+    console.log('🔍 UsersService.findById → délégation ProfileService:', id);
 
     try {
-      // Utiliser le service UserService pour chercher dans les vraies tables (customers + admins)
-      const user = await this.userService.getUserById(id);
-
-      if (user) {
-        // Convertir vers UserResponseDto
-        const userResponse: UserResponseDto = {
-          id: user.cst_id,
-          email: user.cst_mail,
-          firstName: user.cst_fname || '',
-          lastName: user.cst_name || '',
-          isActive: user.cst_activ === '1',
-          isPro: user.cst_is_pro === '1',
-          tel: user.cst_tel || '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-
-        console.log('✅ Utilisateur trouvé:', userResponse.email);
-        return userResponse;
-      }
-
-      console.log('❌ Utilisateur non trouvé:', id);
-      return null;
+      // Déléguer vers ProfileService
+      return await this.profileService.findById(id);
     } catch (error: any) {
       console.error('❌ Erreur recherche par ID:', error);
-      return null;
+      return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
 
