@@ -384,8 +384,8 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
     return {
       nodeEnv: this.nestConfigService.get<string>('NODE_ENV'),
       port: this.nestConfigService.get<number>('PORT'),
-      databaseUrl: this.nestConfigService.get<string>('DATABASE_URL') ? '[CONFIGURED]' : '[NOT SET]',
       supabaseUrl: this.nestConfigService.get<string>('SUPABASE_URL') ? '[CONFIGURED]' : '[NOT SET]',
+      supabaseServiceKey: this.nestConfigService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ? '[CONFIGURED]' : '[NOT SET]',
       redisUrl: this.nestConfigService.get<string>('REDIS_URL') ? '[CONFIGURED]' : '[NOT SET]',
       jwtSecret: this.nestConfigService.get<string>('JWT_SECRET') ? '[CONFIGURED]' : '[NOT SET]',
       version: process.env.npm_package_version || '1.0.0',

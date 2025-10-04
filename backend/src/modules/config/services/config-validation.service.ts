@@ -9,11 +9,11 @@ export class ConfigValidationService {
   private readonly environmentSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']),
     PORT: z.coerce.number().min(1).max(65535).default(3000),
-    DATABASE_URL: z.string().url(),
+    SUPABASE_URL: z.string().url(),
+    SUPABASE_ANON_KEY: z.string().min(1),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     JWT_SECRET: z.string().min(32),
     REDIS_URL: z.string().url().optional(),
-    SUPABASE_URL: z.string().url().optional(),
-    SUPABASE_ANON_KEY: z.string().optional(),
   });
 
   async validateEnvironmentConfig(): Promise<{

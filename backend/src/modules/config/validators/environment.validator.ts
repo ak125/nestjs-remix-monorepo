@@ -13,7 +13,7 @@ export class EnvironmentValidator {
     const warnings: string[] = [];
 
     // Variables obligatoires
-    const required = ['NODE_ENV', 'DATABASE_URL', 'JWT_SECRET'];
+    const required = ['NODE_ENV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'];
     for (const varName of required) {
       if (!process.env[varName]) {
         errors.push(`Variable d'environnement obligatoire manquante: ${varName}`);

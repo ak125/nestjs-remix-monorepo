@@ -25,7 +25,7 @@ export class ConfigMonitoringService {
   private async performHealthCheck(): Promise<void> {
     try {
       // Check critical environment variables
-      const criticalVars = ['NODE_ENV', 'DATABASE_URL', 'JWT_SECRET'];
+      const criticalVars = ['NODE_ENV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'];
       const missing = criticalVars.filter(varName => !process.env[varName]);
       
       if (missing.length > 0) {
