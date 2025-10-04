@@ -257,7 +257,11 @@ export class ProfileService extends SupabaseBaseService {
   /**
    * Invalider cache profil après mise à jour
    */
-  private async invalidateCachedProfile(userId: string): Promise<void> {
+  /**
+   * Invalider le cache du profil utilisateur
+   * Public pour permettre l'utilisation par UsersAdminService
+   */
+  async invalidateCachedProfile(userId: string): Promise<void> {
     try {
       const cacheKey = `user:profile:${userId}`;
       await this.cacheService.del(cacheKey);
