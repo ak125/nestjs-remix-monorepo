@@ -8,9 +8,10 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
-  UnauthorizedException,
   HttpException,
   HttpStatus,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { UserDataService } from '../../database/services/user-data.service';
@@ -31,12 +32,10 @@ import {
   LoginResponseDto,
   PaginatedUsersResponseDto,
 } from './dto/users.dto';
-import { 
-  CreateUserDto,
-  UpdateUserDto 
-} from './dto/create-user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class UsersService extends SupabaseBaseService {
@@ -45,6 +44,8 @@ export class UsersService extends SupabaseBaseService {
     private readonly userDataService: UserDataService,
     private readonly userService: UserService,
     private readonly cacheService: CacheService,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
   ) {
     super(configService);
   }
@@ -53,79 +54,82 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Inscription d'un nouvel utilisateur
+   * ✅ DÉLÉGUÉ vers AuthService.register()
    */
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
-    console.log('🔐 UsersService.register:', registerDto.email);
+    console.log(
+      '🔐 UsersService.register → délégation AuthService:',
+      registerDto.email,
+    );
 
     try {
-      // Vérifier si l'utilisateur existe déjà
-      const existingUser = await this.findByEmail(registerDto.email);
-      if (existingUser) {
-        throw new ConflictException(
-          'Un utilisateur avec cet email existe déjà',
-        );
-      }
-
-      // Créer le nouvel utilisateur (simulation)
-      const newUser: UserResponseDto = {
-        id: String(Date.now()),
+      // Déléguer vers AuthService qui gère l'authentification
+      const authUser = await this.authService.register({
         email: registerDto.email,
-        firstName: registerDto.firstName,
-        lastName: registerDto.lastName,
-        isPro: false,
-        isActive: true,
+        password: registerDto.password,
+        firstName: registerDto.firstName || '',
+        lastName: registerDto.lastName || '',
+        phone: registerDto.tel,
+      });
+
+      // Convertir AuthUser → UserResponseDto
+      const userResponse: UserResponseDto = {
+        id: authUser.id,
+        email: authUser.email,
+        firstName: authUser.firstName,
+        lastName: authUser.lastName,
+        isPro: authUser.isPro,
+        isActive: authUser.isActive,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      console.log('✅ Utilisateur créé:', newUser.id);
-      return newUser;
+      console.log('✅ Utilisateur créé via AuthService:', authUser.id);
+      return userResponse;
     } catch (error: any) {
       console.error('❌ Erreur création utilisateur:', error);
-      throw new HttpException(
-        error?.message || "Erreur lors de la création de l'utilisateur",
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error; // Propager l'erreur d'AuthService
     }
   }
 
   /**
    * Connexion utilisateur
+   * ✅ DÉLÉGUÉ vers AuthService.login()
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    console.log('🔑 UsersService.login:', loginDto.email);
+    console.log(
+      '🔑 UsersService.login → délégation AuthService:',
+      loginDto.email,
+    );
 
     try {
-      // Trouver l'utilisateur
-      const user = await this.findByEmail(loginDto.email);
-      if (!user) {
-        throw new UnauthorizedException('Email ou mot de passe incorrect');
-      }
+      // Déléguer vers AuthService qui gère l'authentification complète
+      const loginResult = await this.authService.login(
+        loginDto.email,
+        loginDto.password,
+      );
 
-      if (!user.isActive) {
-        throw new UnauthorizedException('Compte désactivé');
-      }
-
-      // Simulation de vérification de mot de passe
-      // En production, utiliser bcrypt pour comparer les mots de passe hashés
-
-      // Générer un token JWT (simulation)
-      const token = 'mock-jwt-token-' + Date.now();
-
+      // Convertir LoginResult (AuthService) → LoginResponseDto (UsersService)
       const response: LoginResponseDto = {
-        user,
-        accessToken: token,
-        expiresIn: 86400, // 24h en secondes
+        user: {
+          id: loginResult.user.id,
+          email: loginResult.user.email,
+          firstName: loginResult.user.firstName,
+          lastName: loginResult.user.lastName,
+          isPro: loginResult.user.isPro,
+          isActive: loginResult.user.isActive,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        accessToken: loginResult.access_token,
+        expiresIn: loginResult.expires_in,
       };
 
-      console.log('✅ Connexion réussie:', user.id);
+      console.log('✅ Connexion réussie via AuthService:', loginResult.user.id);
       return response;
     } catch (error: any) {
       console.error('❌ Erreur connexion:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la connexion',
-        error?.status || HttpStatus.UNAUTHORIZED,
-      );
+      throw error; // Propager l'erreur d'AuthService
     }
   }
 
@@ -230,9 +234,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Créer un nouvel utilisateur (admin)
    */
-  async createUser(
-    createUserDto: CreateUserDto,
-  ): Promise<UserResponseDto> {
+  async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     console.log('➕ UsersService.createUser:', createUserDto.email);
 
     try {

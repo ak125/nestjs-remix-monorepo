@@ -17,10 +17,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { UserService } from '../database/services/user.service';
 import { RedisCacheService } from '../database/services/redis-cache.service';
+import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
 
 export interface AuthUser {
   id: string;
@@ -48,6 +48,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly cacheService: RedisCacheService,
+    private readonly passwordCrypto: PasswordCryptoService,
   ) {
     this.logger.log(
       'AuthService initialized - Complete modular version with legacy support',
@@ -106,6 +107,45 @@ export class AuthService {
         return null;
       }
 
+      // ✅ UPGRADE AUTOMATIQUE: Migrer les mots de passe legacy vers bcrypt
+      if (this.passwordCrypto.needsRehash(user.cst_pswd)) {
+        this.logger.log(`🔄 Upgrading password for user: ${email}`);
+        try {
+          await this.passwordCrypto.upgradeHashIfNeeded(
+            user.cst_id,
+            password,
+            user.cst_pswd,
+            async (userId, newHash) => {
+              // Callback pour mettre à jour le hash dans la base
+              if (isAdmin) {
+                // Update admin dans ___config_admin (utiliser column cnfa_pswd)
+                const url = `${process.env.SUPABASE_URL}/rest/v1/___config_admin?cnfa_id=eq.${userId}`;
+                await fetch(url, {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+                    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY || ''}`,
+                    Prefer: 'return=minimal',
+                  } as HeadersInit,
+                  body: JSON.stringify({ cnfa_pswd: newHash }),
+                });
+              } else {
+                // Update customer via userService
+                await this.userService.updateUserPassword(userId, newHash);
+              }
+            },
+          );
+          this.logger.log(`✅ Password upgraded successfully for: ${email}`);
+        } catch (upgradeError) {
+          this.logger.error(
+            `Failed to upgrade password for ${email}:`,
+            upgradeError,
+          );
+          // Ne pas bloquer la connexion si l'upgrade échoue
+        }
+      }
+
       // Vérifier que l'utilisateur est actif
       if (user.cst_activ !== '1') {
         this.logger.warn(`Inactive user tried to login: ${email}`);
@@ -133,8 +173,70 @@ export class AuthService {
   }
 
   /**
-   * Connexion utilisateur avec gestion des tentatives et sessions
-   * (équivalent myspace.connect.try.php)
+   * Inscription d'un nouvel utilisateur
+   * Vérifie l'unicité de l'email, hash le mot de passe et crée l'utilisateur en DB
+   */
+  async register(registerDto: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+  }): Promise<AuthUser> {
+    try {
+      this.logger.debug(`Registering new user: ${registerDto.email}`);
+
+      // 1. Vérifier si l'utilisateur existe déjà
+      const existingUser = await this.checkIfUserExists({
+        email: registerDto.email,
+      });
+      
+      if (existingUser) {
+        this.logger.warn(`User already exists: ${registerDto.email}`);
+        throw new BadRequestException(
+          'Un utilisateur avec cet email existe déjà',
+        );
+      }
+
+      // 2. Hasher le mot de passe avec bcrypt (via PasswordCryptoService)
+      const hashedPassword = await this.passwordCrypto.hashPassword(
+        registerDto.password,
+      );
+
+      // 3. Créer l'utilisateur via UserService
+      const createdUser = await this.userService.createUser({
+        email: registerDto.email,
+        password: hashedPassword,
+        firstName: registerDto.firstName,
+        lastName: registerDto.lastName,
+      });
+
+      if (!createdUser) {
+        this.logger.error(
+          `Failed to create user in database: ${registerDto.email}`,
+        );
+        throw new BadRequestException(
+          "Erreur lors de la création de l'utilisateur",
+        );
+      }
+
+      // 4. Formater et retourner l'utilisateur créé
+      const authUser = this.formatUserResponse(createdUser);
+
+      this.logger.log(
+        `User registered successfully: ${registerDto.email} (ID: ${authUser.id})`,
+      );
+
+      return authUser;
+    } catch (error) {
+      this.logger.error(`Registration failed for ${registerDto.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Connexion utilisateur avec validation et session
+   * Gère les tentatives échouées et l'upgrade automatique des mots de passe legacy
    */
   async login(
     email: string,
@@ -234,69 +336,28 @@ export class AuthService {
 
   /**
    * Valider un mot de passe (support legacy MD5+crypt et moderne bcrypt)
+   * Utilise PasswordCryptoService pour la validation multi-format
    */
   private async validatePassword(
     plainPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
     try {
-      // Vérifier d'abord le format bcrypt moderne
-      if (hashedPassword.startsWith('$2')) {
-        return await bcrypt.compare(plainPassword, hashedPassword);
-      }
-
-      // Format MD5 simple (32 caractères) - utilisé dans ___config_admin
-      if (
-        hashedPassword.length === 32 &&
-        /^[a-f0-9]{32}$/i.test(hashedPassword)
-      ) {
-        const md5Hash = crypto
-          .createHash('md5')
-          .update(plainPassword)
-          .digest('hex');
-        return md5Hash === hashedPassword;
-      }
-
-      // Format legacy MD5+crypt avec sel "im10tech7"
-      return this.verifyLegacyPassword(plainPassword, hashedPassword);
+      this.logger.debug(
+        `🔐 validatePassword called with hash: ${hashedPassword.substring(0, 20)}...`,
+      );
+      const result = await this.passwordCrypto.validatePassword(
+        plainPassword,
+        hashedPassword,
+      );
+      this.logger.debug(
+        `🔐 validatePassword result: ${result.isValid} (format: ${result.format})`,
+      );
+      return result.isValid;
     } catch (error) {
       this.logger.error('Error validating password:', error);
       return false;
     }
-  }
-
-  /**
-   * Vérifier le mot de passe legacy (MD5 + crypt avec sel "im10tech7")
-   */
-  private verifyLegacyPassword(
-    plainPassword: string,
-    hashedPassword: string,
-  ): boolean {
-    try {
-      // Reproduire l'ancien système : crypt(md5($password), "im10tech7")
-      const md5Hash = crypto
-        .createHash('md5')
-        .update(plainPassword)
-        .digest('hex');
-      const salt = 'im10tech7';
-      const legacyHash = this.phpCrypt(md5Hash, salt);
-      return legacyHash === hashedPassword;
-    } catch (error) {
-      this.logger.error('Error verifying legacy password:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Simuler la fonction crypt() de PHP
-   */
-  private phpCrypt(password: string, salt: string): string {
-    // Implémentation simplifiée - en production utiliser une lib dédiée
-    return crypto
-      .createHash('sha256')
-      .update(salt + password)
-      .digest('base64')
-      .substring(0, 13);
   }
 
   /**
@@ -521,7 +582,7 @@ export class AuthService {
       }
 
       // Vérifier le mot de passe actuel
-      const isCurrentPasswordValid = await this.verifyPasswordHash(
+      const isCurrentPasswordValid = await this.validatePassword(
         currentPassword,
         user.cst_pswd,
       );
@@ -531,7 +592,8 @@ export class AuthService {
       }
 
       // Hacher le nouveau mot de passe
-      const hashedNewPassword = await this.hashPasswordWithBcrypt(newPassword);
+      const hashedNewPassword =
+        await this.passwordCrypto.hashPassword(newPassword);
 
       // Mettre à jour le mot de passe
       const updated = await this.userService.updateUser(userId, {
@@ -590,27 +652,8 @@ export class AuthService {
     }
   }
 
-  /**
-   * Hache un mot de passe avec bcrypt
-   */
-  private async hashPasswordWithBcrypt(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
-  }
-
-  /**
-   * Vérifie un mot de passe contre son hash
-   */
-  private async verifyPasswordHash(
-    password: string,
-    hash: string,
-  ): Promise<boolean> {
-    try {
-      return await bcrypt.compare(password, hash);
-    } catch (error) {
-      this.logger.error('Error verifying password hash:', error);
-      return false;
-    }
-  }
+  // ✅ NETTOYAGE: Méthodes de hachage déplacées vers PasswordCryptoService
+  // Utiliser this.passwordCrypto.hashPassword() et this.passwordCrypto.validatePassword()
 
   // ==========================================
   // NOUVELLES FONCTIONNALITÉS MODULAIRES
@@ -638,7 +681,7 @@ export class AuthService {
       }
 
       // Logique de permissions basée sur le niveau utilisateur existant
-      const userLevel = parseInt(user.cst_level) || 0;
+      const userLevel = parseInt(String(user.cst_level)) || 0;
 
       const modulePermissions = {
         commercial: { read: 1, write: 3 },
@@ -650,7 +693,7 @@ export class AuthService {
         reports: { read: 1, write: 5 },
       };
 
-      const requiredLevel = modulePermissions[module]?.[action] || 9;
+      const requiredLevel = (modulePermissions as any)[module]?.[action] || 9;
       const hasAccess = userLevel >= requiredLevel;
 
       this.logger.debug(
@@ -748,7 +791,7 @@ export class AuthService {
       const decoded = this.jwtService.verify(token);
 
       // Récupérer l'utilisateur via le service existant
-      const user = await this.userService.findUserById(decoded.sub);
+      const user = await this.userService.getUserById(decoded.sub);
       if (!user || user.cst_activ !== '1') {
         return null;
       }
@@ -760,7 +803,9 @@ export class AuthService {
           request.sessionID || (request.headers['x-session-id'] as string),
       };
     } catch (error) {
-      this.logger.debug(`Invalid token in session request: ${error.message}`);
+      this.logger.debug(
+        `Invalid token in session request: ${(error as Error).message}`,
+      );
       return null;
     }
   }

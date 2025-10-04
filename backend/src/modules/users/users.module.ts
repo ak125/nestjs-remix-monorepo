@@ -11,12 +11,13 @@
  * ✅ Sessions JWT + Redis cache
  */
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
 import { MailService } from '../../services/mail.service';
+import { AuthModule } from '../../auth/auth.module';
 
 // Controllers disponibles
 import { UsersController } from './users.controller';
@@ -41,6 +42,7 @@ import { UserShipmentService } from './services/user-shipment.service';
     ConfigModule, // ✅ Configuration pour SupabaseBaseService
     DatabaseModule, // ✅ UserDataService et autres services de données
     CacheModule, // ✅ Redis cache pour sessions et performances
+    forwardRef(() => AuthModule), // ✅ AuthModule avec forwardRef (évite circular dependency)
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret-key',
       signOptions: { expiresIn: '7d' },
