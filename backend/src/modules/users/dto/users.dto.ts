@@ -4,8 +4,6 @@
  */
 
 import {
-  RegisterDto,
-  LoginDto,
   UpdateProfileDto,
   UpdateAddressDto,
   UserMessageDto,
@@ -19,8 +17,6 @@ import { UserResponseDto, transformUserToResponse } from './user-response.dto';
 
 // Export des types depuis les schémas Zod
 export {
-  RegisterDto,
-  LoginDto,
   UpdateProfileDto,
   UpdateAddressDto,
   UserMessageDto,
@@ -57,15 +53,5 @@ export interface PaginatedUsersResponseDto {
   hasPreviousPage: boolean;
 }
 
-// DTOs pour compatibilité avec l'interface admin existante
-export interface CreateUserDto {
-  email: string;
-  name: string;
-  password: string;
-}
-
-export interface UpdateUserDto {
-  name?: string;
-  email?: string;
-  isPro?: boolean;
-}
+// Note: CreateUserDto est maintenant dans create-user.dto.ts (version Zod complète)
+// L'interface simple ci-dessous était un doublon et a été supprimée

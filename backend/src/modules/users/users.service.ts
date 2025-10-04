@@ -17,9 +17,10 @@ import { UserDataService } from '../../database/services/user-data.service';
 import { UserService } from '../../database/services/user.service';
 import { CacheService } from '../../cache/cache.service';
 import { ConfigService } from '@nestjs/config';
+// Import depuis les versions officielles (pas de doublons)
+import { RegisterDto } from '../../auth/dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 import {
-  RegisterDto,
-  LoginDto,
   UpdateProfileDto,
   UpdateAddressDto,
   UserMessageDto,
@@ -29,10 +30,11 @@ import {
   UserResponseDto,
   LoginResponseDto,
   PaginatedUsersResponseDto,
-  CreateUserDto,
-  UpdateUserDto,
 } from './dto/users.dto';
-import { CreateUserDto as CreateUserControllerDto } from './dto/create-user.dto';
+import { 
+  CreateUserDto,
+  UpdateUserDto 
+} from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 
@@ -229,7 +231,7 @@ export class UsersService extends SupabaseBaseService {
    * Créer un nouvel utilisateur (admin)
    */
   async createUser(
-    createUserDto: CreateUserControllerDto,
+    createUserDto: CreateUserDto,
   ): Promise<UserResponseDto> {
     console.log('➕ UsersService.createUser:', createUserDto.email);
 
@@ -284,11 +286,10 @@ export class UsersService extends SupabaseBaseService {
       const updatedUser: UserResponseDto = {
         ...user,
         email: updateUserDto.email || user.email,
-        firstName: updateUserDto.name?.split(' ')[0] || user.firstName,
-        lastName:
-          updateUserDto.name?.split(' ').slice(1).join(' ') || user.lastName,
-        isPro:
-          updateUserDto.isPro !== undefined ? updateUserDto.isPro : user.isPro,
+        firstName: updateUserDto.firstName || user.firstName,
+        lastName: updateUserDto.lastName || user.lastName,
+        // Note: isPro est un champ admin, sera géré par UsersAdminService (Jour 3)
+        isPro: user.isPro,
         updatedAt: new Date(),
       };
 
@@ -865,10 +866,9 @@ export class UsersService extends SupabaseBaseService {
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const registerDto: RegisterDto = {
       email: createUserDto.email,
-      firstName: createUserDto.name?.split(' ')[0] || '',
-      lastName: createUserDto.name?.split(' ').slice(1).join(' ') || '',
+      firstName: createUserDto.firstName,
+      lastName: createUserDto.lastName,
       password: createUserDto.password,
-      confirmPassword: createUserDto.password,
     };
     return this.register(registerDto);
   }
@@ -878,8 +878,8 @@ export class UsersService extends SupabaseBaseService {
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
     const updateDto: UpdateProfileDto = {
-      firstName: updateUserDto.name?.split(' ')[0],
-      lastName: updateUserDto.name?.split(' ').slice(1).join(' '),
+      firstName: updateUserDto.firstName,
+      lastName: updateUserDto.lastName,
       email: updateUserDto.email,
     };
     return this.updateProfile(Number(id), updateDto);
@@ -970,11 +970,10 @@ export class UsersService extends SupabaseBaseService {
     const registerDto: RegisterDto = {
       email: userData.email,
       password: userData.password,
-      confirmPassword: userData.password, // Même valeur que password
       firstName: userData.firstName || userData.name?.split(' ')[0],
       lastName:
         userData.lastName || userData.name?.split(' ').slice(1).join(' '),
-      phone: userData.phone,
+      tel: userData.phone,
     };
     return this.register(registerDto);
   }

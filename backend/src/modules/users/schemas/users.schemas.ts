@@ -16,27 +16,6 @@ export const userBaseSchema = z.object({
     .optional(),
 });
 
-// Schéma d'inscription
-export const registerSchema = userBaseSchema
-  .extend({
-    password: z
-      .string()
-      .min(8, 'Mot de passe trop court')
-      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Mot de passe trop simple'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Les mots de passe ne correspondent pas',
-    path: ['confirmPassword'],
-  });
-
-// Schéma de connexion
-export const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(1, 'Mot de passe requis'),
-  rememberMe: z.boolean().optional(),
-});
-
 // Schéma de mise à jour profil
 export const updateProfileSchema = userBaseSchema.partial().extend({
   currentPassword: z.string().optional(),
@@ -101,8 +80,6 @@ export const searchUsersSchema = z.object({
 });
 
 // Types TypeScript dérivés
-export type RegisterDto = z.infer<typeof registerSchema>;
-export type LoginDto = z.infer<typeof loginSchema>;
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
 export type UpdateAddressDto = z.infer<typeof updateAddressSchema>;
 export type UserMessageDto = z.infer<typeof userMessageSchema>;
