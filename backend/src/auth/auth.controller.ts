@@ -91,6 +91,46 @@ export class AuthController {
     }
   }
   /**
+   * POST /auth/login
+   * Authentification utilisateur avec email/password
+   */
+  @Post('auth/login')
+  async loginPost(
+    @Body() credentials: { email: string; password: string },
+    @Req() request: Express.Request,
+  ): Promise<any> {
+    try {
+      const loginResult = await this.authService.login(
+        credentials.email,
+        credentials.password,
+        (request as any).ip,
+      );
+
+      // Sauvegarder dans la session Passport
+      return new Promise((resolve, reject) => {
+        (request as any).login(loginResult.user, (err: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({
+              success: true,
+              message: 'Connexion réussie',
+              user: loginResult.user,
+              sessionToken: loginResult.access_token,
+            });
+          }
+        });
+      });
+    } catch (_error: any) {
+      const error = _error as Error;
+      return {
+        success: false,
+        error: error.message || 'Erreur lors de la connexion',
+      };
+    }
+  }
+
+  /**
    * GET /auth/login
    * Redirige vers la page de login Remix (/login) en conservant la query string
    */
