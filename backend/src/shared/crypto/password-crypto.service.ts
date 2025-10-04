@@ -18,7 +18,7 @@ export interface PasswordValidationResult {
 @Injectable()
 export class PasswordCryptoService {
   private readonly logger = new Logger(PasswordCryptoService.name);
-  private readonly BCRYPT_ROUNDS = 12;
+  private readonly BCRYPT_ROUNDS = 10; // ✅ Compromis sécurité/performance (100ms vs 400ms)
   private readonly LEGACY_SALT = 'im10tech7';
 
   constructor() {
@@ -134,6 +134,60 @@ export class PasswordCryptoService {
    */
   isLegacyHash(hash: string): boolean {
     return !this.isBcryptHash(hash);
+  }
+
+  /**
+   * Vérifier si un hash bcrypt a besoin d'être re-hashé
+   * (ex: si on change BCRYPT_ROUNDS de 10 à 12)
+   */
+  needsRehash(hash: string): boolean {
+    if (!this.isBcryptHash(hash)) {
+      return true; // Legacy hash = toujours upgrader
+    }
+
+    try {
+      // Extraire les rounds du hash bcrypt
+      // Format: $2b$10$... (10 = rounds)
+      const roundsMatch = hash.match(/^\$2[aby]\$(\d+)\$/);
+      if (!roundsMatch) return false;
+
+      const currentRounds = parseInt(roundsMatch[1]);
+      return currentRounds < this.BCRYPT_ROUNDS;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Migrer automatiquement lors du login (upgrade-on-login)
+   * À appeler après une authentification réussie
+   */
+  async upgradeHashIfNeeded(
+    userId: string,
+    plainPassword: string,
+    currentHash: string,
+    updateCallback: (userId: string, newHash: string) => Promise<void>,
+  ): Promise<boolean> {
+    if (!this.needsRehash(currentHash)) {
+      return false; // Pas besoin d'upgrade
+    }
+
+    try {
+      // Créer nouveau hash moderne
+      const newHash = await this.hashPassword(plainPassword);
+
+      // Mettre à jour en base via callback
+      await updateCallback(userId, newHash);
+
+      this.logger.log(
+        `🔄 Password upgraded for user ${userId} (${this.isLegacyHash(currentHash) ? 'legacy' : 'old bcrypt'} → bcrypt ${this.BCRYPT_ROUNDS})`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(`Failed to upgrade password for user ${userId}:`, error);
+      return false;
+    }
   }
 
   /**
