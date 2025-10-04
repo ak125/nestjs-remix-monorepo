@@ -1,0 +1,4 @@
+# Fichiers de test et scripts temporaires
+# Ces fichiers sont conservés localement mais non versionnés
+*
+!.gitignore
