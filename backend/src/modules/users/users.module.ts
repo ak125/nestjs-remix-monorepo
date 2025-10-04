@@ -18,6 +18,7 @@ import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
 import { MailService } from '../../services/mail.service';
 import { AuthModule } from '../../auth/auth.module';
+import { MessagesModule } from '../messages/messages.module';
 
 // Controllers disponibles
 import { UsersController } from './users.controller';
@@ -43,6 +44,7 @@ import { UserShipmentService } from './services/user-shipment.service';
     DatabaseModule, // ✅ UserDataService et autres services de données
     CacheModule, // ✅ Redis cache pour sessions et performances
     forwardRef(() => AuthModule), // ✅ AuthModule avec forwardRef (évite circular dependency)
+    MessagesModule, // ✅ MessagesModule pour délégation messaging
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret-key',
       signOptions: { expiresIn: '7d' },

@@ -36,6 +36,7 @@ import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { AuthService } from '../../auth/auth.service';
+import { MessagesService } from '../messages/messages.service';
 
 @Injectable()
 export class UsersService extends SupabaseBaseService {
@@ -46,6 +47,7 @@ export class UsersService extends SupabaseBaseService {
     private readonly cacheService: CacheService,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+    private readonly messagesService: MessagesService,
   ) {
     super(configService);
   }
@@ -619,54 +621,72 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Créer un message utilisateur
+   * ✅ DÉLÉGUÉ vers MessagesService.createMessage()
    */
   async createMessage(
     userId: number,
     messageDto: UserMessageDto,
   ): Promise<{ success: boolean; messageId: string }> {
-    console.log('📝 UsersService.createMessage:', userId, messageDto.subject);
+    console.log(
+      '📝 UsersService.createMessage → délégation MessagesService:',
+      userId,
+    );
 
     try {
-      const messageId = 'msg_' + Date.now();
+      // ✅ Déléguer vers MessagesService
+      const message = await this.messagesService.createMessage({
+        customerId: userId.toString(),
+        staffId: 'system', // ID system pour messages auto
+        subject: messageDto.subject,
+        content: messageDto.content,
+        priority: 'normal',
+      });
 
-      // En production, sauvegarder en base
-      console.log('✅ Message créé:', messageId);
-      return { success: true, messageId };
+      console.log('✅ Message créé via MessagesService:', message.id);
+      return { success: true, messageId: message.id };
     } catch (error: any) {
       console.error('❌ Erreur création message:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la création du message',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error; // Propager l'erreur de MessagesService
     }
   }
 
   /**
    * Récupérer les messages d'un utilisateur
+   * ✅ DÉLÉGUÉ vers MessagesService.getMessages()
    */
   async getUserMessages(userId: number): Promise<any[]> {
-    console.log('📬 UsersService.getUserMessages:', userId);
+    console.log(
+      '📬 UsersService.getUserMessages → délégation MessagesService:',
+      userId,
+    );
 
     try {
-      // En production, récupérer depuis la base
-      const messages = [
-        {
-          id: 'msg_1',
-          subject: 'Message de test',
-          content: 'Contenu du message',
-          createdAt: new Date(),
-          read: false,
-        },
-      ];
+      // ✅ Déléguer vers MessagesService avec filtres
+      const result = await this.messagesService.getMessages({
+        customerId: userId.toString(),
+        page: 1,
+        limit: 100,
+      });
 
-      console.log('✅ Messages récupérés:', messages.length);
+      // Convertir ModernMessage[] vers format attendu par l'interface
+      const messages = result.messages.map((msg) => ({
+        id: msg.id,
+        subject: msg.subject,
+        content: msg.content,
+        createdAt: msg.createdAt,
+        read: msg.isRead,
+        orderId: msg.orderId,
+        priority: msg.priority,
+      }));
+
+      console.log(
+        '✅ Messages récupérés via MessagesService:',
+        messages.length,
+      );
       return messages;
     } catch (error: any) {
       console.error('❌ Erreur récupération messages:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération des messages',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw error; // Propager l'erreur de MessagesService
     }
   }
 
