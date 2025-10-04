@@ -46,7 +46,7 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client.from('__blog_guide').select('*');
+      let query = client.from('__blog_guide').select('*', { count: 'exact' });
 
       // Appliquer les filtres
       if (filters.type) {
@@ -124,7 +124,42 @@ export class GuideService {
   }
 
   /**
-   * 🛒 Récupérer les guides d'achat
+   * � Récupérer un guide par slug (alias)
+   */
+  async getGuideBySlug(slug: string): Promise<BlogArticle | null> {
+    const cacheKey = `guide:slug:${slug}`;
+
+    try {
+      const cached = await this.cacheManager.get<BlogArticle>(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      const client = this.supabaseService.getClient();
+      const { data: guide } = await client
+        .from('__blog_guide')
+        .select('*')
+        .eq('bg_alias', slug)
+        .single();
+
+      if (!guide) return null;
+
+      const article = await this.transformGuideToArticle(client, guide);
+      if (article) {
+        await this.cacheManager.set(cacheKey, article, 3600); // 1h
+      }
+
+      return article;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur récupération guide par slug ${slug}: ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * �🛒 Récupérer les guides d'achat
    */
   async getPurchaseGuides(): Promise<BlogArticle[]> {
     const cacheKey = 'guides_purchase';
@@ -373,34 +408,52 @@ export class GuideService {
     client: any,
     guide: any,
   ): Promise<BlogArticle> {
-    // Récupérer les sections H2/H3
-    const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
-      client
-        .from('__blog_guide_h2')
-        .select('*')
-        .eq('bg2_bg_id', guide.bg_id)
-        .order('bg2_id'),
-      client
-        .from('__blog_guide_h3')
-        .select('*')
-        .eq('bg3_bg_id', guide.bg_id)
-        .order('bg3_id'),
-    ]);
+    // Récupérer les sections H2
+    const { data: h2Sections } = await client
+      .from('__blog_guide_h2')
+      .select('*')
+      .eq('bg2_bg_id', guide.bg_id)
+      .order('bg2_id');
 
-    const sections: BlogSection[] = [
-      ...(h2Sections?.map((s: any) => ({
-        level: 2,
-        title: s.bg2_h2,
-        content: s.bg2_content,
-        anchor: s.bg2_h2?.toLowerCase().replace(/\s+/g, '-'),
-      })) || []),
-      ...(h3Sections?.map((s: any) => ({
-        level: 3,
-        title: s.bg3_h3,
-        content: s.bg3_content,
-        anchor: s.bg3_h3?.toLowerCase().replace(/\s+/g, '-'),
-      })) || []),
-    ];
+    const sections: BlogSection[] = [];
+
+    // Pour chaque H2, récupérer ses H3
+    if (h2Sections && h2Sections.length > 0) {
+      for (const h2 of h2Sections) {
+        // Ajouter le H2
+        sections.push({
+          level: 2,
+          title: h2.bg2_h2,
+          content: h2.bg2_content,
+          anchor: h2.bg2_h2?.toLowerCase().replace(/\s+/g, '-'),
+          wall: h2.bg2_wall || null,
+          cta_anchor: h2.bg2_cta_anchor || null,
+          cta_link: h2.bg2_cta_link || null,
+        });
+
+        // Récupérer les H3 de ce H2
+        const { data: h3Sections } = await client
+          .from('__blog_guide_h3')
+          .select('*')
+          .eq('bg3_bg2_id', h2.bg2_id)
+          .order('bg3_id');
+
+        // Ajouter les H3 (sous-sections du H2 actuel)
+        if (h3Sections && h3Sections.length > 0) {
+          h3Sections.forEach((h3: any) => {
+            sections.push({
+              level: 3,
+              title: h3.bg3_h3,
+              content: h3.bg3_content,
+              anchor: h3.bg3_h3?.toLowerCase().replace(/\s+/g, '-'),
+              wall: h3.bg3_wall || null,
+              cta_anchor: h3.bg3_cta_anchor || null,
+              cta_link: h3.bg3_cta_link || null,
+            });
+          });
+        }
+      }
+    }
 
     return {
       id: `guide_${guide.bg_id}`,

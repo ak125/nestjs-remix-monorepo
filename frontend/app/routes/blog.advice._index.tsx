@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
+import { BlogNavigation } from "~/components/blog/BlogNavigation";
 
 interface AdviceArticle {
   id: string;
@@ -451,6 +452,9 @@ export default function AdviceIndex() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Blog */}
+      <BlogNavigation />
+      
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-16">

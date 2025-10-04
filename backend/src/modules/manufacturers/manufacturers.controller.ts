@@ -100,6 +100,155 @@ export class ManufacturersController {
   }
 
   /**
+   * GET /api/manufacturers/popular-models
+   * 🚗 Récupérer les modèles les plus consultés avec images
+   * Pour carousel homepage (comme PHP)
+   */
+  @Get('popular-models')
+  async getPopularModels(@Query('limit') limit?: string) {
+    this.logger.log('GET /api/manufacturers/popular-models');
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    const models =
+      await this.manufacturersService.getPopularModelsWithImages(limitNumber);
+
+    return {
+      success: true,
+      data: models,
+      total: models.length,
+      message: `${models.length} modèles populaires récupérés`,
+    };
+  }
+
+  /**
+   * GET /api/manufacturers/brands-logos
+   * 🎨 Récupérer les logos de marques pour carousel horizontal
+   * Pour section "Marques les plus consultées" (comme PHP)
+   */
+  @Get('brands-logos')
+  async getBrandsLogos(@Query('limit') limit?: string) {
+    this.logger.log('GET /api/manufacturers/brands-logos');
+    const limitNumber = limit ? parseInt(limit, 10) : 20;
+    const brands =
+      await this.manufacturersService.getBrandsWithLogos(limitNumber);
+
+    return {
+      success: true,
+      data: brands,
+      total: brands.length,
+      message: `${brands.length} logos de marques récupérés`,
+    };
+  }
+
+  /**
+   * GET /api/manufacturers/page-metadata/:alias
+   * 📄 Récupérer les métadonnées SEO d'une page depuis __blog_meta_tags_ariane
+   * Exemple: /api/manufacturers/page-metadata/blog-pieces-auto-auto
+   */
+  @Get('page-metadata/:alias')
+  async getPageMetadata(@Param('alias') alias: string) {
+    this.logger.log(`GET /api/manufacturers/page-metadata/${alias}`);
+    const metadata = await this.manufacturersService.getPageMetadata(alias);
+
+    return {
+      success: true,
+      data: metadata,
+      message: `Métadonnées récupérées pour "${alias}"`,
+    };
+  }
+
+  /**
+   * GET /api/manufacturers/brand/:alias
+   * 🔍 Récupérer une marque et ses modèles par alias (ex: "audi")
+   */
+  @Get('brand/:alias')
+  async getBrandByAlias(@Param('alias') alias: string) {
+    this.logger.log(`GET /api/manufacturers/brand/${alias}`);
+    
+    try {
+      const result = await this.manufacturersService.getBrandWithModelsByAlias(alias);
+      
+      return {
+        success: true,
+        data: result,
+        message: `Marque "${alias}" récupérée avec ${result.models.length} modèles`,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.logger.error(`Erreur getBrandByAlias: ${errorMessage}`);
+      return {
+        success: false,
+        error: errorMessage,
+        data: { brand: null, models: [] },
+      };
+    }
+  }
+
+  /**
+   * GET /api/manufacturers/brand/:brandAlias/model/:modelAlias
+   * 🔍 Récupérer un modèle et ses motorisations par alias
+   * Exemple: /api/manufacturers/brand/citroen/model/berlingo-ii
+   */
+  @Get('brand/:brandAlias/model/:modelAlias')
+  async getModelByAlias(
+    @Param('brandAlias') brandAlias: string,
+    @Param('modelAlias') modelAlias: string,
+  ) {
+    this.logger.log(`GET /api/manufacturers/brand/${brandAlias}/model/${modelAlias}`);
+    
+    try {
+      const result = await this.manufacturersService.getModelWithTypesByAlias(
+        brandAlias,
+        modelAlias,
+      );
+      
+      return {
+        success: true,
+        data: result,
+        message: `Modèle "${modelAlias}" de "${brandAlias}" récupéré avec ${result.types.length} motorisations`,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.logger.error(`Erreur getModelByAlias: ${errorMessage}`);
+      return {
+        success: false,
+        error: errorMessage,
+        data: { brand: null, model: null, types: [] },
+      };
+    }
+  }
+
+  /**
+   * GET /api/manufacturers/seo/:marqueId
+   * 🔍 Récupérer les données SEO dynamiques pour une page constructeur
+   * Supporte 3 niveaux : marque, modèle, type
+   */
+  @Get('seo/:marqueId')
+  async getDynamicSeo(
+    @Param('marqueId', ParseIntPipe) marqueId: number,
+    @Query('modeleId') modeleId?: string,
+    @Query('typeId') typeId?: string,
+  ) {
+    this.logger.log(
+      `GET /api/manufacturers/seo/${marqueId}?modeleId=${modeleId}&typeId=${typeId}`,
+    );
+
+    const modeleIdNum = modeleId ? parseInt(modeleId, 10) : undefined;
+    const typeIdNum = typeId ? parseInt(typeId, 10) : undefined;
+
+    const seoData = await this.manufacturersService.getDynamicSeoData(
+      marqueId,
+      modeleIdNum,
+      typeIdNum,
+    );
+
+    return {
+      success: true,
+      data: seoData,
+      message: 'Données SEO générées avec succès',
+    };
+  }
+
+  /**
    * GET /api/manufacturers/stats
    * Récupérer les statistiques globales
    */
@@ -583,5 +732,57 @@ export class ManufacturersController {
   async getTypesStats() {
     this.logger.log('GET /api/manufacturers/types/stats');
     return this.manufacturersService.getTypesStats();
+  }
+
+  /**
+   * GET /api/manufacturers/display-levels
+   * Analyser les niveaux de marque_display
+   */
+  @Get('display-levels')
+  async getDisplayLevels() {
+    this.logger.log('GET /api/manufacturers/display-levels');
+    
+    try {
+      const { data, error } = await this.manufacturersService.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_display, marque_logo')
+        .order('marque_display', { ascending: false })
+        .order('marque_name', { ascending: true });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Grouper par niveau de display
+      const grouped: Record<number, any[]> = {};
+      const stats: Record<number, number> = {};
+
+      data.forEach(m => {
+        const level = m.marque_display ?? 0;
+        if (!grouped[level]) {
+          grouped[level] = [];
+          stats[level] = 0;
+        }
+        grouped[level].push({
+          id: m.marque_id,
+          name: m.marque_name,
+          logo: m.marque_logo ? true : false,
+        });
+        stats[level]++;
+      });
+
+      return {
+        success: true,
+        total: data.length,
+        statistics: stats,
+        levels: Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(level => ({
+          display: Number(level),
+          count: stats[Number(level)],
+          brands: grouped[Number(level)],
+        })),
+      };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
   }
 }

@@ -3,6 +3,8 @@
  * 
  * Page publique listant toutes les marques automobiles
  * Route: /manufacturers
+ * 
+ * ✨ NOUVELLE VERSION avec carousel modèles populaires
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
@@ -13,6 +15,8 @@ import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
+import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 
 interface Brand {
   marque_id: number;
@@ -20,9 +24,44 @@ interface Brand {
   models_count?: number;
 }
 
+interface FeaturedModel {
+  type_id: number;
+  type_alias: string;
+  type_name: string;
+  type_name_meta: string;
+  type_power: number;
+  type_date_range: string;
+  modele_id: number;
+  modele_alias: string;
+  modele_name: string;
+  modele_name_meta: string;
+  modele_image_url: string;
+  marque_id: number;
+  marque_alias: string;
+  marque_name: string;
+  marque_name_meta: string;
+  marque_name_meta_title: string;
+  url: string;
+  seo_title: string;
+  seo_description: string;
+}
+
+interface BrandLogo {
+  id: number;
+  alias: string;
+  name: string;
+  name_meta: string;
+  name_title: string;
+  logo_url: string | null;
+  url: string;
+  is_active: boolean;
+}
+
 interface LoaderData {
   brands: Brand[];
   total: number;
+  popularModels: FeaturedModel[];
+  brandLogos: BrandLogo[];
   error?: string;
 }
 
@@ -31,7 +70,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // Récupérer toutes les marques
-    const brandsResponse = await fetch(`${baseUrl}/api/vehicles/brands`, {
+    const brandsResponse = await fetch(`${baseUrl}/api/manufacturers`, {
       headers: { 'internal-call': 'true' }
     });
 
@@ -41,14 +80,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const brandsData = await brandsResponse.json();
     const brands: Brand[] = brandsData.data?.map((brand: any) => ({
-      marque_id: brand.marque_id,
-      marque_name: brand.marque_name,
+      marque_id: brand.id,
+      marque_name: brand.name,
       models_count: brand.models_count || 0
     })) || [];
 
+    // ✨ NOUVEAU : Récupérer les modèles populaires
+    let popularModels: FeaturedModel[] = [];
+    try {
+      const modelsResponse = await fetch(`${baseUrl}/api/manufacturers/popular-models?limit=8`, {
+        headers: { 'internal-call': 'true' }
+      });
+      if (modelsResponse.ok) {
+        const modelsData = await modelsResponse.json();
+        popularModels = modelsData.data || [];
+      }
+    } catch (error) {
+      console.error("Erreur chargement modèles populaires:", error);
+    }
+
+    // ✨ NOUVEAU : Récupérer les logos de marques
+    let brandLogos: BrandLogo[] = [];
+    try {
+      const logosResponse = await fetch(`${baseUrl}/api/manufacturers/brands-logos?limit=18`, {
+        headers: { 'internal-call': 'true' }
+      });
+      if (logosResponse.ok) {
+        const logosData = await logosResponse.json();
+        brandLogos = logosData.data || [];
+      }
+    } catch (error) {
+      console.error("Erreur chargement logos:", error);
+    }
+
     return json({
       brands: brands.sort((a, b) => a.marque_name.localeCompare(b.marque_name)),
-      total: brands.length
+      total: brands.length,
+      popularModels,
+      brandLogos
     } as LoaderData);
 
   } catch (error) {
@@ -56,13 +125,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json({
       brands: [],
       total: 0,
+      popularModels: [],
+      brandLogos: [],
       error: "Impossible de charger les marques"
     } as LoaderData);
   }
 }
 
 export default function ManufacturersIndex() {
-  const { brands, total, error } = useLoaderData<typeof loader>();
+  const { brands, total, popularModels, brandLogos, error } = useLoaderData<typeof loader>();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Filtrage côté client
@@ -87,6 +158,20 @@ export default function ManufacturersIndex() {
           et explorez leurs modèles et spécifications techniques.
         </p>
       </div>
+
+      {/* ✨ NOUVEAU : Carousel modèles populaires */}
+      {popularModels.length > 0 && (
+        <div className="mb-16">
+          <FeaturedModelsCarousel models={popularModels} />
+        </div>
+      )}
+
+      {/* ✨ NOUVEAU : Logos de marques */}
+      {brandLogos.length > 0 && (
+        <div className="mb-16">
+          <BrandLogosCarousel brands={brandLogos} />
+        </div>
+      )}
 
       {/* Barre de recherche */}
       <div className="max-w-md mx-auto mb-8">

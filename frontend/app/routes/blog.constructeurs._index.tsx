@@ -1,8 +1,11 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
+import { BlogNavigation } from "~/components/blog/BlogNavigation";
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
+
+// ⚠️ NOTE: Backend API tourne sur port 3000, Frontend sur port 5173
 
 // Liste complète des constructeurs (pour la sidebar)
 const ALL_BRANDS = [
@@ -237,15 +240,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   console.log('[API] Constructeurs loader with params:', { page, search, letter, brand, sortBy });
 
-  // Essayer de récupérer depuis l'API
+  // Essayer de récupérer depuis l'API manufacturers (catalogue technique)
   try {
-    const apiUrl = new URL(`${API_BASE_URL}/api/blog/constructeurs`);
-    apiUrl.searchParams.set('page', page.toString());
-    apiUrl.searchParams.set('limit', limit.toString());
+    const apiUrl = new URL(`${API_BASE_URL}/api/manufacturers`);
     if (search) apiUrl.searchParams.set('search', search);
     if (letter) apiUrl.searchParams.set('letter', letter);
-    if (brand) apiUrl.searchParams.set('brand', brand);
-    if (sortBy) apiUrl.searchParams.set('sortBy', sortBy);
+    // Pagination gérée côté client pour l'instant
+    apiUrl.searchParams.set('limit', '200'); // Récupérer toutes les marques
 
     const response = await fetch(apiUrl.toString(), {
       headers: { 'Accept': 'application/json' },
@@ -254,14 +255,38 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const apiData = await response.json();
-      console.log('[API] Success:', apiData.items?.length || 0, 'constructeurs');
+      
+      // Convertir les données manufacturers en format constructeurs
+      const manufacturers = apiData.data || [];
+      console.log('[API] Success:', manufacturers.length, 'constructeurs');
+      
+      // Filtrer localement
+      let filtered = manufacturers;
+      if (letter) {
+        filtered = filtered.filter((m: any) => m.name.charAt(0).toUpperCase() === letter);
+      }
+      if (brand) {
+        filtered = filtered.filter((m: any) => m.name.toLowerCase().includes(brand.toLowerCase()));
+      }
+      
+      // Pagination locale
+      const startIndex = (page - 1) * limit;
+      const paginatedItems = filtered.slice(startIndex, startIndex + limit);
       
       // Enrichir avec les données manquantes
       return json({
-        constructeurs: apiData.items || [],
-        total: apiData.total || 0,
-        page: apiData.page || page,
-        totalPages: apiData.totalPages || 1,
+        constructeurs: paginatedItems.map((m: any) => ({
+          id: m.id,
+          title: m.name,
+          slug: m.slug,
+          brand: m.name,
+          logo: m.logo,
+          excerpt: `Pièces auto ${m.name} - Catalogue complet`,
+          is_active: m.is_active,
+        })),
+        total: filtered.length,
+        page,
+        totalPages: Math.ceil(filtered.length / limit),
         search,
         letter,
         brand,
@@ -270,10 +295,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         featuredConstructeurs: (apiData.items || []).slice(0, 6),
         popularBrands: ALL_BRANDS.slice(0, 10).map(name => ({ name, count: 1, totalViews: 0 })),
         stats: {
-          totalViews: apiData.total * 1500,
+          totalViews: (apiData.total || 0) * 1500,
           avgViews: 1500,
           totalConstructeurs: apiData.total || 0,
-          totalModels: apiData.total * 15
+          totalModels: (apiData.total || 0) * 15
         },
         success: true,
         source: 'api'
@@ -622,6 +647,9 @@ export default function ConstructeursHomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Navigation Blog */}
+      <BlogNavigation />
+      
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
@@ -650,15 +678,15 @@ export default function ConstructeursHomePage() {
               <div className="text-sm text-blue-100">Constructeurs</div>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">{stats.totalModels.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{(stats.totalModels || 0).toLocaleString()}</div>
               <div className="text-sm text-blue-100">Modèles</div>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">{Math.round(stats.totalViews / 1000)}K</div>
+              <div className="text-2xl font-bold">{Math.round((stats.totalViews || 0) / 1000)}K</div>
               <div className="text-sm text-blue-100">Vues totales</div>
             </div>
             <div className="bg-white/10 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold">{stats.avgViews.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{(stats.avgViews || 0).toLocaleString()}</div>
               <div className="text-sm text-blue-100">Vues moyenne</div>
             </div>
           </div>

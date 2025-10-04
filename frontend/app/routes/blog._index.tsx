@@ -25,13 +25,19 @@ import {
   ExternalLink,
   Share2,
   Bookmark,
-  Zap,
   Wrench,
   Award,
   MessageCircle,
   Mail,
+  CheckCircle2,
+  Car,
+  ShoppingCart,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
+
+// Blog Components
+import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { BlogNavigation } from "~/components/blog/BlogNavigation";
 
 // UI Components
 import { Button } from "~/components/ui/button";
@@ -312,35 +318,33 @@ export default function BlogIndex() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      {/* Hero Section Améliorée */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900 text-white py-24">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-purple-900/90" />
-          <div className="absolute top-0 left-0 w-full h-full opacity-10">
-            <svg viewBox="0 0 100 20" className="w-full h-full">
-              <defs>
-                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                  <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-            </svg>
-          </div>
-        </div>
+      {/* Navigation Blog */}
+      <BlogNavigation />
+      
+      {/* Hero Compact */}
+      <CompactBlogHeader
+        title="Blog Automecanik"
+        description={blogData.success && blogData.stats
+          ? `${blogData.stats.totalArticles}+ articles • ${formatViews(blogData.stats.totalViews)} vues`
+          : "Conseils d'experts et guides pratiques automobile"
+        }
+        breadcrumb="Accueil > Blog"
+        stats={blogData.success && blogData.stats ? [
+          { icon: BookOpen, value: blogData.stats.totalArticles, label: "Articles" },
+          { icon: Sparkles, value: blogData.stats.totalAdvice, label: "Conseils" },
+          { icon: Star, value: blogData.stats.totalGuides || 0, label: "Guides" },
+        ] : []}
+        gradientFrom="from-blue-900"
+        gradientTo="to-purple-900"
+      />
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
-              Blog Automecanik
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 leading-relaxed max-w-3xl mx-auto">
-              Conseils d'experts, guides pratiques et actualités pour prendre soin de votre véhicule. 
-              Votre référence automobile depuis 2020.
-            </p>
-
-            {/* Barre de recherche améliorée */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
-              <Form method="get" className="flex flex-col md:flex-row gap-4">
+      {/* Search Bar Section - Compact */}
+      <section className="py-6 bg-white border-b">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            {/* Barre de recherche */}
+            <div className="bg-slate-50 rounded-xl p-4 border border-gray-200">
+              <Form method="get" className="flex flex-col md:flex-row gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
@@ -376,50 +380,6 @@ export default function BlogIndex() {
                 </Button>
               </Form>
             </div>
-
-            {/* Statistiques animées */}
-            {blogData.success && blogData.stats && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                {[
-                  { label: 'Articles', value: animatedStats.articles, icon: BookOpen, link: null },
-                  { label: 'Conseils', value: animatedStats.advice, icon: Sparkles, link: '/blog-pieces-auto/conseils' },
-                  { label: 'Guides', value: animatedStats.guides, icon: Star, link: null },
-                  { label: 'Vues', value: animatedStats.views, icon: Eye, format: true, link: null },
-                ].map((stat, index) => {
-                  const content = (
-                    <>
-                      <stat.icon className="w-6 h-6 mx-auto mb-2 text-blue-200" />
-                      <div className="text-3xl md:text-4xl font-bold text-white mb-1 tabular-nums">
-                        {stat.format && (stat.value || 0) > 1000 
-                          ? formatViews(stat.value || 0)
-                          : `${(stat.value || 0).toLocaleString()}+`
-                        }
-                      </div>
-                      <div className="text-blue-200 text-sm font-medium">{stat.label}</div>
-                    </>
-                  );
-
-                  return stat.link ? (
-                    <Link
-                      key={stat.label}
-                      to={stat.link}
-                      style={{ animationDelay: `${index * 100}ms` }}
-                      className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-110 hover:bg-white/20 transition-all duration-300 animate-fade-in cursor-pointer group"
-                    >
-                      {content}
-                    </Link>
-                  ) : (
-                    <div
-                      key={stat.label}
-                      style={{ animationDelay: `${index * 100}ms` }}
-                      className="text-center p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:scale-110 hover:bg-white/20 transition-all duration-300 animate-fade-in"
-                    >
-                      {content}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -548,52 +508,147 @@ export default function BlogIndex() {
         </section>
       )}
 
-      {/* Section Thématiques Populaires */}
-      <section className="py-16 bg-white">
+      {/* Section Catégories Principales */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 text-lg">
               <Hash className="w-4 h-4 mr-2" />
-              Thématiques
+              Nos Catégories
             </Badge>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Explorez par sujet
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Explorez nos contenus par thématique
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Trouvez rapidement les articles qui vous intéressent
+              Guides complets, conseils d'experts et informations détaillées
             </p>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-3 max-w-5xl mx-auto">
-            {[
-              { label: 'Entretien', icon: Wrench, count: blogData.stats?.totalAdvice || 0, color: 'blue' },
-              { label: 'Diagnostic', icon: Zap, count: Math.floor((blogData.stats?.totalGuides || 0) * 0.4), color: 'orange' },
-              { label: 'Réparation', icon: Award, count: Math.floor((blogData.stats?.totalAdvice || 0) * 0.6), color: 'green' },
-              { label: 'Pièces détachées', icon: Star, count: Math.floor((blogData.stats?.totalArticles || 0) * 0.3), color: 'purple' },
-              { label: 'Constructeurs', icon: BookOpen, count: blogData.stats?.totalConstructeurs || 12, color: 'red' },
-              { label: 'Tutoriels', icon: TrendingUp, count: blogData.stats?.totalGuides || 0, color: 'indigo' },
-            ].map((theme) => (
-              <Link
-                key={theme.label}
-                to={`/blog?q=${theme.label.toLowerCase()}`}
-                className={`
-                  group flex items-center gap-3 px-6 py-3 rounded-full
-                  bg-${theme.color}-50 hover:bg-${theme.color}-100
-                  border-2 border-${theme.color}-200 hover:border-${theme.color}-400
-                  transition-all duration-200 hover:scale-105 hover:shadow-md
-                `}
-              >
-                <theme.icon className={`w-5 h-5 text-${theme.color}-600`} />
-                <span className={`font-semibold text-${theme.color}-900`}>{theme.label}</span>
-                <Badge className={`bg-${theme.color}-200 text-${theme.color}-800 hover:bg-${theme.color}-300`}>
-                  {theme.count}
-                </Badge>
-              </Link>
-            ))}
+          {/* 3 Catégories Principales */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-6xl mx-auto">
+            {/* Montage et Entretien */}
+            <Link to="/blog-pieces-auto/conseils" className="group">
+              <Card className="h-full border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full opacity-50" />
+                <CardHeader className="relative">
+                  <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Wrench className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                    Montage et Entretien
+                  </CardTitle>
+                  <p className="text-gray-600 mt-2">
+                    Guides détaillés pour installer et entretenir vos pièces auto
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="bg-orange-100 text-orange-800 text-sm">
+                      150+ guides
+                    </Badge>
+                    <ArrowRight className="w-5 h-5 text-orange-600 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-orange-500" />
+                      Tutoriels pas à pas
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-orange-500" />
+                      Conseils de pro
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-orange-500" />
+                      Liste d'outils
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Constructeurs */}
+            <Link to="/blog-pieces-auto/auto" className="group">
+              <Card className="h-full border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-bl-full opacity-50" />
+                <CardHeader className="relative">
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Car className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    Constructeurs Automobile
+                  </CardTitle>
+                  <p className="text-gray-600 mt-2">
+                    Histoire, modèles et spécificités de chaque marque
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="bg-blue-100 text-blue-800 text-sm">
+                      35+ marques
+                    </Badge>
+                    <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-blue-500" />
+                      Histoire des marques
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-blue-500" />
+                      Modèles emblématiques
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-blue-500" />
+                      Fiches techniques
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Guide d'Achat */}
+            <Link to="/blog-pieces-auto/guide" className="group">
+              <Card className="h-full border-2 border-green-200 hover:border-green-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-white overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-bl-full opacity-50" />
+                <CardHeader className="relative">
+                  <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <ShoppingCart className="w-8 h-8" />
+                  </div>
+                  <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-green-600 transition-colors">
+                    Guide d'Achat
+                  </CardTitle>
+                  <p className="text-gray-600 mt-2">
+                    Conseils pour choisir les meilleures pièces au meilleur prix
+                  </p>
+                </CardHeader>
+                <CardContent className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <Badge className="bg-green-100 text-green-800 text-sm">
+                      120+ guides
+                    </Badge>
+                    <ArrowRight className="w-5 h-5 text-green-600 group-hover:translate-x-2 transition-transform" />
+                  </div>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                      Comparatifs détaillés
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                      Rapport qualité/prix
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                      Marques recommandées
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
-          {/* Bouton "Voir tous les conseils" */}
-          <div className="text-center mt-8">
+          {/* Bouton "Tous les conseils" */}
+          <div className="text-center">
             <Link to="/blog-pieces-auto/conseils">
               <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all">
                 <BookOpen className="w-5 h-5 mr-2" />

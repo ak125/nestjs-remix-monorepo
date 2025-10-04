@@ -32,6 +32,8 @@ import { useState, useEffect } from "react";
 // UI Components
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
 // Blog components
 import CTAButton from "~/components/blog/CTAButton";
@@ -305,110 +307,68 @@ export default function LegacyBlogArticle() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="flex items-center space-x-2 text-sm text-gray-600">
-            <Link to="/" className="hover:text-primary transition-colors">
-              Accueil
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link to="/blog" className="hover:text-primary transition-colors">
-              Blog
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link to="/blog-pieces-auto/conseils" className="hover:text-primary transition-colors">
-              Conseils
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium capitalize">{pg_alias}</span>
-          </nav>
-        </div>
-      </div>
+      {/* Navigation */}
+      <BlogPiecesAutoNavigation />
+      
+      {/* Header Compact */}
+      <CompactBlogHeader
+        title={article.h1}
+        description={`Publié le ${new Date(article.publishedAt).toLocaleDateString('fr-FR')} • ${article.viewsCount.toLocaleString()} vues`}
+        breadcrumb={[
+          { label: "Accueil", href: "/" },
+          { label: "Blog", href: "/blog" },
+          { label: "Conseils", href: "/blog-pieces-auto/conseils" },
+          { label: article.title },
+        ]}
+        stats={[
+          { icon: Eye, value: article.viewsCount.toLocaleString(), label: "Vues" },
+          { icon: Clock, value: `${Math.ceil(article.content.split(' ').length / 200)} min`, label: "Lecture" },
+        ]}
+        gradientFrom="from-purple-600"
+        gradientTo="to-pink-600"
+      />
 
-      {/* En-tête Article - Design moderne */}
-      <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <button
-            onClick={() => navigate('/blog')}
-            className="mb-8 px-5 py-2.5 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg transition-all flex items-center gap-2 border border-white/20"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium">Retour au blog</span>
-          </button>
+      <div className="container mx-auto px-4 max-w-6xl py-8">
+        {/* Bouton retour */}
+        <button
+          onClick={() => navigate('/blog')}
+          className="mb-6 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg transition-all flex items-center gap-2 border border-gray-200 shadow-sm"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="font-medium text-gray-700">Retour au blog</span>
+        </button>
 
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
-            {article.h1}
-          </h1>
-
-          {/* 🖼️ Image featured de l'article - Optimisée avec shadcn/ui Card */}
-          {article.featuredImage && (
-            <Card className="mt-6 max-w-2xl mx-auto border-2 border-white/10 shadow-2xl overflow-hidden hover:shadow-3xl transition-shadow duration-300">
-              <CardContent className="p-0">
-                <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8 flex items-center justify-center min-h-[14rem] md:min-h-[18rem]">
-                  <img
-                    src={article.featuredImage}
-                    alt={article.title}
-                    className="w-full h-56 md:h-72 object-contain mx-auto drop-shadow-lg"
-                    style={{ imageRendering: 'crisp-edges' }}
-                    loading="eager"
-                    width="800"
-                    height="288"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="flex flex-wrap items-center gap-3 text-white/80 text-sm mb-6">
-            {/* Date de publication */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <Calendar className="w-4 h-4" />
-              <span>
-                {new Date(article.publishedAt).toLocaleDateString('fr-FR', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
-              </span>
-            </div>
-            {/* Date de modification (si différente) */}
-            {article.updatedAt && article.updatedAt !== article.publishedAt && (
-              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                <Clock className="w-4 h-4" />
-                <span>
-                  Mis à jour le {new Date(article.updatedAt).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </span>
+        {/* Featured Image */}
+        {article.featuredImage && (
+          <Card className="mb-8 border shadow-lg overflow-hidden">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 flex items-center justify-center">
+                <img
+                  src={article.featuredImage}
+                  alt={article.title}
+                  className="w-full h-64 object-contain drop-shadow-lg"
+                  loading="eager"
+                />
               </div>
-            )}
-            {/* Vues */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full">
-              <Eye className="w-4 h-4" />
-              <span className="font-medium">{article.viewsCount.toLocaleString()}</span>
-              <span>vues</span>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Tags */}
-          {article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2.5">
-              {article.tags.slice(0, 6).map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="secondary"
-                  className="px-4 py-1.5 text-sm bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-all border-white/20 font-medium"
-                >
-                  <Tag className="w-3.5 h-3.5 mr-1.5 inline" />
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Tags */}
+        {article.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {article.tags.slice(0, 6).map((tag) => (
+              <Badge 
+                key={tag} 
+                variant="secondary"
+                className="px-3 py-1 text-sm"
+              >
+                <Tag className="w-3 h-3 mr-1.5 inline" />
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Contenu Principal */}

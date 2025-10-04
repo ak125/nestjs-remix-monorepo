@@ -84,6 +84,43 @@ export class ContentController {
   }
 
   /**
+   * 📖 Récupérer un guide par slug
+   * GET /api/blog/guides/slug/pieces-auto-comment-s-y-retrouver
+   */
+  @Get('guides/slug/:slug')
+  async getGuideBySlug(@Param('slug') slug: string) {
+    try {
+      const guide = await this.guideService.getGuideBySlug(slug);
+
+      if (!guide) {
+        throw new HttpException('Guide non trouvé', HttpStatus.NOT_FOUND);
+      }
+
+      // Incrémenter les vues (utiliser l'ID du guide)
+      if (guide.id) {
+        await this.guideService.incrementGuideViews(parseInt(guide.id));
+      }
+
+      return {
+        success: true,
+        data: guide,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `❌ Erreur récupération guide ${slug}: ${(error as Error).message}`,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * 📖 Récupérer un guide par ID
    * GET /api/blog/guides/123
    */
@@ -202,13 +239,16 @@ export class ContentController {
 
       return {
         success: true,
+        items: result.articles || [], // Format attendu par le frontend
+        total: result.total || 0, // Protection contre null
+        page,
+        limit,
+        totalPages: Math.ceil((result.total || 0) / limit),
+        filters,
+        // Rétrocompatibilité
         data: {
           constructeurs: result.articles,
           total: result.total,
-          page,
-          limit,
-          totalPages: Math.ceil(result.total / limit),
-          filters,
         },
       };
     } catch (error) {

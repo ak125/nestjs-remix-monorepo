@@ -6,7 +6,6 @@ import { BlogCacheService } from './blog-cache.service';
 import {
   BlogArticle,
   BlogSection,
-  BlogSearchResult,
   BlogDashboard,
 } from '../interfaces/blog.interfaces';
 
@@ -213,38 +212,43 @@ export class BlogService {
    */
   async searchBlog(
     query: string,
-    type: 'all' | 'advice' | 'guide' | 'constructeur' | 'glossaire' = 'all',
-    page: number = 1,
-    limit: number = 20,
-  ): Promise<BlogSearchResult> {
+    options?: {
+      type?: 'all' | 'advice' | 'guide' | 'constructeur' | 'glossaire';
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<{ articles: BlogArticle[]; total: number }> {
     try {
+      const limit = options?.limit || 20;
+      const offset = options?.offset || 0;
+
       this.logger.log(`🔍 Recherche "${query}"`);
 
-      // Recherche simple dans les conseils pour le moment
-      const { data } = await this.supabaseService.client
+      // Recherche dans les conseils (titre, contenu, résumé)
+      const { data, count } = await this.supabaseService.client
         .from('__blog_advice')
-        .select('*')
-        .ilike('ba_title', `%${query}%`)
-        .range((page - 1) * limit, page * limit - 1);
+        .select('*', { count: 'exact' })
+        .or(
+          `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_resume.ilike.%${query}%`,
+        )
+        .range(offset, offset + limit - 1);
 
-      const results =
+      const articles =
         data?.map((item) => this.transformAdviceToArticle(item)) || [];
 
-      this.logger.log(`🔍 Recherche "${query}": ${results.length} résultats`);
+      this.logger.log(
+        `🔍 Recherche "${query}": ${articles.length} résultats trouvés sur ${count || 0} total`,
+      );
 
       return {
-        query,
-        type,
-        results,
-        total: results.length,
-        page,
-        limit,
+        articles,
+        total: count || 0,
       };
     } catch (error) {
       this.logger.error(
         `❌ Erreur recherche blog: ${(error as Error).message}`,
       );
-      return { query, type, results: [], total: 0, page, limit };
+      return { articles: [], total: 0 };
     }
   }
 

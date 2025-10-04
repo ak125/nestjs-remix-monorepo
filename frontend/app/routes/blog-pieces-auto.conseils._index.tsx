@@ -2,10 +2,12 @@
 import * as React from "react";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles, Clock } from "lucide-react";
-import { Card, CardContent } from "~/components/ui/card";
+import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles, Clock, Wrench, CheckCircle2 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
 /* ===========================
    Types
@@ -167,50 +169,58 @@ export default function BlogConseilsIndex() {
   const getFamilyColor = (family: string) => FAMILY_COLORS[family] || FAMILY_COLORS["Autres"];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
-      {/* Hero */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 via-transparent to-transparent" />
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-2 text-blue-200 text-sm mb-6">
-              <Link to="/" className="hover:text-white transition-colors">Accueil</Link>
-              <span>/</span>
-              <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
-              <span>/</span>
-              <span className="text-white font-medium">Montage et entretien</span>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+      {/* Navigation */}
+      <BlogPiecesAutoNavigation />
+      
+      {/* Hero Compact */}
+      <CompactBlogHeader
+        title="Montage et Entretien"
+        description={`${totalArticles} guides pratiques • ${stats.totalCategories} catégories • ${formatViews(stats.totalViews)} vues`}
+        breadcrumb={[
+          { label: "Accueil", href: "/" },
+          { label: "Pièces Auto", href: "/blog-pieces-auto/conseils" },
+          { label: "Montage et Entretien" },
+        ]}
+        stats={[
+          { icon: BookOpen, value: totalArticles, label: "Guides" },
+          { icon: Tag, value: stats.totalCategories, label: "Catégories" },
+          { icon: Eye, value: formatViews(stats.totalViews), label: "Vues" },
+        ]}
+        gradientFrom="from-orange-900"
+        gradientTo="to-red-900"
+      />
 
-            <div className="text-center">
-              <Badge className="mb-6 bg-white/20 text-white backdrop-blur-md px-6 py-2.5 border border-white/30 shadow-lg">
-                <BookOpen className="w-4 h-4 mr-2" />
-                Guides pratiques
-              </Badge>
-
-              <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
-                Montage et entretien
-              </h1>
-
-              <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Tous nos conseils d&apos;experts pour l&apos;entretien et la réparation de votre véhicule
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                <div className="group relative p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                  <BookOpen className="w-8 h-8 mx-auto mb-3 text-blue-200 group-hover:text-white transition-colors" />
-                  <div className="text-4xl font-bold mb-2 tabular-nums">{totalArticles}</div>
-                  <div className="text-blue-200 text-sm font-medium uppercase tracking-wide">Articles</div>
+      {/* Points clés */}
+      <section className="py-8 bg-gradient-to-r from-orange-50 to-red-50 border-b border-orange-100">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+                  1
                 </div>
-                <div className="group relative p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                  <Tag className="w-8 h-8 mx-auto mb-3 text-blue-200 group-hover:text-white transition-colors" />
-                  <div className="text-4xl font-bold mb-2 tabular-nums">{stats.totalCategories}</div>
-                  <div className="text-blue-200 text-sm font-medium uppercase tracking-wide">Catégories</div>
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-2 text-lg">Instructions détaillées</h4>
+                  <p className="text-gray-600 text-sm">Étapes claires avec photos et schémas explicatifs pour chaque intervention</p>
                 </div>
-                <div className="group relative p-6 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                  <Eye className="w-8 h-8 mx-auto mb-3 text-blue-200 group-hover:text-white transition-colors" />
-                  <div className="text-4xl font-bold mb-2 tabular-nums">{formatViews(stats.totalViews)}</div>
-                  <div className="text-blue-200 text-sm font-medium uppercase tracking-wide">Vues totales</div>
+              </div>
+              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+                  2
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-2 text-lg">Outils nécessaires</h4>
+                  <p className="text-gray-600 text-sm">Liste complète du matériel requis pour réussir le montage de vos pièces</p>
+                </div>
+              </div>
+              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+                  3
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 mb-2 text-lg">Conseils d'experts</h4>
+                  <p className="text-gray-600 text-sm">Astuces professionnelles et recommandations pour un montage réussi</p>
                 </div>
               </div>
             </div>
@@ -218,39 +228,72 @@ export default function BlogConseilsIndex() {
         </div>
       </section>
 
-      {/* Sticky filters */}
-      <section className="sticky top-0 z-40 bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-600 flex-shrink-0">
-              <Filter className="w-5 h-5" />
-              <span className="hidden sm:inline text-sm font-semibold">Filtrer par catégorie :</span>
+      {/* Section Filtres Améliorée */}
+      <section className="py-12 bg-gradient-to-br from-orange-50 via-white to-red-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            {/* En-tête */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-2 rounded-full mb-3">
+                <Filter className="w-5 h-5" />
+                <span className="font-semibold">Par Catégorie</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                Explorez par type d'intervention
+              </h3>
+              <p className="text-gray-600">
+                Trouvez rapidement le guide adapté à votre besoin
+              </p>
             </div>
 
-            <div className="flex-1 overflow-x-auto scrollbar-hide">
-              <div className="flex gap-2 pb-2">
-                {groupedArticles.map((group, index) => {
-                  const colors = getFamilyColor(group.category);
-                  const icon = FAMILY_ICONS[group.category] || "📦";
-                  return (
-                    <button
-                      key={group.categorySlug}
-                      onClick={() => {
-                        const el = document.getElementById(group.categorySlug);
-                        if (!el) return;
-                        const offset = 120;
-                        const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-                        window.scrollTo({ top: y, behavior: "smooth" });
-                      }}
-                      style={{ animationDelay: `${index * 30}ms` }}
-                      className={`group relative px-4 py-2.5 rounded-xl ${colors.bg} border-2 ${colors.border} text-sm font-medium whitespace-nowrap transition-all duration-200 hover:shadow-lg hover:scale-105 cursor-pointer`}
-                    >
-                      <span className="mr-1.5">{icon}</span>
-                      <span className={`${colors.text} font-semibold`}>{group.category}</span>
-                      <Badge className={`ml-2 ${colors.badge}`}>{group.count}</Badge>
-                    </button>
-                  );
-                })}
+            {/* Grille de filtres */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
+              {groupedArticles.map((group, index) => {
+                const colors = getFamilyColor(group.category);
+                const icon = FAMILY_ICONS[group.category] || "📦";
+                return (
+                  <button
+                    key={group.categorySlug}
+                    onClick={() => {
+                      const el = document.getElementById(group.categorySlug);
+                      if (!el) return;
+                      const offset = 120;
+                      const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+                      window.scrollTo({ top: y, behavior: "smooth" });
+                    }}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    className={`group relative p-2.5 rounded-lg ${colors.bg} border-2 ${colors.border} transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer text-center`}
+                  >
+                    {/* Icône */}
+                    <div className={`text-2xl mb-1.5 transform group-hover:scale-110 transition-transform duration-200`}>
+                      {icon}
+                    </div>
+                    
+                    {/* Nom de la catégorie */}
+                    <h4 className={`${colors.text} font-bold text-xs leading-tight line-clamp-2`}>
+                      {group.category}
+                    </h4>
+
+                    {/* Effet de survol */}
+                    <div className={`absolute inset-0 rounded-lg bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Statistiques */}
+            <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-orange-600" />
+                <span><strong className="text-gray-900">{totalArticles}</strong> guides disponibles</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-orange-600" />
+                <span><strong className="text-gray-900">{stats.totalViews.toLocaleString()}</strong> vues totales</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-orange-600" />
+                <span><strong className="text-gray-900">{stats.totalCategories}</strong> catégories</span>
               </div>
             </div>
           </div>
@@ -385,42 +428,26 @@ export default function BlogConseilsIndex() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-
-        <div className="container mx-auto px-4 relative z-10">
+      {/* CTA - Design orange moderne */}
+      <section className="py-16 bg-gradient-to-r from-orange-600 to-red-600 text-white">
+        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 mb-8">
-              <Sparkles className="w-10 h-10" />
-            </div>
-
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Besoin d&apos;aide pour votre véhicule ?</h2>
-            <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Nos experts vous conseillent pour l&apos;entretien et la réparation
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">Besoin d'aide pour une réparation ?</h3>
+            <p className="text-xl mb-8 text-white/90">
+              Nos experts sont là pour vous conseiller sur le choix des pièces et les techniques de montage
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link to="/contact" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-white text-blue-600 hover:bg-gray-100 transition-all px-8 py-6 text-lg font-semibold rounded-xl">
-                  <span>Contacter nos experts</span>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/contact">
+                <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg rounded-xl font-semibold">
+                  Contacter un expert
+                </Button>
+              </Link>
+              <Link to="/blog-pieces-auto/auto">
+                <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-xl font-semibold">
+                  Voir les pièces
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-
-              <Link to="/catalogue" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-blue-600 transition-all px-8 py-6 text-lg font-semibold rounded-xl">
-                  Voir le catalogue
-                </Button>
-              </Link>
-            </div>
-
-            <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-blue-100">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span>Support 7j/7</span></div>
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span>+10 000 clients satisfaits</span></div>
-              <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span>Livraison rapide</span></div>
             </div>
           </div>
         </div>

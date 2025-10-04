@@ -199,7 +199,7 @@ export class BlogController {
         data: {
           query,
           type: type || 'all',
-          results: results.articles,
+          articles: results.articles,
           total: results.total,
           page,
           limit,

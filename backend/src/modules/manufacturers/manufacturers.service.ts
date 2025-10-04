@@ -989,4 +989,699 @@ export class ManufacturersService extends SupabaseBaseService {
       .replace(/[^a-z0-9]+/g, '-') // Remplace les caractères spéciaux par des tirets
       .replace(/^-|-$/g, ''); // Supprime les tirets en début et fin
   }
+
+  /**
+   * 1️⃣ MÉTHODE SIMPLE : Récupère les marques avec leurs logos
+   * ✅ Sans FK - Fonctionne parfaitement
+   */
+  async getBrandsWithLogos(limit = 100) {
+    try {
+      const cacheKey = `brands_logos:${limit}`;
+      
+      // Vérifier le cache
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`✅ Cache hit pour ${cacheKey}`);
+        return cached;
+      }
+
+      this.logger.log(`🔍 Récupération des ${limit} marques avec logos...`);
+
+      const { data, error } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias, marque_logo, marque_display')
+        .eq('marque_display', 1)
+        .order('marque_name', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('❌ Erreur Supabase getBrandsWithLogos:', error);
+        throw new Error(`Supabase error: ${error.message}`);
+      }
+
+      const formattedBrands = data.map(brand => ({
+        id: brand.marque_id,
+        name: brand.marque_name,
+        alias: brand.marque_alias,
+        logo: brand.marque_logo
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brand.marque_logo}`
+          : null,
+        slug: this.generateSlug(brand.marque_name),
+      }));
+
+      this.logger.log(`✅ ${formattedBrands.length} marques récupérées`);
+
+      // Mise en cache
+      await this.cacheManager.set(cacheKey, formattedBrands, 3600);
+
+      return formattedBrands;
+    } catch (error) {
+      this.logger.error('❌ Erreur getBrandsWithLogos:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * 2️⃣ MÉTHODE MOYENNE : SEO dynamique avec requêtes séparées
+   * ✅ Sans FK - Requêtes simples successives
+   */
+  async getDynamicSeoData(
+    marqueId: number,
+    modeleId?: number,
+    typeId?: number,
+  ) {
+    try {
+      this.logger.log(`🔍 Récupération SEO pour marque=${marqueId}, modele=${modeleId}, type=${typeId}`);
+
+      let title = '';
+      let description = '';
+      let h1 = '';
+
+      // 1. Toujours récupérer la marque
+      const { data: marque, error: marqueError } = await this.client
+        .from('auto_marque')
+        .select('marque_name, marque_alias')
+        .eq('marque_id', marqueId)
+        .single();
+
+      if (marqueError || !marque) {
+        throw new Error(`Marque ${marqueId} non trouvée`);
+      }
+
+      // 2. Si modeleId fourni, récupérer le modèle
+      let modele = null;
+      if (modeleId) {
+        const { data: modeleData, error: modeleError } = await this.client
+          .from('auto_modele')
+          .select('modele_name, modele_alias')
+          .eq('modele_id', modeleId)
+          .single();
+
+        if (!modeleError && modeleData) {
+          modele = modeleData;
+        }
+      }
+
+      // 3. Si typeId fourni, récupérer le type
+      let type = null;
+      if (typeId) {
+        const { data: typeData, error: typeError } = await this.client
+          .from('auto_type')
+          .select('type_name, type_year_from, type_year_to')
+          .eq('type_id', typeId)
+          .single();
+
+        if (!typeError && typeData) {
+          type = typeData;
+        }
+      }
+
+      // 4. Construire le SEO selon le niveau
+      if (type && modele) {
+        // Niveau TYPE
+        const dateRange = type.type_year_from && type.type_year_to
+          ? ` (${type.type_year_from}-${type.type_year_to})`
+          : '';
+        title = `${marque.marque_name} ${modele.modele_name} ${type.type_name}${dateRange} - Pièces Auto`;
+        h1 = `Pièces détachées pour ${marque.marque_name} ${modele.modele_name} ${type.type_name}`;
+        description = `Trouvez toutes les pièces détachées pour votre ${marque.marque_name} ${modele.modele_name} ${type.type_name}${dateRange}. Large catalogue, prix compétitifs.`;
+      } else if (modele) {
+        // Niveau MODÈLE
+        title = `${marque.marque_name} ${modele.modele_name} - Pièces Auto`;
+        h1 = `Pièces détachées ${marque.marque_name} ${modele.modele_name}`;
+        description = `Découvrez notre gamme complète de pièces pour ${marque.marque_name} ${modele.modele_name}. Qualité garantie.`;
+      } else {
+        // Niveau MARQUE uniquement
+        title = `Pièces Auto ${marque.marque_name} - Catalogue Complet`;
+        h1 = `Pièces détachées ${marque.marque_name}`;
+        description = `Large choix de pièces détachées pour véhicules ${marque.marque_name}. Livraison rapide, prix compétitifs.`;
+      }
+
+      this.logger.log(`✅ SEO généré pour ${marque.marque_name}`);
+
+      return {
+        title,
+        description,
+        h1,
+        breadcrumb: {
+          marque: { id: marqueId, name: marque.marque_name, alias: marque.marque_alias },
+          modele: modele ? { id: modeleId, name: modele.modele_name, alias: modele.modele_alias } : null,
+          type: type ? { id: typeId, name: type.type_name } : null,
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur getDynamicSeoData:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * 3️⃣ MÉTHODE COMPLEXE : Modèles populaires avec images
+   * ✅ SANS FK - Utilise 4 requêtes séparées + jointure manuelle
+   */
+  async getPopularModelsWithImages(limit = 10) {
+    try {
+      const cacheKey = `popular_models:${limit}`;
+      
+      // Vérifier le cache
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log(`✅ Cache hit pour ${cacheKey}`);
+        return cached;
+      }
+
+      this.logger.log(`🔍 Récupération des ${limit} modèles populaires (4 requêtes séparées)...`);
+
+      // 1️⃣ Récupérer les types (véhicules) les plus populaires
+      // NOTE: tous les champs auto_type sont STRING dans Supabase
+      const { data: types, error: typesError } = await this.client
+        .from('auto_type')
+        .select('type_id, type_name, type_year_from, type_year_to, type_modele_id')
+        .eq('type_display', '1') // STRING pas NUMBER
+        .order('type_id', { ascending: false })
+        .limit(limit * 3); // x3 car beaucoup de modèles ont "no.webp"
+
+      if (typesError || !types || types.length === 0) {
+        this.logger.warn('⚠️ Aucun type trouvé');
+        return [];
+      }
+
+      this.logger.log(`✅ ${types.length} types récupérés`);
+
+      // 2️⃣ Récupérer les modèles correspondants (avec images valides)
+      const modeleIds = [...new Set(types.map(t => t.type_modele_id))];
+      const { data: modeles, error: modelesError } = await this.client
+        .from('auto_modele')
+        .select('modele_id, modele_name, modele_alias, modele_mdg_id, modele_pic')
+        .in('modele_id', modeleIds)
+        .gte('modele_display', 1)
+        .not('modele_pic', 'is', null)
+        .not('modele_pic', 'eq', 'no.webp'); // Exclure les images placeholder
+
+      if (modelesError || !modeles) {
+        this.logger.error('❌ Erreur récupération modèles:', modelesError);
+        return [];
+      }
+
+      this.logger.log(`✅ ${modeles.length} modèles récupérés`);
+
+      // 3️⃣ Récupérer les groupes de modèles
+      const mdgIds = [...new Set(modeles.map(m => m.modele_mdg_id))];
+      const { data: groups, error: groupsError } = await this.client
+        .from('auto_modele_group')
+        .select('mdg_id, mdg_name, mdg_marque_id')
+        .in('mdg_id', mdgIds);
+
+      if (groupsError || !groups) {
+        this.logger.error('❌ Erreur récupération groupes:', groupsError);
+        return [];
+      }
+
+      this.logger.log(`✅ ${groups.length} groupes récupérés`);
+
+      // 4️⃣ Récupérer les marques
+      const marqueIds = [...new Set(groups.map(g => g.mdg_marque_id))];
+      const { data: marques, error: marquesError } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias')
+        .in('marque_id', marqueIds);
+
+      if (marquesError || !marques) {
+        this.logger.error('❌ Erreur récupération marques:', marquesError);
+        return [];
+      }
+
+      this.logger.log(`✅ ${marques.length} marques récupérées`);
+
+      // 5️⃣ JOINTURE MANUELLE : Associer toutes les données
+      const formattedModels = types
+        .map(type => {
+          const modele = modeles.find(m => m.modele_id === parseInt(type.type_modele_id));
+          if (!modele) return null;
+
+          const group = groups.find(g => g.mdg_id === modele.modele_mdg_id);
+          if (!group) return null;
+
+          const marque = marques.find(m => m.marque_id === group.mdg_marque_id);
+          if (!marque) return null;
+
+          // Construire l'URL de l'image depuis le modèle
+          const imageName = modele.modele_pic.replace('.webp', '.jpg').replace(/\\/g, '/');
+          const imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${marque.marque_alias}/${imageName}`;
+
+          const dateRange = type.type_year_from && type.type_year_to
+            ? `${type.type_year_from}-${type.type_year_to}`
+            : '';
+
+          return {
+            id: parseInt(type.type_id),
+            name: `${marque.marque_name} ${modele.modele_name} ${type.type_name}`,
+            brandName: marque.marque_name,
+            modelName: modele.modele_name,
+            typeName: type.type_name,
+            dateRange,
+            imageUrl,
+            slug: this.generateSlug(`${marque.marque_name}-${modele.modele_name}-${type.type_name}`),
+          };
+        })
+        .filter(Boolean) // Supprimer les null
+        .slice(0, limit); // Limiter au nombre demandé
+
+      this.logger.log(`✅ ${formattedModels.length} modèles populaires formatés`);
+
+      // Mise en cache
+      await this.cacheManager.set(cacheKey, formattedModels, 3600);
+
+      return formattedModels;
+    } catch (error) {
+      this.logger.error('❌ Erreur getPopularModelsWithImages:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * 🆕 NOUVELLE MÉTHODE : Récupération d'une marque avec tous ses modèles par alias
+   * ✅ Utilisée pour les pages détail constructeur (ex: /blog-pieces-auto/auto/audi)
+   */
+
+  /**
+   * 4️⃣ NOUVELLE MÉTHODE : Récupération des métadonnées SEO depuis __blog_meta_tags_ariane
+   * ✅ Utilise la table de métadonnées pour les pages blog
+   */
+  async getBrandWithModelsByAlias(alias: string) {
+    try {
+      this.logger.log(`🔍 Récupération marque et modèles pour alias="${alias}"`);
+
+      // 1. Récupérer la marque par alias
+      const { data: brandData, error: brandError } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_name_meta, marque_alias, marque_logo, marque_relfollow, marque_display')
+        .eq('marque_alias', alias)
+        .eq('marque_display', 1)
+        .single();
+
+      if (brandError || !brandData) {
+        this.logger.warn(`⚠️ Marque non trouvée pour alias="${alias}"`);
+        return null;
+      }
+
+      this.logger.log(`✅ Marque trouvée: ${brandData.marque_name} (ID: ${brandData.marque_id})`);
+
+      // 2. Récupérer les modèles groupés (modele_parent = 0) avec TOUTES les infos
+      const { data: modelsData, error: modelsError } = await this.client
+        .from('auto_modele')
+        .select('*')  // Récupérer TOUTES les colonnes disponibles
+        .eq('modele_marque_id', brandData.marque_id)
+        .eq('modele_parent', 0)
+        .eq('modele_display', 1)
+        .order('modele_sort', { ascending: true })
+        .order('modele_name', { ascending: true });
+
+      if (modelsError) {
+        this.logger.error('❌ Erreur récupération modèles:', modelsError.message);
+        throw modelsError;
+      }
+
+      this.logger.log(`✅ ${modelsData?.length || 0} modèles récupérés`);
+      
+      // Log des colonnes disponibles pour debug (première fois seulement)
+      if (modelsData && modelsData.length > 0) {
+        this.logger.log(`📋 Colonnes disponibles: ${Object.keys(modelsData[0]).join(', ')}`);
+      }
+
+      // 3. Récupérer le contenu SEO depuis __BLOG_SEO_MARQUE
+      const { data: seoData } = await this.client
+        .from('__blog_seo_marque')
+        .select('bsm_title, bsm_descrip, bsm_keywords, bsm_h1, bsm_content')
+        .eq('bsm_marque_id', brandData.marque_id)
+        .single();
+
+      // 4. Si pas de SEO blog, essayer __SEO_MARQUE
+      let seoContent = null;
+      if (!seoData) {
+        const { data: fallbackSeoData } = await this.client
+          .from('__seo_marque')
+          .select('sm_content')
+          .eq('sm_marque_id', brandData.marque_id)
+          .single();
+        
+        seoContent = fallbackSeoData?.sm_content || null;
+      }
+
+      // 5. Construire les métadonnées
+      const metadata = {
+        title: seoData?.bsm_title || `Pièces détachées ${brandData.marque_name_meta} à prix pas cher`,
+        description: seoData?.bsm_descrip || `Automecanik vous offre tous les conseilles d'achat de toutes les pièces et accessoires autos à prix pas cher du constructeur ${brandData.marque_name_meta}`,
+        keywords: seoData?.bsm_keywords || brandData.marque_name,
+        h1: seoData?.bsm_h1 || `Choisissez votre véhicule ${brandData.marque_name}`,
+        content: seoData?.bsm_content || seoContent || `Un vaste choix de pièces détachées <b>${brandData.marque_name}</b> au meilleur tarif et de qualité irréprochable proposées par les grandes marques d'équipementiers automobile de première monte d'origine.`,
+        relfollow: brandData.marque_relfollow === 1 ? 'index, follow' : 'noindex, nofollow',
+      };
+
+      // 6. Pour chaque modèle, compter ses motorisations (types) ET récupérer les carburants disponibles
+      const modelIds = modelsData.map((m) => m.modele_id);
+      const { data: typesCountData } = await this.client
+        .from('auto_type')
+        .select('type_modele_id, type_fuel')
+        .in('type_modele_id', modelIds)
+        .eq('type_display', '1');
+
+      // Créer un map pour compter les motorisations ET les carburants par modèle
+      const motorisationsCount: Record<string, number> = {};
+      const fuelTypesByModel: Record<string, Set<string>> = {};
+      
+      if (typesCountData) {
+        typesCountData.forEach((type: any) => {
+          // Compter les motorisations
+          motorisationsCount[type.type_modele_id] =
+            (motorisationsCount[type.type_modele_id] || 0) + 1;
+          
+          // Collecter les types de carburant uniques
+          if (!fuelTypesByModel[type.type_modele_id]) {
+            fuelTypesByModel[type.type_modele_id] = new Set();
+          }
+          if (type.type_fuel) {
+            fuelTypesByModel[type.type_modele_id].add(type.type_fuel);
+          }
+        });
+      }
+
+      // 7. Formater les modèles avec TOUTES les infos disponibles
+      const models = (modelsData || []).map((model) => {
+        // Construire l'URL de l'image
+        let imageUrl = null;
+        if (
+          model.modele_pic &&
+          model.modele_pic !== 'no.webp' &&
+          model.modele_pic !== ''
+        ) {
+          imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${brandData.marque_alias}/${model.modele_pic}`;
+        } else {
+          imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/no.png`;
+        }
+
+        // Formater la période
+        let dateRange = '';
+        if (!model.modele_year_to || model.modele_year_to === null) {
+          dateRange = `du ${model.modele_month_from}/${model.modele_year_from}`;
+        } else {
+          dateRange = `de ${model.modele_year_from} à ${model.modele_year_to}`;
+        }
+
+        // Compter les motorisations pour ce modèle
+        const motorisationsCountForModel =
+          motorisationsCount[model.modele_id] || 0;
+
+        // Récupérer les types de carburant disponibles (triés: Diesel avant Essence)
+        const fuelTypes = fuelTypesByModel[model.modele_id]
+          ? Array.from(fuelTypesByModel[model.modele_id]).sort((a, b) => {
+              // Ordre: Diesel > Essence > Hybride > Électrique > Autres
+              const order: Record<string, number> = {
+                Diesel: 1,
+                diesel: 1,
+                Essence: 2,
+                essence: 2,
+                Hybride: 3,
+                hybride: 3,
+                Électrique: 4,
+                électrique: 4,
+                Electric: 4,
+                electric: 4,
+              };
+              const orderA = order[a] || 99;
+              const orderB = order[b] || 99;
+              return orderA - orderB;
+            })
+          : [];
+
+        return {
+          id: model.modele_id,
+          name: model.modele_name,
+          alias: model.modele_alias,
+          imageUrl,
+          dateRange,
+          yearFrom: model.modele_year_from,
+          yearTo: model.modele_year_to,
+          monthFrom: model.modele_month_from,
+          monthTo: model.modele_month_to,
+          // Nouvelles infos enrichies
+          motorisationsCount: motorisationsCountForModel,
+          modele_fuel_types: fuelTypes,
+          parent: model.modele_parent,
+          sort: model.modele_sort,
+          display: model.modele_display,
+          // Infos supplémentaires si disponibles dans la DB
+          ...Object.keys(model).reduce((acc: Record<string, any>, key) => {
+            // Exclure les colonnes déjà mappées
+            if (
+              !key.startsWith('modele_') ||
+              [
+                'modele_id',
+                'modele_name',
+                'modele_alias',
+                'modele_pic',
+                'modele_year_from',
+                'modele_year_to',
+                'modele_month_from',
+                'modele_month_to',
+                'modele_parent',
+                'modele_sort',
+                'modele_display',
+                'modele_marque_id',
+              ].includes(key)
+            ) {
+              return acc;
+            }
+            // Ajouter les autres colonnes disponibles
+            acc[key] = (model as any)[key];
+            return acc;
+          }, {} as Record<string, any>),
+        };
+      });
+
+      return {
+        brand: {
+          id: brandData.marque_id,
+          name: brandData.marque_name,
+          alias: brandData.marque_alias,
+          logo: brandData.marque_logo 
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brandData.marque_logo}`
+            : null,
+        },
+        models,
+        metadata,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur getBrandWithModelsByAlias:', error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Récupérer un modèle et ses motorisations (types) par alias de marque et modèle
+   */
+  async getModelWithTypesByAlias(brandAlias: string, modelAlias: string) {
+    try {
+      this.logger.log(
+        `🔍 Récupération modèle et types pour brand="${brandAlias}", model="${modelAlias}"`,
+      );
+
+      // 1. Récupérer la marque par alias
+      const { data: brandData, error: brandError } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias, marque_logo')
+        .eq('marque_alias', brandAlias)
+        .eq('marque_display', 1)
+        .single();
+
+      if (brandError || !brandData) {
+        this.logger.warn(`⚠️ Marque non trouvée pour alias="${brandAlias}"`);
+        throw new Error(`Marque ${brandAlias} non trouvée`);
+      }
+
+      // 2. Récupérer le modèle par alias
+      const { data: modelData, error: modelError } = await this.client
+        .from('auto_modele')
+        .select(
+          'modele_id, modele_name, modele_alias, modele_pic, modele_year_from, modele_year_to, modele_body',
+        )
+        .eq('modele_marque_id', brandData.marque_id)
+        .eq('modele_alias', modelAlias)
+        .eq('modele_display', 1)
+        .single();
+
+      if (modelError || !modelData) {
+        this.logger.warn(
+          `⚠️ Modèle non trouvé pour alias="${modelAlias}" de marque ${brandData.marque_name}`,
+        );
+        throw new Error(`Modèle ${modelAlias} non trouvé`);
+      }
+
+      this.logger.log(
+        `✅ Modèle trouvé: ${modelData.modele_name} (ID: ${modelData.modele_id})`,
+      );
+
+      // 3. Récupérer les types (motorisations) de ce modèle
+      const { data: typesData, error: typesError } = await this.client
+        .from('auto_type')
+        .select(
+          `
+          type_id,
+          type_name,
+          type_power_kw,
+          type_power_ps,
+          type_fuel,
+          type_body,
+          type_engine,
+          type_tmf_id,
+          type_month_from,
+          type_year_from,
+          type_month_to,
+          type_year_to
+        `,
+        )
+        .eq('type_modele_id', modelData.modele_id)
+        .eq('type_display', '1')
+        .order('type_name', { ascending: true });
+
+      if (typesError) {
+        this.logger.error('❌ Erreur récupération types:', typesError.message);
+        throw typesError;
+      }
+
+      this.logger.log(`✅ ${typesData?.length || 0} motorisations récupérées`);
+
+      // 3.5. DÉSACTIVÉ : Récupération des codes moteurs
+      // La table cars_engine n'a pas de liaison directe avec auto_type.
+      // type_tmf_id → eng_mfa_id donne le fabricant du moteur (Alfa, Audi, etc.),
+      // pas le code moteur spécifique au véhicule.
+      // TODO: Trouver la vraie table de liaison ou colonne pour les codes moteurs.
+      const engineCodeMap: Record<string, string> = {};
+
+      // 4. Construire l'URL de l'image du modèle
+      let imageUrl = null;
+      if (
+        modelData.modele_pic &&
+        modelData.modele_pic !== 'no.webp' &&
+        modelData.modele_pic !== ''
+      ) {
+        imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${brandData.marque_alias}/${modelData.modele_pic}`;
+      } else {
+        imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/no.png`;
+      }
+
+      // 5. Formater les types avec les codes moteurs
+      const types = (typesData || []).map((type) => ({
+        id: type.type_id,
+        designation: type.type_name,
+        kw: type.type_power_kw,
+        ch: type.type_power_ps,
+        carburant: type.type_fuel,
+        carosserie: type.type_body,
+        engineCode: engineCodeMap[type.type_tmf_id] || null,
+        monthFrom: type.type_month_from,
+        yearFrom: type.type_year_from,
+        monthTo: type.type_month_to,
+        yearTo: type.type_year_to,
+      }));
+
+      // 6. Retourner les données complètes
+      return {
+        brand: {
+          id: brandData.marque_id,
+          name: brandData.marque_name,
+          alias: brandData.marque_alias,
+          logo: brandData.marque_logo
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brandData.marque_logo}`
+            : null,
+        },
+        model: {
+          id: modelData.modele_id,
+          name: modelData.modele_name,
+          alias: modelData.modele_alias,
+          imageUrl,
+          yearFrom: modelData.modele_year_from,
+          yearTo: modelData.modele_year_to,
+          body: modelData.modele_body || null,
+        },
+        types,
+        metadata: null, // TODO: Ajouter les métadonnées SEO si nécessaire
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      this.logger.error('❌ Erreur getModelWithTypesByAlias:', errorMessage);
+      throw error;
+    }
+  }
+
+  async getPageMetadata(alias: string) {
+    try {
+      this.logger.log(`🔍 Récupération métadonnées pour alias="${alias}"`);
+
+      // Vérifier le cache d'abord
+      const cacheKey = `meta:${alias}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      if (cached) {
+        this.logger.log('✅ Métadonnées récupérées depuis le cache');
+        return cached;
+      }
+
+      // Requête Supabase
+      const { data, error } = await this.client
+        .from('__blog_meta_tags_ariane')
+        .select('*')
+        .eq('mta_alias', alias)
+        .single();
+
+      if (error) {
+        this.logger.warn(`⚠️ Aucune métadonnée trouvée pour "${alias}":`, error.message);
+        
+        // Retourner des métadonnées par défaut
+        const defaultMeta = {
+          title: 'Catalogue Technique Auto - Pièces détachées | Automecanik',
+          description: 'Découvrez notre catalogue complet de pièces détachées automobiles. Qualité OEM garantie pour toutes les marques.',
+          keywords: 'pièces auto, catalogue, constructeurs, pièces détachées, OEM',
+          h1: 'Pièces Auto & Accessoires',
+          ariane: 'Accueil > Blog > Pièces Auto',
+          content: null,
+          relfollow: 'index, follow',
+        };
+        
+        return defaultMeta;
+      }
+
+      this.logger.log(`✅ Métadonnées récupérées pour "${alias}"`);
+
+      // Formater les données
+      const metadata = {
+        title: data.mta_title || 'Automecanik',
+        description: data.mta_descrip || '',
+        keywords: data.mta_keywords || '',
+        h1: data.mta_h1 || data.mta_title || '',
+        ariane: data.mta_ariane || '',
+        content: data.mta_content || null,
+        relfollow: data.mta_relfollow === '1' || data.mta_relfollow === 'index, follow' 
+          ? 'index, follow' 
+          : 'noindex, nofollow',
+      };
+
+      // Mise en cache (1 heure)
+      await this.cacheManager.set(cacheKey, metadata, 3600);
+
+      return metadata;
+    } catch (error) {
+      this.logger.error('❌ Erreur getPageMetadata:', error.message);
+      
+      // Retourner des métadonnées par défaut en cas d'erreur
+      return {
+        title: 'Catalogue Technique Auto | Automecanik',
+        description: 'Pièces détachées automobiles de qualité',
+        keywords: 'pièces auto, catalogue',
+        h1: 'Pièces Auto',
+        ariane: 'Accueil',
+        content: null,
+        relfollow: 'index, follow',
+      };
+    }
+  }
 }

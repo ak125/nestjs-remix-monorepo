@@ -108,10 +108,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
-  // ⚠️ Validation assouplie : brand et model doivent avoir un tiret, mais pas type
-  // Type peut être soit "{alias}-{id}.html" soit juste "{id}.html"
-  if (!brand.includes('-') || !model.includes('-')) {
-    console.error('❌ Format de paramètres invalide pour brand/model');
+  if (!brand.includes('-') || !model.includes('-') || !type.includes('-')) {
+    console.error('❌ Format de paramètres invalide');
     throw new Response("URL invalide", { status: 400 });
   }
 
@@ -126,11 +124,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const modele_id = parseInt(modelParts[modelParts.length - 1]) || 0;
   const modele_alias = modelParts.slice(0, -1).join('-');
 
-  // Type parsing: support des formats "{alias}-{id}.html" ET "{id}.html"
-  const typeWithoutHtml = type.replace('.html', '');
-  const typeParts = typeWithoutHtml.split('-');
+  const typeParts = type.replace('.html', '').split('-');
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
-  const type_alias = typeWithoutHtml;
+  const type_alias = type.replace('.html', '');
 
   // === APPEL API POUR RÉCUPÉRER LES VRAIES DONNÉES ===
   console.log(`🔍 Appel API pour type_id=${type_id}`);
