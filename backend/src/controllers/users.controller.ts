@@ -5,7 +5,9 @@ import {
   Query,
   HttpStatus,
   HttpException,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { LegacyUserService } from '../database/services/legacy-user.service';
 import { LegacyOrderService } from '../database/services/legacy-order.service';
 
@@ -107,22 +109,78 @@ export class UsersController {
 
   /**
    * GET /api/legacy-users/dashboard
-   * Récupère les statistiques pour le dashboard
+   * Récupère les statistiques pour le dashboard utilisateur connecté
+   * Nécessite une session authentifiée
    */
   @Get('dashboard')
-  async getDashboardStats() {
+  async getDashboardStats(@Req() req: Request) {
     try {
       console.log(`📊 Récupération des statistiques dashboard`);
 
+      // Récupérer l'utilisateur depuis la session
+      const sessionUser = (req.session as any)?.passport?.user;
+      
+      if (!sessionUser?.userId) {
+        throw new HttpException(
+          'Session utilisateur non trouvée',
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      // Récupérer les détails complets de l'utilisateur
+      const userDetails = await this.legacyUserService.getUserById(
+        sessionUser.userId,
+      );
+
+      if (!userDetails) {
+        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+      }
+
+      // Stats globales (pour admin)
       const totalUsers =
         await this.legacyUserService.getTotalActiveUsersCount();
       const totalOrders = await this.legacyOrderService.getTotalOrdersCount();
       const activeUsers =
         await this.legacyUserService.getTotalActiveUsersCount();
 
+      // TODO: Implémenter récupération des messages et commandes utilisateur
+      // Pour l'instant, stats basiques basées sur les données disponibles
+      const userStats = {
+        messages: {
+          total: 0,
+          unread: 0,
+          threads: 0,
+        },
+        orders: {
+          total: 0,
+          pending: 0,
+          completed: 0,
+          revenue: 0,
+        },
+        profile: {
+          completeness: this.calculateProfileCompleteness(userDetails),
+          hasActiveSubscription: false,
+          securityScore: 75,
+        },
+      };
+
       return {
         success: true,
-        data: {
+        user: {
+          id: userDetails.id,
+          email: userDetails.email,
+          firstName: userDetails.firstName,
+          lastName: userDetails.lastName,
+          status: userDetails.isActive ? 'active' : 'inactive',
+          lastLoginAt:
+            (userDetails as any).lastLoginAt || new Date().toISOString(),
+          createdAt: (userDetails as any).createdAt || new Date().toISOString(),
+          isPro: userDetails.isPro || false,
+          isActive: userDetails.isActive,
+          level: userDetails.level || 1,
+        },
+        stats: userStats,
+        globalStats: {
           totalUsers,
           totalOrders,
           activeUsers,
@@ -132,11 +190,37 @@ export class UsersController {
     } catch (error) {
       console.error(`❌ Erreur récupération stats dashboard:`, error);
 
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new HttpException(
         'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * Calcule le taux de complétion du profil utilisateur
+   */
+  private calculateProfileCompleteness(user: any): number {
+    let score = 0;
+    const fields = [
+      user.firstName,
+      user.lastName,
+      user.email,
+      user.phone,
+      user.address,
+    ];
+    
+    fields.forEach((field) => {
+      if (field && field.toString().trim().length > 0) {
+        score += 20;
+      }
+    });
+
+    return Math.min(score, 100);
   }
 
   /**
