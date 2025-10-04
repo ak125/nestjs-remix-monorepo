@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import * as bcrypt from 'bcrypt';
-import { createHash } from 'crypto';
+// createHash supprimé car la validation est maintenant dans PasswordCryptoService
 
 export interface User {
   cst_id: string;
@@ -242,51 +242,8 @@ export class UserService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Valider un mot de passe (supporte multiple formats)
-   */
-  async validatePassword(
-    plainPassword: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
-    try {
-      // Vérification si le mot de passe est déjà en clair (ancien système)
-      if (plainPassword === hashedPassword) {
-        return true;
-      }
-
-      // Vérification avec SHA-1 (système intermédiaire)
-      const sha1Hash = createHash('sha1').update(plainPassword).digest('hex');
-      if (sha1Hash === hashedPassword) {
-        return true;
-      }
-
-      // Vérification avec bcrypt (nouveau système)
-      const bcryptResult = await bcrypt.compare(plainPassword, hashedPassword);
-      if (bcryptResult) {
-        return true;
-      }
-
-      // Vérification avec Unix DES crypt (ancien système Unix)
-      if (hashedPassword.length === 13) {
-        try {
-          const crypt = await import('unix-crypt-td-js');
-          const salt = hashedPassword.substring(0, 2);
-          const cryptResult = crypt.default(plainPassword, salt);
-          if (cryptResult === hashedPassword) {
-            return true;
-          }
-        } catch (cryptError) {
-          console.error('Erreur Unix DES crypt:', cryptError);
-        }
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Erreur validation mot de passe:', error);
-      return false;
-    }
-  }
+  // ✅ SUPPRIMÉ: validatePassword() est maintenant dans PasswordCryptoService
+  // Utiliser PasswordCryptoService.validatePassword() à la place
 
   /**
    * Mettre à jour un utilisateur
@@ -319,18 +276,8 @@ export class UserService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Hasher un mot de passe
-   */
-  async hashPassword(password: string): Promise<string> {
-    try {
-      const saltRounds = 10;
-      return await bcrypt.hash(password, saltRounds);
-    } catch (error) {
-      console.error('Erreur lors du hashage du mot de passe:', error);
-      throw error;
-    }
-  }
+  // ✅ SUPPRIMÉ: hashPassword() est maintenant dans PasswordCryptoService
+  // Utiliser PasswordCryptoService.hashPassword() à la place
 
   /**
    * Mettre à jour le mot de passe d'un utilisateur

@@ -1,6 +1,6 @@
 /**
  * 🔐 PasswordCryptoService - Service Centralisé de Cryptographie
- * ✅ Service unique pour toute la gestion des mots de passe
+ * ✅ Service unique pour toute la gestion de mot de passe
  * ✅ Support multi-format : bcrypt, MD5, MD5+crypt legacy
  * ✅ Validation de force de mot de passe
  * ✅ Aucune dépendance externe (injectable partout)
@@ -9,6 +9,8 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import crypt = require('unix-crypt-td-js');
 
 export interface PasswordValidationResult {
   isValid: boolean;
@@ -109,17 +111,17 @@ export class PasswordCryptoService {
   }
 
   /**
-   * Simuler la fonction crypt() de PHP (DES encryption)
+   * Fonction crypt() compatible PHP (DES encryption)
+   * ✅ Utilise unix-crypt-td-js pour la compatibilité exacte avec PHP
    */
   private phpCrypt(password: string, salt: string): string {
-    // Simulation simplifiée de crypt() PHP avec DES
-    // Pour une compatibilité totale, utiliser 'unix-crypt-td-js'
-    const hash = crypto
-      .createHash('sha256')
-      .update(salt + password)
-      .digest('base64')
-      .substring(0, 13);
-    return hash;
+    try {
+      // Utiliser la vraie fonction crypt() de PHP (DES encryption)
+      return crypt(password, salt);
+    } catch (error) {
+      this.logger.error('Error in phpCrypt:', error);
+      throw error;
+    }
   }
 
   /**
