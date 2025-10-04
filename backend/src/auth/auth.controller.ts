@@ -13,29 +13,42 @@ import { NextFunction, Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
+import { UserService } from '../database/services/user.service';
 import {
   ModuleAccessDto,
   BulkModuleAccessDto,
   AccessLogDto,
   TokenValidationDto,
 } from './dto/module-access.dto';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import RegisterSchema, { RegisterDto } from './dto/register.dto';
 
 @Controller()
 export class AuthController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {}
 
   /**
    * POST /auth/register
    * Créer un nouveau compte utilisateur
+   * ✅ Validation automatique avec Zod (cohérent avec l'architecture)
    */
   @Post('auth/register')
-  async register(@Body() userData: any, @Req() request: Express.Request) {
+  async register(
+    @Body(new ZodValidationPipe(RegisterSchema)) userData: RegisterDto,
+    @Req() request: Express.Request,
+  ): Promise<any> {
     try {
-      // Créer l'utilisateur via UsersService
-      await this.usersService.createUser(userData);
+      // Créer l'utilisateur via UserService (database layer)
+      await this.userService.createUser({
+        email: userData.email,
+        password: userData.password,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+      });
 
       // Authentifier automatiquement l'utilisateur
       const loginResult = await this.authService.login(
@@ -44,14 +57,23 @@ export class AuthController {
         (request as any).ip,
       );
 
-      return {
-        success: true,
-        message: 'Compte créé avec succès',
-        user: loginResult.user,
-        sessionToken: loginResult.access_token,
-      };
-    } catch (error: any) {
-      if (error.message?.includes('déjà utilisé')) {
+      // ✅ IMPORTANT: Sauvegarder l'utilisateur dans la session Passport
+      return new Promise((resolve, reject) => {
+        (request as any).login(loginResult.user, (err: any) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({
+              success: true,
+              message: 'Compte créé avec succès',
+              user: loginResult.user,
+              sessionToken: loginResult.access_token,
+            });
+          }
+        });
+      });
+    } catch (_error: any) {
+      if (_error.message?.includes('déjà utilisé')) {
         return {
           success: false,
           message: 'Cet email est déjà utilisé',
@@ -64,7 +86,7 @@ export class AuthController {
         message: 'Erreur lors de la création du compte',
         status: 500,
         debug:
-          process.env.NODE_ENV === 'development' ? error.message : undefined,
+          process.env.NODE_ENV === 'development' ? _error.message : undefined,
       };
     }
   }
@@ -417,7 +439,7 @@ export class AuthController {
       );
 
       return results;
-    } catch (error: any) {
+    } catch (_error: any) {
       return {};
     }
   }
@@ -427,7 +449,7 @@ export class AuthController {
    * Enregistrer un accès utilisateur (optimisé Redis)
    */
   @Post('auth/access-log')
-  async logAccess(@Body() dto: AccessLogDto) {
+  async logAccess(@Body() _dto: AccessLogDto) {
     try {
       // L'historique de connexion est géré automatiquement dans AuthService
       // Ce endpoint sert uniquement pour des logs d'accès spéciaux si nécessaire
@@ -436,10 +458,10 @@ export class AuthController {
         success: true,
         message: 'Access logged successfully',
       };
-    } catch (error: any) {
+    } catch (_error: any) {
       return {
         success: false,
-        error: error.message,
+        error: _error.message,
       };
     }
   }
