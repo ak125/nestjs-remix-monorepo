@@ -53,7 +53,7 @@ print_json() {
 }
 
 extract_cookie() {
-    echo "$1" | grep -i "set-cookie:" | sed 's/.*connect.sid=\([^;]*\).*/\1/' | head -1
+    echo "$1" | grep -i "Set-Cookie:" | sed 's/.*connect.sid=\([^;]*\).*/\1/' | head -1
 }
 
 extract_json_field() {
@@ -105,9 +105,9 @@ test_02_login() {
             \"password\": \"TestPassword123!\"
         }")
     
-    if echo "$response" | grep -q "set-cookie:"; then
+    if echo "$response" | grep -iq "Set-Cookie:"; then
         SESSION_COOKIE=$(extract_cookie "$response")
-        print_success "Login réussi - Session créée dans Redis (TTL: 7 jours)"
+        print_success "Login réussi - Session créée dans Redis (TTL: 30 jours)"
         print_info "Cookie: ${SESSION_COOKIE:0:50}..."
     else
         print_error "Échec login"
