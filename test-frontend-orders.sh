@@ -85,7 +85,7 @@ test_api_routes() {
   echo -e "${BLUE}👤 Routes Orders (Client - nécessite auth)${NC}"
   echo "Note: Ces routes nécessitent une authentification, on attend 401/403"
   test_route "GET" "$BASE_URL/api/orders" "Liste des commandes" 403
-  test_route "GET" "$BASE_URL/api/customer/orders/1" "Liste commandes client" 401
+  test_route "GET" "$BASE_URL/api/orders/277001" "Détail commande" 403
   
   echo ""
   echo -e "${BLUE}🔧 Routes Orders (Admin - nécessite auth admin)${NC}"
