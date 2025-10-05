@@ -39,7 +39,7 @@ import {
 } from '../dto/stock.dto';
 
 @ApiTags('Admin - Stock Management CONSOLIDÉ')
-@Controller('admin/stock')
+@Controller('api/admin/stock')
 @UseGuards(AuthenticatedGuard)
 @ApiBearerAuth()
 export class StockController {

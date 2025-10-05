@@ -1,4 +1,5 @@
-import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, Logger, UseGuards } from '@nestjs/common';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import {
   ApiTags,
   ApiOperation,
@@ -10,6 +11,7 @@ import { ProductsService } from '../../products/products.service';
 
 @ApiTags('Admin Products')
 @Controller('api/admin/products')
+@UseGuards(AuthenticatedGuard)
 export class AdminProductsController {
   private readonly logger = new Logger(AdminProductsController.name);
 

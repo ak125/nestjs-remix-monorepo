@@ -1,5 +1,6 @@
-import { Controller, Get, Put, Param, Body } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, UseGuards } from '@nestjs/common';
 import { ConfigurationService } from '../services/configuration.service';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 
 /**
  * 🔧 ConfigurationController - Controller de configuration système
@@ -10,7 +11,8 @@ import { ConfigurationService } from '../services/configuration.service';
  * ✅ Structure REST cohérente
  * ✅ Préparé pour l'authentification admin
  */
-@Controller('admin/configuration')
+@Controller('api/admin/configuration')
+@UseGuards(AuthenticatedGuard)
 export class ConfigurationController {
   constructor(private readonly configurationService: ConfigurationService) {}
 

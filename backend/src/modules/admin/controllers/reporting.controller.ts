@@ -20,7 +20,7 @@ import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { ReportingService, ReportFilters } from '../services/reporting.service';
 
-@Controller('admin/reports')
+@Controller('api/admin/reports')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class ReportingController {
   private readonly logger = new Logger(ReportingController.name);

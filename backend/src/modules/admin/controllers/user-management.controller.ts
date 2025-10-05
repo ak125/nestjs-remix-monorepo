@@ -26,7 +26,7 @@ import {
 } from '../services/user-management.service';
 import { User } from '../../../common/decorators/user.decorator';
 
-@Controller('admin/users')
+@Controller('api/admin/users')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class UserManagementController {
   private readonly logger = new Logger(UserManagementController.name);
