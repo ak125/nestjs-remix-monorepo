@@ -1,11 +1,5 @@
 /**
- * AdminModule - Module d'administratimport { UserManagementService } from './se  exports: [
-    ConfigurationService,
-    StockManagementService,
-    ReportingService,
-    UserManagementService,
-  ],user-management.service';
-import { StaffService } from '../staff/staff.service';
+ * AdminModule - Module d'administration
  *
  * Module aligné sur l'approche des modules orders, cart, user, payment :
  * - Structure modulaire claire avec séparation des responsabilités
@@ -16,7 +10,7 @@ import { StaffService } from '../staff/staff.service';
  *
  * Phase 1 : Configuration de base ✅
  * Phase 2 : Stock Management 🚧
- * Phase 3 : Orders Administration
+ * Phase 3 : Orders Administration (AdminOrdersController retiré - intégré dans OrdersController)
  * Phase 4 : Reporting & Analytics
  */
 
@@ -34,7 +28,7 @@ import { RealStockController } from './controllers/real-stock.controller';
 import { SimpleStockController } from './controllers/simple-stock.controller';
 import { WorkingStockService } from './services/working-stock.service';
 import { WorkingStockController } from './controllers/working-stock.controller';
-import { AdminOrdersController } from './controllers/admin-orders.controller';
+// AdminOrdersController retiré - Routes admin intégrées dans OrdersController (/api/orders/admin/*)
 import { AdminController } from './controllers/admin.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
 import { ReportingController } from './controllers/reporting.controller';
@@ -71,7 +65,7 @@ import { ProductsModule } from '../products/products.module';
     RealStockController,
     SimpleStockController,
     WorkingStockController,
-    AdminOrdersController,
+    // AdminOrdersController retiré - Routes disponibles dans OrdersModule (/api/orders/admin/*)
     AdminController,
     AdminRootController,
     ReportingController,
