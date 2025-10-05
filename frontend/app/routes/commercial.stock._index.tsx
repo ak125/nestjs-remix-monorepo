@@ -67,11 +67,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : 'http://127.0.0.1:3000';
       
     // Réutiliser les APIs existantes qui fonctionnent
-    const statsResponse = await fetch(`${API_BASE}/api/admin/working-stock/stats`);
+    const statsResponse = await fetch(`${API_BASE}/api/admin/stock/stats`);
     const statsData = await statsResponse.json();
 
     // Construire l'URL pour le dashboard avec filtres
-    const dashboardUrl = new URL(`${API_BASE}/api/admin/working-stock/dashboard`);
+    const dashboardUrl = new URL(`${API_BASE}/api/admin/stock/dashboard`);
     dashboardUrl.searchParams.set('page', page.toString());
     dashboardUrl.searchParams.set('limit', limit.toString());
     if (search) dashboardUrl.searchParams.set('search', search);
@@ -136,7 +136,7 @@ export default function CommercialStockIndex() {
 
   const handleExport = () => {
     // Logique d'export basée sur l'API existante
-    window.open(`http://localhost:3000/api/admin/working-stock/export`, '_blank');
+    window.open(`http://localhost:3000/api/admin/stock/health`, '_blank');
   };
 
   return (

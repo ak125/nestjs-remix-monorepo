@@ -57,11 +57,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   };
 
   try {
-    // Appel à l'API working-stock qui fonctionne
+    // Appel à la nouvelle API consolidée
     const baseUrl = process.env.API_URL || 'http://localhost:3000';
     
     // Dashboard et stats
-    const statsResponse = await fetch(`${baseUrl}/api/admin/working-stock/stats`);
+    const statsResponse = await fetch(`${baseUrl}/api/admin/stock/stats`);
     
     const statsData = statsResponse.ok ? await statsResponse.json() : null;
     
@@ -88,8 +88,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (filters.limit) stockParams.append('limit', filters.limit.toString());
 
     const stockEndpoint = filters.search 
-      ? `${baseUrl}/api/admin/working-stock/search?${stockParams}`
-      : `${baseUrl}/api/admin/working-stock/dashboard?${stockParams}`;
+      ? `${baseUrl}/api/admin/stock/search?${stockParams}`
+      : `${baseUrl}/api/admin/stock/dashboard?${stockParams}`;
     
     const stockResponse = await fetch(stockEndpoint);
     const stockResponseData = stockResponse.ok ? await stockResponse.json() : null;
@@ -137,7 +137,7 @@ export async function action({ request }: ActionFunctionArgs) {
           notes: formData.get('notes') as string,
         };
 
-        const response = await fetch(`${baseUrl}/admin/stock-enhanced/movements`, {
+        const response = await fetch(`${baseUrl}/api/admin/stock/${movement.productId}/reserve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(movement),
@@ -160,9 +160,9 @@ export async function action({ request }: ActionFunctionArgs) {
         };
 
         const response = await fetch(
-          `${baseUrl}/admin/stock-enhanced/products/${productId}/adjust`,
+          `${baseUrl}/api/admin/stock/${productId}/availability`,
           {
-            method: 'POST',
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(adjustment),
           }
@@ -223,7 +223,7 @@ export default function AdminStock() {
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>Le serveur backend est démarré</li>
               <li>Le service working-stock est activé</li>
-              <li>Les routes /api/admin/working-stock/* sont disponibles</li>
+              <li>Les routes /api/admin/stock/* sont disponibles</li>
             </ul>
           </div>
         </div>
@@ -253,7 +253,7 @@ export default function AdminStock() {
           </button>
           <button
             onClick={() => {
-              const url = `${process.env.API_URL || 'http://localhost:3000'}/admin/stock-enhanced/report`;
+              const url = `${process.env.API_URL || 'http://localhost:3000'}/api/admin/stock/health`;
               window.open(url, '_blank');
             }}
             className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
