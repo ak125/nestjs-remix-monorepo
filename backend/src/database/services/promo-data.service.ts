@@ -114,12 +114,17 @@ export class PromoDataService extends SupabaseBaseService {
         }
       }
 
+      // Normaliser le type de promo (DB: PERCENT/FIXED → App: percentage/fixed)
+      const normalizedType = promo.type === 'PERCENT' ? 'percentage' : 
+                             promo.type === 'FIXED' ? 'fixed' : 
+                             promo.type.toLowerCase();
+
       return {
         valid: true,
         promo: {
           id: promo.id,
           code: promo.code,
-          discount_type: promo.type, // Colonne réelle : type
+          discount_type: normalizedType, // Normalisé : PERCENT → percentage
           discount_value: parseFloat(promo.value), // Colonne réelle : value
           min_purchase_amount: promo.min_amount ? parseFloat(promo.min_amount) : null, // Colonne réelle : min_amount
           description: promo.description,
