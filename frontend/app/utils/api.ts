@@ -9,14 +9,19 @@ export const API_CONFIG = {
     ? window.ENV.API_BASE_URL 
     : "http://localhost:3000",
   ENDPOINTS: {
-    // Endpoints des paiements - alignés sur l'architecture legacy
+    // Endpoints des paiements - Backend consolidé
     PAYMENTS: "/api/payments",
+    PAYMENT_BY_ID: (id: string) => `/api/payments/${id}`,
+    PAYMENT_BY_REFERENCE: (ref: string) => `/api/payments/reference/${ref}`,
+    PAYMENT_BY_USER: (userId: string) => `/api/payments/user/${userId}`,
+    PAYMENT_BY_ORDER: (orderId: string) => `/api/payments/order/${orderId}`,
+    PAYMENT_CANCEL: (id: string) => `/api/payments/${id}/cancel`,
+    PAYMENT_REFUND: (id: string) => `/api/payments/${id}/refund`,
+    PAYMENT_STATUS_UPDATE: (id: string) => `/api/payments/${id}/status`,
     PAYMENT_STATS: "/api/payments/stats",
-    PAYMENT_STATUS: (orderId: string | number) => `/api/payments/${orderId}/status`,
-    PAYMENT_INITIATE: (orderId: string | number) => `/api/payments/${orderId}/initiate`,
+    PAYMENT_METHODS: "/api/payments/methods/available",
     PAYMENT_CALLBACK: (gateway: string) => `/api/payments/callback/${gateway}`,
-    PAYMENT_CALLBACKS: (orderId: string | number) => `/api/payments/${orderId}/callbacks`,
-    PAYMENT_TRANSACTION: (transactionId: string) => `/api/payments/transaction/${transactionId}`,
+    PAYMENT_TRANSACTIONS: (id: string) => `/api/payments/${id}/transactions`,
     
     // Endpoints existants (pour compatibilité)
     ORDERS: "/api/orders",
@@ -159,9 +164,9 @@ export async function getPaymentStatus(orderId: string | number, context?: any):
       }
     }
     
-    // Fallback : appel HTTP
+    // Fallback : appel HTTP - Utiliser PAYMENT_BY_ORDER ou PAYMENT_BY_ID
     console.log('⚠️ Fallback vers API HTTP pour statut de paiement');
-    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.PAYMENT_STATUS(orderId)));
+    const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.PAYMENT_BY_ORDER(String(orderId))));
     if (!response.ok) {
       throw new Error(`Paiement non trouvé: ${response.status}`);
     }

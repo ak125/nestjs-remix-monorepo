@@ -51,27 +51,13 @@ export async function initializePayment(
 
     const paymentData = await response.json();
 
-    if (params.paymentMethod === 'CYBERPLUS') {
-      // Pour Cyberplus, générer le formulaire de redirection
-      const formResponse = await fetch(
-        `${process.env.BACKEND_URL}/api/payments/${paymentData.data.id}/cyberplus-form`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Internal-Call': 'true',
-          },
-        }
-      );
-
-      if (formResponse.ok) {
-        const formData = await formResponse.json();
-        return {
-          transactionId: paymentData.data.id,
-          formData: formData.parameters,
-          gatewayUrl: formData.url,
-        };
-      }
+    // Le backend retourne déjà redirectData avec le formulaire
+    if (paymentData.data.redirectData) {
+      return {
+        transactionId: paymentData.data.id,
+        formData: paymentData.data.redirectData.parameters,
+        gatewayUrl: paymentData.data.redirectData.url,
+      };
     }
 
     return {
@@ -208,7 +194,8 @@ export async function handlePaymentReturn(
 }
 
 /**
- * Traite le retour de paiement depuis Cyberplus (compatible avec route payment-return)
+ * Traite le retour de paiement depuis Cyberplus
+ * Utilise le webhook /api/payments/callback/cyberplus
  */
 export async function processPaymentReturn({
   transactionId,
@@ -220,9 +207,9 @@ export async function processPaymentReturn({
   params: Record<string, string>;
 }) {
   try {
-    // Appeler l'API backend pour traiter le retour
+    // Utiliser le callback Cyberplus standard
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/payments/${transactionId}/return`,
+      `${process.env.BACKEND_URL}/api/payments/callback/cyberplus`,
       {
         method: 'POST',
         headers: {
@@ -230,7 +217,8 @@ export async function processPaymentReturn({
           'Internal-Call': 'true',
         },
         body: JSON.stringify({
-          status,
+          vads_trans_id: transactionId,
+          vads_trans_status: status || 'PENDING',
           ...params,
         }),
       }
