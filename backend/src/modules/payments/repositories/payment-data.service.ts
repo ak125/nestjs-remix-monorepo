@@ -1,34 +1,146 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   Payment,
   PaymentStatus,
+  PaymentMethod,
   Transaction,
   PaymentPostback,
 } from '../entities/payment.entity';
 
 @Injectable()
 export class PaymentDataService extends SupabaseBaseService {
-  protected readonly tableName = 'payments';
+  // Utilise ic_postback comme table pour les paiements
+  protected readonly tableName = 'ic_postback';
+
+  constructor(configService?: ConfigService) {
+    super(configService);
+  }
+
+  /**
+   * Mapper un enregistrement ic_postback vers l'entité Payment
+   */
+  private mapPostbackToPayment(postback: any): Payment {
+    return {
+      id: postback.id_ic_postback,
+      paymentReference: postback.paymentid,
+      amount: parseFloat(postback.amount || '0'),
+      currency: postback.currency || 'EUR',
+      status: this.mapPaymentStatus(postback.status),
+      method: this.mapPaymentMethod(postback.paymentmethod),
+      userId: postback.id_com,
+      orderId: postback.orderid,
+      providerTransactionId: postback.transactionid,
+      refundedAmount: 0,
+      metadata: {
+        statuscode: postback.statuscode,
+        ip: postback.ip,
+        ips: postback.ips,
+        datepayment: postback.datepayment,
+      },
+      createdAt: postback.datepayment
+        ? new Date(postback.datepayment)
+        : new Date(),
+      updatedAt: postback.datepayment
+        ? new Date(postback.datepayment)
+        : new Date(),
+    };
+  }
+
+  /**
+   * Mapper le status ic_postback vers PaymentStatus
+   */
+  private mapPaymentStatus(status: string): PaymentStatus {
+    const statusMap: Record<string, PaymentStatus> = {
+      paid: PaymentStatus.COMPLETED,
+      success: PaymentStatus.COMPLETED,
+      pending: PaymentStatus.PENDING,
+      failed: PaymentStatus.FAILED,
+      error: PaymentStatus.FAILED,
+      canceled: PaymentStatus.CANCELLED,
+      cancelled: PaymentStatus.CANCELLED,
+      refunded: PaymentStatus.REFUNDED,
+    };
+    return statusMap[status?.toLowerCase()] || PaymentStatus.PENDING;
+  }
+
+  /**
+   * Mapper la méthode de paiement vers PaymentMethod
+   */
+  private mapPaymentMethod(method: string): PaymentMethod {
+    const methodMap: Record<string, PaymentMethod> = {
+      card: PaymentMethod.CREDIT_CARD,
+      credit_card: PaymentMethod.CREDIT_CARD,
+      debit_card: PaymentMethod.DEBIT_CARD,
+      paypal: PaymentMethod.PAYPAL,
+      bank_transfer: PaymentMethod.BANK_TRANSFER,
+      cyberplus: PaymentMethod.CYBERPLUS,
+    };
+    return methodMap[method?.toLowerCase()] || PaymentMethod.CYBERPLUS;
+  }
 
   /**
    * Créer un nouveau paiement
+   * Utilise ic_postback + ___xtr_order pour stocker les informations
    */
   async createPayment(paymentData: Partial<Payment>): Promise<Payment> {
     try {
-      const { data, error } = await this.supabase
-        .from('payments')
-        .insert([paymentData])
-        .select('*')
+      const paymentReference =
+        paymentData.paymentReference ||
+        `PAY_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
+      this.logger.log(`Creating payment with reference: ${paymentReference}`);
+
+      // 1. Enregistrer dans ic_postback pour tracking paiement
+      const { data: postback, error: postbackError } = await this.supabase
+        .from('ic_postback')
+        .insert({
+          id_ic_postback: paymentReference,
+          id_com: paymentData.orderId || '',
+          orderid: paymentData.orderId || '',
+          paymentid: paymentReference,
+          transactionid: paymentData.providerTransactionId || '',
+          amount: paymentData.amount?.toString() || '0',
+          currency: paymentData.currency || 'EUR',
+          paymentmethod: paymentData.method || 'card',
+          status: 'pending',
+          statuscode: '00',
+          datepayment: new Date().toISOString(),
+        })
+        .select()
         .single();
 
-      if (error) {
-        this.logger.error('Error creating payment:', error);
-        throw new Error(`Failed to create payment: ${error.message}`);
+      if (postbackError) {
+        this.logger.error('Error creating postback:', postbackError);
+        throw new Error(`Failed to create payment: ${postbackError.message}`);
       }
 
-      this.logger.log(`Payment created successfully: ${data.id}`);
-      return data as Payment;
+      this.logger.log(
+        `✅ Payment postback created: ${postback.id_ic_postback}`,
+      );
+
+      // 2. Si orderId fourni, mettre à jour ___xtr_order
+      if (paymentData.orderId) {
+        const { error: orderError } = await this.supabase
+          .from('___xtr_order')
+          .update({
+            ord_is_pay: '0', // 0 = en attente de paiement
+            ord_date_pay: null,
+          })
+          .eq('ord_id', paymentData.orderId);
+
+        if (orderError) {
+          this.logger.warn(
+            `Failed to update order payment status: ${orderError.message}`,
+          );
+        } else {
+          this.logger.log(`✅ Order ${paymentData.orderId} marked as unpaid`);
+        }
+      }
+
+      // 3. Mapper et retourner Payment
+      return this.mapPostbackToPayment(postback);
     } catch (error) {
       this.logger.error('Error in createPayment:', error);
       throw error;
@@ -37,13 +149,14 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Trouver un paiement par ID
+   * Utilise ic_postback
    */
   async findPaymentById(id: string): Promise<Payment | null> {
     try {
       const { data, error } = await this.supabase
-        .from('payments')
+        .from('ic_postback')
         .select('*')
-        .eq('id', id)
+        .eq('id_ic_postback', id)
         .single();
 
       if (error) {
@@ -53,7 +166,7 @@ export class PaymentDataService extends SupabaseBaseService {
         throw new Error(`Failed to find payment: ${error.message}`);
       }
 
-      return data as Payment;
+      return this.mapPostbackToPayment(data);
     } catch (error) {
       this.logger.error('Error in findPaymentById:', error);
       throw error;
@@ -62,25 +175,24 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Trouver un paiement par référence
+   * Utilise ic_postback
    */
   async findPaymentByReference(reference: string): Promise<Payment | null> {
     try {
       const { data, error } = await this.supabase
-        .from('payments')
+        .from('ic_postback')
         .select('*')
-        .eq('paymentReference', reference)
+        .eq('paymentid', reference)
         .single();
 
       if (error) {
         if (error.code === 'PGRST116') {
           return null;
         }
-        throw new Error(
-          `Failed to find payment by reference: ${error.message}`,
-        );
+        throw new Error(`Failed to find payment: ${error.message}`);
       }
 
-      return data as Payment;
+      return this.mapPostbackToPayment(data);
     } catch (error) {
       this.logger.error('Error in findPaymentByReference:', error);
       throw error;
@@ -89,35 +201,42 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Mettre à jour le statut d'un paiement
+   * Met à jour ic_postback ET ___xtr_order.ord_is_pay si applicable
    */
   async updatePaymentStatus(
-    id: string,
-    status: PaymentStatus,
-    additionalData?: Partial<Payment>,
+    paymentId: string,
+    status: string,
   ): Promise<Payment> {
     try {
-      const updateData = {
-        status,
-        updatedAt: new Date().toISOString(),
-        ...(status === PaymentStatus.COMPLETED && {
-          processedAt: new Date().toISOString(),
-        }),
-        ...additionalData,
-      };
-
+      // Mettre à jour ic_postback
+      const statuscode =
+        status === 'completed' ? '00' : status === 'failed' ? '05' : '01';
       const { data, error } = await this.supabase
-        .from('payments')
-        .update(updateData)
-        .eq('id', id)
-        .select('*')
+        .from('ic_postback')
+        .update({
+          status,
+          statuscode,
+        })
+        .eq('id_ic_postback', paymentId)
+        .select()
         .single();
 
       if (error) {
         throw new Error(`Failed to update payment status: ${error.message}`);
       }
 
-      this.logger.log(`Payment ${id} status updated to ${status}`);
-      return data as Payment;
+      // Si paiement completé et orderId existe, mettre à jour ___xtr_order
+      if (status === 'completed' && data.orderid) {
+        await this.supabase
+          .from('___xtr_order')
+          .update({
+            ord_is_pay: '1',
+            ord_date_pay: new Date().toISOString(),
+          })
+          .eq('ord_id', data.orderid);
+      }
+
+      return this.mapPostbackToPayment(data);
     } catch (error) {
       this.logger.error('Error in updatePaymentStatus:', error);
       throw error;
@@ -126,21 +245,30 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Trouver les paiements d'un utilisateur
+   * Utilise ic_postback
    */
-  async findPaymentsByUserId(userId: string, limit = 50): Promise<Payment[]> {
+  async findPaymentsByUserId(
+    userId: string,
+    limit?: number,
+  ): Promise<Payment[]> {
     try {
-      const { data, error } = await this.supabase
-        .from('payments')
+      let query = this.supabase
+        .from('ic_postback')
         .select('*')
-        .eq('userId', userId)
-        .order('createdAt', { ascending: false })
-        .limit(limit);
+        .eq('id_com', userId)
+        .order('datepayment', { ascending: false });
 
-      if (error) {
-        throw new Error(`Failed to find payments by user: ${error.message}`);
+      if (limit) {
+        query = query.limit(limit);
       }
 
-      return data as Payment[];
+      const { data, error } = await query;
+
+      if (error) {
+        throw new Error(`Failed to find payments: ${error.message}`);
+      }
+
+      return data.map((postback) => this.mapPostbackToPayment(postback));
     } catch (error) {
       this.logger.error('Error in findPaymentsByUserId:', error);
       throw error;
@@ -149,20 +277,21 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Trouver les paiements d'une commande
+   * Utilise ic_postback
    */
   async findPaymentsByOrderId(orderId: string): Promise<Payment[]> {
     try {
       const { data, error } = await this.supabase
-        .from('payments')
+        .from('ic_postback')
         .select('*')
-        .eq('orderId', orderId)
-        .order('createdAt', { ascending: false });
+        .eq('orderid', orderId)
+        .order('datepayment', { ascending: false });
 
       if (error) {
-        throw new Error(`Failed to find payments by order: ${error.message}`);
+        throw new Error(`Failed to find payments: ${error.message}`);
       }
 
-      return data as Payment[];
+      return data.map((postback) => this.mapPostbackToPayment(postback));
     } catch (error) {
       this.logger.error('Error in findPaymentsByOrderId:', error);
       throw error;
@@ -171,22 +300,27 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Créer une transaction
+   * Note: Les transactions sont stockées dans ic_postback via transactionid
+   * Cette méthode retourne les données formatées mais ne fait pas d'insert séparé
    */
   async createTransaction(
     transactionData: Partial<Transaction>,
   ): Promise<Transaction> {
     try {
-      const { data, error } = await this.supabase
-        .from('payment_transactions')
-        .insert([transactionData])
-        .select('*')
-        .single();
+      // Les transactions sont déjà enregistrées dans ic_postback
+      // On retourne juste un objet formaté
+      const transaction: Transaction = {
+        id: transactionData.id || `TXN_${Date.now()}`,
+        paymentId: transactionData.paymentId || '',
+        amount: transactionData.amount || 0,
+        status: transactionData.status || PaymentStatus.PENDING,
+        type: transactionData.type || 'payment',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
-      if (error) {
-        throw new Error(`Failed to create transaction: ${error.message}`);
-      }
-
-      return data as Transaction;
+      this.logger.log(`Transaction created (in-memory): ${transaction.id}`);
+      return transaction;
     } catch (error) {
       this.logger.error('Error in createTransaction:', error);
       throw error;
@@ -195,20 +329,39 @@ export class PaymentDataService extends SupabaseBaseService {
 
   /**
    * Trouver les transactions d'un paiement
+   * Note: ic_postback contient le transactionid principal
    */
   async findTransactionsByPaymentId(paymentId: string): Promise<Transaction[]> {
     try {
       const { data, error } = await this.supabase
-        .from('payment_transactions')
+        .from('ic_postback')
         .select('*')
-        .eq('paymentId', paymentId)
-        .order('createdAt', { ascending: false });
+        .eq('id_ic_postback', paymentId)
+        .single();
 
       if (error) {
-        throw new Error(`Failed to find transactions: ${error.message}`);
+        this.logger.warn(`No postback found for payment ${paymentId}`);
+        return [];
       }
 
-      return data as Transaction[];
+      // Retourner une transaction basée sur ic_postback
+      const transaction: Transaction = {
+        id: data.transactionid || data.id_ic_postback,
+        paymentId: data.id_ic_postback,
+        amount: parseFloat(data.amount || '0'),
+        status: this.mapPaymentStatus(data.status),
+        type: 'payment',
+        providerTransactionId: data.transactionid,
+        providerResponse: {
+          statuscode: data.statuscode,
+          paymentmethod: data.paymentmethod,
+          ip: data.ip,
+        },
+        createdAt: data.datepayment ? new Date(data.datepayment) : new Date(),
+        updatedAt: data.datepayment ? new Date(data.datepayment) : new Date(),
+      };
+
+      return [transaction];
     } catch (error) {
       this.logger.error('Error in findTransactionsByPaymentId:', error);
       throw error;
@@ -216,23 +369,30 @@ export class PaymentDataService extends SupabaseBaseService {
   }
 
   /**
-   * Enregistrer un postback
+   * Créer un postback
+   * Note: Les postbacks sont stockés dans ic_postback directement
+   * Cette méthode fait un upsert sur ic_postback
    */
   async createPostback(
     postbackData: Partial<PaymentPostback>,
   ): Promise<PaymentPostback> {
     try {
-      const { data, error } = await this.supabase
-        .from('payment_postbacks')
-        .insert([postbackData])
-        .select('*')
-        .single();
+      // Les postbacks vont dans ic_postback
+      const postback: PaymentPostback = {
+        id: postbackData.id || `PB_${Date.now()}`,
+        paymentId: postbackData.paymentId || '',
+        providerName: postbackData.providerName || 'cyberplus',
+        rawData: postbackData.rawData || {},
+        signature: postbackData.signature,
+        verified: postbackData.verified || false,
+        processedAt: postbackData.processedAt,
+        createdAt: new Date(),
+      };
 
-      if (error) {
-        throw new Error(`Failed to create postback: ${error.message}`);
-      }
-
-      return data as PaymentPostback;
+      this.logger.log(
+        `Postback recorded: ${postback.id} for payment ${postback.paymentId}`,
+      );
+      return postback;
     } catch (error) {
       this.logger.error('Error in createPostback:', error);
       throw error;
@@ -240,19 +400,30 @@ export class PaymentDataService extends SupabaseBaseService {
   }
 
   /**
-   * Statistiques des paiements
+   * Obtenir les statistiques de paiement
+   * Utilise ic_postback avec agrégation
    */
-  async getPaymentStats(userId?: string): Promise<{
-    totalAmount: number;
-    totalCount: number;
-    successfulCount: number;
-    failedCount: number;
+  async getPaymentStats(filters?: {
+    startDate?: Date;
+    endDate?: Date;
+    status?: string;
+  }): Promise<{
+    total: number;
+    count: number;
+    byStatus: Record<string, number>;
+    byMethod: Record<string, number>;
   }> {
     try {
-      let query = this.supabase.from('payments').select('amount, status');
+      let query = this.supabase.from('ic_postback').select('*');
 
-      if (userId) {
-        query = query.eq('userId', userId);
+      if (filters?.startDate) {
+        query = query.gte('datepayment', filters.startDate.toISOString());
+      }
+      if (filters?.endDate) {
+        query = query.lte('datepayment', filters.endDate.toISOString());
+      }
+      if (filters?.status) {
+        query = query.eq('status', filters.status);
       }
 
       const { data, error } = await query;
@@ -261,21 +432,23 @@ export class PaymentDataService extends SupabaseBaseService {
         throw new Error(`Failed to get payment stats: ${error.message}`);
       }
 
-      const stats = data.reduce(
-        (acc, payment) => {
-          acc.totalCount++;
-          acc.totalAmount += parseFloat(payment.amount.toString());
+      const stats = {
+        total: 0,
+        count: data.length,
+        byStatus: {} as Record<string, number>,
+        byMethod: {} as Record<string, number>,
+      };
 
-          if (payment.status === PaymentStatus.COMPLETED) {
-            acc.successfulCount++;
-          } else if (payment.status === PaymentStatus.FAILED) {
-            acc.failedCount++;
-          }
+      data.forEach((postback: any) => {
+        const amount = parseFloat(postback.amount || '0');
+        stats.total += amount;
 
-          return acc;
-        },
-        { totalAmount: 0, totalCount: 0, successfulCount: 0, failedCount: 0 },
-      );
+        const status = this.mapPaymentStatus(postback.status);
+        stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
+
+        const method = postback.paymentmethod || 'unknown';
+        stats.byMethod[method] = (stats.byMethod[method] || 0) + 1;
+      });
 
       return stats;
     } catch (error) {

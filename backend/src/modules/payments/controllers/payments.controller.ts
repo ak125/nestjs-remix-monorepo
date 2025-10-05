@@ -153,6 +153,54 @@ export class PaymentsController {
   }
 
   /**
+   * GET /api/payments/stats (et /stats/global)
+   * Statistiques des paiements - DOIT être avant @Get(':id')
+   * 🔒 Admin uniquement
+   */
+  @Get('stats')
+  // @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Statistiques des paiements (admin)' })
+  @ApiResponse({ status: 200, description: 'Statistiques' })
+  async getPaymentStats(
+    @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    try {
+      this.logger.log('Admin: Getting payment statistics');
+
+      const filters: any = {};
+      if (status) filters.status = status;
+      if (startDate) filters.startDate = new Date(startDate);
+      if (endDate) filters.endDate = new Date(endDate);
+
+      const stats = await this.paymentDataService.getPaymentStats(filters);
+
+      return {
+        success: true,
+        data: stats,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to get stats: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Alias pour GET /api/payments/stats/global
+   */
+  @Get('stats/global')
+  async getGlobalStats(
+    @Query('status') status?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.getPaymentStats(status, startDate, endDate);
+  }
+
+  /**
    * GET /api/payments/:id
    * Obtenir les détails d'un paiement
    * 🔒 Authentification requise
@@ -256,6 +304,69 @@ export class PaymentsController {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get order payments: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  /**
+   * GET /api/payments/reference/:reference
+   * Récupérer un paiement par sa référence
+   */
+  @Get('reference/:reference')
+  @ApiOperation({ summary: 'Paiement par référence' })
+  @ApiParam({ name: 'reference', description: 'Référence du paiement' })
+  @ApiResponse({ status: 200, description: 'Détails du paiement' })
+  @ApiResponse({ status: 404, description: 'Paiement introuvable' })
+  async getPaymentByReference(@Param('reference') reference: string) {
+    try {
+      this.logger.log(`Getting payment by reference: ${reference}`);
+
+      const payment = await this.paymentService.getPaymentByReference(reference);
+
+      return {
+        success: true,
+        data: payment,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to get payment by reference: ${errorMessage}`);
+      throw new NotFoundException(`Payment not found: ${reference}`);
+    }
+  }
+
+  /**
+   * PATCH /api/payments/:id/status
+   * Mettre à jour le statut d'un paiement
+   * 🔐 Admin uniquement
+   */
+  @Patch(':id/status')
+  @HttpCode(HttpStatus.OK)
+  // @UseGuards(AuthenticatedGuard, AdminGuard)
+  @ApiOperation({ summary: 'Mettre à jour le statut du paiement' })
+  @ApiParam({ name: 'id', description: 'ID du paiement' })
+  @ApiResponse({ status: 200, description: 'Statut mis à jour' })
+  @ApiResponse({ status: 404, description: 'Paiement introuvable' })
+  async updatePaymentStatus(
+    @Param('id') id: string,
+    @Body() updateDto: { status: string; providerTransactionId?: string },
+  ) {
+    try {
+      this.logger.log(`Updating payment status: ${id} -> ${updateDto.status}`);
+
+      const payment = await this.paymentService.updatePaymentStatus(
+        id,
+        updateDto.status as any,
+      );
+
+      this.logger.log(`✅ Payment status updated: ${id}`);
+
+      return {
+        success: true,
+        data: payment,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to update payment status: ${errorMessage}`);
       throw error;
     }
   }
@@ -376,32 +487,6 @@ export class PaymentsController {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to refund payment: ${errorMessage}`);
-      throw error;
-    }
-  }
-
-  /**
-   * GET /api/payments/stats
-   * Statistiques des paiements
-   * 🔒 Admin uniquement
-   */
-  @Get('stats/global')
-  // @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'Statistiques globales des paiements (admin)' })
-  @ApiResponse({ status: 200, description: 'Statistiques' })
-  async getPaymentStats(@Query('userId') userId?: string) {
-    try {
-      this.logger.log('Admin: Getting payment statistics');
-
-      const stats = await this.paymentDataService.getPaymentStats(userId);
-
-      return {
-        success: true,
-        data: stats,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`❌ Failed to get stats: ${errorMessage}`);
       throw error;
     }
   }

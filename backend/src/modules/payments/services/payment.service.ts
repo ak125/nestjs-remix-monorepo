@@ -279,6 +279,27 @@ export class PaymentService {
   }
 
   /**
+   * Obtenir un paiement par sa référence
+   */
+  async getPaymentByReference(reference: string): Promise<Payment> {
+    try {
+      const payment =
+        await this.paymentDataService.findPaymentByReference(reference);
+
+      if (!payment) {
+        throw new NotFoundException(`Payment not found: ${reference}`);
+      }
+
+      return payment;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get payment by reference: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Obtenir les paiements d'un utilisateur
    */
   async getUserPayments(userId: string, limit = 20): Promise<Payment[]> {
