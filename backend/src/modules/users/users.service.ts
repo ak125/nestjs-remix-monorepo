@@ -53,20 +53,17 @@ export class UsersService extends SupabaseBaseService {
     super(configService);
   }
 
-  // ========== MÉTHODES D'AUTHENTIFICATION ==========
 
   /**
    * Inscription d'un nouvel utilisateur
-   * ✅ DÉLÉGUÉ vers AuthService.register()
    */
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
     console.log(
-      '🔐 UsersService.register → délégation AuthService:',
+      '🔐 UsersService.register:',
       registerDto.email,
     );
 
     try {
-      // Déléguer vers AuthService qui gère l'authentification
       const authUser = await this.authService.register({
         email: registerDto.email,
         password: registerDto.password,
@@ -87,7 +84,7 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('✅ Utilisateur créé via AuthService:', authUser.id);
+      console.log('Utilisateur créé via AuthService:', authUser.id);
       return userResponse;
     } catch (error: any) {
       console.error('❌ Erreur création utilisateur:', error);
@@ -97,16 +94,14 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Connexion utilisateur
-   * ✅ DÉLÉGUÉ vers AuthService.login()
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     console.log(
-      '🔑 UsersService.login → délégation AuthService:',
+      '🔑 UsersService.login:',
       loginDto.email,
     );
 
     try {
-      // Déléguer vers AuthService qui gère l'authentification complète
       const loginResult = await this.authService.login(
         loginDto.email,
         loginDto.password,
@@ -128,7 +123,7 @@ export class UsersService extends SupabaseBaseService {
         expiresIn: loginResult.expires_in,
       };
 
-      console.log('✅ Connexion réussie via AuthService:', loginResult.user.id);
+      console.log('Connexion réussie via AuthService:', loginResult.user.id);
       return response;
     } catch (error: any) {
       console.error('❌ Erreur connexion:', error);
@@ -136,23 +131,20 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-  // ========== MÉTHODES DE PROFIL ==========
 
   /**
    * Récupérer le profil d'un utilisateur
    */
   /**
    * Récupérer profil utilisateur
-   * ✅ DÉLÉGUÉ vers ProfileService.getProfile()
    */
   async getProfile(userId: number): Promise<UserResponseDto> {
     console.log(
-      '👤 UsersService.getProfile → délégation ProfileService:',
+      '👤 UsersService.getProfile:',
       userId,
     );
 
     try {
-      // Déléguer vers ProfileService (conversion number → string)
       return await this.profileService.getProfile(String(userId));
     } catch (error: any) {
       console.error('❌ Erreur récupération profil:', error);
@@ -162,20 +154,18 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Mettre à jour le profil
-   * ✅ DÉLÉGUÉ vers ProfileService.updateProfile()
    */
   async updateProfile(
     userId: number,
     updateDto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
     console.log(
-      '✏️ UsersService.updateProfile → délégation ProfileService:',
+      '✏️ UsersService.updateProfile:',
       userId,
       updateDto,
     );
 
     try {
-      // Déléguer vers ProfileService (conversion number → string)
       return await this.profileService.updateProfile(String(userId), updateDto);
     } catch (error: any) {
       console.error('❌ Erreur mise à jour profil:', error);
@@ -183,23 +173,20 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-  // ========== MÉTHODES DE GESTION DES UTILISATEURS (ADMIN) ==========
 
   /**
    * Récupérer tous les utilisateurs avec pagination
-   * ✅ IMPLÉMENTÉ avec Supabase via userService
    */
   async getAllUsers(
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('📋 UsersService.getAllUsers → délégation userService:', {
+    console.log('UsersService.getAllUsers:', {
       page,
       limit,
     });
 
     try {
-      // Déléguer vers userService qui gère Supabase
       const result = await this.userService.getAllUsers(page, limit);
 
       return {
@@ -235,7 +222,7 @@ export class UsersService extends SupabaseBaseService {
    * Créer un nouvel utilisateur (admin)
    */
   async createUser(createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    console.log('➕ UsersService.createUser:', createUserDto.email);
+    console.log('UsersService.createUser:', createUserDto.email);
 
     try {
       // Vérifier si l'utilisateur existe déjà
@@ -258,7 +245,7 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('✅ Utilisateur créé (admin):', newUser.id);
+      console.log('Utilisateur créé (admin):', newUser.id);
       return newUser;
     } catch (error: any) {
       console.error('❌ Erreur création utilisateur (admin):', error);
@@ -276,7 +263,7 @@ export class UsersService extends SupabaseBaseService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    console.log('✏️ UsersService.updateUser:', id, updateUserDto);
+    console.log('UsersService.updateUser:', id, updateUserDto);
 
     try {
       const user = await this.findById(id);
@@ -295,7 +282,7 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('✅ Utilisateur mis à jour:', updatedUser.email);
+      console.log('Utilisateur mis à jour:', updatedUser.email);
       return updatedUser;
     } catch (error: any) {
       console.error('❌ Erreur mise à jour utilisateur:', error);
@@ -319,7 +306,7 @@ export class UsersService extends SupabaseBaseService {
       }
 
       // En pratique, on désactive plutôt que de supprimer
-      console.log('✅ Utilisateur désactivé:', id);
+      console.log('Utilisateur désactivé:', id);
       return true;
     } catch (error: any) {
       console.error('❌ Erreur suppression utilisateur:', error);
@@ -387,7 +374,7 @@ export class UsersService extends SupabaseBaseService {
       }
 
       // En pratique, vérifier l'ancien mot de passe et hasher le nouveau
-      console.log('✅ Mot de passe changé pour:', id);
+      console.log('Mot de passe changé pour:', id);
       return true;
     } catch (error: any) {
       console.error('❌ Erreur changement mot de passe:', error);
@@ -416,7 +403,7 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('✅ Niveau utilisateur mis à jour:', id, level);
+      console.log('Niveau utilisateur mis à jour:', id, level);
       return updatedUser;
     } catch (error: any) {
       console.error('❌ Erreur mise à jour niveau:', error);
@@ -440,7 +427,7 @@ export class UsersService extends SupabaseBaseService {
       }
 
       // Désactiver l'utilisateur
-      console.log('✅ Utilisateur désactivé:', id);
+      console.log('Utilisateur désactivé:', id);
       return true;
     } catch (error: any) {
       console.error('❌ Erreur désactivation utilisateur:', error);
@@ -455,7 +442,7 @@ export class UsersService extends SupabaseBaseService {
    * Réactiver un utilisateur
    */
   async reactivateUser(id: string): Promise<UserResponseDto> {
-    console.log('✅ UsersService.reactivateUser:', id);
+    console.log('UsersService.reactivateUser:', id);
 
     try {
       const user = await this.findById(id);
@@ -470,7 +457,7 @@ export class UsersService extends SupabaseBaseService {
         updatedAt: new Date(),
       };
 
-      console.log('✅ Utilisateur réactivé:', id);
+      console.log('Utilisateur réactivé:', id);
       return reactivatedUser;
     } catch (error: any) {
       console.error('❌ Erreur réactivation utilisateur:', error);
@@ -483,13 +470,12 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Récupérer les utilisateurs actifs
-   * ✅ IMPLÉMENTÉ avec Supabase
    */
   async getActiveUsers(
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('✅ UsersService.getActiveUsers:', { page, limit });
+    console.log('UsersService.getActiveUsers:', { page, limit });
 
     try {
       const offset = (page - 1) * limit;
@@ -545,12 +531,11 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Rechercher des utilisateurs avec filtres
-   * ✅ IMPLÉMENTÉ avec Supabase
    */
   async searchUsers(
     searchParams: SearchUsersDto,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('🔍 UsersService.searchUsers:', searchParams);
+    console.log('UsersService.searchUsers:', searchParams);
 
     try {
       const page = searchParams.page || 1;
@@ -619,7 +604,6 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-  // ========== MÉTHODES EXISTANTES CONSERVÉES ==========
 
   /**
    * Mettre à jour les adresses - TEMPORAIREMENT DÉSACTIVÉE
@@ -639,14 +623,13 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Créer un message utilisateur
-   * ✅ DÉLÉGUÉ vers MessagesService.createMessage()
    */
   async createMessage(
     userId: number,
     messageDto: UserMessageDto,
   ): Promise<{ success: boolean; messageId: string }> {
     console.log(
-      '📝 UsersService.createMessage → délégation MessagesService:',
+      '📝 UsersService.createMessage:',
       userId,
     );
 
@@ -660,7 +643,7 @@ export class UsersService extends SupabaseBaseService {
         priority: 'normal',
       });
 
-      console.log('✅ Message créé via MessagesService:', message.id);
+      console.log('Message créé via MessagesService:', message.id);
       return { success: true, messageId: message.id };
     } catch (error: any) {
       console.error('❌ Erreur création message:', error);
@@ -670,11 +653,10 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Récupérer les messages d'un utilisateur
-   * ✅ DÉLÉGUÉ vers MessagesService.getMessages()
    */
   async getUserMessages(userId: number): Promise<any[]> {
     console.log(
-      '📬 UsersService.getUserMessages → délégation MessagesService:',
+      '📬 UsersService.getUserMessages:',
       userId,
     );
 
@@ -714,7 +696,7 @@ export class UsersService extends SupabaseBaseService {
   async requestPasswordReset(
     resetDto: ResetPasswordDto,
   ): Promise<{ success: boolean; message: string }> {
-    console.log('🔄 UsersService.requestPasswordReset:', resetDto.email);
+    console.log('UsersService.requestPasswordReset:', resetDto.email);
 
     try {
       const user = await this.findByEmail(resetDto.email);
@@ -728,7 +710,7 @@ export class UsersService extends SupabaseBaseService {
       }
 
       // En production, générer un token et envoyer un email
-      console.log('✅ Demande de réinitialisation traitée');
+      console.log('Demande de réinitialisation traitée');
       return { success: true, message: 'Lien de réinitialisation envoyé' };
     } catch (error: any) {
       console.error('❌ Erreur demande réinitialisation:', error);
@@ -745,28 +727,25 @@ export class UsersService extends SupabaseBaseService {
   async confirmPasswordReset(
     _confirmDto: ConfirmResetPasswordDto,
   ): Promise<void> {
-    console.log('🔄 UsersService.confirmPasswordReset (Mock)');
+    console.log('UsersService.confirmPasswordReset (Mock)');
     // TODO: Implémenter avec vraie DB
     throw new Error('Not implemented yet');
   }
 
-  // ========== MÉTHODES UTILITAIRES ==========
 
   /**
    * Trouver un utilisateur par email
    */
   /**
    * Trouver utilisateur par email
-   * ✅ DÉLÉGUÉ vers ProfileService.findByEmail()
    */
   async findByEmail(email: string): Promise<UserResponseDto | null> {
     console.log(
-      '📧 UsersService.findByEmail → délégation ProfileService:',
+      '📧 UsersService.findByEmail:',
       email,
     );
 
     try {
-      // Déléguer vers ProfileService
       return await this.profileService.findByEmail(email);
     } catch (error: any) {
       console.error('❌ Erreur recherche par email:', error);
@@ -776,13 +755,11 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Trouver utilisateur par ID
-   * ✅ DÉLÉGUÉ vers ProfileService.findById()
    */
   async findById(id: string): Promise<UserResponseDto | null> {
-    console.log('🔍 UsersService.findById → délégation ProfileService:', id);
+    console.log('UsersService.findById:', id);
 
     try {
-      // Déléguer vers ProfileService
       return await this.profileService.findById(id);
     } catch (error: any) {
       console.error('❌ Erreur recherche par ID:', error);
@@ -790,7 +767,6 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-  // ========== MÉTHODES HÉRITÉES (compatibilité) ==========
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const registerDto: RegisterDto = {
@@ -818,7 +794,6 @@ export class UsersService extends SupabaseBaseService {
     await this.deleteUser(id);
   }
 
-  // ========== MÉTHODES MANQUANTES POUR LE CONTRÔLEUR ==========
 
   /**
    * Trouver tous les utilisateurs avec pagination
@@ -950,17 +925,16 @@ export class UsersService extends SupabaseBaseService {
    * Valider une civilité
    */
   validateCivility(civility: string): boolean {
-    console.log('✔️ UsersService.validateCivility:', civility);
+    console.log('UsersService.validateCivility:', civility);
     const validCivilities = ['M', 'Mme', 'Mlle', 'Dr', 'Prof'];
     return validCivilities.includes(civility);
   }
 
   /**
    * Rechercher les utilisateurs par civilité
-   * ⚠️ DÉSACTIVÉ - Le champ civilité n'existe pas dans la DB
    */
   async findByCivility(civility: string, options: any = {}): Promise<any> {
-    console.log('🔍 UsersService.findByCivility:', civility);
+    console.log('UsersService.findByCivility:', civility);
 
     try {
       if (!this.validateCivility(civility)) {
@@ -996,12 +970,12 @@ export class UsersService extends SupabaseBaseService {
    * Mettre à jour la dernière connexion
    */
   async updateLastLogin(userId: number): Promise<boolean> {
-    console.log('🕐 UsersService.updateLastLogin:', userId);
+    console.log('UsersService.updateLastLogin:', userId);
 
     try {
       // Simulation de mise à jour pour le moment
       // En production, utiliser Supabase pour mettre à jour last_login
-      console.log('✅ Dernière connexion mise à jour:', userId);
+      console.log('Dernière connexion mise à jour:', userId);
       return true;
     } catch (error: any) {
       console.error('❌ Erreur updateLastLogin:', error);
