@@ -163,15 +163,48 @@ cst_fname           - Prénom (text)
 cst_name            - Nom (text)
 ```
 
-### `___XTR_ORDER_STATUS` - Historique statuts
+### `___xtr_order_line_status` - Statuts de lignes de commande
 ```
-Colonnes à documenter
+orls_id         - ID statut (text)
+orls_name       - Nom du statut (text)
+orls_action     - Action associée (text)
+orls_color      - Couleur pour UI (text)
+orls_dept_id    - ID département (text)
 ```
 
-### `___XTR_ORDER_LINE_EQUIV_TICKET` - Tickets SAV
+**Notes:**
+- Table de référence pour les statuts de lignes
+- Exemples: En attente, Commandé, Reçu, Livré, etc.
+- Utilisé par `orl_orls_id` dans `___xtr_order_line`
+
+### `___xtr_order_status` - Statuts de commandes (référence)
 ```
-Colonnes à documenter
+ords_id         - ID statut (text)
+ords_named      - Nom du statut (text)
+ords_action     - Action associée (text)
+ords_color      - Couleur pour UI (text)
+ords_dept_id    - ID département (text)
 ```
+
+**Notes:**
+- Table de référence pour les statuts de commandes
+- Exemples: Brouillon, Confirmée, Payée, Expédiée, Livrée, Annulée
+- Utilisé par `ord_ords_id` dans `___xtr_order`
+- Workflow: 1 (brouillon) → 2 (confirmée) → 3 (payée) → 4 (expédiée) → 5 (livrée)
+
+### `___xtr_order_line_equiv_ticket` - Tickets SAV
+```
+orlet_id            - ID ticket (text)
+orlet_ord_id        - ID commande (text)
+orlet_orl_id        - ID ligne de commande (text)
+orlet_equiv_id      - ID équivalence (text)
+orlet_amount_ttc    - Montant TTC (text)
+```
+
+**Notes:**
+- Lien entre lignes de commande et tickets d'équivalence
+- Utilisé pour les avoirs, crédits, remplacements
+- Toutes les colonnes en text
 
 ---
 
