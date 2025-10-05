@@ -1,18 +1,20 @@
 /**
- * 📦 CONTRÔLEUR ORDERS UNIFIÉ - Phase 3
+ * 📦 CONTRÔLEUR ORDERS UNIFIÉ
  *
- * Consolidation de 6 contrôleurs en un seul fichier organisé :
- * - orders-fusion.controller.ts (CRUD principal)
- * - orders-simple.controller.ts (Client basique)
- * - customer-orders.controller.ts (Client complet)
- * - admin-orders.controller.ts (Admin)
- * - legacy-orders.controller.ts (Legacy - compatibilité)
- * - automotive-orders.controller.ts (Déjà désactivé)
+ * Contrôleur principal consolidé pour toutes les opérations liées aux commandes.
+ * Remplace 6 contrôleurs obsolètes pour une architecture claire et maintenable.
  *
- * Architecture :
- * - Routes client  : /api/orders/* (AuthenticatedGuard)
- * - Routes admin   : /api/orders/admin/* (AuthenticatedGuard + IsAdminGuard)
- * - Routes legacy  : /api/orders/legacy/* (Compatibilité)
+ * Architecture organisée en 4 sections :
+ * 1. Routes CLIENT  : Authentification utilisateur (AuthenticatedGuard)
+ * 2. Routes ADMIN   : Authentification + privilèges admin (IsAdminGuard)
+ * 3. Routes LEGACY  : Compatibilité rétroactive (@deprecated)
+ * 4. Routes TEST    : Endpoints de développement et tests
+ *
+ * Routes :
+ * - Client  : /api/orders/* (AuthenticatedGuard)
+ * - Admin   : /api/orders/admin/* (AuthenticatedGuard + IsAdminGuard)
+ * - Legacy  : /api/orders/legacy/* (Compatibilité - à déprécier)
+ * - Test    : /api/orders/test/* (Développement uniquement)
  */
 
 import {
