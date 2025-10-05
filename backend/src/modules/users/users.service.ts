@@ -5,13 +5,12 @@
 
 import {
   Injectable,
-  BadRequestException,
+  Inject,
+  forwardRef,
   NotFoundException,
   ConflictException,
   HttpException,
   HttpStatus,
-  Inject,
-  forwardRef,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { UserDataService } from '../../database/services/user-data.service';
@@ -188,28 +187,39 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Récupérer tous les utilisateurs avec pagination
+   * ✅ IMPLÉMENTÉ avec Supabase via userService
    */
   async getAllUsers(
     page: number = 1,
     limit: number = 20,
   ): Promise<PaginatedUsersResponseDto> {
-    console.log('📋 UsersService.getAllUsers:', { page, limit });
+    console.log('📋 UsersService.getAllUsers → délégation userService:', {
+      page,
+      limit,
+    });
 
     try {
-      const mockUsers = await this.getMockUsers();
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-
-      const paginatedUsers = mockUsers.slice(startIndex, endIndex);
+      // Déléguer vers userService qui gère Supabase
+      const result = await this.userService.getAllUsers(page, limit);
 
       return {
-        users: paginatedUsers,
-        total: mockUsers.length,
+        users: result.users.map((user) => ({
+          id: String(user.cst_id),
+          email: user.cst_mail,
+          firstName: user.cst_fname || '',
+          lastName: user.cst_name || '',
+          tel: user.cst_tel || user.cst_gsm,
+          isPro: user.cst_is_pro === '1',
+          isActive: user.cst_activ === '1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })),
+        total: result.total,
         page,
         limit,
         currentPage: page,
-        totalPages: Math.ceil(mockUsers.length / limit),
-        hasNextPage: page < Math.ceil(mockUsers.length / limit),
+        totalPages: Math.ceil(result.total / limit),
+        hasNextPage: page < Math.ceil(result.total / limit),
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
@@ -472,33 +482,8 @@ export class UsersService extends SupabaseBaseService {
   }
 
   /**
-   * Récupérer les utilisateurs par niveau
-   */
-  async getUsersByLevel(level: number): Promise<UserResponseDto[]> {
-    console.log('📊 UsersService.getUsersByLevel:', level);
-
-    try {
-      const mockUsers = await this.getMockUsers();
-      // En pratique, filtrer par niveau depuis la DB
-      const filteredUsers = mockUsers.filter((user) => true); // Mock: tous les utilisateurs
-
-      console.log(
-        '✅ Utilisateurs récupérés par niveau:',
-        level,
-        filteredUsers.length,
-      );
-      return filteredUsers;
-    } catch (error: any) {
-      console.error('❌ Erreur récupération par niveau:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la récupération par niveau',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  /**
    * Récupérer les utilisateurs actifs
+   * ✅ IMPLÉMENTÉ avec Supabase
    */
   async getActiveUsers(
     page: number = 1,
@@ -507,21 +492,45 @@ export class UsersService extends SupabaseBaseService {
     console.log('✅ UsersService.getActiveUsers:', { page, limit });
 
     try {
-      const mockUsers = await this.getMockUsers();
-      const activeUsers = mockUsers.filter((user) => user.isActive);
+      const offset = (page - 1) * limit;
 
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedUsers = activeUsers.slice(startIndex, endIndex);
+      const {
+        data: users,
+        error,
+        count,
+      } = await this.supabase
+        .from('___xtr_customer')
+        .select('*', { count: 'exact' })
+        .eq('cst_active', 1)
+        .range(offset, offset + limit - 1)
+        .order('cst_id', { ascending: false });
+
+      if (error) {
+        console.error('❌ Erreur Supabase getActiveUsers:', error);
+        throw new Error(error.message);
+      }
+
+      const total = count || 0;
+      console.log(`✅ ${users?.length || 0} utilisateurs actifs sur ${total}`);
 
       return {
-        users: paginatedUsers,
-        total: activeUsers.length,
+        users: (users || []).map((user) => ({
+          id: String(user.cst_id),
+          email: user.cst_email,
+          firstName: user.cst_firstname,
+          lastName: user.cst_lastname,
+          tel: user.cst_tel,
+          isPro: user.cst_level >= 5,
+          isActive: user.cst_active === 1,
+          createdAt: new Date(user.cst_created_at),
+          updatedAt: new Date(user.cst_updated_at || user.cst_created_at),
+        })),
+        total,
         page,
         limit,
         currentPage: page,
-        totalPages: Math.ceil(activeUsers.length / limit),
-        hasNextPage: page < Math.ceil(activeUsers.length / limit),
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
@@ -536,6 +545,7 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Rechercher des utilisateurs avec filtres
+   * ✅ IMPLÉMENTÉ avec Supabase
    */
   async searchUsers(
     searchParams: SearchUsersDto,
@@ -543,41 +553,61 @@ export class UsersService extends SupabaseBaseService {
     console.log('🔍 UsersService.searchUsers:', searchParams);
 
     try {
-      const mockUsers = await this.getMockUsers();
-      let filteredUsers = mockUsers;
+      const page = searchParams.page || 1;
+      const limit = searchParams.limit || 20;
+      const offset = (page - 1) * limit;
 
-      // Appliquer les filtres
+      // Construire la requête Supabase avec filtres
+      let query = this.supabase
+        .from('___xtr_customer')
+        .select('*', { count: 'exact' });
+
+      // Filtre de recherche global (email, prénom, nom)
       if (searchParams.search) {
-        const searchTerm = searchParams.search.toLowerCase();
-        filteredUsers = filteredUsers.filter(
-          (user) =>
-            user.email.toLowerCase().includes(searchTerm) ||
-            user.firstName?.toLowerCase().includes(searchTerm) ||
-            user.lastName?.toLowerCase().includes(searchTerm),
+        const searchTerm = searchParams.search;
+        query = query.or(
+          `cst_email.ilike.%${searchTerm}%,cst_firstname.ilike.%${searchTerm}%,cst_lastname.ilike.%${searchTerm}%`,
         );
       }
 
+      // Filtre par statut actif
       if (searchParams.isActive !== undefined) {
-        filteredUsers = filteredUsers.filter(
-          (user) => user.isActive === searchParams.isActive,
-        );
+        query = query.eq('cst_active', searchParams.isActive ? 1 : 0);
       }
 
       // Pagination
-      const page = searchParams.page || 1;
-      const limit = searchParams.limit || 20;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+      query = query
+        .range(offset, offset + limit - 1)
+        .order('cst_id', { ascending: false });
+
+      const { data: users, error, count } = await query;
+
+      if (error) {
+        console.error('❌ Erreur Supabase searchUsers:', error);
+        throw new Error(error.message);
+      }
+
+      const total = count || 0;
+      console.log(`✅ ${users?.length || 0} utilisateurs trouvés sur ${total}`);
 
       return {
-        users: paginatedUsers,
-        total: filteredUsers.length,
+        users: (users || []).map((user) => ({
+          id: String(user.cst_id),
+          email: user.cst_email,
+          firstName: user.cst_firstname,
+          lastName: user.cst_lastname,
+          tel: user.cst_tel,
+          isPro: user.cst_level >= 5,
+          isActive: user.cst_active === 1,
+          createdAt: new Date(user.cst_created_at),
+          updatedAt: new Date(user.cst_updated_at || user.cst_created_at),
+        })),
+        total,
         page,
         limit,
         currentPage: page,
-        totalPages: Math.ceil(filteredUsers.length / limit),
-        hasNextPage: page < Math.ceil(filteredUsers.length / limit),
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
         hasPreviousPage: page > 1,
       };
     } catch (error: any) {
@@ -596,7 +626,7 @@ export class UsersService extends SupabaseBaseService {
    */
   async updateAddress(
     userId: number,
-    updateDto: UpdateAddressDto,
+    _updateDto: UpdateAddressDto,
   ): Promise<UserResponseDto> {
     console.log('🏠 UsersService.updateAddress - DÉSACTIVÉE:', userId);
 
@@ -713,24 +743,11 @@ export class UsersService extends SupabaseBaseService {
    * Confirmer la réinitialisation de mot de passe
    */
   async confirmPasswordReset(
-    confirmDto: ConfirmResetPasswordDto,
-  ): Promise<{ success: boolean; message: string }> {
-    console.log('✅ UsersService.confirmPasswordReset');
-
-    try {
-      // En production, vérifier le token et mettre à jour le mot de passe
-      console.log('✅ Mot de passe réinitialisé');
-      return {
-        success: true,
-        message: 'Mot de passe réinitialisé avec succès',
-      };
-    } catch (error: any) {
-      console.error('❌ Erreur confirmation réinitialisation:', error);
-      throw new HttpException(
-        error?.message || 'Erreur lors de la confirmation de réinitialisation',
-        error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    _confirmDto: ConfirmResetPasswordDto,
+  ): Promise<void> {
+    console.log('🔄 UsersService.confirmPasswordReset (Mock)');
+    // TODO: Implémenter avec vraie DB
+    throw new Error('Not implemented yet');
   }
 
   // ========== MÉTHODES UTILITAIRES ==========
@@ -771,90 +788,6 @@ export class UsersService extends SupabaseBaseService {
       console.error('❌ Erreur recherche par ID:', error);
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
-  }
-
-  /**
-   * Données mock pour les tests
-   */
-  private async getMockUsers(): Promise<UserResponseDto[]> {
-    return [
-      {
-        id: '1',
-        email: 'admin@automecanik.com',
-        firstName: 'Admin',
-        lastName: 'System',
-        tel: '+33123456789',
-        isPro: false,
-        isActive: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-      },
-      {
-        id: '2',
-        email: 'client@test.com',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        tel: '+33987654321',
-        isPro: false,
-        isActive: true,
-        createdAt: new Date('2024-02-15'),
-        updatedAt: new Date(Date.now() - 86400000), // Hier
-      },
-      {
-        id: '3',
-        email: 'pro@garage.com',
-        firstName: 'Marie',
-        lastName: 'Martin',
-        tel: '+33555666777',
-        isPro: true,
-        isActive: true,
-        createdAt: new Date('2024-03-10'),
-        updatedAt: new Date(),
-      },
-      {
-        id: '4',
-        email: 'inactive@test.com',
-        firstName: 'Pierre',
-        lastName: 'Inactive',
-        isPro: false,
-        isActive: false,
-        createdAt: new Date('2024-01-20'),
-        updatedAt: new Date(),
-      },
-      {
-        id: '5',
-        email: 'garage@pro.com',
-        firstName: 'François',
-        lastName: 'Garage',
-        tel: '+33444555666',
-        isPro: true,
-        isActive: true,
-        createdAt: new Date('2024-04-05'),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'test-user-123',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        tel: '+33111222333',
-        isPro: false,
-        isActive: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-      },
-      {
-        id: 'usr_1752842636126_j88bat3bh',
-        email: 'auto@example.com',
-        firstName: 'AutoModified',
-        lastName: 'EquipementModified',
-        tel: '+33444555666',
-        isPro: false,
-        isActive: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-      },
-    ];
   }
 
   // ========== MÉTHODES HÉRITÉES (compatibilité) ==========
@@ -991,7 +924,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Créer un token de réinitialisation de mot de passe
    */
-  async createPasswordResetToken(email: string): Promise<string> {
+  async createPasswordResetToken(_email: string): Promise<string> {
     // Générer un token simple
     const token =
       Math.random().toString(36).substring(2, 15) +
@@ -1003,8 +936,8 @@ export class UsersService extends SupabaseBaseService {
    * Réinitialiser le mot de passe avec token
    */
   async resetPasswordWithToken(
-    token: string,
-    newPassword: string,
+    _token: string,
+    _newPassword: string,
   ): Promise<any> {
     // Pour l'instant, retourner un succès simulé
     return {
@@ -1024,6 +957,7 @@ export class UsersService extends SupabaseBaseService {
 
   /**
    * Rechercher les utilisateurs par civilité
+   * ⚠️ DÉSACTIVÉ - Le champ civilité n'existe pas dans la DB
    */
   async findByCivility(civility: string, options: any = {}): Promise<any> {
     console.log('🔍 UsersService.findByCivility:', civility);
@@ -1034,24 +968,19 @@ export class UsersService extends SupabaseBaseService {
       }
 
       const { page = 1, limit = 20 } = options;
-      const offset = (page - 1) * limit;
 
-      // Simulation de recherche pour le moment (civility n'existe pas dans le modèle)
-      const mockUsers = await this.getMockUsers();
-      const filteredUsers = mockUsers; // Tous les utilisateurs pour le moment
-
-      const paginatedUsers = filteredUsers.slice(offset, offset + limit);
-
+      // Le champ civilité n'existe pas dans ___xtr_customer
+      // Retourner une liste vide pour l'instant
       console.log(
-        `✅ ${paginatedUsers.length} utilisateurs trouvés avec civilité ${civility}`,
+        `⚠️ La recherche par civilité n'est pas supportée (champ manquant dans la DB)`,
       );
       return {
-        users: paginatedUsers,
+        users: [],
         pagination: {
           page,
           limit,
-          total: filteredUsers.length,
-          totalPages: Math.ceil(filteredUsers.length / limit),
+          total: 0,
+          totalPages: 0,
         },
       };
     } catch (error: any) {
