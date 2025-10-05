@@ -198,14 +198,10 @@ export class OrdersService extends SupabaseBaseService {
    */
   async getOrderById(orderId: number): Promise<any> {
     try {
+      // Simplifier sans JOIN pour éviter erreurs de relation
       const { data: order, error } = await this.supabase
         .from('___XTR_ORDER')
-        .select(
-          `
-          *,
-          customer:customer_id(cst_id, cst_mail, cst_fname, cst_name)
-        `,
-        )
+        .select('*')
         .eq('order_id', orderId)
         .single();
 
@@ -243,50 +239,46 @@ export class OrdersService extends SupabaseBaseService {
       const limit = filters.limit || 20;
       const offset = (page - 1) * limit;
 
+      // Utiliser les vrais noms de colonnes Supabase (préfixe ord_)
       let query = this.supabase
-        .from('___XTR_ORDER')
-        .select(
-          '*, customer:customer_id(cst_id, cst_mail, cst_fname, cst_name)',
-          {
-            count: 'exact',
-          },
-        );
+        .from('___xtr_order')
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (filters.customerId) {
-        query = query.eq('customer_id', filters.customerId);
+        query = query.eq('ord_cst_id', filters.customerId.toString());
       }
 
       if (filters.status) {
-        query = query.eq('order_status', filters.status);
+        query = query.eq('ord_ords_id', filters.status.toString());
       }
 
       if (filters.startDate) {
-        query = query.gte('created_at', filters.startDate.toISOString());
+        query = query.gte('ord_date', filters.startDate.toISOString());
       }
 
       if (filters.endDate) {
-        query = query.lte('created_at', filters.endDate.toISOString());
+        query = query.lte('ord_date', filters.endDate.toISOString());
       }
 
       if (filters.minAmount) {
-        query = query.gte('total_ttc', filters.minAmount);
+        query = query.gte('ord_total_ttc', filters.minAmount.toString());
       }
 
       if (filters.maxAmount) {
-        query = query.lte('total_ttc', filters.maxAmount);
+        query = query.lte('ord_total_ttc', filters.maxAmount.toString());
       }
 
       if (filters.search) {
         query = query.or(
-          `order_number.ilike.%${filters.search}%,customer_note.ilike.%${filters.search}%`,
+          `ord_id.ilike.%${filters.search}%,ord_info.ilike.%${filters.search}%`,
         );
       }
 
       // Pagination et tri
       query = query
         .range(offset, offset + limit - 1)
-        .order('created_at', { ascending: false });
+        .order('ord_date', { ascending: false });
 
       const { data: orders, error, count } = await query;
 
@@ -461,29 +453,29 @@ export class OrdersService extends SupabaseBaseService {
    */
   async getOrderStats(customerId?: number): Promise<any> {
     try {
-      let query = this.supabase.from('___XTR_ORDER').select('*', {
+      let query = this.supabase.from('___xtr_order').select('*', {
         count: 'exact',
         head: false,
       });
 
       if (customerId) {
-        query = query.eq('customer_id', customerId);
+        query = query.eq('ord_cst_id', customerId.toString());
       }
 
       const { data: orders, count } = await query;
 
       const totalRevenue = (orders || []).reduce(
-        (sum, order) => sum + (order.total_ttc || 0),
+        (sum, order) => sum + parseFloat(order.ord_total_ttc || '0'),
         0,
       );
 
       const statusCounts = (orders || []).reduce(
         (acc, order) => {
-          const status = order.order_status || 0;
+          const status = order.ord_ords_id || '0';
           acc[status] = (acc[status] || 0) + 1;
           return acc;
         },
-        {} as Record<number, number>,
+        {} as Record<string, number>,
       );
 
       return {
