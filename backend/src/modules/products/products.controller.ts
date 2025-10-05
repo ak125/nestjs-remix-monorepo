@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
+import { StockService } from './services/stock.service';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -51,7 +52,10 @@ import { ZodQueryValidationPipe } from '../../common/pipes/zod-query-validation.
 export class ProductsController {
   private readonly logger = new Logger(ProductsController.name);
 
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly stockService: StockService,
+  ) {}
 
   /**
    * Mapper les noms de champs de l'API vers les noms de colonnes en base de données
@@ -220,11 +224,35 @@ export class ProductsController {
   }
 
   /**
-   * Récupérer une pièce par ID
+   * Récupérer une pièce par ID avec informations de stock
    */
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+    const product = await this.productsService.findOne(id);
+    
+    // Ajouter les informations de stock au produit
+    try {
+      const stock = await this.stockService.getProductStock(id);
+      return {
+        ...product,
+        stock,
+      };
+    } catch (error: any) {
+      this.logger.warn(
+        `Impossible de récupérer le stock pour le produit ${id}:`,
+        error?.message || error,
+      );
+      // Retourner le produit sans info de stock en cas d'erreur
+      return {
+        ...product,
+        stock: {
+          available: 0,
+          reserved: 0,
+          total: 0,
+          status: 'out_of_stock',
+        },
+      };
+    }
   }
 
   /**
@@ -419,6 +447,91 @@ export class ProductsController {
       );
       throw new HttpException(
         'Erreur lors de la récupération des produits populaires',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📋 Obtenir la liste de réapprovisionnement
+   */
+  @Get('inventory/reorder-list')
+  @CacheTTL(60) // Cache 1 minute
+  async getReorderList() {
+    try {
+      const reorderList = await this.stockService.getReorderList();
+      return {
+        success: true,
+        count: reorderList.length,
+        items: reorderList,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la récupération de la liste de réapprovisionnement:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération de la liste de réapprovisionnement',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📊 Rapport d'inventaire global
+   */
+  @Get('inventory/report')
+  @CacheTTL(300) // Cache 5 minutes
+  async getInventoryReport() {
+    try {
+      const report = await this.stockService.getInventoryReport();
+      return {
+        success: true,
+        report,
+      };
+    } catch (error) {
+      this.logger.error(
+        "Erreur lors de la génération du rapport d'inventaire:",
+        error,
+      );
+      throw new HttpException(
+        "Erreur lors de la génération du rapport d'inventaire",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔄 Simuler un réapprovisionnement (pour tests/démo)
+   */
+  @Post('inventory/restock/:id')
+  async simulateRestock(
+    @Param('id') id: string,
+    @Body() body: { quantity: number },
+  ) {
+    try {
+      const productId = parseInt(id, 10);
+      const success = await this.stockService.simulateRestock(
+        productId,
+        body.quantity,
+      );
+
+      if (success) {
+        return {
+          success: true,
+          message: `Réapprovisionnement de ${body.quantity} unités effectué`,
+          productId,
+        };
+      } else {
+        throw new HttpException(
+          'Échec du réapprovisionnement',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    } catch (error) {
+      this.logger.error('Erreur lors du réapprovisionnement:', error);
+      throw new HttpException(
+        'Erreur lors du réapprovisionnement',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

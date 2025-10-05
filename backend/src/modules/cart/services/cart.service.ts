@@ -1,445 +1,138 @@
 /**
- * 🛒 SERVICE CART PRINCIPAL - Architecture moderne alignée
+ * 🛒 SERVICE CART PRINCIPAL - Version Consolidée et Simplifiée
  *
- * Service principal de gestion du panier basé sur l'architecture existante :
- * ✅ Hérite de SupabaseBaseService (approche commune)
- * ✅ Utilise les interfaces existantes
- * ✅ Intégration avec cache et validation
- * ✅ Compatible avec l'approche modulaire
+ * Service orchestrant uniquement les opérations complexes du panier
+ * ✅ Délègue toutes les opérations CRUD à CartDataService
+ * ✅ Utilise PromoService avancé (Zod + Cache Redis)
+ * ✅ Gère uniquement la logique métier complexe (codes promo)
+ * 
+ * NOTE: Les opérations simples (get, add, update, delete) sont gérées
+ * directement par CartDataService dans le controller pour plus de clarté
  */
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
-import { PromoService } from '../promo.service';
-import { CartCalculationService } from './cart-calculation.service';
+import { PromoService } from '../../promo/promo.service';
 import { CartDataService } from '../../../database/services/cart-data.service';
-import { CartItem, CartMetadata } from '../cart.interfaces';
-
-export interface Cart {
-  id: string;
-  sessionId: string;
-  userId?: string;
-  items: CartItem[];
-  metadata: CartMetadata;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 @Injectable()
-export class CartService extends SupabaseBaseService {
+export class CartService {
   protected readonly logger = new Logger(CartService.name);
 
   constructor(
-    private readonly cacheService: CacheService,
     private readonly promoService: PromoService,
-    private readonly calculationService: CartCalculationService,
     private readonly cartDataService: CartDataService,
   ) {
-    super();
-    this.logger.log('CartService initialized - Modern architecture');
+    this.logger.log('✅ CartService initialized - Consolidated architecture');
   }
 
   /**
-   * Récupérer le panier complet (items + metadata)
+   * ===================================================================
+   * MÉTHODE PRINCIPALE : APPLICATION CODE PROMO
+   * ===================================================================
+   * Toutes les autres opérations (get, add, update, delete) sont gérées
+   * directement par CartDataService dans le controller pour plus de simplicité
+   * ===================================================================
    */
-  async getCart(sessionId: string, userId?: string): Promise<Cart> {
-    try {
-      // Vérifier le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      const cached = await this.cacheService.get<Cart>(cacheKey);
-      if (cached) {
-        return cached;
-      }
-
-      // Récupérer les items du panier
-      const items = await this.getCartItems(userId || sessionId);
-
-      // Récupérer ou créer les métadonnées
-      const metadata = await this.getOrCreateCartMetadata(sessionId, userId);
-
-      const cart: Cart = {
-        id: metadata.id.toString(),
-        sessionId,
-        userId,
-        items,
-        metadata,
-        createdAt: metadata.created_at,
-        updatedAt: metadata.updated_at,
-      };
-
-      // Mettre en cache
-      await this.cacheService.set(cacheKey, cart, 300); // 5 minutes
-
-      return cart;
-    } catch (error) {
-      this.logger.error(`Erreur getCart: ${(error as any)?.message || error}`);
-      throw new Error('Impossible de récupérer le panier');
-    }
-  }
 
   /**
-   * Récupérer les items du panier
-   */
-  private async getCartItems(userOrSessionId: string): Promise<CartItem[]> {
-    try {
-      const { data, error } = await this.supabase
-        .from('cart_items')
-        .select('*')
-        .eq('user_id', userOrSessionId)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Erreur items panier: ${error.message}`);
-      }
-
-      return data || [];
-    } catch (error) {
-      this.logger.error(
-        `Erreur getCartItems: ${(error as any)?.message || error}`,
-      );
-      return [];
-    }
-  }
-
-  /**
-   * Récupérer ou créer les métadonnées du panier
-   */
-  private async getOrCreateCartMetadata(
-    sessionId: string,
-    userId?: string,
-  ): Promise<CartMetadata> {
-    try {
-      // Chercher les métadonnées existantes
-      const { data: existing, error: selectError } = await this.supabase
-        .from('cart_metadata')
-        .select('*')
-        .or(
-          userId
-            ? `user_id.eq.${userId},session_id.eq.${sessionId}`
-            : `session_id.eq.${sessionId}`,
-        )
-        .single();
-
-      if (!selectError && existing) {
-        return existing;
-      }
-
-      // Créer de nouvelles métadonnées
-      const { data: newMetadata, error: insertError } = await this.supabase
-        .from('cart_metadata')
-        .insert({
-          user_id: userId || sessionId, // La clé primaire
-          session_id: sessionId,
-          subtotal: 0,
-          tax_amount: 0,
-          shipping_cost: 0,
-          total: 0,
-          promo_discount: 0,
-          currency: 'EUR',
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        throw new Error(`Erreur création métadonnées: ${insertError.message}`);
-      }
-
-      return newMetadata;
-    } catch (error) {
-      this.logger.error(
-        `Erreur getOrCreateCartMetadata: ${(error as any)?.message || error}`,
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Ajouter un produit au panier
-   */
-  async addToCart(
-    sessionId: string,
-    productId: string,
-    quantity: number,
-    price: number,
-    userId?: string,
-  ): Promise<Cart> {
-    try {
-      // Vérifier si le produit existe déjà
-      const { data: existingItem, error: selectError } = await this.supabase
-        .from('cart_items')
-        .select('*')
-        .eq('user_id', userId || sessionId)
-        .eq('product_id', productId)
-        .single();
-
-      if (existingItem && !selectError) {
-        // Mettre à jour la quantité
-        const newQuantity = existingItem.quantity + quantity;
-
-        const { error: updateError } = await this.supabase
-          .from('cart_items')
-          .update({
-            quantity: newQuantity,
-            price: price,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', existingItem.id);
-
-        if (updateError) {
-          throw new Error(`Erreur mise à jour item: ${updateError.message}`);
-        }
-      } else {
-        // Ajouter un nouvel item
-        const { error: insertError } = await this.supabase
-          .from('cart_items')
-          .insert({
-            user_id: userId || sessionId,
-            product_id: productId,
-            quantity,
-            price,
-          });
-
-        if (insertError) {
-          throw new Error(`Erreur ajout item: ${insertError.message}`);
-        }
-      }
-
-      // Mettre à jour les métadonnées
-      await this.updateCartMetadata(sessionId, userId);
-
-      // Invalider le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      await this.cacheService.del(cacheKey);
-
-      this.logger.log(`Produit ${productId} ajouté au panier`);
-
-      // Retourner le panier mis à jour
-      return this.getCart(sessionId, userId);
-    } catch (error) {
-      this.logger.error(
-        `Erreur addToCart: ${(error as any)?.message || error}`,
-      );
-      throw new BadRequestException(
-        "Impossible d'ajouter le produit au panier",
-      );
-    }
-  }
-
-  /**
-   * Modifier la quantité d'un item
-   */
-  async updateQuantity(
-    sessionId: string,
-    itemId: string,
-    quantity: number,
-    userId?: string,
-  ): Promise<Cart> {
-    try {
-      if (quantity < 0) {
-        throw new BadRequestException('La quantité doit être positive');
-      }
-
-      if (quantity === 0) {
-        return this.removeFromCart(sessionId, itemId, userId);
-      }
-
-      const { error } = await this.supabase
-        .from('cart_items')
-        .update({
-          quantity,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', itemId)
-        .eq('user_id', userId || sessionId);
-
-      if (error) {
-        throw new Error(`Erreur mise à jour quantité: ${error.message}`);
-      }
-
-      // Mettre à jour les métadonnées
-      await this.updateCartMetadata(sessionId, userId);
-
-      // Invalider le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      await this.cacheService.del(cacheKey);
-
-      return this.getCart(sessionId, userId);
-    } catch (error) {
-      this.logger.error(
-        `Erreur updateQuantity: ${(error as any)?.message || error}`,
-      );
-      throw new BadRequestException('Impossible de modifier la quantité');
-    }
-  }
-
-  /**
-   * Supprimer un item du panier
-   */
-  async removeFromCart(
-    sessionId: string,
-    itemId: string,
-    userId?: string,
-  ): Promise<Cart> {
-    try {
-      const { error } = await this.supabase
-        .from('cart_items')
-        .delete()
-        .eq('id', itemId)
-        .eq('user_id', userId || sessionId);
-
-      if (error) {
-        throw new Error(`Erreur suppression item: ${error.message}`);
-      }
-
-      // Mettre à jour les métadonnées
-      await this.updateCartMetadata(sessionId, userId);
-
-      // Invalider le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      await this.cacheService.del(cacheKey);
-
-      this.logger.log(`Item ${itemId} supprimé du panier`);
-
-      return this.getCart(sessionId, userId);
-    } catch (error) {
-      this.logger.error(
-        `Erreur removeFromCart: ${(error as any)?.message || error}`,
-      );
-      throw new BadRequestException("Impossible de supprimer l'article");
-    }
-  }
-
-  /**
-   * Vider le panier
-   */
-  async clearCart(sessionId: string, userId?: string): Promise<void> {
-    try {
-      const { error } = await this.supabase
-        .from('cart_items')
-        .delete()
-        .eq('user_id', userId || sessionId);
-
-      if (error) {
-        throw new Error(`Erreur vidage panier: ${error.message}`);
-      }
-
-      // Mettre à jour les métadonnées
-      await this.updateCartMetadata(sessionId, userId);
-
-      // Invalider le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      await this.cacheService.del(cacheKey);
-
-      this.logger.log('Panier vidé');
-    } catch (error) {
-      this.logger.error(
-        `Erreur clearCart: ${(error as any)?.message || error}`,
-      );
-      throw new BadRequestException('Impossible de vider le panier');
-    }
-  }
-
-  /**
-   * Appliquer un code promo (VERSION CONSOLIDÉE - Redis)
+   * Appliquer un code promo au panier
+   * ✅ Utilise PromoService avec validation Zod + Cache Redis
+   * ✅ Calcule le total du panier en temps réel
+   * ✅ Valide la validité et les conditions du code promo
+   * 
+   * @param sessionId - ID de session du panier
+   * @param promoCode - Code promo à appliquer
+   * @param userId - ID utilisateur optionnel
+   * @returns Résultat de la validation avec réduction appliquée
    */
   async applyPromoCode(
     sessionId: string,
     promoCode: string,
     userId?: string,
-  ): Promise<any> {
+  ): Promise<{
+    valid: boolean;
+    discount: number;
+    finalTotal: number;
+    message?: string;
+  }> {
     try {
-      const userIdForCart = userId || sessionId;
-
-      // 1. Récupérer le panier depuis Redis via CartDataService
-      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
-
-      if (!cart || cart.items.length === 0) {
-        throw new BadRequestException('Le panier est vide');
-      }
-
-      // 2. Valider le code promo avec le subtotal
-      const validation = await this.promoService.validatePromoCode(
-        promoCode,
-        userIdForCart,
-        cart.stats.subtotal,
+      this.logger.log(
+        `📦 Application code promo "${promoCode}" pour ${userId || sessionId}`,
       );
 
-      if (!validation.valid) {
+      // 1. Récupérer le panier via CartDataService
+      const cart = await this.cartDataService.getCartWithMetadata(sessionId);
+
+      if (!cart || !cart.items || cart.items.length === 0) {
         throw new BadRequestException(
-          validation.reason || 'Code promo invalide',
+          "Panier vide - impossible d'appliquer un code promo",
         );
       }
 
-      // 3. Sauvegarder le code promo appliqué dans Redis
-      await this.cartDataService.applyPromoCode(userIdForCart, {
-        code: promoCode,
-        discount_type: validation.discountType!,
-        discount_value: validation.discount,
-        discount_amount: validation.discount,
-        promo_id: validation.promoId!,
-        applied_at: new Date().toISOString(),
-      });
+      // 2. Calculer le total du panier
+      const subtotal = cart.items.reduce((sum: number, item: any) => {
+        return sum + item.price * item.quantity;
+      }, 0);
 
-      this.logger.log(
-        `✅ Code promo ${promoCode} appliqué: -${validation.discount.toFixed(2)}€`,
+      // 3. Préparer le résumé du panier pour PromoService
+      const cartSummary = {
+        userId: userId ? parseInt(userId, 10) : 0,
+        subtotal,
+        shipping: 0, // Sera calculé plus tard
+        items: cart.items.map((item: any) => ({
+          productId: item.product_id,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      };
+
+      // 4. Valider le code promo avec PromoService (Zod + Cache)
+      const validationResult = await this.promoService.validatePromoCode(
+        promoCode,
+        cartSummary,
       );
 
-      // 4. Retourner le panier mis à jour
+      if (!validationResult.valid) {
+        this.logger.warn(
+          `❌ Code promo "${promoCode}" invalide: ${validationResult.message}`,
+        );
+        return {
+          valid: false,
+          discount: 0,
+          finalTotal: subtotal,
+          message: validationResult.message || 'Code promo invalide',
+        };
+      }
+
+      // 5. Calculer la réduction
+      const discount = validationResult.discount || 0;
+      const finalTotal = Math.max(0, subtotal - discount);
+
+      // 6. L'enregistrement de l'utilisation se fera lors de la validation de la commande
+      // (pas ici car le panier peut être abandonné sans achat)
+
+      this.logger.log(
+        `✅ Code promo "${promoCode}" appliqué: -${discount}€ (total: ${finalTotal}€)`,
+      );
+
       return {
-        success: true,
-        message: 'Code promo appliqué avec succès',
-        promo_code: promoCode,
-        discount: validation.discount,
-        discount_type: validation.discountType,
+        valid: true,
+        discount,
+        finalTotal,
+        message:
+          validationResult.message || `Réduction de ${discount}€ appliquée`,
       };
     } catch (error) {
       this.logger.error(
-        `Erreur applyPromoCode: ${(error as any)?.message || error}`,
+        `❌ Erreur application code promo: ${(error as any)?.message || error}`,
       );
-      throw new BadRequestException(
-        (error as any)?.message || "Impossible d'appliquer le code promo",
-      );
-    }
-  }
 
-  /**
-   * Mettre à jour les métadonnées du panier (calculs avancés)
-   */
-  private async updateCartMetadata(
-    sessionId: string,
-    userId?: string,
-  ): Promise<void> {
-    try {
-      const items = await this.getCartItems(userId || sessionId);
-
-      // Utiliser le service de calcul avancé
-      const calculations = await this.calculationService.calculateCart(items);
-
-      const { error } = await this.supabase
-        .from('cart_metadata')
-        .update({
-          total_items: calculations.itemCount,
-          total_quantity: calculations.itemCount,
-          subtotal: calculations.subtotalHT,
-          tax_amount: calculations.tva,
-          shipping_amount: calculations.shippingFee,
-          total_amount: calculations.grandTotal,
-          last_activity: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .or(
-          userId
-            ? `user_id.eq.${userId},session_id.eq.${sessionId}`
-            : `session_id.eq.${sessionId}`,
-        );
-
-      if (error) {
-        throw new Error(`Erreur mise à jour métadonnées: ${error.message}`);
+      if (error instanceof BadRequestException) {
+        throw error;
       }
-    } catch (error) {
-      this.logger.error(
-        `Erreur updateCartMetadata: ${(error as any)?.message || error}`,
+
+      throw new BadRequestException(
+        "Erreur lors de l'application du code promo",
       );
     }
   }

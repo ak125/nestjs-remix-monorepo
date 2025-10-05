@@ -27,6 +27,7 @@ import { LoaderV5TestController } from './loader-v5-test.controller'; // 🎯 Co
 // Services
 import { ProductsService } from './products.service';
 import { ProductsEnhancementService } from './services/products-enhancement.service';
+import { StockService } from './services/stock.service'; // 📦 Service de gestion du stock
 import { ProductFilterV4UltimateService } from './product-filter-v4-ultimate.service'; // 🎯 Service V4 Ultimate
 import { FilteringServiceV5UltimateCleanService } from './filtering-service-v5-ultimate-clean.service'; // ✅ Service V5 PROPRE
 import { TechnicalDataServiceV5Ultimate } from './technical-data-v5-ultimate.service'; // ✅ Service V5 Technical Data
@@ -55,6 +56,7 @@ import { PricingServiceV5UltimateFinal } from './pricing-service-v5-ultimate-fin
   providers: [
     ProductsService, // ✅ Service principal de gestion des produits
     ProductsEnhancementService, // ✅ Service d'amélioration avec règles métier avancées
+    StockService, // 📦 Service de gestion du stock
     ProductFilterV4UltimateService, // 🎯 Service de filtrage V4 Ultimate
     FilteringServiceV5UltimateCleanService, // ✅ Service de filtrage V5 PROPRE
     TechnicalDataServiceV5Ultimate, // ✅ Service de données techniques V5 Ultimate
@@ -80,6 +82,7 @@ import { PricingServiceV5UltimateFinal } from './pricing-service-v5-ultimate-fin
   exports: [
     ProductsService, // ✅ Exporté pour utilisation dans d'autres modules
     ProductsEnhancementService, // ✅ Service d'amélioration exporté
+    StockService, // 📦 Service de stock exporté
     ProductFilterV4UltimateService, // 🎯 Service V4 Ultimate exporté pour réutilisation
     FilteringServiceV5UltimateCleanService, // ✅ Service V5 PROPRE exporté
     TechnicalDataServiceV5Ultimate, // ✅ Service V5 Technical Data exporté

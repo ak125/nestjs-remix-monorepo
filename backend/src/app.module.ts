@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
 import { CartModule } from './modules/cart/cart.module';
+import { PromoModule } from './modules/promo/promo.module'; // 🎫 NOUVEAU - Module promo avancé avec Zod et Cache !
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { MessagesModule } from './modules/messages/messages.module';
@@ -76,6 +77,7 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     OrdersModule,
     HealthModule,
     CartModule,
+    PromoModule, // 🎫 ACTIVÉ - Module promo avancé avec validation Zod et Cache Redis !
     AuthModule,
     UsersModule,
     MessagesModule,

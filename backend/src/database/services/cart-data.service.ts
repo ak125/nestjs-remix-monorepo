@@ -264,7 +264,9 @@ export class CartDataService extends SupabaseBaseService {
         throw new Error(`Produit ${productId} introuvable`);
       }
 
-      this.logger.log(`💰 Prix produit ${productId}: customPrice=${customPrice}, product.price_ttc=${(product as any).price_ttc}`);
+      this.logger.log(
+        `💰 Prix produit ${productId}: customPrice=${customPrice}, product.price_ttc=${(product as any).price_ttc}`,
+      );
 
       // 2. Récupérer le panier existant depuis Redis
       const cartItems = await this.getCartFromRedis(sessionId);
@@ -321,7 +323,9 @@ export class CartDataService extends SupabaseBaseService {
         
         // VÉRIFICATION: relire immédiatement pour confirmer
         const verification = await this.getCartFromRedis(sessionId);
-        this.logger.log(`🔍 Vérification immédiate: ${verification.length} items trouvés`);
+        this.logger.log(
+          `🔍 Vérification immédiate: ${verification.length} items trouvés`,
+        );
         
         return newItem;
       }
@@ -428,7 +432,9 @@ export class CartDataService extends SupabaseBaseService {
       // Prix de test par défaut si toujours 0 (pour les tests E2E)
       if (priceTTC === 0) {
         priceTTC = 99.99; // Prix par défaut pour tests
-        this.logger.warn(`⚠️ Aucun prix trouvé pour ${productId}, utilisation prix par défaut: ${priceTTC}€`);
+        this.logger.warn(
+          `⚠️ Aucun prix trouvé pour ${productId}, utilisation prix par défaut: ${priceTTC}€`,
+        );
       }
       
       this.logger.log(

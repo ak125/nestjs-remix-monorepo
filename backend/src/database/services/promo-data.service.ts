@@ -74,11 +74,22 @@ export class PromoDataService extends SupabaseBaseService {
   }
 
   /**
-   * Valider un code promo avec toutes les règles
+   * Valider un code promo avec toutes les règles AVANCÉES
+   * 
+   * Validations:
+   * - Dates de validité
+   * - Limite globale d'utilisation
+   * - Limite par client
+   * - Montant minimum d'achat
+   * - Produits/catégories applicables
+   * - Stackable (cumulable avec autres promos)
    */
   async validatePromoCode(
     code: string,
+    cartSubtotal: number = 0,
+    cartItems: Array<{ product_id: string; quantity: number }> = [],
     userId?: string,
+    currentPromos: string[] = [],
   ): Promise<{
     valid: boolean;
     message?: string;
@@ -89,10 +100,11 @@ export class PromoDataService extends SupabaseBaseService {
       discount_value: number;
       min_purchase_amount: number | null;
       description: string | null;
+      stackable?: boolean;
     };
   }> {
     try {
-      this.logger.log(`🔍 Validation code promo: ${code}`);
+      this.logger.log(`🔍 Validation AVANCÉE code promo: ${code}`);
 
       const promo = await this.getValidPromoByCode(code);
 
@@ -103,7 +115,76 @@ export class PromoDataService extends SupabaseBaseService {
         };
       }
 
-      // Vérifier limite d'utilisation si userId fourni
+      // ✅ 1. Vérifier limite globale d'utilisation
+      if (promo.max_usage && promo.usage_count >= promo.max_usage) {
+        this.logger.warn(`❌ Limite globale atteinte pour ${code}: ${promo.usage_count}/${promo.max_usage}`);
+        return {
+          valid: false,
+          message: 'Ce code promo a atteint sa limite d\'utilisation',
+        };
+      }
+
+      // ✅ 2. Vérifier limite par client
+      if (userId && promo.usage_limit_per_customer) {
+        const userUsageCount = await this.getUserPromoUsageCount(promo.id, parseInt(userId));
+        if (userUsageCount >= promo.usage_limit_per_customer) {
+          this.logger.warn(`❌ Limite client atteinte pour ${code}: ${userUsageCount}/${promo.usage_limit_per_customer}`);
+          return {
+            valid: false,
+            message: `Vous avez déjà utilisé ce code promo ${userUsageCount} fois (limite: ${promo.usage_limit_per_customer})`,
+          };
+        }
+      }
+
+      // ✅ 3. Vérifier montant minimum d'achat
+      if (promo.min_amount && cartSubtotal < parseFloat(promo.min_amount)) {
+        const remaining = parseFloat(promo.min_amount) - cartSubtotal;
+        this.logger.warn(`❌ Montant minimum non atteint: ${cartSubtotal}€ < ${promo.min_amount}€`);
+        return {
+          valid: false,
+          message: `Ajoutez ${remaining.toFixed(2)}€ pour bénéficier de cette promo (minimum: ${promo.min_amount}€)`,
+        };
+      }
+
+      // ✅ 4. Vérifier produits applicables (si défini)
+      if (promo.applicable_products && promo.applicable_products.length > 0) {
+        const hasApplicableProduct = cartItems.some(item => 
+          promo.applicable_products.includes(parseInt(item.product_id))
+        );
+        if (!hasApplicableProduct) {
+          this.logger.warn(`❌ Aucun produit applicable dans le panier pour ${code}`);
+          return {
+            valid: false,
+            message: 'Ce code promo ne s\'applique à aucun produit de votre panier',
+          };
+        }
+      }
+
+      // ✅ 5. Vérifier catégories applicables (si défini)
+      if (promo.applicable_categories && promo.applicable_categories.length > 0) {
+        const hasApplicableCategory = await this.checkCartHasCategories(
+          cartItems,
+          promo.applicable_categories
+        );
+        if (!hasApplicableCategory) {
+          this.logger.warn(`❌ Aucune catégorie applicable dans le panier pour ${code}`);
+          return {
+            valid: false,
+            message: 'Ce code promo ne s\'applique à aucune catégorie de votre panier',
+          };
+        }
+      }
+
+      // ✅ 6. Vérifier stackable (cumulable avec autres promos)
+      if (!promo.stackable && currentPromos.length > 0) {
+        this.logger.warn(`❌ Code ${code} non cumulable avec: ${currentPromos.join(', ')}`);
+        return {
+          valid: false,
+          message: 'Ce code promo n\'est pas cumulable avec d\'autres promotions',
+        };
+      }
+
+      // ✅ 7. Vérifier limite par client (ancienne méthode pour compatibilité)
       if (userId && promo.usage_limit_per_customer) {
         const hasUsed = await this.checkPromoUsage(promo.id, parseInt(userId));
         if (hasUsed) {
@@ -180,6 +261,79 @@ export class PromoDataService extends SupabaseBaseService {
       return data.length > 0;
     } catch (error) {
       this.logger.error("Erreur lors de la vérification d'utilisation", error);
+      return false;
+    }
+  }
+
+  /**
+   * Compte le nombre d'utilisations d'un promo par un client
+   */
+  async getUserPromoUsageCount(promoId: number, userId: number): Promise<number> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/promo_usage?promo_id=eq.${promoId}&user_id=eq.${userId}&select=id`,
+        {
+          method: 'GET',
+          headers: this.headers,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.length;
+    } catch (error) {
+      this.logger.error(
+        "Erreur lors du comptage d'utilisations",
+        error,
+      );
+      return 0;
+    }
+  }
+
+  /**
+   * Vérifie si le panier contient des produits de catégories spécifiques
+   */
+  async checkCartHasCategories(
+    cartItems: Array<{ product_id: string; quantity: number }>,
+    categoryIds: number[],
+  ): Promise<boolean> {
+    try {
+      if (cartItems.length === 0 || categoryIds.length === 0) {
+        return false;
+      }
+
+      const productIds = cartItems.map((item) => parseInt(item.product_id));
+
+      // Récupérer les catégories des produits du panier
+      const response = await fetch(
+        `${this.baseUrl}/pieces?piece_id=in.(${productIds.join(',')})&select=piece_gamme_id`,
+        {
+          method: 'GET',
+          headers: this.headers,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const products = await response.json();
+      const productCategories = products
+        .map((p: any) => p.piece_gamme_id)
+        .filter(Boolean);
+
+      // Vérifier si au moins une catégorie correspond
+      return productCategories.some((catId: number) =>
+        categoryIds.includes(catId),
+      );
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la vérification des catégories',
+        error,
+      );
       return false;
     }
   }

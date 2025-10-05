@@ -4,4 +4,4 @@
  * ✅ Redirige vers le composant de formulaire unifié
  */
 
-export { default, loader, action, meta } from './admin.suppliers.new';
+export { default, loader, action, meta } from './admin.suppliers';

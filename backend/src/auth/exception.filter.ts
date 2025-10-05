@@ -20,8 +20,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
       return response.redirect(302, `${redirectUrl}?error=${message}`);
     }
 
+    const exceptionResponse = exception.getResponse();
+    const message =
+      typeof exceptionResponse === 'string'
+        ? exceptionResponse
+        : (exceptionResponse as any)?.message || exception.message;
+
     response.status(status).json({
       statusCode: status,
+      message,
       timestamp: new Date().toISOString(),
       path: request.url,
     });

@@ -12,6 +12,8 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { ProductsModule } from '../products/products.module';
+import { PromoModule } from '../promo/promo.module';
 
 // Controllers
 import { CartController } from './cart.controller';
@@ -21,8 +23,7 @@ import { TestSupabaseController } from './test-supabase.controller';
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
-import { ShippingCalculationService } from './services/shipping-calculation.service';
-import { PromoService } from './promo.service';
+import { CartAnalyticsService } from './services/cart-analytics.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { PromoDataService } from '../../database/services/promo-data.service';
 import { ShippingDataService } from '../../database/services/shipping-data.service';
@@ -32,6 +33,8 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
     DatabaseModule, // Pour accès Supabase/PostgREST
     CacheModule, // Pour Redis cache et sessions
     ShippingModule, // Pour les services de livraison
+    ProductsModule, // Pour accès StockService
+    PromoModule, // 🆕 Module promo avancé avec Zod et Cache
   ],
   controllers: [
     CartController, // Controller principal
@@ -42,8 +45,7 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
     CartService, // Service principal moderne
     CartCalculationService, // Service de calculs
     CartValidationService, // Service de validation
-    ShippingCalculationService, // Service calculs shipping
-    PromoService, // Service de gestion des promotions
+    CartAnalyticsService, // Service analytics panier
     CartDataService, // Service d'accès aux données
     PromoDataService, // Service données codes promo
     ShippingDataService, // Service données shipping
@@ -52,7 +54,7 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
     CartService, // Service moderne exporté
     CartCalculationService, // Service calculs exporté
     CartValidationService, // Service validation exporté
-    PromoService, // Service promotions exporté
+    CartAnalyticsService, // Service analytics exporté
     CartDataService, // Service données exporté
   ],
 })

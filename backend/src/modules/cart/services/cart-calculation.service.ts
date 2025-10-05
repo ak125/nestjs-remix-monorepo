@@ -12,7 +12,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CartItem } from '../cart.interfaces';
+import { CartItem } from '../../../database/services/cart-data.service';
 
 export interface CartCalculation {
   subtotalHT: number;

@@ -35,8 +35,10 @@ import { Request } from 'express';
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
-import { ShippingCalculationService } from './services/shipping-calculation.service';
+import { CartAnalyticsService } from './services/cart-analytics.service';
 import { CartDataService } from '../../database/services/cart-data.service';
+import { ShippingService } from '../shipping/shipping.service';
+import { StockService } from '../products/services/stock.service';
 import { validateAddItem } from './dto/add-item.dto';
 import { validateUpdateItem } from './dto/update-item.dto';
 import { validateApplyPromo } from './dto/apply-promo.dto';
@@ -68,7 +70,9 @@ export class CartController {
     private readonly cartCalculationService: CartCalculationService,
     private readonly cartValidationService: CartValidationService,
     private readonly cartDataService: CartDataService,
-    private readonly shippingCalculationService: ShippingCalculationService,
+    private readonly shippingService: ShippingService,
+    private readonly stockService: StockService,
+    private readonly cartAnalyticsService: CartAnalyticsService,
   ) {}
 
   /**
@@ -201,11 +205,25 @@ export class CartController {
       const productIdNum = parseInt(String(addItemDto.product_id), 10);
       const userIdForCart = userId || sessionId;
       
+      // ✅ VALIDATION DU STOCK avant ajout au panier
+      const stockValidation = await this.stockService.validateStock(
+        productIdNum,
+        addItemDto.quantity,
+      );
+      
+      if (!stockValidation.isValid) {
+        throw new BadRequestException(
+          stockValidation.message ||
+            `Stock insuffisant. Seulement ${stockValidation.available} unité(s) disponible(s)`,
+        );
+      }
+      
+      this.logger.log(
+        `✅ Stock validé pour produit ${productIdNum}: ${addItemDto.quantity}/${stockValidation.available}`,
+      );
+      
       // Vérifier si c'est une mise à jour de quantité (flag replace dans le body)
       const isReplace = (body as any)?.replace === true;
-      
-      // Récupérer les données produit enrichies si fournies depuis le frontend
-      const productData = (body as any)?.productData;
 
       const result = await this.cartDataService.addCartItem(
         userIdForCart,
@@ -213,7 +231,6 @@ export class CartController {
         addItemDto.quantity,
         addItemDto.custom_price,
         isReplace,
-        productData,
       );
 
       this.logger.log(
@@ -506,21 +523,26 @@ export class CartController {
       const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
       
       // Calculer poids total
-      const totalWeight = this.shippingCalculationService.calculateTotalWeight(cart.items);
+      const totalWeight = cart.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
       
-      // Calculer coût shipping
-      const shippingInfo = await this.shippingCalculationService.calculateShippingCost(
-        postalCode,
-        totalWeight,
-        cart.stats.subtotal,
-      );
+      // Utiliser ShippingService pour calculer les frais
+      const estimate = await this.shippingService.calculateShippingEstimate({
+        weight: totalWeight,
+        country: 'FR',
+        postalCode: postalCode,
+        orderAmount: cart.stats.subtotal,
+      });
 
       return {
         success: true,
-        shipping: shippingInfo,
-        remainingForFreeShipping: this.shippingCalculationService.calculateRemainingForFreeShipping(
-          cart.stats.subtotal,
-        ),
+        shipping: {
+          zone: estimate.zone,
+          cost: estimate.fee,
+          isFree: estimate.freeShipping,
+          estimatedDays: estimate.deliveryEstimate.minDays,
+          method: estimate.freeShipping ? 'Livraison gratuite' : 'Colissimo',
+        },
+        remainingForFreeShipping: estimate.freeShipping ? 0 : Math.max(0, 100 - cart.stats.subtotal),
       };
     } catch (error) {
       this.logger.error('Erreur calcul shipping:', error);
@@ -565,14 +587,23 @@ export class CartController {
       const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
       
       // Calculer poids total
-      const totalWeight = this.shippingCalculationService.calculateTotalWeight(cart.items);
+      const totalWeight = cart.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
       
-      // Calculer et appliquer shipping
-      const shippingInfo = await this.shippingCalculationService.calculateShippingCost(
-        postalCode,
-        totalWeight,
-        cart.stats.subtotal,
-      );
+      // Utiliser ShippingService pour calculer
+      const estimate = await this.shippingService.calculateShippingEstimate({
+        weight: totalWeight,
+        country: 'FR',
+        postalCode: postalCode,
+        orderAmount: cart.stats.subtotal,
+      });
+      
+      const shippingInfo = {
+        zone: estimate.zone,
+        cost: estimate.fee,
+        isFree: estimate.freeShipping,
+        estimatedDays: estimate.deliveryEstimate.minDays,
+        method: estimate.freeShipping ? 'Livraison gratuite' : 'Colissimo',
+      };
 
       // Enregistrer dans Redis
       await this.cartDataService.applyShipping(userIdForCart, {
@@ -633,7 +664,110 @@ export class CartController {
   }
 
   // ============================================================
-  // 🗑️ NETTOYAGE
+  // � ANALYTICS
+  // ============================================================
+
+  /**
+   * 📊 Rapport d'analytics du panier
+   */
+  @Get('analytics/report')
+  @ApiOperation({
+    summary: 'Rapport complet des analytics panier',
+    description:
+      'Taux d abandon, valeur moyenne, produits abandonnés, conversion',
+  })
+  async getAnalyticsReport() {
+    try {
+      const report = await this.cartAnalyticsService.getComprehensiveReport();
+      return {
+        success: true,
+        report,
+      };
+    } catch (error) {
+      this.logger.error('Erreur getAnalyticsReport:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération du rapport analytics',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📈 Taux d'abandon et conversion
+   */
+  @Get('analytics/abandonment')
+  @ApiOperation({
+    summary: 'Taux d abandon et de conversion',
+    description: 'Statistiques sur les paniers créés, convertis et abandonnés',
+  })
+  async getAbandonmentRate() {
+    try {
+      const stats = await this.cartAnalyticsService.getAbandonmentRate();
+      return {
+        success: true,
+        stats,
+      };
+    } catch (error) {
+      this.logger.error('Erreur getAbandonmentRate:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération du taux d abandon',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 💰 Valeur moyenne du panier
+   */
+  @Get('analytics/average-value')
+  @ApiOperation({
+    summary: 'Valeur moyenne du panier',
+    description: 'Statistiques sur les valeurs des paniers convertis',
+  })
+  async getAverageCartValue() {
+    try {
+      const stats = await this.cartAnalyticsService.getAverageCartValue();
+      return {
+        success: true,
+        stats,
+      };
+    } catch (error) {
+      this.logger.error('Erreur getAverageCartValue:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération de la valeur moyenne',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🏆 Produits les plus abandonnés
+   */
+  @Get('analytics/abandoned-products')
+  @ApiOperation({
+    summary: 'Produits les plus abandonnés',
+    description: 'Liste des produits fréquemment laissés dans les paniers',
+  })
+  async getTopAbandonedProducts() {
+    try {
+      const products =
+        await this.cartAnalyticsService.getTopAbandonedProducts(10);
+      return {
+        success: true,
+        count: products.length,
+        products,
+      };
+    } catch (error) {
+      this.logger.error('Erreur getTopAbandonedProducts:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des produits abandonnés',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============================================================
+  // �🗑️ NETTOYAGE
   // ============================================================
 
   /**

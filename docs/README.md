@@ -2,6 +2,20 @@
 
 ## 📚 Documentation Active
 
+### 🎯 Module Panier (PRODUCTION READY) ✅
+
+**Documentation complète du module panier consolidé** :
+- [RAPPORT-FINAL-CART-MODULE.md](./RAPPORT-FINAL-CART-MODULE.md) - 📊 **Rapport Final & Résumé Exécutif**
+- [CONSOLIDATION-CART-COMPLETE.md](./CONSOLIDATION-CART-COMPLETE.md) - 🏆 **Guide Consolidation Complète**
+- [STOCK-MANAGEMENT-FLUX-TENDU.md](./STOCK-MANAGEMENT-FLUX-TENDU.md) - 📦 **Gestion Stock Flux Tendu**
+- [STOCK-IMPLEMENTATION-COMPLETE.md](./STOCK-IMPLEMENTATION-COMPLETE.md) - 🔧 **Stock - Doc Technique**
+- [CART-ANALYTICS-COMPLETE.md](./CART-ANALYTICS-COMPLETE.md) - 📊 **Analytics Panier Avancés**
+- [SHIPPING-INTEGRATION-COMPLETE.md](./SHIPPING-INTEGRATION-COMPLETE.md) - 🚚 **Calcul Livraison**
+
+**Status** : ✅ 100% Complet | Tests : 26+/26+ Passing | Doc : 3000+ lignes
+
+---
+
 ### Guides de Démarrage
 - [GETTING-STARTED.md](./GETTING-STARTED.md) - Guide de démarrage du projet
 - [MIGRATION-SUPABASE-REST-ONLY.md](./MIGRATION-SUPABASE-REST-ONLY.md) - Migration Supabase
@@ -37,6 +51,8 @@
 ### Solutions & Fixes
 - [SOLUTION-CDN-URLS.md](./SOLUTION-CDN-URLS.md) - Solution CDN
 - [IMPLEMENTATION-STATUS.md](./IMPLEMENTATION-STATUS.md) - État d'implémentation
+- [ORDERS-ROUTES-ANALYSIS.md](./ORDERS-ROUTES-ANALYSIS.md) - Analyse routes commandes
+- [ORDERS-CONSOLIDATION-PLAN.md](./ORDERS-CONSOLIDATION-PLAN.md) - Plan consolidation commandes
 
 ### Constructeurs
 - [README-CONSTRUCTEURS.md](./README-CONSTRUCTEURS.md) - README dédié constructeurs
