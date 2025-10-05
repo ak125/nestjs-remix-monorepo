@@ -60,6 +60,14 @@
 - `archives/old-orders-docs/FRONTEND-ORDERS-VERIFICATION.md`
 - `archives/old-orders-docs/DATABASE-STRUCTURE-ORDERS.md`
 
+### Cart Module ⭐ NOUVEAU
+**Documentation active** : [CART-MODULE-COMPLETE.md](./CART-MODULE-COMPLETE.md)
+- Architecture complète Backend + Frontend
+- 15 routes API REST
+- Gestion codes promo (7 codes en base)
+- Calcul frais de port (structure prête)
+- Score actuel : **85/100**
+
 ### Git Organization
 **Documentation active** : Voir [REFACTORING-COMPLETE.md](./REFACTORING-COMPLETE.md) → Section "Organisation Git"
 
@@ -213,6 +221,9 @@ Autres archives et documentation historique.
 
 **...travailler sur le module Orders**
 → [REFACTORING-COMPLETE.md](./REFACTORING-COMPLETE.md) → Section "Module Orders"
+
+**...travailler sur le module Cart (Panier)** ⭐
+→ [CART-MODULE-COMPLETE.md](./CART-MODULE-COMPLETE.md)
 
 **...comprendre l'organisation Git**
 → [REFACTORING-COMPLETE.md](./REFACTORING-COMPLETE.md) → Section "Organisation Git"

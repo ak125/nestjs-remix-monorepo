@@ -117,7 +117,20 @@ nestjs-remix-monorepo/
 - ✅ Profils utilisateurs
 - ✅ Historique des commandes
 
-### 📦 Catalogue Produits
+### � Gestion du Panier (Cart)
+
+- ✅ Ajout/suppression produits au panier
+- ✅ Calcul automatique des totaux
+- ✅ Gestion des quantités
+- ✅ Validation avant commande
+- ✅ Sauvegarde session (Redis + Passport)
+- ✅ Vérification stock temps réel
+- 🔄 Codes promo (7 codes actifs)
+- 🔄 Calcul frais de port (structure prête)
+
+**API** : 15 endpoints | **Score** : 85/100 | **Documentation** : [CART-MODULE-COMPLETE.md](./docs/CART-MODULE-COMPLETE.md)
+
+### �📦 Catalogue Produits
 
 - ✅ 4,036,045 produits
 - ✅ 9,266 catégories
