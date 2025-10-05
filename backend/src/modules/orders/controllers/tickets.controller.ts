@@ -7,13 +7,13 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { TicketsAdvancedService } from '../services/tickets-advanced.service';
+import { TicketsService } from '../services/tickets.service';
 
 @Controller('api/tickets')
 export class TicketsController {
   private readonly logger = new Logger(TicketsController.name);
 
-  constructor(private readonly ticketsService: TicketsAdvancedService) {}
+  constructor(private readonly ticketsService: TicketsService) {}
 
   /**
    * Test du service tickets

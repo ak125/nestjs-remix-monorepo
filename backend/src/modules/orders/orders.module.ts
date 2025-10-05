@@ -18,41 +18,31 @@ import { CustomerOrdersController } from './controllers/customer-orders.controll
 // Controller Admin - Version dédiée aux administrateurs (NOUVEAU)
 import { AdminOrdersController } from './controllers/admin-orders.controller';
 
-// Services minimaux fonctionnels
+// Services consolidés - Phase 2
 import { OrderCalculationService } from './services/order-calculation.service';
-import { OrdersServiceEnhanced } from './services/orders-enhanced-minimal.service';
-import { OrderArchiveService } from './services/order-archive-minimal.service';
-
-// Service Fusion - Version Complète (RESTAURÉ)
-import { OrdersService } from './services/orders-fusion.service';
-
-// Service Simple - Version Test Tables Legacy (NOUVEAU)
-import { OrdersSimpleService } from './services/orders-simple.service';
-
-// Service de gestion des statuts (NOUVEAU)
+import { OrdersService } from './services/orders.service';
 import { OrderStatusService } from './services/order-status.service';
+import { OrderArchiveService } from './services/order-archive.service';
+import { TicketsService } from './services/tickets.service';
 
-// Contrôleur de test des statuts (NOUVEAU)
+// Contrôleurs spécialisés
 import { OrderStatusController } from './controllers/order-status.controller';
-
-// Contrôleur d'archivage complet (NOUVEAU)
 import { OrderArchiveController } from './controllers/order-archive.controller';
-
-// Service d'archivage complet (NOUVEAU)
-import { OrderArchiveCompleteService } from './services/order-archive-complete.service';
-
-// Service tickets avancés (NOUVEAU)
-import { TicketsAdvancedService } from './services/tickets-advanced.service';
 import { TicketsController } from './controllers/tickets.controller';
-
-// Controller Legacy Orders Enrichi (NOUVEAU)
 import { LegacyOrdersController } from './controllers/legacy-orders.controller';
 
 /**
- * Module Orders - Version avec Service Tickets Avancés
- * ✅ Service minimal conservé pour compatibilité
- * ✅ Service tickets avancés avec Supabase direct
- * ✅ TicketEquivalentService obsolète retiré
+ * Module Orders - Version Consolidée Phase 2
+ * ✅ Services consolidés (5 services au lieu de 8)
+ * ✅ Architecture claire et maintenable
+ * ✅ Suppression des doublons et services obsolètes
+ *
+ * Services actifs:
+ * - OrdersService: CRUD principal
+ * - OrderCalculationService: Calculs
+ * - OrderStatusService: Workflow statuts
+ * - OrderArchiveService: Archivage
+ * - TicketsService: SAV
  */
 @Module({
   imports: [
@@ -72,24 +62,20 @@ import { LegacyOrdersController } from './controllers/legacy-orders.controller';
     LegacyOrdersController, // Controller legacy orders enrichi NOUVEAU
   ],
   providers: [
-    OrderCalculationService,
-    OrdersServiceEnhanced, // Service minimal existant
-    OrderArchiveService,
-    OrdersService, // Service fusion NOUVEAU
-    OrdersSimpleService, // Service simple NOUVEAU
-    OrderStatusService, // Service statuts NOUVEAU
-    OrderArchiveCompleteService, // Service archivage complet NOUVEAU
-    TicketsAdvancedService, // Service tickets avancés NOUVEAU
+    // Services consolidés Phase 2
+    OrdersService, // Service principal CRUD
+    OrderCalculationService, // Calculs
+    OrderStatusService, // Workflow statuts
+    OrderArchiveService, // Archivage
+    TicketsService, // SAV
   ],
   exports: [
+    // Export des services consolidés
+    OrdersService,
     OrderCalculationService,
-    OrdersServiceEnhanced,
+    OrderStatusService,
     OrderArchiveService,
-    OrdersService, // Disponible pour injection
-    OrdersSimpleService, // Disponible pour injection
-    OrderStatusService, // Disponible pour injection
-    OrderArchiveCompleteService, // Disponible pour injection
-    TicketsAdvancedService, // Disponible pour injection
+    TicketsService,
   ],
 })
 export class OrdersModule {}

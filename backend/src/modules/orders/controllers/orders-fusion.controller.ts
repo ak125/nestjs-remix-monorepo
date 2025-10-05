@@ -16,7 +16,7 @@ import {
   OrdersService,
   CreateOrderData,
   OrderFilters,
-} from '../services/orders-fusion.service';
+} from '../services/orders.service';
 
 /**
  * Contrôleur Orders Fusion - Version Complète
@@ -99,12 +99,10 @@ export class OrdersFusionController {
       this.logger.log(
         `Updating order ${orderId} status to ${updateData.status}`,
       );
-      return await this.ordersService.updateOrderStatus(
-        orderId,
-        updateData.status,
-        updateData.comment,
-        updateData.userId,
-      );
+      // Utiliser updateOrder du service consolidé
+      return await this.ordersService.updateOrder(orderId, {
+        status: updateData.status,
+      });
     } catch (error) {
       this.logger.error(`Error updating order ${orderId} status:`, error);
       throw error;
@@ -119,15 +117,12 @@ export class OrdersFusionController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteOrder(
     @Param('id', ParseIntPipe) orderId: number,
-    @Body() deleteData: { userId: number; reason?: string },
+    @Body() _deleteData: { userId: number; reason?: string },
   ) {
     try {
-      this.logger.log(`Deleting order ${orderId} by user ${deleteData.userId}`);
-      await this.ordersService.deleteOrder(
-        orderId,
-        deleteData.userId,
-        deleteData.reason,
-      );
+      this.logger.log(`Deleting order ${orderId}`);
+      // Service consolidé utilise signature simplifiée
+      await this.ordersService.deleteOrder(orderId);
     } catch (error) {
       this.logger.error(`Error deleting order ${orderId}:`, error);
       throw error;

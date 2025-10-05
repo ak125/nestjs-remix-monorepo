@@ -96,6 +96,50 @@ export class OrderArchiveService extends SupabaseBaseService {
   }
 
   /**
+   * Récupérer une commande archivée par ID
+   */
+  async getArchivedOrder(orderId: number): Promise<any> {
+    try {
+      this.logger.log(`Récupération commande archivée #${orderId}`);
+
+      const { data: order, error } = await this.supabase
+        .from('___XTR_ORDER')
+        .select('*')
+        .eq('order_id', orderId)
+        .eq('is_archived', true)
+        .single();
+
+      if (error || !order) {
+        throw new NotFoundException(
+          `Commande archivée #${orderId} introuvable`,
+        );
+      }
+
+      // Récupérer les lignes
+      const { data: lines } = await this.supabase
+        .from('___XTR_ORDER_LINE')
+        .select('*')
+        .eq('order_id', orderId);
+
+      // Récupérer l'historique
+      const { data: statusHistory } = await this.supabase
+        .from('___XTR_ORDER_STATUS')
+        .select('*')
+        .eq('order_id', orderId)
+        .order('created_at', { ascending: true });
+
+      return {
+        ...order,
+        lines: lines || [],
+        statusHistory: statusHistory || [],
+      };
+    } catch (error: any) {
+      this.logger.error(`Erreur getArchivedOrder(${orderId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Lister les commandes archivées
    */
   async listArchivedOrders(filters: ArchiveFilters = {}): Promise<any> {
@@ -147,6 +191,31 @@ export class OrderArchiveService extends SupabaseBaseService {
       };
     } catch (error: any) {
       this.logger.error('Erreur listArchivedOrders:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Exporter une commande pour PDF
+   */
+  async exportOrderForPdf(orderId: number): Promise<any> {
+    try {
+      this.logger.log(`Export PDF commande #${orderId}`);
+
+      const archivedOrder = await this.getArchivedOrder(orderId);
+
+      return {
+        exportReady: true,
+        order: archivedOrder,
+        metadata: {
+          exportDate: new Date().toISOString(),
+          exportType: 'PDF',
+          fileName: `order_${archivedOrder.order_number}_archive.pdf`,
+          format: 'A4',
+        },
+      };
+    } catch (error: any) {
+      this.logger.error(`Erreur exportOrderForPdf(${orderId}):`, error);
       throw error;
     }
   }

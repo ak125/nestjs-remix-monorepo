@@ -19,7 +19,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { OrdersSimpleService } from '../../orders/services/orders-simple.service';
+import { OrdersService } from '../../orders/services/orders.service';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
@@ -29,7 +29,7 @@ import { IsAdminGuard } from '../../../auth/is-admin.guard';
 export class AdminOrdersController {
   private readonly logger = new Logger(AdminOrdersController.name);
 
-  constructor(private readonly ordersService: OrdersSimpleService) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
   /**
    * GET /admin/orders
@@ -74,7 +74,7 @@ export class AdminOrdersController {
   async getOrdersStats() {
     try {
       this.logger.log('Requête statistiques commandes');
-      const stats = await this.ordersService.getSimpleStats();
+      const stats = await this.ordersService.getOrderStats();
 
       return {
         success: true,
@@ -102,7 +102,7 @@ export class AdminOrdersController {
   async getOrderById(@Param('id') id: string) {
     try {
       this.logger.log(`Requête commande ID: ${id}`);
-      const order = await this.ordersService.getOrderById(id);
+      const order = await this.ordersService.getOrderById(parseInt(id));
 
       if (!order) {
         throw new NotFoundException('Commande non trouvée');
@@ -178,7 +178,7 @@ export class AdminOrdersController {
   async getOrdersByCustomer(@Param('customerId') customerId: string) {
     try {
       this.logger.log(`Requête commandes client: ${customerId}`);
-      const orders = await this.ordersService.getOrdersByCustomer(customerId);
+      const orders = await this.ordersService.getCustomerOrders(parseInt(customerId));
 
       return {
         success: true,

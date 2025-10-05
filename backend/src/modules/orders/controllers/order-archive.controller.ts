@@ -1,14 +1,23 @@
-import { Controller, Get, Post, Param, Query, Body } from '@nestjs/common';
-import { OrderArchiveCompleteService } from '../services/order-archive-complete.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Body,
+  Logger,
+} from '@nestjs/common';
+import { OrderArchiveService } from '../services/order-archive.service';
 
 /**
  * Contrôleur pour l'archivage complet des commandes
+ * Mis à jour pour utiliser OrderArchiveService consolidé (Phase 2)
  */
 @Controller('order-archive')
 export class OrderArchiveController {
-  constructor(
-    private readonly orderArchiveService: OrderArchiveCompleteService,
-  ) {}
+  private readonly logger = new Logger(OrderArchiveController.name);
+
+  constructor(private readonly orderArchiveService: OrderArchiveService) {}
 
   /**
    * GET /order-archive/:orderId
@@ -17,11 +26,10 @@ export class OrderArchiveController {
   @Get(':orderId')
   async getArchivedOrder(
     @Param('orderId') orderId: string,
-    @Query('customerId') customerId?: string,
+    @Query('customerId') _customerId?: string,
   ) {
     try {
       const orderIdNum = parseInt(orderId);
-      const customerIdNum = customerId ? parseInt(customerId) : undefined;
 
       const order = await this.orderArchiveService.getArchivedOrder(orderIdNum);
 
@@ -59,10 +67,11 @@ export class OrderArchiveController {
     try {
       const customerIdNum = parseInt(customerId);
 
-      const result = await this.orderArchiveService.listArchivedOrders(
-        customerIdNum,
-        filters,
-      );
+      const result = await this.orderArchiveService.listArchivedOrders({
+        customerId: customerIdNum,
+        page: filters.page ? parseInt(filters.page) : undefined,
+        limit: filters.limit ? parseInt(filters.limit) : undefined,
+      });
 
       return {
         success: true,
@@ -226,13 +235,14 @@ export class OrderArchiveController {
 
       // Test 2: Lister les commandes archivées
       try {
-        const list =
-          await this.orderArchiveService.listArchivedOrders(testCustomerId);
+        const list = await this.orderArchiveService.listArchivedOrders({
+          customerId: testCustomerId,
+        });
         results.tests.push({
           name: 'listArchivedOrders',
           success: true,
-          totalOrders: list.totalOrders,
-          years: list.years,
+          totalOrders: list.data?.length || 0,
+          pagination: list.pagination,
         });
       } catch (error) {
         results.tests.push({
