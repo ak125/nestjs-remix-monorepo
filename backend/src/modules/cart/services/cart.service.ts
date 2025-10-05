@@ -13,6 +13,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { CacheService } from '../../../cache/cache.service';
 import { PromoService } from '../promo.service';
 import { CartCalculationService } from './cart-calculation.service';
+import { CartDataService } from '../../../database/services/cart-data.service';
 import { CartItem, CartMetadata } from '../cart.interfaces';
 
 export interface Cart {
@@ -33,6 +34,7 @@ export class CartService extends SupabaseBaseService {
     private readonly cacheService: CacheService,
     private readonly promoService: PromoService,
     private readonly calculationService: CartCalculationService,
+    private readonly cartDataService: CartDataService,
   ) {
     super();
     this.logger.log('CartService initialized - Modern architecture');
@@ -339,21 +341,28 @@ export class CartService extends SupabaseBaseService {
   }
 
   /**
-   * Appliquer un code promo
+   * Appliquer un code promo (VERSION CONSOLIDÉE - Redis)
    */
   async applyPromoCode(
     sessionId: string,
     promoCode: string,
     userId?: string,
-  ): Promise<Cart> {
+  ): Promise<any> {
     try {
-      const cart = await this.getCart(sessionId, userId);
+      const userIdForCart = userId || sessionId;
 
-      // Valider le code promo
+      // 1. Récupérer le panier depuis Redis via CartDataService
+      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
+
+      if (!cart || cart.items.length === 0) {
+        throw new BadRequestException('Le panier est vide');
+      }
+
+      // 2. Valider le code promo avec le subtotal
       const validation = await this.promoService.validatePromoCode(
         promoCode,
-        userId || sessionId,
-        cart.metadata.subtotal,
+        userIdForCart,
+        cart.stats.subtotal,
       );
 
       if (!validation.valid) {
@@ -362,33 +371,35 @@ export class CartService extends SupabaseBaseService {
         );
       }
 
-      // Mettre à jour les métadonnées avec la promo
-      const { error } = await this.supabase
-        .from('cart_metadata')
-        .update({
-          promo_code: promoCode,
-          promo_discount: validation.discount,
-          promo_applied_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', cart.metadata.id);
+      // 3. Sauvegarder le code promo appliqué dans Redis
+      await this.cartDataService.applyPromoCode(userIdForCart, {
+        code: promoCode,
+        discount_type: validation.discountType!,
+        discount_value: validation.discount,
+        discount_amount: validation.discount,
+        promo_id: validation.promoId!,
+        applied_at: new Date().toISOString(),
+      });
 
-      if (error) {
-        throw new Error(`Erreur application promo: ${error.message}`);
-      }
+      this.logger.log(
+        `✅ Code promo ${promoCode} appliqué: -${validation.discount.toFixed(2)}€`,
+      );
 
-      // Invalider le cache
-      const cacheKey = `cart:${userId || sessionId}`;
-      await this.cacheService.del(cacheKey);
-
-      this.logger.log(`Code promo ${promoCode} appliqué`);
-
-      return this.getCart(sessionId, userId);
+      // 4. Retourner le panier mis à jour
+      return {
+        success: true,
+        message: 'Code promo appliqué avec succès',
+        promo_code: promoCode,
+        discount: validation.discount,
+        discount_type: validation.discountType,
+      };
     } catch (error) {
       this.logger.error(
         `Erreur applyPromoCode: ${(error as any)?.message || error}`,
       );
-      throw new BadRequestException("Impossible d'appliquer le code promo");
+      throw new BadRequestException(
+        (error as any)?.message || "Impossible d'appliquer le code promo",
+      );
     }
   }
 

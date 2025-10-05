@@ -52,8 +52,9 @@ export class PromoDataService extends SupabaseBaseService {
    */
   async getValidPromoByCode(code: string): Promise<any | null> {
     try {
+      const now = new Date().toISOString();
       const response = await fetch(
-        `${this.baseUrl}/promo_codes?code=eq.${code.toUpperCase()}&active=eq.true&valid_from=lte.now()&valid_until=gte.now()&select=*`,
+        `${this.baseUrl}/promo_codes?code=eq.${code.toUpperCase()}&active=eq.true&valid_from=lte.${now}&valid_until=gte.${now}&select=*`,
         {
           method: 'GET',
           headers: this.headers,
@@ -103,7 +104,7 @@ export class PromoDataService extends SupabaseBaseService {
       }
 
       // Vérifier limite d'utilisation si userId fourni
-      if (userId && promo.max_uses_per_user) {
+      if (userId && promo.usage_limit_per_customer) {
         const hasUsed = await this.checkPromoUsage(promo.id, parseInt(userId));
         if (hasUsed) {
           return {
@@ -118,9 +119,9 @@ export class PromoDataService extends SupabaseBaseService {
         promo: {
           id: promo.id,
           code: promo.code,
-          discount_type: promo.discount_type,
-          discount_value: promo.discount_value,
-          min_purchase_amount: promo.min_purchase_amount,
+          discount_type: promo.type, // Colonne réelle : type
+          discount_value: parseFloat(promo.value), // Colonne réelle : value
+          min_purchase_amount: promo.min_amount ? parseFloat(promo.min_amount) : null, // Colonne réelle : min_amount
           description: promo.description,
         },
       };
