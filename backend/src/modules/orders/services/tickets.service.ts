@@ -41,8 +41,8 @@ export interface TicketValidationResult {
 }
 
 @Injectable()
-export class TicketsAdvancedService extends SupabaseBaseService {
-  protected readonly logger = new Logger(TicketsAdvancedService.name);
+export class TicketsService extends SupabaseBaseService {
+  protected readonly logger = new Logger(TicketsService.name);
 
   constructor() {
     super();
