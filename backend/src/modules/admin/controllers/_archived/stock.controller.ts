@@ -29,8 +29,8 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { StockManagementService } from '../services/stock-management.service';
-import { WorkingStockService } from '../services/working-stock.service';
 import {
   StockDashboardFilters,
   UpdateStockDto,
@@ -38,19 +38,14 @@ import {
   DisableProductDto,
 } from '../dto/stock.dto';
 
-@ApiTags('Admin - Stock Management CONSOLIDÉ')
+@ApiTags('Admin - Stock Management')
 @Controller('admin/stock')
-@UseGuards(AuthenticatedGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @ApiBearerAuth()
 export class StockController {
   private readonly logger = new Logger(StockController.name);
 
-  constructor(
-    private readonly stockService: StockManagementService,
-    private readonly workingStockService: WorkingStockService,
-  ) {
-    this.logger.log('✅ Stock Controller consolidé - 6 controllers fusionnés en 1');
-  }
+  constructor(private readonly stockService: StockManagementService) {}
 
   /**
    * GET /admin/stock/dashboard
@@ -213,119 +208,11 @@ export class StockController {
   }
 
   /**
-   * GET /admin/stock/stats
-   * Statistiques détaillées du stock
-   * ⚡ NOUVEAU - Fusionné de WorkingStockController
-   */
-  @Get('stats')
-  @ApiOperation({ summary: 'Statistiques détaillées des stocks' })
-  @ApiResponse({ status: 200, description: 'Statistiques récupérées' })
-  async getStockStats() {
-    try {
-      this.logger.debug('Récupération statistiques stock');
-      const stats = await this.workingStockService.getStockStatistics();
-      return {
-        success: true,
-        data: stats,
-        message: 'Statistiques récupérées avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur récupération statistiques', error);
-      throw error;
-    }
-  }
-
-  /**
-   * GET /admin/stock/search
-   * Recherche avancée dans le stock
-   * ⚡ NOUVEAU - Fusionné de WorkingStockController
-   */
-  @Get('search')
-  @ApiOperation({ summary: 'Rechercher des articles dans le stock' })
-  @ApiResponse({ status: 200, description: 'Résultats de recherche' })
-  async searchStock(
-    @Query('query') query: string,
-    @Query('limit') limit: string = '50',
-    @Query('availableOnly') availableOnly: string = 'true',
-  ) {
-    try {
-      this.logger.debug('Recherche stock', { query, limit, availableOnly });
-      const items = await this.workingStockService.searchItems(
-        query,
-        parseInt(limit),
-        availableOnly === 'true',
-      );
-      return {
-        success: true,
-        data: items,
-        count: items.length,
-        message: 'Recherche effectuée avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur recherche stock', error);
-      throw error;
-    }
-  }
-
-  /**
-   * GET /admin/stock/top-items
-   * Récupérer les top produits
-   * ⚡ NOUVEAU - Fusionné de WorkingStockController
-   */
-  @Get('top-items')
-  @ApiOperation({ summary: 'Récupérer les produits top (prix élevé)' })
-  @ApiResponse({ status: 200, description: 'Top produits récupérés' })
-  async getTopItems(@Query('limit') limit: string = '10') {
-    try {
-      this.logger.debug('Récupération top items', { limit });
-      const items = await this.workingStockService.getTopItems(parseInt(limit));
-      return {
-        success: true,
-        data: items,
-        count: items.length,
-        message: 'Top produits récupérés avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur top items', error);
-      throw error;
-    }
-  }
-
-  /**
-   * PUT /admin/stock/:pieceId/availability
-   * Mettre à jour la disponibilité d'un produit
-   * ⚡ NOUVEAU - Fusionné de WorkingStockController
-   */
-  @Put(':pieceId/availability')
-  @ApiOperation({ summary: 'Mettre à jour la disponibilité' })
-  @ApiResponse({ status: 200, description: 'Disponibilité mise à jour' })
-  async updateAvailability(
-    @Param('pieceId') pieceId: string,
-    @Body() body: { available: boolean },
-  ) {
-    try {
-      this.logger.debug('Mise à jour disponibilité', { pieceId, ...body });
-      const result = await this.workingStockService.updateAvailability(
-        pieceId,
-        body.available,
-      );
-      return {
-        success: true,
-        data: { pieceId, available: body.available, updated: result },
-        message: 'Disponibilité mise à jour avec succès',
-      };
-    } catch (error) {
-      this.logger.error('Erreur mise à jour disponibilité', error);
-      throw error;
-    }
-  }
-
-  /**
    * GET /admin/stock/health
    * Vérifier la santé du service de gestion des stocks
    */
   @Get('health')
-  @ApiOperation({ summary: 'État de santé du service stock consolidé' })
+  @ApiOperation({ summary: 'État de santé du service stock' })
   @ApiResponse({ status: 200, description: 'Service opérationnel' })
   async checkHealth() {
     try {
@@ -333,21 +220,18 @@ export class StockController {
       return {
         success: true,
         data: {
-          service: 'StockController-Consolidated',
-          oldControllers: 6,
-          newControllers: 1,
-          routes: 13,
+          service: 'StockManagementService',
           status: 'operational',
           timestamp: new Date().toISOString(),
         },
-        message: '✅ Service stock consolidé opérationnel - 83% reduction',
+        message: 'Service opérationnel',
       };
     } catch (error) {
       this.logger.error('Erreur vérification santé', error);
       return {
         success: false,
         data: {
-          service: 'StockController-Consolidated',
+          service: 'StockManagementService',
           status: 'error',
           timestamp: new Date().toISOString(),
         },

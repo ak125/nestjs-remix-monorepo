@@ -18,17 +18,9 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
 
-// Controllers
+// Controllers - Stock consolidé ✅
 import { ConfigurationController } from './controllers/configuration.controller';
-import { StockController } from './controllers/stock.controller';
-import { StockEnhancedController } from './controllers/stock-enhanced.controller';
-import { StockTestController } from './controllers/stock-test.controller';
-import { RealStockService } from './services/real-stock.service';
-import { RealStockController } from './controllers/real-stock.controller';
-import { SimpleStockController } from './controllers/simple-stock.controller';
-import { WorkingStockService } from './services/working-stock.service';
-import { WorkingStockController } from './controllers/working-stock.controller';
-// AdminOrdersController retiré - Routes admin intégrées dans OrdersController (/api/orders/admin/*)
+import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
 import { ReportingController } from './controllers/reporting.controller';
@@ -36,9 +28,10 @@ import { UserManagementController } from './controllers/user-management.controll
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
 
-// Services
+// Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
 import { StockManagementService } from './services/stock-management.service';
+import { WorkingStockService } from './services/working-stock.service'; // ✅ Ajouté pour stock.controller.ts
 import { ReportingService } from './services/reporting.service';
 import { UserManagementService } from './services/user-management.service';
 // import { AdminProductsService } from './services/admin-products.service';
@@ -59,12 +52,12 @@ import { ProductsModule } from '../products/products.module';
   ],
   controllers: [
     ConfigurationController,
-    StockController,
-    StockEnhancedController,
-    StockTestController,
-    RealStockController,
-    SimpleStockController,
-    WorkingStockController,
+    StockController, // 🔥 Un seul controller stock consolidé (13 routes)
+    // ❌ StockEnhancedController - SUPPRIMÉ
+    // ❌ StockTestController - SUPPRIMÉ
+    // ❌ RealStockController - SUPPRIMÉ
+    // ❌ SimpleStockController - SUPPRIMÉ
+    // ❌ WorkingStockController - SUPPRIMÉ (fonctionnalités intégrées dans StockController)
     // AdminOrdersController retiré - Routes disponibles dans OrdersModule (/api/orders/admin/*)
     AdminController,
     AdminRootController,
@@ -75,9 +68,9 @@ import { ProductsModule } from '../products/products.module';
   ],
   providers: [
     ConfigurationService,
-    StockManagementService,
-    RealStockService,
-    WorkingStockService,
+    StockManagementService, // ✅ Service principal stock
+    WorkingStockService, // ✅ Service complémentaire (search, export, stats)
+    // ❌ RealStockService - SUPPRIMÉ (fonctionnalité minimaliste)
     ReportingService,
     UserManagementService,
     // AdminProductsService,
