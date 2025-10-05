@@ -52,9 +52,9 @@ export async function getUserOrders(
       }
     }
 
-    // Appel à l'API backend
+    // Appel à l'API backend consolidée (userId récupéré via AuthenticatedGuard)
     const response = await fetch(
-      `${baseUrl}/api/customer/orders/${userId}?${searchParams}`,
+      `${baseUrl}/api/orders?${searchParams}`,
       {
         method: "GET",
         headers,
@@ -139,9 +139,9 @@ export async function getOrderDetail(
       }
     }
 
-    // Appel à l'API backend pour le détail de la commande
+    // Appel à l'API backend consolidée pour le détail de la commande
     const response = await fetch(
-      `${baseUrl}/api/customer/orders/${userId}/${orderId}`,
+      `${baseUrl}/api/orders/${orderId}`,
       {
         method: "GET",
         headers,
