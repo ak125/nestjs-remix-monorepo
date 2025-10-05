@@ -21,9 +21,11 @@ import { TestSupabaseController } from './test-supabase.controller';
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
+import { ShippingCalculationService } from './services/shipping-calculation.service';
 import { PromoService } from './promo.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { PromoDataService } from '../../database/services/promo-data.service';
+import { ShippingDataService } from '../../database/services/shipping-data.service';
 
 @Module({
   imports: [
@@ -40,9 +42,11 @@ import { PromoDataService } from '../../database/services/promo-data.service';
     CartService, // Service principal moderne
     CartCalculationService, // Service de calculs
     CartValidationService, // Service de validation
+    ShippingCalculationService, // Service calculs shipping
     PromoService, // Service de gestion des promotions
     CartDataService, // Service d'accès aux données
     PromoDataService, // Service données codes promo
+    ShippingDataService, // Service données shipping
   ],
   exports: [
     CartService, // Service moderne exporté

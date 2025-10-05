@@ -182,6 +182,9 @@ export class CartDataService extends SupabaseBaseService {
       
       // Récupérer le code promo appliqué s'il existe
       const appliedPromo = await this.getAppliedPromo(sessionId);
+      
+      // Récupérer la méthode de livraison appliquée
+      const appliedShipping = await this.getAppliedShipping(sessionId);
 
       // Calculer statistiques comme l'ancien système PHP
       const stats = {
@@ -194,14 +197,17 @@ export class CartDataService extends SupabaseBaseService {
           (sum, item) => sum + item.price * item.quantity,
           0,
         ),
-        total: 0, // Calculé avec frais de port
+        total: 0, // Calculé avec réductions et frais de port
         hasPromo: !!appliedPromo,
         promoDiscount: appliedPromo?.discount_amount || 0,
         promoCode: appliedPromo?.code,
+        hasShipping: !!appliedShipping,
+        shippingCost: appliedShipping?.cost || 0,
+        shippingMethod: appliedShipping?.method_name,
       };
       
-      // Appliquer la réduction promo
-      stats.total = stats.subtotal - stats.promoDiscount;
+      // Appliquer la réduction promo et ajouter les frais de port
+      stats.total = stats.subtotal - stats.promoDiscount + stats.shippingCost;
 
       return {
         metadata: {
@@ -565,6 +571,76 @@ export class CartDataService extends SupabaseBaseService {
       this.logger.log(`🗑️ Code promo retiré du panier ${sessionId}`);
     } catch (error) {
       this.logger.error(`❌ Erreur suppression promo:`, error);
+      throw error;
+    }
+  }
+
+  // ============================================================
+  // 🚚 GESTION SHIPPING
+  // ============================================================
+
+  /**
+   * Clé Redis pour le shipping
+   */
+  private getShippingKey(sessionId: string): string {
+    return `${CART_REDIS_PREFIX}shipping:${sessionId}`;
+  }
+
+  /**
+   * 🚚 Appliquer une méthode de livraison
+   */
+  async applyShipping(
+    sessionId: string,
+    shipping: {
+      method_id: number;
+      method_name: string;
+      zone: string;
+      cost: number;
+      estimated_days: number;
+      postal_code?: string;
+      address?: string;
+    },
+  ): Promise<void> {
+    try {
+      const key = this.getShippingKey(sessionId);
+      const shippingData = {
+        ...shipping,
+        applied_at: new Date().toISOString(),
+      };
+
+      await this.cacheService.set(key, shippingData, CART_EXPIRY_SECONDS);
+      this.logger.log(
+        `🚚 Méthode livraison appliquée: ${shipping.method_name} (${shipping.cost}€) pour ${sessionId}`,
+      );
+    } catch (error) {
+      this.logger.error(`❌ Erreur application shipping:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 Récupérer la méthode de livraison appliquée
+   */
+  async getAppliedShipping(sessionId: string): Promise<any | null> {
+    try {
+      const key = this.getShippingKey(sessionId);
+      return await this.cacheService.get<any>(key);
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération shipping:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 🗑️ Retirer la méthode de livraison
+   */
+  async removeShipping(sessionId: string): Promise<void> {
+    try {
+      const key = this.getShippingKey(sessionId);
+      await this.cacheService.del(key);
+      this.logger.log(`🗑️ Méthode livraison retirée du panier ${sessionId}`);
+    } catch (error) {
+      this.logger.error(`❌ Erreur suppression shipping:`, error);
       throw error;
     }
   }

@@ -35,6 +35,7 @@ import { Request } from 'express';
 import { CartService } from './services/cart.service';
 import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
+import { ShippingCalculationService } from './services/shipping-calculation.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { validateAddItem } from './dto/add-item.dto';
 import { validateUpdateItem } from './dto/update-item.dto';
@@ -67,6 +68,7 @@ export class CartController {
     private readonly cartCalculationService: CartCalculationService,
     private readonly cartValidationService: CartValidationService,
     private readonly cartDataService: CartDataService,
+    private readonly shippingCalculationService: ShippingCalculationService,
   ) {}
 
   /**
@@ -468,6 +470,171 @@ export class CartController {
       );
     }
   }
+
+  // ============================================================
+  // 🚚 GESTION SHIPPING
+  // ============================================================
+
+  /**
+   * 💰 Calculer les frais de livraison
+   */
+  @Post('shipping/calculate')
+  @ApiOperation({
+    summary: 'Calculer les frais de livraison',
+    description: 'Calcule le coût de livraison selon le code postal et le poids du panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Frais de livraison calculés avec succès',
+  })
+  async calculateShipping(
+    @Req() req: RequestWithUser,
+    @Body() body: { postalCode: string },
+  ) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      const { postalCode } = body;
+
+      if (!postalCode) {
+        throw new BadRequestException('Code postal requis');
+      }
+
+      // Récupérer le panier pour calculer poids et subtotal
+      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
+      
+      // Calculer poids total
+      const totalWeight = this.shippingCalculationService.calculateTotalWeight(cart.items);
+      
+      // Calculer coût shipping
+      const shippingInfo = await this.shippingCalculationService.calculateShippingCost(
+        postalCode,
+        totalWeight,
+        cart.stats.subtotal,
+      );
+
+      return {
+        success: true,
+        shipping: shippingInfo,
+        remainingForFreeShipping: this.shippingCalculationService.calculateRemainingForFreeShipping(
+          cart.stats.subtotal,
+        ),
+      };
+    } catch (error) {
+      this.logger.error('Erreur calcul shipping:', error);
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Erreur calcul livraison',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * 🚚 Appliquer une méthode de livraison
+   */
+  @Post('shipping')
+  @ApiOperation({
+    summary: 'Appliquer une méthode de livraison au panier',
+    description: 'Enregistre la méthode de livraison sélectionnée',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Méthode de livraison appliquée avec succès',
+  })
+  async applyShipping(
+    @Req() req: RequestWithUser,
+    @Body() body: {
+      postalCode: string;
+      address?: string;
+    },
+  ) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      const { postalCode, address } = body;
+
+      if (!postalCode) {
+        throw new BadRequestException('Code postal requis');
+      }
+
+      // Récupérer le panier
+      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
+      
+      // Calculer poids total
+      const totalWeight = this.shippingCalculationService.calculateTotalWeight(cart.items);
+      
+      // Calculer et appliquer shipping
+      const shippingInfo = await this.shippingCalculationService.calculateShippingCost(
+        postalCode,
+        totalWeight,
+        cart.stats.subtotal,
+      );
+
+      // Enregistrer dans Redis
+      await this.cartDataService.applyShipping(userIdForCart, {
+        method_id: 1, // Colissimo par défaut
+        method_name: shippingInfo.method,
+        zone: shippingInfo.zone,
+        cost: shippingInfo.cost,
+        estimated_days: shippingInfo.estimatedDays,
+        postal_code: postalCode,
+        address,
+      });
+
+      return {
+        success: true,
+        message: 'Méthode de livraison appliquée avec succès',
+        shipping: shippingInfo,
+      };
+    } catch (error) {
+      this.logger.error('Erreur application shipping:', error);
+      throw new HttpException(
+        error instanceof Error ? error.message : 'Erreur application livraison',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ Retirer la méthode de livraison
+   */
+  @Delete('shipping')
+  @ApiOperation({
+    summary: 'Retirer la méthode de livraison',
+    description: 'Retire la méthode de livraison actuellement appliquée au panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Méthode de livraison retirée avec succès',
+  })
+  async removeShipping(@Req() req: RequestWithUser) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      await this.cartDataService.removeShipping(userIdForCart);
+
+      return {
+        success: true,
+        message: 'Méthode de livraison retirée avec succès',
+      };
+    } catch (error) {
+      this.logger.error('Erreur retrait shipping:', error);
+      throw new HttpException(
+        'Erreur lors du retrait de la méthode de livraison',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============================================================
+  // 🗑️ NETTOYAGE
+  // ============================================================
 
   /**
    * 🗑️ Vider le panier
