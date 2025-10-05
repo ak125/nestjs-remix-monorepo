@@ -1,4 +1,6 @@
-# 📅 Rapport Journalier - 5 Octobre 2025
+# � RAPPORT QUOTIDIEN - 5 octobre 2025
+
+> **Note** : Pour la documentation technique complète et consolidée, voir [REFACTORING-COMPLETE.md](./REFACTORING-COMPLETE.md)
 
 **Développeur**: @ak125  
 **Assistant**: GitHub Copilot  
