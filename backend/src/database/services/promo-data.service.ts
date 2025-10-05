@@ -73,6 +73,87 @@ export class PromoDataService extends SupabaseBaseService {
   }
 
   /**
+   * Valider un code promo avec toutes les règles
+   */
+  async validatePromoCode(
+    code: string,
+    userId?: string,
+  ): Promise<{
+    valid: boolean;
+    message?: string;
+    promo?: {
+      id: number;
+      code: string;
+      discount_type: string;
+      discount_value: number;
+      min_purchase_amount: number | null;
+      description: string | null;
+    };
+  }> {
+    try {
+      this.logger.log(`🔍 Validation code promo: ${code}`);
+
+      const promo = await this.getValidPromoByCode(code);
+
+      if (!promo) {
+        return {
+          valid: false,
+          message: 'Code promo invalide ou expiré',
+        };
+      }
+
+      // Vérifier limite d'utilisation si userId fourni
+      if (userId && promo.max_uses_per_user) {
+        const hasUsed = await this.checkPromoUsage(promo.id, parseInt(userId));
+        if (hasUsed) {
+          return {
+            valid: false,
+            message: 'Vous avez déjà utilisé ce code promo',
+          };
+        }
+      }
+
+      return {
+        valid: true,
+        promo: {
+          id: promo.id,
+          code: promo.code,
+          discount_type: promo.discount_type,
+          discount_value: promo.discount_value,
+          min_purchase_amount: promo.min_purchase_amount,
+          description: promo.description,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Erreur validation code promo', error);
+      return {
+        valid: false,
+        message: 'Erreur lors de la validation',
+      };
+    }
+  }
+
+  /**
+   * Calculer le montant de réduction
+   */
+  calculateDiscount(
+    discountType: string,
+    discountValue: number,
+    cartSubtotal: number,
+  ): number {
+    switch (discountType) {
+      case 'percentage':
+        return Math.round(((cartSubtotal * discountValue) / 100) * 100) / 100;
+      case 'fixed':
+        return Math.min(discountValue, cartSubtotal);
+      case 'free_shipping':
+        return 0; // Géré séparément
+      default:
+        return 0;
+    }
+  }
+
+  /**
    * Vérifie si un utilisateur a déjà utilisé un code promo
    */
   async checkPromoUsage(promoId: number, userId: number): Promise<boolean> {

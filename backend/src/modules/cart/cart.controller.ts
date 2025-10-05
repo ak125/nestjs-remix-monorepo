@@ -398,11 +398,16 @@ export class CartController {
       const applyPromoDto = validateApplyPromo(body);
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
 
       this.logger.debug(
         `Application code promo ${applyPromoDto.promoCode} - session: ${sessionId}`,
       );
 
+      // 1. Récupérer le panier actuel pour calculer le subtotal
+      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
+
+      // 2. Utiliser CartService pour valider et appliquer le promo
       const result = await this.cartService.applyPromoCode(
         sessionId,
         applyPromoDto.promoCode,
@@ -421,6 +426,44 @@ export class CartController {
 
       throw new HttpException(
         "Erreur lors de l'application du code promo",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🗑️ Retirer le code promo appliqué
+   */
+  @Delete('promo')
+  @ApiOperation({
+    summary: 'Retirer le code promotionnel',
+    description: 'Retire le code promo actuellement appliqué au panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Code promo retiré avec succès',
+  })
+  async removePromo(@Req() req: RequestWithUser) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id;
+      const userIdForCart = userId || sessionId;
+
+      this.logger.debug(`Retrait code promo - session: ${sessionId}`);
+
+      await this.cartDataService.removePromoCode(userIdForCart);
+
+      return {
+        success: true,
+        message: 'Code promo retiré avec succès',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erreur retrait promo: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+
+      throw new HttpException(
+        'Erreur lors du retrait du code promo',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

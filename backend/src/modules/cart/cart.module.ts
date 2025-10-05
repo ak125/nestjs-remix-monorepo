@@ -23,6 +23,7 @@ import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
 import { PromoService } from './promo.service';
 import { CartDataService } from '../../database/services/cart-data.service';
+import { PromoDataService } from '../../database/services/promo-data.service';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { CartDataService } from '../../database/services/cart-data.service';
     CartValidationService, // Service de validation
     PromoService, // Service de gestion des promotions
     CartDataService, // Service d'accès aux données
+    PromoDataService, // Service données codes promo
   ],
   exports: [
     CartService, // Service moderne exporté

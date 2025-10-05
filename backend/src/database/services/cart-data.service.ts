@@ -39,6 +39,18 @@ export type CartItem = z.infer<typeof CartItemSchema>;
 export type CartMetadata = z.infer<typeof CartMetadataSchema>;
 
 /**
+ * 🎫 INTERFACE PROMO APPLIQUÉ
+ */
+export interface AppliedPromo {
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  discount_amount: number;
+  promo_id: number;
+  applied_at: string;
+}
+
+/**
  * 🔧 CONSTANTES REDIS POUR LES PANIERS
  */
 
@@ -70,6 +82,13 @@ export class CartDataService extends SupabaseBaseService {
   }
 
   /**
+   * 🔑 Générer la clé Redis pour un code promo appliqué
+   */
+  private getPromoKey(sessionId: string): string {
+    return `cart:promo:${sessionId}`;
+  }
+
+  /**
    * 💾 Sauvegarder le panier dans Redis via CacheService (avec TTL)
    */
   private async saveCartToRedis(
@@ -77,10 +96,11 @@ export class CartDataService extends SupabaseBaseService {
     cartItems: CartItem[],
   ): Promise<void> {
     const key = this.getCartKey(sessionId);
-    await this.cacheService.set(key, cartItems, CART_EXPIRY_SECONDS);
-    this.logger.debug(
-      `💾 Panier sauvé Redis: ${sessionId} (${cartItems.length} items)`,
+    this.logger.log(
+      `💾 Sauvegarde Redis: clé="${key}", items=${cartItems.length}`,
     );
+    await this.cacheService.set(key, cartItems, CART_EXPIRY_SECONDS);
+    this.logger.log(`✅ Panier sauvegardé dans Redis: ${sessionId}`);
   }
 
   /**
@@ -109,9 +129,13 @@ export class CartDataService extends SupabaseBaseService {
       
       // LOG DE DEBUG pour voir ce qui est stocké
       this.logger.log(
-        `📦 Items bruts depuis Redis:`,
+        `📦 Items bruts depuis Redis (${cartItems.length} items):`,
         JSON.stringify(cartItems, null, 2),
       );
+      
+      if (cartItems.length === 0) {
+        this.logger.warn(`⚠️ Panier vide pour session ${sessionId}`);
+      }
       
       // Enrichir avec les données produits depuis les tables existantes
       const enrichedItems = await Promise.all(
@@ -156,6 +180,9 @@ export class CartDataService extends SupabaseBaseService {
         }),
       );
       
+      // Récupérer le code promo appliqué s'il existe
+      const appliedPromo = await this.getAppliedPromo(sessionId);
+
       // Calculer statistiques comme l'ancien système PHP
       const stats = {
         itemCount: enrichedItems.length,
@@ -168,20 +195,25 @@ export class CartDataService extends SupabaseBaseService {
           0,
         ),
         total: 0, // Calculé avec frais de port
-        hasPromo: false,
-        promoDiscount: 0,
+        hasPromo: !!appliedPromo,
+        promoDiscount: appliedPromo?.discount_amount || 0,
+        promoCode: appliedPromo?.code,
       };
       
-      stats.total = stats.subtotal; // Simplifié pour l'instant
+      // Appliquer la réduction promo
+      stats.total = stats.subtotal - stats.promoDiscount;
 
       return {
         metadata: {
           user_id: sessionId,
           subtotal: stats.subtotal,
           total: stats.total,
+          promo_code: appliedPromo?.code,
+          promo_discount: stats.promoDiscount,
         },
         items: enrichedItems,
         stats,
+        appliedPromo,
       };
     } catch (error) {
       this.logger.error(
@@ -273,10 +305,16 @@ export class CartDataService extends SupabaseBaseService {
       } else {
         // 4b. Ajouter nouveau produit
         const updatedItems = [...cartItems, newItem];
+        this.logger.log(`📝 Items à sauvegarder: ${updatedItems.length}`);
         await this.saveCartToRedis(sessionId, updatedItems);
         this.logger.log(
           `➕ Nouveau produit ajouté Redis: ${product.piece_name} (${quantity})`,
         );
+        
+        // VÉRIFICATION: relire immédiatement pour confirmer
+        const verification = await this.getCartFromRedis(sessionId);
+        this.logger.log(`🔍 Vérification immédiate: ${verification.length} items trouvés`);
+        
         return newItem;
       }
     } catch (error) {
@@ -304,13 +342,10 @@ export class CartDataService extends SupabaseBaseService {
       }
 
       // LOG DEBUG pour voir les vraies valeurs de marque
-      this.logger.log(
-        `🔍 DONNÉES MARQUE pour ${productId}:`,
-        {
-          piece_pm_id: pieceData.piece_pm_id,
-          type_piece_pm_id: typeof pieceData.piece_pm_id,
-        },
-      );
+      this.logger.log(`🔍 DONNÉES MARQUE pour ${productId}:`, {
+        piece_pm_id: pieceData.piece_pm_id,
+        type_piece_pm_id: typeof pieceData.piece_pm_id,
+      });
       
       // REQUÊTE SÉPARÉE POUR LES PRIX
       const { data: priceData, error: priceError } = await this.client
@@ -342,7 +377,10 @@ export class CartDataService extends SupabaseBaseService {
           });
           
           if (!brandError && brandData) {
-            brandName = brandData.pm_name || brandData.pm_alias || `ID-${pieceData.piece_pm_id}`;
+            brandName =
+              brandData.pm_name ||
+              brandData.pm_alias ||
+              `ID-${pieceData.piece_pm_id}`;
             this.logger.log(
               `🏷️ Marque trouvée: ${brandName} (ID: ${brandData.pm_id}, Sort: ${brandData.pm_sort})`,
             );
@@ -361,7 +399,9 @@ export class CartDataService extends SupabaseBaseService {
           brandName = `ID-${pieceData.piece_pm_id}`; // Utiliser l'ID comme nom de fallback
         }
       } else {
-        this.logger.log(`🔍 Aucun piece_pm_id défini pour le produit ${productId}`);
+        this.logger.log(
+          `🔍 Aucun piece_pm_id défini pour le produit ${productId}`,
+        );
       }
 
       let priceTTC = 0;
@@ -466,6 +506,49 @@ export class CartDataService extends SupabaseBaseService {
         `❌ Erreur calcul totaux panier session ${sessionId}:`,
         error,
       );
+      throw error;
+    }
+  }
+
+  /**
+   * 🎫 Appliquer un code promo au panier
+   */
+  async applyPromoCode(sessionId: string, promo: AppliedPromo): Promise<void> {
+    try {
+      const key = `${CART_REDIS_PREFIX}promo:${sessionId}`;
+      await this.cacheService.set(key, promo, CART_EXPIRY_SECONDS);
+      this.logger.log(
+        `🎫 Code promo appliqué: ${promo.code} (-${promo.discount_amount}€)`,
+      );
+    } catch (error) {
+      this.logger.error(`❌ Erreur application promo:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 Récupérer le code promo appliqué
+   */
+  async getAppliedPromo(sessionId: string): Promise<AppliedPromo | null> {
+    try {
+      const key = `${CART_REDIS_PREFIX}promo:${sessionId}`;
+      return await this.cacheService.get<AppliedPromo>(key);
+    } catch (error) {
+      this.logger.error(`❌ Erreur récupération promo:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * 🗑️ Retirer le code promo appliqué
+   */
+  async removePromoCode(sessionId: string): Promise<void> {
+    try {
+      const key = `${CART_REDIS_PREFIX}promo:${sessionId}`;
+      await this.cacheService.del(key);
+      this.logger.log(`🗑️ Code promo retiré du panier ${sessionId}`);
+    } catch (error) {
+      this.logger.error(`❌ Erreur suppression promo:`, error);
       throw error;
     }
   }

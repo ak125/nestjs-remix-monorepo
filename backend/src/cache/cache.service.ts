@@ -1,16 +1,50 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { getAppConfig } from '../config/app.config';
 
 @Injectable()
-export class CacheService {
+export class CacheService implements OnModuleInit {
   private redisClient: Redis | null = null;
+  private redisReady = false;
   private readonly defaultTTL = 3600; // 1 heure
 
   constructor(@Optional() private configService?: ConfigService) {
-    // Context7 : Différer l'initialisation pour éviter les problèmes d'injection
-    setImmediate(() => this.initializeRedis());
+    // L'initialisation se fera dans onModuleInit
+  }
+
+  async onModuleInit() {
+    await this.initializeRedis();
+    await this.waitForRedis();
+  }
+
+  private async waitForRedis(): Promise<void> {
+    return new Promise((resolve) => {
+      if (this.redisReady) {
+        console.log('✅ Redis déjà prêt');
+        resolve();
+        return;
+      }
+
+      if (!this.redisClient) {
+        console.error('❌ RedisClient non initialisé');
+        resolve();
+        return;
+      }
+
+      this.redisClient.once('ready', () => {
+        this.redisReady = true;
+        console.log('✅ Redis prêt et disponible');
+        resolve();
+      });
+
+      // Timeout 5s
+      setTimeout(() => {
+        console.warn('⚠️ Redis non prêt après 5s, continue quand même');
+        this.redisReady = true; // Force ready pour ne pas bloquer
+        resolve();
+      }, 5000);
+    });
   }
 
   private async initializeRedis() {
@@ -44,6 +78,11 @@ export class CacheService {
       this.redisClient.on('connect', () => {
         console.log('✅ Cache Redis connecté');
       });
+
+      this.redisClient.on('ready', () => {
+        this.redisReady = true;
+        console.log('✅ Cache Redis prêt');
+      });
     } catch (error) {
       console.error('❌ Erreur de connexion Redis Cache:', error);
     }
@@ -51,12 +90,15 @@ export class CacheService {
 
   async get<T>(key: string): Promise<T | null> {
     try {
-      if (!this.redisClient) return null;
+      if (!this.redisClient || !this.redisReady) {
+        console.warn(`⚠️ Redis non prêt pour GET ${key}`);
+        return null;
+      }
 
       const value = await this.redisClient.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      console.error('Cache get error:', error);
+      console.error(`❌ Cache GET ${key} error:`, error);
       return null;
     }
   }
@@ -67,11 +109,16 @@ export class CacheService {
     ttl: number = this.defaultTTL,
   ): Promise<void> {
     try {
-      if (!this.redisClient) return;
+      if (!this.redisClient || !this.redisReady) {
+        console.error(`❌ Redis non prêt pour SET ${key}`);
+        return;
+      }
 
-      await this.redisClient.setex(key, ttl, JSON.stringify(value));
+      const result = await this.redisClient.setex(key, ttl, JSON.stringify(value));
+      console.log(`✅ Redis SET ${key} = ${result} (TTL: ${ttl}s)`);
     } catch (error) {
-      console.error('Cache set error:', error);
+      console.error(`❌ Cache SET ${key} error:`, error);
+      throw error;
     }
   }
 

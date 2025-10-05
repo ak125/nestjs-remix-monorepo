@@ -27,43 +27,54 @@ export class DatabaseCompositionService {
     );
   }
 
-  // === CART OPERATIONS ===
+  // === CART OPERATIONS === (REFACTORÉ - utiliser CartDataService directement)
   async getCartItems(userId: number | string) {
     return this.cartDataService.getCartItems(String(userId));
   }
 
   async getProductById(productId: number) {
-    return this.cartDataService.getProductById(productId);
+    return this.cartDataService.getProductWithAllData(productId);
   }
 
   async getCartItemByUserAndProduct(
     userId: number | string,
     productId: number,
   ) {
-    return this.cartDataService.getCartItemByUserAndProduct(
-      String(userId),
-      productId,
+    // Méthode obsolète - récupérer le panier complet
+    const cart = await this.cartDataService.getCartWithMetadata(String(userId));
+    return cart.items.find(
+      (item: any) => parseInt(item.product_id) === productId,
     );
   }
 
-  async addCartItem(cartItem: any) {
-    return this.cartDataService.addCartItem(cartItem);
+  async addCartItem(sessionId: string, productId: number, quantity: number) {
+    return this.cartDataService.addCartItem(sessionId, productId, quantity);
   }
 
-  async updateCartItem(itemId: number, updates: any) {
-    return this.cartDataService.updateCartItem(itemId, updates);
+  async updateCartItem(sessionId: string, productId: number, quantity: number) {
+    return this.cartDataService.addCartItem(
+      sessionId,
+      productId,
+      quantity,
+      undefined,
+      true,
+    );
   }
 
-  async deleteCartItem(itemId: number, userId: number | string) {
-    return this.cartDataService.deleteCartItem(itemId, String(userId));
+  async deleteCartItem(sessionId: string, productId: number) {
+    return this.cartDataService.removeCartItem(sessionId, productId);
   }
 
   async clearUserCart(userId: number | string) {
     return this.cartDataService.clearUserCart(String(userId));
   }
 
-  async getCartItemByIdAndUser(itemId: number, userId: number | string) {
-    return this.cartDataService.getCartItemByIdAndUser(itemId, String(userId));
+  async getCartItemByIdAndUser(sessionId: string, productId: number) {
+    // Méthode obsolète - récupérer depuis le panier complet
+    const cart = await this.cartDataService.getCartWithMetadata(sessionId);
+    return cart.items.find(
+      (item: any) => parseInt(item.product_id) === productId,
+    );
   }
 
   async calculateCartTotals(userId: string) {
@@ -132,7 +143,6 @@ export class DatabaseCompositionService {
         subtotal: cartTotals.subtotal,
         tax: cartTotals.tax,
         shipping: cartTotals.shipping,
-        discount: cartTotals.discount,
         total: cartTotals.total,
         ...orderData,
       });
