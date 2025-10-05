@@ -1,0 +1,215 @@
+* 73f65b5 (refactor/payments-consolidation) docs(payments): Ultimate success report - 100/100 score
+* eaea198 docs(payments): Add frontend verification success report
+* 8177b27 test(payments): Add E2E test script + frontend verification complete
+* 348be4f fix(frontend): Align payment routes with consolidated backend
+* ac3457b docs(payments): Add final summary markdown
+* 04b1871 docs(payments): Add visual success report
+* 0550358 docs(payments): Add complete refactoring documentation
+* ddbbdc6 fix(payments): Fix DI error + add missing routes
+* 8a7c55a docs: add payment architecture notes and database structure
+* d90eca3 docs: complete Payments refactoring documentation
+* fb02e1d feat(payments): consolidate payments module with unified controller
+* a043f5c refactor(payments): remove obsolete files
+* 68ec2f9 docs: add Payment refactoring plan
+* 7f4c563 (refactor/orders-cleanup) docs: add Orders-Users integrations documentation
+* 9dde913 📚 Docs: README récapitulatif refactoring Orders
+* af10f42 📝 PR: Template Pull Request complet
+* 881ee0a ✅ Validation: Module Orders 100% validé en production
+* 79f67d7 📚 Documentation: Rapport final complet Backend + Frontend
+* 6d52c82 ✅ Tests: Frontend orders 100% validé
+* ef731a8 ✅ Frontend: Correction routes API orders consolidées
+* 2e4e1b6 📚 Documentation: Rapport succès refactoring complet
+* 1c5a88f ✨ Qualité: Code 100% propre - Audit complet réussi
+* 6e65a36 📚 Phase 4: Documentation finale complète
+* dcdfc8f 🗑️  Phase 4: Suppression fichiers obsolètes
+* 5873b0c 📝 Docs: Phase 3 complétée - Consolidation contrôleurs
+* 549e684 🚀 Phase 3: Consolidation contrôleurs (10→4)
+* 29e50ef 📝 Docs: Structure BDD complète - Toutes tables documentées
+* 1f6c037 🔧 Fix: Corriger structure BDD dans OrdersService (ord_* colonnes)
+* 14085a4 ✅ Phase 2: Consolidation des services Orders (8→5)
+* 645ae88 feat(orders): Phase 1 - Consolidation des services
+* 6c5569a docs(orders): Analyse et plan de consolidation
+* 1926a85 (origin/refactor/user-module-dto-cleanup, refactor/user-module-dto-cleanup) docs: Nettoyage documentation excessive
+* 6f9c144 feat(users): Remplacer mock par implémentations Supabase
+* 218d6bf chore: Nettoyage docs et fichiers temporaires
+* 8d1a351 docs: Document final consolidé refactoring Users
+* 41be9bf fix(test): Correction détection cookie session
+* 9adf9e7 fix(auth): Ajout endpoint POST /auth/login
+* 84b45c6 test(users): Scripts tests curl + validation refactoring
+* 96364ba docs: Bilan complet refactoring module Users (JOUR 1-2-3)
+* 9c686b4 feat(users): JOUR 3 Phase 3.1 - UsersAdminService (version simplifiée)
+* a8e31d2 docs(jour2): Phase 2.4 - Nettoyage architecture messagerie + documentation finale
+* c6a277c refactor(users): JOUR 2 Phase 2.3 - Création ProfileService
+* d6431f8 refactor(users): JOUR 2 Phase 2.2 - Délégation MessagesService
+* 04deefb refactor(users): JOUR 2 Phase 2.1 - Délégation AuthService
+* 6bb33ff fix(dashboard): implémentation authentification dashboard + docs DB
+* 15cd280 refactor(users): Jour 1 - Nettoyage et consolidation DTOs
+* df7ac79 (feature/supabase-rest-only) docs(crypto): Add final report and diagnostic scripts for password upgrade
+* b853371 (origin/feature/supabase-rest-only) feat(crypto): Add security enhancements and E2E tests
+* 0d835d5 refactor(crypto): Create centralized PasswordCryptoService and remove duplicates
+* 134fc33 fix(auth): Correct authentication bug and implement Zod validation
+* b1623f4 feat: Migration vers Supabase REST API uniquement
+* d94c8a4 (origin/feature/blog-cleanup, feature/blog-cleanup) chore: Clean up temporary test files and scripts
+* e037da1 (origin/blogv2, blogv2) feat(blog): Fix H2/H3 sections loading and improve guide structure
+* 7b17c0d ✨ FEAT: Amélioration majeure page Constructeurs
+* b998b33 ⚡ CACHE: Ajout cache Redis sur hierarchy (99.6% plus rapide)
+* 8e10c13 ⚡ PERF: Optimisation batch ~90% plus rapide (4s → 330ms)
+* 4e310f4 fix(blog): Supprimer le re-tri frontend par date
+* dbc3c1d feat(blog): Tri des articles par mc_sort (ordre catalogue)
+* 06e79ac feat(blog): Tri des familles par mf_sort au lieu de totalViews
+* a32665f fix(blog): Correction régression images après optimisation
+* c86542d feat(blog): amélioration page conseils avec hiérarchie par familles
+* a1691aa 🔧 Amélioration: Priorisation niveaux popularité véhicules
+* f353dbe ✅ Phase 3: Véhicules compatibles - SUCCÈS COMPLET
+* 2a23fa7 📝 docs: Rapport final Blog Modernisation v5
+* 1704115 🔧 fix(blog): Amélioration logs debug véhicules compatibles
+* c56efee 🚗 feat(blog): Véhicules compatibles - Backend (Phase 3)
+* 7791afd ✨ feat(blog): Articles croisés (sidebar 'On vous propose')
+* b6eee3d fix(blog): Complete pg_alias support in all frontend links
+* aeec49e feat(blog): Add pg_alias support for legacy URLs
+* c79e14b feat(blog): Add legacy URL redirect system for SEO preservation
+* b93e677 feat(blog): Complete article system with H2/H3 sections from database
+* d0bfb5a docs: Blog navbar success report with testing guide and next steps
+* 53f6f39 feat: Add Blog link to Navbar with 'Nouveau' badge
+* 900df93 docs: Complete Blog V2 analysis with existing tables and improvement plan
+* 99c2cfd (origin/fix/search-prs-kind-sorting, fix/search-prs-kind-sorting) docs: Session fix confirmation + preparation for Caddy deployment
+* 69dcb73 feat: Add cart button to search results and expose price/stock in API
+* 18bce9d fix: Complete cart and performance fixes
+* fc0321a chore: Clean 43 obsolete documentation files
+* 96d9d52 feat(frontend): SearchBar homepage premium avec design moderne
+* 9c9ff65 fix(search): Correction tri par prs_kind et variantes de recherche
+* 1b73c20 (origin/feature/routes-pieces-cleanup, feature/routes-pieces-cleanup) ✨ feat: Design moderne implémenté avec approche hybride
+* 541e812 docs: Rapport de succès du nettoyage des routes pièces
+* 1b37db7 clean: Suppression automatisée de 10 fichiers routes pièces obsolètes
+* 651f60d (origin/feature/v5-ultimate-enhancements, feature/v5-ultimate-enhancements) feat: Analyse approfondie des routes pièces + plan de nettoyage
+* b86d387 🔒 SAUVEGARDE: Système pricing fonctionnel avec vraies données PHP Logic API
+* 05293a5 (origin/feature/filtering-v5-ultimate-final, feature/filtering-v5-ultimate-final) 🎯 V5 Ultimate Success: Parsing URL intelligent + API PHP Logic opérationnelle
+* 38b343e (origin/feature/migrate-services-to-shared-types, feature/migrate-services-to-shared-types) 🎯 FILTERING SERVICE V5 ULTIMATE CLEAN - Méthodologie appliquée
+* df0973a 🚫 feat: Remove fake fallback pieces - use HTTP error codes instead
+* a574b41 ✅ feat: Unify VehicleSelector system - VehicleSelectorV2 working perfectly
+* c44dcdd (origin/feature/shared-types-package, feature/shared-types-package) feat: 🏗️ Add unified @monorepo/shared-types package
+* c05e071 (origin/feature/v4-ultimate-service-integration, feature/v4-ultimate-service-integration, feature/pieces-php-logic-integration) ✅ PIECES VEHICULE - Route pieces avec véhicule terminée
+* 1c09b6f 🚀 feat: Intégration complète Service V4 Ultimate
+* 156f84b (origin/feature/catalog-100-percent-optimization, feature/catalog-100-percent-optimization) 🎯 Optimisation catalogue 100% - Suppression filtres restrictifs
+* 756bf57 (origin/feature/vehicle-catalog-optimization, origin/feature/enhanced-vehicle-catalog-complete, feature/vehicle-catalog-optimization, feature/enhanced-vehicle-catalog-complete) ✅ Système de catalogue filtré par véhicule - Version complète
+* 381a189 feat: 🚗 Enhanced vehicle catalog with modern UI and intelligent features
+* 2134d73 (origin/feature/homepage-cleanup, origin/feature/design-enhancements-complete, feature/homepage-cleanup, feature/design-enhancements-complete) ✨ Major improvements: Enhanced Design & Vehicle Selector Fix
+* 83cf846 chore: cleanup redundant and obsolete files
+* 2d44e71 chore: continue homepage cleanup - remove technical comments and optimize code structure
+* f646df8 feat: fix BrandCarousel data mapping and clean homepage components
+| *   889dad5 (refs/stash) WIP on main: 74a3001 temp: save cache state
+| |\  
+| | * e8dae44 index on main: 74a3001 temp: save cache state
+| |/  
+| * 74a3001 (HEAD -> main, origin/backup/pre-cleanup-20251005-153822, backup/pre-cleanup-20251005-153822) temp: save cache state
+| * e20b66e ignore redis cache dump
+| *   34fbf54 (origin/main, origin/HEAD) Merge pull request #2 from ak125/04-authentication
+| |\  
+| * \   2fdf1e9 Merge pull request #1 from ak125/04-authentication
+| |\ \  
+| | | | * 64b9ff9 (feature/indexv2) feat: Homepage améliorée avec sections complètes
+| | | | * 5674b80 ✅ RESTORE: Restauration complète des optimisations et améliorations du système
+| |_|_|/  
+|/| | |   
+| | | | * 5ad7b69 (origin/feature/indexv2) refactor: 🗂️ Organisation et nettoyage des composants
+| | | | * ff18582 feat: ➕ Ajout du CartMemoryService pour persistance du panier en mémoire
+| | | | * bbed470 feat: 🛡️ Implémentation complète du système de validation Zod
+| | | | * d30b638 🚗 Zod validation integration for VehicleSelector and URL routing fixes
+| |_|_|/  
+|/| | |   
+* | | | b19e5ac (origin/feature/homepage-catalog-integration, feature/homepage-catalog-integration) feat: intégration catalogue homepage avec composants optimisés
+* | | | 9612ef3 (origin/feature/vehicle-detail-page, feature/vehicle-detail-page) ✨ feat: Système complet de migration URLs avec redirections 301 SEO
+* | | | d6b0cc9 fix: Complete vehicle selector optimization and validation
+* | | | 7093660 ♻️ REFACTOR: Renommage VehicleSelectorHybrid → VehicleSelector
+* | | | 8fd845c ✨ FEATURE: Page véhicule détail + Navigation interne complète
+* | | | f5dd3e2 🗑️ CLEANUP: Suppression fichiers temporaires Vite et tsconfig.tsbuildinfo
+* | | | d717c6f 🧹 CLEANUP: Nettoyage workspace et archivage
+* | | | 7a243b9 (origin/home) 🚗 FIX: Sélecteur véhicule intelligent - Résolution complète
+* | | | 6a865b1 (home) 🔧 Correction du problème motorisations CLIO IV 2017
+* | | | 2ad448d 🚀 ENHANCED SERVICES - Implementation Complete
+* | | | a24a75d (config-module-enhancement) ✨ feat: Complete system configuration with breadcrumb navigation
+* | | | 3c7c69c (origin/config-module-enhancement) feat: Complete config module implementation using existing ___config table
+* | | | 1969f4f feat: Enhanced config module with improved architecture and error handling
+* | | | 9833129 (404) 🔧 Fix critical database constraint violation in ErrorLogService
+* | | | 5547bb2 🎨 Optimize Error404 component - Enhanced UX and functionality
+* | | | 8518bd6 🛠️ Fix multiple empty routes - Complete solution
+* | | | dfd264b 🔧 Fix /support route - Missing loader resolved
+* | | | c9e682a 🎯 Optimize catch-all route ($.tsx) with intelligent 404 handling
+* | | | 9693c1e (origin/404) 🚀 STRATÉGIE OPTIMALE ACCOMPLIE: Intégration Frontend ↔ Backend Complète
+* | | | 65e3095 🎯 ACCOMPLISSEMENT FINAL: Module Erreurs Optimisé avec Conservation 100% Code Utilisateur
+* | | | e5b3f36 (origin/support-module, support-module) ✅ MONOREPO BACKEND/FRONTEND COMPLET + IA SUPPORT
+* | | | 64267f7 feat(support): Complete Review System + Extended Dashboard + API Integration
+* | | | def3a75 ✨ SYSTÈME DE SUPPORT CLIENT COMPLET
+* | | | 9fb249e feat(support): Complete support module implementation
+* | | | 76f002f docs: Legal pages system completion report
+* | | | 518b45d feat(legal): Complete legal pages system
+* | | | 12e5c73 feat(support): Système de contact frontend complet avec intégration backend
+* | | | 40f8b49 feat(support): Amélioration complète du ReviewService avec adaptation aux tables existantes
+* | | | b48dec3 feat: Adapter ContactService pour utiliser les tables existantes
+* | | | a4bc5d8 (origin/layout, layout) feat: create comprehensive support module with enhanced services and controllers
+* | | | 98529cc 🔧 amélioration: LayoutService et LayoutController avancés
+* | | | f25bcc8 ✨ feat: Implémentation GlobalSearch et NotificationCenter
+* | | | 1ee3a24 (origin/products-consolidation-new, products-consolidation-new) 🎉 PRODUCTS CONSOLIDATION COMPLETE: Modules complets + Corrections React
+* | | | efbc0fe 🔧 FIX: Intégration complète du ProductsEnhancementService
+* | | | 21bf67a 🎉 RÉCUPÉRATION COMPLÈTE: Toutes les améliorations de la branche products + correction service worker
+* | | | 91dc8a2 🚀 PRODUCTS CONSOLIDATION COMPLETE + Service Worker Fix
+* | | | b810a31 🔧 Fix: Service worker cleanup for products branch
+* | | | 50fd49b 🏆 PRODUCTS CONSOLIDATION - FINAL SUCCESS
+* | | | 6dc8825 🎯 PRODUCTS CONSOLIDATION - Phase 2A SUCCESS
+| | | | * 059fc5f (dashboard-consolidation-new) 🔧 Fix: Add service worker cleanup to prevent sw.js errors
+| |_|_|/  
+|/| | |   
+* | | | d1373ec 🏆 Dashboard Consolidation Complete - Progressive Enhancement Architecture
+* | | | 26128b5 (order-consolidation-new) 🎯 ORDERS CONSOLIDATION SUCCESS - Renommage intelligent + Vraies données
+* | | | dd974bb (origin/user-consolidation, user-consolidation, order-consolidation) 📋 Strategy analysis: Push direct validated as optimal approach
+* | | | 14a6b66 ✅ VALIDATION FINALE: Serveur opérationnel - Consolidation 100% réussie
+* | | | 03467bc 🏆 CONSOLIDATION FINALE: Mission accomplie avec succès
+* | | | 54329e9 📋 Phase 2 FINAL: Backend consolidation complete
+* | | | 3692b9a 🗑️ Phase 2B-2: Remove users-extended dead service
+* | | | 1480cce 🗑️ Phase 2B-1: Remove 2 dead backend services
+* | | | 6d7b72a 📊 Phase 2A: Dependencies analysis complete
+* | | | a33bfc6 🧹 Phase 1: Frontend consolidation - Remove 5 redundant user files
+* | | | d94b415 (origin/performance-boost, performance-boost) feat: Complete user management system with optimized pagination and detailed views
+* | | | 82c282f 🎉 INTÉGRATION FRONTEND OPTIMISÉE COMPLÈTE - Option 1 Accomplie
+* | | | 8454b36 🚀 OPTIMISATIONS PERFORMANCE COMPLÈTES - Cache Redis + Pagination Optimisée
+* | | | 515daa5 (optimisation-selective) 📋 Add: Tests & Performance roadmaps
+* | | | bf07c39 (origin/optimisation-selective) ✅ Complete: Implémentation finale du dashboard commercial avec sidebar
+* | | | 9ac9cf3 ✅ Fix: Correction des erreurs null/undefined dans le dashboard commercial
+* | | | df040a9 feat: Récupération sélective des optimisations sûres
+* | | | ea673de (origin/blog, blog) fix: Correction dashboard service avec vraies colonnes DB
+| | | | * 8d6cb38 (origin/optimisation, optimisation) feat: JWT auth fix + architecture cleanup (15+ files removed)
+| |_|_|/  
+|/| | |   
+* | | | fc1abdd optimisation
+* | | | ac08cd9 (origin/backoffice, backoffice) blog
+* | | | 66e0416 (origin/commercial, commercial) backoffice
+* | | | 01c9b5b commercial
+* | | | f0bb882 (gpt5) 🚀 Performance: Cache system + architecture validation
+* | | | 7f4cac4 ✅ Fix: Correction imports auth + injection dépendances services
+* | | | 4c60971 (origin/gpt5) feat: Unify authentication system
+* | | | f3e95c2 feat: Complete audit with production data connection
+* | | | a482996 gpt5
+* | | | b18745d (origin/admin, admin) context7
+* | | | 1423083 pbcopilot
+* | | | 137102f pb-admin
+* | | | 35b342a (origin/cart) update
+* | | | 52a68b6 (origin/payments) update
+* | | | c667dfc module payments
+* | | | fec3c7d (origin/service-commercial) interface
+* | | | b47df7b interface
+* | | | a1cda28 order3
+* | | | 13d60b7 user2
+* | | | a6237fb (origin/order) feat: update order branch
+* | | | 94f29c7 (origin/develop) profil
+* | | | 11f42ee USER
+ / / /  
+| | | * e21ad4e (origin/build-app) feat(reseller): Architecture complète massdoc revendeurs
+| | | * 1fa9d15 feat(reseller): Modules massdoc revendeurs sécurisés
+| | | * 0d36810 feat(security): Sécurisation section massdoc revendeurs
+| | | * 81f0566 feat(mcp): Migration complète 245 fichiers PHP → Architecture moderne
+| | | * 920234a feat(mcp): Intégration complète des modules MCP avec outillage
+| | | * 8243d9a feat(mcp): Intégration complète des modules MCP avec outillage
+| | | * 6723064 app
+| | |/  
+| | * 0495ff4 (origin/04-authentication) Add Inscription
+| |/  
