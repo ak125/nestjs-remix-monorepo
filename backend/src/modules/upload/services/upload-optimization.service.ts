@@ -8,7 +8,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UploadType } from '../dto/upload.dto';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 export interface OptimizationOptions {
   maxWidth?: number;
@@ -182,7 +182,7 @@ export class UploadOptimizationService {
 
     // Suppression des métadonnées si demandée
     if (options.stripMetadata) {
-      pipeline = pipeline.removeExifMetadata();
+      pipeline = pipeline.withMetadata({ orientation: undefined });
     }
 
     // Détermination du format de sortie

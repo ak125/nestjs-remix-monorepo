@@ -23,7 +23,7 @@ export interface SystemHealthCheck {
 
 @Injectable()
 export class HealthCheckService extends SupabaseBaseService {
-  private readonly logger = new Logger(HealthCheckService.name);
+  protected readonly logger = new Logger(HealthCheckService.name);
 
   constructor(
     configService: ConfigService,

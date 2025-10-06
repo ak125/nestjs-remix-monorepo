@@ -381,37 +381,40 @@ export interface TaskExecution {
 }
 
 // Ré-export des types des services
-export {
-  ContactFormData,
-  ContactTicket,
-  ContactStats,
-} from './services/contact.service';
-export {
-  ReviewData,
-  ReviewFilters as ReviewServiceFilters,
-  ReviewStats,
-} from './services/review.service';
-export {
-  QuoteRequest,
-  Quote,
-  QuotedItem,
-  QuoteProduct,
-} from './services/quote.service';
-export { FAQ, FAQCategory, FAQStats } from './services/faq.service';
-export { LegalDocument, LegalDocumentVersion } from './services/legal.service';
-export {
-  Claim,
-  ClaimResolution,
-  ClaimTimelineEntry,
-  ClaimStats,
-} from './services/claim.service';
-export {
-  NotificationPayload,
-  NotificationAction,
-} from './services/notification.service';
-export { SupportConfig } from './services/support-config.service';
-export {
-  SupportAnalytics,
-  AgentPerformance,
-  SupportReport,
-} from './services/support-analytics.service';
+// Note: Ces types sont désormais définis directement dans ce fichier
+// pour éviter les dépendances circulaires
+
+// export {
+//   ContactFormData,
+//   ContactTicket,
+//   ContactStats,
+// } from './services/contact.service';
+// export {
+//   ReviewData,
+//   ReviewFilters as ReviewServiceFilters,
+//   ReviewStats,
+// } from './services/review.service';
+// export {
+//   QuoteRequest,
+//   Quote,
+//   QuotedItem,
+//   QuoteProduct,
+// } from './services/quote.service';
+// export { FAQ, FAQCategory, FAQStats } from './services/faq.service';
+// export { LegalDocument, LegalDocumentVersion } from './services/legal.service';
+// export {
+//   Claim,
+//   ClaimResolution,
+//   ClaimTimelineEntry,
+//   ClaimStats,
+// } from './services/claim.service';
+// export {
+//   NotificationPayload,
+//   NotificationAction,
+// } from './services/notification.service';
+// export { SupportConfig } from './services/support-config.service';
+// export {
+//   SupportAnalytics,
+//   AnalyticsPeriod,
+//   SupportMetrics,
+// } from './services/support-analytics.service';

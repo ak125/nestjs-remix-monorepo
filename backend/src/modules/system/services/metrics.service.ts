@@ -24,7 +24,7 @@ export interface PerformanceMetrics {
 
 @Injectable()
 export class MetricsService extends SupabaseBaseService {
-  private readonly logger = new Logger(MetricsService.name);
+  protected readonly logger = new Logger(MetricsService.name);
   private metricsCache = new Map<string, SystemMetric>();
   private readonly CACHE_TTL = 60000; // 1 minute
 

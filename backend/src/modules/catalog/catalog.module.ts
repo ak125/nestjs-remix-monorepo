@@ -34,7 +34,7 @@ import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
 import { PiecesDbService } from '../../pieces/pieces-db.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
-import { PricingServiceV5UltimateFinal } from '../products/pricing-service-v5-ultimate-final.service';
+import { PricingService } from '../products/services/pricing.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -93,8 +93,10 @@ import { PricingServiceV5UltimateFinal } from '../products/pricing-service-v5-ul
     PiecesUltraEnhancedService,
     PiecesDbService,
     PiecesRealService,
-    // 🎯 V5 ULTIMATE PRICING - Service de prix avancé
-    PricingServiceV5UltimateFinal,
+    // 🎯 PRICING SERVICE - Service de prix
+    PricingService,
+    // Alias pour compatibilité
+    { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
   exports: [
     CatalogService,

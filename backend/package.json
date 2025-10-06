@@ -9,8 +9,9 @@
   "types": "./dist/remix/remix.service.d.ts",
   "scripts": {
     "dev": "run-p dev:compile dev:watch",
-    "dev:compile": "tsc --build --watch",
-    "dev:watch": "nodemon node dist/main.js",
+    "dev:nest": "nest start --watch --preserveWatchOutput",
+    "dev:compile": "tsc --build --watch --preserveWatchOutput",
+    "dev:watch": "nodemon --delay 2000ms --watch dist dist/main.js",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
     "build": "tsc --build",
@@ -51,7 +52,6 @@
     "@types/socket.io": "^3.0.2",
     "@types/uuid": "^10.0.0",
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "bullmq": "^5.56.10",
     "cache-manager": "^5.0.0",
@@ -67,7 +67,6 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "redis": "^5.6.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.3",
@@ -75,7 +74,7 @@
     "swagger-ui-express": "^4.6.3",
     "undici": "^7.13.0",
     "unix-crypt-td-js": "^1.1.4",
-    "zod": "^4.0.5"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@fafa/eslint-config": "*",
