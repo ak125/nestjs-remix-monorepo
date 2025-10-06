@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { ProductsService } from '../products.service';
 import { z } from 'zod';
 
 /**
@@ -22,14 +22,14 @@ const ProductValidationResultSchema = z.object({
 type ProductValidationResult = z.infer<typeof ProductValidationResultSchema>;
 
 @Injectable()
-export class ProductsEnhancementServiceV5UltimateSimple {
-  protected readonly logger = new Logger(ProductsEnhancementServiceV5UltimateSimple.name);
+export class ProductEnhancementService {
+  protected readonly logger = new Logger(ProductEnhancementService.name);
 
   // 🎯 CACHE INTELLIGENT - Pattern des services V5 Ultimate
   private readonly enhancementCache = new Map<string, any>();
 
   constructor(private readonly productsService: ProductsService) {
-    this.logger.log('🎯 [ProductsEnhancementV5Simple] Service V5 Ultimate Simple initialisé');
+    this.logger.log('🎯 [ProductEnhancement] Service initialisé');
   }
 
   /**

@@ -9,7 +9,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { TechnicalDataServiceV5Ultimate } from './technical-data-v5-ultimate.service';
+import { TechnicalDataService } from './services/technical-data.service';
 import { z } from 'zod';
 
 /**
@@ -44,7 +44,7 @@ export class TechnicalDataV5UltimateController {
   private readonly logger = new Logger(TechnicalDataV5UltimateController.name);
 
   constructor(
-    private readonly technicalDataService: TechnicalDataServiceV5Ultimate,
+    private readonly technicalDataService: TechnicalDataService,
   ) {}
 
   /**

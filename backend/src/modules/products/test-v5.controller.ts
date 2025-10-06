@@ -1,8 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { TechnicalDataServiceV5UltimateFixed } from './technical-data-v5-ultimate-fixed.service';
-import { ProductsEnhancementServiceV5UltimateSimple } from './products-enhancement-v5-ultimate-simple.service';
-import { PricingServiceV5Ultimate } from './pricing-service-v5-ultimate.service';
-import { PricingServiceV5UltimateFinal } from './pricing-service-v5-ultimate-final.service';
+import { TechnicalDataService } from './services/technical-data.service';
+import { ProductEnhancementService } from './services/product-enhancement.service';
+import { PricingService } from './services/pricing.service';
 
 /**
  * 🎯 CONTRÔLEUR DE TEST V5 ULTIMATE - Tests curl directs
@@ -12,10 +11,9 @@ import { PricingServiceV5UltimateFinal } from './pricing-service-v5-ultimate-fin
 @Controller('api/test-v5')
 export class TestV5Controller {
   constructor(
-    private readonly technicalDataService: TechnicalDataServiceV5UltimateFixed,
-    private readonly enhancementService: ProductsEnhancementServiceV5UltimateSimple,
-    private readonly pricingService: PricingServiceV5Ultimate,
-    private readonly pricingFinalService: PricingServiceV5UltimateFinal,
+    private readonly technicalDataService: TechnicalDataService,
+    private readonly enhancementService: ProductEnhancementService,
+    private readonly pricingService: PricingService,
   ) {}
 
   /**
@@ -237,7 +235,7 @@ export class TestV5Controller {
     @Param('pieceId') pieceId: string,
     @Query('quantity') quantity: string = '1',
   ) {
-    return await this.pricingFinalService.getProductPricing(
+    return await this.pricingService.getProductPricing(
       parseInt(pieceId),
       parseInt(quantity),
     );
@@ -253,7 +251,7 @@ export class TestV5Controller {
     @Query('type') type: string = 'standard',
     @Query('currency') currency: string = 'EUR',
   ) {
-    return await this.pricingFinalService.getAdvancedPricing(
+    return await this.pricingService.getAdvancedPricing(
       parseInt(pieceId),
       {
         quantity: parseInt(quantity),
@@ -268,7 +266,7 @@ export class TestV5Controller {
    */
   @Get('pricing-final-health')
   async getPricingFinalHealth() {
-    return await this.pricingFinalService.getHealthStatus();
+    return await this.pricingService.getHealthStatus();
   }
 
   /**
@@ -276,7 +274,7 @@ export class TestV5Controller {
    */
   @Get('pricing-final-stats')
   getPricingFinalStats() {
-    return this.pricingFinalService.getServiceStats();
+    return this.pricingService.getServiceStats();
   }
 
   /**
@@ -284,7 +282,7 @@ export class TestV5Controller {
    */
   @Get('pricing-final-debug/:pieceId')
   async debugPricingFinalData(@Param('pieceId') pieceId: string) {
-    return await this.pricingFinalService.debugRealData(parseInt(pieceId));
+    return await this.pricingService.debugRealData(parseInt(pieceId));
   }
 
   /**
@@ -292,7 +290,7 @@ export class TestV5Controller {
    */
   @Get('pricing-final-clear-cache')
   clearPricingFinalCache() {
-    return this.pricingFinalService.clearCache();
+    return this.pricingService.clearCache();
   }
 
   /**
@@ -418,6 +416,6 @@ export class TestV5Controller {
    */
   @Get('search/:reference')
   async searchByReference(@Param('reference') reference: string) {
-    return this.pricingFinalService.searchByReference(reference);
+    return this.pricingService.searchByReference(reference);
   }
 }

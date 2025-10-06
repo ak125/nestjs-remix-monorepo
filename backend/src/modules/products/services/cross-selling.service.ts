@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { z } from 'zod';
 
 /**
@@ -88,8 +88,8 @@ type CrossSellingSeo = z.infer<typeof CrossSellingSeoSchema>;
 type CrossSellingResult = z.infer<typeof CrossSellingResultSchema>;
 
 @Injectable()
-export class CrossSellingServiceV5Ultimate extends SupabaseBaseService {
-  protected readonly logger = new Logger(CrossSellingServiceV5Ultimate.name);
+export class CrossSellingService extends SupabaseBaseService {
+  protected readonly logger = new Logger(CrossSellingService.name);
   
   // 🎯 CACHE ADAPTATIF - Inspiré des patterns RobotsV5Ultimate
   private readonly cacheKeys = {

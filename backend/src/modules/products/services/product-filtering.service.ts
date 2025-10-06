@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { z } from 'zod';
 
 /**
@@ -63,8 +63,8 @@ type FilterGroup = z.infer<typeof FilterGroupSchema>;
 type FilterResult = z.infer<typeof FilterResultSchema>;
 
 @Injectable()
-export class FilteringServiceV5UltimateCleanService extends SupabaseBaseService {
-  protected readonly logger = new Logger(FilteringServiceV5UltimateCleanService.name);
+export class ProductFilteringService extends SupabaseBaseService {
+  protected readonly logger = new Logger(ProductFilteringService.name);
 
   /**
    * 🎯 MÉTHODE PRINCIPALE - Récupérer tous les filtres

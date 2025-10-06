@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
  * 🎯 PRICING SERVICE V5 ULTIMATE FINAL
@@ -34,8 +34,8 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
  * 🏆 SUCCÈS MÉTHODOLOGIQUE VALIDÉ par tests curl directs !
  */
 @Injectable()
-export class PricingServiceV5UltimateFinal extends SupabaseBaseService {
-  private readonly logger = new Logger(PricingServiceV5UltimateFinal.name);
+export class PricingService extends SupabaseBaseService {
+  private readonly logger = new Logger(PricingService.name);
   
   // Cache intelligent (AMÉLIORATION vs original sans cache)
   private readonly priceCache = new Map<string, any>();
