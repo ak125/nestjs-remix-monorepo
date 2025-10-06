@@ -2,9 +2,9 @@ import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ProductFilteringService } from './services/product-filtering.service';
 
-@ApiTags('Filtering V5 Ultimate Clean')
-@Controller('filtering-v5-clean')
-export class FilteringV5CleanController {
+@ApiTags('Product Filters')
+@Controller('api/products/filters')
+export class FilteringController {
   constructor(
     private readonly filteringService: ProductFilteringService,
   ) {}

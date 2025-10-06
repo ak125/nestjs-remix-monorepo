@@ -39,9 +39,9 @@ const BatchTechnicalDataSchema = z.object({
   options: GetTechnicalDataQuerySchema.optional(),
 });
 
-@Controller('api/products/technical-data-v5')
-export class TechnicalDataV5UltimateController {
-  private readonly logger = new Logger(TechnicalDataV5UltimateController.name);
+@Controller('api/products/technical-data')
+export class TechnicalDataController {
+  private readonly logger = new Logger(TechnicalDataController.name);
 
   constructor(
     private readonly technicalDataService: TechnicalDataService,

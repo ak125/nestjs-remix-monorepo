@@ -1,21 +1,22 @@
 import { Controller, Get, Logger, Param, HttpException, HttpStatus, Query } from '@nestjs/common';
-import { CrossSellingServiceV5Ultimate } from './cross-selling-v5-ultimate.service';
+import { CrossSellingService } from './services/cross-selling.service';
 
 /**
- * 🎯 CONTRÔLEUR CROSS-SELLING V5 - ROUTES PUBLIQUES
+ * 🎯 CONTRÔLEUR CROSS-SELLING - ROUTES PUBLIQUES
  * 
  * Ce contrôleur expose les endpoints cross-selling attendus par le frontend :
  * - GET /api/cross-selling/v5/:typeId/:pgId
  * - GET /api/cross-selling/v5/by-alias (avec query params)
+ * - GET /api/cross-selling/health
  * 
- * Il utilise le service CrossSellingServiceV5Ultimate existant
+ * Consolidé Phase 3 - utilise CrossSellingService
  */
 @Controller('api/cross-selling')
 export class CrossSellingController {
   private readonly logger = new Logger(CrossSellingController.name);
 
   constructor(
-    private readonly crossSellingV5Service: CrossSellingServiceV5Ultimate,
+    private readonly crossSellingService: CrossSellingService,
   ) {}
 
   /**
@@ -35,7 +36,7 @@ export class CrossSellingController {
       // Valeurs par défaut pour mfId si non spécifié
       const defaultMfId = 1;
 
-      return await this.crossSellingV5Service.getAdvancedCrossGammes(
+      return await this.crossSellingService.getAdvancedCrossGammes(
         parseInt(pgId),
         parseInt(typeId),
         defaultMfId,
@@ -80,7 +81,7 @@ export class CrossSellingController {
       const defaultTypeId = 1;
       const defaultMfId = 1;
 
-      return await this.crossSellingV5Service.getAdvancedCrossGammes(
+      return await this.crossSellingService.getAdvancedCrossGammes(
         defaultPgId,
         defaultTypeId,
         defaultMfId,
