@@ -515,7 +515,7 @@ const BrandGrid: React.FC<{ constructeurs: ConstructeurArticle[] }> = ({ constru
               </span>
               <span className="flex items-center gap-1">
                 <ViewIcon />
-                {constructeur.viewsCount.toLocaleString()}
+                {(constructeur.viewsCount || 0).toLocaleString()}
               </span>
             </div>
           </div>
