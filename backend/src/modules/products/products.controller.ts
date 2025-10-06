@@ -17,6 +17,7 @@ import {
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
 import { StockService } from './services/stock.service';
+import { PricingService } from './services/pricing.service';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -55,6 +56,7 @@ export class ProductsController {
   constructor(
     private readonly productsService: ProductsService,
     private readonly stockService: StockService,
+    private readonly pricingService: PricingService,
   ) {}
 
   /**
@@ -417,6 +419,26 @@ export class ProductsController {
       );
       throw new HttpException(
         'Erreur lors de la récupération des types',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 RECHERCHE PAR RÉFÉRENCE - Trouve une pièce par sa référence
+   * @param reference - Référence de la pièce (ex: KTBWP8841)
+   * @returns Données de la pièce et pricing si trouvé
+   */
+  @Get('search/:reference')
+  @CacheTTL(300) // 5 minutes de cache
+  async searchByReference(@Param('reference') reference: string) {
+    try {
+      this.logger.log(`Recherche par référence: ${reference}`);
+      return await this.pricingService.searchByReference(reference);
+    } catch (error) {
+      this.logger.error(`Erreur recherche référence ${reference}:`, error);
+      throw new HttpException(
+        'Erreur lors de la recherche',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

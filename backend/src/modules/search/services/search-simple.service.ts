@@ -154,28 +154,40 @@ export class SearchSimpleService extends SupabaseBaseService {
       this.logger.log(`📊 prs_kind: ${JSON.stringify(kindCounts)}`);
     }
 
-    // FALLBACK: Si pieces_ref_search est vide, rechercher directement dans pieces
+    // FALLBACK: Si pieces_ref_search est vide, rechercher dans pieces_price.pri_ref (beaucoup plus rapide !)
     let pieceIds: number[] = [];
     let prsKindMap = new Map<string, string>();
 
     if (searchRefs.length === 0) {
-      this.logger.log(`⚠️ pieces_ref_search vide, fallback sur recherche directe dans pieces`);
+      this.logger.log(`⚠️ pieces_ref_search vide, fallback OPTIMISÉ sur pieces_price.pri_ref`);
       
-      // Recherche DIRECTE dans pieces avec OR sur toutes les variantes
-      const orConditions = uniqueVariants.map((v) => `piece_ref.ilike.%${v}%`).join(',');
+      // ✅ OPTIMISATION: Rechercher dans pieces_price.pri_ref (indexé et plus rapide)
+      // Utiliser seulement la variante principale pour la performance
+      const mainVariant = uniqueVariants[0];
+      const fallbackPricesResult = await this.client
+        .from('pieces_price')
+        .select('pri_piece_id, pri_ref, pri_pm_id, pri_dispo')
+        .ilike('pri_ref', `%${mainVariant}%`)
+        .eq('pri_dispo', '1')
+        .limit(100); // Limite raisonnable pour la performance
+
+      const priceMatches = fallbackPricesResult.data || [];
+      this.logger.log(`🔄 Fallback: ${priceMatches.length} prix trouvés via pri_ref`);
+
+      if (priceMatches.length === 0) {
+        return this.processResults([], refQuery, filters, page, limit, offset, startTime, categoryFilter, cacheKey);
+      }
+
+      // Récupérer les pièces correspondantes
+      const matchedPieceIds = [...new Set(priceMatches.map((p) => p.pri_piece_id))];
       const directPiecesResult = await this.client
         .from('pieces')
         .select('piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display')
-        .or(orConditions)
-        .eq('piece_display', true)
-        .limit(1000);
+        .in('piece_id', matchedPieceIds)
+        .eq('piece_display', true);
 
       const directPieces = directPiecesResult.data || [];
-      this.logger.log(`🔄 Fallback: ${directPieces.length} pièces trouvées directement`);
-
-      if (directPieces.length === 0) {
-        return this.processResults([], refQuery, filters, page, limit, offset, startTime, categoryFilter, cacheKey);
-      }
+      this.logger.log(`🔄 Fallback: ${directPieces.length} pièces trouvées`);
 
       // Utiliser ces pièces directement (prs_kind = '0' par défaut)
       pieceIds = directPieces.map((p) => p.piece_id);
