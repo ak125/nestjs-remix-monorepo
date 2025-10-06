@@ -242,13 +242,14 @@ export interface V5UltimateHealth {
 }
 
 /**
- * 🔍 RECHERCHE PAR RÉFÉRENCE - Utilise le service V5 Ultimate
+ * 🔍 RECHERCHE PAR RÉFÉRENCE - Utilise l'endpoint de production
+ * ✅ Migré en Phase 5.1: /api/test-v5/search → /api/products/search
  * @param reference Référence de pièce à rechercher
  * @returns Résultats avec distinction supplier/brand
  */
 export async function searchPieceByReference(reference: string): Promise<V5UltimateSearchResult> {
   try {
-    const response = await fetch(`${API_BASE}/api/test-v5/search/${encodeURIComponent(reference)}`, {
+    const response = await fetch(`${API_BASE}/api/products/search/${encodeURIComponent(reference)}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -262,7 +263,7 @@ export async function searchPieceByReference(reference: string): Promise<V5Ultim
 
     return await response.json();
   } catch (error) {
-    console.error('Erreur recherche V5 Ultimate:', error);
+    console.error('Erreur recherche par référence:', error);
     return {
       success: false,
       search_query: reference,

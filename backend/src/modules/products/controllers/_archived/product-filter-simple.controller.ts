@@ -29,7 +29,7 @@ import {
 } from '@nestjs/swagger';
 
 // Service V4 Ultimate
-import { ProductFilterV4UltimateService } from './product-filter-v4-ultimate.service';
+import { ProductFilteringService } from './services/product-filtering.service';
 
 @ApiTags('Product Filters - V4 Ultimate (Zod Only)')
 @Controller('api/product-filters-v4')
@@ -37,7 +37,7 @@ export class ProductFilterSimpleController {
   private readonly logger = new Logger(ProductFilterSimpleController.name);
 
   constructor(
-    private readonly filterService: ProductFilterV4UltimateService
+    private readonly filterService: ProductFilteringService
   ) {}
 
   /**

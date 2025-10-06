@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { z } from 'zod';
 
 /**
@@ -64,8 +64,8 @@ type TechnicalDataResult = z.infer<typeof TechnicalDataResultSchema>;
 type TechnicalCriteria = z.infer<typeof TechnicalCriteriaSchema>;
 
 @Injectable()
-export class TechnicalDataServiceV5UltimateFixed extends SupabaseBaseService {
-  protected readonly logger = new Logger(TechnicalDataServiceV5UltimateFixed.name);
+export class TechnicalDataService extends SupabaseBaseService {
+  protected readonly logger = new Logger(TechnicalDataService.name);
 
   // 🎯 CACHE SIMPLE - Pattern de FilteringV5UltimateFixed
   private readonly technicalCache = new Map<string, any>();

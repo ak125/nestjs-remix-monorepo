@@ -1,7 +1,7 @@
 // 🔧 Route pièces avec véhicule - Version V5 Améliorée 
 // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState, useMemo } from 'react';
 
@@ -482,14 +482,8 @@ async function fetchRealPieces(typeId: number, gammeId: number): Promise<{pieces
  */
 async function fetchCrossSellingGammes(typeId: number, gammeId: number): Promise<CrossSellingGamme[]> {
   try {
-    // Essai avec l'endpoint principal cross-selling
-    let response = await fetch(`http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`);
-    
-    // Si 404, essayer l'endpoint alternatif
-    if (response.status === 404) {
-      console.log(`🔄 Essai endpoint alternatif cross-selling`);
-      response = await fetch(`http://localhost:3000/api/products/loader-v5-test/cross-selling/${gammeId}/${typeId}`);
-    }
+    // Essai avec l'endpoint principal cross-selling (consolidé Phase 3)
+    const response = await fetch(`http://localhost:3000/api/cross-selling/v5/${typeId}/${gammeId}`);
     
     if (!response.ok) {
       console.warn(`❌ Cross-selling API non disponible: ${response.status}`);

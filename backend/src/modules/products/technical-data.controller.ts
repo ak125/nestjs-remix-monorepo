@@ -9,7 +9,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { TechnicalDataServiceV5Ultimate } from './technical-data-v5-ultimate.service';
+import { TechnicalDataService } from './services/technical-data.service';
 import { z } from 'zod';
 
 /**
@@ -39,12 +39,12 @@ const BatchTechnicalDataSchema = z.object({
   options: GetTechnicalDataQuerySchema.optional(),
 });
 
-@Controller('api/products/technical-data-v5')
-export class TechnicalDataV5UltimateController {
-  private readonly logger = new Logger(TechnicalDataV5UltimateController.name);
+@Controller('api/products/technical-data')
+export class TechnicalDataController {
+  private readonly logger = new Logger(TechnicalDataController.name);
 
   constructor(
-    private readonly technicalDataService: TechnicalDataServiceV5Ultimate,
+    private readonly technicalDataService: TechnicalDataService,
   ) {}
 
   /**
@@ -146,30 +146,50 @@ export class TechnicalDataV5UltimateController {
   }
 
   /**
-   * 🏥 HEALTH CHECK SERVICE - Surveillance santé
-   * GET /api/products/technical-data-v5/health
+   * 🏥 HEALTH CHECK SERVICE - Simple health check
+   * GET /api/products/technical-data/health
    */
-  @Get('_health')
+  @Get('health')
   async healthCheck() {
     try {
-      const health = await this.technicalDataService.performHealthCheck();
+      const health = await this.technicalDataService.getHealthStatus();
       
-      this.logger.debug(`🏥 [TechnicalDataV5Controller] Health check: ${health.status}`);
+      this.logger.debug(`🏥 [TechnicalDataController] Health check: ${health.status}`);
 
+      return health;
+    } catch (error) {
+      this.logger.error(`❌ [TechnicalDataController] Erreur health check:`, error);
+      
+      return {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * 🏥 HEALTH CHECK DETAILED - Advanced health monitoring  
+   * GET /api/products/technical-data/_health
+   */
+  @Get('_health')
+  async detailedHealthCheck() {
+    try {
+      const health = await this.technicalDataService.getHealthStatus();
+      const stats = this.technicalDataService.getServiceStats();
+      
       return {
         success: true,
         health,
+        stats,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ [TechnicalDataV5Controller] Erreur health check:`, error);
+      this.logger.error(`❌ [TechnicalDataController] Erreur detailed health:`, error);
       
       return {
         success: false,
-        health: {
-          status: 'unhealthy',
-          error: error.message,
-        },
+        error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       };
     }
