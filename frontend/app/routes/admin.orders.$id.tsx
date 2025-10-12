@@ -10,7 +10,12 @@ import { ArrowLeft, Edit, Package, MapPin, CreditCard, FileText, User, Phone, Ma
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { OrderLineActions } from "~/components/admin/OrderLineActions";
 
+/**
+ * 🎯 FORMAT BDD SUPABASE - Format legacy consolidé
+ * Correspond exactement à la structure de la table ___xtr_order
+ */
 interface OrderDetails {
   ord_id: string;
   ord_cst_id: string;
@@ -63,11 +68,17 @@ interface OrderDetails {
   };
   orderLines?: Array<{
     orl_id: string;
-    orl_art_ref: string;
+    orl_ord_id: string;
     orl_pg_name: string;
+    orl_pm_name?: string;
+    orl_art_ref?: string;
+    orl_art_ref_clean?: string;
     orl_art_quantity: string;
-    orl_art_unit_price: string;
-    orl_art_total_price: string;
+    orl_art_price_sell_unit_ttc?: string;
+    orl_art_price_sell_ttc?: string;
+    orl_art_price_buy_unit_ht?: string;
+    orl_orls_id?: string;
+    orl_equiv_id?: string;
     lineStatus?: {
       orls_id: string;
       orls_named: string;
@@ -81,41 +92,53 @@ interface LoaderData {
   error?: string;
 }
 
-export const loader: LoaderFunction = async ({ params, context }) => {
+export const loader: LoaderFunction = async ({ params, request }) => {
   const orderId = params.id;
   
   if (!orderId) {
     return json<LoaderData>({ order: null, error: "ID de commande manquant" });
   }
 
+  console.log(`🔍 [Frontend] Chargement commande avec ID: ${orderId}`);
+
   try {
-  // Utiliser l'intégration directe pour récupérer la commande
-  const { getRemixIntegrationService } = await import("~/server/remix-integration.server");
-  const integration: any = await getRemixIntegrationService(context);
-    let result = await integration.getOrderByIdForRemix?.(orderId);
-    if (!result) {
-      // Fallback HTTP direct
-      const { getRemixApiService } = await import("~/server/remix-api.server");
-      const api: any = await getRemixApiService(context);
-      result = await api.makeApiCall?.(`/api/legacy-orders/${orderId}`);
-      if (result && !result.success) {
-        result = { success: true, order: result };
-      }
-    }
+    const cookie = request.headers.get("Cookie") || "";
     
-    if (!result.success) {
+    // Appel direct à l'API backend
+    const response = await fetch(`http://localhost:3000/api/legacy-orders/${orderId}`, {
+      headers: {
+        "Cookie": cookie,
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ [Frontend] API /api/legacy-orders/${orderId} returned ${response.status}:`, errorText);
+      
       return json<LoaderData>({ 
         order: null, 
-        error: result.error || "Commande non trouvée" 
+        error: `Commande non trouvée avec l'ID: ${orderId}` 
       });
     }
 
+    const data = await response.json();
+    const order = data.data || data.order || data;
+    
+    if (!order || !order.ord_id) {
+      console.error(`❌ [Frontend] Commande non trouvée ou structure invalide`);
+      return json<LoaderData>({ 
+        order: null, 
+        error: "Commande non trouvée" 
+      });
+    }
+
+    console.log(`✅ [Frontend] Commande ${orderId} chargée (format BDD)`);
     return json<LoaderData>({
-      order: result.order,
+      order: order,
       error: undefined
     });
   } catch (error) {
-    console.error("Error loading order:", error);
+    console.error("❌ [Frontend] Error loading order:", error);
     return json<LoaderData>({ 
       order: null, 
       error: "Erreur lors du chargement de la commande" 
@@ -383,10 +406,15 @@ export default function OrderDetailsReal() {
             <div className="space-y-4">
               {order.orderLines.map((line, index) => (
                 <div key={line.orl_id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
-                      <h4 className="font-medium">{line.orl_pg_name}</h4>
-                      <p className="text-gray-600">Réf: {line.orl_art_ref}</p>
+                      <h4 className="font-medium">
+                        {line.orl_pg_name}
+                        {line.orl_pm_name && ` - ${line.orl_pm_name}`}
+                      </h4>
+                      {line.orl_art_ref && (
+                        <p className="text-gray-600">Réf: {line.orl_art_ref}</p>
+                      )}
                       {line.lineStatus && (
                         <Badge className={`mt-2 ${getStatusColor(line.lineStatus)}`}>
                           {line.lineStatus.orls_named}
@@ -395,12 +423,21 @@ export default function OrderDetailsReal() {
                     </div>
                     <div className="text-right">
                       <p className="font-medium">
-                        {line.orl_art_quantity} x {parseFloat(line.orl_art_unit_price).toFixed(2)} €
+                        {line.orl_art_quantity} x {line.orl_art_price_sell_unit_ttc ? parseFloat(line.orl_art_price_sell_unit_ttc).toFixed(2) : '0.00'} €
                       </p>
                       <p className="text-lg font-bold">
-                        {parseFloat(line.orl_art_total_price).toFixed(2)} €
+                        {line.orl_art_price_sell_ttc ? parseFloat(line.orl_art_price_sell_ttc).toFixed(2) : '0.00'} €
                       </p>
                     </div>
+                  </div>
+                  
+                  {/* 🚀 NOUVEAU : Boutons d'action */}
+                  <div className="mt-4 pt-4 border-t">
+                    <OrderLineActions 
+                      orderId={parseInt(order.ord_id)} 
+                      line={line}
+                      onSuccess={() => window.location.reload()}
+                    />
                   </div>
                 </div>
               ))}
@@ -411,17 +448,53 @@ export default function OrderDetailsReal() {
         </CardContent>
       </Card>
 
-      {/* Informations supplémentaires */}
+      {/* Informations de paiement */}
       {order.ord_info && (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Informations supplémentaires
+              <CreditCard className="w-5 h-5" />
+              Informations de paiement
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap">{order.ord_info}</p>
+            {(() => {
+              try {
+                const paymentInfo = JSON.parse(order.ord_info);
+                return (
+                  <div className="grid grid-cols-2 gap-4">
+                    {paymentInfo.payment_gateway && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Passerelle de paiement</label>
+                        <p className="mt-1 font-semibold">{paymentInfo.payment_gateway}</p>
+                      </div>
+                    )}
+                    {paymentInfo.transaction_id && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">ID Transaction</label>
+                        <p className="mt-1 font-mono text-sm">{paymentInfo.transaction_id}</p>
+                      </div>
+                    )}
+                    {paymentInfo.currency && (
+                      <div>
+                        <label className="text-sm font-medium text-gray-600">Devise</label>
+                        <p className="mt-1">{paymentInfo.currency}</p>
+                      </div>
+                    )}
+                    {paymentInfo.payment_metadata && Object.keys(paymentInfo.payment_metadata).length > 0 && (
+                      <div className="col-span-2">
+                        <label className="text-sm font-medium text-gray-600">Métadonnées</label>
+                        <pre className="mt-1 p-3 bg-gray-50 rounded text-xs overflow-auto">
+                          {JSON.stringify(paymentInfo.payment_metadata, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                );
+              } catch {
+                return <p className="whitespace-pre-wrap text-sm">{order.ord_info}</p>;
+              }
+            })()}
           </CardContent>
         </Card>
       )}

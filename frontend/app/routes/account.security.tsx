@@ -1,10 +1,12 @@
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from "lucide-react";
+
+import { requireAuth } from "../auth/unified.server";
+import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { requireAuth } from "../auth/unified.server";
 
 type SecurityData = {
   password: {
@@ -39,11 +41,16 @@ type SecurityData = {
 
 type LoaderData = {
   security: SecurityData;
+  user: any;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   // Authentification requise
-  await requireAuth(request);
+  const user = await requireAuth(request);
+  
+  if (!user) {
+    throw new Response("Non authentifié", { status: 401 });
+  }
   
   try {
     // TODO: Récupérer les données de sécurité depuis l'API
@@ -101,18 +108,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       ]
     };
 
-    return json<LoaderData>({ security });
+    return json<LoaderData>({ security, user });
   } catch (error) {
     console.error("Erreur chargement sécurité:", error);
-    return json<LoaderData>({ 
-      security: {
-        password: { strength: "weak", lastChanged: null, daysOld: 0 },
-        twoFactor: { enabled: false },
-        sessions: { active: 0, devices: [] },
-        securityScore: 0,
-        recommendations: []
-      }
-    });
+    throw new Response("Erreur chargement sécurité", { status: 500 });
   }
 };
 
@@ -183,7 +182,7 @@ function RecommendationCard({ recommendation }: { recommendation: SecurityData['
 }
 
 export default function AccountSecurity() {
-  const { security } = useLoaderData<LoaderData>();
+  const { security, user } = useLoaderData<LoaderData>();
 
   const getPasswordStrengthColor = (strength: string) => {
     switch (strength) {
@@ -202,7 +201,8 @@ export default function AccountSecurity() {
   };
 
   return (
-    <div className="space-y-6">
+    <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
+      <div className="space-y-6">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
@@ -360,6 +360,7 @@ export default function AccountSecurity() {
           </Link>
         </Button>
       </div>
-    </div>
+      </div>
+    </AccountLayout>
   );
 }

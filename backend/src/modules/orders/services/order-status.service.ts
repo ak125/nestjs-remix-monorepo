@@ -301,10 +301,18 @@ export class OrderStatusService extends SupabaseBaseService {
 
   /**
    * Récupérer l'historique des statuts d'une commande (version simplifiée)
+   * TODO: Créer une vraie table d'historique (ex: ___xtr_order_history)
+   * Note: ___xtr_order_status est une table de référence des statuts, pas d'historique
    */
   async getOrderStatusHistory(orderId: number): Promise<any[]> {
+    // Temporairement désactivé car ___xtr_order_status n'a pas de colonne order_id
+    // C'est une table de référence (enum) des statuts possibles
+    this.logger.warn(`Historique des statuts non disponible pour commande ${orderId} - table d'historique à créer`);
+    return [];
+    
+    /* Code original à réactiver une fois la table d'historique créée
     const { data, error } = await this.supabase
-      .from('___xtr_order_status')
+      .from('___xtr_order_history')  // Utiliser une vraie table d'historique
       .select('*')
       .eq('order_id', orderId)
       .order('created_at', { ascending: false });
@@ -315,5 +323,6 @@ export class OrderStatusService extends SupabaseBaseService {
     }
 
     return data || [];
+    */
   }
 }

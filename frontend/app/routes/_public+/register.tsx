@@ -1,10 +1,8 @@
 import { 
-  json, 
-  redirect,
-  type ActionFunctionArgs, 
-  type LoaderFunctionArgs 
+  type LoaderFunctionArgs,
+  redirect 
 } from "@remix-run/node";
-import { Form, useActionData, Link, useNavigation } from "@remix-run/react";
+import { Link, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { z } from "zod";
 import { getOptionalUser } from "../../auth/unified.server";
@@ -47,95 +45,40 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   return null;
 };
 
-export async function action({ request }: ActionFunctionArgs) {
-  // Équivalent à myspace.subscribe.php
-  const formData = await request.formData();
-  const data = Object.fromEntries(formData);
-  
-  try {
-    // Parser et valider les données
-    const userData = {
-      email: data.email,
-      password: data.password,
-      confirmPassword: data.confirmPassword,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      phone: data.phone,
-      civility: data.civility,
-      newsletterOptIn: data.newsletterOptIn === "on",
-      billingAddress: {
-        address1: data["billing.address1"],
-        address2: data["billing.address2"],
-        postalCode: data["billing.postalCode"],
-        city: data["billing.city"],
-        country: data["billing.country"] || "FR",
-      },
-    };
-
-    const validated = RegisterSchema.parse(userData);
-    
-    // Créer l'utilisateur via l'API backend
-    console.log('🔍 DEBUG: Appel API register avec:', validated);
-    
-    const response = await fetch('http://localhost:3000/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(validated),
-    });
-
-    const result = await response.json();
-    console.log('🔍 DEBUG: Réponse API register:', result);
-
-    if (!response.ok) {
-      if (response.status === 409) {
-        return json(
-          { error: "Cet email est déjà utilisé" },
-          { status: 409 }
-        );
-      }
-      return json(
-        { error: result.message || "Erreur lors de la création du compte" },
-        { status: response.status }
-      );
-    }
-
-    // Redirection vers la page de bienvenue avec token de session
-    if (result.sessionToken) {
-      console.log('🔍 DEBUG: Redirection avec token:', result.sessionToken);
-      return redirect(`/authenticate?token=${result.sessionToken}`);
-    }
-
-    // Si succès mais pas de token, redirection vers login
-    if (result.success) {
-      console.log('🔍 DEBUG: Succès sans token, redirection vers login');
-      return redirect("/login?message=Compte créé avec succès, veuillez vous connecter");
-    }
-
-    // Redirection par défaut
-    console.log('🔍 DEBUG: Redirection par défaut');
-    return redirect("/account/welcome");
-
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return json(
-        { errors: error.flatten() },
-        { status: 400 }
-      );
-    }
-    return json(
-      { error: "Erreur lors de la création du compte" },
-      { status: 500 }
-    );
-  }
-}
-
 export default function RegisterPage() {
-  const actionData = useActionData<typeof action>();
-  const navigation = useNavigation();
-  const isSubmitting = navigation.state === "submitting";
+  const [searchParams] = useSearchParams();
+  const error = searchParams.get("error");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    // Soumettre directement au backend via navigation native (comme le login)
+    const tempForm = document.createElement('form');
+    tempForm.method = 'POST';
+    tempForm.action = '/register-and-login';
+    tempForm.style.display = 'none';
+    
+    // Ajouter tous les champs du formulaire
+    const fields = ['email', 'password', 'confirmPassword', 'firstName', 'lastName', 'phone', 'civility'];
+    fields.forEach(field => {
+      const value = formData.get(field);
+      if (value) {
+        const input = document.createElement('input');
+        input.name = field;
+        input.value = value as string;
+        tempForm.appendChild(input);
+      }
+    });
+    
+    document.body.appendChild(tempForm);
+    tempForm.submit();
+  };
 
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -181,35 +124,20 @@ export default function RegisterPage() {
         </div>
 
         {/* Error Messages */}
-        {actionData && 'error' in actionData && (
+        {error && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-500">
             <Card className="border-red-200 bg-red-50">
               <CardContent className="pt-6">
                 <p className="text-sm text-red-800 flex items-center gap-2">
                   <span className="text-lg">❌</span>
-                  {actionData.error}
+                  {error}
                 </p>
               </CardContent>
             </Card>
           </div>
         )}
 
-        {actionData && 'errors' in actionData && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <ul className="space-y-1">
-                  {Object.entries(actionData.errors.fieldErrors).map(([field, errors]) => (
-                    <li key={field} className="text-sm text-red-800 flex items-start gap-2">
-                      <span>•</span>
-                      <span><strong>{field}:</strong> {Array.isArray(errors) ? errors.join(', ') : ''}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+
 
         {/* Registration Form */}
         <Card className="shadow-xl border-gray-200 backdrop-blur-sm bg-white/90">
@@ -220,7 +148,7 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form method="post" className="space-y-8">
+            <form method="post" onSubmit={handleSubmit} className="space-y-8">
               {/* Informations personnelles */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
@@ -461,7 +389,7 @@ export default function RegisterPage() {
                   )}
                 </Button>
               </div>
-            </Form>
+            </form>
           </CardContent>
         </Card>
 

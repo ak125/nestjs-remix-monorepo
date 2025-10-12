@@ -148,4 +148,82 @@ export class MessagesService {
     this.logger.log(`Fetching customers with limit: ${limit}`);
     return this.messageDataService.getCustomers(limit);
   }
+
+  /**
+   * Archiver un message
+   */
+  async archiveMessage(messageId: string, userId: string): Promise<ModernMessage> {
+    this.logger.log(`Archiving message: ${messageId} by user ${userId}`);
+
+    // Vérifier que le message appartient à l'utilisateur
+    const message = await this.getMessageById(messageId);
+    if (message.customerId !== userId) {
+      throw new NotFoundException('Message non trouvé ou accès refusé');
+    }
+
+    const archivedMessage = await this.messageDataService.updateMessageStatus(
+      messageId,
+      { closed: true },
+    );
+
+    this.eventEmitter.emit('message.archived', { messageId, userId });
+
+    return archivedMessage;
+  }
+
+  /**
+   * Supprimer un message (soft delete en le fermant)
+   */
+  async deleteMessage(messageId: string, userId: string): Promise<boolean> {
+    this.logger.log(`Deleting message: ${messageId} by user ${userId}`);
+
+    // Vérifier que le message appartient à l'utilisateur
+    const message = await this.getMessageById(messageId);
+    if (message.customerId !== userId) {
+      throw new NotFoundException('Message non trouvé ou accès refusé');
+    }
+
+    await this.messageDataService.updateMessageStatus(messageId, {
+      closed: true,
+    });
+
+    this.eventEmitter.emit('message.deleted', { messageId, userId });
+
+    return true;
+  }
+
+  /**
+   * Répondre à un message
+   */
+  async replyToMessage(
+    messageId: string,
+    userId: string,
+    replyContent: string,
+  ): Promise<ModernMessage> {
+    this.logger.log(`Replying to message: ${messageId} by user ${userId}`);
+
+    // Récupérer le message original
+    const originalMessage = await this.getMessageById(messageId);
+    if (originalMessage.customerId !== userId) {
+      throw new NotFoundException('Message non trouvé ou accès refusé');
+    }
+
+    // Créer la réponse
+    const replyMessage = await this.createMessage({
+      customerId: userId,
+      staffId: originalMessage.staffId,
+      orderId: originalMessage.orderId,
+      subject: `Re: ${originalMessage.subject}`,
+      content: replyContent,
+      priority: originalMessage.priority,
+    });
+
+    this.eventEmitter.emit('message.reply', {
+      originalMessageId: messageId,
+      replyMessageId: replyMessage.id,
+      userId,
+    });
+
+    return replyMessage;
+  }
 }

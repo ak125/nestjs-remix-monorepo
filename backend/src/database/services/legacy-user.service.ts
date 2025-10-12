@@ -81,8 +81,13 @@ export class LegacyUserService extends SupabaseBaseService {
   /**
    * Récupère un utilisateur par son ID
    */
-  async getUserById(userId: string): Promise<LegacyUser> {
+  async getUserById(
+    userId: string,
+    options?: { throwOnNotFound?: boolean },
+  ): Promise<LegacyUser | null> {
     try {
+      this.logger.debug(`🔍 Recherche utilisateur avec ID: ${userId}`);
+
       const { data, error } = await this.supabase
         .from('___xtr_customer')
         .select('*')
@@ -90,13 +95,35 @@ export class LegacyUserService extends SupabaseBaseService {
         .single();
 
       if (error || !data) {
-        throw new NotFoundException('Utilisateur non trouvé');
+        this.logger.warn(`⚠️ Client ${userId} non trouvé`);
+
+        // Si throwOnNotFound est true, on lance une erreur (pour l'endpoint API)
+        if (options?.throwOnNotFound) {
+          throw new NotFoundException(
+            `Utilisateur non trouvé avec l'ID: ${userId}`,
+          );
+        }
+
+        // Sinon retourner null (pour usage interne, affichage liste)
+        return null;
       }
 
+      this.logger.debug(`✅ Utilisateur trouvé:`, {
+        id: data.cst_id,
+        email: data.cst_mail,
+      });
       return this.mapToLegacyUser(data);
     } catch (error) {
-      this.logger.error(`Failed to get user ${userId}:`, error);
-      throw error;
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      this.logger.error(
+        `❌ Erreur inattendue lors de la recherche de l'utilisateur ${userId}:`,
+        error,
+      );
+      throw new NotFoundException(
+        `Impossible de récupérer l'utilisateur ${userId}: ${error.message}`,
+      );
     }
   }
 
@@ -131,6 +158,8 @@ export class LegacyUserService extends SupabaseBaseService {
    */
   async getUserOrders(userId: string): Promise<any[]> {
     try {
+      this.logger.debug(`📦 Recherche commandes pour user: ${userId}`);
+
       const { data, error } = await this.supabase
         .from('___xtr_order')
         .select('ord_id, ord_date, ord_total_ttc, ord_is_pay, ord_info')
@@ -138,19 +167,40 @@ export class LegacyUserService extends SupabaseBaseService {
         .order('ord_date', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        this.logger.error(`❌ Erreur Supabase orders pour ${userId}:`, error);
+        throw error;
+      }
 
-      return (data || []).map((order) => ({
-        id: order.ord_id,
-        date: order.ord_date,
-        total: parseFloat(order.ord_total_ttc || '0'),
-        isPaid: order.ord_is_pay === '1',
-        info: order.ord_info,
-        status: order.ord_is_pay === '1' ? 'paid' : 'pending',
-      }));
+      const orders = (data || [])
+        .map((order) => {
+          try {
+            return {
+              id: order.ord_id,
+              date: order.ord_date,
+              total: parseFloat(order.ord_total_ttc || '0'),
+              isPaid: order.ord_is_pay === '1',
+              info: order.ord_info || null,
+              status: order.ord_is_pay === '1' ? 'paid' : 'pending',
+            };
+          } catch (mapError) {
+            this.logger.warn(
+              `⚠️ Erreur mapping order ${order.ord_id}:`,
+              mapError,
+            );
+            return null;
+          }
+        })
+        .filter(Boolean); // Filtrer les nulls
+
+      this.logger.debug(
+        `✅ ${orders.length} commandes trouvées pour user ${userId}`,
+      );
+      return orders;
     } catch (error) {
-      this.logger.error(`Failed to get orders for user ${userId}:`, error);
-      throw error;
+      this.logger.error(`❌ Failed to get orders for user ${userId}:`, error);
+      // Retourner un tableau vide au lieu de throw pour ne pas bloquer l'affichage
+      return [];
     }
   }
 

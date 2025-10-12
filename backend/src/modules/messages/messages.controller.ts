@@ -13,17 +13,8 @@ import {
   Body,
   HttpException,
   HttpStatus,
-  UsePipes,
 } from '@nestjs/common';
 import { MessagesService } from './messages.service';
-import {
-  CreateMessageDto,
-  MessageFiltersDto,
-  MarkAsReadDto,
-  validateCreateMessage,
-  validateMessageFilters,
-  validateMarkAsRead,
-} from './dto';
 
 @Controller('api/messages')
 export class MessagesController {
@@ -277,6 +268,125 @@ export class MessagesController {
       console.error(`❌ API Messages Error: ${error.message || error}`);
       throw new HttpException(
         'Erreur serveur lors de la récupération des clients',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Archiver un message
+   * PUT /api/messages/:id/archive
+   */
+  @Put(':id/archive')
+  async archiveMessage(
+    @Param('id') messageId: string,
+    @Body() body: { userId: string },
+  ) {
+    console.log(`📧 API Messages: PUT /api/messages/${messageId}/archive`);
+
+    try {
+      const message = await this.messagesService.archiveMessage(
+        messageId,
+        body.userId,
+      );
+
+      console.log(`✅ API Messages: Message ${messageId} archivé`);
+      return {
+        success: true,
+        data: message,
+        message: 'Message archivé avec succès',
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Error: ${error.message || error}`);
+
+      if (error.status === 404) {
+        throw new HttpException(
+          'Message non trouvé ou accès refusé',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw new HttpException(
+        "Erreur serveur lors de l'archivage du message",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Supprimer un message
+   * PUT /api/messages/:id/delete
+   */
+  @Put(':id/delete')
+  async deleteMessage(
+    @Param('id') messageId: string,
+    @Body() body: { userId: string },
+  ) {
+    console.log(`📧 API Messages: PUT /api/messages/${messageId}/delete`);
+
+    try {
+      await this.messagesService.deleteMessage(messageId, body.userId);
+
+      console.log(`✅ API Messages: Message ${messageId} supprimé`);
+      return {
+        success: true,
+        message: 'Message supprimé avec succès',
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Error: ${error.message || error}`);
+
+      if (error.status === 404) {
+        throw new HttpException(
+          'Message non trouvé ou accès refusé',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw new HttpException(
+        'Erreur serveur lors de la suppression du message',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Répondre à un message
+   * POST /api/messages/:id/reply
+   */
+  @Post(':id/reply')
+  async replyToMessage(
+    @Param('id') messageId: string,
+    @Body() body: { userId: string; content: string },
+  ) {
+    console.log(`📧 API Messages: POST /api/messages/${messageId}/reply`);
+
+    try {
+      const replyMessage = await this.messagesService.replyToMessage(
+        messageId,
+        body.userId,
+        body.content,
+      );
+
+      console.log(
+        `✅ API Messages: Réponse créée ${replyMessage.id} pour message ${messageId}`,
+      );
+      return {
+        success: true,
+        data: replyMessage,
+        message: 'Réponse envoyée avec succès',
+      };
+    } catch (error: any) {
+      console.error(`❌ API Messages Error: ${error.message || error}`);
+
+      if (error.status === 404) {
+        throw new HttpException(
+          'Message non trouvé ou accès refusé',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      throw new HttpException(
+        "Erreur serveur lors de l'envoi de la réponse",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

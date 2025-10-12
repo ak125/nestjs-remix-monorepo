@@ -68,20 +68,21 @@ export async function getUserOrders(
     const data = await response.json();
 
     // Mapping des données depuis la réponse du backend
-    const orders: Order[] = (data.orders || []).map((order: any) => ({
-      id: order.id?.toString() || order.order_id?.toString(),
-      orderNumber: order.orderNumber || `CMD-${order.id}`,
-      status: order.status || 1,
-      totalTTC: parseFloat(order.totalTTC || order.total_ttc || 0),
-      createdAt: order.createdAt || order.created_at,
+    // ✅ Adaptation pour structure legacy (ord_id, ord_total_ttc, etc.)
+    const orders: Order[] = (data.data || data.orders || []).map((order: any) => ({
+      id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
+      orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
+      status: parseInt(order.ord_ords_id || order.status || 1),
+      totalTTC: parseFloat(order.ord_total_ttc || order.totalTTC || order.total_ttc || 0),
+      createdAt: order.ord_date || order.createdAt || order.created_at,
       lines: (order.lines || order.orderLines || []).map((line: any) => ({
-        id: line.id?.toString(),
-        productId: line.productId || line.product_id,
-        productName: line.productName || line.product_name || "Produit",
+        id: line.orl_id || line.id?.toString(),
+        productId: line.orl_pg_id || line.productId || line.product_id,
+        productName: line.orl_pg_name || line.productName || line.product_name || "Produit",
         productImage:
           line.productImage || line.product_image || "/images/placeholder.jpg",
-        quantity: parseInt(line.quantity || 1),
-        unitPrice: parseFloat(line.unitPrice || line.unit_price || 0),
+        quantity: parseInt(line.orl_art_quantity || line.quantity || 1),
+        unitPrice: parseFloat(line.orl_art_price_sell_unit_ttc || line.unitPrice || line.unit_price || 0),
       })),
     }));
 
@@ -164,34 +165,44 @@ export async function getOrderDetail(
 
     const order = response_data.data;
 
+    // 🔍 DEBUG: Afficher les données reçues
+    console.log('🔍 [getOrderDetail] Raw order data:', {
+      ord_id: order.ord_id,
+      ord_ords_id: order.ord_ords_id,
+      ord_total_ttc: order.ord_total_ttc,
+      lines_count: order.lines?.length,
+    });
+
     // Mapping des données depuis la réponse du backend
-    return {
-      id: order.id?.toString() || order.order_id?.toString(),
-      orderNumber: order.orderNumber || `CMD-${order.id}`,
-      status: order.status || 1,
-      totalTTC: parseFloat(order.totalTTC || order.total_ttc || 0),
+    // ✅ Adaptation pour structure legacy (ord_id, ord_total_ttc, etc.)
+    const mappedOrder = {
+      id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
+      orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
+      status: parseInt(order.ord_ords_id || order.status || 1),
+      totalTTC: parseFloat(order.ord_total_ttc || order.totalTTC || order.total_ttc || 0),
       totalPrice: parseFloat(
-        order.totalPrice ||
+        order.ord_total_ttc ||
+          order.totalPrice ||
           order.total_price ||
           order.totalTTC ||
           order.total_ttc ||
           0,
       ),
-      subtotalHT: parseFloat(order.subtotalHT || order.subtotal_ht || 0),
+      subtotalHT: parseFloat(order.ord_amount_ht || order.subtotalHT || order.subtotal_ht || 0),
       subtotalPrice: parseFloat(
-        order.subtotalPrice || order.subtotal_price || order.subtotalHT || 0,
+        order.ord_amount_ttc || order.subtotalPrice || order.subtotal_price || order.subtotalHT || 0,
       ),
-      tva: parseFloat(order.tva || order.tax_amount || 0),
+      tva: parseFloat(order.ord_tva || order.tva || order.tax_amount || 0),
       shippingFee: parseFloat(
-        order.shippingFee || order.shipping_fee || order.deliveryPrice || 0,
+        order.ord_shipping_fee_ttc || order.shippingFee || order.shipping_fee || order.deliveryPrice || 0,
       ),
       deliveryPrice: parseFloat(
-        order.deliveryPrice || order.delivery_price || order.shippingFee || 0,
+        order.ord_shipping_fee_ttc || order.deliveryPrice || order.delivery_price || order.shippingFee || 0,
       ),
       discountAmount: parseFloat(
         order.discountAmount || order.discount_amount || 0,
       ),
-      createdAt: order.createdAt || order.created_at,
+      createdAt: order.ord_date || order.createdAt || order.created_at,
       updatedAt: order.updatedAt || order.updated_at,
       paymentMethod:
         order.paymentMethod || order.payment_method || "Carte bancaire",
@@ -203,23 +214,24 @@ export async function getOrderDetail(
       hasReview: order.hasReview || false,
       canReturn: order.canReturn || order.status === 6,
 
-      // Lignes de commande
+      // Lignes de commande - Support structure legacy
       lines: (order.lines || order.orderLines || []).map((line: any) => ({
-        id: line.id?.toString(),
-        productId: line.productId || line.product_id,
-        productName: line.productName || line.product_name || "Produit",
-        productRef: line.productRef || line.product_ref || line.sku,
+        id: line.orl_id || line.id?.toString(),
+        productId: line.orl_pg_id || line.productId || line.product_id,
+        productName: line.orl_pg_name || line.productName || line.product_name || "Produit",
+        productRef: line.orl_art_ref || line.productRef || line.product_ref || line.sku,
         productImage:
           line.productImage || line.product_image || "/images/placeholder.jpg",
-        quantity: parseInt(line.quantity || 1),
-        unitPrice: parseFloat(line.unitPrice || line.unit_price || 0),
+        quantity: parseInt(line.orl_art_quantity || line.quantity || 1),
+        unitPrice: parseFloat(line.orl_art_price_sell_unit_ttc || line.unitPrice || line.unit_price || 0),
         totalPrice: parseFloat(
-          line.totalPrice ||
+          line.orl_art_price_sell_ttc ||
+            line.totalPrice ||
             line.total_price ||
-            line.unitPrice * line.quantity ||
+            (parseFloat(line.orl_art_price_sell_unit_ttc || 0) * parseInt(line.orl_art_quantity || 1)) ||
             0,
         ),
-        status: line.status || order.status || 1,
+        status: parseInt(line.orl_orls_id || line.status || order.ord_ords_id || order.status || 1),
       })),
 
       // Adresses
@@ -279,8 +291,9 @@ export async function getOrderDetail(
       statusHistory: order.statusHistory ||
         order.status_history || [
           {
-            label: getOrderStatusLabel(order.status || 1),
+            label: getOrderStatusLabel(parseInt(order.ord_ords_id || order.status || '1')),
             date:
+              order.ord_date ||
               order.updatedAt ||
               order.updated_at ||
               order.createdAt ||
@@ -289,6 +302,17 @@ export async function getOrderDetail(
           },
         ],
     };
+
+    // 🔍 DEBUG: Afficher les données mappées
+    console.log('✅ [getOrderDetail] Mapped order:', {
+      id: mappedOrder.id,
+      orderNumber: mappedOrder.orderNumber,
+      status: mappedOrder.status,
+      totalTTC: mappedOrder.totalTTC,
+      lines: mappedOrder.lines?.length,
+    });
+
+    return mappedOrder;
   } catch (error) {
     console.error("Error fetching order detail:", error);
     throw error;

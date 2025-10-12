@@ -20,16 +20,22 @@ import { MailService } from '../../services/mail.service';
 import { AuthModule } from '../../auth/auth.module';
 import { MessagesModule } from '../messages/messages.module';
 
-// Controllers disponibles
-import { UsersController } from './users.controller';
+// ✅ CONTRÔLEUR FINAL CONSOLIDÉ
+import { UsersFinalController } from './users-final.controller';
+
+// Controllers spécialisés (à conserver)
 import { PasswordController } from './controllers/password.controller';
 import { AddressesController } from './controllers/addresses.controller';
 import { UserShipmentController } from './controllers/user-shipment.controller';
-// import { AddressesSimpleController } from './controllers/addresses-simple.controller';
-// import { UserAddressController } from './controllers/user-address.controller';
 
-// Services métier spécialisés
+// ✅ SERVICES FINAUX CONSOLIDÉS
+import { UsersFinalService } from './users-final.service';
+import { UserDataConsolidatedService } from './services/user-data-consolidated.service';
+
+// ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
 import { UsersService } from './users.service';
+
+// Services spécialisés (à conserver)
 import { ProfileService } from './services/profile.service';
 import { UsersAdminService } from './services/admin.service';
 import { PasswordService } from './services/password.service';
@@ -53,27 +59,28 @@ import { UserShipmentService } from './services/user-shipment.service';
     }),
   ],
   controllers: [
-    // Controllers principaux
-    UsersController,
+    // ✅ CONTRÔLEUR PRINCIPAL CONSOLIDÉ
+    UsersFinalController, // Route unique: /api/users
+    
+    // Controllers spécialisés
     PasswordController, // ✅ API REST pour gestion des mots de passe
     AddressesController, // ✅ Service d'adresses réactivé
     UserShipmentController, // ✅ API pour les expéditions utilisateur
-    // AddressesTestController, // ✅ Test contrôleur adresses - validation architecture (temporairement désactivé)
-    // UserAddressController temporairement désactivé - incompatibilité des méthodes
   ],
   providers: [
-    // Services existants modernisés
-    UsersService,
-    ProfileService, // ✅ Service moderne de gestion des profils (Phase 2.3)
-    UsersAdminService, // ✅ Service opérations admin (Phase 3.1 - simplifié)
+    // ✅ SERVICES PRINCIPAUX CONSOLIDÉS
+    UsersFinalService, // Service métier avec cache Redis
+    UserDataConsolidatedService, // Accès données Supabase
+    
+    // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
+    UsersService, // TODO: Migrer AuthModule vers UsersFinalService
+    
+    // Services spécialisés
+    ProfileService, // ✅ Service moderne de gestion des profils
+    UsersAdminService, // ✅ Service opérations admin
     PasswordService, // ✅ Service moderne de gestion des mots de passe
     AddressesService, // ✅ Service moderne de gestion des adresses
     UserShipmentService, // ✅ Service de suivi des expéditions utilisateur
-
-    // Services modernes spécialisés (temporairement désactivés - migration this.db vers this.client)
-    // TODO: Migrer AddressModernService, MessageModernService
-    // AddressModernService,
-    // MessageModernService,
 
     // Service mail avec token d'injection
     {
@@ -82,16 +89,19 @@ import { UserShipmentService } from './services/user-shipment.service';
     },
   ],
   exports: [
-    // Services pour autres modules
-    UsersService,
-    ProfileService, // ✅ Service de profils exporté (Phase 2.3)
-    UsersAdminService, // ✅ Service admin exporté (Phase 3.1 - simplifié)
+    // ✅ SERVICES PRINCIPAUX CONSOLIDÉS
+    UsersFinalService, // Service métier principal
+    UserDataConsolidatedService, // Accès données
+    
+    // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
+    UsersService, // TODO: Migrer AuthModule vers UsersFinalService
+    
+    // Services spécialisés
+    ProfileService, // ✅ Service de profils exporté
+    UsersAdminService, // ✅ Service admin exporté
     PasswordService, // ✅ Service de mots de passe exporté
     AddressesService, // ✅ Service d'adresses exporté
     UserShipmentService, // ✅ Service de suivi des expéditions exporté
-    // Services modernes temporairement désactivés
-    // AddressModernService,
-    // MessageModernService,
   ],
 })
 export class UsersModule {}

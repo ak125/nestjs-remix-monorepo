@@ -1,23 +1,25 @@
 import { json, type LoaderFunction } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 
+import { requireUser } from "../auth/unified.server";
+
 /**
- * Layout principal pour toutes les pages compte utilisateur
- * Route parent pour account.*
+ * Layout parent minimal pour toutes les pages compte utilisateur
+ * Les routes enfants (account.dashboard, account.orders, etc.) 
+ * gèrent leur propre layout avec AccountLayout component
  */
 
-export const loader: LoaderFunction = async ({ request }) => {
-  // TODO: Vérifier l'authentification utilisateur
-  // Pour l'instant, on laisse passer
-  return json({ user: null });
+export const loader: LoaderFunction = async ({ context }) => {
+  const user = await requireUser({ context });
+  return json({ user });
 };
 
 export default function AccountLayout() {
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
-      </div>
+      {/* Layout minimal - la sidebar complète est gérée par AccountLayout dans chaque route */}
+      <Outlet />
     </div>
   );
 }
