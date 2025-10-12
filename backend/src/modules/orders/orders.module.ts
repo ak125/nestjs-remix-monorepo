@@ -20,6 +20,9 @@ import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 
+// 🆕 Service Email pour notifications
+import { EmailService } from '../../services/email.service';
+
 /**
  * 📦 MODULE ORDERS - Version Consolidée Phase 3
  *
@@ -70,6 +73,7 @@ import { OrderActionsService } from './services/order-actions.service';
     OrderArchiveService, // Archivage
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
+    EmailService, // 🆕 Notifications email
   ],
   exports: [
     // Export des services consolidés

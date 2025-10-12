@@ -3,19 +3,18 @@
  * Gestion avancée de 59,137 utilisateurs avec fonctionnalités étendues
  */
 
+import { useState } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher, Form } from '@remix-run/react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
-import { Input } from '~/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher } from '@remix-run/react';
 import { 
   Users, UserPlus, Search, ChevronLeft, ChevronRight, Eye, Edit, Trash2, 
-  Mail, MapPin, Building, Award, Shield, Filter, Download, RefreshCw,
-  UserCheck, UserX, Star, Calendar, Clock
+  Mail, MapPin, Building, Award, Filter, Download, RefreshCw,
+  UserCheck, UserX, Star
 } from 'lucide-react';
-import { useState } from 'react';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 
 interface User {
   id: string;
@@ -56,6 +55,12 @@ interface LoaderData {
     newUsersToday: number;
     averageLevel: number;
   };
+}
+
+interface ActionData {
+  success?: boolean;
+  message?: string;
+  error?: string;
 }
 
 // ⚡ LOADER avec filtres avancés
@@ -238,23 +243,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       default:
         return json({ error: 'Action non reconnue' }, { status: 400 });
     }
-  } catch (error: any) {
-    console.error('❌ Action error:', error);
-    return json({ error: error.message || 'Erreur serveur' }, { status: 500 });
-  }
-};
-
-export default function AdminUsersEnhanced() {
-  const { users, total, currentPage, totalPages, filters, stats } = useLoaderData<LoaderData>();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const fetcher = useFetcher();
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-
-  // Afficher notification quand action terminée
-  if (fetcher.data && fetcher.state === 'idle' && !notification) {
-    if (fetcher.data.success) {
+    } catch (error: any) {
+      console.error('❌ Erreur action admin.users:', error);
+      return json({ error: error.message || 'Une erreur est survenue' }, { status: 500 });
+    }
+  };
+  
+  // 🎨 COMPOSANT PRINCIPAL
+  export default function AdminUsersIndex() {
+    const { users, total, currentPage, totalPages, filters, stats } = useLoaderData<LoaderData>();
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const fetcher = useFetcher<ActionData>();
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+  
+    // Afficher notification quand action terminée
+    if (fetcher.data && fetcher.state === 'idle' && !notification) {
+      if (fetcher.data.success && fetcher.data.message) {
       setNotification({ type: 'success', message: fetcher.data.message });
       setTimeout(() => setNotification(null), 5000);
       if (fetcher.data.message.includes('supprimé')) {
@@ -268,17 +274,6 @@ export default function AdminUsersEnhanced() {
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('fr-FR').format(num);
-  };
-
-  const formatDate = (dateString?: string | null) => {
-    if (!dateString) return 'Non défini';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return 'Non défini';
-    return new Intl.DateTimeFormat('fr-FR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    }).format(date);
   };
 
   const getLevelBadge = (level: number) => {
@@ -338,24 +333,29 @@ export default function AdminUsersEnhanced() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Notification */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
+      <div className="max-w-[1600px] mx-auto space-y-6 p-4 sm:p-6 lg:p-8">
+        {/* Notification Toast */}
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+        <div className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
           notification.type === 'success' 
-            ? 'bg-green-100 border-green-500 text-green-900' 
-            : 'bg-red-100 border-red-500 text-red-900'
-        } border-l-4 animate-in slide-in-from-right`}>
-          <div className="flex items-center gap-2">
-            {notification.type === 'success' ? (
-              <UserCheck className="w-5 h-5" />
-            ) : (
-              <UserX className="w-5 h-5" />
-            )}
-            <span className="font-medium">{notification.message}</span>
+            ? 'bg-green-50/95 border-green-500 text-green-900' 
+            : 'bg-red-50/95 border-red-500 text-red-900'
+        } animate-in slide-in-from-right duration-300`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${
+              notification.type === 'success' ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              {notification.type === 'success' ? (
+                <UserCheck className="w-5 h-5" />
+              ) : (
+                <UserX className="w-5 h-5" />
+              )}
+            </div>
+            <span className="font-semibold flex-1">{notification.message}</span>
             <button 
               onClick={() => setNotification(null)}
-              className="ml-4 text-lg font-bold hover:opacity-70"
+              className="text-2xl font-bold hover:opacity-70 transition-opacity px-2"
             >
               ×
             </button>
@@ -364,119 +364,166 @@ export default function AdminUsersEnhanced() {
       )}
 
       {/* Header avec actions */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="w-8 h-8 text-blue-600" />
-            Gestion des utilisateurs
-          </h1>
-          <p className="text-muted-foreground">
-            {formatNumber(total)} utilisateurs au total
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Actualiser
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => fetcher.submit({ _action: 'export' }, { method: 'post' })}>
-            <Download className="w-4 h-4 mr-2" />
-            Exporter
-          </Button>
-          <Link to="new">
-            <Button size="sm">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Nouvel utilisateur
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <Users className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Gestion des utilisateurs
+              </h1>
+              <p className="text-gray-600 font-medium mt-1">
+                {formatNumber(total)} utilisateurs au total
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Actualiser
             </Button>
-          </Link>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => fetcher.submit({ _action: 'export' }, { method: 'post' })}
+              className="border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exporter
+            </Button>
+            <Link to="new">
+              <Button 
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <UserPlus className="w-4 h-4 mr-2" />
+                Nouvel utilisateur
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Statistiques étendues */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total utilisateurs</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalUsers)}</div>
-            <p className="text-xs text-muted-foreground">+{stats.newUsersToday} aujourd'hui</p>
-          </CardContent>
-        </Card>
+        {/* Total utilisateurs */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Total utilisateurs</span>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Users className="h-4 w-4 text-blue-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{formatNumber(stats.totalUsers)}</div>
+            <p className="text-xs text-green-600 font-medium mt-1">
+              +{stats.newUsersToday} aujourd'hui
+            </p>
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs actifs</CardTitle>
-            <UserCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatNumber(stats.activeUsers)}</div>
-            <p className="text-xs text-muted-foreground">
+        {/* Utilisateurs actifs */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-green-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Utilisateurs actifs</span>
+              <div className="p-2 bg-green-100 rounded-lg">
+                <UserCheck className="h-4 w-4 text-green-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-green-700">{formatNumber(stats.activeUsers)}</div>
+            <p className="text-xs text-gray-600 font-medium mt-1">
               {Math.round(stats.activeUsers / stats.totalUsers * 100)}% du total
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs Pro</CardTitle>
-            <Award className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{formatNumber(stats.proUsers)}</div>
-            <p className="text-xs text-muted-foreground">
+        {/* Utilisateurs Pro */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Utilisateurs Pro</span>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Award className="h-4 w-4 text-purple-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-purple-700">{formatNumber(stats.proUsers)}</div>
+            <p className="text-xs text-gray-600 font-medium mt-1">
               {Math.round(stats.proUsers / stats.totalUsers * 100)}% du total
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entreprises</CardTitle>
-            <Building className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{formatNumber(stats.companyUsers)}</div>
-            <p className="text-xs text-muted-foreground">
+        {/* Entreprises */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Entreprises</span>
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Building className="h-4 w-4 text-indigo-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-indigo-700">{formatNumber(stats.companyUsers)}</div>
+            <p className="text-xs text-gray-600 font-medium mt-1">
               {Math.round(stats.companyUsers / stats.totalUsers * 100)}% du total
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Niveau moyen</CardTitle>
-            <Star className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.averageLevel}</div>
-            <p className="text-xs text-muted-foreground">Sur 5 niveaux</p>
-          </CardContent>
-        </Card>
+        {/* Niveau moyen */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-amber-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Niveau moyen</span>
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <Star className="h-4 w-4 text-amber-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-amber-700">{stats.averageLevel}</div>
+            <p className="text-xs text-gray-600 font-medium mt-1">Sur 5 niveaux</p>
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pages</CardTitle>
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{currentPage}</div>
-            <p className="text-xs text-muted-foreground">sur {formatNumber(totalPages)}</p>
-          </CardContent>
-        </Card>
+        {/* Pages */}
+        <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-500/10 to-gray-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <div className="relative">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-gray-600">Pages</span>
+              <div className="p-2 bg-gray-100 rounded-lg">
+                <ChevronRight className="h-4 w-4 text-gray-600" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{currentPage}</div>
+            <p className="text-xs text-gray-600 font-medium mt-1">sur {formatNumber(totalPages)}</p>
+          </div>
+        </div>
+      </div>
       </div>
 
       {/* Filtres avancés */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="w-5 h-5" />
-            Recherche et filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Filter className="w-5 h-5 text-blue-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Recherche et filtres</h2>
+          </div>
+        </div>
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium mb-2 block">Recherche</label>
@@ -553,58 +600,63 @@ export default function AdminUsersEnhanced() {
               </Button>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Actions en lot */}
       {selectedUsers.length > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">
-                {selectedUsers.length} utilisateur(s) sélectionné(s)
-              </span>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={clearSelection}>
-                  Désélectionner tout
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl shadow-sm border border-blue-200 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-blue-900">
+              {selectedUsers.length} utilisateur(s) sélectionné(s)
+            </span>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={clearSelection}>
+                Désélectionner tout
+              </Button>
+              <fetcher.Form method="post" className="inline">
+                <input type="hidden" name="_action" value="bulkDelete" />
+                <input type="hidden" name="userIds" value={selectedUsers.join(',')} />
+                <Button 
+                  type="submit" 
+                  size="sm" 
+                  variant="destructive"
+                  onClick={(e) => {
+                    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedUsers.length} utilisateur(s) ?`)) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Supprimer la sélection
                 </Button>
-                <fetcher.Form method="post" className="inline">
-                  <input type="hidden" name="_action" value="bulkDelete" />
-                  <input type="hidden" name="userIds" value={selectedUsers.join(',')} />
-                  <Button 
-                    type="submit" 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={(e) => {
-                      if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedUsers.length} utilisateur(s) ?`)) {
-                        e.preventDefault();
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Supprimer la sélection
-                  </Button>
-                </fetcher.Form>
-              </div>
+              </fetcher.Form>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Table des utilisateurs améliorée */}
-      <Card>
-        <CardHeader>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                📋 Liste des utilisateurs
-                <Badge variant="secondary">
-                  {users.length} sur {formatNumber(total)}
-                </Badge>
-              </CardTitle>
-              <CardDescription>
-                Page {currentPage} sur {formatNumber(totalPages)} - Données en temps réel
-              </CardDescription>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    Liste des utilisateurs
+                    <Badge variant="secondary">
+                      {users.length} sur {formatNumber(total)}
+                    </Badge>
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    Page {currentPage} sur {formatNumber(totalPages)} - Données en temps réel
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={selectedUsers.length === users.length ? clearSelection : selectAllUsers}>
@@ -612,8 +664,8 @@ export default function AdminUsersEnhanced() {
               </Button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div className="p-6">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
@@ -798,11 +850,8 @@ export default function AdminUsersEnhanced() {
                             size="sm"
                             className="h-8 w-8 p-0"
                             title={user.isActive ? "Désactiver" : "Activer"}
-                            disabled={fetcher.state === 'submitting'}
                           >
-                            {fetcher.state === 'submitting' ? (
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                            ) : user.isActive ? (
+                            {user.isActive ? (
                               <UserCheck className="w-4 h-4" />
                             ) : (
                               <UserX className="w-4 h-4" />
@@ -878,8 +927,8 @@ export default function AdminUsersEnhanced() {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

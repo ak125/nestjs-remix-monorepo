@@ -119,7 +119,7 @@ export class UsersController {
 
       // Récupérer l'utilisateur depuis req.user (désérialisé par Passport)
       const user = (req as any).user;
-      
+
       if (!user || !user.id) {
         throw new HttpException(
           'Session utilisateur non trouvée',
@@ -151,10 +151,10 @@ export class UsersController {
       // Récupérer les messages de l'utilisateur (5 derniers)
       const baseUrl = process.env.SUPABASE_URL || '';
       const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-      
+
       let recentMessages = [];
       let unreadCount = 0;
-      
+
       try {
         const messagesResponse = await fetch(
           `${baseUrl}/rest/v1/___XTR_MSG?MSG_CST_ID=eq.${user.id}&MSG_CNFA_ID=neq.0&order=MSG_DATE.desc&limit=5`,
@@ -260,7 +260,7 @@ export class UsersController {
       user.phone,
       user.address,
     ];
-    
+
     fields.forEach((field) => {
       if (field && field.toString().trim().length > 0) {
         score += 20;
@@ -323,6 +323,31 @@ export class UsersController {
       console.error(`❌ Erreur commandes utilisateur ${userId}:`, error);
       throw new HttpException(
         'Erreur lors de la récupération des commandes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/legacy-users/:id/stats
+   * Récupère les statistiques détaillées d'un utilisateur
+   */
+  @Get(':id/stats')
+  async getUserStats(@Param('id') userId: string) {
+    try {
+      console.log(`📊 Récupération statistiques utilisateur: ${userId}`);
+
+      const stats = await this.legacyUserService.getUserStats(userId);
+
+      return {
+        success: true,
+        data: stats,
+        userId,
+      };
+    } catch (error) {
+      console.error(`❌ Erreur statistiques utilisateur ${userId}:`, error);
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

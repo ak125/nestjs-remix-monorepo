@@ -205,6 +205,94 @@ export class LegacyUserService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère les statistiques détaillées d'un utilisateur
+   */
+  async getUserStats(userId: string): Promise<{
+    totalOrders: number;
+    completedOrders: number;
+    pendingOrders: number;
+    totalSpent: number;
+    averageOrderValue: number;
+    lastOrderDate: string | null;
+    firstOrderDate: string | null;
+    paymentRate: number;
+    accountAge: number;
+    registrationDate: string | null;
+  }> {
+    try {
+      this.logger.debug(`📊 Calcul statistiques pour user: ${userId}`);
+
+      // Récupérer toutes les commandes pour les stats
+      const orders = await this.getUserOrders(userId);
+
+      const totalOrders = orders.length;
+      const completedOrders = orders.filter((o) => o.isPaid).length;
+      const pendingOrders = totalOrders - completedOrders;
+      const totalSpent = orders.reduce((sum, order) => sum + order.total, 0);
+      const averageOrderValue = totalOrders > 0 ? totalSpent / totalOrders : 0;
+      const paymentRate =
+        totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
+
+      // Dates des commandes
+      const orderDates = orders
+        .map((o) => new Date(o.date))
+        .filter((d) => !isNaN(d.getTime()));
+      const lastOrderDate =
+        orderDates.length > 0
+          ? new Date(
+              Math.max(...orderDates.map((d) => d.getTime())),
+            ).toISOString()
+          : null;
+      const firstOrderDate =
+        orderDates.length > 0
+          ? new Date(
+              Math.min(...orderDates.map((d) => d.getTime())),
+            ).toISOString()
+          : null;
+
+      // Ancienneté du compte (en jours)
+      const registrationDate = firstOrderDate; // Approximation avec la première commande
+      const accountAge = registrationDate
+        ? Math.floor(
+            (Date.now() - new Date(registrationDate).getTime()) /
+              (1000 * 60 * 60 * 24),
+          )
+        : 0;
+
+      const stats = {
+        totalOrders,
+        completedOrders,
+        pendingOrders,
+        totalSpent: parseFloat(totalSpent.toFixed(2)),
+        averageOrderValue: parseFloat(averageOrderValue.toFixed(2)),
+        lastOrderDate,
+        firstOrderDate,
+        paymentRate: parseFloat(paymentRate.toFixed(1)),
+        accountAge,
+        registrationDate,
+      };
+
+      this.logger.debug(`✅ Stats calculées pour user ${userId}:`, stats);
+      return stats;
+    } catch (error) {
+      this.logger.error(`❌ Failed to get stats for user ${userId}:`, error);
+      // Retourner des stats vides en cas d'erreur
+      return {
+        totalOrders: 0,
+        completedOrders: 0,
+        pendingOrders: 0,
+        totalSpent: 0,
+        averageOrderValue: 0,
+        lastOrderDate: null,
+        firstOrderDate: null,
+        paymentRate: 0,
+        accountAge: 0,
+        registrationDate: null,
+      };
+    }
+  }
+
+  /**
    * Mappe les données de la DB vers le modèle LegacyUser
    */
   private mapToLegacyUser(dbData: any): LegacyUser {

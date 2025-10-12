@@ -119,15 +119,30 @@ export default function CommercialOrders() {
 
   return (
     <div className="container mx-auto p-6">
+      {/* Bandeau d'information */}
+      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-blue-900">
+              📋 Interface Commerciale - Vue Consultation
+            </p>
+            <p className="text-sm text-blue-700 mt-1">
+              Pour gérer les commandes (validation, expédition, emails), utilisez l'interface admin : <a href="/admin/orders" className="underline font-semibold hover:text-blue-900">→ Aller vers Admin Orders</a>
+            </p>
+          </div>
+        </div>
+      </div>
+      
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold flex items-center">
             <ShoppingCart className="mr-3 h-8 w-8 text-blue-600" />
-            Gestion des Commandes
+            Commandes - Vue Commerciale
           </h1>
           <p className="text-gray-600 mt-1">
-            Interface commerciale - {data.total} commandes
+            Interface en consultation - {data.total} commandes
           </p>
         </div>
         <div className="flex gap-2">

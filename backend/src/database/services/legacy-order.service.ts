@@ -496,10 +496,18 @@ export class LegacyOrderService extends SupabaseBaseService {
       status?: string;
       userId?: string;
       includeUnpaid?: boolean; // Nouveau paramètre
+      excludePending?: boolean; // ✨ Nouveau: exclure statut "En attente" (ord_ords_id = 1)
     } = {},
   ): Promise<any[]> {
     try {
-      const { limit = 20, offset = 0, status, userId, includeUnpaid = false } = options;
+      const {
+        limit = 20,
+        offset = 0,
+        status,
+        userId,
+        includeUnpaid = false,
+        excludePending = true,
+      } = options;
 
       // 1. Récupérer les commandes
       let query = this.supabase
@@ -514,6 +522,14 @@ export class LegacyOrderService extends SupabaseBaseService {
       if (!includeUnpaid && !status) {
         query = query.eq('ord_is_pay', '1');
         this.logger.debug('🔒 Filtrage: Commandes PAYÉES uniquement');
+      }
+
+      // ✅ NOUVEAU : Exclure les commandes "En attente" (statut 1) par défaut
+      if (excludePending) {
+        query = query.neq('ord_ords_id', '1');
+        this.logger.debug(
+          '🔒 Filtrage: Exclusion statut "En attente" (ord_ords_id=1)',
+        );
       }
 
       // Filtrer par utilisateur si spécifié
@@ -550,11 +566,19 @@ export class LegacyOrderService extends SupabaseBaseService {
         .in('cst_id', customerIds);
 
       // 4. Créer un map des clients pour lookup rapide
-      const customerMap = new Map(
-        (customers || []).map((c) => [c.cst_id, c]),
-      );
+      const customerMap = new Map((customers || []).map((c) => [c.cst_id, c]));
 
-      // 5. ✅ Retourner le format BDD brut avec le customer attaché
+      // 4. Récupérer les informations de paiement depuis ic_postback
+      const orderIds = orders.map((o) => o.ord_id);
+      const { data: postbacks } = await this.supabase
+        .from('ic_postback')
+        .select('orderid, paymentmethod, transactionid, datepayment, status')
+        .in('orderid', orderIds);
+
+      // 5. Créer un map des postbacks pour lookup rapide
+      const postbackMap = new Map((postbacks || []).map((p) => [p.orderid, p]));
+
+      // 6. ✅ Retourner le format BDD brut avec le customer + postback attachés
       return orders.map((order: any) => ({
         // Colonnes de la table ___xtr_order (format BDD brut)
         ord_id: order.ord_id,
@@ -566,6 +590,8 @@ export class LegacyOrderService extends SupabaseBaseService {
         ord_ords_id: order.ord_ords_id,
         // Données client enrichies
         customer: customerMap.get(order.ord_cst_id) || null,
+        // ✨ NOUVEAU: Informations de paiement réelles depuis ic_postback
+        postback: postbackMap.get(order.ord_id) || null,
       }));
     } catch (error) {
       this.logger.error('Failed to get all orders:', error);
@@ -689,19 +715,22 @@ export class LegacyOrderService extends SupabaseBaseService {
         .eq('cst_id', orderData.ord_cst_id)
         .single();
 
-      // 3. Récupérer l'adresse de facturation
+      // 3. Récupérer l'adresse de facturation (liée au client, pas à la commande)
       const { data: billingAddress } = await this.supabase
         .from('___xtr_customer_billing_address')
         .select('*')
-        .eq('cba_ord_id', orderId)
-        .single();
+        .eq('cba_cst_id', orderData.ord_cst_id)
+        .limit(1)
+        .maybeSingle();
 
-      // 4. Récupérer l'adresse de livraison
+      // 4. Récupérer l'adresse de livraison (liée au client, comme la facturation)
       const { data: deliveryAddress } = await this.supabase
         .from('___xtr_customer_delivery_address')
         .select('*')
-        .eq('cda_ord_id', orderId)
-        .single();
+        .eq('cda_cst_id', orderData.ord_cst_id)
+        .order('cda_id', { ascending: false }) // La plus récente
+        .limit(1)
+        .maybeSingle();
 
       // 5. Récupérer les lignes de commande
       const { data: orderLines } = await this.supabase
@@ -804,10 +833,19 @@ export class LegacyOrderService extends SupabaseBaseService {
   }
 
   /**
-   * Compte le nombre total de commandes
+   * Compte le nombre total de commandes (avec filtres optionnels)
    */
-  async getTotalOrdersCount(): Promise<number> {
-    const cacheKey = 'total_orders_count';
+  async getTotalOrdersCount(
+    options: {
+      status?: string;
+      userId?: string;
+      excludePending?: boolean;
+    } = {},
+  ): Promise<number> {
+    const { status, userId, excludePending = true } = options;
+
+    // Clé de cache dynamique basée sur les filtres
+    const cacheKey = `total_orders_count_${status || 'all'}_${userId || 'all'}_${excludePending}`;
 
     // Essayer d'abord le cache (TTL: 2 minutes)
     const cached = this.cacheService.get<number>(cacheKey);
@@ -817,11 +855,35 @@ export class LegacyOrderService extends SupabaseBaseService {
     }
 
     try {
-      this.logger.debug('📊 Fetching total orders count from database');
+      this.logger.debug('📊 Fetching total orders count from database', {
+        status,
+        userId,
+        excludePending,
+      });
 
-      const { count, error } = await this.supabase
+      let query = this.supabase
         .from('___xtr_order')
         .select('*', { count: 'exact', head: true });
+
+      // Appliquer les mêmes filtres que getAllOrders
+      if (status === 'paid') {
+        query = query.eq('ord_is_pay', '1');
+      } else if (status === 'pending') {
+        query = query.eq('ord_is_pay', '0');
+      } else if (!status) {
+        // Par défaut: commandes payées uniquement
+        query = query.eq('ord_is_pay', '1');
+      }
+
+      if (excludePending) {
+        query = query.neq('ord_ords_id', '1');
+      }
+
+      if (userId) {
+        query = query.eq('ord_cst_id', userId);
+      }
+
+      const { count, error } = await query;
 
       if (error) throw error;
 

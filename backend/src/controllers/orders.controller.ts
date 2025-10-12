@@ -22,19 +22,31 @@ export class OrdersController {
     @Query('limit') limit: string = '20',
     @Query('status') status?: string,
     @Query('userId') userId?: string,
+    @Query('excludePending') excludePending?: string, // ✨ Nouveau: exclure "En attente"
   ) {
     try {
-      console.log('📦 Récupération des commandes...');
+      console.log('📦 Récupération des commandes...', {
+        page,
+        limit,
+        status,
+        userId,
+        excludePending,
+      });
 
       const orders = await this.legacyOrderService.getAllOrders({
         limit: parseInt(limit),
         offset: (parseInt(page) - 1) * parseInt(limit),
         status,
         userId,
+        excludePending: excludePending !== 'false', // Par défaut true, sauf si explicitement false
       });
 
-      // Récupérer le total de commandes
-      const totalCount = await this.legacyOrderService.getTotalOrdersCount();
+      // Récupérer le total de commandes (ajusté selon les filtres)
+      const totalCount = await this.legacyOrderService.getTotalOrdersCount({
+        status,
+        userId,
+        excludePending: excludePending !== 'false',
+      });
 
       return {
         success: true,
@@ -44,7 +56,7 @@ export class OrdersController {
           limit: parseInt(limit),
           total: totalCount,
         },
-        filters: { status, userId },
+        filters: { status, userId, excludePending: excludePending !== 'false' },
       };
     } catch (error) {
       console.error('❌ Erreur récupération commandes:', error);

@@ -3,7 +3,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 /**
  * 🚀 Service Actions Commandes - Version Moderne
- * 
+ *
  * Gère TOUTES les actions sur lignes de commande :
  * - Changements statuts (1-6)
  * - Workflow équivalences (91-94)
@@ -118,12 +118,15 @@ export class OrderActionsService extends SupabaseBaseService {
     userId: number,
   ): Promise<any> {
     try {
-      this.logger.log(`🔄 Proposer équiv ligne ${originalLineId} → produit ${equivalentProductId}`);
+      this.logger.log(
+        `🔄 Proposer équiv ligne ${originalLineId} → produit ${equivalentProductId}`,
+      );
 
       // 1. Récupérer infos produit équivalent depuis table PIECES
       const { data: product, error: productError } = await this.supabase
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_ref,
           piece_ref_clean,
@@ -138,7 +141,8 @@ export class OrderActionsService extends SupabaseBaseService {
             pri_remise
           ),
           pieces_marque!inner(pm_name)
-        `)
+        `,
+        )
         .eq('piece_id', equivalentProductId)
         .eq('piece_display', 1)
         .single();
@@ -204,7 +208,7 @@ export class OrderActionsService extends SupabaseBaseService {
           msg_cnfa_id: userId,
           msg_date: new Date().toISOString(),
           msg_subject: 'Support Technique : Proposition équivalence',
-          msg_content: 'Une proposition d\'équivalence a été envoyée',
+          msg_content: "Une proposition d'équivalence a été envoyée",
           msg_open: 0,
         });
       }
@@ -310,8 +314,10 @@ export class OrderActionsService extends SupabaseBaseService {
       }
 
       // Calculer différence
-      const totalNew = equivLine.orl_art_price_sell_ttc + equivLine.orl_art_deposit_ttc;
-      const totalOld = origLine.orl_art_price_sell_ttc + origLine.orl_art_deposit_ttc;
+      const totalNew =
+        equivLine.orl_art_price_sell_ttc + equivLine.orl_art_deposit_ttc;
+      const totalOld =
+        origLine.orl_art_price_sell_ttc + origLine.orl_art_deposit_ttc;
       const amountDiff = totalNew - totalOld;
 
       // 1. Passer équiv en statut 5 (PD)
@@ -364,6 +370,263 @@ export class OrderActionsService extends SupabaseBaseService {
       });
     } catch (error) {
       this.logger.warn('⚠️ Erreur audit:', error);
+    }
+  }
+
+  // ============================================================
+  // ACTIONS GLOBALES SUR COMMANDES (Nouveau)
+  // ============================================================
+
+  /**
+   * 📦 Récupérer une commande complète
+   */
+  async getOrder(orderId: string): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('___xtr_order')
+      .select('*')
+      .eq('ord_id', orderId)
+      .single();
+
+    if (error || !data) {
+      throw new BadRequestException(`Commande ${orderId} introuvable`);
+    }
+
+    return data;
+  }
+
+  /**
+   * 👤 Récupérer client d'une commande
+   */
+  async getCustomer(customerId: string): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('___xtr_customer')
+      .select('*')
+      .eq('cst_id', customerId)
+      .single();
+
+    if (error || !data) {
+      throw new BadRequestException(`Client ${customerId} introuvable`);
+    }
+
+    return data;
+  }
+
+  /**
+   * ✅ Valider commande (statut 2 → 3)
+   */
+  async validateOrder(orderId: string, userId?: number): Promise<any> {
+    try {
+      this.logger.log(`✅ Validation commande ${orderId}`);
+
+      const order = await this.getOrder(orderId);
+
+      // Vérifier que commande est payée
+      if (order.ord_is_pay !== '1') {
+        throw new BadRequestException(
+          'Commande non payée, validation impossible',
+        );
+      }
+
+      // Vérifier statut actuel = 2 (Confirmée)
+      if (order.ord_ords_id !== '2') {
+        throw new BadRequestException(
+          `Statut invalide: ${order.ord_ords_id}, attendu: 2 (Confirmée)`,
+        );
+      }
+
+      // Mettre à jour statut → 3 (En cours)
+      const { error } = await this.supabase
+        .from('___xtr_order')
+        .update({
+          ord_ords_id: '3', // En cours
+          ord_updated_at: new Date().toISOString(),
+        })
+        .eq('ord_id', orderId);
+
+      if (error) throw error;
+
+      // Historique
+      await this.createOrderStatusHistory(
+        orderId,
+        '3',
+        'Commande validée par admin',
+        userId,
+      );
+
+      this.logger.log(`✅ Commande ${orderId} validée (statut 3)`);
+      return { success: true, newStatus: '3' };
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur validation commande:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📦 Expédier commande (statut 3 → 4)
+   */
+  async shipOrder(
+    orderId: string,
+    trackingNumber: string,
+    userId?: number,
+  ): Promise<any> {
+    try {
+      this.logger.log(
+        `📦 Expédition commande ${orderId} - Suivi: ${trackingNumber}`,
+      );
+
+      const order = await this.getOrder(orderId);
+
+      // Vérifier statut actuel = 3 (En cours)
+      if (order.ord_ords_id !== '3') {
+        throw new BadRequestException(
+          `Statut invalide: ${order.ord_ords_id}, attendu: 3 (En cours)`,
+        );
+      }
+
+      // Mettre à jour avec numéro de suivi
+      const { error } = await this.supabase
+        .from('___xtr_order')
+        .update({
+          ord_ords_id: '4', // Expédiée
+          ord_date_ship: new Date().toISOString(),
+          ord_tracking: trackingNumber,
+          ord_updated_at: new Date().toISOString(),
+        })
+        .eq('ord_id', orderId);
+
+      if (error) throw error;
+
+      // Historique
+      await this.createOrderStatusHistory(
+        orderId,
+        '4',
+        `Commande expédiée - Suivi: ${trackingNumber}`,
+        userId,
+      );
+
+      this.logger.log(`✅ Commande ${orderId} expédiée`);
+      return { success: true, newStatus: '4', trackingNumber };
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur expédition commande:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🚚 Marquer comme livrée (statut 4 → 5)
+   */
+  async markAsDelivered(orderId: string, userId?: number): Promise<any> {
+    try {
+      this.logger.log(`🚚 Livraison commande ${orderId}`);
+
+      const order = await this.getOrder(orderId);
+
+      // Vérifier statut actuel = 4 (Expédiée)
+      if (order.ord_ords_id !== '4') {
+        throw new BadRequestException(
+          `Statut invalide: ${order.ord_ords_id}, attendu: 4 (Expédiée)`,
+        );
+      }
+
+      // Mettre à jour
+      const { error } = await this.supabase
+        .from('___xtr_order')
+        .update({
+          ord_ords_id: '5', // Livrée
+          ord_date_deliv: new Date().toISOString(),
+          ord_updated_at: new Date().toISOString(),
+        })
+        .eq('ord_id', orderId);
+
+      if (error) throw error;
+
+      // Historique
+      await this.createOrderStatusHistory(
+        orderId,
+        '5',
+        'Commande livrée',
+        userId,
+      );
+
+      this.logger.log(`✅ Commande ${orderId} livrée`);
+      return { success: true, newStatus: '5' };
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur livraison commande:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * ❌ Annuler commande (→ statut 6)
+   */
+  async cancelOrder(
+    orderId: string,
+    reason: string,
+    userId?: number,
+  ): Promise<any> {
+    try {
+      this.logger.log(`❌ Annulation commande ${orderId} - Raison: ${reason}`);
+
+      const order = await this.getOrder(orderId);
+
+      // Ne pas annuler si déjà expédiée ou livrée
+      if (order.ord_ords_id === '4' || order.ord_ords_id === '5') {
+        throw new BadRequestException(
+          "Impossible d'annuler une commande expédiée ou livrée",
+        );
+      }
+
+      // Mettre à jour
+      const { error } = await this.supabase
+        .from('___xtr_order')
+        .update({
+          ord_ords_id: '6', // Annulée
+          ord_cancel_date: new Date().toISOString(),
+          ord_cancel_reason: reason,
+          ord_updated_at: new Date().toISOString(),
+        })
+        .eq('ord_id', orderId);
+
+      if (error) throw error;
+
+      // Historique
+      await this.createOrderStatusHistory(
+        orderId,
+        '6',
+        `Commande annulée: ${reason}`,
+        userId,
+      );
+
+      // TODO: Remettre stock si produits réservés
+      // TODO: Remboursement si payée
+
+      this.logger.log(`✅ Commande ${orderId} annulée`);
+      return { success: true, newStatus: '6', reason };
+    } catch (error: any) {
+      this.logger.error(`❌ Erreur annulation commande:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📝 Créer entrée historique statuts
+   */
+  private async createOrderStatusHistory(
+    orderId: string,
+    newStatus: string,
+    comment: string,
+    userId?: number,
+  ): Promise<void> {
+    try {
+      await this.supabase.from('___xtr_order_status_history').insert({
+        osh_ord_id: orderId,
+        osh_ords_id: newStatus,
+        osh_date: new Date().toISOString(),
+        osh_admin_id: userId ? `adm_${userId}` : null,
+        osh_comment: comment,
+      });
+    } catch (error) {
+      this.logger.warn('⚠️ Erreur historique statuts:', error);
     }
   }
 }
