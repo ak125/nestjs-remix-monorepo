@@ -117,6 +117,9 @@ export async function loader({ context }: LoaderFunctionArgs) {
   const API_BASE = process.env.API_URL || 'http://localhost:3000';
   
   try {
+    console.log('🔗 Dashboard API_BASE:', API_BASE);
+    console.log('👤 Dashboard User:', { level: userLevel, name: userRole.name });
+    
     // Appels API pour interface commerciale
     const apiCalls = [
       fetch(`${API_BASE}/api/dashboard/stats`, {
@@ -135,6 +138,12 @@ export async function loader({ context }: LoaderFunctionArgs) {
     
     const responses = await Promise.all(apiCalls);
     
+    console.log('📊 Dashboard Response status:', {
+      stats: responses[0].status,
+      orders: responses[1].status,
+      suppliers: responses[2].status
+    });
+    
     // Construire les stats unifiées
     let stats: DashboardStats = {
       ordersThisMonth: 0,
@@ -147,6 +156,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
     // Traiter les données du dashboard commercial
     if (responses[0]?.ok) {
       const dashboardData = await responses[0].json();
+      console.log('📊 Dashboard stats data:', dashboardData);
       
       stats = {
         ordersThisMonth: dashboardData.totalOrders || 0,
@@ -160,11 +170,14 @@ export async function loader({ context }: LoaderFunctionArgs) {
         lowStockItems: dashboardData.lowStockItems || [],
         suppliers: []
       };
+    } else {
+      console.error('❌ Dashboard stats API failed:', responses[0].status, await responses[0].text());
     }
     
     // Traiter les commandes récentes
     if (responses[1]?.ok) {
       const ordersData = await responses[1].json();
+      console.log('📦 Dashboard orders count:', ordersData.orders?.length || 0);
       stats.recentOrders = (ordersData.orders || []).slice(0, 5).map((order: any) => ({
         id: order.id || order.orderNumber,
         orderNumber: order.orderNumber,
@@ -176,17 +189,32 @@ export async function loader({ context }: LoaderFunctionArgs) {
         date: order.createdAt || order.date,
         createdAt: order.createdAt
       }));
+    } else {
+      console.error('❌ Dashboard orders API failed:', responses[1].status);
     }
     
     // Traiter les fournisseurs
     if (responses[2]?.ok) {
       const suppliersData = await responses[2].json();
+      console.log('🏢 Dashboard suppliers count:', suppliersData.suppliers?.length || 0);
       stats.suppliers = (suppliersData.suppliers || []).slice(0, 5).map((supplier: any) => ({
         id: supplier.id,
         name: supplier.name,
         status: supplier.statistics?.totalArticles > 0 ? 'active' : 'inactive'
       }));
+    } else {
+      console.error('❌ Dashboard suppliers API failed:', responses[2].status);
     }
+    
+    console.log('✅ Dashboard final stats:', {
+      ordersThisMonth: stats.ordersThisMonth,
+      revenueThisMonth: stats.revenueThisMonth,
+      todayOrdersCount: stats.todayOrdersCount,
+      preparingOrdersCount: stats.preparingOrdersCount,
+      lowStockCount: stats.lowStockCount,
+      recentOrdersCount: stats.recentOrders.length,
+      suppliersCount: stats.suppliers?.length || 0
+    });
     
     return json({ user: userRole, stats });
     
