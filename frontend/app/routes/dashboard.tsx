@@ -279,55 +279,140 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header Commercial */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg shadow-lg p-8 text-white mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <BarChart3 className="h-12 w-12" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header amélioré avec gradient et infos utiles */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white shadow-lg">
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">
-                Tableau de Bord Commercial
-              </h1>
-              <p className="text-white/80 mt-1">
-                Bienvenue, {user.name}
+              <h1 className="text-3xl font-bold mb-2">🎯 Tableau de Bord Commercial</h1>
+              <p className="text-blue-100 text-sm">
+                Bienvenue, <span className="font-semibold">{user.name}</span> • {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-          </div>
-          <div className="flex gap-3">
-            <Link to="/analytics">
-              <Button variant="secondary" size="sm">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
-              </Button>
-            </Link>
-            <Link to="/products/admin">
-              <Button variant="secondary" size="sm">
-                <Package className="h-4 w-4 mr-2" />
-                Produits
-              </Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link to="/products/admin">
+                <Button variant="secondary" size="sm" className="shadow-md hover:shadow-lg transition-shadow">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Analytics
+                </Button>
+              </Link>
+              <Link to="/products/admin">
+                <Button variant="secondary" size="sm" className="shadow-md hover:shadow-lg transition-shadow">
+                  <Package className="mr-2 h-4 w-4" />
+                  Produits
+                </Button>
+              </Link>
+              <Link to="/orders">
+                <Button variant="default" size="sm" className="bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg transition-shadow">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Commandes
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* KPIs principaux */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Contenu principal */}
+      <div className="container mx-auto px-6 py-8">
+        {/* KPIs principaux */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Commandes aujourd'hui */}
-        <Card>
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Commandes Aujourd'hui
             </CardTitle>
-            <ShoppingCart className="h-5 w-5 text-blue-500" />
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <ShoppingCart className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold text-blue-600">
               {formatNumber(stats.todayOrdersCount || 0)}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              À traiter rapidement
+            <p className="text-xs text-blue-500 mt-1 font-medium">
+              📦 À traiter rapidement
             </p>
+            {(stats.todayOrdersCount ?? 0) > 20 && (
+              <Badge variant="default" className="mt-2 bg-blue-500">
+                🔥 Journée active
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* CA du mois */}
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              CA du Mois
+            </CardTitle>
+            <div className="p-2 bg-green-100 rounded-lg">
+              <DollarSign className="h-5 w-5 text-green-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              {formatPrice(stats.revenueThisMonth)}
+            </div>
+            <p className="text-xs text-gray-500 mt-1 font-medium">
+              💰 Chiffre d'affaires mensuel
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              +{formatNumber(stats.ordersThisMonth)} commandes
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* En préparation */}
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              En Préparation
+            </CardTitle>
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Package className="h-5 w-5 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-600">
+              {formatNumber(stats.preparingOrdersCount || 0)}
+            </div>
+            <p className="text-xs text-gray-500 mt-1 font-medium">
+              ⏳ Commandes à traiter
+            </p>
+            {(stats.preparingOrdersCount ?? 0) > 500 && (
+              <Badge variant="destructive" className="mt-2">
+                ⚠️ Attention retard
+              </Badge>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Stock faible */}
+        <Card className="hover:shadow-lg transition-shadow border-l-4 border-l-red-500">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Stock Faible
+            </CardTitle>
+            <div className="p-2 bg-red-100 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-red-600">
+              {formatNumber(stats.lowStockCount || 0)}
+            </div>
+            <p className="text-xs text-red-500 mt-1 font-medium">
+              🚨 Articles à réapprovisionner
+            </p>
+            {(stats.lowStockCount ?? 0) === 0 && (
+              <Badge variant="default" className="mt-2 bg-green-500">
+                ✅ Stock OK
+              </Badge>
+            )}
           </CardContent>
         </Card>
 
@@ -484,8 +569,9 @@ export default function Dashboard() {
               </p>
             )}
             <div className="mt-6">
-              <Link to="/orders.admin">
-                <Button variant="outline" className="w-full">
+              <Link to="/orders">
+                <Button variant="outline" className="w-full hover:bg-blue-50 hover:border-blue-500 transition-colors">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   Voir toutes les commandes
                 </Button>
               </Link>
@@ -574,12 +660,14 @@ export default function Dashboard() {
           </Card>
         </Link>
 
-        <Link to="/orders.admin">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+        <Link to="/orders">
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-green-500">
             <CardContent className="flex items-center gap-4 p-6">
-              <ShoppingCart className="h-10 w-10 text-green-500" />
+              <div className="p-3 bg-green-100 rounded-lg">
+                <ShoppingCart className="h-10 w-10 text-green-600" />
+              </div>
               <div>
-                <h3 className="font-bold">Commandes</h3>
+                <h3 className="font-bold text-lg">Commandes</h3>
                 <p className="text-sm text-gray-500">Gérer les commandes</p>
               </div>
             </CardContent>
@@ -597,6 +685,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </Link>
+      </div>
       </div>
     </div>
   );
