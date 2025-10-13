@@ -256,7 +256,8 @@ export default function Dashboard() {
     return `${num > 0 ? '+' : ''}${num.toFixed(1)}%`;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null | undefined) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
     const statusLower = status.toLowerCase();
     if (statusLower.includes('livr') || statusLower.includes('complet')) {
       return 'bg-green-100 text-green-800';
