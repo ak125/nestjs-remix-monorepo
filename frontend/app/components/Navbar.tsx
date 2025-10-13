@@ -22,7 +22,11 @@ export const Navbar = ({ logo }: { logo: string }) => {
           {/* Dashboard conditionnel selon le niveau utilisateur */}
           {user && (
             <Link 
-              to={(user.level ?? 0) >= 3 ? "/dashboard" : "/account/dashboard"}
+              to={
+                (user.level ?? 0) >= 7 ? "/admin" : 
+                (user.level ?? 0) >= 3 ? "/dashboard" : 
+                "/account/dashboard"
+              }
               className="hover:text-blue-200 transition-colors text-sm font-medium"
             >
               Dashboard

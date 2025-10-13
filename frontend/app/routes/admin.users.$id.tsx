@@ -718,7 +718,7 @@ export default function UserDetails() {
                       </div>
                     </div>
                     <Link
-                      to={`/admin/orders/${order.id}`}
+                      to={`/orders/${order.id}`}
                       className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       Voir détails

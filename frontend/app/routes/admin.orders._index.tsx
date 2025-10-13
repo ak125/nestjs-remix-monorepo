@@ -343,7 +343,7 @@ export default function AdminOrders() {
     toast.loading('Validation en cours...', { id: 'validate' });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${orderId}/validate`, {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -373,7 +373,7 @@ export default function AdminOrders() {
     toast.loading('Expédition en cours...', { id: 'ship' });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${actionOrderId}/ship`, {
+      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/ship`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -407,7 +407,7 @@ export default function AdminOrders() {
     toast.loading('Annulation en cours...', { id: 'cancel' });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${actionOrderId}/cancel`, {
+      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -440,7 +440,7 @@ export default function AdminOrders() {
     toast.loading('Envoi du rappel...', { id: 'reminder' });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/orders/${orderId}/payment-reminder`, {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/payment-reminder`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -1264,7 +1264,7 @@ export default function AdminOrders() {
                         <td className="p-3">
                           <div className="flex flex-wrap gap-2">
                             <a 
-                              href={`/admin/orders/${order.ord_id}`}
+                              href={`/orders/${order.ord_id}`}
                               className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors inline-flex items-center gap-1"
                               title="Voir les détails"
                             >
@@ -1599,7 +1599,7 @@ export default function AdminOrders() {
                   <div className="text-sm font-semibold mb-3">Actions disponibles</div>
                   <div className="flex flex-col space-y-2">
                     <a 
-                      href={`/admin/orders/${selectedOrder.ord_id}`}
+                      href={`/orders/${selectedOrder.ord_id}`}
                       className="btn btn-primary w-full"
                     >
                       📋 Voir les détails complets

@@ -309,7 +309,7 @@ export default function CommercialOrders() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <Link 
-                        to={`/admin/orders/${order.id || order.ord_id}`}
+                        to={`/orders/${order.id || order.ord_id}`}
                         className="text-blue-600 hover:text-blue-900"
                       >
                         <Eye className="h-4 w-4" />
