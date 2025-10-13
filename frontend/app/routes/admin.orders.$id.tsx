@@ -201,7 +201,7 @@ export default function OrderDetailsReal() {
                 {error || "Commande non trouvée"}
               </p>
               <Button asChild>
-                <Link to="/admin/orders">Retour aux commandes</Link>
+                <Link to="/orders">Retour aux commandes</Link>
               </Button>
             </div>
           </div>
