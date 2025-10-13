@@ -1,5 +1,10 @@
 // Test simple pour vérifier que les routes fonctionnent
 export async function loader() {
+  // 🛡️ Production Guard: Cette route est uniquement pour dev/test
+  if (process.env.NODE_ENV === "production") {
+    throw new Response("Not Found", { status: 404 });
+  }
+  
   return { message: "Route test fonctionne!" };
 }
 

@@ -76,7 +76,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
     },
     {
       name: "Commandes",
-      href: "/admin/orders",
+      href: "/orders",
       icon: ShoppingCart,
       description: "Gestion des commandes",
       badge: stats ? { count: stats.totalOrders, color: "bg-green-500" } : { count: 0, color: "bg-gray-400" },
@@ -84,7 +84,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
     },
     {
       name: "Stock",
-      href: "/admin/stock/working/main",
+      href: "/commercial/stock",
       icon: Package,
       description: "Gestion des stocks",
       badge: stats ? { count: stats.totalStock || 409687, color: "bg-emerald-500" } : { count: 409687, color: "bg-emerald-500" },
@@ -153,8 +153,8 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       ]
     },
     {
-      name: "Commercial",
-      href: "/commercial",
+      name: "Dashboard Commercial",
+      href: "/dashboard",
       icon: Store,
       description: "Interface commerciale",
       badge: { count: 'PRO', color: "bg-blue-600" },

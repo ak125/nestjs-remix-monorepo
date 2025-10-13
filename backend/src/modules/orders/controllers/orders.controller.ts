@@ -117,11 +117,11 @@ export class OrdersController {
   @UseGuards(AuthenticatedGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Récupérer une commande par ID' })
-  @ApiParam({ name: 'id', description: 'ID de la commande' })
+  @ApiParam({ name: 'id', description: 'ID de la commande (string)' })
   @ApiResponse({ status: 200, description: 'Détails de la commande' })
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
   async getOrderById(
-    @Param('id', ParseIntPipe) orderId: number,
+    @Param('id') orderId: string, // ✅ CORRECTIF: ord_id est un string maintenant
     @Request() req: any,
   ) {
     try {
@@ -170,9 +170,10 @@ export class OrdersController {
       this.logger.log(`Creating order for user ${userId}`);
 
       // S'assurer que le customerId correspond à l'utilisateur connecté
+      // Utiliser directement userId (peut être string ou number)
       const dataWithUserId = {
         ...orderData,
-        customerId: parseInt(userId),
+        customerId: userId,
       };
 
       return await this.ordersService.createOrder(dataWithUserId);
@@ -509,12 +510,15 @@ export class OrdersController {
   @Post('test/create')
   @ApiOperation({ summary: 'Créer commande de test (DEV)' })
   @ApiResponse({ status: 201, description: 'Commande test créée' })
-  async testCreateOrder() {
+  async testCreateOrder(@Body() testData?: { customerId?: string | number }) {
     try {
-      this.logger.log('Creating test order with mock data');
+      // Utiliser customerId fourni ou celui de monia123@gmail.com par défaut
+      const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
+      
+      this.logger.log(`Creating test order with mock data for customer ${customerId}`);
 
       const mockOrderData: CreateOrderData = {
-        customerId: 1,
+        customerId: customerId,
         orderLines: [
           {
             productId: 'TEST001',

@@ -2,11 +2,12 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import { Package, Clock, CheckCircle, XCircle, Truck, ShoppingBag } from "lucide-react";
 
+import { requireAuth } from "../auth/unified.server";
+import { AccountLayout } from "../components/account/AccountNavigation";
 import { OrderSummaryWidget } from "../components/orders/OrderSummaryWidget";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { requireAuth } from "../auth/unified.server";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
 
@@ -70,8 +71,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function OrdersListPage() {
-  const { orders, pagination, stats } = useLoaderData<typeof loader>();
+  const { orders, pagination, stats, user } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Erreur de chargement</p>
+          <Button asChild>
+            <Link to="/auth/login">Se connecter</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const getStatusIcon = (status: number) => {
     switch (status) {
@@ -109,9 +123,10 @@ export default function OrdersListPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Widget de résumé */}
-      <OrderSummaryWidget 
+    <AccountLayout user={user} stats={{ orders: { pending: stats.pendingOrders }, messages: { unread: 0 } }}>
+      <div className="space-y-6">
+        {/* Widget de résumé */}
+        <OrderSummaryWidget 
         totalOrders={stats.totalOrders}
         pendingOrders={stats.pendingOrders}
         completedOrders={stats.completedOrders}
@@ -248,14 +263,14 @@ export default function OrdersListPage() {
                   
                   <div className="flex gap-2">
                     <Button variant="outline" asChild>
-                      <Link to={`/account/orders/${order.id}`}>
+                      <Link to={`/account/orders/${(order as any).ord_id || order.id || order.orderNumber}`}>
                         Voir le détail
                       </Link>
                     </Button>
                     
                     {order.status === 6 && (
                       <Button variant="secondary" asChild>
-                        <Link to={`/account/orders/${order.id}/invoice`}>
+                        <Link to={`/account/orders/${(order as any).ord_id || order.id}/invoice`}>
                           Facture
                         </Link>
                       </Button>
@@ -263,7 +278,7 @@ export default function OrdersListPage() {
                     
                     {[1, 2, 3, 4, 5].includes(order.status) && (
                       <Button asChild>
-                        <Link to={`/account/orders/${order.id}/track`}>
+                        <Link to={`/account/orders/${(order as any).ord_id || order.id}/track`}>
                           Suivre
                         </Link>
                       </Button>
@@ -317,6 +332,7 @@ export default function OrdersListPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </AccountLayout>
   );
 }

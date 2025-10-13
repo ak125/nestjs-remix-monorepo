@@ -32,6 +32,29 @@ cd frontend && npm run dev
 - Frontend: `http://localhost:5173`
 - Admin Dashboard: `http://localhost:5173/admin`
 
+### 🧹 Nettoyage et Consolidation
+
+**Nouveau !** Scripts automatisés pour un monorepo propre et sécurisé :
+
+```bash
+# Nettoyage rapide (2 min)
+./scripts/quick-cleanup.sh
+
+# Nettoyage complet interactif (recommandé)
+./scripts/secure-cleanup.sh
+
+# Voir la documentation complète
+cat docs/CONSOLIDATION-GUIDE.md
+```
+
+**Bénéfices** :
+- ✅ Suppression des doublons et redondances
+- ✅ Dépendances unifiées et sécurisées
+- ✅ Structure organisée et documentée
+- ✅ Réduction de 30% de la taille du repo
+
+👉 **Guide complet** : [docs/CONSOLIDATION-GUIDE.md](./docs/CONSOLIDATION-GUIDE.md)
+
 ---
 
 ## 🏗️ Architecture
@@ -202,7 +225,7 @@ npm test
 
 **Backend** (`backend/.env`) :
 ```env
-PORT=3001
+PORT=3000
 DATABASE_URL=postgresql://user:pass@host:5432/db
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
@@ -212,7 +235,7 @@ BNP_CYBERPLUS_SECRET_KEY=your-secret-key
 
 **Frontend** (`frontend/.env`) :
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:3000
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 ```

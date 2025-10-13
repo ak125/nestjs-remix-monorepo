@@ -1,11 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
-import { VehicleBrand, PaginationOptions, VehicleResponse } from '../../types/vehicle.types';
+import {
+  VehicleBrand,
+  PaginationOptions,
+  VehicleResponse,
+} from '../../types/vehicle.types';
 
 /**
  * 🏷️ VEHICLE BRANDS SERVICE - Service dédié à la gestion des marques
- * 
+ *
  * Responsabilités :
  * - CRUD des marques automobiles
  * - Recherche et filtrage par marque
@@ -29,9 +33,7 @@ export interface BrandStats {
 export class VehicleBrandsService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleBrandsService.name);
 
-  constructor(
-    private cacheService: VehicleCacheService,
-  ) {
+  constructor(private cacheService: VehicleCacheService) {
     super();
     this.logger.log('🏷️ VehicleBrandsService initialisé');
   }
@@ -39,9 +41,11 @@ export class VehicleBrandsService extends SupabaseBaseService {
   /**
    * 🏷️ Obtenir toutes les marques avec pagination
    */
-  async getBrands(options: PaginationOptions = {}): Promise<VehicleResponse<VehicleBrand>> {
+  async getBrands(
+    options: PaginationOptions = {},
+  ): Promise<VehicleResponse<VehicleBrand>> {
     const cacheKey = `all_brands:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -63,7 +67,9 @@ export class VehicleBrandsService extends SupabaseBaseService {
             query = query.ilike('marque_name', `%${search}%`);
           }
 
-          const { data, error, count } = await query.order('marque_name', { ascending: true });
+          const { data, error, count } = await query.order('marque_name', {
+            ascending: true,
+          });
 
           if (error) {
             this.logger.error('Erreur getBrands:', error);
@@ -74,13 +80,13 @@ export class VehicleBrandsService extends SupabaseBaseService {
             data: data || [],
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error('Erreur getBrands:', error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -89,7 +95,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async getBrandById(marqueId: number): Promise<VehicleBrand | null> {
     const cacheKey = `brand_id:${marqueId}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -112,7 +118,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
           this.logger.error(`Erreur getBrandById ${marqueId}:`, error);
           return null;
         }
-      }
+      },
     );
   }
 
@@ -123,7 +129,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
     if (!marqueName?.trim()) return null;
 
     const cacheKey = `brand_name:${marqueName.toLowerCase()}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -146,7 +152,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
           this.logger.error(`Erreur getBrandByName ${marqueName}:`, error);
           return null;
         }
-      }
+      },
     );
   }
 
@@ -155,16 +161,18 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async getYearsByBrand(
     marqueId: number,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<{ year: number; count: number }>> {
     const cacheKey = `years_by_brand:${marqueId}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
       async () => {
         try {
-          this.logger.debug(`📅 Récupération des années pour marque: ${marqueId}`);
+          this.logger.debug(
+            `📅 Récupération des années pour marque: ${marqueId}`,
+          );
 
           const { page = 0, limit = 50 } = options;
           const offset = page * limit;
@@ -172,12 +180,14 @@ export class VehicleBrandsService extends SupabaseBaseService {
           // Requête avec agrégation par année
           const { data, error } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               type_year,
               auto_modele!inner(
                 auto_marque!inner(marque_id)
               )
-            `)
+            `,
+            )
             .eq('auto_modele.auto_marque.marque_id', marqueId)
             .eq('type_display', 1)
             .not('type_year', 'is', null)
@@ -190,7 +200,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
           // Agrégation côté client (peut être optimisé avec une vue SQL)
           const yearCounts = new Map<number, number>();
-          data?.forEach(item => {
+          data?.forEach((item) => {
             const year = item.type_year;
             if (year) {
               yearCounts.set(year, (yearCounts.get(year) || 0) + 1);
@@ -203,16 +213,17 @@ export class VehicleBrandsService extends SupabaseBaseService {
             .slice(offset, offset + limit);
 
           return {
+            success: true,
             data: years,
-            total: yearCounts.size,
-            page,
-            limit
+            total: years.length,
+            page: 0,
+            limit: years.length,
           };
         } catch (error) {
           this.logger.error(`Erreur getYearsByBrand ${marqueId}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -221,14 +232,14 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async searchBrands(
     query: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<VehicleBrand>> {
     if (!query?.trim()) {
       return await this.getBrands(options);
     }
 
     const cacheKey = `search_brands:${query}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -254,16 +265,17 @@ export class VehicleBrandsService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: data || [],
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchBrands ${query}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -272,7 +284,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async getBrandStats(): Promise<BrandStats> {
     const cacheKey = 'brand_stats:global';
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -294,16 +306,18 @@ export class VehicleBrandsService extends SupabaseBaseService {
           // Marques avec modèles
           const { data: brandsWithModels } = await this.client
             .from('auto_marque')
-            .select(`
+            .select(
+              `
               marque_id,
               marque_name,
               auto_modele(modele_id)
-            `)
+            `,
+            )
             .eq('marque_display', 1);
 
-          const brandsWithModelsCount = brandsWithModels?.filter(
-            brand => brand.auto_modele?.length > 0
-          ).length || 0;
+          const brandsWithModelsCount =
+            brandsWithModels?.filter((brand) => brand.auto_modele?.length > 0)
+              .length || 0;
 
           // Top marques par nombre de modèles
           const topBrands = await this.getTopBrands();
@@ -312,7 +326,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
             totalBrands: totalBrands || 0,
             activeBrands: activeBrands || 0,
             brandsWithModels: brandsWithModelsCount,
-            topBrands
+            topBrands,
           };
         } catch (error) {
           this.logger.error('Erreur getBrandStats:', error);
@@ -320,44 +334,49 @@ export class VehicleBrandsService extends SupabaseBaseService {
             totalBrands: 0,
             activeBrands: 0,
             brandsWithModels: 0,
-            topBrands: []
+            topBrands: [],
           };
         }
-      }
+      },
     );
   }
 
   /**
    * 🏆 Obtenir le top des marques
    */
-  private async getTopBrands(limit: number = 10): Promise<Array<{
-    marque_name: string;
-    modelCount: number;
-    typeCount: number;
-  }>> {
+  private async getTopBrands(limit: number = 10): Promise<
+    Array<{
+      marque_name: string;
+      modelCount: number;
+      typeCount: number;
+    }>
+  > {
     try {
       const { data } = await this.client
         .from('auto_marque')
-        .select(`
+        .select(
+          `
           marque_name,
           auto_modele(
             modele_id,
             auto_type(type_id)
           )
-        `)
+        `,
+        )
         .eq('marque_display', 1)
         .limit(limit);
 
       return (data || [])
-        .map(brand => ({
+        .map((brand) => ({
           marque_name: brand.marque_name,
           modelCount: brand.auto_modele?.length || 0,
-          typeCount: brand.auto_modele?.reduce(
-            (total, model) => total + (model.auto_type?.length || 0), 
-            0
-          ) || 0
+          typeCount:
+            brand.auto_modele?.reduce(
+              (total, model) => total + (model.auto_type?.length || 0),
+              0,
+            ) || 0,
         }))
-        .filter(brand => brand.modelCount > 0)
+        .filter((brand) => brand.modelCount > 0)
         .sort((a, b) => b.modelCount - a.modelCount)
         .slice(0, limit);
     } catch (error) {
@@ -371,7 +390,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async getAllBrandsForSelect(): Promise<Array<{ id: number; name: string }>> {
     const cacheKey = 'all_brands_select';
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -388,15 +407,15 @@ export class VehicleBrandsService extends SupabaseBaseService {
             return [];
           }
 
-          return (data || []).map(brand => ({
+          return (data || []).map((brand) => ({
             id: brand.marque_id,
-            name: brand.marque_name
+            name: brand.marque_name,
           }));
         } catch (error) {
           this.logger.error('Erreur getAllBrandsForSelect:', error);
           return [];
         }
-      }
+      },
     );
   }
 
@@ -419,7 +438,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
    */
   async getPopularBrands(limit: number = 10): Promise<VehicleBrand[]> {
     const cacheKey = `popular_brands:${limit}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.BRANDS,
       cacheKey,
@@ -427,18 +446,18 @@ export class VehicleBrandsService extends SupabaseBaseService {
         try {
           // Pour l'instant, retourne les marques avec le plus de modèles
           const topBrands = await this.getTopBrands(limit);
-          
+
           const brandPromises = topBrands.map(async (brand) => {
             return await this.getBrandByName(brand.marque_name);
           });
-          
+
           const brands = await Promise.all(brandPromises);
-          return brands.filter(brand => brand !== null) as VehicleBrand[];
+          return brands.filter((brand) => brand !== null) as VehicleBrand[];
         } catch (error) {
           this.logger.error('Erreur getPopularBrands:', error);
           return [];
         }
-      }
+      },
     );
   }
 }

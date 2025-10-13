@@ -1,101 +1,25 @@
-import { IsString, IsNumber, IsOptional, IsObject } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { z } from 'zod';
 
 /**
- * DTO pour les callbacks Cyberplus/BNP
+ * Schema Zod pour les callbacks Cyberplus/BNP
+ * Remplacement de class-validator par Zod pour la validation
  */
-export class CyberplusCallbackDto {
-  @ApiProperty({
-    description: 'ID de la transaction Cyberplus',
-    example: 'CYB_1696502400_ABC123',
-  })
-  @IsString()
-  transaction_id!: string;
+export const CyberplusCallbackSchema = z.object({
+  transaction_id: z.string(),
+  order_id: z.string(),
+  status: z.string(),
+  statuscode: z.string().optional(),
+  amount: z.number(),
+  currency: z.string().optional().default('EUR'),
+  payment_method: z.string().optional(),
+  signature: z.string(),
+  ip: z.string().optional(),
+  ips: z.string().optional(),
+  date_payment: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
 
-  @ApiProperty({
-    description: 'ID de la commande',
-    example: 'ORD_2023_001234',
-  })
-  @IsString()
-  order_id!: string;
-
-  @ApiProperty({
-    description: 'Statut du paiement',
-    example: 'success',
-  })
-  @IsString()
-  status!: string;
-
-  @ApiProperty({
-    description: 'Code statut numérique',
-    example: '00',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  statuscode?: string;
-
-  @ApiProperty({
-    description: 'Montant du paiement (en euros)',
-    example: 99.99,
-  })
-  @IsNumber()
-  amount!: number;
-
-  @ApiProperty({
-    description: 'Devise (ISO 4217)',
-    example: 'EUR',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  currency?: string;
-
-  @ApiProperty({
-    description: 'Méthode de paiement utilisée',
-    example: 'CB',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  payment_method?: string;
-
-  @ApiProperty({
-    description: 'Signature HMAC pour validation',
-    example: 'a3b2c1d4e5f6...',
-  })
-  @IsString()
-  signature!: string;
-
-  @ApiProperty({
-    description: 'Adresse IP du client',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  ip?: string;
-
-  @ApiProperty({
-    description: 'Adresse IP du serveur Cyberplus',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  ips?: string;
-
-  @ApiProperty({
-    description: 'Date du paiement (ISO 8601)',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  date_payment?: string;
-
-  @ApiProperty({
-    description: 'Données additionnelles',
-    required: false,
-  })
-  @IsOptional()
-  @IsObject()
-  metadata?: Record<string, any>;
-}
+/**
+ * Type inféré du schema Zod
+ */
+export type CyberplusCallbackDto = z.infer<typeof CyberplusCallbackSchema>;

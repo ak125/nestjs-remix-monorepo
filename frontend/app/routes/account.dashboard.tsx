@@ -296,7 +296,7 @@ export default function UnifiedAccountDashboard() {
             <div className="flex gap-2">
               {!mode.enhanced && (
                 <a 
-                  href={`${window.location.pathname}?enhanced=true`}
+                  href="/account/dashboard?enhanced=true"
                   className="text-blue-600 hover:text-blue-700"
                 >
                   → Version enrichie
@@ -304,7 +304,7 @@ export default function UnifiedAccountDashboard() {
               )}
               {mode.enhanced && (
                 <a 
-                  href={window.location.pathname}
+                  href="/account/dashboard"
                   className="text-blue-600 hover:text-blue-700"
                 >
                   → Version standard

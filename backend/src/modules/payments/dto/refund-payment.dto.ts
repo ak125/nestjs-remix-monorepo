@@ -1,26 +1,15 @@
-import { IsNumber, IsString, IsOptional, Min, Max } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { z } from 'zod';
 
 /**
- * DTO pour les remboursements de paiement
+ * Schema Zod pour les remboursements de paiement
+ * Remplacement de class-validator par Zod pour la validation
  */
-export class RefundPaymentDto {
-  @ApiProperty({
-    description: 'Montant du remboursement (si partiel)',
-    example: 49.99,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(0.01)
-  amount?: number;
+export const RefundPaymentSchema = z.object({
+  amount: z.number().positive().min(0.01).optional(),
+  reason: z.string().optional(),
+});
 
-  @ApiProperty({
-    description: 'Raison du remboursement',
-    example: 'Client insatisfait - Article défectueux',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  reason?: string;
-}
+/**
+ * Type inféré du schema Zod
+ */
+export type RefundPaymentDto = z.infer<typeof RefundPaymentSchema>;

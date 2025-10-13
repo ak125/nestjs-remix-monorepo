@@ -27,10 +27,9 @@ export class RemixController {
       request.url.startsWith('/api/') ||
       request.url.startsWith('/admin/breadcrumbs') ||
       request.url.startsWith('/authenticate') ||
-      request.url.startsWith('/auth/') ||
-      request.url.startsWith('/profile/')
+      request.url.startsWith('/auth/')
     ) {
-      // console.log('🔀 Skipping API/Auth/Profile route, calling next()');
+      // console.log('🔀 Skipping API/Auth route, calling next()');
       return next();
     }
 

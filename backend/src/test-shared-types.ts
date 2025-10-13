@@ -1,6 +1,6 @@
 /**
  * 🧪 TEST D'INTÉGRATION - Types partagés
- * 
+ *
  * Test simple pour vérifier que le package @monorepo/shared-types
  * peut être importé et utilisé dans le backend NestJS
  */
@@ -32,17 +32,25 @@ const testBrand: VehicleBrand = {
   marque_name: 'Toyota',
   marque_alias: 'toyota',
   marque_display: 1,
+  marque_relfollow: 1,
+  marque_sitemap: 1,
 };
 
 try {
   const validatedBrand = validateVehicleBrand(testBrand);
-  console.log('✅ Validation VehicleBrand réussie:', validatedBrand.marque_name);
+  console.log(
+    '✅ Validation VehicleBrand réussie:',
+    validatedBrand.marque_name,
+  );
 } catch (error) {
   console.error('❌ Erreur validation VehicleBrand:', error);
 }
 
 // Test de création d'une réponse API
-const successResponse = createSuccessResponse(testBrand, 'Marque récupérée avec succès');
+const successResponse = createSuccessResponse(
+  testBrand,
+  'Marque récupérée avec succès',
+);
 console.log('✅ Réponse API créée:', successResponse.success);
 
 // Test de création d'un objet UnifiedPiece
@@ -67,9 +75,12 @@ try {
   const validatedPiece = UnifiedPieceSchema.parse(testPiece);
   console.log('✅ Validation UnifiedPiece réussie:', validatedPiece.piece_name);
 } catch (error) {
-  console.log('⚠️  Validation UnifiedPiece (champs manquants normaux):', error.errors?.[0]?.message || error.message);
+  console.log(
+    '⚠️  Validation UnifiedPiece (champs manquants normaux):',
+    error.errors?.[0]?.message || error.message,
+  );
 }
 
-console.log('🎉 Tests d\'intégration terminés !');
+console.log("🎉 Tests d'intégration terminés !");
 
-export { }; // Pour que ce soit un module
+export {}; // Pour que ce soit un module

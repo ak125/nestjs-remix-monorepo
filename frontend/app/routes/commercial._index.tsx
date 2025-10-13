@@ -309,7 +309,7 @@ export default function CommercialDashboard() {
               </div>
               
               <div className="mt-4">
-                <Link to="/commercial/orders">
+                <Link to="/orders">
                   <Button variant="outline" className="w-full">
                     Voir toutes les commandes
                   </Button>

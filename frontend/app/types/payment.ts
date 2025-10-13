@@ -15,6 +15,8 @@ export interface Payment {
   id: string;
   orderId: string;
   userId: string;
+  customerName?: string;
+  customerEmail?: string;
   amount: number;
   currency: string;
   status: PaymentStatus;

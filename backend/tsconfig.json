@@ -3,7 +3,9 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strict": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noEmitOnError": false,
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": false,

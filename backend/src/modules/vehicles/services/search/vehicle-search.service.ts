@@ -2,14 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
-import { 
-  PaginationOptions, 
-  VehicleResponse
-} from '../../types/vehicle.types';
+import { PaginationOptions, VehicleResponse } from '../../types/vehicle.types';
 
 /**
  * 🔍 VEHICLE SEARCH SERVICE - Service de recherche avancée pour véhicules
- * 
+ *
  * Responsabilités :
  * - Recherche par code (Mine, CNIT, etc.)
  * - Recherche textuelle avancée
@@ -50,14 +47,20 @@ export class VehicleSearchService extends SupabaseBaseService {
    */
   async searchByCode(
     code: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     if (!code?.trim()) {
-      return { data: [], total: 0, page: 0, limit: options.limit || 50 };
+      return {
+        success: true,
+        data: [],
+        total: 0,
+        page: 0,
+        limit: options.limit || 50,
+      };
     }
 
     const cacheKey = `code:${code}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.SEARCH,
       cacheKey,
@@ -71,7 +74,8 @@ export class VehicleSearchService extends SupabaseBaseService {
           // Recherche dans auto_type avec jointures
           let query = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -81,7 +85,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -89,8 +94,8 @@ export class VehicleSearchService extends SupabaseBaseService {
           // Recherche flexible par code
           query = query.or(
             `type_mine_code.ilike.%${code}%,` +
-            `type_cnit_code.ilike.%${code}%,` +
-            `type_name.ilike.%${code}%`
+              `type_cnit_code.ilike.%${code}%,` +
+              `type_name.ilike.%${code}%`,
           );
 
           const { data, error, count } = await query.order('type_name');
@@ -101,19 +106,21 @@ export class VehicleSearchService extends SupabaseBaseService {
           }
 
           // Enrichissement des résultats
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchByCode ${code}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -122,15 +129,24 @@ export class VehicleSearchService extends SupabaseBaseService {
    */
   async searchAdvanced(
     criteria: SearchCriteria,
-    options: AdvancedSearchOptions = {}
+    options: AdvancedSearchOptions = {},
   ): Promise<VehicleResponse<any>> {
     const { query } = criteria;
     if (!query?.trim()) {
-      return { data: [], total: 0, page: 0, limit: options.limit || 50 };
+      return {
+        success: true,
+        data: [],
+        total: 0,
+        page: 0,
+        limit: options.limit || 50,
+      };
     }
 
-    const cacheKey = this.cacheService.generateSearchKey({ ...criteria, ...options });
-    
+    const cacheKey = this.cacheService.generateSearchKey({
+      ...criteria,
+      ...options,
+    });
+
     return await this.cacheService.getOrSet(
       CacheType.SEARCH,
       cacheKey,
@@ -138,13 +154,18 @@ export class VehicleSearchService extends SupabaseBaseService {
         try {
           this.logger.debug(`🔍 Recherche avancée: ${query}`);
 
-          const { page = 0, limit = 50, searchIn = ['marque', 'modele', 'type'] } = options;
+          const {
+            page = 0,
+            limit = 50,
+            searchIn = ['marque', 'modele', 'type'],
+          } = options;
           const offset = page * limit;
 
           // Construction de la requête avec jointures
           let dbQuery = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -154,7 +175,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -163,28 +185,36 @@ export class VehicleSearchService extends SupabaseBaseService {
           const searchConditions: string[] = [];
 
           if (searchIn.includes('marque')) {
-            searchConditions.push(`auto_modele.auto_marque.marque_name.ilike.%${query}%`);
+            searchConditions.push(
+              `auto_modele.auto_marque.marque_name.ilike.%${query}%`,
+            );
           }
-          
+
           if (searchIn.includes('modele')) {
             searchConditions.push(`auto_modele.modele_name.ilike.%${query}%`);
           }
-          
+
           if (searchIn.includes('type')) {
             searchConditions.push(`type_name.ilike.%${query}%`);
           }
 
           // Ajout de critères spécifiques
           if (criteria.marque) {
-            dbQuery = dbQuery.eq('auto_modele.auto_marque.marque_name', criteria.marque);
+            dbQuery = dbQuery.eq(
+              'auto_modele.auto_marque.marque_name',
+              criteria.marque,
+            );
           }
-          
+
           if (criteria.modele) {
             dbQuery = dbQuery.eq('auto_modele.modele_name', criteria.modele);
           }
 
           if (criteria.engineCode) {
-            dbQuery = dbQuery.ilike('type_engine_code', `%${criteria.engineCode}%`);
+            dbQuery = dbQuery.ilike(
+              'type_engine_code',
+              `%${criteria.engineCode}%`,
+            );
           }
 
           // Application des conditions de recherche
@@ -192,7 +222,9 @@ export class VehicleSearchService extends SupabaseBaseService {
             dbQuery = dbQuery.or(searchConditions.join(','));
           }
 
-          const { data, error, count } = await dbQuery.order('auto_modele.auto_marque.marque_name, auto_modele.modele_name, type_name');
+          const { data, error, count } = await dbQuery.order(
+            'auto_modele.auto_marque.marque_name, auto_modele.modele_name, type_name',
+          );
 
           if (error) {
             this.logger.error('Erreur recherche avancée:', error);
@@ -202,20 +234,21 @@ export class VehicleSearchService extends SupabaseBaseService {
           // Enrichissement si demandé
           let enrichedData = data || [];
           if (options.includeEngine !== false) {
-            enrichedData = await this.enrichmentService.enrichVehicles(enrichedData);
+            enrichedData =
+              await this.enrichmentService.enrichVehicles(enrichedData);
           }
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error('Erreur searchAdvanced:', error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -224,14 +257,20 @@ export class VehicleSearchService extends SupabaseBaseService {
    */
   async searchByCnit(
     cnitCode: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     if (!cnitCode?.trim()) {
-      return { data: [], total: 0, page: 0, limit: options.limit || 50 };
+      return {
+        success: true,
+        data: [],
+        total: 0,
+        page: 0,
+        limit: options.limit || 50,
+      };
     }
 
     const cacheKey = `cnit:${cnitCode}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.SEARCH,
       cacheKey,
@@ -244,7 +283,8 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           const { data, error, count } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -254,7 +294,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .ilike('type_cnit_code', `%${cnitCode}%`)
             .limit(limit)
@@ -266,19 +307,21 @@ export class VehicleSearchService extends SupabaseBaseService {
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchByCnit ${cnitCode}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -286,10 +329,10 @@ export class VehicleSearchService extends SupabaseBaseService {
    * 🔍 Recherche multi-critères avec filtres
    */
   async searchWithFilters(
-    filters: SearchCriteria & PaginationOptions
+    filters: SearchCriteria & PaginationOptions,
   ): Promise<VehicleResponse<any>> {
     const cacheKey = this.cacheService.generateSearchKey(filters);
-    
+
     return await this.cacheService.getOrSet(
       CacheType.SEARCH,
       cacheKey,
@@ -302,7 +345,8 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           let query = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -312,24 +356,28 @@ export class VehicleSearchService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
 
           // Application des filtres
           if (filters.marque) {
-            query = query.eq('auto_modele.auto_marque.marque_name', filters.marque);
+            query = query.eq(
+              'auto_modele.auto_marque.marque_name',
+              filters.marque,
+            );
           }
-          
+
           if (filters.modele) {
             query = query.eq('auto_modele.modele_name', filters.modele);
           }
-          
+
           if (filters.type) {
             query = query.ilike('type_name', `%${filters.type}%`);
           }
-          
+
           if (filters.engineCode) {
             query = query.ilike('type_engine_code', `%${filters.engineCode}%`);
           }
@@ -337,31 +385,35 @@ export class VehicleSearchService extends SupabaseBaseService {
           if (filters.query) {
             query = query.or(
               `auto_modele.auto_marque.marque_name.ilike.%${filters.query}%,` +
-              `auto_modele.modele_name.ilike.%${filters.query}%,` +
-              `type_name.ilike.%${filters.query}%`
+                `auto_modele.modele_name.ilike.%${filters.query}%,` +
+                `type_name.ilike.%${filters.query}%`,
             );
           }
 
-          const { data, error, count } = await query.order('auto_modele.auto_marque.marque_name, auto_modele.modele_name, type_name');
+          const { data, error, count } = await query.order(
+            'auto_modele.auto_marque.marque_name, auto_modele.modele_name, type_name',
+          );
 
           if (error) {
             this.logger.error('Erreur recherche avec filtres:', error);
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error('Erreur searchWithFilters:', error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -371,12 +423,12 @@ export class VehicleSearchService extends SupabaseBaseService {
   async getSuggestions(
     query: string,
     type: 'marque' | 'modele' | 'type' = 'marque',
-    limit: number = 10
+    limit: number = 10,
   ): Promise<string[]> {
     if (!query?.trim()) return [];
 
     const cacheKey = `suggestions:${type}:${query}:${limit}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.SEARCH,
       cacheKey,
@@ -393,8 +445,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                 .ilike('marque_name', `%${query}%`)
                 .limit(limit)
                 .order('marque_name');
-              
-              suggestions = marques?.map(m => m.marque_name) || [];
+
+              suggestions = marques?.map((m) => m.marque_name) || [];
               break;
 
             case 'modele':
@@ -405,8 +457,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                 .ilike('modele_name', `%${query}%`)
                 .limit(limit)
                 .order('modele_name');
-              
-              suggestions = modeles?.map(m => m.modele_name) || [];
+
+              suggestions = modeles?.map((m) => m.modele_name) || [];
               break;
 
             case 'type':
@@ -417,8 +469,8 @@ export class VehicleSearchService extends SupabaseBaseService {
                 .ilike('type_name', `%${query}%`)
                 .limit(limit)
                 .order('type_name');
-              
-              suggestions = types?.map(t => t.type_name) || [];
+
+              suggestions = types?.map((t) => t.type_name) || [];
               break;
           }
 
@@ -427,7 +479,7 @@ export class VehicleSearchService extends SupabaseBaseService {
           this.logger.error(`Erreur suggestions ${type}:`, error);
           return [];
         }
-      }
+      },
     );
   }
 }

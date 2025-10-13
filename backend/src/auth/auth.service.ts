@@ -536,6 +536,7 @@ export class AuthService {
       lastName?: string;
       email?: string;
       phone?: string;
+      password?: string;
     },
   ): Promise<AuthUser | null> {
     try {

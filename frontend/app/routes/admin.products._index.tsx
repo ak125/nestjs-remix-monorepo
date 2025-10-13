@@ -1,3 +1,36 @@
+/**
+ * ⚙️ ADMIN PRODUCTS - INTERFACE SYSTÈME
+ * 
+ * ⚠️ IMPORTANT: Cette route est DIFFÉRENTE de /products/admin
+ * 
+ * 🎯 Usage:
+ * - Route: /admin/products
+ * - Audience: ADMIN SYSTÈME uniquement (level 7+)
+ * - Contexte: Configuration système, gestion technique des produits
+ * 
+ * 🔧 Features système:
+ * - CRUD basique des produits (Create, Read, Update, Delete)
+ * - Activation/désactivation produits
+ * - Gestion des SKU et alias techniques
+ * - Configuration base de données
+ * - Interface simple et fonctionnelle
+ * 
+ * 🔄 Comparaison avec /products/admin:
+ * - /admin/products (ICI): Interface système basique, config, niveau 7+
+ * - /products/admin: Interface commerciale riche, full-featured, niveau 3+
+ * 
+ * ✅ Quand utiliser cette route:
+ * - Ajouter/modifier des produits en BDD
+ * - Activer/désactiver des références
+ * - Configurer les SKU techniques
+ * - Maintenance système des produits
+ * 
+ * 🚫 NE PAS utiliser pour:
+ * - Recherche produit quotidienne → Utiliser /products/admin
+ * - Créer une commande → Utiliser /products/admin
+ * - Consulter le catalogue → Utiliser /products/admin
+ */
+
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';

@@ -15,8 +15,14 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function loader({ context }: LoaderFunctionArgs) {
-  const user = await getOptionalUser({ context });
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  // Essayer d'abord avec context, puis avec request si context vide
+  let user = context?.user ? await getOptionalUser({ context }) : null;
+  if (!user) {
+    const { getAuthUser } = await import("../auth/unified.server");
+    user = await getAuthUser(request);
+  }
+  
   if (!user) throw redirect('/login');
   if (!user.level || user.level < 5) throw redirect('/unauthorized');
   
@@ -29,7 +35,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
     pendingOrders: 0,
     completedOrders: 0,
     totalSuppliers: 0,
-    totalStock: 409687 // Valeur par défaut du stock
+    totalStock: 409687, // Valeur par défaut du stock
+    totalProducts: 0,
+    totalCategories: 0,
+    totalBrands: 0
   };
 
   try {
@@ -49,7 +58,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
         pendingOrders: dashboardData.pendingOrders || 0,
         completedOrders: dashboardData.completedOrders || 0,
         totalSuppliers: dashboardData.totalSuppliers || 0,
-        totalStock: 409687 // Valeur par défaut du stock
+        totalStock: 409687, // Valeur par défaut du stock
+        totalProducts: 0,
+        totalCategories: 0,
+        totalBrands: 0
       };
     }
 

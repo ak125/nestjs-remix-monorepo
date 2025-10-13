@@ -2,15 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
-import { 
-  VehicleType, 
-  PaginationOptions, 
-  VehicleResponse 
+import {
+  VehicleType,
+  PaginationOptions,
+  VehicleResponse,
 } from '../../types/vehicle.types';
 
 /**
  * 🔧 VEHICLE TYPES SERVICE - Service dédié à la gestion des types/motorisations
- * 
+ *
  * Responsabilités :
  * - CRUD des types automobiles
  * - Recherche et filtrage par type
@@ -53,9 +53,11 @@ export class VehicleTypesService extends SupabaseBaseService {
   /**
    * 🔧 Obtenir tous les types avec pagination
    */
-  async getTypes(options: TypeSearchOptions = {}): Promise<VehicleResponse<VehicleType>> {
+  async getTypes(
+    options: TypeSearchOptions = {},
+  ): Promise<VehicleResponse<VehicleType>> {
     const cacheKey = `all_types:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -63,12 +65,18 @@ export class VehicleTypesService extends SupabaseBaseService {
         try {
           this.logger.debug('🔧 Récupération des types');
 
-          const { page = 0, limit = 50, search, includeEngine = true } = options;
+          const {
+            page = 0,
+            limit = 50,
+            search,
+            includeEngine = true,
+          } = options;
           const offset = page * limit;
 
           let query = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -78,7 +86,8 @@ export class VehicleTypesService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -87,15 +96,18 @@ export class VehicleTypesService extends SupabaseBaseService {
           if (options.modeleId) {
             query = query.eq('auto_modele.modele_id', options.modeleId);
           }
-          
+
           if (options.marqueId) {
-            query = query.eq('auto_modele.auto_marque.marque_id', options.marqueId);
+            query = query.eq(
+              'auto_modele.auto_marque.marque_id',
+              options.marqueId,
+            );
           }
-          
+
           if (options.year) {
             query = query.eq('type_year', options.year);
           }
-          
+
           if (options.engineCode) {
             query = query.ilike('type_engine_code', `%${options.engineCode}%`);
           }
@@ -114,20 +126,21 @@ export class VehicleTypesService extends SupabaseBaseService {
           // Enrichissement si demandé
           let enrichedData = data || [];
           if (includeEngine) {
-            enrichedData = await this.enrichmentService.enrichVehicles(enrichedData);
+            enrichedData =
+              await this.enrichmentService.enrichVehicles(enrichedData);
           }
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error('Erreur getTypes:', error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -136,10 +149,10 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async getTypeById(
     typeId: number,
-    includeEngine: boolean = true
+    includeEngine: boolean = true,
   ): Promise<VehicleType | null> {
     const cacheKey = `type_id:${typeId}:${includeEngine}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -147,7 +160,8 @@ export class VehicleTypesService extends SupabaseBaseService {
         try {
           const { data, error } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -157,7 +171,8 @@ export class VehicleTypesService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_id', typeId)
             .eq('type_display', 1)
             .single();
@@ -177,7 +192,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           this.logger.error(`Erreur getTypeById ${typeId}:`, error);
           return null;
         }
-      }
+      },
     );
   }
 
@@ -186,23 +201,31 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async getTypesByModel(
     modeleId: number,
-    options: PaginationOptions & { includeEngine?: boolean } = {}
+    options: PaginationOptions & { includeEngine?: boolean } = {},
   ): Promise<VehicleResponse<VehicleType>> {
     const cacheKey = `types_by_model:${modeleId}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
       async () => {
         try {
-          this.logger.debug(`🔧 Récupération des types pour modèle: ${modeleId}`);
+          this.logger.debug(
+            `🔧 Récupération des types pour modèle: ${modeleId}`,
+          );
 
-          const { page = 0, limit = 50, search, includeEngine = true } = options;
+          const {
+            page = 0,
+            limit = 50,
+            search,
+            includeEngine = true,
+          } = options;
           const offset = page * limit;
 
           let query = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -212,7 +235,8 @@ export class VehicleTypesService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('auto_modele.modele_id', modeleId)
             .eq('type_display', 1)
             .limit(limit)
@@ -232,20 +256,21 @@ export class VehicleTypesService extends SupabaseBaseService {
           // Enrichissement si demandé
           let enrichedData = data || [];
           if (includeEngine) {
-            enrichedData = await this.enrichmentService.enrichVehicles(enrichedData);
+            enrichedData =
+              await this.enrichmentService.enrichVehicles(enrichedData);
           }
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur getTypesByModel ${modeleId}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -254,14 +279,14 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async searchTypes(
     query: string,
-    options: TypeSearchOptions = {}
+    options: TypeSearchOptions = {},
   ): Promise<VehicleResponse<VehicleType>> {
     if (!query?.trim()) {
       return await this.getTypes(options);
     }
 
     const cacheKey = `search_types:${query}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -274,7 +299,8 @@ export class VehicleTypesService extends SupabaseBaseService {
 
           let dbQuery = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -284,13 +310,14 @@ export class VehicleTypesService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .or(
               `type_name.ilike.%${query}%,` +
-              `type_mine_code.ilike.%${query}%,` +
-              `type_cnit_code.ilike.%${query}%,` +
-              `type_engine_code.ilike.%${query}%`
+                `type_mine_code.ilike.%${query}%,` +
+                `type_cnit_code.ilike.%${query}%,` +
+                `type_engine_code.ilike.%${query}%`,
             )
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -299,9 +326,12 @@ export class VehicleTypesService extends SupabaseBaseService {
           if (options.modeleId) {
             dbQuery = dbQuery.eq('auto_modele.modele_id', options.modeleId);
           }
-          
+
           if (options.marqueId) {
-            dbQuery = dbQuery.eq('auto_modele.auto_marque.marque_id', options.marqueId);
+            dbQuery = dbQuery.eq(
+              'auto_modele.auto_marque.marque_id',
+              options.marqueId,
+            );
           }
 
           const { data, error, count } = await dbQuery.order('type_name');
@@ -314,20 +344,21 @@ export class VehicleTypesService extends SupabaseBaseService {
           // Enrichissement si demandé
           let enrichedData = data || [];
           if (includeEngine) {
-            enrichedData = await this.enrichmentService.enrichVehicles(enrichedData);
+            enrichedData =
+              await this.enrichmentService.enrichVehicles(enrichedData);
           }
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchTypes ${query}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -336,7 +367,7 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async getTypeStats(): Promise<TypeStats> {
     const cacheKey = 'type_stats:global';
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -370,7 +401,7 @@ export class VehicleTypesService extends SupabaseBaseService {
             .not('type_year', 'is', null);
 
           const byYear: Record<number, number> = {};
-          yearData?.forEach(item => {
+          yearData?.forEach((item) => {
             if (item.type_year) {
               byYear[item.type_year] = (byYear[item.type_year] || 0) + 1;
             }
@@ -384,7 +415,7 @@ export class VehicleTypesService extends SupabaseBaseService {
             activeTypes: activeTypes || 0,
             typesWithEngine: typesWithEngine || 0,
             byYear,
-            topEngines
+            topEngines,
           };
         } catch (error) {
           this.logger.error('Erreur getTypeStats:', error);
@@ -393,20 +424,22 @@ export class VehicleTypesService extends SupabaseBaseService {
             activeTypes: 0,
             typesWithEngine: 0,
             byYear: {},
-            topEngines: []
+            topEngines: [],
           };
         }
-      }
+      },
     );
   }
 
   /**
    * 🏆 Obtenir le top des moteurs
    */
-  private async getTopEngines(limit: number = 10): Promise<Array<{
-    engineCode: string;
-    count: number;
-  }>> {
+  private async getTopEngines(limit: number = 10): Promise<
+    Array<{
+      engineCode: string;
+      count: number;
+    }>
+  > {
     try {
       const { data } = await this.client
         .from('auto_type')
@@ -416,7 +449,7 @@ export class VehicleTypesService extends SupabaseBaseService {
 
       // Compter les occurrences
       const engineCounts = new Map<string, number>();
-      data?.forEach(item => {
+      data?.forEach((item) => {
         if (item.type_engine_code) {
           const code = item.type_engine_code;
           engineCounts.set(code, (engineCounts.get(code) || 0) + 1);
@@ -436,14 +469,16 @@ export class VehicleTypesService extends SupabaseBaseService {
   /**
    * 🔧 Obtenir tous les types d'un modèle (pour sélecteurs)
    */
-  async getTypesForSelect(modeleId: number): Promise<Array<{ 
-    id: number; 
-    name: string; 
-    year?: number;
-    engineCode?: string;
-  }>> {
+  async getTypesForSelect(modeleId: number): Promise<
+    Array<{
+      id: number;
+      name: string;
+      year?: number;
+      engineCode?: string;
+    }>
+  > {
     const cacheKey = `types_select:${modeleId}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -461,17 +496,17 @@ export class VehicleTypesService extends SupabaseBaseService {
             return [];
           }
 
-          return (data || []).map(type => ({
+          return (data || []).map((type) => ({
             id: type.type_id,
             name: type.type_name,
             year: type.type_year,
-            engineCode: type.type_engine_code
+            engineCode: type.type_engine_code,
           }));
         } catch (error) {
           this.logger.error('Erreur getTypesForSelect:', error);
           return [];
         }
-      }
+      },
     );
   }
 
@@ -493,7 +528,7 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async getYearsByModel(modeleId: number): Promise<number[]> {
     const cacheKey = `years_by_model:${modeleId}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -513,13 +548,17 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           // Supprimer les doublons et trier
-          const years = [...new Set(data?.map(item => item.type_year).filter(Boolean) || [])];
+          const years = [
+            ...new Set(
+              data?.map((item) => item.type_year).filter(Boolean) || [],
+            ),
+          ];
           return years.sort((a, b) => b - a);
         } catch (error) {
           this.logger.error(`Erreur getYearsByModel ${modeleId}:`, error);
           return [];
         }
-      }
+      },
     );
   }
 
@@ -528,7 +567,7 @@ export class VehicleTypesService extends SupabaseBaseService {
    */
   async getEngineCodesByModel(modeleId: number): Promise<string[]> {
     const cacheKey = `engine_codes_by_model:${modeleId}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -548,13 +587,17 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           // Supprimer les doublons
-          const engines = [...new Set(data?.map(item => item.type_engine_code).filter(Boolean) || [])];
+          const engines = [
+            ...new Set(
+              data?.map((item) => item.type_engine_code).filter(Boolean) || [],
+            ),
+          ];
           return engines.sort();
         } catch (error) {
           this.logger.error(`Erreur getEngineCodesByModel ${modeleId}:`, error);
           return [];
         }
-      }
+      },
     );
   }
 
@@ -564,12 +607,12 @@ export class VehicleTypesService extends SupabaseBaseService {
   async getTypeSuggestions(
     query: string,
     modeleId?: number,
-    limit: number = 10
+    limit: number = 10,
   ): Promise<string[]> {
     if (!query?.trim()) return [];
 
     const cacheKey = `type_suggestions:${query}:${modeleId || 'all'}:${limit}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -588,13 +631,13 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           const { data } = await dbQuery;
-          
-          return data?.map(t => t.type_name) || [];
+
+          return data?.map((t) => t.type_name) || [];
         } catch (error) {
           this.logger.error(`Erreur getTypeSuggestions ${query}:`, error);
           return [];
         }
-      }
+      },
     );
   }
 
@@ -607,7 +650,7 @@ export class VehicleTypesService extends SupabaseBaseService {
     relatedTypes: VehicleType[];
   } | null> {
     const cacheKey = `type_summary:${typeId}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.TYPES,
       cacheKey,
@@ -620,7 +663,8 @@ export class VehicleTypesService extends SupabaseBaseService {
           // Types similaires du même modèle
           const { data: relatedData } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -630,25 +674,31 @@ export class VehicleTypesService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
-            .eq('type_modele_id', type.auto_modele.modele_id)
+            `,
+            )
+            .eq(
+              'type_modele_id',
+              (type.auto_modele as any)?.modele_id || type.type_modele_id,
+            )
             .eq('type_display', 1)
             .neq('type_id', typeId)
             .limit(5)
             .order('type_name');
 
-          const relatedTypes = await this.enrichmentService.enrichVehicles(relatedData || []);
+          const relatedTypes = await this.enrichmentService.enrichVehicles(
+            relatedData || [],
+          );
 
           return {
             type,
-            enriched: !!type.engineDetails?.enriched,
-            relatedTypes
+            enriched: !!(type as any).engineDetails?.enriched,
+            relatedTypes,
           };
         } catch (error) {
           this.logger.error(`Erreur getTypeSummary ${typeId}:`, error);
           return null;
         }
-      }
+      },
     );
   }
 }

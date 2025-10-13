@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { getErrorMessage } from '../../../common/utils/error.utils';
 import { MetricsService } from './metrics.service';
 
 export interface DatabaseHealth {
@@ -29,7 +30,7 @@ export interface SystemAlert {
 
 @Injectable()
 export class DatabaseMonitorService extends SupabaseBaseService {
-  private readonly logger = new Logger(DatabaseMonitorService.name);
+  protected readonly logger = new Logger(DatabaseMonitorService.name);
   private alerts: SystemAlert[] = [];
 
   // Tables critiques à surveiller
@@ -100,7 +101,10 @@ export class DatabaseMonitorService extends SupabaseBaseService {
             );
           }
         } catch (error) {
-          this.logger.error(`❌ Error checking table ${table}:`, error);
+          this.logger.error(
+            `\u274C Erreur monitoring table ${table}:`,
+            getErrorMessage(error),
+          );
           tableResults[table] = {
             accessible: false,
             recordCount: 0,
@@ -108,7 +112,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
           await this.createAlert(
             'error',
             `Failed to check table ${table}`,
-            error.message,
+            getErrorMessage(error),
           );
         }
       }
@@ -235,7 +239,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
         queryTime: -1,
         recordCount: -1,
         indexHealth: 'critical',
-        recommendations: [`Failed to monitor table: ${error.message}`],
+        recommendations: [`Failed to monitor table: ${getErrorMessage(error)}`],
       };
     }
   }

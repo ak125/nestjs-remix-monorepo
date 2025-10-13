@@ -44,8 +44,8 @@ export class ProfileController {
         return res.redirect('/auth/login');
       }
 
-      // Rediriger vers une page de profil (à créer dans le frontend)
-      return res.redirect(`/profile/edit?userId=${user.id}`);
+      // Rediriger vers la page de profil du frontend
+      return res.redirect(`/profile`);
     } catch (error) {
       console.error('Profile error:', error);
       return res.redirect('/');
