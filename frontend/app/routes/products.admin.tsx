@@ -1,18 +1,33 @@
 /**
- * 🎯 PRODUCTS ADMIN - UNIFIED INTERFACE
+ * � PRODUCTS ADMIN - INTERFACE COMMERCIALE
  * 
- * Interface unifiée pour la gestion des produits
- * Remplace pro.products._index.tsx + commercial.products._index.tsx
+ * ⚠️ IMPORTANT: Cette route est DIFFÉRENTE de /admin/products
  * 
- * Features:
- * - Role-based UI (Pro vs Commercial)
+ * 🎯 Usage:
+ * - Route: /products/admin
+ * - Audience: COMMERCIAL (level 3+) + ADMIN (level 7+)
+ * - Contexte: Gestion quotidienne des produits, catalogue enrichi
+ * 
+ * 📊 Features commerciales:
+ * - 4M+ produits automobile avec recherche avancée
+ * - Visualisation enrichie (images, specs, compatibilité)
  * - Progressive Enhancement (?enhanced=true)
- * - Component library integration
- * - Centralized backend communication
+ * - Stats temps réel (stock, ventes, tendances)
+ * - Interface optimisée pour la vente
+ * 
+ * 🔄 Comparaison avec /admin/products:
+ * - /products/admin (ICI): Interface commerciale richeFull-featured UI, niveau 3+
+ * - /admin/products: Interface système basique, config, niveau 7+
+ * 
+ * ✅ Quand utiliser cette route:
+ * - Recherche produit pour créer une commande
+ * - Consultation catalogue client
+ * - Vérification stock disponible
+ * - Analytics ventes par produit
  * 
  * Routes:
- * - /products/admin (base interface)
- * - /products/admin?enhanced=true (advanced interface)
+ * - /products/admin (interface base)
+ * - /products/admin?enhanced=true (interface avancée)
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
