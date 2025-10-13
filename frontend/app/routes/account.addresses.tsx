@@ -1,6 +1,9 @@
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { MapPin, Plus, Edit2, Trash2, Home, Building } from "lucide-react";
+
+import { requireAuth } from "../auth/unified.server";
+import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -21,10 +24,17 @@ type Address = {
 
 type LoaderData = {
   addresses: Address[];
+  user: any;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
+    const user = await requireAuth(request);
+    
+    if (!user) {
+      throw new Response("Non authentifié", { status: 401 });
+    }
+
     // TODO: Récupérer les adresses depuis l'API
     const addresses: Address[] = [
       {
@@ -54,10 +64,10 @@ export const loader: LoaderFunction = async ({ request }) => {
       }
     ];
 
-    return json<LoaderData>({ addresses });
+    return json<LoaderData>({ addresses, user });
   } catch (error) {
     console.error("Erreur chargement adresses:", error);
-    return json<LoaderData>({ addresses: [] });
+    throw new Response("Erreur chargement adresses", { status: 500 });
   }
 };
 
@@ -108,13 +118,14 @@ function AddressCard({ address }: { address: Address }) {
 }
 
 export default function AccountAddresses() {
-  const { addresses } = useLoaderData<LoaderData>();
+  const { addresses, user } = useLoaderData<LoaderData>();
 
   const billingAddresses = addresses.filter(addr => addr.type === "billing");
   const shippingAddresses = addresses.filter(addr => addr.type === "shipping");
 
   return (
-    <div className="space-y-6">
+    <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
+      <div className="space-y-6">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
@@ -207,6 +218,7 @@ export default function AccountAddresses() {
           </Link>
         </Button>
       </div>
-    </div>
+      </div>
+    </AccountLayout>
   );
 }

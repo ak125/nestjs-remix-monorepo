@@ -32,7 +32,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     case "view-order":
       console.log("Viewing order for notification:", notificationId);
-      return json({ success: true, redirect: `/admin/orders/${notificationId}` });
+      return json({ success: true, redirect: `/orders/${notificationId}` });
 
     case "process-order":
       console.log("Processing order for notification:", notificationId);

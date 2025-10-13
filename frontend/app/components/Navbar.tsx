@@ -19,6 +19,19 @@ export const Navbar = ({ logo }: { logo: string }) => {
         
         {/* Navigation principale */}
         <div className="hidden md:flex gap-6">
+          {/* Dashboard conditionnel selon le niveau utilisateur */}
+          {user && (
+            <Link 
+              to={
+                (user.level ?? 0) >= 7 ? "/admin" : 
+                (user.level ?? 0) >= 3 ? "/dashboard" : 
+                "/account/dashboard"
+              }
+              className="hover:text-blue-200 transition-colors text-sm font-medium"
+            >
+              Dashboard
+            </Link>
+          )}
           <Link to="/catalogue" className="hover:text-blue-200 transition-colors text-sm font-medium">
             Catalogue
           </Link>
@@ -83,7 +96,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
         </Link>
 
         {/* Lien Admin conditionnel */}
-        {user?.level && user.level >= 7 && (
+        {user && (user.level ?? 0) >= 7 && (
           <Link 
             to='/admin' 
             className="hover:text-blue-200 transition-colors bg-blue-800 px-2 py-1 rounded text-sm"

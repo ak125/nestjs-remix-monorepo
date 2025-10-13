@@ -62,7 +62,7 @@ export interface RealTimeMetrics {
 
 @Injectable()
 export class UploadAnalyticsService extends SupabaseBaseService {
-  private readonly logger = new Logger(UploadAnalyticsService.name);
+  protected readonly logger = new Logger(UploadAnalyticsService.name);
   private readonly metricsCache = new Map<string, any>();
 
   // Métriques en temps réel
@@ -75,7 +75,7 @@ export class UploadAnalyticsService extends SupabaseBaseService {
   };
 
   constructor(
-    private configService: ConfigService,
+    protected configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super();

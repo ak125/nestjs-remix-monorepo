@@ -548,35 +548,42 @@ export class ProductsService extends SupabaseBaseService {
    */
   async getStats() {
     try {
-      // Compter les pièces totales
+      // 🎯 Compter uniquement les pièces AFFICHABLES (piece_display = true)
+      // Structure réelle vérifiée: piece_display = boolean
       const { count: totalPieces, error: piecesError } = await this.client
         .from('pieces')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('piece_display', true);
 
-      // Compter les pièces actives (piece_display = true)
+      // Compter les pièces actives disponibles (avec stock > 0)
+      // piece_qty_sale est de type SMALLINT (int2), comparaison numérique possible
       const { count: activePieces, error: activeError } = await this.client
         .from('pieces')
         .select('*', { count: 'exact', head: true })
-        .eq('piece_display', true);
+        .eq('piece_display', true)
+        .not('piece_qty_sale', 'is', null)
+        .gt('piece_qty_sale', 0);
 
-      // Compter les gammes
+      // Compter les gammes actives uniquement (pg_display = '1')
       const { count: totalGammes, error: gammesError } = await this.client
         .from('pieces_gamme')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('pg_display', '1');
 
-      // Compter les marques actives (on testera la structure après)
+      // Compter les marques de pièces actives (pm_display = '1')
+      // Note: pieces_marque contient les marques de pièces (toutes colonnes TEXT)
       const { count: totalMarques, error: marquesError } = await this.client
         .from('pieces_marque')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('pm_display', '1');
 
-      // Compter les pièces avec stock très faible (piece_qty_sale <= 2)
+      // Compter les pièces avec stock faible (piece_qty_sale = 1)
+      // piece_qty_sale est SMALLINT, comparaison numérique directe
       const { count: lowStockCount, error: lowStockError } = await this.client
         .from('pieces')
         .select('*', { count: 'exact', head: true })
-        .not('piece_qty_sale', 'is', null)
-        .gt('piece_qty_sale', 0)
-        .lte('piece_qty_sale', 2)
-        .eq('piece_display', true);
+        .eq('piece_display', true)
+        .eq('piece_qty_sale', 1);
 
       if (
         piecesError ||
@@ -585,12 +592,12 @@ export class ProductsService extends SupabaseBaseService {
         marquesError ||
         lowStockError
       ) {
-        this.logger.error('Erreur getStats:', {
-          piecesError,
-          activeError,
-          gammesError,
-          marquesError,
-          lowStockError,
+        this.logger.error('⚠️ Erreur getStats (certaines requêtes ont échoué):', {
+          piecesError: piecesError?.message,
+          activeError: activeError?.message,
+          gammesError: gammesError?.message,
+          marquesError: marquesError?.message,
+          lowStockError: lowStockError?.message,
         });
       }
 
@@ -602,10 +609,10 @@ export class ProductsService extends SupabaseBaseService {
         lowStockItems: lowStockCount || 0,
       };
 
-      this.logger.log('Statistiques produits:', stats);
+      this.logger.log('📊 Statistiques produits (affichables uniquement):', stats);
       return stats;
     } catch (error) {
-      this.logger.error('Erreur dans getStats:', error);
+      this.logger.error('❌ Erreur dans getStats:', error);
       return {
         totalProducts: 0,
         activeProducts: 0,

@@ -101,7 +101,7 @@ export default function CommercialVehiclesBrandModels() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                <Link to="/commercial" className="hover:text-gray-900">Commercial</Link>
+                <Link to="/dashboard" className="hover:text-gray-900">Commercial</Link>
                 <span>/</span>
                 <Link to="/commercial/vehicles" className="hover:text-gray-900">Véhicules</Link>
                 <span>/</span>

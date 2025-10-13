@@ -7,7 +7,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 export interface ImageProcessingOptions {
   resize?: {
@@ -168,7 +168,7 @@ export class ImageProcessingService {
 
       // 7. Métadonnées
       if (options.metadata?.strip) {
-        pipeline = pipeline.removeExifMetadata();
+        pipeline = pipeline.withMetadata({ orientation: undefined });
         operations.push('Suppression métadonnées');
       }
 

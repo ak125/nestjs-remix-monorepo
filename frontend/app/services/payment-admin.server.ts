@@ -60,19 +60,25 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
     const result = await response.json();
     const order = result.data;
 
-    // Convertir la commande en données de paiement
+    // Convertir la commande en données de paiement (format BDD)
     return {
-      id: `payment_${order.id}`,
-      orderId: order.id,
-      userId: order.customerId,
-      amount: order.totalTtc || 0,
+      id: `payment_${order.ord_id}`,
+      orderId: order.ord_id,
+      userId: order.ord_cst_id,
+      amount: parseFloat(order.ord_total_ttc || '0'),
       currency: 'EUR',
-      status: order.isPaid ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
+      status: order.ord_is_pay === '1' ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
       paymentMethod: 'stripe',
-      transactionId: order.id,
-      createdAt: order.date,
-      updatedAt: order.date,
-      gatewayData: order.info ? JSON.parse(order.info) : {},
+      transactionId: order.ord_id,
+      createdAt: order.ord_date || new Date().toISOString(),
+      updatedAt: order.ord_date || new Date().toISOString(),
+      gatewayData: order.ord_info ? (() => {
+        try {
+          return JSON.parse(order.ord_info);
+        } catch {
+          return {};
+        }
+      })() : {},
     };
   } catch (error) {
     console.error(`❌ Failed to fetch payment ${id}:`, error);
@@ -110,38 +116,56 @@ export async function getAdminPayments(params: AdminPaymentListParams = {}): Pro
       pagination: data.pagination
     });
     
-    // Convertir les commandes en données de paiement
-    const payments: Payment[] = (data.data || []).map((order: any) => ({
-      id: `payment_${order.id}`,
-      orderId: order.id,
-      userId: order.customerId,
-      amount: order.totalTtc || 0,
-      currency: 'EUR',
-      status: order.isPaid ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
-      paymentMethod: 'stripe', // Valeur par défaut
-      transactionId: order.id,
-      createdAt: order.date,
-      updatedAt: order.date,
-      gatewayData: order.info ? (() => {
-        try {
-          return JSON.parse(order.info);
-        } catch (e: any) {
-          console.warn('Failed to parse order.info:', order.info?.substring(0, 100), e.message);
-          return {};
-        }
-      })() : {},
-    }));
+    // ✅ Le filtrage est maintenant géré côté BACKEND (excludePending=true par défaut)
+    // Plus besoin de filtrer ici, toutes les commandes reçues sont déjà payées et confirmées
+    const orders = data.data || [];
+    
+    console.log('🔧 DEBUG - Orders received (already filtered by backend):', {
+      ordersCount: orders.length,
+      paginationTotal: data.pagination?.total,
+    });
+    
+    // Convertir les commandes en données de paiement (format BDD)
+    const payments: Payment[] = orders.map((order: any) => {
+      // Extraire le nom du client
+      const customer = order.customer;
+      const customerName = customer 
+        ? `${customer.cst_fname || ''} ${customer.cst_name || ''}`.trim() || `Client #${order.ord_cst_id}`
+        : `Client #${order.ord_cst_id}`;
+      const customerEmail = customer?.cst_mail || '';
 
-    const totalPages = Math.ceil((data.pagination?.total || 0) / limit);
+      // ✨ Extraire la vraie méthode de paiement depuis ic_postback
+      const postback = order.postback;
+      const paymentMethod = postback?.paymentmethod || 'card'; // card, paypal, etc.
+      const transactionId = postback?.transactionid || order.ord_id;
+      const paymentDate = postback?.datepayment || order.ord_date;
 
+      return {
+        id: `payment_${order.ord_id}`,
+        orderId: order.ord_id,
+        userId: order.ord_cst_id,
+        customerName,
+        customerEmail,
+        amount: parseFloat(order.ord_total_ttc || '0'),
+        currency: 'EUR',
+        status: order.ord_is_pay === '1' ? PaymentStatus.COMPLETED : PaymentStatus.PENDING,
+        paymentMethod, // ✨ Vraie méthode depuis ic_postback
+        transactionId, // ✨ Vrai ID transaction
+        createdAt: order.ord_date || new Date().toISOString(),
+        updatedAt: paymentDate || new Date().toISOString(),
+        gatewayData: postback || {}, // ✨ Données réelles du postback
+      };
+    });
+
+    // ✅ Utiliser directement la pagination du backend (déjà ajustée aux filtres)
     return {
       payments,
       pagination: {
-        page,
-        limit,
-        total: data.pagination?.total || 0,
-        totalPages,
-        hasNext: page < totalPages,
+        page: data.pagination?.page || page,
+        limit: data.pagination?.limit || limit,
+        total: data.pagination?.total || 0, // Total ajusté aux filtres backend
+        totalPages: Math.ceil((data.pagination?.total || 0) / limit),
+        hasNext: page < Math.ceil((data.pagination?.total || 0) / limit),
         hasPrev: page > 1,
       },
       stats: await getPaymentStats(), // Sera calculé séparément

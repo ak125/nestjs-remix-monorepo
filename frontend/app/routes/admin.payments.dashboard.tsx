@@ -41,7 +41,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const page = parseInt(url.searchParams.get('page') || '1');
     const limit = parseInt(url.searchParams.get('limit') || '10');
     const search = url.searchParams.get('search') || '';
-    const status = url.searchParams.get('status') || '';
+    // Par défaut, afficher uniquement les paiements complétés (payés)
+    const status = url.searchParams.get('status') || PaymentStatus.COMPLETED;
     
     const [paymentsResult, stats] = await Promise.all([
       getAdminPayments({ page, limit, search, status }),
@@ -150,13 +151,39 @@ export default function AdminPaymentsDashboard() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(dateString));
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      // Vérifier si la date est valide
+      if (isNaN(date.getTime())) {
+        return 'Date invalide';
+      }
+      
+      return new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    } catch (error) {
+      console.error('Erreur formatage date:', dateString, error);
+      return 'Date invalide';
+    }
+  };
+
+  // ✨ Formater la méthode de paiement pour un affichage lisible
+  const formatPaymentMethod = (method: string): string => {
+    const methods: Record<string, string> = {
+      'card': '💳 CB',
+      'cyberplus': '💳 CyberPlus',
+      'stripe': '💳 Stripe',
+      'paypal': '🅿️ PayPal',
+      'bank_transfer': '🏦 Virement',
+      'check': '📝 Chèque',
+    };
+    return methods[method?.toLowerCase()] || `💳 ${method || 'CB'}`;
   };
 
   return (
@@ -193,6 +220,21 @@ export default function AdminPaymentsDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Bannière informative */}
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-blue-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                <strong>ℹ️ Vue basée sur les commandes payées</strong> - Affiche uniquement les commandes confirmées et payées (hors statut "En attente"). 
+                Les données proviennent de la table des commandes.
+              </p>
+            </div>
+          </div>
+        </div>
         
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -318,6 +360,9 @@ export default function AdminPaymentsDashboard() {
                     Commande
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Montant
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -352,6 +397,16 @@ export default function AdminPaymentsDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
+                        {payment.customerName || `Client #${payment.userId}`}
+                      </div>
+                      {payment.customerEmail && (
+                        <div className="text-sm text-gray-500">
+                          {payment.customerEmail}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
                         {formatPrice(payment.amount)}
                       </div>
                       <div className="text-sm text-gray-500">
@@ -360,7 +415,7 @@ export default function AdminPaymentsDashboard() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {payment.paymentMethod}
+                        {formatPaymentMethod(payment.paymentMethod)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

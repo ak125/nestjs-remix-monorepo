@@ -2,14 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
-import { 
-  PaginationOptions, 
-  VehicleResponse
-} from '../../types/vehicle.types';
+import { PaginationOptions, VehicleResponse } from '../../types/vehicle.types';
 
 /**
  * ⛏️ VEHICLE MINE SERVICE - Service dédié aux recherches par codes Mine
- * 
+ *
  * Responsabilités :
  * - Recherche par code mine exact
  * - Recherche par type mine
@@ -50,14 +47,20 @@ export class VehicleMineService extends SupabaseBaseService {
    */
   async searchByMineCode(
     mineCode: string,
-    options: MineSearchOptions = {}
+    options: MineSearchOptions = {},
   ): Promise<VehicleResponse<any>> {
     if (!mineCode?.trim()) {
-      return { success: true, data: [], total: 0, page: 0, limit: options.limit || 50 };
+      return {
+        success: true,
+        data: [],
+        total: 0,
+        page: 0,
+        limit: options.limit || 50,
+      };
     }
 
     const cacheKey = `mine_code:${mineCode}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
@@ -70,7 +73,8 @@ export class VehicleMineService extends SupabaseBaseService {
 
           let query = this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -80,7 +84,8 @@ export class VehicleMineService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -98,19 +103,21 @@ export class VehicleMineService extends SupabaseBaseService {
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchByMineCode ${mineCode}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -119,14 +126,20 @@ export class VehicleMineService extends SupabaseBaseService {
    */
   async searchByMineType(
     minePattern: string,
-    options: MineSearchOptions = {}
+    options: MineSearchOptions = {},
   ): Promise<VehicleResponse<any>> {
     if (!minePattern?.trim()) {
-      return { data: [], total: 0, page: 0, limit: options.limit || 50 };
+      return {
+        success: true,
+        data: [],
+        total: 0,
+        page: 0,
+        limit: options.limit || 50,
+      };
     }
 
     const cacheKey = `mine_type:${minePattern}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
@@ -139,7 +152,8 @@ export class VehicleMineService extends SupabaseBaseService {
 
           const { data, error, count } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -149,11 +163,12 @@ export class VehicleMineService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .or(
               `type_mine_code.ilike.%${minePattern}%,` +
-              `type_name.ilike.%${minePattern}%`
+                `type_name.ilike.%${minePattern}%`,
             )
             .limit(limit)
             .range(offset, offset + limit - 1)
@@ -164,19 +179,21 @@ export class VehicleMineService extends SupabaseBaseService {
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur searchByMineType ${minePattern}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -185,23 +202,26 @@ export class VehicleMineService extends SupabaseBaseService {
    */
   async getMinesByModel(
     modeleId: number,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     const cacheKey = `mines_by_model:${modeleId}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
       async () => {
         try {
-          this.logger.debug(`⛏️ Récupération des codes mine pour modèle: ${modeleId}`);
+          this.logger.debug(
+            `⛏️ Récupération des codes mine pour modèle: ${modeleId}`,
+          );
 
           const { page = 0, limit = 50 } = options;
           const offset = page * limit;
 
           const { data, error, count } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               type_id,
               type_name,
               type_mine_code,
@@ -215,7 +235,8 @@ export class VehicleMineService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('auto_modele.modele_id', modeleId)
             .eq('type_display', 1)
             .not('type_mine_code', 'is', null)
@@ -228,19 +249,21 @@ export class VehicleMineService extends SupabaseBaseService {
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur getMinesByModel ${modeleId}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -251,7 +274,7 @@ export class VehicleMineService extends SupabaseBaseService {
     if (!mineCode?.trim()) return null;
 
     const cacheKey = `mine_info:${mineCode}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
@@ -259,7 +282,8 @@ export class VehicleMineService extends SupabaseBaseService {
         try {
           const { data, error } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               type_mine_code,
               type_id,
               type_name,
@@ -269,7 +293,8 @@ export class VehicleMineService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_mine_code', mineCode)
             .eq('type_display', 1)
             .single();
@@ -283,14 +308,15 @@ export class VehicleMineService extends SupabaseBaseService {
             mine_code: data.type_mine_code,
             type_id: data.type_id,
             type_name: data.type_name,
-            modele_name: data.auto_modele.modele_name,
-            marque_name: data.auto_modele.auto_marque.marque_name
+            modele_name: (data.auto_modele as any)?.modele_name || 'Unknown',
+            marque_name:
+              (data.auto_modele as any)?.auto_marque?.marque_name || 'Unknown',
           };
         } catch (error) {
           this.logger.error(`Erreur getMineInfo ${mineCode}:`, error);
           return null;
         }
-      }
+      },
     );
   }
 
@@ -299,10 +325,10 @@ export class VehicleMineService extends SupabaseBaseService {
    */
   async getMineVariants(
     baseMineCode: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     const cacheKey = `mine_variants:${baseMineCode}:${JSON.stringify(options)}`;
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
@@ -316,7 +342,8 @@ export class VehicleMineService extends SupabaseBaseService {
           // Recherche des codes mine similaires (avec préfixe commun)
           const { data, error, count } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               *,
               auto_modele!inner(
                 modele_id,
@@ -326,7 +353,8 @@ export class VehicleMineService extends SupabaseBaseService {
                   marque_name
                 )
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .ilike('type_mine_code', `${baseMineCode}%`)
             .neq('type_mine_code', baseMineCode) // Exclure le code exact
@@ -339,19 +367,21 @@ export class VehicleMineService extends SupabaseBaseService {
             throw error;
           }
 
-          const enrichedData = await this.enrichmentService.enrichVehicles(data || []);
+          const enrichedData = await this.enrichmentService.enrichVehicles(
+            data || [],
+          );
 
           return {
             data: enrichedData,
             total: count || 0,
             page,
-            limit
+            limit,
           };
         } catch (error) {
           this.logger.error(`Erreur getMineVariants ${baseMineCode}:`, error);
           throw error;
         }
-      }
+      },
     );
   }
 
@@ -365,7 +395,7 @@ export class VehicleMineService extends SupabaseBaseService {
     withoutEngine: number;
   }> {
     const cacheKey = 'mine_stats:global';
-    
+
     return await this.cacheService.getOrSet(
       CacheType.MINE,
       cacheKey,
@@ -381,17 +411,20 @@ export class VehicleMineService extends SupabaseBaseService {
           // Par marque
           const { data: byMarqueData } = await this.client
             .from('auto_type')
-            .select(`
+            .select(
+              `
               auto_modele!inner(
                 auto_marque!inner(marque_name)
               )
-            `)
+            `,
+            )
             .eq('type_display', 1)
             .not('type_mine_code', 'is', null);
 
           const byMarque: Record<string, number> = {};
-          byMarqueData?.forEach(item => {
-            const marque = item.auto_modele.auto_marque.marque_name;
+          byMarqueData?.forEach((item) => {
+            const marque =
+              (item.auto_modele as any)?.auto_marque?.marque_name || 'Unknown';
             byMarque[marque] = (byMarque[marque] || 0) + 1;
           });
 
@@ -407,7 +440,7 @@ export class VehicleMineService extends SupabaseBaseService {
             totalMines: totalMines || 0,
             byMarque,
             withEngine: withEngine || 0,
-            withoutEngine: (totalMines || 0) - (withEngine || 0)
+            withoutEngine: (totalMines || 0) - (withEngine || 0),
           };
         } catch (error) {
           this.logger.error('Erreur getMineStats:', error);
@@ -415,10 +448,10 @@ export class VehicleMineService extends SupabaseBaseService {
             totalMines: 0,
             byMarque: {},
             withEngine: 0,
-            withoutEngine: 0
+            withoutEngine: 0,
           };
         }
-      }
+      },
     );
   }
 
@@ -463,7 +496,7 @@ export class VehicleMineService extends SupabaseBaseService {
       if (!exists && mineCode.length >= 3) {
         const { data } = await this.searchByMineType(mineCode, { limit: 5 });
         suggestions = data
-          .map(item => item.type_mine_code)
+          .map((item) => item.type_mine_code)
           .filter((code, index, arr) => arr.indexOf(code) === index)
           .slice(0, 5);
       }
@@ -471,7 +504,7 @@ export class VehicleMineService extends SupabaseBaseService {
       return {
         isValid,
         exists,
-        suggestions: suggestions.length > 0 ? suggestions : undefined
+        suggestions: suggestions.length > 0 ? suggestions : undefined,
       };
     } catch (error) {
       this.logger.error(`Erreur validateMineCode ${mineCode}:`, error);

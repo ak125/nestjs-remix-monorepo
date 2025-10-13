@@ -739,6 +739,109 @@ export class PaymentsController {
     }
   }
 
+  /**
+   * POST /api/payments/proceed-supplement
+   * Initialiser le paiement d'un supplément de commande
+   * 🔒 Authentification requise
+   */
+  @Post('proceed-supplement')
+  @HttpCode(HttpStatus.OK)
+  // @UseGuards(AuthenticatedGuard)
+  @ApiOperation({ 
+    summary: 'Initialiser le paiement d\'un supplément de commande',
+    description: 'Génère le formulaire de paiement pour un supplément de commande (ORD_PARENT != 0)'
+  })
+  @ApiResponse({ status: 200, description: 'Redirection vers passerelle de paiement' })
+  @ApiResponse({ status: 400, description: 'Commande invalide ou déjà payée' })
+  @ApiResponse({ status: 403, description: 'Accès non autorisé' })
+  async proceedSupplementPayment(
+    @Body('orderId') orderId: string,
+    @Body('paymentMethod') paymentMethod: 'PAYBOX' | 'PAYPAL',
+    @Request() req?: any,
+  ) {
+    try {
+      this.logger.log(`Processing supplement payment for order ${orderId}`);
+
+      // Récupérer userId depuis session
+      const userId = req?.user?.id;
+      if (!userId) {
+        throw new BadRequestException('User ID is required - please login');
+      }
+
+      // Récupérer les données de la commande
+      const { data: orderData, error: orderError } = await this.paymentDataService['supabase']
+        .from('___xtr_order')
+        .select('ord_id, ord_cst_id, ord_parent, ord_total_ttc, ord_is_pay')
+        .eq('ord_id', orderId)
+        .single();
+
+      if (orderError || !orderData) {
+        throw new NotFoundException(`Order not found: ${orderId}`);
+      }
+
+      // Vérifications de sécurité
+      if (orderData.ord_cst_id !== userId) {
+        throw new BadRequestException('Unauthorized access - order does not belong to user');
+      }
+
+      if (orderData.ord_is_pay === 1 || orderData.ord_is_pay === true) {
+        throw new BadRequestException('Order already paid');
+      }
+
+      if (!orderData.ord_parent || orderData.ord_parent === '0') {
+        throw new BadRequestException('This is not a supplement order');
+      }
+
+      // Créer le paiement
+      const payment = await this.paymentService.createPayment({
+        orderId: orderData.ord_id.toString(),
+        userId: userId,
+        amount: parseFloat(orderData.ord_total_ttc),
+        currency: 'EUR',
+        method: paymentMethod === 'PAYBOX' ? PaymentMethod.CYBERPLUS : PaymentMethod.PAYPAL,
+        description: `Supplément commande ${orderData.ord_parent}/A - ${orderData.ord_id}/A`,
+      });
+
+      // Générer le formulaire de redirection selon la méthode
+      let redirectData = null;
+      let redirectUrl = null;
+
+      if (paymentMethod === 'PAYBOX') {
+        // Utiliser Cyberplus pour les cartes bancaires
+        redirectData = this.cyberplusService.generatePaymentForm({
+          amount: payment.amount,
+          currency: payment.currency,
+          orderId: orderData.ord_id.toString(),
+          customerEmail: req?.user?.email || '',
+          returnUrl: `${process.env.BASE_URL}/account/orders/${orderData.ord_id}/payment-success`,
+          cancelUrl: `${process.env.BASE_URL}/account/orders/${orderData.ord_id}/payment-cancel`,
+          notifyUrl: `${process.env.BASE_URL}/api/payments/callback/cyberplus`,
+          description: payment.description,
+        });
+        redirectUrl = redirectData.action;
+      } else {
+        // PayPal - TODO: implémenter l'intégration PayPal
+        redirectUrl = `${process.env.PAYPAL_URL}/checkout?order_id=${payment.id}`;
+      }
+
+      this.logger.log(`✅ Supplement payment initialized: ${payment.id}`);
+
+      return {
+        success: true,
+        data: {
+          paymentId: payment.id,
+          redirectUrl,
+          redirectData,
+        },
+        message: 'Paiement initialisé avec succès',
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`❌ Failed to proceed supplement payment: ${errorMessage}`, error instanceof Error ? error.stack : '');
+      throw error;
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════
   // MÉTHODES PRIVÉES / HELPERS
   // ═══════════════════════════════════════════════════════════════

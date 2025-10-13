@@ -3,7 +3,7 @@ import { PiecesV4WorkingService } from '../services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { PiecesPhpLogicCompleteService } from '../services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from '../services/pieces-enhanced.service';
-import { PricingServiceV5UltimateFinal } from '../../products/pricing-service-v5-ultimate-final.service';
+import { PricingService as PricingServiceV5UltimateFinal } from '../../products/services/pricing.service';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ

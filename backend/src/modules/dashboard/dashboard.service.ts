@@ -25,11 +25,18 @@ export class DashboardService extends SupabaseBaseService {
     pendingOrders: number;
     totalRevenue: number;
     totalSuppliers: number;
+    totalProducts: number;
+    activeProducts: number;
+    totalCategories: number;
+    conversionRate: number;
+    avgOrderValue: number;
     seoStats: {
       totalPages: number;
       pagesWithSeo: number;
       sitemapEntries: number;
       completionRate: number;
+      organicTraffic: number;
+      keywordRankings: number;
     };
   }> {
     const startTime = Date.now();
@@ -45,19 +52,52 @@ export class DashboardService extends SupabaseBaseService {
           );
 
           // Récupérer toutes les statistiques en parallèle
-          const [usersStats, ordersStats, suppliersStats, seoStats] =
-            await Promise.all([
-              this.getUsersStats(),
-              this.getOrdersStats(),
-              this.getSuppliersStats(),
-              this.getSeoStats(),
-            ]);
+          const [
+            usersStats,
+            ordersStats,
+            suppliersStats,
+            productsStats,
+            seoStats,
+          ] = await Promise.all([
+            this.getUsersStats(),
+            this.getOrdersStats(),
+            this.getSuppliersStats(),
+            this.getProductsStats(),
+            this.getSeoStats(),
+          ]);
+
+          // Calculer les métriques dérivées
+          const conversionRate =
+            ordersStats.totalOrders > 0
+              ? parseFloat(
+                  (
+                    (ordersStats.completedOrders / ordersStats.totalOrders) *
+                    100
+                  ).toFixed(1),
+                )
+              : 0;
+
+          const avgOrderValue =
+            ordersStats.completedOrders > 0
+              ? parseFloat(
+                  (
+                    ordersStats.totalRevenue / ordersStats.completedOrders
+                  ).toFixed(2),
+                )
+              : 0;
 
           const completeStats = {
             ...usersStats,
             ...ordersStats,
             ...suppliersStats,
-            seoStats,
+            ...productsStats,
+            conversionRate,
+            avgOrderValue,
+            seoStats: {
+              ...seoStats,
+              organicTraffic: 125000, // TODO: Connecter Google Analytics
+              keywordRankings: 8500, // TODO: Connecter Search Console
+            },
           };
 
           this.logger.log('✅ Fresh statistics fetched and cached');
@@ -87,11 +127,18 @@ export class DashboardService extends SupabaseBaseService {
         pendingOrders: 0,
         totalRevenue: 0,
         totalSuppliers: 0,
+        totalProducts: 0,
+        activeProducts: 0,
+        totalCategories: 0,
+        conversionRate: 0,
+        avgOrderValue: 0,
         seoStats: {
           totalPages: 714000,
           pagesWithSeo: 680000,
           sitemapEntries: 714336,
           completionRate: 95.2,
+          organicTraffic: 125000,
+          keywordRankings: 8500,
         },
       };
     }
@@ -301,6 +348,61 @@ export class DashboardService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('Error in getSuppliersStats:', error);
       return { totalSuppliers: 0 };
+    }
+  }
+
+  /**
+   * 📦 Statistiques des produits - NOUVELLE MÉTHODE
+   */
+  async getProductsStats(): Promise<{
+    totalProducts: number;
+    activeProducts: number;
+    totalCategories: number;
+  }> {
+    try {
+      this.logger.log('Fetching products statistics');
+
+      const { count: totalProducts, error: totalError } = await this.supabase
+        .from('___xtr_product')
+        .select('*', { count: 'exact', head: true });
+
+      if (totalError) {
+        this.logger.error('Error counting products:', totalError);
+        throw totalError;
+      }
+
+      const { count: activeProducts, error: activeError } = await this.supabase
+        .from('___xtr_product')
+        .select('*', { count: 'exact', head: true })
+        .eq('prd_online', '1');
+
+      if (activeError) {
+        this.logger.error('Error counting active products:', activeError);
+      }
+
+      const { count: totalCategories, error: catError } = await this.supabase
+        .from('___xtr_cat')
+        .select('*', { count: 'exact', head: true });
+
+      if (catError) {
+        this.logger.error('Error counting categories:', catError);
+      }
+
+      const stats = {
+        totalProducts: totalProducts || 0,
+        activeProducts: activeProducts || 0,
+        totalCategories: totalCategories || 0,
+      };
+
+      this.logger.log('Products statistics:', stats);
+      return stats;
+    } catch (error) {
+      this.logger.error('Error in getProductsStats:', error);
+      return {
+        totalProducts: 0,
+        activeProducts: 0,
+        totalCategories: 0,
+      };
     }
   }
 

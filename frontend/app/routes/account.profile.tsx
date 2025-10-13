@@ -1,11 +1,14 @@
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
+
+import { requireAuth } from "../auth/unified.server";
+import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
-type User = {
+type UserProfile = {
   id: string;
   email: string;
   firstName: string;
@@ -14,30 +17,67 @@ type User = {
   status: string;
   createdAt: string;
   lastLoginAt: string | null;
+  level?: number;
+  isPro?: boolean;
+  completeness?: number;
 };
 
 type LoaderData = {
-  user: User | null;
+  user: UserProfile;
+  stats?: any;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
-    // TODO: Récupérer l'utilisateur depuis la session
-    const user = {
-      id: "1",
-      email: "user@example.com",
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+33 6 12 34 56 78",
-      status: "active",
-      createdAt: "2024-01-15T10:00:00Z",
-      lastLoginAt: "2025-08-12T15:30:00Z"
+    const user = await requireAuth(request);
+    
+    if (!user) {
+      throw new Response("Non authentifié", { status: 401 });
+    }
+
+    // Construire un profil par défaut avec les données de session
+    const defaultProfile = {
+      id: user.id || '',
+      email: user.email || '',
+      firstName: user.firstName || 'Utilisateur',
+      lastName: user.lastName || '',
+      phone: '',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      level: 1,
+      isPro: false,
+      completeness: 60
     };
 
-    return json<LoaderData>({ user });
+    // Essayer de récupérer le profil complet depuis l'API
+    try {
+      const baseUrl = process.env.API_URL || 'http://localhost:3000';
+      const profileResponse = await fetch(`${baseUrl}/api/users/profile`, {
+        headers: {
+          'Cookie': request.headers.get('Cookie') || ''
+        }
+      });
+
+      if (profileResponse.ok) {
+        const { data } = await profileResponse.json();
+        return json<LoaderData>({ 
+          user: { ...defaultProfile, ...data }, 
+          stats: {} 
+        });
+      }
+    } catch (apiError) {
+      console.warn("API profile fetch failed, using default:", apiError);
+    }
+
+    // Retourner le profil par défaut si l'API échoue
+    return json<LoaderData>({ 
+      user: defaultProfile, 
+      stats: {} 
+    });
   } catch (error) {
     console.error("Erreur chargement profil:", error);
-    return json<LoaderData>({ user: null });
+    throw new Response("Erreur chargement profil", { status: 500 });
   }
 };
 
@@ -46,17 +86,20 @@ export default function AccountProfile() {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">Erreur de chargement du profil</p>
-        <Button asChild className="mt-4">
-          <Link to="/account/dashboard">Retour au dashboard</Link>
-        </Button>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">Erreur de chargement du profil</p>
+          <Button asChild>
+            <Link to="/account/dashboard">Retour au dashboard</Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
+      <div className="space-y-6">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
@@ -153,7 +196,8 @@ export default function AccountProfile() {
             Gérer la sécurité
           </Link>
         </Button>
+        </div>
       </div>
-    </div>
+    </AccountLayout>
   );
 }

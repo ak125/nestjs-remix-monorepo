@@ -1,62 +1,20 @@
-import { IsEnum, IsOptional, IsNumber, Min, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { z } from 'zod';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 
 /**
- * DTO pour filtrer les paiements
+ * Schema Zod pour filtrer les paiements
+ * Remplacement de class-validator par Zod pour la validation
  */
-export class PaymentFiltersDto {
-  @ApiProperty({
-    description: 'Filtrer par statut',
-    enum: PaymentStatus,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(PaymentStatus)
-  status?: PaymentStatus;
+export const PaymentFiltersSchema = z.object({
+  status: z.nativeEnum(PaymentStatus).optional(),
+  method: z.nativeEnum(PaymentMethod).optional(),
+  userId: z.string().optional(),
+  orderId: z.string().optional(),
+  limit: z.number().int().min(1).optional().default(20),
+  offset: z.number().int().min(0).optional().default(0),
+});
 
-  @ApiProperty({
-    description: 'Filtrer par méthode de paiement',
-    enum: PaymentMethod,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(PaymentMethod)
-  method?: PaymentMethod;
-
-  @ApiProperty({
-    description: 'Filtrer par ID utilisateur',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  userId?: string;
-
-  @ApiProperty({
-    description: 'Filtrer par ID commande',
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  orderId?: string;
-
-  @ApiProperty({
-    description: 'Nombre de résultats',
-    example: 20,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  limit?: number;
-
-  @ApiProperty({
-    description: 'Offset pour pagination',
-    example: 0,
-    required: false,
-  })
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  offset?: number;
-}
+/**
+ * Type inféré du schema Zod
+ */
+export type PaymentFiltersDto = z.infer<typeof PaymentFiltersSchema>;

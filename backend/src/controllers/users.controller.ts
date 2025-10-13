@@ -117,20 +117,22 @@ export class UsersController {
     try {
       console.log(`📊 Récupération des statistiques dashboard`);
 
-      // Récupérer l'utilisateur depuis la session
-      const sessionUser = (req.session as any)?.passport?.user;
-      
-      if (!sessionUser?.userId) {
+      // Récupérer l'utilisateur depuis req.user (désérialisé par Passport)
+      const user = (req as any).user;
+
+      if (!user || !user.id) {
         throw new HttpException(
           'Session utilisateur non trouvée',
           HttpStatus.UNAUTHORIZED,
         );
       }
 
-      // Récupérer les détails complets de l'utilisateur
-      const userDetails = await this.legacyUserService.getUserById(
-        sessionUser.userId,
+      console.log(
+        `👤 Dashboard stats pour utilisateur: ${user.email} (${user.id})`,
       );
+
+      // Récupérer les détails complets de l'utilisateur
+      const userDetails = await this.legacyUserService.getUserById(user.id);
 
       if (!userDetails) {
         throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
@@ -143,23 +145,68 @@ export class UsersController {
       const activeUsers =
         await this.legacyUserService.getTotalActiveUsersCount();
 
-      // TODO: Implémenter récupération des messages et commandes utilisateur
-      // Pour l'instant, stats basiques basées sur les données disponibles
+      // Récupérer les commandes de l'utilisateur
+      const userOrders = await this.legacyUserService.getUserOrders(user.id);
+
+      // Récupérer les messages de l'utilisateur (5 derniers)
+      const baseUrl = process.env.SUPABASE_URL || '';
+      const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+      let recentMessages = [];
+      let unreadCount = 0;
+
+      try {
+        const messagesResponse = await fetch(
+          `${baseUrl}/rest/v1/___XTR_MSG?MSG_CST_ID=eq.${user.id}&MSG_CNFA_ID=neq.0&order=MSG_DATE.desc&limit=5`,
+          {
+            headers: {
+              apikey: apiKey,
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        if (messagesResponse.ok) {
+          recentMessages = await messagesResponse.json();
+          unreadCount = recentMessages.filter(
+            (msg: any) => msg.MSG_OPEN === 0,
+          ).length;
+        }
+      } catch (error) {
+        console.error('Erreur récupération messages:', error);
+      }
+
+      // Calculer les stats des commandes
+      const pendingOrders = userOrders.filter(
+        (order: any) =>
+          order.ord_is_pay === 0 || [1, 2, 3, 4, 5].includes(order.ord_status),
+      ).length;
+      const completedOrders = userOrders.filter(
+        (order: any) => order.ord_is_pay === 1 && order.ord_status === 6,
+      ).length;
+      const totalRevenue = userOrders.reduce(
+        (sum: number, order: any) => sum + parseFloat(order.ord_total_ttc || 0),
+        0,
+      );
+
       const userStats = {
         messages: {
-          total: 0,
-          unread: 0,
-          threads: 0,
+          total: recentMessages.length,
+          unread: unreadCount,
+          recent: recentMessages.slice(0, 5),
         },
         orders: {
-          total: 0,
-          pending: 0,
-          completed: 0,
-          revenue: 0,
+          total: userOrders.length,
+          pending: pendingOrders,
+          completed: completedOrders,
+          revenue: totalRevenue,
+          recent: userOrders.slice(0, 5),
         },
         profile: {
           completeness: this.calculateProfileCompleteness(userDetails),
           hasActiveSubscription: false,
+          isPro: userDetails.isPro || false,
           securityScore: 75,
         },
       };
@@ -213,7 +260,7 @@ export class UsersController {
       user.phone,
       user.address,
     ];
-    
+
     fields.forEach((field) => {
       if (field && field.toString().trim().length > 0) {
         score += 20;
@@ -232,7 +279,13 @@ export class UsersController {
     try {
       console.log(`🔍 Récupération utilisateur ID: ${id}`);
 
-      const user = await this.legacyUserService.getUserById(id);
+      const user = await this.legacyUserService.getUserById(id, {
+        throwOnNotFound: true,
+      });
+
+      if (!user) {
+        throw new HttpException('Utilisateur non trouvé', HttpStatus.NOT_FOUND);
+      }
 
       return {
         success: true,
@@ -270,6 +323,31 @@ export class UsersController {
       console.error(`❌ Erreur commandes utilisateur ${userId}:`, error);
       throw new HttpException(
         'Erreur lors de la récupération des commandes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /api/legacy-users/:id/stats
+   * Récupère les statistiques détaillées d'un utilisateur
+   */
+  @Get(':id/stats')
+  async getUserStats(@Param('id') userId: string) {
+    try {
+      console.log(`📊 Récupération statistiques utilisateur: ${userId}`);
+
+      const stats = await this.legacyUserService.getUserStats(userId);
+
+      return {
+        success: true,
+        data: stats,
+        userId,
+      };
+    } catch (error) {
+      console.error(`❌ Erreur statistiques utilisateur ${userId}:`, error);
+      throw new HttpException(
+        'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

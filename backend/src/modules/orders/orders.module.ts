@@ -10,6 +10,7 @@ import { OrdersController } from './controllers/orders.controller';
 import { OrderStatusController } from './controllers/order-status.controller';
 import { OrderArchiveController } from './controllers/order-archive.controller';
 import { TicketsController } from './controllers/tickets.controller';
+import { OrderActionsController } from './controllers/order-actions.controller';
 
 // Services consolidés - Phase 2
 import { OrderCalculationService } from './services/order-calculation.service';
@@ -17,6 +18,10 @@ import { OrdersService } from './services/orders.service';
 import { OrderStatusService } from './services/order-status.service';
 import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
+import { OrderActionsService } from './services/order-actions.service';
+
+// 🆕 Service Email pour notifications
+import { EmailService } from '../../services/email.service';
 
 /**
  * 📦 MODULE ORDERS - Version Consolidée Phase 3
@@ -58,6 +63,7 @@ import { TicketsService } from './services/tickets.service';
     OrderStatusController, // /order-status/* (workflow statuts)
     OrderArchiveController, // /order-archive/* (archivage)
     TicketsController, // /api/tickets/* (SAV)
+    OrderActionsController, // /api/admin/orders/* (ACTIONS BACKOFFICE)
   ],
   providers: [
     // Services consolidés Phase 2
@@ -66,6 +72,8 @@ import { TicketsService } from './services/tickets.service';
     OrderStatusService, // Workflow statuts
     OrderArchiveService, // Archivage
     TicketsService, // SAV
+    OrderActionsService, // Actions backoffice
+    EmailService, // 🆕 Notifications email
   ],
   exports: [
     // Export des services consolidés
@@ -74,6 +82,7 @@ import { TicketsService } from './services/tickets.service';
     OrderStatusService,
     OrderArchiveService,
     TicketsService,
+    OrderActionsService,
   ],
 })
 export class OrdersModule {}

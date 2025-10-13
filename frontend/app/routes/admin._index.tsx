@@ -1079,7 +1079,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/orders" className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+          <Link to="/orders" className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group">
             <div className="flex items-center gap-3">
               <ShoppingCart className="h-6 w-6 text-purple-500 group-hover:text-purple-600" />
               <div>

@@ -3,7 +3,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 @Injectable()
 export class UserShipmentService extends SupabaseBaseService {
-  private readonly logger = new Logger(UserShipmentService.name);
+  protected readonly logger = new Logger(UserShipmentService.name);
 
   async getUserShipments(userId: string) {
     try {

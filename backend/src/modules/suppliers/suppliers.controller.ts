@@ -304,7 +304,7 @@ export class SuppliersController {
    * Test des liens pour debug
    */
   @Get('test-links')
-  async testSupplierLinks() {
+  async testAllSupplierLinks() {
     try {
       const testResult = await this.suppliersService.testSupplierLinksTable();
 
