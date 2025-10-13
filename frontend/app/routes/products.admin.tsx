@@ -90,12 +90,12 @@ interface ProductsData {
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
   
-  // Determine user role and check access
+  // Vérifier accès commercial (niveau 3+)
   const userLevel = user.level || 0;
   const userName = user.name || 'Utilisateur';
-  const userRole = userLevel >= 4 ? 'pro' : userLevel >= 3 ? 'commercial' : null;
-  if (!userRole) {
-    throw new Response('Accès refusé - Compte professionnel ou commercial requis', { status: 403 });
+  const userRole = 'commercial'; // Une seule interface commerciale
+  if (userLevel < 3) {
+    throw new Response('Accès refusé - Compte commercial requis', { status: 403 });
   }
 
   // Check for enhanced mode
@@ -105,34 +105,21 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const baseUrl = process.env.API_URL || "http://localhost:3000";
   
   try {
-    // Unified API calls with role-based data fetching
+    // Appels API pour interface commerciale
     const apiCalls = [
       fetch(`${baseUrl}/api/products/stats`, {
         headers: { 
           'internal-call': 'true',
-          'user-role': userRole,
           'user-level': userLevel.toString()
         }
+      }),
+      fetch(`${baseUrl}/api/products/gammes`, {
+        headers: { 'internal-call': 'true' }
+      }),
+      fetch(`${baseUrl}/api/products/brands-test`, {
+        headers: { 'internal-call': 'true' }
       })
     ];
-
-    // Add role-specific calls
-    if (userRole === 'commercial') {
-      apiCalls.push(
-        fetch(`${baseUrl}/api/products/gammes`, {
-          headers: { 'internal-call': 'true' }
-        }),
-        fetch(`${baseUrl}/api/products/brands-test`, {
-          headers: { 'internal-call': 'true' }
-        })
-      );
-    } else if (userRole === 'pro') {
-      apiCalls.push(
-        fetch(`${baseUrl}/api/products/pro-exclusive`, {
-          headers: { 'internal-call': 'true' }
-        })
-      );
-    }
 
     const responses = await Promise.all(apiCalls);
     
@@ -149,19 +136,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         totalProducts: statsData.totalProducts || 0,
         brandsCount: statsData.totalBrands || statsData.brandsCount || 0,
         categoriesCount: statsData.totalCategories || statsData.categoriesCount || 0,
-        ...(userRole === 'commercial' && {
-          lowStockItems: statsData.lowStockItems || 0
-        }),
-        ...(userRole === 'pro' && {
-          averageRating: statsData.averageRating || 0,
-          inStock: statsData.inStock || 0,
-          exclusiveProducts: statsData.exclusiveProducts || 0
-        })
+        lowStockItems: statsData.lowStockItems || 0,
+        inStock: statsData.activeProducts || statsData.inStock || 0
       };
     }
 
     // Mock products data (in production, fetch from unified API)
-    const products: Product[] = userRole === 'pro' ? [
+    const products: Product[] = [
       {
         id: 'prod-001',
         name: 'Plaquettes de frein Brembo Sport',
@@ -194,22 +175,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         deliveryTime: '24h',
         discount: 28
       }
-    ] : [
-      {
-        id: 'comm-001',
-        name: 'Kit d\'embrayage Sachs Performance',
-        description: 'Kit complet pour véhicules commerciaux',
-        price: 189.99,
-        brand: 'Sachs',
-        category: 'Transmission',
-        image: '/images/clutch-sachs.jpg',
-        stock: 45,
-        rating: 4.5,
-        reviews: 67,
-        deliveryTime: '48h',
-        is_active: true,
-        is_top: false
-      }
     ];
 
     return json<ProductsData>({
@@ -222,10 +187,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats,
       products,
       enhanced,
-      ...(userRole === 'commercial' && responses.length > 1 && {
-        recentProducts: responses[1]?.ok ? (await responses[1].json()).slice(0, 6) : [],
-        recentBrands: responses[2]?.ok ? await responses[2].json() : []
-      })
+      recentProducts: responses[1]?.ok ? (await responses[1].json()).slice(0, 6) : [],
+      recentBrands: responses[2]?.ok ? await responses[2].json() : []
     });
 
   } catch (error) {
