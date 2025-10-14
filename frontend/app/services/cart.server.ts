@@ -68,10 +68,12 @@ class CartServerService {
 
       if (response.ok) {
         const backendData = await response.json();
-        // console.log("✅ [CartServer] Données backend reçues:", backendData);
+        // console.log("✅ [CartServer] Données backend reçues:", JSON.stringify(backendData, null, 2));
         
         // Normaliser les données du backend vers notre format
-        return this.normalizeBackendData(backendData);
+        const normalized = this.normalizeBackendData(backendData);
+        // console.log("🔄 [CartServer] Données normalisées:", JSON.stringify(normalized.summary, null, 2));
+        return normalized;
       } else {
         console.warn("⚠️ [CartServer] Backend non disponible, utilisation des données de démo");
       }
@@ -127,6 +129,7 @@ class CartServerService {
         tax_amount: 0,
         shipping_cost: 0,
         discount_amount: 0,
+        consigne_total: 0,
         currency: "EUR"
       },
       metadata: {
@@ -287,6 +290,7 @@ class CartServerService {
             subtotal: 0,
             tax_amount: 0,
             shipping_cost: 0,
+            consigne_total: 0,
             currency: "EUR"
           },
           metadata: {}
@@ -373,16 +377,21 @@ class CartServerService {
         product_image: item.product_image || item.image_url || "/images/no-image.png",
         stock_available: item.stock_available || 999,
         weight: item.weight || 0,
-        options: item.options || {}
+        options: item.options || {},
+        // ✅ PHASE 4: Mapper les consignes depuis le backend
+        consigne_unit: item.consigne_unit || 0,
+        has_consigne: item.has_consigne || false,
+        consigne_total: item.consigne_total || 0,
       })),
       summary: {
-        total_items: backendData.totals?.item_count || backendData.items?.length || 0,
-        total_price: backendData.totals?.total || 0,
+        total_items: backendData.totals?.total_items || 0,
+        total_price: backendData.totals?.total || backendData.totals?.total_price || 0, // ✅ Backend envoie "total" pas "total_price"
         subtotal: backendData.totals?.subtotal || 0,
-        tax_amount: backendData.totals?.tax || 0,
-        shipping_cost: backendData.totals?.shipping || 0,
-        discount_amount: backendData.totals?.discount || 0,
-        currency: backendData.metadata?.currency || "EUR"
+        tax_amount: backendData.totals?.tax || backendData.totals?.tax_amount || 0,
+        shipping_cost: backendData.totals?.shipping || backendData.totals?.shipping_cost || 0,
+        discount_amount: backendData.totals?.discount || backendData.totals?.discount_amount || 0,
+        consigne_total: backendData.totals?.consigne_total || 0,
+        currency: "EUR"
       },
       metadata: {
         user_id: backendData.user_id,
@@ -401,11 +410,12 @@ class CartServerService {
       items: rawCart.items || [],
       summary: {
         total_items: rawCart.totals?.total_items || rawCart.summary?.total_items || 0,
-        total_price: rawCart.totals?.total_price || rawCart.summary?.total_price || 0,
+        total_price: rawCart.totals?.total || rawCart.totals?.total_price || rawCart.summary?.total_price || 0, // ✅ Backend envoie totals.total
         subtotal: rawCart.totals?.subtotal || rawCart.summary?.subtotal || 0,
-        tax_amount: rawCart.totals?.tax_amount || rawCart.summary?.tax_amount || 0,
-        shipping_cost: rawCart.totals?.shipping_cost || rawCart.summary?.shipping_cost || 0,
-        discount_amount: rawCart.totals?.discount_amount || rawCart.summary?.discount_amount || 0,
+        tax_amount: rawCart.totals?.tax || rawCart.totals?.tax_amount || rawCart.summary?.tax_amount || 0,
+        shipping_cost: rawCart.totals?.shipping || rawCart.totals?.shipping_cost || rawCart.summary?.shipping_cost || 0,
+        discount_amount: rawCart.totals?.discount || rawCart.totals?.discount_amount || rawCart.summary?.discount_amount || 0,
+        consigne_total: rawCart.totals?.consigne_total || rawCart.summary?.consigne_total || 0,
         currency: rawCart.totals?.currency || rawCart.summary?.currency || "EUR"
       },
       metadata: rawCart.metadata || {}
@@ -439,6 +449,7 @@ class CartServerService {
         subtotal: 0,
         tax_amount: 0,
         shipping_cost: 0,
+        consigne_total: 0,
         currency: "EUR"
       },
       metadata: {
