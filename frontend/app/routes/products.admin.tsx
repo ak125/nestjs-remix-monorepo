@@ -31,45 +31,74 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
+import { useLoaderData, Link, useSearchParams } from '@remix-run/react';
 import { 
-  Search, 
-  Filter, 
-  Star,
   ShoppingCart,
   Eye,
-  Truck,
-  CheckCircle,
   TrendingUp,
   AlertTriangle,
   BarChart3
 } from 'lucide-react';
 import { requireUser } from '../auth/unified.server';
+import { Pagination } from '../components/products/Pagination';
+import { ProductFilters } from '../components/products/ProductFilters';
 import { ProductsQuickActions } from '../components/products/ProductsQuickActions';
 import { ProductsStatsCard } from '../components/products/ProductsStatsCard';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 
-// Unified Product Interface
+// API Product Interface (from backend)
+interface APIProduct {
+  id: number;
+  name: string;
+  reference: string;
+  description: string | null;
+  brand: {
+    id: number;
+    name: string;
+    logo?: string;
+  };
+  pricing: {
+    publicTTC: number;
+    proHT: number;
+    consigneTTC: number;
+    margin: number;
+    currency: string;
+  };
+  stock: {
+    available: number;
+    status: 'in_stock' | 'low_stock' | 'out_of_stock';
+    minAlert: number;
+  };
+  status: {
+    isActive: boolean;
+    hasImage: boolean;
+    year: number;
+  };
+  categoryId: number;
+  available: boolean;
+}
+
+// UI Product Interface (for display)
 interface Product {
   id: string;
   name: string;
   description: string;
+  reference: string;
   price: number;
-  priceProf?: number;  // Pro-only field
+  priceProf?: number;
   brand: string;
   category: string;
   image: string;
   stock: number;
   rating: number;
   reviews: number;
-  isProExclusive?: boolean;  // Pro-only field
   deliveryTime: string;
   discount?: number;
-  alias?: string;  // Commercial-specific field
-  is_active?: boolean;  // Commercial-specific field
-  is_top?: boolean;  // Commercial-specific field
+  margin?: number;
+  is_active?: boolean;
+  stockStatus?: 'in_stock' | 'low_stock' | 'out_of_stock';
 }
 
 interface ProductStats {
@@ -93,6 +122,16 @@ interface ProductsData {
   };
   stats: ProductStats;
   products: Product[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  filterLists: {
+    gammes: Array<{ id: string; name: string }>;
+    brands: Array<{ id: string; name: string }>;
+  };
   recentProducts?: Product[];  // Commercial style
   recentBrands?: Array<{
     marque_id: number;
@@ -113,9 +152,25 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     throw new Response('Accès refusé - Compte commercial requis', { status: 403 });
   }
 
-  // Check for enhanced mode
+  // Paramètres URL
   const url = new URL(request.url);
+  console.log('🌐 [LOADER] Full URL:', url.toString());
+  console.log('🌐 [LOADER] Search params:', Object.fromEntries(url.searchParams.entries()));
+  
   const enhanced = url.searchParams.get('enhanced') === 'true';
+  const search = url.searchParams.get('search') || '';
+  const page = url.searchParams.get('page') || '1';
+  const limit = url.searchParams.get('limit') || '50';
+  const gammeId = url.searchParams.get('gammeId') || '';
+  const brandId = url.searchParams.get('brandId') || '';
+  // Par défaut: actifs seulement (sauf si explicitement demandé tous)
+  const activeOnly = url.searchParams.get('activeOnly');
+  const isActive = activeOnly === 'true' || activeOnly === null ? 'true' : '';
+  const lowStock = url.searchParams.get('lowStock') || '';
+  
+  console.log('🔍 [LOADER] Extracted params:', {
+    gammeId, brandId, search, page, limit, isActive, lowStock
+  });
 
   const baseUrl = process.env.API_URL || "http://localhost:3000";
   
@@ -156,41 +211,78 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       };
     }
 
-    // Mock products data (in production, fetch from unified API)
-    const products: Product[] = [
-      {
-        id: 'prod-001',
-        name: 'Plaquettes de frein Brembo Sport',
-        description: 'Plaquettes haute performance pour conduite sportive',
-        price: 129.99,
-        priceProf: 89.99,
-        brand: 'Brembo',
-        category: 'Freinage',
-        image: '/images/brake-pads-brembo.jpg',
-        stock: 25,
-        rating: 4.8,
-        reviews: 127,
-        isProExclusive: true,
-        deliveryTime: '24-48h',
-        discount: 31
-      },
-      {
-        id: 'prod-002',
-        name: 'Huile moteur Castrol GTX 5W-30',
-        description: 'Huile synthétique haute performance',
-        price: 34.50,
-        priceProf: 24.90,
-        brand: 'Castrol',
-        category: 'Lubrification',
-        image: '/images/oil-castrol.jpg',
-        stock: 150,
-        rating: 4.6,
-        reviews: 89,
-        isProExclusive: false,
-        deliveryTime: '24h',
-        discount: 28
+    // 🔥 VRAIES DONNÉES - Récupérer produits depuis l'API avec prix + filtres
+    let products: Product[] = [];
+    let pagination = { page: 1, limit: 50, total: 0, totalPages: 0 };
+    let filterLists = { gammes: [], brands: [] };
+
+    try {
+      // Construire URL avec paramètres
+      const queryParams = new URLSearchParams();
+      if (search) queryParams.set('search', search);
+      if (page) queryParams.set('page', page);
+      if (limit) queryParams.set('limit', limit);
+      if (gammeId) queryParams.set('gammeId', gammeId);
+      if (brandId) queryParams.set('brandId', brandId);
+      if (isActive) queryParams.set('isActive', isActive);
+      if (lowStock) queryParams.set('lowStock', lowStock);
+      
+      const apiUrl = `${baseUrl}/api/products/admin/list?${queryParams.toString()}`;
+      console.log('📡 [LOADER] Calling API:', apiUrl);
+
+      // Construire URL pour les filtres dynamiques
+      const filtersParams = new URLSearchParams();
+      if (gammeId) filtersParams.set('gammeId', gammeId);
+      if (brandId) filtersParams.set('brandId', brandId);
+      const filtersUrl = `${baseUrl}/api/products/filters/lists?${filtersParams.toString()}`;
+      console.log('📡 [LOADER] Calling Filters API:', filtersUrl);
+
+      const [productsResponse, filtersResponse] = await Promise.all([
+        fetch(apiUrl, {
+          headers: { 
+            'internal-call': 'true',
+            'user-level': userLevel.toString()
+          }
+        }),
+        fetch(filtersUrl, {
+          headers: { 'internal-call': 'true' }
+        })
+      ]);
+
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        pagination = productsData.pagination || pagination;
+        
+        // Transformer les données API vers format UI
+        products = (productsData.products || []).map((apiProduct: APIProduct) => ({
+          id: apiProduct.id.toString(),
+          name: apiProduct.name,
+          description: apiProduct.description || `Référence: ${apiProduct.reference}`,
+          reference: apiProduct.reference,
+          price: apiProduct.pricing.publicTTC,
+          priceProf: apiProduct.pricing.proHT,
+          margin: apiProduct.pricing.margin,
+          brand: apiProduct.brand.name,
+          category: `Catégorie ${apiProduct.categoryId}`,
+          image: apiProduct.status.hasImage 
+            ? `/images/products/${apiProduct.id}.jpg` 
+            : '/images/product-placeholder.jpg',
+          stock: apiProduct.stock.available,
+          stockStatus: apiProduct.stock.status,
+          rating: 4.5, // TODO: Implémenter système d'avis
+          reviews: 0,
+          deliveryTime: apiProduct.stock.status === 'in_stock' ? '24-48h' : '3-5j',
+          is_active: apiProduct.status.isActive,
+        }));
       }
-    ];
+
+      if (filtersResponse.ok) {
+        filterLists = await filtersResponse.json();
+      }
+    } catch (error) {
+      console.error('❌ Erreur chargement produits:', error);
+      // Continuer avec tableau vide
+    }
 
     return json<ProductsData>({
       user: {
@@ -201,6 +293,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       stats,
       products,
+      pagination,
+      filterLists,
       enhanced,
       recentProducts: responses[1]?.ok ? (await responses[1].json()).slice(0, 6) : [],
       recentBrands: responses[2]?.ok ? await responses[2].json() : []
@@ -217,6 +311,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       stats: { totalProducts: 0, brandsCount: 0, categoriesCount: 0 },
       products: [],
+      pagination: { page: 1, limit: 50, total: 0, totalPages: 0 },
+      filterLists: { gammes: [], brands: [] },
       enhanced,
       error: 'Erreur lors du chargement des données produits'
     });
@@ -225,7 +321,17 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 export default function ProductsAdmin() {
   const data = useLoaderData<typeof loader>();
-  const { user, stats, products, enhanced, error } = data;
+  const { user, stats, products, pagination, filterLists, enhanced, error } = data;
+  
+  // Compter filtres actifs
+  const [searchParams] = useSearchParams();
+  const activeFiltersCount = [
+    'search',
+    'gammeId',
+    'brandId',
+    'isActive',
+    'lowStock',
+  ].filter((key) => searchParams.get(key)).length;
 
   // Handle refresh
   const handleRefresh = () => {
@@ -298,104 +404,150 @@ export default function ProductsAdmin() {
         onRefresh={handleRefresh}
       />
 
-      {/* Products Grid */}
+      {/* Filtres Avancés */}
+      <ProductFilters
+        gammes={filterLists.gammes}
+        brands={filterLists.brands}
+        activeFiltersCount={activeFiltersCount}
+      />
+
+      {/* Products Table - Interface Commerciale */}
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">
-            {user.role === 'pro' ? 'Produits Exclusifs' : 'Catalogue Produits'}
+            Catalogue Produits ({pagination.total.toLocaleString()} produits - Page {pagination.page}/{pagination.totalPages})
           </h2>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filtrer
-            </Button>
-            <Button variant="outline" size="sm">
-              <Search className="h-4 w-4 mr-2" />
-              Rechercher
-            </Button>
-          </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <Card key={product.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-semibold text-lg text-gray-900">
-                      {product.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">{product.brand}</p>
-                  </div>
-                  {product.isProExclusive && user.role === 'pro' && (
-                    <Badge variant="secondary">Exclusif</Badge>
-                  )}
-                  {product.is_top && user.role === 'commercial' && (
-                    <Badge variant="default">Top</Badge>
-                  )}
-                </div>
+        {/* Tableau Produits */}
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Produit
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Référence
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Prix Public TTC
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Prix Pro HT
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Marge %
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stock
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Statut
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => {
+                    // Badge stock coloré
+                    const stockBadge = product.stockStatus === 'out_of_stock' 
+                      ? { color: 'bg-red-100 text-red-800', label: 'Rupture' }
+                      : product.stockStatus === 'low_stock'
+                      ? { color: 'bg-orange-100 text-orange-800', label: 'Stock Faible' }
+                      : { color: 'bg-green-100 text-green-800', label: 'Disponible' };
 
-                <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-                  {product.description}
-                </p>
+                    return (
+                      <tr key={product.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {product.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {product.brand}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900 font-mono">
+                            {product.reference}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {product.price.toFixed(2)} €
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="text-sm font-semibold text-blue-600">
+                            {product.priceProf?.toFixed(2) || '—'} €
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {product.margin && product.margin > 0 ? (
+                            <Badge variant="secondary" className="font-mono">
+                              {product.margin.toFixed(1)}%
+                            </Badge>
+                          ) : (
+                            <span className="text-sm text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <Badge className={stockBadge.color}>
+                              {stockBadge.label}
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              {product.stock} unités
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {product.is_active ? (
+                            <Badge className="bg-green-100 text-green-800">
+                              ✓ Actif
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">
+                              Inactif
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button asChild size="sm" variant="outline">
+                              <Link to={`/products/${product.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <ShoppingCart className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
 
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    {user.role === 'pro' && product.priceProf ? (
-                      <div>
-                        <span className="text-sm text-gray-500 line-through">
-                          {product.price.toFixed(2)}€
-                        </span>
-                        <span className="text-lg font-bold text-green-600 ml-2">
-                          {product.priceProf.toFixed(2)}€
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-lg font-bold text-gray-900">
-                        {product.price.toFixed(2)}€
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm text-gray-600">
-                      {product.rating} ({product.reviews})
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
-                    <span className="text-sm text-gray-600">
-                      Stock: {product.stock}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Truck className="h-4 w-4 text-gray-400" />
-                    <span className="text-xs text-gray-500">
-                      {product.deliveryTime}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button asChild size="sm" className="flex-1">
-                    <Link to={`/products/${product.id}`}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      Voir
-                    </Link>
-                  </Button>
-                  {user.role === 'pro' && (
-                    <Button variant="outline" size="sm">
-                      <ShoppingCart className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Pagination */}
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.total}
+          itemsPerPage={pagination.limit}
+        />
       </div>
 
       {enhanced && (
