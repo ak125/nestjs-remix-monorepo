@@ -108,14 +108,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const order = await response.json();
     
-    // Rediriger vers la liste des commandes (car on ne peut pas récupérer l'ID à cause de RLS)
-    if (!order.ord_id || order.ord_id === 'créé') {
-      console.log('✅ Commande créée, redirection vers la liste des commandes');
+    // ✅ Phase 7: Rediriger vers la page de paiement avec l'orderId
+    const orderId = order.order_id || order.ord_id || order.id;
+    
+    if (!orderId || orderId === 'créé') {
+      // Fallback si on n'a pas l'ID
+      console.log('✅ Commande créée sans ID, redirection vers la liste des commandes');
       return redirect('/account/orders?created=true');
     }
     
-    // Rediriger vers la page de la commande si on a l'ID
-    return redirect(`/account/orders/${order.order_id || order.ord_id}`);
+    console.log(`✅ Commande ${orderId} créée, redirection vers paiement`);
+    return redirect(`/checkout/payment?orderId=${orderId}`);
     
   } catch (error) {
     console.error("Erreur création commande:", error);
@@ -212,6 +215,30 @@ export default function CheckoutPage() {
                 <span>{cart.summary.tax_amount.toFixed(2)}€</span>
               </div>
             )}
+            {/* ✅ Phase 7: Afficher les consignes si présentes dans le panier */}
+            {(() => {
+              const consignesTotal = cart.items.reduce((sum: number, item: any) => {
+                if (item.has_consigne && item.consigne_unit) {
+                  return sum + (item.quantity * item.consigne_unit);
+                }
+                return sum;
+              }, 0);
+              
+              if (consignesTotal > 0) {
+                return (
+                  <div className="flex justify-between text-amber-600 font-medium">
+                    <span className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      Consignes (remboursables)
+                    </span>
+                    <span>{consignesTotal.toFixed(2)}€</span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
             <div className="flex justify-between font-bold text-lg pt-2 border-t">
               <span>Total</span>
               <span>{total.toFixed(2)}€</span>

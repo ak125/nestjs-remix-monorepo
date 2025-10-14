@@ -107,6 +107,8 @@ export interface OrderSummary {
   shippingFee: number;
   totalTTC: number;
   currency: string;
+  // ✅ Phase 7: Montant des consignes
+  consigneTotal?: number;
 }
 
 export interface OrderItem {
