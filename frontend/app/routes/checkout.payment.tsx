@@ -28,26 +28,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   try {
-    // TODO: Implémenter getOrder ou utiliser une API existante
-    const order = {
-      id: orderId,
-      orderNumber: `ORD-${orderId}`,
-      status: 1,
-      items: [],
-      subtotalHT: 0,
-      tva: 0,
-      shippingFee: 0,
-      totalTTC: 0,
-      currency: 'EUR'
-    } as OrderSummary;
+    // ✅ Phase 7: Récupérer la vraie commande depuis l'API
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const orderResponse = await fetch(`${backendUrl}/api/orders/${orderId}`, {
+      headers: {
+        'Cookie': request.headers.get('Cookie') || '',
+        'Internal-Call': 'true',
+      },
+    });
 
-    // if (!order) {
-    //   throw new Response("Commande introuvable", { status: 404 });
-    // }
+    if (!orderResponse.ok) {
+      if (orderResponse.status === 404) {
+        throw new Response("Commande introuvable", { status: 404 });
+      }
+      throw new Error(`Failed to fetch order: ${orderResponse.statusText}`);
+    }
 
-    // if (order.status !== 1) {
-    //   return redirect(`/account/orders/${orderId}`);
-    // }
+    const orderData = await orderResponse.json();
+    const orderDetails = orderData.data;
+
+    // Transformer les données de la commande pour l'interface OrderSummary
+    const order: OrderSummary = {
+      id: orderDetails.ord_id,
+      orderNumber: orderDetails.ord_id,
+      status: parseInt(orderDetails.ord_is_pay || '0'),
+      items: orderDetails.items || [],
+      subtotalHT: parseFloat(orderDetails.ord_subtotal_ht || '0'),
+      tva: parseFloat(orderDetails.ord_tax_amount || '0'),
+      shippingFee: parseFloat(orderDetails.ord_shipping_cost || '0'),
+      totalTTC: parseFloat(orderDetails.ord_total_ttc || '0'),
+      currency: 'EUR',
+      // ✅ Phase 7: Récupérer le montant des consignes
+      consigneTotal: parseFloat(orderDetails.ord_deposit_ttc || '0'),
+    };
+
+    // Si la commande est déjà payée, rediriger vers la page de commande
+    if (order.status !== 0) {
+      return redirect(`/account/orders/${orderId}`);
+    }
 
     const paymentMethods = await getAvailablePaymentMethods();
 
@@ -84,11 +102,32 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
+    // ✅ Phase 7: Récupérer les infos de la commande pour obtenir le montant total avec consignes
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const orderResponse = await fetch(`${backendUrl}/api/orders/${orderId}`, {
+      headers: {
+        'Cookie': request.headers.get('Cookie') || '',
+        'Internal-Call': 'true',
+      },
+    });
+
+    if (!orderResponse.ok) {
+      throw new Error('Impossible de récupérer la commande');
+    }
+
+    const orderData = await orderResponse.json();
+    const orderDetails = orderData.data;
+    
+    const totalAmount = parseFloat(orderDetails.ord_total_ttc || '0');
+    const consigneTotal = parseFloat(orderDetails.ord_deposit_ttc || '0');
+
     // Initialiser le paiement côté serveur
     const paymentData = await initializePayment({
       orderId,
       userId: user.id,
       paymentMethod,
+      amount: totalAmount, // ✅ Phase 7: Montant total incluant consignes
+      consigneTotal, // ✅ Phase 7: Montant des consignes
       returnUrl: `${process.env.BASE_URL}/checkout/payment/return`,
       ipAddress: request.headers.get("X-Forwarded-For") || 
                  request.headers.get("X-Real-IP") || 
@@ -192,6 +231,18 @@ export default function PaymentPage() {
                     <span>Frais de port</span>
                     <span>{formatPrice(order.shippingFee)}</span>
                   </div>
+                  {/* ✅ Phase 7: Afficher les consignes si présentes */}
+                  {order.consigneTotal && order.consigneTotal > 0 && (
+                    <div className="flex justify-between text-sm text-amber-600 font-medium">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        Consignes (remboursables)
+                      </span>
+                      <span>{formatPrice(order.consigneTotal)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-semibold text-lg border-t border-gray-200 pt-2">
                     <span>Total TTC</span>
                     <span>{formatPrice(order.totalTTC)}</span>

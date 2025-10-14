@@ -8,6 +8,8 @@ export interface InitializePaymentParams {
   orderId: string;
   userId: string;
   paymentMethod: string;
+  amount: number; // ✅ Phase 7: Montant total TTC (inclut consignes)
+  consigneTotal?: number; // ✅ Phase 7: Montant des consignes
   returnUrl: string;
   ipAddress: string;
 }
@@ -28,7 +30,9 @@ export async function initializePayment(
   try {
     console.log('🔄 Initializing payment:', params);
 
-    const response = await fetch(`${process.env.BACKEND_URL}/api/payments`, {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${backendUrl}/api/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,10 +41,14 @@ export async function initializePayment(
       body: JSON.stringify({
         orderId: params.orderId,
         userId: params.userId,
-        paymentMethod: params.paymentMethod,
+        amount: params.amount, // ✅ Phase 7: Montant total incluant consignes
+        method: params.paymentMethod,
+        currency: 'EUR',
+        // ✅ Phase 7: Informations consignes
+        consigne_total: params.consigneTotal || 0,
         returnUrl: params.returnUrl,
-        cancelUrl: `${process.env.BASE_URL}/checkout/payment/cancel`,
-        notifyUrl: `${process.env.BASE_URL}/api/payments/callback/cyberplus`,
+        cancelUrl: `${baseUrl}/checkout/payment/cancel`,
+        notifyUrl: `${baseUrl}/api/payments/callback/cyberplus`,
         ipAddress: params.ipAddress,
       }),
     });
@@ -79,8 +87,9 @@ export async function initializePayment(
  */
 export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
   try {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/payments/methods/available`,
+      `${backendUrl}/api/payments/methods/available`,
       {
         headers: {
           'Internal-Call': 'true',
@@ -138,8 +147,9 @@ function getDefaultPaymentMethods(): PaymentMethod[] {
  */
 export async function getPaymentStatus(paymentId: string) {
   try {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/payments/${paymentId}`,
+      `${backendUrl}/api/payments/${paymentId}`,
       {
         headers: {
           'Internal-Call': 'true',
@@ -167,8 +177,9 @@ export async function handlePaymentReturn(
   returnData: Record<string, string>
 ) {
   try {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/payments/callback/success`,
+      `${backendUrl}/api/payments/callback/success`,
       {
         method: 'POST',
         headers: {
@@ -208,8 +219,9 @@ export async function processPaymentReturn({
 }) {
   try {
     // Utiliser le callback Cyberplus standard
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/payments/callback/cyberplus`,
+      `${backendUrl}/api/payments/callback/cyberplus`,
       {
         method: 'POST',
         headers: {
