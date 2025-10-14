@@ -19,6 +19,10 @@ export interface CartItem {
   stock_available?: number; // Stock disponible
   unit_price?: number; // Prix unitaire (alias de price)
   total_price?: number; // Prix total calculé
+  // 🆕 PHASE 1 POC: Support consignes (batteries, alternateurs)
+  consigne_unit?: number; // Consigne unitaire depuis pieces_price.pri_consigne_ttc
+  consigne_total?: number; // Consigne totale = consigne_unit * quantity
+  has_consigne?: boolean; // Flag pour affichage conditionnel
   options?: Record<string, any>;
 }
 
@@ -29,6 +33,8 @@ export interface CartSummary {
   tax_amount: number;
   shipping_cost: number;
   discount_amount?: number;
+  // 🆕 PHASE 1 POC: Total consignes séparé
+  consigne_total: number; // Total des consignes (remboursables)
   currency: string;
 }
 
