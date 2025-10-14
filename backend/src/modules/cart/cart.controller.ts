@@ -113,10 +113,10 @@ export class CartController {
       const userIdForCart = userId || sessionId;
 
       // 🔍 DEBUG: Identifier l'origine des appels répétés
-      const referer = req.headers.referer || 'Unknown';
-      this.logger.log(
-        `🔍 Cart GET Request - Session: ${sessionId}, User: ${userId}, Referer: ${referer}`,
-      );
+      // const referer = req.headers.referer || 'Unknown';
+      // this.logger.log(
+      //   `🔍 Cart GET Request - Session: ${sessionId}, User: ${userId}, Referer: ${referer}`,
+      // );
 
       this.logger.debug(
         `Récupération panier pour: session=${sessionId}, user=${userId}`,
@@ -127,11 +127,11 @@ export class CartController {
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
       // 🔍 DEBUG: Voir ce qui revient du CartDataService
-      this.logger.log('🔍 CartData brut:', JSON.stringify(cartData, null, 2));
+      // this.logger.log('🔍 CartData brut:', JSON.stringify(cartData, null, 2));
       
-      if (cartData.items?.length > 0) {
-        this.logger.log('🔍 Premier item:', JSON.stringify(cartData.items[0], null, 2));
-      }
+      // if (cartData.items?.length > 0) {
+      //   this.logger.log('🔍 Premier item:', JSON.stringify(cartData.items[0], null, 2));
+      // }
 
       // Reformater au format API attendu par le frontend
       const cart = {

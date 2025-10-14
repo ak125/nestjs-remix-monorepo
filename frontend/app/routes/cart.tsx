@@ -14,8 +14,8 @@ import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
 import { getCart } from "../services/cart.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  console.log("🛒 [CART LOADER] Chargement du panier depuis cart.tsx");
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  // console.log("🛒 [CART LOADER] Chargement du panier depuis cart.tsx");
   try {
     const url = new URL(request.url);
     const cleared = url.searchParams.get('cleared');
@@ -38,6 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           subtotal: 0, 
           tax_amount: 0, 
           shipping_cost: 0, 
+          consigne_total: 0, // ✅ PHASE 4
           currency: "EUR" 
         } 
       }, 
@@ -97,6 +98,7 @@ async function updateItemQuantityAPI(productId: number, quantity: number) {
       throw new Error('La quantité doit être d\'au moins 1');
     }
     
+    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
     const response = await fetch('/api/cart/items', {
       method: 'POST', // Réutiliser l'endpoint d'ajout qui gère la mise à jour
       headers: {
@@ -129,6 +131,7 @@ async function updateItemQuantityAPI(productId: number, quantity: number) {
 // Utilise le product_id numérique qui correspond aux données du backend
 async function removeItemAPI(productId: number) {
   try {
+    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
     const response = await fetch(`/api/cart/items/${productId}`, {
       method: 'DELETE',
       credentials: 'include'
@@ -149,7 +152,7 @@ async function removeItemAPI(productId: number) {
   }
 }
 
-// Composant CartSummary
+// Composant CartSummary avec design amélioré
 function CartSummary({ summary, children, isUpdating }: { 
   summary: any; 
   children?: React.ReactNode;
@@ -158,47 +161,85 @@ function CartSummary({ summary, children, isUpdating }: {
   const total = summary.total_price || (summary.subtotal + summary.tax_amount + summary.shipping_cost - (summary.discount_amount || 0));
   
   return (
-    <div className={`bg-gray-50 p-6 rounded-lg transition-opacity ${
-      isUpdating ? 'opacity-50' : ''
+    <div className={`bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 p-6 rounded-xl shadow-lg transition-all ${
+      isUpdating ? 'opacity-50 scale-[0.98]' : 'hover:shadow-xl'
     }`}>
-      <h2 className="text-lg font-semibold mb-4 flex items-center">
+      <h2 className="text-xl font-bold mb-5 flex items-center text-gray-800 border-b-2 border-blue-500 pb-3">
+        <span className="mr-2">📋</span>
         Résumé de la commande
         {isUpdating && (
-          <span className="ml-2 text-sm text-blue-600">🔄 Mise à jour...</span>
+          <span className="ml-auto flex items-center text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+            <div className="animate-spin w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+            Mise à jour...
+          </span>
         )}
       </h2>
       
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span>Sous-total ({summary.total_items} articles)</span>
-          <span>{summary.subtotal.toFixed(2)}€</span>
+      <div className="space-y-3 text-sm">
+        {/* Nombre de pièces - Badge style */}
+        <div className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+          <span className="font-semibold text-gray-700 flex items-center">
+            <span className="mr-2">🔢</span>
+            Nombre de pièces
+          </span>
+          <span className="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+            {summary.total_items}
+          </span>
+        </div>
+
+        {/* Sous-total */}
+        <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
+          <span className="text-gray-700 font-medium">Sous-total produits</span>
+          <span className="font-semibold text-gray-900">{summary.subtotal.toFixed(2)}€</span>
         </div>
         
+        {/* Consignes avec style particulier */}
+        {summary.consigne_total > 0 && (
+          <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg shadow-sm border-2 border-amber-300">
+            <span className="text-amber-800 font-medium flex items-center">
+              <span className="mr-2">♻️</span>
+              Consignes
+              <span className="text-xs ml-2 bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
+                remboursables
+              </span>
+            </span>
+            <span className="font-bold text-amber-700">+{summary.consigne_total.toFixed(2)}€</span>
+          </div>
+        )}
+        
         {summary.shipping_cost > 0 && (
-          <div className="flex justify-between">
-            <span>Livraison</span>
-            <span>{summary.shipping_cost.toFixed(2)}€</span>
+          <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
+            <span className="text-gray-700 flex items-center">
+              <span className="mr-2">🚚</span>
+              Livraison
+            </span>
+            <span className="font-semibold">{summary.shipping_cost.toFixed(2)}€</span>
           </div>
         )}
         
         {summary.tax_amount > 0 && (
-          <div className="flex justify-between">
-            <span>TVA</span>
-            <span>{summary.tax_amount.toFixed(2)}€</span>
+          <div className="flex justify-between p-3 bg-white rounded-lg shadow-sm">
+            <span className="text-gray-700">TVA</span>
+            <span className="font-semibold">{summary.tax_amount.toFixed(2)}€</span>
           </div>
         )}
         
         {summary.discount_amount > 0 && (
-          <div className="flex justify-between text-green-600">
-            <span>Remise</span>
-            <span>-{summary.discount_amount.toFixed(2)}€</span>
+          <div className="flex justify-between p-3 bg-green-50 rounded-lg shadow-sm border-2 border-green-300">
+            <span className="text-green-700 font-medium flex items-center">
+              <span className="mr-2">🎁</span>
+              Remise
+            </span>
+            <span className="font-bold text-green-700">-{summary.discount_amount.toFixed(2)}€</span>
           </div>
         )}
         
-        <hr className="my-2" />
-        <div className="flex justify-between font-semibold text-lg">
-          <span>Total</span>
-          <span>{total.toFixed(2)}€</span>
+        {/* Total avec style imposant */}
+        <div className="mt-4 pt-4 border-t-2 border-gray-300">
+          <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg">
+            <span className="font-bold text-lg text-white">Total TTC</span>
+            <span className="font-bold text-3xl text-white">{total.toFixed(2)}€</span>
+          </div>
         </div>
       </div>
       
@@ -261,140 +302,170 @@ function CartItem({ item, onUpdate, onRemove }: {
   const totalPrice = isTotal ? item.price : item.price * item.quantity;
 
   return (
-    <div className={`bg-white rounded-lg border shadow-sm transition-all duration-200 p-6 ${
-      isUpdating || isRemoving ? 'opacity-50 pointer-events-none' : 'hover:shadow-md'
+    <div className={`bg-white rounded-xl border-2 shadow-md transition-all duration-300 p-6 ${
+      isUpdating || isRemoving 
+        ? 'opacity-50 pointer-events-none scale-[0.98]' 
+        : 'hover:shadow-xl hover:border-blue-300 hover:scale-[1.01]'
     }`}>
-      {/* En-tête produit */}
-      <div className="flex items-start justify-between mb-4">
+      {/* En-tête produit avec badge consigne */}
+      <div className="flex items-start justify-between mb-5 pb-4 border-b-2 border-gray-100">
         <div className="flex-1">
-          <h3 className="font-semibold text-xl text-gray-900 mb-2">
-            {item.product_name || item.name || 'Produit sans nom'}
-          </h3>
-          <div className="text-sm text-gray-600 space-y-1">
-            <div>
-              <span className="font-medium">Référence:</span> 
-              <span className="text-gray-900 font-mono ml-1">{item.product_sku || item.product_id}</span>
+          <div className="flex items-start gap-3">
+            <h3 className="font-bold text-xl text-gray-900 mb-2 flex-1">
+              {item.product_name || item.name || 'Produit sans nom'}
+            </h3>
+            {item.has_consigne && item.consigne_unit > 0 && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 whitespace-nowrap">
+                <span className="mr-1">♻️</span>
+                +{item.consigne_unit.toFixed(2)}€ consigne
+              </span>
+            )}
+          </div>
+          <div className="text-sm text-gray-600 space-y-2 mt-2">
+            <div className="flex items-center">
+              <span className="font-semibold text-gray-500 min-w-[80px]">Référence</span>
+              <span className="text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded">
+                {item.product_sku || item.product_id}
+              </span>
             </div>
             {item.product_brand && item.product_brand !== 'MARQUE INCONNUE' && item.product_brand !== 'Non spécifiée' && (
-              <div>
-                <span className="font-medium">Marque:</span> 
-                <span className="text-gray-900 ml-1">{item.product_brand}</span>
+              <div className="flex items-center">
+                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
+                <span className="text-gray-900 bg-blue-50 px-2 py-1 rounded font-medium">
+                  {item.product_brand}
+                </span>
               </div>
             )}
             {(item.product_brand === 'MARQUE INCONNUE' || item.product_brand === 'Non spécifiée') && (
-              <div>
-                <span className="font-medium">Marque:</span> 
-                <span className="text-gray-500 italic ml-1">Non spécifiée</span>
+              <div className="flex items-center">
+                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
+                <span className="text-gray-400 italic px-2 py-1">Non spécifiée</span>
               </div>
             )}
             {!item.product_brand && (
-              <div>
-                <span className="font-medium">Marque:</span> 
-                <span className="text-gray-400 italic ml-1">Données manquantes</span>
+              <div className="flex items-center">
+                <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
+                <span className="text-gray-300 italic px-2 py-1">Données manquantes</span>
               </div>
             )}
           </div>
         </div>
         
-        {/* Badge de statut */}
+        {/* Badge de statut animé */}
         {(isUpdating || isRemoving) && (
-          <div className="flex items-center space-x-2 text-blue-600 text-sm bg-blue-50 px-3 py-1 rounded-full">
+          <div className="flex items-center space-x-2 text-blue-600 text-sm bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 rounded-full border-2 border-blue-200 shadow-sm">
             <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-            <span className="font-medium">{isUpdating ? 'Mise à jour...' : 'Suppression...'}</span>
+            <span className="font-semibold">{isUpdating ? 'Mise à jour...' : 'Suppression...'}</span>
           </div>
         )}
       </div>
       
-      {/* Contrôles */}
+      {/* Contrôles avec design modernisé */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-        {/* Quantité */}
-        <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium text-gray-700">Quantité:</span>
-          <div className="flex items-center border-2 border-gray-200 rounded-lg bg-white shadow-sm">
+        {/* Quantité avec style amélioré */}
+        <div className="flex flex-col space-y-2">
+          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Quantité</span>
+          <div className="flex items-center border-2 border-gray-300 rounded-xl bg-gradient-to-r from-gray-50 to-white shadow-md hover:shadow-lg transition-shadow">
             <button
               onClick={() => handleQuantityChange(currentQuantity - 1)}
               disabled={isUpdating || isRemoving || currentQuantity <= 1}
-              className="px-4 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-l-lg font-bold text-lg"
+              className="px-5 py-3 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-l-xl font-bold text-xl text-red-600 hover:scale-110"
             >
               −
             </button>
-            <div className="px-4 py-2 min-w-[60px] text-center font-bold text-lg bg-gray-50 border-x-2 border-gray-200">
+            <div className="px-6 py-3 min-w-[70px] text-center font-bold text-2xl bg-white border-x-2 border-gray-300 text-gray-900">
               {currentQuantity}
             </div>
             <button
               onClick={() => handleQuantityChange(currentQuantity + 1)}
               disabled={isUpdating || isRemoving}
-              className="px-4 py-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-r-lg font-bold text-lg"
+              className="px-5 py-3 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all rounded-r-xl font-bold text-xl text-green-600 hover:scale-110"
             >
               +
             </button>
           </div>
         </div>
         
-        {/* Prix */}
-        <div className="text-center">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600 mb-1">
-              Prix unitaire: <span className="font-semibold">{unitPrice.toFixed(2)}€</span>
+        {/* Prix avec carte détaillée */}
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Prix total</span>
+          <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-50 p-5 rounded-xl shadow-md border-2 border-blue-200">
+            <div className="text-sm text-gray-700 mb-2 flex justify-between">
+              <span className="font-medium">Prix unitaire</span>
+              <span className="font-bold text-gray-900">{unitPrice.toFixed(2)}€</span>
             </div>
-            <div className="text-2xl font-bold text-blue-600">
+            {item.has_consigne && item.consigne_unit > 0 && (
+              <div className="text-xs text-amber-700 mb-2 flex justify-between bg-amber-50 px-2 py-1 rounded border border-amber-200">
+                <span className="font-medium">+ Consigne</span>
+                <span className="font-semibold">{item.consigne_unit.toFixed(2)}€</span>
+              </div>
+            )}
+            <div className="text-3xl font-extrabold text-blue-700 text-center mt-2 mb-1">
               {totalPrice.toFixed(2)}€
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-600 text-center bg-white/50 py-1 px-2 rounded-full">
               {item.quantity} × {unitPrice.toFixed(2)}€
+              {item.has_consigne && ` + ${item.consigne_unit.toFixed(2)}€`}
             </div>
           </div>
         </div>
         
-        {/* Actions */}
-        <div className="flex justify-end">
+        {/* Actions avec bouton amélioré */}
+        <div className="flex flex-col space-y-2">
+          <span className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Actions</span>
           {!showConfirmDelete ? (
             <button
               onClick={confirmRemoval}
               disabled={isUpdating || isRemoving}
-              className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2 font-medium shadow-sm"
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-semibold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
             >
-              <span>🗑️</span>
+              <span className="text-lg">🗑️</span>
               <span>Supprimer</span>
             </button>
           ) : (
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setShowConfirmDelete(false)}
-                disabled={isRemoving}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleRemove}
-                disabled={isRemoving}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition-colors disabled:opacity-50 font-medium"
-              >
-                {isRemoving ? '⏳ Suppression...' : '✓ Confirmer'}
-              </button>
+            <div className="flex flex-col space-y-2 bg-red-50 p-3 rounded-xl border-2 border-red-200">
+              <p className="text-sm font-semibold text-red-800 mb-1">⚠️ Confirmer la suppression ?</p>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowConfirmDelete(false)}
+                  disabled={isRemoving}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleRemove}
+                  disabled={isRemoving}
+                  className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-2 rounded-lg transition-all disabled:opacity-50 font-semibold shadow-md hover:shadow-lg"
+                >
+                  {isRemoving ? '⏳ Suppression...' : '✓ Confirmer'}
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
     </div>
   );
-}// Composant panier vide
+}// Composant panier vide avec design amélioré
 function EmptyCart() {
   return (
-    <div className="text-center py-12">
-      <div className="text-6xl mb-4">🛒</div>
-      <h2 className="text-xl font-semibold mb-2">Votre panier est vide</h2>
-      <p className="text-gray-600 mb-6">
-        Découvrez nos produits et ajoutez-les à votre panier
-      </p>
+    <div className="text-center py-16 px-6">
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-12 max-w-2xl mx-auto shadow-lg border-2 border-gray-200">
+        <div className="text-8xl mb-6 animate-pulse">🛒</div>
+        <h2 className="text-3xl font-bold mb-4 text-gray-800">Votre panier est vide</h2>
+        <p className="text-lg text-gray-600 mb-8">
+          Découvrez nos produits et ajoutez-les à votre panier pour commencer vos achats
+        </p>
 
-      <Link
-        to="/products"
-        className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Continuer mes achats
-      </Link>
+        <Link
+          to="/products"
+          className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl font-semibold text-lg hover:scale-105 active:scale-95"
+        >
+          <span>🛍️</span>
+          <span>Continuer mes achats</span>
+        </Link>
+      </div>
     </div>
   );
 }

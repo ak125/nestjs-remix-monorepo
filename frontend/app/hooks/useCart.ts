@@ -30,8 +30,8 @@ interface UseCartReturn {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  removeItem: (itemId: string) => void;
-  updateQuantity: (itemId: string, quantity: number) => void;
+  removeItem: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   refreshCart: () => void;
 }
 
@@ -120,15 +120,13 @@ export function useCart(): UseCartReturn {
 
         setItems(enrichedItems);
         
-        // Utiliser le summary du backend OU recalculer localement
+        // ✅ PRIORITÉ: Utiliser le summary du backend (calculs déjà faits)
         if (cartData.summary) {
-          setSummary({
-            ...cartData.summary,
-            consigne_total: enrichedItems.reduce((sum, item) => 
-              sum + (item.consigne_total || 0), 0
-            ),
-          });
+          // console.log('🔍 [useCart] Summary reçu du backend:', cartData.summary);
+          setSummary(cartData.summary); // Utiliser directement le summary backend
         } else {
+          // Fallback: Recalculer localement si pas de summary backend
+          console.warn('⚠️ [useCart] Pas de summary backend, recalcul local');
           setSummary(calculateSummary(enrichedItems));
         }
         
@@ -157,26 +155,68 @@ export function useCart(): UseCartReturn {
     fetcher.load('/cart');
   }, [fetcher]);
 
-  const removeItem = useCallback((itemId: string) => {
-    // Supprimer via action DELETE
-    fetcher.submit(
-      { itemId },
-      { method: 'DELETE', action: '/cart' }
-    );
-  }, [fetcher]);
+  const removeItem = useCallback(async (itemId: string) => {
+    // ✅ Appeler le backend via chemin relatif (Remix proxy)
+    try {
+      // Extraire product_id : peut être "user-product-timestamp" ou directement "product"
+      const parts = itemId.split('-');
+      const productId = parts.length >= 2 ? parts[1] : itemId;
+      
+      console.log('🗑️ removeItem:', { itemId, productId });
+      
+      const response = await fetch(`/api/cart/items/${productId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
 
-  const updateQuantity = useCallback((itemId: string, quantity: number) => {
+      if (response.ok) {
+        console.log('✅ Article supprimé');
+        // Recharger le panier après suppression
+        refreshCart();
+      } else {
+        console.error('❌ Erreur suppression article:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Erreur removeItem:', error);
+    }
+  }, [refreshCart]);
+
+  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
     if (quantity < 1) {
       removeItem(itemId);
       return;
     }
 
-    // Mettre à jour via action PATCH
-    fetcher.submit(
-      { itemId, quantity: quantity.toString() },
-      { method: 'PATCH', action: '/cart' }
-    );
-  }, [fetcher, removeItem]);
+    // ✅ Appeler le backend via chemin relatif (Remix proxy)
+    try {
+      // Extraire product_id : peut être "user-product-timestamp" ou directement "product"
+      const parts = itemId.split('-');
+      const productId = parts.length >= 2 ? parts[1] : itemId;
+      
+      console.log('🔄 updateQuantity:', { itemId, productId, quantity });
+      
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          product_id: parseInt(productId), 
+          quantity,
+          replace: true 
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Quantité mise à jour');
+        // Recharger le panier après mise à jour
+        refreshCart();
+      } else {
+        console.error('❌ Erreur mise à jour quantité:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Erreur updateQuantity:', error);
+    }
+  }, [removeItem, refreshCart]);
 
   return {
     items,

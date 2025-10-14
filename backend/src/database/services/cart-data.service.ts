@@ -122,16 +122,16 @@ export class CartDataService extends SupabaseBaseService {
    */
   async getCartWithMetadata(sessionId: string) {
     try {
-      this.logger.log(`🛒 Récupération panier Redis: ${sessionId}`);
+      // this.logger.log(`🛒 Récupération panier Redis: ${sessionId}`);
       
       // Récupérer items du panier depuis Redis
       const cartItems = await this.getCartFromRedis(sessionId);
       
       // LOG DE DEBUG pour voir ce qui est stocké
-      this.logger.log(
-        `📦 Items bruts depuis Redis (${cartItems.length} items):`,
-        JSON.stringify(cartItems, null, 2),
-      );
+      // this.logger.log(
+      //   `📦 Items bruts depuis Redis (${cartItems.length} items):`,
+      //   JSON.stringify(cartItems, null, 2),
+      // );
       
       if (cartItems.length === 0) {
         this.logger.warn(`⚠️ Panier vide pour session ${sessionId}`);
@@ -354,7 +354,7 @@ export class CartDataService extends SupabaseBaseService {
    */
   async getProductWithAllData(productId: number) {
     try {
-      this.logger.log(`🔍 Récupération complète produit ID ${productId}...`);
+      // this.logger.log(`🔍 Récupération complète produit ID ${productId}...`);
       
       // REQUÊTE SIMPLE POUR RÉCUPÉRER LA PIÈCE
       const { data: pieceData, error: pieceError } = await this.client
@@ -369,10 +369,10 @@ export class CartDataService extends SupabaseBaseService {
       }
 
       // LOG DEBUG pour voir les vraies valeurs de marque
-      this.logger.log(`🔍 DONNÉES MARQUE pour ${productId}:`, {
-        piece_pm_id: pieceData.piece_pm_id,
-        type_piece_pm_id: typeof pieceData.piece_pm_id,
-      });
+      // this.logger.log(`🔍 DONNÉES MARQUE pour ${productId}:`, {
+      //   piece_pm_id: pieceData.piece_pm_id,
+      //   type_piece_pm_id: typeof pieceData.piece_pm_id,
+      // });
       
       // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
       const { data: priceData, error: priceError } = await this.client
@@ -386,9 +386,9 @@ export class CartDataService extends SupabaseBaseService {
       
       if (pieceData.piece_pm_id) {
         try {
-          this.logger.log(
-            `🔍 Recherche marque pour piece_pm_id: ${pieceData.piece_pm_id}`,
-          );
+          // this.logger.log(
+          //   `🔍 Recherche marque pour piece_pm_id: ${pieceData.piece_pm_id}`,
+          // );
           
           // Rechercher dans pieces_marque avec pm_id
           const { data: brandData, error: brandError } = await this.client
@@ -397,20 +397,20 @@ export class CartDataService extends SupabaseBaseService {
             .eq('pm_id', pieceData.piece_pm_id.toString())
             .single();
           
-          this.logger.log(`🔍 Résultat recherche marque:`, {
-            piece_pm_id: pieceData.piece_pm_id,
-            brandData,
-            brandError,
-          });
+          // this.logger.log(`🔍 Résultat recherche marque:`, {
+          //   piece_pm_id: pieceData.piece_pm_id,
+          //   brandData,
+          //   brandError,
+          // });
           
           if (!brandError && brandData) {
             brandName =
               brandData.pm_name ||
               brandData.pm_alias ||
               `ID-${pieceData.piece_pm_id}`;
-            this.logger.log(
-              `🏷️ Marque trouvée: ${brandName} (ID: ${brandData.pm_id}, Sort: ${brandData.pm_sort})`,
-            );
+            // this.logger.log(
+            //   `🏷️ Marque trouvée: ${brandName} (ID: ${brandData.pm_id}, Sort: ${brandData.pm_sort})`,
+            // );
           } else {
             this.logger.warn(
               `⚠️ Marque non trouvée pour piece_pm_id: ${pieceData.piece_pm_id}`,
@@ -426,9 +426,9 @@ export class CartDataService extends SupabaseBaseService {
           brandName = `ID-${pieceData.piece_pm_id}`; // Utiliser l'ID comme nom de fallback
         }
       } else {
-        this.logger.log(
-          `🔍 Aucun piece_pm_id défini pour le produit ${productId}`,
-        );
+        // this.logger.log(
+        //   `🔍 Aucun piece_pm_id défini pour le produit ${productId}`,
+        // );
       }
 
       let priceTTC = 0;
@@ -461,9 +461,9 @@ export class CartDataService extends SupabaseBaseService {
         }
       }
       
-      this.logger.log(
-        `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€ - Consigne: ${consigneTTC}€`,
-      );
+      // this.logger.log(
+      //   `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€ - Consigne: ${consigneTTC}€`,
+      // );
       
       return {
         ...pieceData,
