@@ -77,6 +77,13 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
 
           {/* Informations produit */}
           <div className="flex-1 min-w-0">
+            {/* 🆕 PHASE 1: Marque (from PHP pattern) */}
+            {item.product_brand && (
+              <p className="text-xs text-gray-500 font-medium uppercase">
+                {item.product_brand}
+              </p>
+            )}
+            
             <h3 className="font-medium text-gray-900 truncate">
               {productName}
             </h3>
@@ -86,6 +93,13 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
             <p className="text-sm font-medium text-gray-900 mt-1">
               {formatPrice(unitPrice)}
             </p>
+            
+            {/* 🆕 PHASE 1: Consigne si présente */}
+            {item.has_consigne && item.consigne_unit && (
+              <p className="text-xs text-orange-600 mt-1">
+                + {formatPrice(item.consigne_unit)} consigne/unité
+              </p>
+            )}
             
             {/* Alerte stock */}
             {stockAvailable < 10 && stockAvailable > 0 && (
