@@ -3,6 +3,7 @@ import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones, BookOpen, 
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
 import { CartSidebar } from "./navbar/CartSidebar";
+import { NavbarMobile } from "./navbar/NavbarMobile";
 import { Badge } from "./ui/badge";
 
 export const Navbar = ({ logo }: { logo: string }) => {
@@ -12,6 +13,9 @@ export const Navbar = ({ logo }: { logo: string }) => {
   return (
     <nav className="px-3 py-2 bg-blue-600 text-white flex justify-between items-center" aria-label="Navigation principale">
       <div className="flex items-center gap-4">
+        {/* 🆕 PHASE 2: Burger Menu Mobile */}
+        <NavbarMobile user={user} />
+        
         <Link to="/">
           <img 
             src={logo}
