@@ -53,6 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     // 2. Transformer les items du panier en lignes de commande
+    // ✅ Phase 5: Inclure les consignes dans les lignes de commande
     const orderLines = cartData.items.map((item: any) => ({
       productId: String(item.product_id),
       productName: item.product_name || 'Produit',
@@ -60,7 +61,9 @@ export async function action({ request }: ActionFunctionArgs) {
       quantity: item.quantity,
       unitPrice: item.price,
       vatRate: 20, // TVA par défaut
-      discount: 0
+      discount: 0,
+      consigne_unit: item.consigne_unit || 0, // ✅ Phase 5: Consigne unitaire
+      has_consigne: item.has_consigne || false, // ✅ Phase 5: Produit avec consigne
     }));
 
     // 3. Créer la commande avec données structurées
