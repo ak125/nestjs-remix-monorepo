@@ -110,7 +110,10 @@ export async function action({ request }: ActionFunctionArgs) {
     
     // ✅ Phase 7: Rediriger vers la page de paiement avec l'orderId
     // L'API retourne un objet avec ord_id (format BDD)
+    console.log('📦 Réponse API création commande:', JSON.stringify(order, null, 2));
+    
     const orderId = order.ord_id || order.order_id || order.id;
+    console.log('🔍 orderId extrait:', orderId);
     
     if (!orderId || orderId === 'créé') {
       // Fallback si on n'a pas l'ID
@@ -122,7 +125,8 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(`/checkout/payment?orderId=${orderId}`);
     
   } catch (error) {
-    console.error("Erreur création commande:", error);
+    console.error("❌ Erreur création commande:", error);
+    console.error("❌ Stack:", error instanceof Error ? error.stack : 'No stack');
     return json({ 
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue"
