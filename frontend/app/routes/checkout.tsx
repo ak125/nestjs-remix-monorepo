@@ -109,7 +109,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const order = await response.json();
     
     // ✅ Phase 7: Rediriger vers la page de paiement avec l'orderId
-    const orderId = order.order_id || order.ord_id || order.id;
+    // L'API retourne un objet avec ord_id (format BDD)
+    const orderId = order.ord_id || order.order_id || order.id;
     
     if (!orderId || orderId === 'créé') {
       // Fallback si on n'a pas l'ID
