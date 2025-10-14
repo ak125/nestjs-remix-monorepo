@@ -69,6 +69,12 @@ export class PaymentService {
         createdAt: new Date(),
         updatedAt: new Date(),
         refundedAmount: 0,
+        // ✅ Phase 6: Stocker info consignes dans metadata (optionnel, pour référence)
+        metadata: {
+          ...createPaymentDto.metadata,
+          consigne_total: createPaymentDto.consigne_total || 0,
+          note: 'Consignes stockées dans ___xtr_order.ord_deposit_ttc',
+        },
       };
 
       const payment = await this.paymentDataService.createPayment(paymentData);

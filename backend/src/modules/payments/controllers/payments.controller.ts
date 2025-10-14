@@ -880,4 +880,61 @@ export class PaymentsController {
       this.logger.error('Error saving callback to database:', error);
     }
   }
+
+  /**
+   * ✅ Phase 6: Endpoint de test pour paiement avec consignes
+   */
+  @Post('test/create-with-consignes')
+  @ApiOperation({ summary: '[TEST] Créer un paiement incluant des consignes' })
+  @HttpCode(HttpStatus.OK)
+  async testCreatePaymentWithConsignes(@Body() testData?: { orderId?: string }) {
+    try {
+      this.logger.log('🧪 [TEST] Creating payment with consignes...');
+
+      // Données de test : commande avec 2 alternateurs à 72€ de consigne chacun
+      const mockPaymentDto: CreatePaymentDto = {
+        amount: 487.17, // 337.18 (produits) + 144 (consignes) + 5.99 (port)
+        currency: 'EUR',
+        method: PaymentMethod.CYBERPLUS,
+        userId: 'test-user-123',
+        orderId: testData?.orderId || 'ORD-TEST-CONSIGNES',
+        description: 'Test paiement avec consignes - Phase 6',
+        consigne_total: 144, // 2 x 72€
+        consigne_details: [
+          {
+            productId: '3047339',
+            quantity: 2,
+            consigne_unit: 72,
+          },
+        ],
+      };
+
+      const payment = await this.paymentService.createPayment(mockPaymentDto);
+
+      return {
+        success: true,
+        message: '✅ Phase 6: Paiement avec consignes créé avec succès',
+        payment: {
+          id: payment.id,
+          reference: payment.paymentReference,
+          amount: payment.amount,
+          consigne_total: payment.consigne_total,
+          consigne_details: payment.consigne_details,
+          status: payment.status,
+        },
+        breakdown: {
+          produits: 337.18,
+          consignes: 144,
+          port: 5.99,
+          total: 487.17,
+        },
+        note: 'Les consignes sont stockées dans ___xtr_order.ord_deposit_ttc (Phase 5). Le paiement contient le montant total (produits + consignes + port).',
+      };
+    } catch (error) {
+      this.logger.error('Error creating test payment:', error);
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to create test payment',
+      );
+    }
+  }
 }

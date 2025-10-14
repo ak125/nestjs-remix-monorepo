@@ -93,6 +93,7 @@ export class PaymentDataService extends SupabaseBaseService {
       this.logger.log(`Creating payment with reference: ${paymentReference}`);
 
       // 1. Enregistrer dans ic_postback pour tracking paiement
+      // Note: Les consignes sont stockées dans ___xtr_order.ord_deposit_ttc, pas ici
       const { data: postback, error: postbackError } = await this.supabase
         .from('ic_postback')
         .insert({
