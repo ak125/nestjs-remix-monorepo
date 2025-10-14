@@ -573,6 +573,73 @@ export class OrdersController {
   }
 
   /**
+   * 🆕 Phase 5: Créer commande test AVEC CONSIGNES
+   * POST /api/orders/test/create-with-consignes
+   */
+  @Post('test/create-with-consignes')
+  @ApiOperation({ summary: 'Créer commande test avec consignes (Phase 5)' })
+  @ApiResponse({ status: 201, description: 'Commande avec consignes créée' })
+  async testCreateOrderWithConsignes(@Body() testData?: { customerId?: string | number }) {
+    try {
+      const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
+      
+      this.logger.log(`✅ Phase 5: Creating test order WITH CONSIGNES for customer ${customerId}`);
+
+      const mockOrderData: CreateOrderData = {
+        customerId: customerId,
+        orderLines: [
+          {
+            productId: '3047339',
+            productName: 'Alternateur CEVAM',
+            productReference: '4561',
+            quantity: 2,
+            unitPrice: 168.59,
+            vatRate: 20,
+            discount: 0,
+            consigne_unit: 72,  // ✅ Consigne unitaire
+            has_consigne: true,  // ✅ Produit avec consigne
+          },
+        ],
+        billingAddress: {
+          firstName: 'Test',
+          lastName: 'Phase5',
+          address: '123 rue Consignes',
+          zipCode: '75001',
+          city: 'Paris',
+          country: 'France',
+        },
+        shippingAddress: {
+          firstName: 'Test',
+          lastName: 'Phase5',
+          address: '123 rue Consignes',
+          zipCode: '75001',
+          city: 'Paris',
+          country: 'France',
+        },
+        customerNote: '✅ Phase 5: Test commande avec consignes alternateur (2x 72€ = 144€)',
+        shippingMethod: 'standard',
+      };
+
+      const result = await this.ordersService.createOrder(mockOrderData);
+
+      return {
+        message: '✅ Phase 5: Commande avec consignes créée avec succès',
+        order: result,
+        consignes_info: {
+          consigne_unit: 72,
+          quantity: 2,
+          consigne_total: 144,
+          note: 'Les consignes sont stockées dans ord_deposit_ttc'
+        },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Error creating test order with consignes:', error);
+      throw error;
+    }
+  }
+
+  /**
    * 📊 Statistiques rapides (test)
    * GET /api/orders/test/stats
    */

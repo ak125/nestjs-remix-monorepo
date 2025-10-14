@@ -5,6 +5,7 @@ export interface OrderCalculation {
   taxAmount: number;
   shippingCost: number;
   discountAmount: number;
+  consigne_total: number;  // ✅ Phase 5: Total consignes
   total: number;
 }
 
@@ -13,6 +14,8 @@ export interface OrderLineItem {
   quantity: number;
   unitPrice: number;
   taxRate?: number;
+  consigne_unit?: number;  // ✅ Phase 5: Consigne unitaire
+  has_consigne?: boolean;  // ✅ Phase 5: Produit avec consigne
 }
 
 @Injectable()
@@ -34,17 +37,26 @@ export class OrderCalculationService {
         return sum + item.quantity * item.unitPrice;
       }, 0);
 
+      // ✅ Phase 5: Calcul des consignes
+      const consigne_total = items.reduce((sum, item) => {
+        if (item.has_consigne && item.consigne_unit) {
+          return sum + item.quantity * item.consigne_unit;
+        }
+        return sum;
+      }, 0);
+
       // Calcul de la TVA
       const taxAmount = subtotal * taxRate;
 
-      // Calcul du total
-      const total = subtotal + taxAmount + shippingCost - discountAmount;
+      // Calcul du total (consignes incluses)
+      const total = subtotal + taxAmount + shippingCost + consigne_total - discountAmount;
 
       return {
         subtotal,
         taxAmount,
         shippingCost,
         discountAmount,
+        consigne_total,
         total: Math.max(0, total), // Ne peut pas être négatif
       };
     } catch (error) {

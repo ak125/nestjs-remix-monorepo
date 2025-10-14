@@ -20,6 +20,8 @@ export interface CreateOrderData {
     unitPrice: number;
     vatRate?: number;
     discount?: number;
+    consigne_unit?: number;  // ✅ Phase 5: Consigne unitaire
+    has_consigne?: boolean;  // ✅ Phase 5: Produit avec consigne
   }>;
   billingAddress: any;
   shippingAddress: any;
@@ -107,9 +109,12 @@ export class OrdersService extends SupabaseBaseService {
       const shippingCost = await this.calculateShippingCost(orderData);
 
       // Calculer totaux
+      // ✅ Phase 5: Les prix sont TTC, donc taxRate = 0 (pas de TVA supplémentaire)
       const totals = await this.calculationService.calculateOrderTotal(
         orderData.orderLines,
         shippingCost,
+        0, // discountAmount
+        0, // taxRate = 0 car les prix sont déjà TTC
       );
 
       // Créer commande principale avec les vrais noms de colonnes
@@ -122,7 +127,7 @@ export class OrdersService extends SupabaseBaseService {
         ord_is_pay: '0',
         ord_date_pay: null,
         ord_amount_ttc: String(totals.subtotal.toFixed(2)),
-        ord_deposit_ttc: '0',
+        ord_deposit_ttc: String(totals.consigne_total.toFixed(2)), // ✅ Phase 5: Consignes
         ord_shipping_fee_ttc: String(shippingCost.toFixed(2)),
         ord_total_ttc: String(totals.total.toFixed(2)),
         ord_info: orderData.customerNote || 'Commande depuis le site',
