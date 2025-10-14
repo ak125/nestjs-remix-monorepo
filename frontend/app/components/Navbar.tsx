@@ -1,14 +1,21 @@
 import { Link } from "@remix-run/react";
-import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones, BookOpen } from 'lucide-react';
+import { Bell, ReceiptEuro, UserRound, Package, Settings, Headphones, BookOpen, ShoppingCart } from 'lucide-react';
+import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
-import { CartIcon } from "./cart/CartIcon";
+import { CartSidebar } from "./navbar/CartSidebar";
+import { NavbarMobile } from "./navbar/NavbarMobile";
+import { Badge } from "./ui/badge";
 
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
+  const { summary, isOpen, toggleCart, closeCart } = useCart();
   
   return (
     <nav className="px-3 py-2 bg-blue-600 text-white flex justify-between items-center" aria-label="Navigation principale">
       <div className="flex items-center gap-4">
+        {/* 🆕 PHASE 2: Burger Menu Mobile */}
+        <NavbarMobile user={user} />
+        
         <Link to="/">
           <img 
             src={logo}
@@ -60,8 +67,22 @@ export const Navbar = ({ logo }: { logo: string }) => {
       <div className='flex gap-4 items-center'>
         {user && <span className="text-sm">{user.firstName} {user.lastName}</span>}
 
-        {/* Panier avec compteur dynamique */}
-        <CartIcon />
+        {/* 🆕 PHASE 1 POC: CartSidebar avec consignes */}
+        <button
+          onClick={toggleCart}
+          className="hover:text-blue-200 transition-colors relative"
+          aria-label="Panier"
+        >
+          <ShoppingCart className="flex-shrink-0" size={20} />
+          {summary.total_items > 0 && (
+            <Badge 
+              variant="destructive" 
+              className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs"
+            >
+              {summary.total_items}
+            </Badge>
+          )}
+        </button>
 
         <Link 
           to='/orders' 
@@ -132,6 +153,9 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </div>
         )}
       </div>
+
+      {/* 🆕 PHASE 1 POC: CartSidebar Component */}
+      <CartSidebar isOpen={isOpen} onClose={closeCart} />
     </nav>
   );
 };

@@ -612,4 +612,152 @@ export class ProductsController {
       );
     }
   }
+
+  /**
+   * 🏪 INTERFACE COMMERCIALE - Liste produits avec prix/stock
+   * Pour page /products/admin (level 3+)
+   */
+  @Get('admin/list')
+  @CacheTTL(60) // Cache 1 minute
+  async getProductsAdmin(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+    @Query('isActive') isActive?: string,
+    @Query('lowStock') lowStock?: string,
+    @Query('gammeId') gammeId?: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('brandId') brandId?: string,
+  ) {
+    try {
+      this.logger.log('🏪 GET /admin/list - Query params:', {
+        search,
+        page,
+        limit,
+        sortBy,
+        sortOrder,
+        isActive,
+        lowStock,
+        gammeId,
+        brandId,
+        categoryId,
+      });
+
+      const options = {
+        search: search || '',
+        page: page ? parseInt(page, 10) : 1,
+        limit: limit ? Math.min(parseInt(limit, 10), 100) : 50,
+        sortBy: sortBy || 'piece_name',
+        sortOrder: sortOrder || 'asc',
+        isActive:
+          isActive === 'true' ? true : isActive === 'false' ? false : undefined,
+        lowStock: lowStock === 'true',
+        gammeId: gammeId ? parseInt(gammeId, 10) : undefined,
+        categoryId: categoryId ? parseInt(categoryId, 10) : undefined,
+        brandId: brandId ? parseInt(brandId, 10) : undefined,
+      };
+
+      const result =
+        await this.productsService.getProductsForCommercial(options);
+
+      this.logger.log(
+        `✅ Retourné ${result.products.length} produits (total: ${result.pagination.total})`,
+      );
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur getProductsAdmin:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des produits',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔄 TOGGLE ACTIVATION - Activer/désactiver produit
+   */
+  @Put(':id/status')
+  async toggleProductStatus(
+    @Param('id') id: string,
+    @Body('isActive') isActive: boolean,
+  ) {
+    try {
+      this.logger.log(`🔄 Toggle status produit ${id} -> ${isActive}`);
+
+      const result = await this.productsService.toggleProductStatus(
+        id,
+        isActive,
+      );
+
+      this.logger.log(`✅ Produit ${id} ${isActive ? 'activé' : 'désactivé'}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`❌ Erreur toggle status produit ${id}:`, error);
+      throw new HttpException(
+        'Erreur lors de la mise à jour du statut',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🎯 FILTRES - Récupérer listes pour dropdowns
+   */
+  @Get('filters/lists')
+  @CacheTTL(600) // Cache 10 minutes
+  async getFilterLists(
+    @Query('gammeId') gammeId?: string,
+    @Query('brandId') brandId?: string,
+  ) {
+    try {
+      this.logger.log('📋 Récupération listes filtres', {
+        gammeId,
+        brandId,
+      });
+
+      let gammes: any[] = [];
+      let brands: any[] = [];
+
+      // Logique de filtrage dynamique :
+      // - Si SEULEMENT gammeId : filtrer les marques par gamme
+      // - Si SEULEMENT brandId : filtrer les gammes par marque
+      // - Si les deux OU aucun : retourner toutes les listes complètes
+      if (gammeId && !brandId) {
+        // Uniquement gamme sélectionnée, filtrer les marques
+        [gammes, brands] = await Promise.all([
+          this.productsService.getGammesForFilters(),
+          this.productsService.getBrandsForGamme(parseInt(gammeId, 10)),
+        ]);
+      } else if (brandId && !gammeId) {
+        // Uniquement marque sélectionnée, filtrer les gammes
+        [gammes, brands] = await Promise.all([
+          this.productsService.getGammesForBrand(parseInt(brandId, 10)),
+          this.productsService.getPieceBrandsForFilters(),
+        ]);
+      } else {
+        // Les deux filtres actifs OU aucun filtre : retourner toutes les listes
+        [gammes, brands] = await Promise.all([
+          this.productsService.getGammesForFilters(),
+          this.productsService.getPieceBrandsForFilters(),
+        ]);
+      }
+
+      this.logger.log(
+        `✅ Listes: ${gammes.length} gammes, ${brands.length} marques`,
+      );
+
+      return {
+        gammes,
+        brands,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur getFilterLists:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des listes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
