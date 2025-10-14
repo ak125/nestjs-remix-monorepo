@@ -14,6 +14,7 @@ import { getOptionalUser } from "./auth/unified.server";
 import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
+import { TopBar } from "./components/navbar/TopBar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
@@ -72,21 +73,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="h-full bg-gray-100">
         <NotificationProvider>
           <div className="min-h-screen flex flex-col">
-                {/* Header avec informations utilisateur */}
-                {user && (
-                  <div className="bg-white shadow-sm border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                      <div className="flex justify-between items-center h-12">
-                        <div className="text-sm text-gray-700">
-                          Bonjour {user.firstName || user.name} {user.lastName || ''}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
+                <TopBar user={user} />
                 
                 <Navbar logo={logo} />
                 <main className="flex-grow flex flex-col">
