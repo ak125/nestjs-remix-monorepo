@@ -143,6 +143,7 @@ export class CartController {
           total_items: cartData.stats.totalQuantity,
           item_count: cartData.stats.totalQuantity,
           subtotal: cartData.stats.subtotal,
+          consigne_total: cartData.stats.consigne_total || 0, // ✅ PHASE 4: Total consignes
           tax: 0,
           shipping: 0,
           discount: cartData.stats.promoDiscount,
