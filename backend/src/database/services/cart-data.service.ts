@@ -150,6 +150,10 @@ export class CartDataService extends SupabaseBaseService {
                 ? product.piece_marque
                 : 'Non spécifiée';
             
+            // ✅ PHASE 4: Extraire la consigne depuis product
+            const consigneUnit = (product as any).consigne_ttc || 0;
+            const hasConsigne = consigneUnit > 0;
+            
             return {
               ...item,
               product_name: product.piece_name || item.product_name,
@@ -160,6 +164,10 @@ export class CartDataService extends SupabaseBaseService {
               weight: product.piece_weight_kgm || item.weight,
               // Prix depuis produit si pas défini dans l'item
               price: item.price || product.price_ttc || 0,
+              // ✅ PHASE 4: Consignes
+              consigne_unit: consigneUnit,
+              has_consigne: hasConsigne,
+              consigne_total: consigneUnit * item.quantity,
             };
           } catch (error) {
             this.logger.warn(
@@ -186,6 +194,12 @@ export class CartDataService extends SupabaseBaseService {
       // Récupérer la méthode de livraison appliquée
       const appliedShipping = await this.getAppliedShipping(sessionId);
 
+      // ✅ PHASE 4: Calculer le total des consignes
+      const consigneTotal = enrichedItems.reduce(
+        (sum, item) => sum + ((item as any).consigne_total || 0),
+        0,
+      );
+      
       // Calculer statistiques comme l'ancien système PHP
       const stats = {
         itemCount: enrichedItems.length,
@@ -197,7 +211,8 @@ export class CartDataService extends SupabaseBaseService {
           (sum, item) => sum + item.price * item.quantity,
           0,
         ),
-        total: 0, // Calculé avec réductions et frais de port
+        consigne_total: consigneTotal, // ✅ PHASE 4: Total consignes
+        total: 0, // Calculé avec consignes, réductions et frais de port
         hasPromo: !!appliedPromo,
         promoDiscount: appliedPromo?.discount_amount || 0,
         promoCode: appliedPromo?.code,
@@ -206,8 +221,8 @@ export class CartDataService extends SupabaseBaseService {
         shippingMethod: appliedShipping?.method_name,
       };
       
-      // Appliquer la réduction promo et ajouter les frais de port
-      stats.total = stats.subtotal - stats.promoDiscount + stats.shippingCost;
+      // Appliquer la réduction promo, ajouter les consignes et les frais de port
+      stats.total = stats.subtotal + consigneTotal - stats.promoDiscount + stats.shippingCost;
 
       return {
         metadata: {
@@ -359,10 +374,10 @@ export class CartDataService extends SupabaseBaseService {
         type_piece_pm_id: typeof pieceData.piece_pm_id,
       });
       
-      // REQUÊTE SÉPARÉE POUR LES PRIX
+      // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
       const { data: priceData, error: priceError } = await this.client
         .from('pieces_price')
-        .select('*')
+        .select('pri_vente_ttc, pri_consigne_ttc')
         .eq('pri_piece_id', productId)
         .limit(1);
 
@@ -437,14 +452,24 @@ export class CartDataService extends SupabaseBaseService {
         );
       }
       
+      // Extraire la consigne (caution remboursable)
+      let consigneTTC = 0;
+      if (!priceError && priceData && priceData.length > 0) {
+        const consigneStr = priceData[0]?.pri_consigne_ttc;
+        if (consigneStr && consigneStr.trim() !== '') {
+          consigneTTC = parseFloat(consigneStr) || 0;
+        }
+      }
+      
       this.logger.log(
-        `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€`,
+        `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€ - Consigne: ${consigneTTC}€`,
       );
       
       return {
         ...pieceData,
         piece_marque: brandName, // Nom de marque complet
         price_ttc: priceTTC,
+        consigne_ttc: consigneTTC, // ✅ PHASE 4: Consigne unitaire
         pieces_price: priceData || [],
       };
     } catch (error) {
