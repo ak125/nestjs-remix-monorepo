@@ -40,6 +40,7 @@
   "devDependencies": {
     "@fafa/eslint-config": "*",
     "@fafa/typescript-config": "*",
+    "@playwright/test": "^1.56.0",
     "@remix-run/dev": "^2.15.0",
     "@remix-run/eslint-config": "^2.17.0",
     "@testing-library/jest-dom": "^6.6.3",

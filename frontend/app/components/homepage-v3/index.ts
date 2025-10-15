@@ -1,0 +1,17 @@
+export { HeroSection } from './hero-section';
+export { FlashBanner } from './flash-banner';
+export { WhyChooseUs } from './why-choose-us';
+export { FeaturedProducts } from './featured-products';
+export { EcommerceFuture } from './ecommerce-future';
+export { ProductComparison } from './product-comparison';
+export { Testimonials } from './testimonials';
+export { Partners } from './partners';
+export { MainCTA } from './main-cta';
+export { BlogSection } from './blog-section';
+export { FAQSection } from './faq-section';
+export { Newsletter } from './newsletter';
+export { Team } from './team';
+export { Contact } from './contact';
+export { Footer } from './footer';
+export { LiveChat } from './live-chat';
+export { PopupSignup } from './popup-signup';

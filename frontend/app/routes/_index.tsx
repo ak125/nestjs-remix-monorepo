@@ -5,20 +5,52 @@ import { AboutSection } from "../components/home/AboutSection";
 import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
 import FamilyGammeHierarchy from "../components/home/FamilyGammeHierarchy";
 import { TopGammes } from "../components/home/TopGammes";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import { ProductSearch } from "../components/search/ProductSearch";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { enhancedVehicleApi } from "../services/api/enhanced-vehicle.api";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Pièces Auto - Leader des pièces automobiles | Trouvez vos pièces auto en ligne" },
-    { name: "description", content: "Découvrez notre large gamme de pièces automobiles de qualité. Livraison rapide, prix compétitifs et service client expert." },
-    { name: "keywords", content: "pièces auto, pièces automobiles, pièces détachées, auto, voiture, mécanique" },
-    { property: "og:title", content: "Pièces Auto - Leader des pièces automobiles" },
-    { property: "og:description", content: "Votre spécialiste en pièces automobiles de qualité" },
+    { title: "Pièces Auto B2B - Plus de 50 000 pièces automobiles en stock | Livraison Express" },
+    { name: "description", content: "Plateforme B2B leader pour les pièces automobiles. Plus de 50 000 références en stock, 120+ marques, livraison express 24h. Prix professionnels compétitifs et support expert." },
+    { name: "keywords", content: "pièces auto b2b, pièces automobiles professionnelles, pièces détachées garage, catalogue pièces auto, distributeur pièces automobiles, pièces auto en ligne, équipementier automobile, pièces origine, pièces adaptables" },
+    
+    // Open Graph / Facebook
     { property: "og:type", content: "website" },
-    { name: "robots", content: "index, follow" },
+    { property: "og:url", content: "https://piecesauto.fr" },
+    { property: "og:title", content: "Pièces Auto B2B - Leader des pièces automobiles professionnelles" },
+    { property: "og:description", content: "50 000+ pièces en stock, 120+ marques, livraison express 24h. La plateforme B2B de référence pour les professionnels de l'automobile." },
+    { property: "og:image", content: "https://piecesauto.fr/og-image.jpg" },
+    { property: "og:locale", content: "fr_FR" },
+    { property: "og:site_name", content: "Pièces Auto B2B" },
+    
+    // Twitter
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:url", content: "https://piecesauto.fr" },
+    { name: "twitter:title", content: "Pièces Auto B2B - Plus de 50 000 pièces en stock" },
+    { name: "twitter:description", content: "Plateforme B2B pour professionnels. Livraison express 24h, prix compétitifs, support expert." },
+    { name: "twitter:image", content: "https://piecesauto.fr/twitter-image.jpg" },
+    
+    // SEO avancé
+    { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" },
+    { name: "googlebot", content: "index, follow" },
+    { name: "author", content: "Pièces Auto B2B" },
+    { name: "language", content: "fr" },
+    { name: "revisit-after", content: "7 days" },
+    { httpEquiv: "content-language", content: "fr" },
+    
+    // Mobile
+    { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=5" },
+    { name: "theme-color", content: "#2563eb" },
+    { name: "apple-mobile-web-app-capable", content: "yes" },
+    { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+    
+    // Liens canoniques et alternates
+    { tagName: "link", rel: "canonical", href: "https://piecesauto.fr" },
+    { tagName: "link", rel: "alternate", hrefLang: "fr", href: "https://piecesauto.fr" },
+    { tagName: "link", rel: "alternate", hrefLang: "x-default", href: "https://piecesauto.fr" },
   ];
 };
 
@@ -128,8 +160,72 @@ export default function IndexOptimized() {
     // La navigation est gérée automatiquement par VehicleSelectorV2 avec redirectOnSelect={true}
   };
 
+  // Données structurées JSON-LD pour le SEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AutoPartsStore",
+    "name": "Pièces Auto B2B",
+    "description": "Plateforme B2B leader pour les pièces automobiles professionnelles",
+    "url": "https://piecesauto.fr",
+    "logo": "https://piecesauto.fr/logo.png",
+    "image": "https://piecesauto.fr/og-image.jpg",
+    "telephone": "+33-1-23-45-67-89",
+    "email": "contact@piecesauto.fr",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "123 Avenue des Pièces Auto",
+      "addressLocality": "Paris",
+      "postalCode": "75001",
+      "addressCountry": "FR"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "48.8566",
+      "longitude": "2.3522"
+    },
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "18:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Saturday",
+        "opens": "09:00",
+        "closes": "12:00"
+      }
+    ],
+    "priceRange": "€€",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "2500",
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "sameAs": [
+      "https://www.facebook.com/piecesautob2b",
+      "https://twitter.com/piecesautob2b",
+      "https://www.linkedin.com/company/piecesautob2b",
+      "https://www.instagram.com/piecesautob2b"
+    ],
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://piecesauto.fr/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* JSON-LD pour le SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      
       {/* Hero Section avec sélecteur hybride */}
       <section className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white py-20">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -142,22 +238,8 @@ export default function IndexOptimized() {
               Plus de {stats.totalProducts?.toLocaleString() || '50 000'} pièces en stock - Livraison express
             </p>
             
-            {/* Barre de recherche */}
-            <div className="max-w-2xl mx-auto mb-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Rechercher par référence, marque, modèle..."
-                  className="w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32"
-                />
-                <button className="absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                  Rechercher
-                </button>
-              </div>
-              <p className="text-sm text-blue-200 mt-2">
-                Ou sélectionnez votre véhicule ci-dessous pour un catalogue personnalisé
-              </p>
-            </div>
+            {/* Barre de recherche produits avec dropdown de résultats */}
+            <ProductSearch variant="hero" showSubtext />
           </div>
 
           {/* Sélecteur de véhicule V2 moderne */}
@@ -251,13 +333,15 @@ export default function IndexOptimized() {
       <TopGammes topGammesData={topGammesData} />
 
       {/* Section À propos */}
-      <AboutSection />
+      <section id="about">
+        <AboutSection />
+      </section>
 
       {/* Section Équipementiers */}
       <EquipementiersCarousel equipementiersData={equipementiersData} />
 
       {/* Section avantages */}
-      <section className="py-16 bg-white">
+      <section id="advantages" className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
             Pourquoi nous choisir ?
@@ -310,6 +394,186 @@ export default function IndexOptimized() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Section Témoignages clients */}
+      <section className="py-16 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">
+              Ils nous font confiance
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Découvrez les avis de nos clients professionnels qui utilisent notre plateforme B2B quotidiennement
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Témoignage 1 */}
+            <Card className="bg-white hover:shadow-xl transition-shadow duration-300 border-t-4 border-blue-500">
+              <CardContent className="pt-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-700 italic mb-4 leading-relaxed">
+                  "Service irréprochable ! Nous avons trouvé toutes les pièces dont nous avions besoin pour notre garage. La livraison est rapide et les prix sont compétitifs."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    JD
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Jean Dupont</p>
+                    <p className="text-sm text-gray-500">Garage Auto Plus, Paris</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Témoignage 2 */}
+            <Card className="bg-white hover:shadow-xl transition-shadow duration-300 border-t-4 border-green-500">
+              <CardContent className="pt-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-700 italic mb-4 leading-relaxed">
+                  "Une plateforme professionnelle et efficace. Le catalogue est complet et le support client est toujours disponible pour nous conseiller. Je recommande vivement !"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    ML
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Marie Lambert</p>
+                    <p className="text-sm text-gray-500">Atelier Mécanique Pro, Lyon</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Témoignage 3 */}
+            <Card className="bg-white hover:shadow-xl transition-shadow duration-300 border-t-4 border-purple-500">
+              <CardContent className="pt-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex text-yellow-400 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                      </svg>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-gray-700 italic mb-4 leading-relaxed">
+                  "Excellent rapport qualité/prix et disponibilité impressionnante. Nous avons réduit nos délais de réparation grâce à leur stock permanent et leurs livraisons express."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    PM
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Pierre Martin</p>
+                    <p className="text-sm text-gray-500">Centre Auto Service, Marseille</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Statistiques de satisfaction */}
+          <div className="mt-12 bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-4xl font-bold text-blue-600 mb-2">98%</div>
+                <div className="text-sm text-gray-600">Clients satisfaits</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-green-600 mb-2">4.8/5</div>
+                <div className="text-sm text-gray-600">Note moyenne</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-purple-600 mb-2">2 500+</div>
+                <div className="text-sm text-gray-600">Avis vérifiés</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold text-orange-600 mb-2">24h</div>
+                <div className="text-sm text-gray-600">Livraison moyenne</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="py-16 bg-gradient-to-r from-indigo-600 via-blue-600 to-blue-700 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Restez informé de nos nouveautés
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Inscrivez-vous à notre newsletter et recevez en avant-première nos offres exclusives, nouveaux produits et conseils d'experts
+            </p>
+            
+            <form className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+              <input
+                type="email"
+                placeholder="Votre adresse email professionnelle"
+                className="flex-1 px-6 py-4 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg"
+                required
+              />
+              <Button 
+                type="submit"
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+              >
+                S'abonner
+              </Button>
+            </form>
+            
+            <p className="text-sm text-blue-200 mt-4">
+              🔒 Vos données sont protégées. Désinscription possible à tout moment.
+            </p>
+            
+            <div className="mt-8 flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-blue-100">Offres exclusives B2B</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-blue-100">Conseils techniques</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span className="text-blue-100">Nouveaux produits</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

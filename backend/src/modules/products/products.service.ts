@@ -933,6 +933,57 @@ export class ProductsService extends SupabaseBaseService {
   }
 
   /**
+   * 🔍 PHASE 9: Recherche rapide de produits pour ProductSearch component
+   * Recherche dans: nom, référence, marque
+   */
+  async searchProducts(query: string, limit: number = 10) {
+    try {
+      const searchTerm = `%${query}%`;
+
+      const { data, error } = await this.client
+        .from('pieces')
+        .select(
+          `
+          piece_id,
+          piece_name,
+          piece_ref,
+          piece_stock,
+          pieces_price!left(pri_vente_ttc, pri_consigne_ttc),
+          pieces_marque!left(marque_id, marque_name)
+        `,
+        )
+        .or(`piece_name.ilike.${searchTerm},piece_ref.ilike.${searchTerm}`)
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('❌ Erreur searchProducts:', error);
+        return [];
+      }
+
+      // Mapper les résultats au format attendu par ProductSearch
+      return (
+        data?.map((piece: any) => ({
+          piece_id: piece.piece_id,
+          name: piece.piece_name || 'Produit sans nom',
+          reference: piece.piece_ref,
+          marque_name: piece.pieces_marque?.marque_name,
+          price_ttc: piece.pieces_price?.pri_vente_ttc
+            ? parseFloat(piece.pieces_price.pri_vente_ttc)
+            : undefined,
+          consigne_ttc: piece.pieces_price?.pri_consigne_ttc
+            ? parseFloat(piece.pieces_price.pri_consigne_ttc)
+            : undefined,
+          stock: piece.piece_stock,
+          image_url: undefined, // TODO: Ajouter images plus tard
+        })) || []
+      );
+    } catch (error) {
+      this.logger.error('❌ Exception searchProducts:', error);
+      return [];
+    }
+  }
+
+  /**
    * Récupérer toutes les marques automobiles (simplifié)
    */
   async getBrands() {

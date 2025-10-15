@@ -31,7 +31,8 @@ import {
   Settings,
   LogIn,
   UserPlus,
-  LogOut
+  LogOut,
+  Search
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../../lib/utils';
@@ -42,9 +43,10 @@ interface NavbarMobileProps {
     lastName?: string;
     level?: number;
   } | null;
+  onSearchClick?: () => void; // 🆕 PHASE 9: Callback pour ouvrir la recherche
 }
 
-export function NavbarMobile({ user }: NavbarMobileProps) {
+export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   // 🔒 Lock scroll quand menu ouvert
@@ -149,6 +151,20 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
         {/* Navigation Links */}
         <nav className="flex-1 overflow-y-auto p-4">
           <ul className="space-y-1">
+            {/* 🆕 PHASE 9: Quick Search Button */}
+            <li>
+              <button
+                onClick={() => {
+                  closeMenu();
+                  onSearchClick?.();
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-blue-50 transition-colors text-gray-700 border border-gray-200"
+              >
+                <Search className="h-5 w-5 text-blue-600" />
+                <span className="font-medium">Recherche rapide</span>
+              </button>
+            </li>
+
             {/* Dashboard */}
             {user && (
               <li>
@@ -228,18 +244,71 @@ export function NavbarMobile({ user }: NavbarMobileProps) {
               </Link>
             </li>
 
-            {/* Admin (si niveau >= 7) */}
+            {/* 🆕 PHASE 7: Admin section (si niveau >= 7) */}
             {user && (user.level ?? 0) >= 7 && (
-              <li className="pt-2 border-t mt-2">
-                <Link
-                  to="/admin"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
-                >
-                  <Settings className="h-5 w-5" />
-                  <span className="font-medium">Administration</span>
-                </Link>
-              </li>
+              <>
+                <li className="pt-2 border-t mt-2">
+                  <p className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    Administration
+                  </p>
+                </li>
+                <li>
+                  <Link
+                    to="/admin"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span className="font-medium">Dashboard Admin</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/users"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span className="font-medium">Utilisateurs</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/orders"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                  >
+                    <Package className="h-5 w-5" />
+                    <span className="font-medium">Commandes</span>
+                  </Link>
+                </li>
+                
+                {/* Super Admin links (niveau >= 9) */}
+                {(user.level ?? 0) >= 9 && (
+                  <>
+                    <li>
+                      <Link
+                        to="/admin/staff"
+                        onClick={closeMenu}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                      >
+                        <Settings className="h-5 w-5" />
+                        <span className="font-medium">Staff</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/admin/suppliers"
+                        onClick={closeMenu}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                      >
+                        <ShoppingBag className="h-5 w-5" />
+                        <span className="font-medium">Fournisseurs</span>
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </>
             )}
           </ul>
         </nav>

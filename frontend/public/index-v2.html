@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vente pièces détachées auto neuves & à prix pas cher | AutoMecanik</title>
+
+  <!-- SEO optimisé -->
+  <meta name="title" content="Vente pièces détachées auto neuves & à prix pas cher | AutoMecanik" />
+  <meta name="description" content="Votre fournisseur de pièces détachées automobile neuves et d'origine pour toutes les marques & modèles de voitures. Livraison rapide, garantie constructeur, prix compétitifs." />
+  <meta name="keywords" content="pieces detachees, pieces auto, pieces de rechange, pieces voiture, pieces automobile, pieces pas cher, renault, peugeot, citroen, audi, bmw, mercedes, ford, volkswagen" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="AutoMecanik" />
+
+  <!-- Canonical & base -->
+  <base href="https://www.automecanik.com" />
+  <link rel="canonical" href="https://www.automecanik.com" />
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+
+  <!-- Pré-connexion / Prefetch (perf) -->
+  <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://ajax.googleapis.com" />
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+
+  <!-- Preload polices (depuis ton second fichier) -->
+  <link rel="preload" as="font" href="/assets/fonts/Pe-icon-7-stroke.woff?d7yf1v" type="font/woff" crossorigin="anonymous" />
+  <link rel="preload" as="font" href="/assets/fonts-2/rubik-v14-latin-300.woff2" type="font/woff2" crossorigin="anonymous" />
+  <link rel="preload" as="font" href="/assets/fonts-2/rubik-v14-latin-regular.woff2" type="font/woff2" crossorigin="anonymous" />
+  <link rel="preload" as="font" href="/assets/fonts-2/rubik-v14-latin-500.woff2" type="font/woff2" crossorigin="anonymous" />
+  <link rel="preload" as="font" href="/assets/fonts-2/rubik-v14-latin-600.woff2" type="font/woff2" crossorigin="anonymous" />
+  <link rel="preload" as="font" href="/assets/fonts-2/rubik-v14-latin-700.woff2" type="font/woff2" crossorigin="anonymous" />
+  <style>body{font-family:'Rubik',system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif}</style>
+
+  <!-- CSS (garde ton bundle + ton styles local si besoin) -->
+  <link href="https://www.automecanik.com/assets/css/v10.fonts.min.css" rel="stylesheet" media="all" />
+  <link href="https://www.automecanik.com/assets/css/v10.style.home.min.css" rel="stylesheet" media="all" />
+  <link rel="stylesheet" href="/styles.css" />
+
+  <!-- JS (déféré) -->
+  <script defer src="/scripts.js"></script>
+
+  <!-- Données structurées (Organization + SearchAction) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"AutoMecanik",
+    "url":"https://www.automecanik.com",
+    "logo":"https://www.automecanik.com/assets/img/logo.png",
+    "sameAs":[
+      "https://www.facebook.com/automecanik",
+      "https://www.instagram.com/automecanik"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "url":"https://www.automecanik.com",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://www.automecanik.com/find/?quest={search_term_string}",
+      "query-input":"required name=search_term_string"
+    }
+  }
+  </script>
+</head>
+
+<body>
+
+  <!-- Topbar (téléphone + auth) -->
+  <div class="container-fluid menutop d-none d-lg-block" role="region" aria-label="Bandeau supérieur">
+    <div class="container-fluid mymaxwidth">
+      <span>Pièces auto à prix pas cher</span>
+      <a href="tel:+33148497869" aria-label="Téléphoner au service client">01 48 49 78 69</a>
+      &nbsp; &nbsp; | &nbsp; &nbsp;
+      <a href="/connexion.html" rel="nofollow">Entrer</a>
+      &nbsp; &nbsp; | &nbsp; &nbsp;
+      <a href="/inscription.html" rel="nofollow">S'inscrire</a>
+    </div>
+  </div>
+
+  <!-- Navbar / Mega menu (progressive enhancement) -->
+  <div class="container-fluid stickymenu" role="navigation" aria-label="Navigation principale">
+    <div class="container-fluid mymaxwidth p-0">
+      <div class="container-fluid mobilestickymenu">
+        <a href="/" class="menu-bar-link menu-bar-link-logo">AutoMecanik</a>
+      </div>
+
+      <nav class="nav w-100">
+        <!-- Triggers mobiles (branchés sur ton scripts.js) -->
+        <a href="javascript:void(0);" class="mobile-menu-trigger" aria-label="Ouvrir le menu">
+          <img src="/assets/img/menu.svg" width="27" alt="Menu" />
+        </a>
+        <a onclick="openMyQuickCart()" class="mobile-menu-trigger-cart" aria-label="Ouvrir le panier">
+          <img src="/assets/img/cart.svg" width="24" alt="Panier" /><span aria-live="polite">0</span>
+        </a>
+        <a href="/connexion.html" class="mobile-menu-trigger-user" aria-label="Se connecter">
+          <img src="/assets/img/user.svg" width="27" alt="Compte" />
+        </a>
+        <a onclick="openMyQuickSearch()" class="mobile-menu-trigger-search" aria-label="Ouvrir la recherche">
+          <img src="/assets/img/search.svg" width="24" alt="Rechercher" />
+        </a>
+
+        <!-- Menu principal -->
+        <ul class="menu menu-bar" role="menubar">
+          <li role="none">
+            <a href="/" class="menu-link menu-bar-link">Accueil</a>
+          </li>
+
+          <!-- Exemple d'entrée méga-menu (catégories) : garde la structure et charge la liste dynamiquement côté client -->
+          <li role="none" class="has-mega" aria-haspopup="true" aria-expanded="false">
+            <button class="menu-link menu-bar-link" aria-haspopup="true" aria-expanded="false">
+              Catalogue produit
+            </button>
+            <div class="mega-menu mega-menu--multiLevel" role="group" aria-label="Catalogue produit">
+              <div class="container-fluid">
+                <div class="row">
+                  <div class="col">
+                    <h3>Système de filtration</h3>
+                    <ul class="list-unstyled">
+                      <li><a href="/pieces/filtre-a-huile-7.html">Filtre à huile</a></li>
+                      <li><a href="/pieces/filtre-a-air-8.html">Filtre à air</a></li>
+                      <li><a href="/pieces/filtre-a-carburant-9.html">Filtre à carburant</a></li>
+                      <li><a href="/pieces/filtre-d-habitacle-424.html">Filtre d'habitacle</a></li>
+                    </ul>
+                  </div>
+                  <div class="col">
+                    <h3>Système de freinage</h3>
+                    <ul class="list-unstyled">
+                      <li><a href="/pieces/plaquettes-de-frein-1.html">Plaquettes de frein</a></li>
+                      <li><a href="/pieces/disque-de-frein-2.html">Disque de frein</a></li>
+                      <li><a href="/pieces/tambour-de-frein-3.html">Tambour de frein</a></li>
+                      <li><a href="/pieces/machoires-de-frein-4.html">Mâchoires de frein</a></li>
+                    </ul>
+                  </div>
+                  <div class="col">
+                    <h3>Courroies de distribution</h3>
+                    <ul class="list-unstyled">
+                      <li><a href="/pieces/kit-de-distribution-5.html">Kit de distribution</a></li>
+                      <li><a href="/pieces/courroie-d-accessoires-6.html">Courroie d'accessoires</a></li>
+                      <li><a href="/pieces/tendeur-de-courroie-10.html">Tendeur de courroie</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+
+          <li role="none">
+            <a href="/blog-pieces-auto/" target="_blank" rel="noopener" class="menu-link menu-bar-link">Blog automobile</a>
+          </li>
+
+          <!-- Barre utilitaires (panier + compte + recherche) -->
+          <li class="stickymenuannex w-100" role="none">
+            <a onclick="openMyQuickCart()" class="stickymenuannex-cart" aria-label="Ouvrir le panier">
+              <img src="/assets/img/cart.svg" width="30" class="mw-100" alt="Panier" /><span>0</span>
+            </a>
+            <a href="/connexion.html" class="stickymenuannex-user" aria-label="Se connecter">
+              <img src="/assets/img/user.svg" width="34" class="mw-100" alt="Compte" />
+            </a>
+
+            <!-- Recherche globale -->
+            <form method="post" action="/find/" class="stickymenuannex-search" role="search" aria-label="Recherche globale">
+              <label for="quest" class="sr-only">Rechercher une pièce</label>
+              <input type="search" id="quest" name="quest" autocomplete="off" placeholder="Réf. ou mot-clé…" />
+            </form>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Panneau latéral : Panier -->
+  <aside id="myquickcart" class="myquickcartcontent" aria-hidden="true" aria-label="Mon panier">
+    <strong>Mon Panier</strong>
+    <button type="button" class="closebtn" onclick="closeMyQuickCart()" aria-label="Fermer le panier">
+      <i class="pe-7s-close pe-3x" aria-hidden="true"></i>
+    </button>
+    <div class="container-fluid mymaxwidth pt-3">
+      <div class="row">
+        <div class="col-12 text-center">Votre panier est vide</div>
+        <div class="col-12 pt-2">
+          <button class="mycartcontinue mb-1" onclick="closeMyQuickCart()">Continuer mes achats</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Panneau latéral : Recherche -->
+  <aside id="myquicksearch" class="myquicksearchcontent" aria-hidden="true" aria-label="Recherche rapide">
+    <button type="button" class="closebtn" onclick="closeMyQuickSearch()" aria-label="Fermer la recherche">
+      <i class="pe-7s-close" aria-hidden="true"></i>
+    </button>
+    <div class="container-fluid myquicksearchcontentin">
+      <div class="row">
+        <div class="col-12 pt-3 pb-3">Recherche par référence</div>
+        <div class="col-12 pt-3">
+          <form action="/find/" method="POST" role="search" aria-label="Recherche par référence">
+            <div class="row">
+              <div class="col-9 col-sm-10 pr-0">
+                <label for="quest-ref" class="sr-only">Référence d'origine ou commerciale</label>
+                <input type="text" name="quest" id="quest-ref" placeholder="Réf. d'origine ou commerciale" autocomplete="off" />
+              </div>
+              <div class="col-3 col-sm-2">
+                <input type="submit" class="submit" value="OK" aria-label="Lancer la recherche" />
+              </div>
+            </div>
+          </form>
+        </div>
+        <!-- Recherche par Type Mine -->
+        <div class="col-12 containermineSeekCar">
+          <form action="/searchmine/" method="POST" role="form" aria-label="Recherche par type mine">
+            <div class="row">
+              <div class="col-12 pb-3">Recherche par type mine</div>
+              <div class="col-9 pr-0">
+                <label for="mine" class="sr-only">Type mine</label>
+                <input type="text" id="mine" name="MINE" inputmode="text" />
+                <input type="hidden" name="ASK2PAGE" value="1" />
+              </div>
+              <div class="col-3 pl-0">
+                <input type="submit" class="mineSeekCar" value="OK" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="home" tabindex="-1">
+    <!-- Hero + Sélecteur véhicule -->
+    <header class="container-fluid containerBanner">
+      <div class="container-fluid mymaxwidth">
+        <div class="row d-flex flex-row-reverse">
+          <div class="col-12 col-sm align-self-center">
+            <h1>Pièces auto à prix pas cher</h1>
+            <p class="lead">Des pièces neuves d'origine, compatibles et garanties.</p>
+            <a href="#catalogue" class="cta-button">Découvrir le catalogue</a>
+          </div>
+
+          <!-- Box sélection véhicule (reprend ta structure) -->
+          <div class="col-12 col-sm containerSeekCarBox" aria-label="Sélection véhicule">
+            <div class="container-fluid containerSeekCar">
+              <div class="row">
+                <div class="col-12 pb-3">Sélectionnez votre véhicule</div>
+
+                <div class="col-12 col-sm-6 col-md-12 p-1 pb-0">
+                  <label for="form-marq" class="sr-only">Constructeur</label>
+                  <select name="form-marq" id="form-marq" aria-label="Constructeur">
+                    <option value="0">Constructeur</option>
+                    <option value="128" class="favorite">PEUGEOT</option>
+                    <option value="140" class="favorite">RENAULT</option>
+                    <option value="42" class="favorite">CITROËN</option>
+                    <option value="22" class="favorite">AUDI</option>
+                    <option value="33" class="favorite">BMW</option>
+                    <option value="90" class="favorite">MERCEDES-BENZ</option>
+                    <option value="173" class="favorite">VOLKSWAGEN</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-12 p-1 pb-0">
+                  <label for="form-year" class="sr-only">Année</label>
+                  <select name="form-year" id="form-year" disabled aria-label="Année">
+                    <option>Année</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-12 p-1 pb-0">
+                  <label for="form-model" class="sr-only">Modèle</label>
+                  <select name="form-model" id="form-model" disabled aria-label="Modèle">
+                    <option>Modèle</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-sm-6 col-md-12 p-1 pb-0">
+                  <label for="form-type" class="sr-only">Motorisation</label>
+                  <select name="form-type" id="form-type" disabled aria-label="Motorisation">
+                    <option>Motorisation</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!-- /Box sélection véhicule -->
+        </div>
+      </div>
+    </header>
+
+    <!-- Marques (carrousel) -->
+    <section class="container-fluid containergrayPage" aria-labelledby="marques-title">
+      <div class="container-fluid mymaxwidth">
+        <div class="row">
+          <div class="col-12">
+            <h2 id="marques-title">Marques automobile</h2>
+            <div class="divh2"></div>
+          </div>
+
+          <div class="col-12">
+            <div class="MultiCarousel" data-items="3,6,8,10" data-slide="1" id="McMarque" data-interval="1000" role="region" aria-label="Carrousel des marques">
+              <div class="MultiCarousel-inner">
+                <!-- PEUGEOT -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/peugeot-128.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/peugeot.png"
+                          alt="PEUGEOT"
+                          title="PEUGEOT"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- RENAULT -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/renault-140.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/renault.png"
+                          alt="RENAULT"
+                          title="RENAULT"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- CITROËN -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/citroen-42.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/citroen.png"
+                          alt="CITROËN"
+                          title="CITROËN"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- AUDI -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/audi-22.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/audi.png"
+                          alt="AUDI"
+                          title="AUDI"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- BMW -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/bmw-33.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/bmw.png"
+                          alt="BMW"
+                          title="BMW"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- MERCEDES-BENZ -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/mercedes-benz-90.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/mercedes.png"
+                          alt="MERCEDES-BENZ"
+                          title="MERCEDES-BENZ"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- VOLKSWAGEN -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/volkswagen-173.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/volkswagen.png"
+                          alt="VOLKSWAGEN"
+                          title="VOLKSWAGEN"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- FORD -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/ford-53.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/ford.png"
+                          alt="FORD"
+                          title="FORD"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- OPEL -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/opel-119.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/opel.png"
+                          alt="OPEL"
+                          title="OPEL"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- FIAT -->
+                <div class="item">
+                  <div class="pad15">
+                    <div class="container-fluid multicarouselwhiteBloc">
+                      <a href="/constructeurs/fiat-52.html">
+                        <img
+                          src="/upload/loading-min.gif"
+                          data-src="https://www.automecanik.com/upload/constructeurs-automobiles/marques-logos/fiat.png"
+                          alt="FIAT"
+                          title="FIAT"
+                          width="94" height="111"
+                          class="mw-100 img-fluid lazy"
+                          loading="lazy"
+                          decoding="async"
+                          sizes="(max-width: 768px) 64px, 94px" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="leftLst" aria-label="Marque précédente" type="button"><span aria-hidden="true">&lt;</span></button>
+              <button class="rightLst" aria-label="Marque suivante" type="button"><span aria-hidden="true">&gt;</span></button>
+            </div>
+          </div>
+
+          <div class="col-12 pt-3">
+            <p>
+              Automecanik propose toutes les marques de constructeurs automobiles vendues en Europe, classées par ordre alphabétique avec leur logo. Sélectionnez le constructeur, puis le modèle de votre véhicule. Vous pouvez aussi partir d'un <a href="/pieces/">type de pièce</a> ou consulter notre <a href="/blog-pieces-auto/" target="_blank" rel="noopener">blog</a> pour des conseils et méthodes de réparation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Catalogue synthétique (liens familles) -->
+    <section id="catalogue" class="container-fluid containercatalogPage" aria-labelledby="catalogue-title">
+      <div class="container-fluid mymaxwidth">
+        <div class="row">
+          <div class="col-12">
+            <h2 id="catalogue-title">Catalogue pièces auto à prix pas cher</h2>
+            <div class="divh2"></div>
+          </div>
+
+          <!-- Système de filtration -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-filtration">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Filtres.webp"
+                alt="Système de filtration"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-filtration">Système de filtration</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/filtre-a-huile-7.html">Filtre à huile</a></li>
+                <li><a href="/pieces/filtre-a-air-8.html">Filtre à air</a></li>
+                <li><a href="/pieces/filtre-a-carburant-9.html">Filtre à carburant</a></li>
+                <li><a href="/pieces/filtre-d-habitacle-424.html">Filtre d'habitacle</a></li>
+                <li><a href="/pieces/filtre-de-boite-auto-416.html">Filtre de boîte auto</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Système de freinage -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-freinage">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Freinage.webp"
+                alt="Système de freinage"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-freinage">Système de freinage</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/plaquettes-de-frein-1.html">Plaquettes de frein</a></li>
+                <li><a href="/pieces/disque-de-frein-2.html">Disque de frein</a></li>
+                <li><a href="/pieces/tambour-de-frein-3.html">Tambour de frein</a></li>
+                <li><a href="/pieces/machoires-de-frein-4.html">Mâchoires de frein</a></li>
+                <li><a href="/pieces/kit-de-frein-5.html">Kit de frein</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Courroies de distribution -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-courroies">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Distribution.webp"
+                alt="Courroies de distribution"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-courroies">Courroies de distribution</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/kit-de-distribution-11.html">Kit de distribution</a></li>
+                <li><a href="/pieces/courroie-de-distribution-12.html">Courroie de distribution</a></li>
+                <li><a href="/pieces/courroie-d-accessoires-13.html">Courroie d'accessoires</a></li>
+                <li><a href="/pieces/tendeur-de-courroie-14.html">Tendeur de courroie</a></li>
+                <li><a href="/pieces/pompe-a-eau-15.html">Pompe à eau</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Système d'allumage -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-allumage">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Allumage.webp"
+                alt="Système d'allumage"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-allumage">Système d'allumage</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/bougies-d-allumage-20.html">Bougies d'allumage</a></li>
+                <li><a href="/pieces/bobine-d-allumage-21.html">Bobine d'allumage</a></li>
+                <li><a href="/pieces/cable-d-allumage-22.html">Câble d'allumage</a></li>
+                <li><a href="/pieces/bougies-de-prechauffage-23.html">Bougies de préchauffage</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Direction et train roulant -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-direction">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Direction.webp"
+                alt="Direction et train roulant"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-direction">Direction et train roulant</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/rotule-de-direction-30.html">Rotule de direction</a></li>
+                <li><a href="/pieces/biellette-de-direction-31.html">Biellette de direction</a></li>
+                <li><a href="/pieces/rotule-de-suspension-32.html">Rotule de suspension</a></li>
+                <li><a href="/pieces/bras-de-suspension-33.html">Bras de suspension</a></li>
+                <li><a href="/pieces/silent-bloc-34.html">Silent-bloc</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Amortisseurs et ressorts -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-amortisseurs">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Amortisseurs.webp"
+                alt="Amortisseurs et ressorts"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-amortisseurs">Amortisseurs et ressorts</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/amortisseur-40.html">Amortisseur</a></li>
+                <li><a href="/pieces/ressort-de-suspension-41.html">Ressort de suspension</a></li>
+                <li><a href="/pieces/coupelle-d-amortisseur-42.html">Coupelle d'amortisseur</a></li>
+                <li><a href="/pieces/butee-de-suspension-43.html">Butée de suspension</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Support moteur -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-support-moteur">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Support-moteur.webp"
+                alt="Support moteur"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-support-moteur">Support moteur</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/support-moteur-50.html">Support moteur</a></li>
+                <li><a href="/pieces/support-boite-de-vitesses-51.html">Support boîte de vitesses</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Embrayage -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-embrayage">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Embrayage.webp"
+                alt="Embrayage"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-embrayage">Embrayage</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/kit-d-embrayage-60.html">Kit d'embrayage</a></li>
+                <li><a href="/pieces/volant-moteur-61.html">Volant moteur</a></li>
+                <li><a href="/pieces/butee-d-embrayage-62.html">Butée d'embrayage</a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Transmission -->
+          <article class="col-12 col-sm-6 col-lg-4 catalogPageCol" aria-labelledby="cat-transmission">
+            <div class="container-fluid catalogPageBloc">
+              <img
+                src="/upload/loading-min.gif"
+                data-src="https://www.automecanik.com/upload/articles/familles-produits/Transmission.webp"
+                alt="Transmission"
+                width="225" height="165"
+                class="img-fluid lazy"
+                loading="lazy"
+                decoding="async" />
+              <h3 id="cat-transmission">Transmission</h3>
+              <ul class="list-unstyled">
+                <li><a href="/pieces/cardan-70.html">Cardan</a></li>
+                <li><a href="/pieces/soufflet-de-cardan-71.html">Soufflet de cardan</a></li>
+                <li><a href="/pieces/joint-de-transmission-72.html">Joint de transmission</a></li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Témoignages -->
+    <section id="testimonials" class="testimonial-section" aria-labelledby="temoignages-title">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <h2 id="temoignages-title">Témoignages clients</h2>
+            <div class="divh2"></div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <blockquote class="testimonial-card">
+              <p>« Excellent service et qualité des pièces. Je recommande AutoMecanik ! Livraison rapide et prix très compétitifs. »</p>
+              <footer>— Jean D., <cite>Paris</cite></footer>
+            </blockquote>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <blockquote class="testimonial-card">
+              <p>« Très satisfait de mon achat. Les pièces sont d'origine et parfaitement compatibles avec mon véhicule. »</p>
+              <footer>— Marie L., <cite>Lyon</cite></footer>
+            </blockquote>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <blockquote class="testimonial-card">
+              <p>« Service client au top ! Ils m'ont aidé à trouver la bonne référence rapidement. Merci ! »</p>
+              <footer>— Pierre M., <cite>Marseille</cite></footer>
+            </blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="cta" class="cta-section">
+      <div class="container">
+        <h2>Découvrez nos produits</h2>
+        <p>Explorez notre vaste gamme de pièces détachées automobiles et inscrivez-vous pour recevoir nos promotions exclusives.</p>
+        <a href="#newsletter" class="cta-button" role="button">S'inscrire à la newsletter</a>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section id="newsletter" class="newsletter-section" aria-labelledby="newsletter-title">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-lg-8">
+            <h2 id="newsletter-title">Inscrivez-vous à notre newsletter</h2>
+            <p>Recevez nos offres exclusives et nos conseils d'experts directement dans votre boîte mail.</p>
+            <form action="/newsletter" method="post" class="newsletter-form">
+              <div class="form-group">
+                <label for="email" class="sr-only">Votre email</label>
+                <input type="email" id="email" name="email" placeholder="exemple@email.com" required aria-required="true" />
+                <button type="submit" class="btn-newsletter">S'inscrire</button>
+              </div>
+              <p class="privacy-notice">
+                <small>En vous inscrivant, vous acceptez de recevoir nos communications. Vous pouvez vous désinscrire à tout moment.</small>
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer id="footer" role="contentinfo">
+    <div class="container">
+      <div class="row">
+        <div class="col-12 col-md-4 mb-4">
+          <h4>À propos d'AutoMecanik</h4>
+          <p>Spécialiste de la vente de pièces détachées automobiles neuves et d'origine depuis plus de 10 ans.</p>
+        </div>
+        <div class="col-12 col-md-4 mb-4">
+          <h4>Liens utiles</h4>
+          <ul class="list-unstyled">
+            <li><a href="/mentions-legales.html">Mentions légales</a></li>
+            <li><a href="/cgv.html">CGV</a></li>
+            <li><a href="/politique-confidentialite.html">Politique de confidentialité</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-12 col-md-4 mb-4">
+          <h4>Nous contacter</h4>
+          <p>
+            <strong>Téléphone :</strong> <a href="tel:+33148497869">01 48 49 78 69</a><br />
+            <strong>Email :</strong> <a href="mailto:contact@automecanik.com">contact@automecanik.com</a>
+          </p>
+          <div class="social-links">
+            <a href="https://www.facebook.com/automecanik" target="_blank" rel="noopener" aria-label="Facebook">
+              <img src="/assets/img/facebook-icon.svg" alt="Facebook" width="32" height="32" />
+            </a>
+            <a href="https://www.instagram.com/automecanik" target="_blank" rel="noopener" aria-label="Instagram">
+              <img src="/assets/img/instagram-icon.svg" alt="Instagram" width="32" height="32" />
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 text-center pt-3">
+          <p>&copy; 2025 AutoMecanik. Tous droits réservés.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts additionnels (analytics, etc.) -->
+  <script>
+    // Initialisation lazy loading
+    if ('IntersectionObserver' in window) {
+      const lazyImages = document.querySelectorAll('.lazy');
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+      lazyImages.forEach(img => imageObserver.observe(img));
+    }
+
+    // Fonctions panier
+    function openMyQuickCart() {
+      document.getElementById('myquickcart').style.width = '320px';
+      document.getElementById('myquickcart').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeMyQuickCart() {
+      document.getElementById('myquickcart').style.width = '0';
+      document.getElementById('myquickcart').setAttribute('aria-hidden', 'true');
+    }
+
+    // Fonctions recherche
+    function openMyQuickSearch() {
+      document.getElementById('myquicksearch').style.width = '100%';
+      document.getElementById('myquicksearch').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeMyQuickSearch() {
+      document.getElementById('myquicksearch').style.width = '0';
+      document.getElementById('myquicksearch').setAttribute('aria-hidden', 'true');
+    }
+  </script>
+
+</body>
+</html>
