@@ -432,7 +432,7 @@ export class BlogController {
           case 'advice':
             const adviceResult = await this.adviceService.getAllAdvice({
               limit,
-              sortBy: 'views',
+              filters: { sortBy: 'views' }, // sortBy dans filters
             });
             articles = adviceResult.articles;
             break;

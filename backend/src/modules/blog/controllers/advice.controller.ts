@@ -42,7 +42,16 @@ export class AdviceController {
 
       const filters: AdviceFilters = {};
       if (category) filters.category = category;
-      if (difficulty) filters.difficulty = difficulty;
+      // Mapping difficulté : débutant/intermédiaire/expert → facile/moyen/difficile
+      if (difficulty) {
+        const difficultyMap: Record<string, 'facile' | 'moyen' | 'difficile'> =
+          {
+            débutant: 'facile',
+            intermédiaire: 'moyen',
+            expert: 'difficile',
+          };
+        filters.difficulty = difficultyMap[difficulty] || 'facile';
+      }
       if (minViews && minViews > 0) filters.minViews = minViews;
 
       const result = await this.adviceService.getAllAdvice({
@@ -181,7 +190,7 @@ export class AdviceController {
   ) {
     try {
       const articles = await this.adviceService.getAdviceForProduct(
-        productId,
+        productId.toString(),
         limit,
       );
 
