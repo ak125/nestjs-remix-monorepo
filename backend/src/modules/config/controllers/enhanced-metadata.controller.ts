@@ -64,9 +64,7 @@ export class EnhancedMetadataController {
    * GET /api/metadata/pages/without-seo
    */
   @Get('pages/without-seo')
-  async getPagesWithoutMetadata(
-    @Query('limit') limit?: number,
-  ): Promise<{
+  async getPagesWithoutMetadata(@Query('limit') limit?: number): Promise<{
     success: boolean;
     data: { pages: string[]; count: number; timestamp: string };
   }> {
