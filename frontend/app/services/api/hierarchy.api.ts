@@ -1,7 +1,7 @@
 // 📁 frontend/app/services/api/hierarchy.api.ts
 // 🏗️ Service API pour la hiérarchie Familles → Gammes (sous-catégories)
 
-import { type CatalogGamme } from './gammes.api';
+import { type CatalogGamme } from '../../types/catalog.types';
 
 export interface FamilyWithGammes {
   mf_id: string;
