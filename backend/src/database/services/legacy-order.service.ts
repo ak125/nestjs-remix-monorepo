@@ -1,12 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../common/cache.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export interface LegacyOrder {
   id: string;
@@ -211,7 +206,7 @@ export class LegacyOrderService extends SupabaseBaseService {
       };
 
       // 5. Insérer la commande
-      const { data: insertedOrder, error: orderError } = await this.supabase
+      const { error: orderError } = await this.supabase
         .from('___xtr_order')
         .insert(orderInsertData)
         .select()

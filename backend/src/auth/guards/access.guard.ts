@@ -16,10 +16,10 @@ export const REQUIRE_PERMISSIONS = 'require_permissions';
 export const RequireAuth = () =>
   Reflector.createDecorator<boolean>({ key: REQUIRE_AUTH });
 
-export const RequireRoles = (..._roles: string[]) =>
+export const RequireRoles = () =>
   Reflector.createDecorator<string[]>({ key: REQUIRE_ROLES });
 
-export const RequirePermissions = (..._permissions: string[]) =>
+export const RequirePermissions = () =>
   Reflector.createDecorator<string[]>({ key: REQUIRE_PERMISSIONS });
 
 @Injectable()

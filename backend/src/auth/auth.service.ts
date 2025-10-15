@@ -648,7 +648,7 @@ export class AuthService {
       // TODO: Implémenter l'extraction JWT réelle
       // Pour le moment, simulation basique
       return token.split(':')[1] || null;
-    } catch (_error) {
+    } catch {
       return null;
     }
   }

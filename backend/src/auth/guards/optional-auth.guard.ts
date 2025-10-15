@@ -34,15 +34,8 @@ export class OptionalAuthGuard implements CanActivate {
       // Vérifier l'en-tête Authorization pour JWT
       const authHeader = request.headers.authorization;
       if (authHeader && authHeader.startsWith('Bearer ')) {
-        const _token = authHeader.substring(7);
-
-        try {
-          // Ici on pourrait ajouter la validation JWT si nécessaire
-          // Pour l'instant, on laisse passer
-          // this.logger.debug('Optional auth: Bearer token detected');
-        } catch (_error) {
-          this.logger.warn('Optional auth: Invalid bearer token');
-        }
+        // Token JWT détecté mais non validé pour l'instant
+        // this.logger.debug('Optional auth: Bearer token detected');
       }
 
       // Pas d'authentification trouvée, mais on laisse passer quand même

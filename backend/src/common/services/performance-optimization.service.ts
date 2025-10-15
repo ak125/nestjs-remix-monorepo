@@ -147,7 +147,7 @@ export class PerformanceOptimizationService {
         const result = await loadFunction(id);
         clearTimeout(timeoutId);
         resolve(result);
-      } catch (error) {
+      } catch {
         clearTimeout(timeoutId);
         resolve(null);
       }

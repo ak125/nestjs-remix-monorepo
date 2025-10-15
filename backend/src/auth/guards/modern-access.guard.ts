@@ -13,6 +13,7 @@ export const REQUIRE_MODULE_ACCESS = 'require_module_access';
 export const RequireModuleAccess = (module: string, action: string = 'read') =>
   Reflector.createDecorator<{ module: string; action: string }>({
     key: REQUIRE_MODULE_ACCESS,
+    transform: () => ({ module, action }),
   });
 
 // Fonction helper pour obtenir la valeur du décorateur
