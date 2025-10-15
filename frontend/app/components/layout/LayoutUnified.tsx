@@ -9,10 +9,15 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import  { type LayoutData, type LayoutConfig, type ModularSection } from '../types/layout';
+import  { type LayoutData, type LayoutConfig, type ModularSection } from '../../types/layout';
 import { FooterEnhanced } from './FooterEnhanced';
-import { Header } from './Header';
-import { SectionsContainer } from './ModularSections';
+// TODO: Créer les fichiers Header.tsx et ModularSections.tsx
+// import { Header } from './Header';
+// import { SectionsContainer } from './ModularSections';
+
+// Composants temporaires
+const Header: React.FC<any> = () => null;
+const SectionsContainer: React.FC<any> = () => null;
 
 interface LayoutUnifiedProps {
   config: LayoutConfig;

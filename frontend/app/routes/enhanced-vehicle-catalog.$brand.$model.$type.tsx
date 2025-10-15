@@ -49,7 +49,7 @@ interface MockVehiclePart {
 // ========================================
 // 🔧 LOADER FUNCTION
 // ========================================
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params: _params }: LoaderFunctionArgs) {
   try {
     // Validation des paramètres
     const validatedParams = ParamsSchema.parse(params);

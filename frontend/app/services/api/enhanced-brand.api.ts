@@ -2,13 +2,21 @@
 // 🏭 Service API amélioré pour les marques - Basé sur l'analyse des fichiers PHP fournis
 // Version 2.0 - Intégration des nouvelles fonctionnalités et optimisations
 
-import  { 
-  type BrandData, 
-  type SeoData, 
-  type PopularVehicle, 
-  type PopularPart, 
-  type BlogContent 
-} from "../../routes/constructeurs.$brand";
+// TODO: Vérifier si le fichier constructeurs.$brand existe ou créer les types ici
+// import  { 
+//   type BrandData, 
+//   type SeoData, 
+//   type PopularVehicle, 
+//   type PopularPart, 
+//   type BlogContent 
+// } from "../../routes/constructeurs.$brand";
+
+// Types définis localement en attendant
+type BrandData = any;
+type SeoData = any;
+type PopularVehicle = any;
+type PopularPart = any;
+type BlogContent = any;
 
 // 🎯 Configuration basée sur l'analyse des versions PHP
 interface EnhancedBrandApiConfig {
@@ -92,6 +100,7 @@ export class EnhancedBrandApiService {
   private contentCleaner(content: string): string {
     return content
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
       .replace(/[^\x20-\x7E\u00C0-\u017F\u0100-\u024F]/g, '')
       .trim();
@@ -271,28 +280,28 @@ export class EnhancedBrandApiService {
 
       // Traitement des données SEO
       let seoData: SeoData = {};
-      if (seoResponse.ok) {
+      if (seoResponse.ok && 'json' in seoResponse) {
         const seoResult = await seoResponse.json();
         seoData = seoResult.data || {};
       }
 
       // Traitement des véhicules populaires
       let popularVehicles: PopularVehicle[] = [];
-      if (vehiclesResponse.ok) {
+      if (vehiclesResponse.ok && 'json' in vehiclesResponse) {
         const vehiclesResult = await vehiclesResponse.json();
         popularVehicles = vehiclesResult.data || [];
       }
 
       // Traitement des pièces populaires  
       let popularParts: PopularPart[] = [];
-      if (partsResponse.ok) {
+      if (partsResponse.ok && 'json' in partsResponse) {
         const partsResult = await partsResponse.json();
         popularParts = partsResult.data || [];
       }
 
       // Traitement du contenu blog
       let blogContent: BlogContent = {};
-      if (blogResponse.ok) {
+      if (blogResponse.ok && 'json' in blogResponse) {
         const blogResult = await blogResponse.json();
         blogContent = blogResult.data || {};
       }

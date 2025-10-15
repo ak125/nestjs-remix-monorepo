@@ -31,7 +31,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
   }
 
   // Récupérer le message depuis l'API backend
-  const API_URL = process.env.API_BASE_URL || "http://localhost:3000";
+  const _API_URL = process.env.API_BASE_URL || "http://localhost:3000";
   const baseUrl = process.env.SUPABASE_URL || "";
   const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
@@ -86,7 +86,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
 };
 
 export default function MessageDetail() {
-  const { message, user } = useLoaderData<typeof loader>();
+  const { message, user: _user } = useLoaderData<typeof loader>();
 
   return (
     <div className="container mx-auto py-8 px-4">

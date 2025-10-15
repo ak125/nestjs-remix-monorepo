@@ -12,7 +12,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { getOptionalUser } from "../../auth/unified.server";
 
-const RegisterSchema = z.object({
+const _RegisterSchema = z.object({
   email: z.string().email("Email invalide"),
   password: z.string().min(8, "8 caractères minimum"),
   confirmPassword: z.string(),

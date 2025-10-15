@@ -1,6 +1,5 @@
 import { Link, useLocation } from "@remix-run/react";
 import { Wrench, BookOpen, Car, Home } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 
 interface NavigationItem {

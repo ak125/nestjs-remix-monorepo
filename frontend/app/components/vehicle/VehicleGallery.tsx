@@ -53,7 +53,7 @@ export function VehicleGallery({ vehicle, images = [] }: VehicleGalleryProps) {
         <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden bg-gray-100">
           <img
             src={allImages[selectedImage]}
-            alt={`${vehicle.brand} ${vehicle.model} - Image ${selectedImage + 1}`}
+            alt={`${vehicle.brand} ${vehicle.model} vue ${selectedImage + 1}`}
             className="w-full h-full object-cover"
             loading="lazy"
           />

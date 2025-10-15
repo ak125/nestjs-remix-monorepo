@@ -1,7 +1,7 @@
 // app/routes/blog-pieces-auto.conseils._index.tsx
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles, Clock, Wrench, CheckCircle2 } from "lucide-react";
+import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag } from "lucide-react";
 import * as React from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";

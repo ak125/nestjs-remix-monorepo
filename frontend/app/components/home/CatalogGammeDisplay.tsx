@@ -3,7 +3,16 @@
 
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
-import { gammesApi, type GammesDisplayData, type CatalogGamme } from '../../services/api/gammes.api';
+// TODO: Créer le fichier gammes.api.ts
+// import { gammesApi, type GammesDisplayData, type CatalogGamme } from '../../services/api/gammes.api';
+
+// Types temporaires en attendant la création du fichier API
+type _CatalogGamme = any;
+type GammesDisplayData = {
+  manufacturers: Record<string, { name: string; gammes: any[] }>;
+  stats: { total_gammes: number; total_manufacturers: number };
+};
+const gammesApi = { getGammesForDisplay: async () => ({ manufacturers: {}, stats: { total_gammes: 0, total_manufacturers: 0 } }) };
 
 interface CatalogGammeDisplayProps {
   className?: string;

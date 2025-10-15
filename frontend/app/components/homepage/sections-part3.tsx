@@ -10,7 +10,7 @@ import { useState } from 'react';
 // ================================
 // PARTENAIRES & CERTIFICATIONS
 // ================================
-export function PartnersAndCertifications({ brands }: any) {
+export function PartnersAndCertifications({ brands: _brands }: any) {
   const partners = [
     { name: 'BOSCH', logo: 'https://via.placeholder.com/150x80?text=BOSCH' },
     { name: 'VALEO', logo: 'https://via.placeholder.com/150x80?text=VALEO' },
@@ -129,7 +129,7 @@ function BundleOffer({ title, discount, items }: any) {
 // ================================
 // SECTION BLOG
 // ================================
-export function BlogSection({ posts }: any) {
+export function BlogSection({ posts: _posts }: any) {
   const blogArticles = [
     {
       title: "5 erreurs à éviter lors de l'achat de pièces auto",

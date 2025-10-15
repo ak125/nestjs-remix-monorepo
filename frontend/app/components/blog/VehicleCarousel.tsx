@@ -5,7 +5,7 @@
 
 import { Car, Fuel, Gauge, Calendar } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
-import { Card, CardContent } from '~/components/ui/card';
+import { Card } from '~/components/ui/card';
 
 export interface CompatibleVehicle {
   type_id: number;
