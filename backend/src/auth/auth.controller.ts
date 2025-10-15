@@ -17,7 +17,6 @@ import { UserService } from '../database/services/user.service';
 import {
   ModuleAccessDto,
   BulkModuleAccessDto,
-  AccessLogDto,
   TokenValidationDto,
 } from './dto/module-access.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
@@ -479,7 +478,7 @@ export class AuthController {
       );
 
       return results;
-    } catch (_error: any) {
+    } catch {
       return {};
     }
   }
@@ -489,7 +488,7 @@ export class AuthController {
    * Enregistrer un accès utilisateur (optimisé Redis)
    */
   @Post('auth/access-log')
-  async logAccess(@Body() _dto: AccessLogDto) {
+  async logAccess() {
     try {
       // L'historique de connexion est géré automatiquement dans AuthService
       // Ce endpoint sert uniquement pour des logs d'accès spéciaux si nécessaire
