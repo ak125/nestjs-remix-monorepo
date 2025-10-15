@@ -10,7 +10,7 @@ export interface ErrorLog {
   msg_parent_id?: string; // Pour les erreurs liées
   msg_open: string; // '1' = non résolu, '0' = résolu
   msg_close: string; // '1' = fermé, '0' = ouvert
-  
+
   // Métadonnées supplémentaires stockées dans msg_content (JSON)
   errorMetadata?: {
     error_code: string;
@@ -47,7 +47,7 @@ export interface RedirectRule {
   msg_parent_id?: string; // Pour grouper les règles liées
   msg_open: string; // '1' = actif, '0' = inactif
   msg_close: string; // '1' = règle fermée/archivée, '0' = en service
-  
+
   // Métadonnées de redirection stockées dans msg_content (JSON)
   redirectMetadata: {
     source_path: string;

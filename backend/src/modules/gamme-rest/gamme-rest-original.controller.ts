@@ -34,11 +34,15 @@ export class GammeRestController extends SupabaseBaseService {
       };
     }
 
-    if (selectorData.pg_display != 1) {  // Use != instead of !== to handle string/number
+    if (selectorData.pg_display != 1) {
+      // Use != instead of !== to handle string/number
       return {
         status: 412,
         error: 'Page disabled',
-        debug: { pg_display: selectorData.pg_display, pg_name: selectorData.pg_name },
+        debug: {
+          pg_display: selectorData.pg_display,
+          pg_name: selectorData.pg_name,
+        },
       };
     }
 
@@ -111,10 +115,22 @@ export class GammeRestController extends SupabaseBaseService {
     } else {
       // Default content (exactly like PHP else block)
       pageTitle = pgNameMeta + ' neuf & à prix bas';
-      pageDescription = 'Votre ' + pgNameMeta + ' au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.';
+      pageDescription =
+        'Votre ' +
+        pgNameMeta +
+        ' au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.';
       pageKeywords = pgNameMeta;
       pageH1 = 'Choisissez ' + pgNameSite + ' pas cher pour votre véhicule';
-      pageContent = 'Le(s) <b>' + pgNameSite + '</b> commercialisés sur ' + pgNameSite + ' sont disponibles pour tous les modèles de véhicules et dans plusieurs marques d\'équipementiers de pièces détachées automobile.<br>Identifier la marque, l\'année, le modèle et la motorisation de votre véhicule sélectionnez le <b>' + pgNameSite + '</b> compatible avec votre voiture.<br>Nous commercialisons des <b>' + pgNameSite + '</b> de différentes qualités : qualité d\'origine, première monte et équivalente à l\'origine avec des prix pas cher.';
+      pageContent =
+        'Le(s) <b>' +
+        pgNameSite +
+        '</b> commercialisés sur ' +
+        pgNameSite +
+        " sont disponibles pour tous les modèles de véhicules et dans plusieurs marques d'équipementiers de pièces détachées automobile.<br>Identifier la marque, l'année, le modèle et la motorisation de votre véhicule sélectionnez le <b>" +
+        pgNameSite +
+        '</b> compatible avec votre voiture.<br>Nous commercialisons des <b>' +
+        pgNameSite +
+        "</b> de différentes qualités : qualité d'origine, première monte et équivalente à l'origine avec des prix pas cher.";
     }
 
     // Robot and canonical (exactly like PHP)
@@ -151,7 +167,7 @@ export class GammeRestController extends SupabaseBaseService {
       : [];
 
     // CATALOGUE SAME FAMILY (exactly like PHP query_same_family)
-    // Original PHP: SELECT DISTINCT PG_ID ,PG_ALIAS, PG_NAME ,PG_NAME_URL ,PG_NAME_META , PG_PIC, PG_IMG 
+    // Original PHP: SELECT DISTINCT PG_ID ,PG_ALIAS, PG_NAME ,PG_NAME_URL ,PG_NAME_META , PG_PIC, PG_IMG
     // FROM PIECES_GAMME JOIN CATALOG_GAMME ON MC_PG_ID = PG_ID
     // WHERE PG_DISPLAY = 1 AND PG_LEVEL IN (1,2) AND MC_MF_ID = $mf_id AND MC_PG_ID != $pg_id ORDER BY MC_SORT
     const catalogueFiltres = [];
@@ -190,13 +206,13 @@ export class GammeRestController extends SupabaseBaseService {
     }
 
     // MOTORISATIONS (exactly like PHP query_cross_gamme_car)
-    // PHP: SELECT DISTINCT CGC_TYPE_ID, TYPE_NAME, TYPE_POWER_PS, TYPE_MONTH_FROM, TYPE_YEAR_FROM, TYPE_YEAR_TO, 
-    // MODELE_ID, MODELE_NAME, MARQUE_ID, MARQUE_NAME FROM __CROSS_GAMME_CAR_NEW 
+    // PHP: SELECT DISTINCT CGC_TYPE_ID, TYPE_NAME, TYPE_POWER_PS, TYPE_MONTH_FROM, TYPE_YEAR_FROM, TYPE_YEAR_TO,
+    // MODELE_ID, MODELE_NAME, MARQUE_ID, MARQUE_NAME FROM __CROSS_GAMME_CAR_NEW
     // JOIN AUTO_TYPE ON TYPE_ID = CGC_TYPE_ID JOIN AUTO_MODELE ON MODELE_ID = TYPE_MODELE_ID
     // JOIN AUTO_MARQUE ON MARQUE_ID = MODELE_MARQUE_ID WHERE CGC_PG_ID = $pg_id AND CGC_LEVEL = 1
     // GROUP BY TYPE_MODELE_ID ORDER BY CGC_ID, MODELE_NAME, TYPE_NAME
     console.log('🔍 Récupération motorisations pour pg_id:', pgIdNum);
-    
+
     // Get cross_gamme_car_new data first
     const { data: crossGammeData } = await this.client
       .from('__cross_gamme_car_new')
@@ -207,9 +223,11 @@ export class GammeRestController extends SupabaseBaseService {
 
     const motorisations: any[] = [];
     if (crossGammeData && crossGammeData.length > 0) {
-      console.log(`✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`);
+      console.log(
+        `✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`,
+      );
       const processedModeles = new Set(); // Group by modele like PHP GROUP BY TYPE_MODELE_ID
-      
+
       for (const cross of crossGammeData) {
         if (processedModeles.has(cross.cgc_modele_id)) continue;
         processedModeles.add(cross.cgc_modele_id);
@@ -267,7 +285,7 @@ export class GammeRestController extends SupabaseBaseService {
     } else {
       console.log('❌ Aucune donnée trouvée dans __cross_gamme_car_new');
     }
-    
+
     console.log(`✅ Motorisations finales: ${motorisations.length}`);
 
     // ÉQUIPEMENTIERS (simplified separate queries to avoid JOIN issues)

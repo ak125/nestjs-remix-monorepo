@@ -76,7 +76,10 @@ export class ConfigAdminController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error('Erreur lors du rechargement des configurations', error);
+      this.logger.error(
+        'Erreur lors du rechargement des configurations',
+        error,
+      );
       throw new HttpException(
         'Erreur lors du rechargement des configurations',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -93,14 +96,14 @@ export class ConfigAdminController {
   async getConfigStats() {
     try {
       const allConfigs = await this.dbConfigService.getAllConfigs();
-      
+
       const stats = {
         total: allConfigs.length,
         byType: this.groupByType(allConfigs),
         byCategory: this.groupByCategory(allConfigs),
-        public: allConfigs.filter(config => config.isPublic).length,
-        private: allConfigs.filter(config => !config.isPublic).length,
-        readOnly: allConfigs.filter(config => config.isReadOnly).length,
+        public: allConfigs.filter((config) => config.isPublic).length,
+        private: allConfigs.filter((config) => !config.isPublic).length,
+        readOnly: allConfigs.filter((config) => config.isReadOnly).length,
       };
 
       return {
@@ -108,7 +111,10 @@ export class ConfigAdminController {
         data: stats,
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des statistiques', error);
+      this.logger.error(
+        'Erreur lors de la récupération des statistiques',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des statistiques',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -132,7 +138,7 @@ export class ConfigAdminController {
           config.value,
           config.type,
         );
-        
+
         if (!validation.isValid) {
           validationResults.push({
             key: config.key,
@@ -151,7 +157,10 @@ export class ConfigAdminController {
         },
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la validation des configurations', error);
+      this.logger.error(
+        'Erreur lors de la validation des configurations',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la validation des configurations',
         HttpStatus.INTERNAL_SERVER_ERROR,

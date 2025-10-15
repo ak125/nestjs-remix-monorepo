@@ -166,11 +166,13 @@ export class AISupportController {
     try {
       if (request.type === 'ticket') {
         const ticket = await this.contactService.getTicket(request.id);
-        
+
         let sentiment, categorization;
         if (request.includeAnalysis) {
-          sentiment = await this.aiSentimentService.analyzeTicketSentiment(ticket);
-          categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+          sentiment =
+            await this.aiSentimentService.analyzeTicketSentiment(ticket);
+          categorization =
+            await this.aiCategorizationService.categorizeTicket(ticket);
         }
 
         return this.aiSmartResponseService.generateTicketResponse(
@@ -186,10 +188,14 @@ export class AISupportController {
 
         let sentiment;
         if (request.includeAnalysis) {
-          sentiment = await this.aiSentimentService.analyzeReviewSentiment(review);
+          sentiment =
+            await this.aiSentimentService.analyzeReviewSentiment(review);
         }
 
-        return this.aiSmartResponseService.generateReviewResponse(review, sentiment);
+        return this.aiSmartResponseService.generateReviewResponse(
+          review,
+          sentiment,
+        );
       }
 
       throw new Error(`Type non supporté: ${request.type}`);
@@ -205,11 +211,12 @@ export class AISupportController {
     @Query('includeAnalysis') includeAnalysis?: string,
   ): Promise<SmartResponse> {
     const ticket = await this.contactService.getTicket(ticketId);
-    
+
     let sentiment, categorization;
     if (includeAnalysis === 'true') {
       sentiment = await this.aiSentimentService.analyzeTicketSentiment(ticket);
-      categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+      categorization =
+        await this.aiCategorizationService.categorizeTicket(ticket);
     }
 
     return this.aiSmartResponseService.generateTicketResponse(
@@ -234,7 +241,10 @@ export class AISupportController {
       sentiment = await this.aiSentimentService.analyzeReviewSentiment(review);
     }
 
-    return this.aiSmartResponseService.generateReviewResponse(review, sentiment);
+    return this.aiSmartResponseService.generateReviewResponse(
+      review,
+      sentiment,
+    );
   }
 
   // ==================== PRÉDICTION D'ESCALATION ====================
@@ -248,9 +258,11 @@ export class AISupportController {
 
     try {
       const ticket = await this.contactService.getTicket(request.ticketId);
-      
-      const sentiment = await this.aiSentimentService.analyzeTicketSentiment(ticket);
-      const categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+
+      const sentiment =
+        await this.aiSentimentService.analyzeTicketSentiment(ticket);
+      const categorization =
+        await this.aiCategorizationService.categorizeTicket(ticket);
 
       return this.aiPredictiveService.predictEscalation(
         ticket,
@@ -268,9 +280,11 @@ export class AISupportController {
     @Param('ticketId') ticketId: string,
   ): Promise<EscalationPrediction> {
     const ticket = await this.contactService.getTicket(ticketId);
-    
-    const sentiment = await this.aiSentimentService.analyzeTicketSentiment(ticket);
-    const categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+
+    const sentiment =
+      await this.aiSentimentService.analyzeTicketSentiment(ticket);
+    const categorization =
+      await this.aiCategorizationService.categorizeTicket(ticket);
 
     return this.aiPredictiveService.predictEscalation(
       ticket,
@@ -290,7 +304,8 @@ export class AISupportController {
 
     try {
       const ticket = await this.contactService.getTicket(request.ticketId);
-      const categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+      const categorization =
+        await this.aiCategorizationService.categorizeTicket(ticket);
 
       return this.aiPredictiveService.optimizeWorkflow(ticket, categorization);
     } catch (error) {
@@ -304,7 +319,8 @@ export class AISupportController {
     @Param('ticketId') ticketId: string,
   ): Promise<WorkflowOptimization> {
     const ticket = await this.contactService.getTicket(ticketId);
-    const categorization = await this.aiCategorizationService.categorizeTicket(ticket);
+    const categorization =
+      await this.aiCategorizationService.categorizeTicket(ticket);
 
     return this.aiPredictiveService.optimizeWorkflow(ticket, categorization);
   }
@@ -354,7 +370,7 @@ export class AISupportController {
           estimatedTime: workflowOptimization.estimatedResolutionTime,
           requiresHuman: smartResponse.requiresHuman,
           nextActions: [
-            ...smartResponse.suggestedActions || [],
+            ...(smartResponse.suggestedActions || []),
             ...escalationPrediction.suggestedActions,
           ],
         },

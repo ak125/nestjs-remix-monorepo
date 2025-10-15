@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import type { Customer, CreateCustomerDto, UpdateCustomerDto, CustomerFilters, PaginatedCustomers } from '../dto/customer.dto';
+import type {
+  Customer,
+  CreateCustomerDto,
+  UpdateCustomerDto,
+  CustomerFilters,
+  PaginatedCustomers,
+} from '../dto/customer.dto';
 import * as bcrypt from 'bcrypt';
 
 /**
@@ -24,7 +30,8 @@ export class CustomerDataService extends SupabaseBaseService {
    */
   async findAll(filters: CustomerFilters): Promise<PaginatedCustomers> {
     try {
-      const { page, limit, search, level, isPro, isActive, city, country } = filters;
+      const { page, limit, search, level, isPro, isActive, city, country } =
+        filters;
       const offset = (page - 1) * limit;
 
       let query = this.supabase
@@ -184,9 +191,11 @@ export class CustomerDataService extends SupabaseBaseService {
       if (dto.phone) updateData.cst_phone = dto.phone;
       if (dto.mobile) updateData.cst_mobile = dto.mobile;
       if (dto.isPro !== undefined) updateData.cst_is_pro = dto.isPro ? 1 : 0;
-      if (dto.isCompany !== undefined) updateData.cst_is_company = dto.isCompany ? 1 : 0;
+      if (dto.isCompany !== undefined)
+        updateData.cst_is_company = dto.isCompany ? 1 : 0;
       if (dto.level !== undefined) updateData.cst_level = dto.level;
-      if (dto.isActive !== undefined) updateData.cst_activ = dto.isActive ? '1' : '0';
+      if (dto.isActive !== undefined)
+        updateData.cst_activ = dto.isActive ? '1' : '0';
       if (dto.companyName) updateData.cst_company_name = dto.companyName;
       if (dto.siret) updateData.cst_siret = dto.siret;
 

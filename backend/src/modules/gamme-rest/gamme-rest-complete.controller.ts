@@ -15,7 +15,6 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 
 @Controller('api/gamme-rest-complete')
 export class GammeRestCompleteController extends SupabaseBaseService {
-
   @Get(':pgId/page-data')
   async getPageData(@Param('pgId') pgId: string) {
     const pgIdNum = parseInt(pgId, 10);
@@ -76,10 +75,12 @@ export class GammeRestCompleteController extends SupabaseBaseService {
     // 3. GET CATALOG INFO (séparément)
     const { data: catalogData } = await this.client
       .from('catalog_gamme')
-      .select(`
+      .select(
+        `
         mc_mf_prime,
         catalog_family(mf_id, mf_name, mf_name_meta)
-      `)
+      `,
+      )
       .eq('mc_pg_id', pgIdNum)
       .single();
 
@@ -282,10 +283,12 @@ export class GammeRestCompleteController extends SupabaseBaseService {
     if (mfId) {
       const { data: catalogFamilyData } = await this.client
         .from('catalog_gamme')
-        .select(`
+        .select(
+          `
           mc_pg_id,
           pieces_gamme!inner(pg_id, pg_name, pg_alias, pg_name_meta, pg_img)
-        `)
+        `,
+        )
         .eq('mc_mf_id', mfId)
         .neq('mc_pg_id', pgIdNum)
         .eq('pieces_gamme.pg_display', 1)
@@ -416,7 +419,7 @@ export class GammeRestCompleteController extends SupabaseBaseService {
       'tarif réduit',
       'bon prix',
     ];
-    const prixPasCherTab = (pgId % 100 + typeId) % prixPasCherArray.length;
+    const prixPasCherTab = ((pgId % 100) + typeId) % prixPasCherArray.length;
     const prixPasCher = prixPasCherArray[prixPasCherTab];
 
     // Default content (comme PHP else)

@@ -72,14 +72,14 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
   private async handle404(request: Request, response: Response) {
     if (response.headersSent) return;
-    
+
     try {
       // 1. Vérifier si c'est un ancien format d'URL → 410 Old Link
       const isOldFormat = this.detectOldLinkPattern(request.path);
       this.logger.debug(
         `Checking old format for ${request.path}: ${isOldFormat}`,
       );
-      
+
       if (isOldFormat) {
         this.logger.log(`Old link format detected: ${request.path} → 410`);
         this.handle410OldLink(request, response);
@@ -112,7 +112,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
       }
     } catch (error) {
       if (response.headersSent) return;
-      
+
       this.logger.error('Erreur dans handle404:', error);
       response.status(404).json({
         statusCode: 404,
@@ -133,7 +133,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
   private async handle410(request: Request, response: Response) {
     if (response.headersSent) return;
-    
+
     try {
       const result = await this.errorService.handle410(request);
 
@@ -161,7 +161,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
       }
     } catch (error) {
       if (response.headersSent) return;
-      
+
       this.logger.error('Erreur dans handle410:', error);
       response.status(410).json({
         statusCode: 410,
@@ -177,7 +177,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
     exception: unknown,
   ) {
     if (response.headersSent) return;
-    
+
     try {
       // Extraire les détails de l'exception si possible
       let condition: string | undefined;
@@ -223,7 +223,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
       }
     } catch (error) {
       if (response.headersSent) return;
-      
+
       this.logger.error('Erreur dans handle412:', error);
       response.status(412).json({
         statusCode: 412,
@@ -235,7 +235,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
   private async handle451(request: Request, response: Response) {
     if (response.headersSent) return;
-    
+
     try {
       // Pour l'instant, gestion basique - pourra être étendue avec un service dédié
       if (this.isApiRequest(request)) {
@@ -254,7 +254,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
       }
     } catch (error) {
       if (response.headersSent) return;
-      
+
       this.logger.error('Erreur dans handle451:', error);
       response.status(451).json({
         statusCode: 451,
@@ -349,7 +349,7 @@ export class GlobalErrorFilter implements ExceptionFilter {
    */
   private async handle410OldLink(request: Request, response: Response) {
     if (response.headersSent) return;
-    
+
     try {
       // Chercher une redirection vers le nouveau format
       const result = await this.errorService.handle410(request);
@@ -380,12 +380,12 @@ export class GlobalErrorFilter implements ExceptionFilter {
         params.set('url', request.url);
         params.set('isOldLink', 'true');
         params.set('type', 'legacy_url');
-        
+
         response.redirect(`/gone?${params.toString()}`);
       }
     } catch (error) {
       if (response.headersSent) return;
-      
+
       this.logger.error('Erreur dans handle410OldLink:', error);
       response.status(410).json({
         statusCode: 410,

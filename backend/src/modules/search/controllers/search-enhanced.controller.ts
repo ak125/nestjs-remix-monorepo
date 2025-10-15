@@ -35,7 +35,7 @@ export class SearchEnhancedController {
     @Query('limit') _limit?: string,
   ) {
     const startTime = Date.now();
-    
+
     try {
       const result = await this.searchService.search(
         {
@@ -44,9 +44,9 @@ export class SearchEnhancedController {
         },
         'enhanced-user',
       );
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       await this.monitoringService.recordSearch({
         service: 'enhanced',
         query: query,
@@ -55,11 +55,11 @@ export class SearchEnhancedController {
         fromCache: false,
         success: true,
       });
-      
+
       return result;
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       await this.monitoringService.recordSearch({
         service: 'enhanced',
         query: query,
@@ -69,7 +69,7 @@ export class SearchEnhancedController {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
-      
+
       throw error;
     }
   }

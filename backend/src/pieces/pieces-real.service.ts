@@ -26,13 +26,15 @@ export class PiecesRealService extends SupabaseBaseService {
   async getRealPiecesForVehicleAndGamme(
     typeId: number,
     pgId: number,
-    limit: number = 20
+    limit: number = 20,
   ): Promise<{
     pieces: RealPiece[];
     total_count: number;
   }> {
-    this.logger.log(`🔧 [PIECES-REAL] Récupération pour type_id: ${typeId}, pg_id: ${pgId}`);
-    
+    this.logger.log(
+      `🔧 [PIECES-REAL] Récupération pour type_id: ${typeId}, pg_id: ${pgId}`,
+    );
+
     try {
       // 1. D'abord, vérifions si la gamme existe
       const { data: gammeData, error: gammeError } = await this.supabase
@@ -51,9 +53,14 @@ export class PiecesRealService extends SupabaseBaseService {
       // 2. Récupérons les pièces de cette gamme
       // Note: Pour le moment, on récupère toutes les pièces de la gamme
       // Plus tard, on ajoutera le filtrage par véhicule via pieces_relation_type
-      const { data: piecesData, error: piecesError, count } = await this.supabase
+      const {
+        data: piecesData,
+        error: piecesError,
+        count,
+      } = await this.supabase
         .from('pieces')
-        .select(`
+        .select(
+          `
           piece_id,
           piece_ref,
           piece_ref_clean,
@@ -62,31 +69,37 @@ export class PiecesRealService extends SupabaseBaseService {
           piece_pg_id,
           piece_has_img,
           piece_qty_sale
-        `, { count: 'exact' })
+        `,
+          { count: 'exact' },
+        )
         .eq('piece_pg_id', pgId)
         .eq('piece_display', true)
         .order('piece_name')
         .limit(limit);
 
       if (piecesError) {
-        this.logger.error('❌ [PIECES-REAL] Erreur requête pièces:', piecesError);
+        this.logger.error(
+          '❌ [PIECES-REAL] Erreur requête pièces:',
+          piecesError,
+        );
         return { pieces: [], total_count: 0 };
       }
 
       // 3. Ajoutons les informations de la gamme à chaque pièce
-      const pieces: RealPiece[] = (piecesData || []).map(piece => ({
+      const pieces: RealPiece[] = (piecesData || []).map((piece) => ({
         ...piece,
         pg_name: gammeData.pg_name,
         pg_alias: gammeData.pg_alias,
       }));
 
-      this.logger.log(`✅ [PIECES-REAL] ${pieces.length} vraies pièces trouvées`);
+      this.logger.log(
+        `✅ [PIECES-REAL] ${pieces.length} vraies pièces trouvées`,
+      );
 
       return {
         pieces,
         total_count: count || 0,
       };
-
     } catch (error) {
       this.logger.error('❌ [PIECES-REAL] Erreur:', error);
       return { pieces: [], total_count: 0 };
@@ -121,7 +134,6 @@ export class PiecesRealService extends SupabaseBaseService {
         gamme_name: gammeData?.pg_name || 'Gamme inconnue',
         gamme_alias: gammeData?.pg_alias || 'gamme-inconnue',
       };
-
     } catch (error) {
       this.logger.error('❌ [PIECES-REAL] Erreur stats:', error);
       return {

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * 📊 SIMPLE ANALYTICS SERVICE - Configuration et Tracking Simplifié
- * 
+ *
  * Version simplifiée du service Analytics qui fonctionne sans tables spécifiques :
  * ✅ Configuration basée sur les variables d'environnement
  * ✅ Cache intégré pour performances optimales
@@ -83,26 +83,43 @@ export class SimpleAnalyticsService {
       }
 
       // Charger depuis les variables d'environnement
-      const provider = this.configService.get<string>('ANALYTICS_PROVIDER', 'google');
-      
+      const provider = this.configService.get<string>(
+        'ANALYTICS_PROVIDER',
+        'google',
+      );
+
       // Obtenir l'ID de tracking selon le provider
       let trackingId = '';
       switch (provider) {
         case 'google':
-          trackingId = this.configService.get<string>('ANALYTICS_GOOGLE_ID', '');
+          trackingId = this.configService.get<string>(
+            'ANALYTICS_GOOGLE_ID',
+            '',
+          );
           break;
         case 'matomo':
-          trackingId = this.configService.get<string>('ANALYTICS_MATOMO_SITE_ID', '');
+          trackingId = this.configService.get<string>(
+            'ANALYTICS_MATOMO_SITE_ID',
+            '',
+          );
           break;
         case 'plausible':
-          trackingId = this.configService.get<string>('ANALYTICS_PLAUSIBLE_DOMAIN', '');
+          trackingId = this.configService.get<string>(
+            'ANALYTICS_PLAUSIBLE_DOMAIN',
+            '',
+          );
           break;
         default:
-          trackingId = this.configService.get<string>('ANALYTICS_TRACKING_ID', '');
+          trackingId = this.configService.get<string>(
+            'ANALYTICS_TRACKING_ID',
+            '',
+          );
       }
-      
+
       if (!trackingId) {
-        this.logger.warn(`No analytics tracking ID configured for provider: ${provider}`);
+        this.logger.warn(
+          `No analytics tracking ID configured for provider: ${provider}`,
+        );
         return null;
       }
 
@@ -111,17 +128,32 @@ export class SimpleAnalyticsService {
         trackingId,
         domain: this.configService.get<string>('ANALYTICS_DOMAIN'),
         scriptUrl: this.configService.get<string>('ANALYTICS_SCRIPT_URL'),
-        config: this.parseJsonConfig(this.configService.get<string>('ANALYTICS_CONFIG', '{}')),
-        anonymizeIp: this.configService.get<boolean>('ANALYTICS_ANONYMIZE_IP', true),
-        trackLoggedInUsers: this.configService.get<boolean>('ANALYTICS_TRACK_LOGGED_USERS', false),
-        customDimensions: this.parseJsonConfig(this.configService.get<string>('ANALYTICS_CUSTOM_DIMENSIONS', '{}')),
-        excludedPaths: this.configService.get<string>('ANALYTICS_EXCLUDED_PATHS', '').split(',').filter(Boolean),
+        config: this.parseJsonConfig(
+          this.configService.get<string>('ANALYTICS_CONFIG', '{}'),
+        ),
+        anonymizeIp: this.configService.get<boolean>(
+          'ANALYTICS_ANONYMIZE_IP',
+          true,
+        ),
+        trackLoggedInUsers: this.configService.get<boolean>(
+          'ANALYTICS_TRACK_LOGGED_USERS',
+          false,
+        ),
+        customDimensions: this.parseJsonConfig(
+          this.configService.get<string>('ANALYTICS_CUSTOM_DIMENSIONS', '{}'),
+        ),
+        excludedPaths: this.configService
+          .get<string>('ANALYTICS_EXCLUDED_PATHS', '')
+          .split(',')
+          .filter(Boolean),
         isActive: this.configService.get<boolean>('ANALYTICS_ENABLED', false),
       };
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, config, this.cacheTtl);
-      this.logger.log(`Analytics config loaded for provider: ${config.provider}`);
+      this.logger.log(
+        `Analytics config loaded for provider: ${config.provider}`,
+      );
 
       return config;
     } catch (error) {
@@ -134,15 +166,17 @@ export class SimpleAnalyticsService {
    * Génère le script de tracking optimisé
    * Compatible avec analytics.track.php, analytics.track.min.php, v7.analytics.track.php
    */
-  async getTrackingScript(options: ScriptConfig = {
-    provider: 'auto',
-    minified: false,
-    async: true,
-    defer: true,
-    version: 'latest',
-  }): Promise<string> {
+  async getTrackingScript(
+    options: ScriptConfig = {
+      provider: 'auto',
+      minified: false,
+      async: true,
+      defer: true,
+      version: 'latest',
+    },
+  ): Promise<string> {
     const config = await this.getConfig();
-    
+
     if (!config || !config.isActive) {
       return '<!-- Analytics disabled or not configured -->';
     }
@@ -161,10 +195,14 @@ export class SimpleAnalyticsService {
           script = this.generatePlausibleScript(config, options);
           break;
         case 'custom':
-          script = config.scriptUrl ? this.generateCustomScript(config, options) : '';
+          script = config.scriptUrl
+            ? this.generateCustomScript(config, options)
+            : '';
           break;
         default:
-          this.logger.warn(`Unsupported analytics provider: ${config.provider}`);
+          this.logger.warn(
+            `Unsupported analytics provider: ${config.provider}`,
+          );
           return '<!-- Unsupported analytics provider -->';
       }
 
@@ -219,7 +257,7 @@ export class SimpleAnalyticsService {
   async getMetrics(): Promise<AnalyticsMetrics> {
     try {
       const eventCounts: Record<string, number> = {};
-      this.eventsBuffer.forEach(event => {
+      this.eventsBuffer.forEach((event) => {
         const key = `${event.category}:${event.action}`;
         eventCounts[key] = (eventCounts[key] || 0) + 1;
       });
@@ -237,9 +275,10 @@ export class SimpleAnalyticsService {
           };
         });
 
-      const lastEventTime = this.eventsBuffer.length > 0 
-        ? this.eventsBuffer[this.eventsBuffer.length - 1].timestamp 
-        : null;
+      const lastEventTime =
+        this.eventsBuffer.length > 0
+          ? this.eventsBuffer[this.eventsBuffer.length - 1].timestamp
+          : null;
 
       const config = await this.getConfig();
       const providersUsed = config ? [config.provider] : [];
@@ -259,7 +298,10 @@ export class SimpleAnalyticsService {
   /**
    * Génère le script Google Analytics optimisé
    */
-  private generateGoogleAnalyticsScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generateGoogleAnalyticsScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     const asyncAttr = options.async ? 'async' : '';
 
     return `
@@ -272,8 +314,16 @@ export class SimpleAnalyticsService {
   
   const gtagConfig = {
     ${config.anonymizeIp ? "'anonymize_ip': true," : ''}
-    ${config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `'custom_map': {'${k}': '${v}'}`).join(',') : ''}
-    ${Object.entries(config.config || {}).map(([k, v]) => `'${k}': ${JSON.stringify(v)}`).join(',')}
+    ${
+      config.customDimensions
+        ? Object.entries(config.customDimensions)
+            .map(([k, v]) => `'custom_map': {'${k}': '${v}'}`)
+            .join(',')
+        : ''
+    }
+    ${Object.entries(config.config || {})
+      .map(([k, v]) => `'${k}': ${JSON.stringify(v)}`)
+      .join(',')}
   };
   
   gtag('config', '${config.trackingId}', gtagConfig);
@@ -284,13 +334,22 @@ export class SimpleAnalyticsService {
   /**
    * Génère le script Matomo optimisé
    */
-  private generateMatomoScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generateMatomoScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     return `
 <!-- Matomo ${options.version} -->
 <script>
   var _paq = window._paq = window._paq || [];
   ${config.anonymizeIp ? "_paq.push(['setDoNotTrack', true]);" : ''}
-  ${config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `_paq.push(['setCustomDimension', ${k}, '${v}']);`).join('\n  ') : ''}
+  ${
+    config.customDimensions
+      ? Object.entries(config.customDimensions)
+          .map(([k, v]) => `_paq.push(['setCustomDimension', ${k}, '${v}']);`)
+          .join('\n  ')
+      : ''
+  }
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
   (function() {
@@ -307,12 +366,21 @@ export class SimpleAnalyticsService {
   /**
    * Génère le script Plausible optimisé
    */
-  private generatePlausibleScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generatePlausibleScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     const attributes = [
       options.defer ? 'defer' : '',
       `data-domain="${config.domain}"`,
-      config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `data-${k}="${v}"`).join(' ') : '',
-    ].filter(Boolean).join(' ');
+      config.customDimensions
+        ? Object.entries(config.customDimensions)
+            .map(([k, v]) => `data-${k}="${v}"`)
+            .join(' ')
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return `
 <!-- Plausible ${options.version} -->
@@ -323,7 +391,10 @@ export class SimpleAnalyticsService {
   /**
    * Génère un script personnalisé
    */
-  private generateCustomScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generateCustomScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     if (!config.scriptUrl) return '';
 
     return `
@@ -339,7 +410,10 @@ export class SimpleAnalyticsService {
   /**
    * Ajoute la configuration GDPR au script
    */
-  private enhanceScriptWithGDPR(script: string, config: AnalyticsConfig): string {
+  private enhanceScriptWithGDPR(
+    script: string,
+    config: AnalyticsConfig,
+  ): string {
     const gdprScript = `
 <script>
   // GDPR Compliance Enhancement

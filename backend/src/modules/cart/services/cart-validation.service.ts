@@ -10,7 +10,10 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CartItem, CartMetadata } from '../../../database/services/cart-data.service';
+import {
+  CartItem,
+  CartMetadata,
+} from '../../../database/services/cart-data.service';
 
 // Type local pour compatibilité avec l'ancienne interface Cart
 interface Cart {

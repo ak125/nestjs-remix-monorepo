@@ -124,9 +124,8 @@ export class MetadataService extends SupabaseBaseService {
       };
 
       // Générer les URLs alternatives
-      metadata.alternateLanguages = await this.generateAlternateLanguages(
-        route,
-      );
+      metadata.alternateLanguages =
+        await this.generateAlternateLanguages(route);
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, metadata, this.cacheTTL);
@@ -370,9 +369,7 @@ export class MetadataService extends SupabaseBaseService {
     }
 
     if (metadata.ogImage) {
-      tags.push(
-        `<meta property="og:image" content="${metadata.ogImage}" />`,
-      );
+      tags.push(`<meta property="og:image" content="${metadata.ogImage}" />`);
     }
 
     if (metadata.canonicalUrl) {
@@ -416,7 +413,7 @@ export class MetadataService extends SupabaseBaseService {
   }
 
   private getDefaultDescription(): string {
-    return 'Votre catalogue de pièces détachées automobile neuves et d\'origine pour toutes les marques & modèles de voitures';
+    return "Votre catalogue de pièces détachées automobile neuves et d'origine pour toutes les marques & modèles de voitures";
   }
 
   private async getDefaultOgImage(): Promise<string> {
@@ -468,7 +465,7 @@ export class MetadataService extends SupabaseBaseService {
   private getFallbackMetadata(route: string, lang: string): PageMetadata {
     return {
       title: 'Page non trouvée | Automecanik',
-      description: 'Cette page n\'existe pas ou a été déplacée.',
+      description: "Cette page n'existe pas ou a été déplacée.",
       robots: 'noindex,nofollow',
     };
   }

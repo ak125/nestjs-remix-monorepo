@@ -13,19 +13,19 @@ import { PaymentDataService } from './repositories/payment-data.service';
 /**
  * 💳 MODULE PAYMENTS CONSOLIDÉ
  * ═══════════════════════════════════════════════════════════════
- * 
+ *
  * Gestion complète des paiements :
  * - Création et suivi des paiements
  * - Intégration Cyberplus/BNP Paribas
  * - Callbacks bancaires sécurisés
  * - Remboursements (total/partiel)
  * - Logs audit complets
- * 
+ *
  * INTÉGRATIONS :
  * - Orders module (commandes)
  * - Users module (clients)
  * - Admin module (gestion)
- * 
+ *
  * VERSION : 1.0.0 (Refactoring 2025-10-05)
  * CONTRÔLEURS : 3 → 1 (-66%)
  */

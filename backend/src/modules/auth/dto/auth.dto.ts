@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * 🎯 DTOs pour l'authentification unifiée
- * 
+ *
  * Gère l'auth pour customers ET staff
  */
 
@@ -33,25 +33,28 @@ export const RefreshTokenSchema = z.object({
 });
 
 // Schema pour le register (customers uniquement)
-export const RegisterSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string()
-    .min(8, 'Minimum 8 caractères')
-    .regex(/[A-Z]/, 'Au moins une majuscule')
-    .regex(/[a-z]/, 'Au moins une minuscule')
-    .regex(/[0-9]/, 'Au moins un chiffre'),
-  confirmPassword: z.string(),
-  firstName: z.string().min(2, 'Minimum 2 caractères'),
-  lastName: z.string().min(2, 'Minimum 2 caractères'),
-  civility: z.enum(['M', 'Mme', 'Autre']).optional(),
-  phone: z.string().optional(),
-  acceptTerms: z.boolean().refine(val => val === true, {
-    message: 'Vous devez accepter les conditions',
-  }),
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'Les mots de passe ne correspondent pas',
-  path: ['confirmPassword'],
-});
+export const RegisterSchema = z
+  .object({
+    email: z.string().email('Email invalide'),
+    password: z
+      .string()
+      .min(8, 'Minimum 8 caractères')
+      .regex(/[A-Z]/, 'Au moins une majuscule')
+      .regex(/[a-z]/, 'Au moins une minuscule')
+      .regex(/[0-9]/, 'Au moins un chiffre'),
+    confirmPassword: z.string(),
+    firstName: z.string().min(2, 'Minimum 2 caractères'),
+    lastName: z.string().min(2, 'Minimum 2 caractères'),
+    civility: z.enum(['M', 'Mme', 'Autre']).optional(),
+    phone: z.string().optional(),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: 'Vous devez accepter les conditions',
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Les mots de passe ne correspondent pas',
+    path: ['confirmPassword'],
+  });
 
 // Types exportés
 export type LoginDto = z.infer<typeof LoginSchema>;

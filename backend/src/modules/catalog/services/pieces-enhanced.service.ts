@@ -3,12 +3,13 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 @Injectable()
 export class PiecesEnhancedService extends SupabaseBaseService {
-  
   async getPiecesEnhancedCatalog(typeId: number, pgId: number) {
     const startTime = Date.now();
 
     try {
-      this.logger.log(`🚀 [ENHANCED] Catalogue amélioré type_id=${typeId}, pg_id=${pgId}`);
+      this.logger.log(
+        `🚀 [ENHANCED] Catalogue amélioré type_id=${typeId}, pg_id=${pgId}`,
+      );
 
       // 1️⃣ RÉCUPÉRATION DES RELATIONS SIMPLIFIÉE
       const relationsResult = await this.client
@@ -18,7 +19,9 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         .eq('rtp_pg_id', pgId);
 
       if (relationsResult.error || !relationsResult.data?.length) {
-        this.logger.warn(`⚠️ [ENHANCED] Aucune relation trouvée pour type_id=${typeId}, pg_id=${pgId}`);
+        this.logger.warn(
+          `⚠️ [ENHANCED] Aucune relation trouvée pour type_id=${typeId}, pg_id=${pgId}`,
+        );
         return {
           success: true,
           catalog: {
@@ -29,17 +32,21 @@ export class PiecesEnhancedService extends SupabaseBaseService {
               brands_count: 0,
               price_range: null,
               quality_distribution: {},
-            }
+            },
           },
-          message: 'Aucune pièce disponible'
+          message: 'Aucune pièce disponible',
         };
       }
 
       const relations = relationsResult.data;
-      const pieceIds = relations.map(r => r.rtp_piece_id);
-      const pmIds = [...new Set(relations.map(r => r.rtp_pm_id).filter(Boolean))];
+      const pieceIds = relations.map((r) => r.rtp_piece_id);
+      const pmIds = [
+        ...new Set(relations.map((r) => r.rtp_pm_id).filter(Boolean)),
+      ];
 
-      this.logger.log(`🔍 [ENHANCED] ${relations.length} relations → ${pieceIds.length} pièces`);
+      this.logger.log(
+        `🔍 [ENHANCED] ${relations.length} relations → ${pieceIds.length} pièces`,
+      );
 
       // 1.5 RÉCUPÉRATION PIÈCES SÉPARÉE
       const piecesResult = await this.client
@@ -51,51 +58,57 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         .limit(50);
 
       // 2️⃣ RÉCUPÉRATION PARALLÈLE OPTIMISÉE
-      const [
-        marquesResult,
-        pricesResult,
-        imagesResult,
-        filtresResult
-      ] = await Promise.all([
-        // MARQUES avec logos
-        this.client
-          .from('pieces_marques')
-          .select('pm_id, pm_name, pm_logo, pm_alias, pm_nb_stars, pm_oes')
-          .in('pm_id', pmIds),
+      const [marquesResult, pricesResult, imagesResult, filtresResult] =
+        await Promise.all([
+          // MARQUES avec logos
+          this.client
+            .from('pieces_marques')
+            .select('pm_id, pm_name, pm_logo, pm_alias, pm_nb_stars, pm_oes')
+            .in('pm_id', pmIds),
 
-        // PRIX avec meilleur type
-        this.client
-          .from('pieces_prices')  
-          .select('pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo')
-          .in('pri_piece_id', pieceIds)
-          .eq('pri_dispo', 1)
-          .order('pri_type', { ascending: false }),
+          // PRIX avec meilleur type
+          this.client
+            .from('pieces_prices')
+            .select(
+              'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
+            )
+            .in('pri_piece_id', pieceIds)
+            .eq('pri_dispo', 1)
+            .order('pri_type', { ascending: false }),
 
-        // IMAGES principales
-        this.client
-          .from('pieces_media_img')
-          .select('pmi_piece_id, pmi_folder, pmi_name')
-          .in('pmi_piece_id', pieceIds)
-          .eq('pmi_display', 1)
-          .limit(100),
+          // IMAGES principales
+          this.client
+            .from('pieces_media_img')
+            .select('pmi_piece_id, pmi_folder, pmi_name')
+            .in('pmi_piece_id', pieceIds)
+            .eq('pmi_display', 1)
+            .limit(100),
 
-        // FILTRES latéraux
-        this.client
-          .from('pieces_side_filtre')
-          .select('psf_id, psf_side')
-          .in('psf_id', relations.map(r => r.rtp_psf_id).filter(Boolean))
-      ]);
+          // FILTRES latéraux
+          this.client
+            .from('pieces_side_filtre')
+            .select('psf_id, psf_side')
+            .in('psf_id', relations.map((r) => r.rtp_psf_id).filter(Boolean)),
+        ]);
 
       // 3️⃣ CONSTRUCTION DES MAPS PERFORMANTES
-      const marquesMap = new Map(marquesResult.data?.map(m => [m.pm_id, m]) || []);
-      const imagesMap = new Map(imagesResult.data?.map(i => [i.pmi_piece_id, i]) || []);
-      const filtresMap = new Map(filtresResult.data?.map(f => [f.psf_id, f]) || []);
-      
+      const marquesMap = new Map(
+        marquesResult.data?.map((m) => [m.pm_id, m]) || [],
+      );
+      const imagesMap = new Map(
+        imagesResult.data?.map((i) => [i.pmi_piece_id, i]) || [],
+      );
+      const filtresMap = new Map(
+        filtresResult.data?.map((f) => [f.psf_id, f]) || [],
+      );
+
       // Prix : garde le meilleur prix par pièce
       const pricesMap = new Map();
-      pricesResult.data?.forEach(p => {
-        if (!pricesMap.has(p.pri_piece_id) || 
-            p.pri_type > pricesMap.get(p.pri_piece_id).pri_type) {
+      pricesResult.data?.forEach((p) => {
+        if (
+          !pricesMap.has(p.pri_piece_id) ||
+          p.pri_type > pricesMap.get(p.pri_piece_id).pri_type
+        ) {
           pricesMap.set(p.pri_piece_id, p);
         }
       });
@@ -104,7 +117,9 @@ export class PiecesEnhancedService extends SupabaseBaseService {
       const piecesData = piecesResult.data || [];
       const products = piecesData.map((piece: any) => {
         // Trouver la relation correspondante
-        const relation = relations.find(r => r.rtp_piece_id === piece.piece_id);
+        const relation = relations.find(
+          (r) => r.rtp_piece_id === piece.piece_id,
+        );
         const marque = marquesMap.get(relation?.rtp_pm_id || piece.piece_pm_id);
         const price = pricesMap.get(piece.piece_id);
         const image = imagesMap.get(piece.piece_id);
@@ -115,7 +130,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         const prixConsigne = parseFloat(price?.pri_consigne_ttc || '0');
         const quantiteVente = parseFloat(piece.piece_qty_sale || '1');
         const prixTotal = prixUnitaire * quantiteVente;
-        const prixTotalAvecConsigne = prixTotal + (prixConsigne * quantiteVente);
+        const prixTotalAvecConsigne = prixTotal + prixConsigne * quantiteVente;
 
         // DÉTERMINATION QUALITÉ (logique HTML)
         let qualite = 'AFTERMARKET';
@@ -128,12 +143,15 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
         // CALCUL ÉTOILES PERFORMANCE
         const nbStars = parseInt(marque?.pm_nb_stars || '0');
-        const starsDisplay = nbStars > 0 ? '★'.repeat(Math.min(nbStars, 6)) : '★★★';
+        const starsDisplay =
+          nbStars > 0 ? '★'.repeat(Math.min(nbStars, 6)) : '★★★';
 
         // NOM COMPLET OPTIMISÉ
         const sideText = filtre?.psf_side || piece.piece_name_side || '';
         const nomComplet = [piece.piece_name, sideText, piece.piece_name_comp]
-          .filter(Boolean).join(' ').trim();
+          .filter(Boolean)
+          .join(' ')
+          .trim();
 
         // IMAGE URL CORRECTE
         let imageUrl = '/upload/articles/no.png';
@@ -161,9 +179,11 @@ export class PiecesEnhancedService extends SupabaseBaseService {
           marque: {
             id: marque?.pm_id || null,
             name: marque?.pm_name || 'Marque inconnue',
-            logo: marque?.pm_logo ? `/upload/equipementiers-automobiles/${marque.pm_logo}.webp` : null,
+            logo: marque?.pm_logo
+              ? `/upload/equipementiers-automobiles/${marque.pm_logo}.webp`
+              : null,
             alias: marque?.pm_alias || null,
-            oes: marque?.pm_oes || 'A'
+            oes: marque?.pm_oes || 'A',
           },
 
           // PRIX DÉTAILLÉS (structure HTML)
@@ -175,13 +195,20 @@ export class PiecesEnhancedService extends SupabaseBaseService {
             quantite_vente: quantiteVente,
             devise: '€',
             // Format d'affichage comme HTML
-            display: prixTotal > 0 ? {
-              principal: `${prixTotal.toFixed(2).replace('.', ',')} €`,
-              consigne: prixConsigne > 0 ? 
-                `Consigne ${(prixConsigne * quantiteVente).toFixed(2).replace('.', ',')} €` : null,
-              total: prixConsigne > 0 ? 
-                `(Total ${prixTotalAvecConsigne.toFixed(2).replace('.', ',')} € TTC)` : 'Prix TTC'
-            } : null
+            display:
+              prixTotal > 0
+                ? {
+                    principal: `${prixTotal.toFixed(2).replace('.', ',')} €`,
+                    consigne:
+                      prixConsigne > 0
+                        ? `Consigne ${(prixConsigne * quantiteVente).toFixed(2).replace('.', ',')} €`
+                        : null,
+                    total:
+                      prixConsigne > 0
+                        ? `(Total ${prixTotalAvecConsigne.toFixed(2).replace('.', ',')} € TTC)`
+                        : 'Prix TTC',
+                  }
+                : null,
           },
 
           // QUALITÉ ET PERFORMANCE
@@ -190,7 +217,9 @@ export class PiecesEnhancedService extends SupabaseBaseService {
             label: qualite,
             stars: nbStars,
             stars_display: starsDisplay,
-            css_class: qualite.toLowerCase().replace(/\s+/g, '-') + ` st${nbStars || 3}ars`
+            css_class:
+              qualite.toLowerCase().replace(/\s+/g, '-') +
+              ` st${nbStars || 3}ars`,
           },
 
           // IMAGE
@@ -199,26 +228,26 @@ export class PiecesEnhancedService extends SupabaseBaseService {
             alt: `${nomComplet} ${marque?.pm_name || ''} ${piece.piece_ref || ''}`,
             title: `${nomComplet} ${piece.piece_ref || ''}`,
             width: 360,
-            height: 360
+            height: 360,
           },
 
           // CARACTÉRISTIQUES
           has_image: piece.piece_has_img === 1,
           has_oem: piece.piece_has_oem === 1,
-          
+
           // FILTRES (pour JS de filtrage)
           filter_categories: [
             piece.piece_fil_name?.toLowerCase() || 'piece',
             qualite.toLowerCase().replace(/\s+/g, '-'),
             `st${nbStars || 3}ars`,
-            marque?.pm_name?.toLowerCase() || 'unknown'
+            marque?.pm_name?.toLowerCase() || 'unknown',
           ].join(' '),
 
           // URLs
           urls: {
             fiche: `/fiche/${piece.piece_id}/${typeId}`,
-            detail: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`
-          }
+            detail: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
+          },
         };
       });
 
@@ -227,8 +256,10 @@ export class PiecesEnhancedService extends SupabaseBaseService {
       const filters = this.generateSmartFilters(products);
 
       const duration = Date.now() - startTime;
-      
-      this.logger.log(`✅ [ENHANCED] ${products.length} produits générés avec filtres avancés en ${duration}ms`);
+
+      this.logger.log(
+        `✅ [ENHANCED] ${products.length} produits générés avec filtres avancés en ${duration}ms`,
+      );
 
       return {
         success: true,
@@ -241,42 +272,46 @@ export class PiecesEnhancedService extends SupabaseBaseService {
             gamme: piecesData[0]?.piece_fil_name || 'Pièces détachées',
             vehicle_info: {
               type_id: typeId,
-              pg_id: pgId
-            }
-          }
+              pg_id: pgId,
+            },
+          },
         },
         performance: {
           duration: `${duration}ms`,
           relations_found: relations.length,
           brands_count: marquesMap.size,
-          images_count: imagesMap.size
-        }
+          images_count: imagesMap.size,
+        },
       };
-
     } catch (error: any) {
       this.logger.error(`❌ [ENHANCED] Erreur: ${error.message}`, error.stack);
       return {
         success: false,
         error: error.message,
-        catalog: { total_products: 0, products: [], filters: {}, statistics: {} }
+        catalog: {
+          total_products: 0,
+          products: [],
+          filters: {},
+          statistics: {},
+        },
       };
     }
   }
 
   private calculateCatalogStatistics(products: any[]) {
     const prices = products
-      .map(p => p.prix.total)
-      .filter(price => price > 0);
+      .map((p) => p.prix.total)
+      .filter((price) => price > 0);
 
     const qualityDistribution: any = {};
     const brandsDistribution: any = {};
 
-    products.forEach(product => {
+    products.forEach((product) => {
       // Distribution qualité
       const quality = product.qualite.type;
       qualityDistribution[quality] = (qualityDistribution[quality] || 0) + 1;
 
-      // Distribution marques  
+      // Distribution marques
       const brand = product.marque.name;
       brandsDistribution[brand] = (brandsDistribution[brand] || 0) + 1;
     });
@@ -284,29 +319,32 @@ export class PiecesEnhancedService extends SupabaseBaseService {
     return {
       total_count: products.length,
       brands_count: Object.keys(brandsDistribution).length,
-      price_range: prices.length > 0 ? {
-        min: Math.min(...prices),
-        max: Math.max(...prices),
-        average: prices.reduce((a, b) => a + b, 0) / prices.length
-      } : null,
+      price_range:
+        prices.length > 0
+          ? {
+              min: Math.min(...prices),
+              max: Math.max(...prices),
+              average: prices.reduce((a, b) => a + b, 0) / prices.length,
+            }
+          : null,
       quality_distribution: qualityDistribution,
-      brands_distribution: brandsDistribution
+      brands_distribution: brandsDistribution,
     };
   }
 
   private generateSmartFilters(products: any[]) {
     const filters = {
       qualite: new Set(),
-      performance: new Set(), 
-      equipementiers: new Set()
+      performance: new Set(),
+      equipementiers: new Set(),
     };
 
-    products.forEach(product => {
+    products.forEach((product) => {
       // Filtres qualité
       filters.qualite.add({
         id: product.qualite.type,
         label: product.qualite.label,
-        value: product.qualite.type
+        value: product.qualite.type,
       });
 
       // Filtres performance (étoiles)
@@ -314,7 +352,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         id: `st${product.qualite.stars}ars`,
         label: product.qualite.stars_display,
         value: `st${product.qualite.stars}ars`,
-        stars: product.qualite.stars
+        stars: product.qualite.stars,
       });
 
       // Filtres équipementiers
@@ -322,16 +360,18 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         id: product.marque.name.toLowerCase(),
         label: product.marque.name,
         value: product.marque.name.toLowerCase(),
-        logo: product.marque.logo
+        logo: product.marque.logo,
       });
     });
 
     return {
       qualite: Array.from(filters.qualite),
-      performance: Array.from(filters.performance)
-        .sort((a: any, b: any) => b.stars - a.stars),
-      equipementiers: Array.from(filters.equipementiers)
-        .sort((a: any, b: any) => a.label.localeCompare(b.label))
+      performance: Array.from(filters.performance).sort(
+        (a: any, b: any) => b.stars - a.stars,
+      ),
+      equipementiers: Array.from(filters.equipementiers).sort(
+        (a: any, b: any) => a.label.localeCompare(b.label),
+      ),
     };
   }
 

@@ -32,12 +32,15 @@ export class MetadataController {
   ) {}
 
   @Get('page/:route')
-  @ApiOperation({ summary: 'Récupérer les métadonnées d\'une page' })
+  @ApiOperation({ summary: "Récupérer les métadonnées d'une page" })
   @ApiResponse({
     status: 200,
     description: 'Métadonnées récupérées avec succès',
   })
-  async getPageMetadata(@Param('route') route: string, @Query('lang') lang?: string) {
+  async getPageMetadata(
+    @Param('route') route: string,
+    @Query('lang') lang?: string,
+  ) {
     try {
       const metadata = await this.metadataService.getPageMetadata(route, lang);
       return {
@@ -57,12 +60,15 @@ export class MetadataController {
   }
 
   @Get('seo/:route')
-  @ApiOperation({ summary: 'Récupérer les données SEO d\'une page' })
+  @ApiOperation({ summary: "Récupérer les données SEO d'une page" })
   @ApiResponse({
     status: 200,
     description: 'Données SEO récupérées avec succès',
   })
-  async getPageSEO(@Param('route') route: string, @Query('lang') lang?: string) {
+  async getPageSEO(
+    @Param('route') route: string,
+    @Query('lang') lang?: string,
+  ) {
     try {
       const seoData = await this.metadataService.getPageSEO(route, lang);
       return {
@@ -82,14 +88,20 @@ export class MetadataController {
   }
 
   @Get('breadcrumb/:route')
-  @ApiOperation({ summary: 'Récupérer le fil d\'Ariane d\'une page' })
+  @ApiOperation({ summary: "Récupérer le fil d'Ariane d'une page" })
   @ApiResponse({
     status: 200,
-    description: 'Fil d\'Ariane récupéré avec succès',
+    description: "Fil d'Ariane récupéré avec succès",
   })
-  async getBreadcrumb(@Param('route') route: string, @Query('lang') lang?: string) {
+  async getBreadcrumb(
+    @Param('route') route: string,
+    @Query('lang') lang?: string,
+  ) {
     try {
-      const breadcrumb = await this.breadcrumbService.generateBreadcrumb(route, lang);
+      const breadcrumb = await this.breadcrumbService.generateBreadcrumb(
+        route,
+        lang,
+      );
       return {
         success: true,
         data: breadcrumb,
@@ -100,7 +112,7 @@ export class MetadataController {
         error,
       );
       throw new HttpException(
-        'Erreur lors de la génération du fil d\'Ariane',
+        "Erreur lors de la génération du fil d'Ariane",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -128,7 +128,7 @@ export class CartController {
 
       // 🔍 DEBUG: Voir ce qui revient du CartDataService
       // this.logger.log('🔍 CartData brut:', JSON.stringify(cartData, null, 2));
-      
+
       // if (cartData.items?.length > 0) {
       //   this.logger.log('🔍 Premier item:', JSON.stringify(cartData.items[0], null, 2));
       // }
@@ -193,7 +193,7 @@ export class CartController {
     try {
       // 🔍 DEBUG: Voir ce qui est reçu
       this.logger.log(`🔍 Raw body received:`, JSON.stringify(body, null, 2));
-      
+
       const addItemDto = validateAddItem(body);
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
@@ -205,24 +205,24 @@ export class CartController {
       // Utiliser CartDataService directement avec les IDs numériques
       const productIdNum = parseInt(String(addItemDto.product_id), 10);
       const userIdForCart = userId || sessionId;
-      
+
       // ✅ VALIDATION DU STOCK avant ajout au panier
       const stockValidation = await this.stockService.validateStock(
         productIdNum,
         addItemDto.quantity,
       );
-      
+
       if (!stockValidation.isValid) {
         throw new BadRequestException(
           stockValidation.message ||
             `Stock insuffisant. Seulement ${stockValidation.available} unité(s) disponible(s)`,
         );
       }
-      
+
       this.logger.log(
         `✅ Stock validé pour produit ${productIdNum}: ${addItemDto.quantity}/${stockValidation.available}`,
       );
-      
+
       // Vérifier si c'est une mise à jour de quantité (flag replace dans le body)
       const isReplace = (body as any)?.replace === true;
 
@@ -425,7 +425,8 @@ export class CartController {
       );
 
       // 1. Récupérer le panier actuel pour calculer le subtotal
-      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
+      const cart =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
 
       // 2. Utiliser CartService pour valider et appliquer le promo
       const result = await this.cartService.applyPromoCode(
@@ -499,7 +500,8 @@ export class CartController {
   @Post('shipping/calculate')
   @ApiOperation({
     summary: 'Calculer les frais de livraison',
-    description: 'Calcule le coût de livraison selon le code postal et le poids du panier',
+    description:
+      'Calcule le coût de livraison selon le code postal et le poids du panier',
   })
   @ApiResponse({
     status: 200,
@@ -521,11 +523,15 @@ export class CartController {
       }
 
       // Récupérer le panier pour calculer poids et subtotal
-      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
-      
+      const cart =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+
       // Calculer poids total
-      const totalWeight = cart.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
-      
+      const totalWeight = cart.items.reduce(
+        (sum, item) => sum + (item.weight || 0) * item.quantity,
+        0,
+      );
+
       // Utiliser ShippingService pour calculer les frais
       const estimate = await this.shippingService.calculateShippingEstimate({
         weight: totalWeight,
@@ -543,7 +549,9 @@ export class CartController {
           estimatedDays: estimate.deliveryEstimate.minDays,
           method: estimate.freeShipping ? 'Livraison gratuite' : 'Colissimo',
         },
-        remainingForFreeShipping: estimate.freeShipping ? 0 : Math.max(0, 100 - cart.stats.subtotal),
+        remainingForFreeShipping: estimate.freeShipping
+          ? 0
+          : Math.max(0, 100 - cart.stats.subtotal),
       };
     } catch (error) {
       this.logger.error('Erreur calcul shipping:', error);
@@ -568,7 +576,8 @@ export class CartController {
   })
   async applyShipping(
     @Req() req: RequestWithUser,
-    @Body() body: {
+    @Body()
+    body: {
       postalCode: string;
       address?: string;
     },
@@ -585,11 +594,15 @@ export class CartController {
       }
 
       // Récupérer le panier
-      const cart = await this.cartDataService.getCartWithMetadata(userIdForCart);
-      
+      const cart =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+
       // Calculer poids total
-      const totalWeight = cart.items.reduce((sum, item) => sum + ((item.weight || 0) * item.quantity), 0);
-      
+      const totalWeight = cart.items.reduce(
+        (sum, item) => sum + (item.weight || 0) * item.quantity,
+        0,
+      );
+
       // Utiliser ShippingService pour calculer
       const estimate = await this.shippingService.calculateShippingEstimate({
         weight: totalWeight,
@@ -597,7 +610,7 @@ export class CartController {
         postalCode: postalCode,
         orderAmount: cart.stats.subtotal,
       });
-      
+
       const shippingInfo = {
         zone: estimate.zone,
         cost: estimate.fee,
@@ -637,7 +650,8 @@ export class CartController {
   @Delete('shipping')
   @ApiOperation({
     summary: 'Retirer la méthode de livraison',
-    description: 'Retire la méthode de livraison actuellement appliquée au panier',
+    description:
+      'Retire la méthode de livraison actuellement appliquée au panier',
   })
   @ApiResponse({
     status: 200,
@@ -822,7 +836,7 @@ export class CartController {
     const userSessionCookie = cookies
       .find((c) => c.trim().startsWith('userSession='))
       ?.split('=')[1];
-    
+
     if (userSessionCookie) {
       return userSessionCookie.trim();
     }

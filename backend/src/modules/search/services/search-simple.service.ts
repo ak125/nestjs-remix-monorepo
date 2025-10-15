@@ -48,15 +48,22 @@ export class SearchSimpleService extends SupabaseBaseService {
   /**
    * Extrait un éventuel mot-clé de catégorie et renvoie la ref sans ce mot.
    */
-  private extractCategoryKeywords(query: string): { refPart: string; keyword: string | null } {
+  private extractCategoryKeywords(query: string): {
+    refPart: string;
+    keyword: string | null;
+  } {
     const lower = query.toLowerCase();
     const words = lower.split(/\s+/);
 
     for (const [cat, keywords] of Object.entries(this.CATEGORY_KEYWORDS)) {
       for (const kw of keywords) {
         if (words.includes(kw)) {
-          const refPart = query.replace(new RegExp(`\\b${kw}\\b`, 'gi'), '').trim();
-          this.logger.log(`✂️ Séparation: "${query}" → REF="${refPart}" + CATÉGORIE="${kw}"`);
+          const refPart = query
+            .replace(new RegExp(`\\b${kw}\\b`, 'gi'), '')
+            .trim();
+          this.logger.log(
+            `✂️ Séparation: "${query}" → REF="${refPart}" + CATÉGORIE="${kw}"`,
+          );
           return { refPart, keyword: kw };
         }
       }
@@ -70,7 +77,10 @@ export class SearchSimpleService extends SupabaseBaseService {
   }
 
   /** Niveau de qualité: 1=OES, 2=Aftermarket, 4=Adaptable (3=ES à implémenter via consigne) */
-  private getQualityLevel(marqueOes: string | null, _priceConsigne: number | null): number {
+  private getQualityLevel(
+    marqueOes: string | null,
+    _priceConsigne: number | null,
+  ): number {
     if (marqueOes === 'O' || marqueOes === 'OES') return 1;
     if (marqueOes === 'A') return 2;
     return 4;
@@ -84,12 +94,15 @@ export class SearchSimpleService extends SupabaseBaseService {
     const cleaned = this.cleanReference(ref);
 
     if (/^[a-z]{2,}/i.test(cleaned)) return false; // 2+ lettres au début -> équipementier
-    if (/^[a-z]\d/i.test(cleaned)) return false;   // lettre puis chiffre -> équipementier
+    if (/^[a-z]\d/i.test(cleaned)) return false; // lettre puis chiffre -> équipementier
 
     const digitCount = (cleaned.match(/\d/g) || []).length;
     const letterCount = (cleaned.match(/[a-z]/gi) || []).length;
 
-    return /^\d/.test(cleaned) && (digitCount === 0 || digitCount / Math.max(letterCount, 1) > 3);
+    return (
+      /^\d/.test(cleaned) &&
+      (digitCount === 0 || digitCount / Math.max(letterCount, 1) > 3)
+    );
   }
 
   /**
@@ -110,10 +123,10 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Variantes de recherche (comme ClearSearchQuest PHP - UPPERCASE)
     const cleanedForSearch = refQuery.trim().toUpperCase();
     const queryVariants = [
-      cleanedForSearch,                                      // Version originale
-      cleanedForSearch.replace(/\s+/g, ''),                  // Sans espaces "KH22"
-      cleanedForSearch.replace(/([A-Z])(\d)/g, '$1 $2'),     // Avec espace "KH 22"
-      cleanedForSearch.replace(/([A-Z])(\d)/g, '$1-$2'),     // Avec tiret "KH-22"
+      cleanedForSearch, // Version originale
+      cleanedForSearch.replace(/\s+/g, ''), // Sans espaces "KH22"
+      cleanedForSearch.replace(/([A-Z])(\d)/g, '$1 $2'), // Avec espace "KH 22"
+      cleanedForSearch.replace(/([A-Z])(\d)/g, '$1-$2'), // Avec tiret "KH-22"
     ];
     const uniqueVariants = [...new Set(queryVariants)];
 
@@ -125,14 +138,22 @@ export class SearchSimpleService extends SupabaseBaseService {
     try {
       const cached = await this.redisCache.get(cacheKey);
       if (cached) {
-        this.logger.log(`⚡ Cache HIT pour "${cleanQuery}" (${Date.now() - startTime}ms)`);
-        return { ...cached, executionTime: Date.now() - startTime, cached: true };
+        this.logger.log(
+          `⚡ Cache HIT pour "${cleanQuery}" (${Date.now() - startTime}ms)`,
+        );
+        return {
+          ...cached,
+          executionTime: Date.now() - startTime,
+          cached: true,
+        };
       }
     } catch (e) {
       this.logger.warn(`⚠️ Erreur lecture cache Redis:`, e);
     }
 
-    this.logger.log(`🔍 Recherche: "${refQuery}" → variantes: ${uniqueVariants.join(', ')}`);
+    this.logger.log(
+      `🔍 Recherche: "${refQuery}" → variantes: ${uniqueVariants.join(', ')}`,
+    );
 
     // 1) refs dans pieces_ref_search
     const searchRefsResult = await this.client
@@ -142,7 +163,9 @@ export class SearchSimpleService extends SupabaseBaseService {
       .limit(1000);
 
     const searchRefs = searchRefsResult.data || [];
-    this.logger.log(`📋 ${searchRefs.length} références trouvées dans pieces_ref_search`);
+    this.logger.log(
+      `📋 ${searchRefs.length} références trouvées dans pieces_ref_search`,
+    );
 
     // Distribution des kinds (debug)
     if (searchRefs.length > 0) {
@@ -159,8 +182,10 @@ export class SearchSimpleService extends SupabaseBaseService {
     let prsKindMap = new Map<string, string>();
 
     if (searchRefs.length === 0) {
-      this.logger.log(`⚠️ pieces_ref_search vide, fallback OPTIMISÉ sur pieces_price.pri_ref`);
-      
+      this.logger.log(
+        `⚠️ pieces_ref_search vide, fallback OPTIMISÉ sur pieces_price.pri_ref`,
+      );
+
       // ✅ OPTIMISATION: Rechercher dans pieces_price.pri_ref (indexé et plus rapide)
       // Utiliser seulement la variante principale pour la performance
       const mainVariant = uniqueVariants[0];
@@ -172,17 +197,33 @@ export class SearchSimpleService extends SupabaseBaseService {
         .limit(100); // Limite raisonnable pour la performance
 
       const priceMatches = fallbackPricesResult.data || [];
-      this.logger.log(`🔄 Fallback: ${priceMatches.length} prix trouvés via pri_ref`);
+      this.logger.log(
+        `🔄 Fallback: ${priceMatches.length} prix trouvés via pri_ref`,
+      );
 
       if (priceMatches.length === 0) {
-        return this.processResults([], refQuery, filters, page, limit, offset, startTime, categoryFilter, cacheKey);
+        return this.processResults(
+          [],
+          refQuery,
+          filters,
+          page,
+          limit,
+          offset,
+          startTime,
+          categoryFilter,
+          cacheKey,
+        );
       }
 
       // Récupérer les pièces correspondantes
-      const matchedPieceIds = [...new Set(priceMatches.map((p) => p.pri_piece_id))];
+      const matchedPieceIds = [
+        ...new Set(priceMatches.map((p) => p.pri_piece_id)),
+      ];
       const directPiecesResult = await this.client
         .from('pieces')
-        .select('piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display')
+        .select(
+          'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
+        )
         .in('piece_id', matchedPieceIds)
         .eq('piece_display', true);
 
@@ -195,12 +236,17 @@ export class SearchSimpleService extends SupabaseBaseService {
 
       // Passer directement au traitement des prix (sauter la seconde requête pieces)
       const pieces = directPieces;
-      
+
       // 3) Charger les prix disponibles (pri_dispo='1')
       const pricesResult = await this.client
         .from('pieces_price')
-        .select('pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo')
-        .in('pri_piece_id', pieces.map((p) => String(p.piece_id)))
+        .select(
+          'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+        )
+        .in(
+          'pri_piece_id',
+          pieces.map((p) => String(p.piece_id)),
+        )
         .eq('pri_dispo', '1');
 
       const prices = pricesResult.data || [];
@@ -251,17 +297,29 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     // 2) Récupérer pièces visibles (piece_display=1) + champs utiles
-    pieceIds = [...new Set(searchRefs.map((r: any) => parseInt(r.prs_piece_id)))].filter(
-      (v) => Number.isFinite(v),
-    );
-    
+    pieceIds = [
+      ...new Set(searchRefs.map((r: any) => parseInt(r.prs_piece_id))),
+    ].filter((v) => Number.isFinite(v));
+
     if (pieceIds.length === 0) {
-      return this.processResults([], refQuery, filters, page, limit, offset, startTime, categoryFilter, cacheKey);
+      return this.processResults(
+        [],
+        refQuery,
+        filters,
+        page,
+        limit,
+        offset,
+        startTime,
+        categoryFilter,
+        cacheKey,
+      );
     }
 
     const piecesResult = await this.client
       .from('pieces')
-      .select('piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display')
+      .select(
+        'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
+      )
       .in('piece_id', pieceIds)
       .eq('piece_display', true)
       .limit(1000);
@@ -270,14 +328,29 @@ export class SearchSimpleService extends SupabaseBaseService {
     this.logger.log(`📦 ${pieces.length} pièces (piece_display=1)`);
 
     if (pieces.length === 0) {
-      return this.processResults([], refQuery, filters, page, limit, offset, startTime, categoryFilter, cacheKey);
+      return this.processResults(
+        [],
+        refQuery,
+        filters,
+        page,
+        limit,
+        offset,
+        startTime,
+        categoryFilter,
+        cacheKey,
+      );
     }
 
     // 3) Charger les prix disponibles (pri_dispo='1') — colonnes TEXT
     const pricesResult = await this.client
       .from('pieces_price')
-      .select('pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo')
-      .in('pri_piece_id', pieces.map((p) => String(p.piece_id)))
+      .select(
+        'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+      )
+      .in(
+        'pri_piece_id',
+        pieces.map((p) => String(p.piece_id)),
+      )
       .eq('pri_dispo', '1');
 
     const prices = pricesResult.data || [];
@@ -304,7 +377,10 @@ export class SearchSimpleService extends SupabaseBaseService {
         const price = priceMap.get(priceKey);
         if (!price) return null;
 
-        const prsKind = parseInt(prsKindMap.get(String(piece.piece_id)) ?? '999', 10);
+        const prsKind = parseInt(
+          prsKindMap.get(String(piece.piece_id)) ?? '999',
+          10,
+        );
         const _priceVenteTTC = parseFloat(price.pri_vente_ttc) || 0;
         const _priceConsigneTTC = parseFloat(price.pri_consigne_ttc) || 0;
 
@@ -321,8 +397,10 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // attacher une ref OEM pour affichage si dispo
     const oemRefMap = new Map<string, string>();
-    for (const r of searchRefs) oemRefMap.set(String(r.prs_piece_id), r.prs_ref);
-    for (const p of enrichedPieces) p._oemRef = oemRefMap.get(String(p.piece_id)) ?? null;
+    for (const r of searchRefs)
+      oemRefMap.set(String(r.prs_piece_id), r.prs_ref);
+    for (const p of enrichedPieces)
+      p._oemRef = oemRefMap.get(String(p.piece_id)) ?? null;
 
     this.logger.log(`✅ ${enrichedPieces.length} pièces enrichies`);
 
@@ -341,7 +419,9 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // DEBUG: Vérifier ordre AVANT processResults
     if (sortedPieces.length > 0) {
-      this.logger.log(`🔧 AVANT processResults - Premier: ${sortedPieces[0].piece_ref} (kind=${sortedPieces[0]._prsKind}), Dernier: ${sortedPieces[sortedPieces.length-1].piece_ref} (kind=${sortedPieces[sortedPieces.length-1]._prsKind})`);
+      this.logger.log(
+        `🔧 AVANT processResults - Premier: ${sortedPieces[0].piece_ref} (kind=${sortedPieces[0]._prsKind}), Dernier: ${sortedPieces[sortedPieces.length - 1].piece_ref} (kind=${sortedPieces[sortedPieces.length - 1]._prsKind})`,
+      );
     }
 
     // 6) Retour formaté + facettes + pagination + cache
@@ -373,7 +453,15 @@ export class SearchSimpleService extends SupabaseBaseService {
       this.logger.log(`❌ 0 résultat pour "${cleanQuery}"`);
       const empty = {
         success: true,
-        data: { items: [], total: 0, page, limit, pages: 0, executionTime: Date.now() - startTime, facets: [] },
+        data: {
+          items: [],
+          total: 0,
+          page,
+          limit,
+          pages: 0,
+          executionTime: Date.now() - startTime,
+          facets: [],
+        },
       };
       return empty;
     }
@@ -381,31 +469,51 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Filtres marque/gamme
     let filtered = pieces;
     if (filters?.marqueIds?.length) {
-      filtered = filtered.filter((p) => filters.marqueIds!.includes(p.piece_pm_id));
+      filtered = filtered.filter((p) =>
+        filters.marqueIds!.includes(p.piece_pm_id),
+      );
     }
     if (filters?.gammeIds?.length) {
-      filtered = filtered.filter((p) => filters.gammeIds!.includes(p.piece_pg_id));
+      filtered = filtered.filter((p) =>
+        filters.gammeIds!.includes(p.piece_pg_id),
+      );
     }
     this.logger.log(`✅ ${filtered.length} pièces (après filtres)`);
 
     // Charger métadonnées marques/gammes
-    const marqueIds = [...new Set(filtered.map((p) => p.piece_pm_id).filter(Boolean))];
-    const gammeIds = [...new Set(filtered.map((p) => p.piece_pg_id).filter(Boolean))];
+    const marqueIds = [
+      ...new Set(filtered.map((p) => p.piece_pm_id).filter(Boolean)),
+    ];
+    const gammeIds = [
+      ...new Set(filtered.map((p) => p.piece_pg_id).filter(Boolean)),
+    ];
 
     const [marquesResult, gammesResult] = await Promise.all([
       marqueIds.length
-        ? this.client.from('pieces_marque').select('pm_id, pm_name, pm_oes').in('pm_id', marqueIds.map(String))
+        ? this.client
+            .from('pieces_marque')
+            .select('pm_id, pm_name, pm_oes')
+            .in('pm_id', marqueIds.map(String))
         : Promise.resolve({ data: [] as any[] }),
       gammeIds.length
-        ? this.client.from('pieces_gamme').select('pg_id, pg_name').in('pg_id', gammeIds.map(String))
+        ? this.client
+            .from('pieces_gamme')
+            .select('pg_id, pg_name')
+            .in('pg_id', gammeIds.map(String))
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
     const marqueMap = new Map<number, { name: string; oes: string | null }>(
-      (marquesResult.data || []).map((m: any) => [parseInt(m.pm_id, 10), { name: m.pm_name, oes: m.pm_oes }]),
+      (marquesResult.data || []).map((m: any) => [
+        parseInt(m.pm_id, 10),
+        { name: m.pm_name, oes: m.pm_oes },
+      ]),
     );
     const gammeMap = new Map<number, string>(
-      (gammesResult.data || []).map((g: any) => [parseInt(g.pg_id, 10), g.pg_name]),
+      (gammesResult.data || []).map((g: any) => [
+        parseInt(g.pg_id, 10),
+        g.pg_name,
+      ]),
     );
 
     // Formatter + qualité + OEM
@@ -447,23 +555,31 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Filtre catégorie via mot-clé éventuel
     if (categoryFilter) {
       const before = items.length;
-      items = items.filter((it) => it.category.toLowerCase().includes(categoryFilter.toLowerCase()));
-      this.logger.log(`🔎 Filtre catégorie "${categoryFilter}": ${items.length}/${before} résultats`);
+      items = items.filter((it) =>
+        it.category.toLowerCase().includes(categoryFilter.toLowerCase()),
+      );
+      this.logger.log(
+        `🔎 Filtre catégorie "${categoryFilter}": ${items.length}/${before} résultats`,
+      );
     }
 
     // PAS DE TRI ICI - Les pièces sont déjà triées par prs_kind puis prix avant l'appel à processResults()
     // Le tri initial (ligne 318-323) respecte la logique PHP : ORDER BY PRS_KIND, PIECE_QTY_SALE*PRI_VENTE_TTC
     const isOEMSearch = items.some((it) => it._isOEM);
-    
+
     // DEBUG: Vérifier que l'ordre est préservé
     const kindDistribution = items.reduce((acc: Record<string, number>, it) => {
       const k = String(it._prsKind ?? 'null');
       acc[k] = (acc[k] || 0) + 1;
       return acc;
     }, {});
-    this.logger.log(`🔧 Distribution prs_kind finale: ${JSON.stringify(kindDistribution)}`);
+    this.logger.log(
+      `🔧 Distribution prs_kind finale: ${JSON.stringify(kindDistribution)}`,
+    );
     if (items.length > 0) {
-      this.logger.log(`🔧 Premier: ${items[0]?.reference} (kind=${items[0]?._prsKind}), Dernier: ${items[items.length-1]?.reference} (kind=${items[items.length-1]?._prsKind})`);
+      this.logger.log(
+        `🔧 Premier: ${items[0]?.reference} (kind=${items[0]?._prsKind}), Dernier: ${items[items.length - 1]?.reference} (kind=${items[items.length - 1]?._prsKind})`,
+      );
     }
 
     // Nettoyage flags internes
@@ -482,7 +598,9 @@ export class SearchSimpleService extends SupabaseBaseService {
     const total = items.length;
     const pageItems = items.slice(offset, offset + limit);
 
-    this.logger.log(`✅ Retour: ${pageItems.length}/${total} en ${Date.now() - startTime}ms`);
+    this.logger.log(
+      `✅ Retour: ${pageItems.length}/${total} en ${Date.now() - startTime}ms`,
+    );
 
     const result = {
       success: true,
@@ -499,7 +617,9 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 💾 Cache (calculer OEM à partir de la liste nettoyée: on l’a avant nettoyage via isOEMSearch)
     try {
-      const cacheTTL = isOEMSearch ? this.OEM_CACHE_TTL : this.GENERAL_CACHE_TTL;
+      const cacheTTL = isOEMSearch
+        ? this.OEM_CACHE_TTL
+        : this.GENERAL_CACHE_TTL;
       await this.redisCache.set(cacheKey, result, cacheTTL);
       this.logger.log(`💾 Mis en cache (TTL: ${cacheTTL}s)`);
     } catch (e) {
@@ -509,10 +629,14 @@ export class SearchSimpleService extends SupabaseBaseService {
     return result;
   }
 
-  private generateFacets(items: Array<{
-    brandId?: number; brand?: string;
-    categoryId?: number; category?: string;
-  }>) {
+  private generateFacets(
+    items: Array<{
+      brandId?: number;
+      brand?: string;
+      categoryId?: number;
+      category?: string;
+    }>,
+  ) {
     // MARQUE
     const m = new Map<number, { label: string; count: number }>();
     for (const it of items) {

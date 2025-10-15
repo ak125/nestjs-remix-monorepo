@@ -47,18 +47,20 @@ export class ImageProcessingService {
    */
   async resizeImage(
     inputBuffer: Buffer,
-    options: ImageResizeOptions = {}
+    options: ImageResizeOptions = {},
   ): Promise<Buffer> {
     const {
       width = 300,
       height = 200,
       quality = 85,
       format = 'webp',
-      fit = 'cover'
+      fit = 'cover',
     } = options;
 
     try {
-      this.logger.log(`🔧 Redimensionnement: ${width}x${height}, qualité: ${quality}%, format: ${format}`);
+      this.logger.log(
+        `🔧 Redimensionnement: ${width}x${height}, qualité: ${quality}%, format: ${format}`,
+      );
 
       const result = await sharp(inputBuffer)
         .resize(width, height, { fit })
@@ -67,7 +69,6 @@ export class ImageProcessingService {
 
       this.logger.log(`✅ Image redimensionnée: ${result.length} bytes`);
       return result;
-
     } catch (error) {
       this.logger.error('❌ Erreur redimensionnement:', error);
       throw new Error(`Erreur lors du redimensionnement: ${error.message}`);
@@ -92,7 +93,6 @@ export class ImageProcessingService {
       const buffer = Buffer.from(await data.arrayBuffer());
       this.logger.log(`✅ Image téléchargée: ${buffer.length} bytes`);
       return buffer;
-
     } catch (error) {
       this.logger.error(`❌ Erreur téléchargement ${imagePath}:`, error);
       throw error;
@@ -105,7 +105,7 @@ export class ImageProcessingService {
   async uploadImageToSupabase(
     buffer: Buffer,
     uploadPath: string,
-    contentType: string = 'image/webp'
+    contentType: string = 'image/webp',
   ): Promise<string> {
     try {
       this.logger.log(`📤 Upload: ${uploadPath}`);
@@ -114,7 +114,7 @@ export class ImageProcessingService {
         .from('uploads')
         .upload(uploadPath, buffer, {
           contentType,
-          upsert: true
+          upsert: true,
         });
 
       if (error) {
@@ -124,7 +124,6 @@ export class ImageProcessingService {
       const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/uploads/${uploadPath}`;
       this.logger.log(`✅ Image uploadée: ${publicUrl}`);
       return publicUrl;
-
     } catch (error) {
       this.logger.error(`❌ Erreur upload ${uploadPath}:`, error);
       throw error;
@@ -142,7 +141,8 @@ export class ImageProcessingService {
       this.logger.log(`🎨 Génération variantes pour: ${originalImagePath}`);
 
       // Télécharger l'image originale
-      const originalBuffer = await this.downloadImageFromSupabase(originalImagePath);
+      const originalBuffer =
+        await this.downloadImageFromSupabase(originalImagePath);
       const originalSize = originalBuffer.length;
 
       const variants: { [key: string]: string } = {};
@@ -154,7 +154,7 @@ export class ImageProcessingService {
           width: variant.width,
           height: variant.height,
           quality: variant.quality,
-          format: 'webp'
+          format: 'webp',
         });
 
         // Construire le chemin de la variante
@@ -165,26 +165,32 @@ export class ImageProcessingService {
         const variantUrl = await this.uploadImageToSupabase(
           resizedBuffer,
           variantPath,
-          'image/webp'
+          'image/webp',
         );
 
         variants[variant.name] = variantUrl;
         totalVariantsSize += resizedBuffer.length;
 
-        this.logger.log(`✅ Variante ${variant.name}: ${variant.width}x${variant.height} (${resizedBuffer.length} bytes)`);
+        this.logger.log(
+          `✅ Variante ${variant.name}: ${variant.width}x${variant.height} (${resizedBuffer.length} bytes)`,
+        );
       }
 
       const stats = {
         originalSize,
-        totalVariantsSize
+        totalVariantsSize,
       };
 
-      this.logger.log(`🎨 Variantes générées: ${Object.keys(variants).length} variantes, économie: ${Math.round((1 - totalVariantsSize / originalSize) * 100)}%`);
+      this.logger.log(
+        `🎨 Variantes générées: ${Object.keys(variants).length} variantes, économie: ${Math.round((1 - totalVariantsSize / originalSize) * 100)}%`,
+      );
 
       return { variants, stats };
-
     } catch (error) {
-      this.logger.error(`❌ Erreur génération variantes ${originalImagePath}:`, error);
+      this.logger.error(
+        `❌ Erreur génération variantes ${originalImagePath}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -207,17 +213,17 @@ export class ImageProcessingService {
     const results = {
       processed: 0,
       errors: [] as string[],
-      variants: {} as { [imageName: string]: { [variant: string]: string } }
+      variants: {} as { [imageName: string]: { [variant: string]: string } },
     };
 
     for (const imagePath of familyImages) {
       try {
-        const imageName = imagePath.split('/').pop()?.replace('.webp', '') || 'unknown';
+        const imageName =
+          imagePath.split('/').pop()?.replace('.webp', '') || 'unknown';
         const { variants } = await this.generateFamilyImageVariants(imagePath);
-        
+
         results.variants[imageName] = variants;
         results.processed++;
-
       } catch (error) {
         const errorMsg = `${imagePath}: ${error.message}`;
         results.errors.push(errorMsg);
@@ -225,7 +231,9 @@ export class ImageProcessingService {
       }
     }
 
-    this.logger.log(`🔄 Traitement terminé: ${results.processed} réussies, ${results.errors.length} erreurs`);
+    this.logger.log(
+      `🔄 Traitement terminé: ${results.processed} réussies, ${results.errors.length} erreurs`,
+    );
     return results;
   }
 
@@ -248,9 +256,8 @@ export class ImageProcessingService {
         height: metadata.height || 0,
         size: buffer.length,
         format: metadata.format || 'unknown',
-        density: metadata.density
+        density: metadata.density,
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur analyse ${imagePath}:`, error);
       throw error;

@@ -83,7 +83,9 @@ export class ProductsModule {
     this.logger.log('✅ Contrôleurs actifs (4):');
     this.logger.log('   • ProductsController - api/products');
     this.logger.log('   • FilteringController - api/products/filters');
-    this.logger.log('   • TechnicalDataController - api/products/technical-data');
+    this.logger.log(
+      '   • TechnicalDataController - api/products/technical-data',
+    );
     this.logger.log('   • CrossSellingController - api/cross-selling');
     this.logger.log('📊 Consolidation Phase 2:');
     this.logger.log('   • Services: 13 → 7 (-46%)');

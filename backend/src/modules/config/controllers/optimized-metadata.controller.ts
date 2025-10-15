@@ -1,15 +1,18 @@
-import { 
-  Controller, 
-  Get, 
-  Put, 
-  Param, 
-  Body, 
-  Query, 
+import {
+  Controller,
+  Get,
+  Put,
+  Param,
+  Body,
+  Query,
   Logger,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { MetadataService, PageMetadata } from '../services/optimized-metadata.service';
+import {
+  MetadataService,
+  PageMetadata,
+} from '../services/optimized-metadata.service';
 
 interface UpdateMetadataDto {
   title?: string;
@@ -24,9 +27,7 @@ interface UpdateMetadataDto {
 export class OptimizedMetadataController {
   private readonly logger = new Logger(OptimizedMetadataController.name);
 
-  constructor(
-    private readonly metadataService: MetadataService,
-  ) {}
+  constructor(private readonly metadataService: MetadataService) {}
 
   /**
    * Récupérer les métadonnées d'une page
@@ -39,7 +40,7 @@ export class OptimizedMetadataController {
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       this.logger.log(`Récupération métadonnées pour: ${route}`);
-      
+
       const metadata = await this.metadataService.getPageMetadata(route, lang);
 
       return {
@@ -47,7 +48,10 @@ export class OptimizedMetadataController {
         data: metadata,
       };
     } catch (error) {
-      this.logger.error(`Erreur récupération métadonnées pour ${route}:`, error);
+      this.logger.error(
+        `Erreur récupération métadonnées pour ${route}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des métadonnées',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -66,7 +70,7 @@ export class OptimizedMetadataController {
   ): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log(`Récupération SEO pour: ${route}`);
-      
+
       const seoData = await this.metadataService.getPageSEO(route, lang);
 
       return {
@@ -93,8 +97,11 @@ export class OptimizedMetadataController {
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       this.logger.log(`Mise à jour métadonnées pour: ${route}`);
-      
-      const metadata = await this.metadataService.updatePageMetadata(route, updateData);
+
+      const metadata = await this.metadataService.updatePageMetadata(
+        route,
+        updateData,
+      );
 
       return {
         success: true,
@@ -117,7 +124,7 @@ export class OptimizedMetadataController {
   async getSitemap(@Query('lang') lang?: string): Promise<any> {
     try {
       this.logger.log(`Génération sitemap pour: ${lang || 'fr'}`);
-      
+
       const sitemap = await this.metadataService.generateSitemap(lang);
 
       return {
@@ -142,7 +149,7 @@ export class OptimizedMetadataController {
   async getRobotsTxt(): Promise<{ success: boolean; data: string }> {
     try {
       this.logger.log('Génération robots.txt');
-      
+
       const robotsTxt = await this.metadataService.generateRobotsTxt();
 
       return {
@@ -166,10 +173,13 @@ export class OptimizedMetadataController {
   async getMetaTags(
     @Param('route') route: string,
     @Query('lang') lang?: string,
-  ): Promise<{ success: boolean; data: { html: string; metadata: PageMetadata } }> {
+  ): Promise<{
+    success: boolean;
+    data: { html: string; metadata: PageMetadata };
+  }> {
     try {
       this.logger.log(`Génération meta tags pour: ${route}`);
-      
+
       const metadata = await this.metadataService.getPageMetadata(route, lang);
       const html = this.metadataService.generateMetaTags(metadata);
 

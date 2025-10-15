@@ -27,7 +27,11 @@ export class SearchController {
   @ApiQuery({ name: 'query', required: false, description: 'Search query' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page' })
-  @ApiQuery({ name: 'clear_cache', required: false, description: 'Clear cache' })
+  @ApiQuery({
+    name: 'clear_cache',
+    required: false,
+    description: 'Clear cache',
+  })
   @ApiResponse({ status: 200, description: 'Search results' })
   async searchPieces(
     @Query('query') query?: string,

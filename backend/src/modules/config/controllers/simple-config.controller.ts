@@ -8,7 +8,10 @@ import {
   HttpCode,
   Logger,
 } from '@nestjs/common';
-import { SimpleConfigService, AppConfig } from '../services/simple-config.service';
+import {
+  SimpleConfigService,
+  AppConfig,
+} from '../services/simple-config.service';
 
 export interface UpdateConfigDto {
   key: keyof AppConfig;
@@ -55,7 +58,9 @@ export class SimpleConfigController {
    * Récupère une valeur spécifique de configuration
    */
   @Get('value/:key')
-  async getConfigValue(@Param('key') key: keyof AppConfig): Promise<{ key: string; value: string | null }> {
+  async getConfigValue(
+    @Param('key') key: keyof AppConfig,
+  ): Promise<{ key: string; value: string | null }> {
     this.logger.debug(`Getting configuration value: ${String(key)}`);
     const value = await this.configService.getConfigValue(key);
     return { key: String(key), value };

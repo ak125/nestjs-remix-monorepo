@@ -1,32 +1,32 @@
 /**
  * 🔄 CONTRÔLEUR DE MIGRATION URLs PIÈCES
- * 
+ *
  * API pour configurer et gérer les redirections 301
  * des anciennes URLs de pièces vers la nouvelle architecture
- * 
+ *
  * @version 1.0.0
  * @since 2025-09-14
  * @author SEO Migration Team
  */
 
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Param, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
   Query,
   Logger,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiResponse, 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
   ApiParam,
   ApiQuery,
-  ApiBody
+  ApiBody,
 } from '@nestjs/swagger';
 import { VehiclePartUrlMigrationService } from '../services/vehicle-part-url-migration.service';
 
@@ -39,7 +39,7 @@ interface RedirectService {
     redirect_type: number;
     reason?: string;
   }): Promise<any>;
-  
+
   findRedirect(url: string): Promise<any>;
   createRedirectRule(rule: any): Promise<any>;
 }
@@ -84,14 +84,16 @@ export class VehiclePartUrlMigrationController {
    * 🧪 Teste la migration d'une URL unique
    */
   @Get('test/:legacyUrl')
-  @ApiOperation({ 
-    summary: 'Teste la migration d\'une URL de pièce',
-    description: 'Valide le mapping d\'une ancienne URL vers la nouvelle structure sans créer de redirection'
+  @ApiOperation({
+    summary: "Teste la migration d'une URL de pièce",
+    description:
+      "Valide le mapping d'une ancienne URL vers la nouvelle structure sans créer de redirection",
   })
-  @ApiParam({ 
-    name: 'legacyUrl', 
+  @ApiParam({
+    name: 'legacyUrl',
     description: 'URL encodée à tester',
-    example: 'pieces%2Ffiltre-a-huile-7%2Faudi-22%2Fa7-sportback-22059%2F3-0-tfsi-quattro-34940.html'
+    example:
+      'pieces%2Ffiltre-a-huile-7%2Faudi-22%2Fa7-sportback-22059%2F3-0-tfsi-quattro-34940.html',
   })
   @ApiResponse({ status: 200, description: 'Test de migration réussi' })
   @ApiResponse({ status: 400, description: 'URL invalide ou non mappable' })
@@ -101,11 +103,11 @@ export class VehiclePartUrlMigrationController {
       this.logger.log(`🧪 Test migration URL: ${legacyUrl}`);
 
       const result = this.migrationService.migratePartUrl(legacyUrl);
-      
+
       if (!result) {
         throw new HttpException(
           `URL non mappable: ${legacyUrl}`,
-          HttpStatus.BAD_REQUEST
+          HttpStatus.BAD_REQUEST,
         );
       }
 
@@ -116,16 +118,15 @@ export class VehiclePartUrlMigrationController {
           legacy_url: legacyUrl,
           new_url: result.newUrl,
           redirect_type: 301,
-          metadata: result.metadata
+          metadata: result.metadata,
         },
-        message: 'Migration testée avec succès (aucune redirection créée)'
+        message: 'Migration testée avec succès (aucune redirection créée)',
       };
-
     } catch (error) {
       this.logger.error(`Erreur test migration:`, error);
       throw new HttpException(
         'Erreur lors du test de migration',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -134,26 +135,26 @@ export class VehiclePartUrlMigrationController {
    * 📊 Obtient les statistiques des mappings disponibles
    */
   @Get('stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Statistiques des mappings de catégories',
-    description: 'Affiche le nombre de catégories mappées et leurs équivalences'
+    description:
+      'Affiche le nombre de catégories mappées et leurs équivalences',
   })
   @ApiResponse({ status: 200, description: 'Statistiques récupérées' })
   async getMappingStats() {
     try {
       const stats = this.migrationService.getMappingStats();
-      
+
       return {
         success: true,
         statistics: stats,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`Erreur récupération stats:`, error);
       throw new HttpException(
         'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -162,20 +163,29 @@ export class VehiclePartUrlMigrationController {
    * 🔄 Migre une URL unique et crée la redirection
    */
   @Post('migrate-url')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Migre une URL unique et crée la redirection 301',
-    description: 'Analyse une ancienne URL, la mappe vers la nouvelle structure et crée la redirection'
+    description:
+      'Analyse une ancienne URL, la mappe vers la nouvelle structure et crée la redirection',
   })
-  @ApiBody({ 
+  @ApiBody({
     description: 'Données de migration',
     schema: {
       type: 'object',
       properties: {
-        legacy_url: { type: 'string', example: '/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html' },
-        test_mode: { type: 'boolean', example: false, description: 'Si true, ne crée pas la redirection' }
+        legacy_url: {
+          type: 'string',
+          example:
+            '/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html',
+        },
+        test_mode: {
+          type: 'boolean',
+          example: false,
+          description: 'Si true, ne crée pas la redirection',
+        },
       },
-      required: ['legacy_url']
-    }
+      required: ['legacy_url'],
+    },
   })
   @ApiResponse({ status: 201, description: 'Redirection créée avec succès' })
   @ApiResponse({ status: 400, description: 'URL invalide ou non mappable' })
@@ -185,11 +195,11 @@ export class VehiclePartUrlMigrationController {
       this.logger.log(`🔄 Migration URL: ${legacy_url} (test: ${test_mode})`);
 
       const result = this.migrationService.migratePartUrl(legacy_url);
-      
+
       if (!result) {
         throw new HttpException(
           `URL non mappable: ${legacy_url}`,
-          HttpStatus.BAD_REQUEST
+          HttpStatus.BAD_REQUEST,
         );
       }
 
@@ -201,9 +211,9 @@ export class VehiclePartUrlMigrationController {
           migration: {
             legacy_url,
             new_url: result.newUrl,
-            metadata: result.metadata
+            metadata: result.metadata,
           },
-          message: 'Migration testée (aucune redirection créée)'
+          message: 'Migration testée (aucune redirection créée)',
         };
       }
 
@@ -222,17 +232,16 @@ export class VehiclePartUrlMigrationController {
           legacy_url,
           new_url: result.newUrl,
           redirect_type: 301,
-          metadata: result.metadata
+          metadata: result.metadata,
         },
         // redirect_id: redirect?.id,
-        message: 'Redirection 301 créée avec succès'
+        message: 'Redirection 301 créée avec succès',
       };
-
     } catch (error) {
       this.logger.error(`Erreur migration URL:`, error);
       throw new HttpException(
         'Erreur lors de la migration',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -241,11 +250,12 @@ export class VehiclePartUrlMigrationController {
    * 🔄 Crée toutes les redirections pour un véhicule donné
    */
   @Post('migrate-vehicle')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Crée toutes les redirections 301 pour un véhicule',
-    description: 'Génère automatiquement toutes les redirections de catégories pour un véhicule spécifique'
+    description:
+      'Génère automatiquement toutes les redirections de catégories pour un véhicule spécifique',
   })
-  @ApiBody({ 
+  @ApiBody({
     description: 'Informations du véhicule',
     schema: {
       type: 'object',
@@ -256,23 +266,46 @@ export class VehiclePartUrlMigrationController {
         model_id: { type: 'number', example: 22059 },
         type_slug: { type: 'string', example: '3-0-tfsi-quattro' },
         type_id: { type: 'number', example: 34940 },
-        force_update: { type: 'boolean', example: false, description: 'Force la mise à jour si redirection existe' }
+        force_update: {
+          type: 'boolean',
+          example: false,
+          description: 'Force la mise à jour si redirection existe',
+        },
       },
-      required: ['brand_slug', 'brand_id', 'model_slug', 'model_id', 'type_slug', 'type_id']
-    }
+      required: [
+        'brand_slug',
+        'brand_id',
+        'model_slug',
+        'model_id',
+        'type_slug',
+        'type_id',
+      ],
+    },
   })
   @ApiResponse({ status: 201, description: 'Redirections créées avec succès' })
   async migrateVehicleUrls(@Body() body: BulkRedirectRequest) {
     try {
-      const { 
-        brand_slug, brand_id, model_slug, model_id, 
-        type_slug, type_id, force_update = false 
+      const {
+        brand_slug,
+        brand_id,
+        model_slug,
+        model_id,
+        type_slug,
+        type_id,
+        force_update = false,
       } = body;
 
-      this.logger.log(`🚗 Migration véhicule: ${brand_slug} ${model_slug} ${type_slug}`);
+      this.logger.log(
+        `🚗 Migration véhicule: ${brand_slug} ${model_slug} ${type_slug}`,
+      );
 
       const redirections = this.migrationService.generateVehicleRedirections(
-        brand_slug, brand_id, model_slug, model_id, type_slug, type_id
+        brand_slug,
+        brand_id,
+        model_slug,
+        model_id,
+        type_slug,
+        type_id,
       );
 
       const results = {
@@ -280,11 +313,11 @@ export class VehiclePartUrlMigrationController {
         vehicle: {
           brand: `${brand_slug}-${brand_id}`,
           model: `${model_slug}-${model_id}`,
-          type: `${type_slug}-${type_id}`
+          type: `${type_slug}-${type_id}`,
         },
         redirections_created: [],
         redirections_skipped: [],
-        errors: []
+        errors: [],
       };
 
       // TODO: Traiter chaque redirection avec votre service
@@ -292,7 +325,7 @@ export class VehiclePartUrlMigrationController {
         try {
           // Vérifier si la redirection existe déjà
           // const existing = await this.redirectService.findRedirect(redirection.source);
-          
+
           // if (existing && !force_update) {
           //   results.redirections_skipped.push({
           //     source: redirection.source,
@@ -313,27 +346,30 @@ export class VehiclePartUrlMigrationController {
             source: redirection.source,
             destination: redirection.destination,
             // redirect_id: redirect?.id,
-            category: redirection.metadata.category_info.modern_name
+            category: redirection.metadata.category_info.modern_name,
           });
-
         } catch (error) {
-          this.logger.error(`Erreur création redirection ${redirection.source}:`, error);
+          this.logger.error(
+            `Erreur création redirection ${redirection.source}:`,
+            error,
+          );
           results.errors.push({
             source: redirection.source,
-            error: error.message
+            error: error.message,
           });
         }
       }
 
-      this.logger.log(`✅ Migration terminée: ${results.redirections_created.length} créées, ${results.redirections_skipped.length} ignorées, ${results.errors.length} erreurs`);
+      this.logger.log(
+        `✅ Migration terminée: ${results.redirections_created.length} créées, ${results.redirections_skipped.length} ignorées, ${results.errors.length} erreurs`,
+      );
 
       return results;
-
     } catch (error) {
       this.logger.error(`Erreur migration véhicule:`, error);
       throw new HttpException(
         'Erreur lors de la migration du véhicule',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -342,29 +378,29 @@ export class VehiclePartUrlMigrationController {
    * 🧪 Lance les tests des exemples fournis
    */
   @Get('test-examples')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Teste les exemples de migration fournis',
-    description: 'Lance les tests sur les URLs d\'exemple pour valider le système'
+    description:
+      "Lance les tests sur les URLs d'exemple pour valider le système",
   })
   @ApiResponse({ status: 200, description: 'Tests terminés' })
   async testMigrationExamples() {
     try {
       this.logger.log(`🧪 Lancement des tests d'exemples...`);
-      
+
       // Le service va logger les résultats
       await this.migrationService.testMigrationExamples();
-      
+
       return {
         success: true,
         message: 'Tests des exemples terminés (voir logs)',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`Erreur tests exemples:`, error);
       throw new HttpException(
         'Erreur lors des tests',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -373,9 +409,10 @@ export class VehiclePartUrlMigrationController {
    * 📋 Génère un aperçu des redirections pour un véhicule
    */
   @Get('preview/:brand/:brandId/:model/:modelId/:type/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Aperçu des redirections pour un véhicule',
-    description: 'Génère la liste des redirections qui seraient créées pour un véhicule donné'
+    description:
+      'Génère la liste des redirections qui seraient créées pour un véhicule donné',
   })
   @ApiParam({ name: 'brand', example: 'audi' })
   @ApiParam({ name: 'brandId', example: '22' })
@@ -390,11 +427,16 @@ export class VehiclePartUrlMigrationController {
     @Param('model') model: string,
     @Param('modelId') modelId: string,
     @Param('type') type: string,
-    @Param('typeId') typeId: string
+    @Param('typeId') typeId: string,
   ) {
     try {
       const redirections = this.migrationService.generateVehicleRedirections(
-        brand, parseInt(brandId), model, parseInt(modelId), type, parseInt(typeId)
+        brand,
+        parseInt(brandId),
+        model,
+        parseInt(modelId),
+        type,
+        parseInt(typeId),
       );
 
       return {
@@ -402,24 +444,23 @@ export class VehiclePartUrlMigrationController {
         vehicle: {
           brand: `${brand}-${brandId}`,
           model: `${model}-${modelId}`,
-          type: `${type}-${typeId}`
+          type: `${type}-${typeId}`,
         },
         total_redirections: redirections.length,
-        redirections: redirections.map(r => ({
+        redirections: redirections.map((r) => ({
           legacy_url: r.source,
           modern_url: r.destination,
           category: r.metadata.category_info.modern_name,
-          seo_keywords: r.metadata.category_info.seo_keywords
+          seo_keywords: r.metadata.category_info.seo_keywords,
         })),
         preview_mode: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`Erreur aperçu redirections:`, error);
       throw new HttpException(
-        'Erreur lors de la génération de l\'aperçu',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        "Erreur lors de la génération de l'aperçu",
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -428,21 +469,25 @@ export class VehiclePartUrlMigrationController {
    * 🔧 Génère les règles de redirection pour Caddy
    */
   @Get('generate-caddy-rules')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génère les règles de redirection Caddy',
-    description: 'Créé la configuration Caddy pour les redirections 301 des anciennes URLs'
+    description:
+      'Créé la configuration Caddy pour les redirections 301 des anciennes URLs',
   })
-  @ApiQuery({ 
-    name: 'category', 
-    required: false, 
-    description: 'Filtrer par catégorie spécifique (filtres, freinage, etc.)' 
+  @ApiQuery({
+    name: 'category',
+    required: false,
+    description: 'Filtrer par catégorie spécifique (filtres, freinage, etc.)',
   })
   async generateCaddyRules(@Query('category') category?: string) {
     try {
-      this.logger.log(`🔧 Génération règles Caddy - Catégorie: ${category || 'toutes'}`);
-      
-      const rules = await this.migrationService.generateCaddyRedirectRules(category);
-      
+      this.logger.log(
+        `🔧 Génération règles Caddy - Catégorie: ${category || 'toutes'}`,
+      );
+
+      const rules =
+        await this.migrationService.generateCaddyRedirectRules(category);
+
       return {
         success: true,
         server: 'Caddy v2',
@@ -456,19 +501,20 @@ export class VehiclePartUrlMigrationController {
           '2. Placez-les dans le bloc de votre domaine',
           '3. Testez avec: caddy validate --config Caddyfile',
           '4. Rechargez avec: caddy reload --config Caddyfile',
-          '5. Vérifiez les logs: tail -f /var/log/caddy/access.log'
+          '5. Vérifiez les logs: tail -f /var/log/caddy/access.log',
         ],
         example_usage: {
-          test_url: 'curl -I "https://your-domain.com/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html"',
-          expected_response: 'HTTP/2 301\nlocation: /pieces/audi-22/a7-sportback-22059/type-34940/filtres'
-        }
+          test_url:
+            'curl -I "https://your-domain.com/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html"',
+          expected_response:
+            'HTTP/2 301\nlocation: /pieces/audi-22/a7-sportback-22059/type-34940/filtres',
+        },
       };
-
     } catch (error) {
       this.logger.error(`Erreur génération règles Caddy:`, error);
       throw new HttpException(
         'Erreur lors de la génération des règles Caddy',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

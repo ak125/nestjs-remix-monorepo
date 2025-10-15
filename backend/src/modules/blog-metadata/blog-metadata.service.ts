@@ -1,9 +1,9 @@
 /**
  * 📝 BLOG METADATA SERVICE
- * 
+ *
  * Service générique pour récupérer les métadonnées SEO
  * depuis la table __blog_meta_tags_ariane de Supabase
- * 
+ *
  * Utilisable par toutes les pages du blog
  */
 
@@ -46,7 +46,7 @@ export class BlogMetadataService {
       // 1️⃣ Vérifier le cache Redis
       const cacheKey = `blog-meta:${alias}`;
       const cached = await this.cacheManager.get<BlogMetadata>(cacheKey);
-      
+
       if (cached) {
         this.logger.log(`✅ Métadonnées depuis cache pour "${alias}"`);
         return cached;
@@ -65,7 +65,7 @@ export class BlogMetadataService {
           `⚠️ Aucune métadonnée trouvée pour "${alias}":`,
           error?.message || 'Pas de données',
         );
-        
+
         return this.getDefaultMetadata(alias);
       }
 
@@ -91,7 +91,7 @@ export class BlogMetadataService {
         `❌ Erreur getMetadata pour "${alias}":`,
         error instanceof Error ? error.message : error,
       );
-      
+
       return this.getDefaultMetadata(alias);
     }
   }
@@ -107,7 +107,7 @@ export class BlogMetadataService {
       // Vérifier le cache
       const cacheKey = 'blog-meta:all';
       const cached = await this.cacheManager.get<BlogMetadata[]>(cacheKey);
-      
+
       if (cached) {
         this.logger.log(`✅ ${cached.length} métadonnées depuis cache`);
         return cached;
@@ -154,7 +154,7 @@ export class BlogMetadataService {
     try {
       const cacheKey = 'blog-meta:aliases';
       const cached = await this.cacheManager.get<string[]>(cacheKey);
-      
+
       if (cached) {
         return cached;
       }
@@ -170,9 +170,9 @@ export class BlogMetadataService {
       }
 
       const aliases = data.map((item) => item.mta_alias);
-      
+
       await this.cacheManager.set(cacheKey, aliases, 3600);
-      
+
       return aliases;
     } catch (error) {
       this.logger.error('❌ Erreur getAvailableAliases:', error);
@@ -195,15 +195,15 @@ export class BlogMetadataService {
   async invalidateAllCache(): Promise<void> {
     // Récupérer tous les alias pour invalider leurs caches
     const aliases = await this.getAvailableAliases();
-    
+
     for (const alias of aliases) {
       await this.invalidateCache(alias);
     }
-    
+
     // Invalider le cache global
     await this.cacheManager.del('blog-meta:all');
     await this.cacheManager.del('blog-meta:aliases');
-    
+
     this.logger.log('🗑️ Tout le cache des métadonnées invalidé');
   }
 
@@ -220,7 +220,7 @@ export class BlogMetadataService {
     if (value === '1') {
       return 'index, follow';
     }
-    
+
     if (value === '0') {
       return 'noindex, nofollow';
     }
@@ -263,7 +263,7 @@ export class BlogMetadataService {
       },
       advice: {
         title: 'Conseils & Guides Auto | Automecanik',
-        description: 'Tous nos conseils pour l\'entretien de votre véhicule.',
+        description: "Tous nos conseils pour l'entretien de votre véhicule.",
         keywords: 'conseils auto, guides, entretien',
         h1: 'Conseils & Guides',
         ariane: 'Accueil > Conseils',

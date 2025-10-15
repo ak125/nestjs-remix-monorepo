@@ -1,6 +1,6 @@
 /**
  * 📝 BLOG METADATA CONTROLLER
- * 
+ *
  * API REST pour les métadonnées SEO des pages blog
  * Routes: /api/blog/metadata/*
  */
@@ -25,7 +25,7 @@ export class BlogMetadataController {
   /**
    * GET /api/blog/metadata/:alias
    * Récupérer les métadonnées d'une page spécifique
-   * 
+   *
    * Exemples:
    * - /api/blog/metadata/constructeurs
    * - /api/blog/metadata/advice
@@ -34,7 +34,7 @@ export class BlogMetadataController {
   @Get(':alias')
   async getMetadata(@Param('alias') alias: string) {
     this.logger.log(`GET /api/blog/metadata/${alias}`);
-    
+
     const metadata = await this.metadataService.getMetadata(alias);
 
     return {
@@ -53,7 +53,7 @@ export class BlogMetadataController {
   @Get()
   async getAllMetadata() {
     this.logger.log('GET /api/blog/metadata (all)');
-    
+
     const allMetadata = await this.metadataService.getAllMetadata();
 
     return {
@@ -71,7 +71,7 @@ export class BlogMetadataController {
   @Get('aliases/list')
   async getAliases() {
     this.logger.log('GET /api/blog/metadata-aliases');
-    
+
     const aliases = await this.metadataService.getAvailableAliases();
 
     return {
@@ -91,7 +91,7 @@ export class BlogMetadataController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async invalidateCache(@Param('alias') alias: string) {
     this.logger.log(`DELETE /api/blog/metadata/cache/${alias}`);
-    
+
     await this.metadataService.invalidateCache(alias);
 
     return {
@@ -108,7 +108,7 @@ export class BlogMetadataController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async invalidateAllCache() {
     this.logger.log('DELETE /api/blog/metadata/cache (all)');
-    
+
     await this.metadataService.invalidateAllCache();
 
     return {

@@ -24,7 +24,9 @@ export class PasswordCryptoService {
   private readonly LEGACY_SALT = 'im10tech7';
 
   constructor() {
-    this.logger.log('PasswordCryptoService initialized - Centralized crypto service');
+    this.logger.log(
+      'PasswordCryptoService initialized - Centralized crypto service',
+    );
   }
 
   /**
@@ -47,8 +49,10 @@ export class PasswordCryptoService {
     hashedPassword: string,
   ): Promise<PasswordValidationResult> {
     try {
-      this.logger.debug(`🔐 Validating password - Hash format: ${hashedPassword.substring(0, 10)}...`);
-      
+      this.logger.debug(
+        `🔐 Validating password - Hash format: ${hashedPassword.substring(0, 10)}...`,
+      );
+
       // Format bcrypt moderne ($2a$, $2b$, $2y$)
       if (hashedPassword.startsWith('$2')) {
         this.logger.debug('🔐 Using bcrypt validation');
@@ -58,22 +62,37 @@ export class PasswordCryptoService {
       }
 
       // Format MD5 simple (32 caractères hex) - utilisé dans ___config_admin
-      if (hashedPassword.length === 32 && /^[a-f0-9]{32}$/i.test(hashedPassword)) {
-        const md5Hash = crypto.createHash('md5').update(plainPassword).digest('hex');
+      if (
+        hashedPassword.length === 32 &&
+        /^[a-f0-9]{32}$/i.test(hashedPassword)
+      ) {
+        const md5Hash = crypto
+          .createHash('md5')
+          .update(plainPassword)
+          .digest('hex');
         const isValid = md5Hash === hashedPassword;
         return { isValid, format: 'md5' };
       }
 
       // Format SHA1 (40 caractères hex) - système intermédiaire
-      if (hashedPassword.length === 40 && /^[a-f0-9]{40}$/i.test(hashedPassword)) {
-        const sha1Hash = crypto.createHash('sha1').update(plainPassword).digest('hex');
+      if (
+        hashedPassword.length === 40 &&
+        /^[a-f0-9]{40}$/i.test(hashedPassword)
+      ) {
+        const sha1Hash = crypto
+          .createHash('sha1')
+          .update(plainPassword)
+          .digest('hex');
         const isValid = sha1Hash === hashedPassword;
         return { isValid, format: 'sha1' };
       }
 
       // Format legacy MD5+crypt avec sel "im10tech7" (13 caractères)
       if (hashedPassword.length === 13) {
-        const isValid = this.verifyLegacyPassword(plainPassword, hashedPassword);
+        const isValid = this.verifyLegacyPassword(
+          plainPassword,
+          hashedPassword,
+        );
         return { isValid, format: 'md5-crypt' };
       }
 
@@ -84,7 +103,9 @@ export class PasswordCryptoService {
       }
 
       // Format inconnu
-      this.logger.warn(`Unknown password format: length=${hashedPassword.length}`);
+      this.logger.warn(
+        `Unknown password format: length=${hashedPassword.length}`,
+      );
       return { isValid: false, format: 'unknown' };
     } catch (error) {
       this.logger.error('Error validating password:', error);
@@ -101,7 +122,10 @@ export class PasswordCryptoService {
   ): boolean {
     try {
       // Reproduire l'ancien système : crypt(md5($password), "im10tech7")
-      const md5Hash = crypto.createHash('md5').update(plainPassword).digest('hex');
+      const md5Hash = crypto
+        .createHash('md5')
+        .update(plainPassword)
+        .digest('hex');
       const legacyHash = this.phpCrypt(md5Hash, this.LEGACY_SALT);
       return legacyHash === hashedPassword;
     } catch (error) {
@@ -187,7 +211,10 @@ export class PasswordCryptoService {
 
       return true;
     } catch (error) {
-      this.logger.error(`Failed to upgrade password for user ${userId}:`, error);
+      this.logger.error(
+        `Failed to upgrade password for user ${userId}:`,
+        error,
+      );
       return false;
     }
   }
@@ -220,7 +247,9 @@ export class PasswordCryptoService {
     }
 
     if (requireSpecialChar && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('Le mot de passe doit contenir au moins un caractère spécial');
+      errors.push(
+        'Le mot de passe doit contenir au moins un caractère spécial',
+      );
     }
 
     if (errors.length > 0) {

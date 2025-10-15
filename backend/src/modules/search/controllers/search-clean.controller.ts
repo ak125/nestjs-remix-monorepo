@@ -33,7 +33,11 @@ export class SearchController {
   @ApiOperation({ summary: 'Recherche de pièces' })
   @ApiResponse({ status: 200, description: 'Résultats de recherche' })
   @ApiQuery({ name: 'q', description: 'Terme de recherche', required: true })
-  @ApiQuery({ name: 'limit', description: 'Nombre de résultats', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Nombre de résultats',
+    required: false,
+  })
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   async search(
     @Query('q') query: string,
@@ -69,8 +73,9 @@ export class SearchController {
       return results;
     } catch (error) {
       this.logger.error('Search error:', error);
-      const message = error instanceof Error ? error.message : 'Erreur inconnue';
-      
+      const message =
+        error instanceof Error ? error.message : 'Erreur inconnue';
+
       throw new HttpException(
         `Erreur lors de la recherche: ${message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -92,7 +97,7 @@ export class SearchController {
 
       // Utiliser instantSearch qui existe
       const results = await this.searchService.instantSearch(query.trim());
-      
+
       // Extraire les suggestions du résultat
       return results.suggestions || [];
     } catch (error) {
@@ -162,7 +167,11 @@ export class SearchController {
    */
   @Get('mine')
   @ApiOperation({ summary: 'Recherche par code MINE' })
-  @ApiQuery({ name: 'code', description: 'Code MINE du véhicule', required: true })
+  @ApiQuery({
+    name: 'code',
+    description: 'Code MINE du véhicule',
+    required: true,
+  })
   async searchByMine(@Query('code') code: string, @User() user?: any) {
     try {
       if (!code || code.trim().length === 0) {
@@ -172,7 +181,10 @@ export class SearchController {
         );
       }
 
-      const results = await this.searchService.searchByMine(code.trim(), user?.id);
+      const results = await this.searchService.searchByMine(
+        code.trim(),
+        user?.id,
+      );
       return results;
     } catch (error) {
       this.logger.error('MINE search error:', error);
@@ -298,7 +310,11 @@ export class SearchController {
   @Get('simple')
   @ApiOperation({ summary: 'Recherche simple' })
   @ApiQuery({ name: 'q', description: 'Terme de recherche', required: true })
-  @ApiQuery({ name: 'limit', description: 'Nombre de résultats', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Nombre de résultats',
+    required: false,
+  })
   async simpleSearch(
     @Query('q') query: string,
     @Query('limit') limit?: string,
@@ -309,8 +325,11 @@ export class SearchController {
       }
 
       const limitNum = limit ? Math.min(parseInt(limit, 10), 50) : 20;
-      const results = await this.searchService.simpleSearch(query.trim(), limitNum);
-      
+      const results = await this.searchService.simpleSearch(
+        query.trim(),
+        limitNum,
+      );
+
       return {
         items: results,
         count: results.length,

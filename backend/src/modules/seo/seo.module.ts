@@ -27,7 +27,7 @@ import { AdvancedSeoV5Controller } from './advanced-seo-v5.controller';
 @Module({
   imports: [
     ConfigModule,
-    
+
     // 🎯 Cache Redis pour SEO V4 Ultimate
     CacheModule.register({
       ttl: 3600, // 1 heure par défaut
@@ -35,7 +35,7 @@ import { AdvancedSeoV5Controller } from './advanced-seo-v5.controller';
       isGlobal: false,
     }),
   ],
-  
+
   controllers: [
     SeoController,
     SeoEnhancedController, // 🎯 Contrôleur pour templates dynamiques
@@ -43,14 +43,14 @@ import { AdvancedSeoV5Controller } from './advanced-seo-v5.controller';
     DynamicSeoController, // 🎯 Contrôleur V4 Ultimate
     AdvancedSeoV5Controller, // 🎯 Contrôleur V5 ULTIMATE - Le plus avancé
   ],
-  
+
   providers: [
     SeoService,
     SeoEnhancedService, // 🎯 Service enrichi avec templates dynamiques
     SitemapService,
     DynamicSeoV4UltimateService, // 🎯 Service V4 Ultimate
     AdvancedSeoV5UltimateService, // 🎯 Service V5 ULTIMATE - Le plus avancé
-    
+
     // Logger spécialisé pour V4/V5
     {
       provide: 'SEO_V4_LOGGER',
@@ -61,7 +61,7 @@ import { AdvancedSeoV5Controller } from './advanced-seo-v5.controller';
       useFactory: () => new Logger('SeoModuleV5Ultimate'),
     },
   ],
-  
+
   exports: [
     SeoService,
     SeoEnhancedService, // 🎯 Exporté pour utilisation dans autres modules
@@ -110,7 +110,7 @@ export class SeoModule {
  * 📊 EXPORTS POUR V4/V5 ULTIMATE
  */
 export { SeoVariables } from './dynamic-seo-v4-ultimate.service';
-export type { 
+export type {
   ComplexSeoVariables,
   ComplexSeoResult,
 } from './advanced-seo-v5-ultimate.service';

@@ -4,9 +4,9 @@ import { z } from 'zod';
 
 /**
  * 🎯 FILTERING SERVICE V5 ULTIMATE CLEAN - MÉTHODOLOGIE APPLIQUÉE
- * 
+ *
  * "Vérifier existant avant et utiliser le meilleur et améliorer"
- * 
+ *
  * ✅ Version PROPRE et FONCTIONNELLE du service V5
  * ✅ Toutes les erreurs TypeScript corrigées
  * ✅ Code propre et professionnel
@@ -69,12 +69,18 @@ export class ProductFilteringService extends SupabaseBaseService {
   /**
    * 🎯 MÉTHODE PRINCIPALE - Récupérer tous les filtres
    */
-  async getAllFilters(pgId: number, typeId: number, options: any = {}): Promise<FilterResult> {
+  async getAllFilters(
+    pgId: number,
+    typeId: number,
+    options: any = {},
+  ): Promise<FilterResult> {
     const startTime = Date.now();
-    
+
     try {
-      this.logger.log(`🎯 [FilteringV5Clean] Début getAllFilters pgId=${pgId}, typeId=${typeId}`);
-      
+      this.logger.log(
+        `🎯 [FilteringV5Clean] Début getAllFilters pgId=${pgId}, typeId=${typeId}`,
+      );
+
       // 📊 FILTRES GAMME
       const gammeFilters: FilterGroup = {
         type: 'gamme',
@@ -98,12 +104,12 @@ export class ProductFilteringService extends SupabaseBaseService {
           {
             id: 2,
             value: 'echappement',
-            label: 'Système d\'Échappement',
+            label: "Système d'Échappement",
             alias: 'echappement-systeme',
             count: 856,
             trending: false,
             metadata: {
-              description: 'Pots d\'échappement et accessoires',
+              description: "Pots d'échappement et accessoires",
               icon: '💨',
               color: '#6c757d',
               compatibility: 'universal',
@@ -191,9 +197,14 @@ export class ProductFilteringService extends SupabaseBaseService {
       // 📊 CALCUL DES STATISTIQUES
       const summary = {
         total_filters: allFilters.length,
-        total_options: allFilters.reduce((sum, group) => sum + group.options.length, 0),
+        total_options: allFilters.reduce(
+          (sum, group) => sum + group.options.length,
+          0,
+        ),
         trending_options: allFilters.reduce(
-          (sum, group) => sum + group.options.filter((opt: FilterOption) => opt.trending).length,
+          (sum, group) =>
+            sum +
+            group.options.filter((opt: FilterOption) => opt.trending).length,
           0,
         ),
       };
@@ -210,15 +221,21 @@ export class ProductFilteringService extends SupabaseBaseService {
           response_time: Date.now() - startTime,
           service_name: 'FilteringServiceV5UltimateClean',
           api_version: 'V5_ULTIMATE_CLEAN',
-          methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
+          methodology:
+            'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
         },
       };
 
-      this.logger.log(`✅ [FilteringV5Clean] Retour réussi en ${Date.now() - startTime}ms`);
+      this.logger.log(
+        `✅ [FilteringV5Clean] Retour réussi en ${Date.now() - startTime}ms`,
+      );
       return result;
     } catch (error) {
-      this.logger.error(`❌ [FilteringV5Clean] Erreur dans getAllFilters:`, error);
-      
+      this.logger.error(
+        `❌ [FilteringV5Clean] Erreur dans getAllFilters:`,
+        error,
+      );
+
       // 🚨 FALLBACK EN CAS D'ERREUR
       return {
         success: false,
@@ -235,7 +252,8 @@ export class ProductFilteringService extends SupabaseBaseService {
           response_time: Date.now() - startTime,
           service_name: 'FilteringServiceV5UltimateClean',
           api_version: 'V5_ULTIMATE_CLEAN',
-          methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
+          methodology:
+            'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
         },
       };
     }
@@ -254,10 +272,11 @@ export class ProductFilteringService extends SupabaseBaseService {
         '3 groupes de filtres (gamme, side, quality)',
         'Métadonnées enrichies avec icônes et couleurs',
         'Support trending et compatibilité',
-        'Gestion d\'erreurs robuste',
+        "Gestion d'erreurs robuste",
         'Validation Zod complète',
       ],
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
+      methodology:
+        'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
     };
   }
 
@@ -279,7 +298,8 @@ export class ProductFilteringService extends SupabaseBaseService {
         success_rate: '100%',
         cache_hit_rate: 'N/A (no cache for simplicity)',
       },
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
+      methodology:
+        'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
       timestamp: new Date().toISOString(),
     };
   }
@@ -288,6 +308,8 @@ export class ProductFilteringService extends SupabaseBaseService {
    * 🧹 INVALIDATION DU CACHE (simple implémentation)
    */
   invalidateCache() {
-    this.logger.log('🧹 [FilteringV5Clean] Cache invalidated (no actual cache implemented for simplicity)');
+    this.logger.log(
+      '🧹 [FilteringV5Clean] Cache invalidated (no actual cache implemented for simplicity)',
+    );
   }
 }

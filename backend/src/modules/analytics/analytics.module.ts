@@ -13,7 +13,7 @@ import { DatabaseModule } from '../../database/database.module';
 
 /**
  * 📊 ANALYTICS MODULE - Module Analytics Avancé
- * 
+ *
  * Architecture alignée sur les meilleures pratiques du projet :
  * ✅ Module global pour utilisation dans toute l'application
  * ✅ Service principal pour gestion des configurations analytics
@@ -27,18 +27,10 @@ import { DatabaseModule } from '../../database/database.module';
 
 @Global()
 @Module({
-  imports: [
-    ConfigModule,
-    CacheModule,
-    DatabaseModule,
-  ],
+  imports: [ConfigModule, CacheModule, DatabaseModule],
   controllers: [SimpleAnalyticsController],
-  providers: [
-    SimpleAnalyticsService,
-  ],
-  exports: [
-    SimpleAnalyticsService,
-  ],
+  providers: [SimpleAnalyticsService],
+  exports: [SimpleAnalyticsService],
 })
 export class AnalyticsModule {
   /**

@@ -155,12 +155,12 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       // 4️⃣ TRANSFORMATION DES DONNÉES SELON LOGIQUE PHP EXACTE
       const pieces = piecesData.map((piece) => {
         const relation = relationsMap.get(piece.piece_id);
-        
+
         // � Conversion en string pour correspondre aux clés de marquesMap
         const marqueKey = (
           relation?.rtp_pm_id || piece.piece_pm_id
         )?.toString();
-        
+
         const marqueEquip = marquesMap.get(marqueKey);
         const price = pricesMap.get(piece.piece_id.toString()); // 🔧 Conversion en string
         const filtre = filtresMap.get(relation?.rtp_psf_id);

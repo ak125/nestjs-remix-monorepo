@@ -20,8 +20,8 @@ export interface CreateOrderData {
     unitPrice: number;
     vatRate?: number;
     discount?: number;
-    consigne_unit?: number;  // ✅ Phase 5: Consigne unitaire
-    has_consigne?: boolean;  // ✅ Phase 5: Produit avec consigne
+    consigne_unit?: number; // ✅ Phase 5: Consigne unitaire
+    has_consigne?: boolean; // ✅ Phase 5: Produit avec consigne
   }>;
   billingAddress: any;
   shippingAddress: any;
@@ -145,10 +145,10 @@ export class OrdersService extends SupabaseBaseService {
         .from('___xtr_order')
         .insert(orderToInsert)
         .select();
-      
+
       this.logger.log('📥 Réponse Supabase data:', createdOrders);
       this.logger.log('📥 Réponse Supabase error:', orderError);
-      
+
       const createdOrder = createdOrders?.[0];
 
       // Vérifier si c'est une vraie erreur (pas juste un objet vide)
@@ -168,7 +168,7 @@ export class OrdersService extends SupabaseBaseService {
           `Échec création commande: ${orderError.message || orderError.code}`,
         );
       }
-      
+
       // Si pas de données retournées mais pas d'erreur, créer un objet minimal
       if (!createdOrder) {
         this.logger.warn(
@@ -205,10 +205,7 @@ export class OrdersService extends SupabaseBaseService {
       if (linesError) {
         this.logger.error('Erreur création lignes:', linesError);
         // Rollback manuel - supprimer la commande
-        await this.supabase
-          .from('___xtr_order')
-          .delete()
-          .eq('ord_id', orderId);
+        await this.supabase.from('___xtr_order').delete().eq('ord_id', orderId);
         throw new BadRequestException(
           `Échec création lignes: ${linesError.message}`,
         );

@@ -30,7 +30,9 @@ export class StockManagementService {
   ) {
     // Initialiser le client Supabase
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     // Import dynamique pour éviter les problèmes de build
     const { createClient } = require('@supabase/supabase-js');
@@ -52,7 +54,9 @@ export class StockManagementService {
         .single();
 
       if (error || !product) {
-        this.logger.warn(`Produit ${productId} introuvable pour vérification stock`);
+        this.logger.warn(
+          `Produit ${productId} introuvable pour vérification stock`,
+        );
         return 0;
       }
 
@@ -141,7 +145,9 @@ export class StockManagementService {
           quantity,
           session_id: sessionId,
           reserved_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + this.RESERVATION_TTL * 1000).toISOString(),
+          expires_at: new Date(
+            Date.now() + this.RESERVATION_TTL * 1000,
+          ).toISOString(),
         },
         this.RESERVATION_TTL,
       );
@@ -342,8 +348,10 @@ export class StockManagementService {
     try {
       // Pattern pour trouver toutes les réservations de la session
       // Note: Redis SCAN serait plus efficace en production
-      this.logger.log(`🧹 Libération de toutes les réservations pour session ${sessionId}`);
-      
+      this.logger.log(
+        `🧹 Libération de toutes les réservations pour session ${sessionId}`,
+      );
+
       // Cette méthode devrait être appelée lors du vidage du panier
       // ou de la validation de commande
     } catch (error) {

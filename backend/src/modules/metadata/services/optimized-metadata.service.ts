@@ -1,13 +1,13 @@
 /**
  * 📄 OPTIMIZED METADATA SERVICE - Service de Métadonnées Optimisé
- * 
+ *
  * ✅ MISSION ACCOMPLIE : "Vérifier existant et utiliser le meilleur"
- * 
+ *
  * Utilise exclusivement les tables existantes :
  * ✅ Table ___meta_tags_ariane (structure confirmée)
- * ✅ Colonnes : mta_id, mta_alias, mta_title, mta_descrip, mta_keywords, 
+ * ✅ Colonnes : mta_id, mta_alias, mta_title, mta_descrip, mta_keywords,
  *              mta_h1, mta_content, mta_ariane, mta_relfollow
- * 
+ *
  * Fonctionnalités professionnelles :
  * ✅ Cache Redis intelligent
  * ✅ Métadonnées complètes (titre, description, keywords, h1)
@@ -47,9 +47,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   private readonly cachePrefix = 'metadata:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
     super();
     this.logger.log('📄 OptimizedMetadataService initialisé');
   }
@@ -62,11 +60,13 @@ export class OptimizedMetadataService extends SupabaseBaseService {
     try {
       const cleanPath = this.cleanPath(path);
       const cacheKey = `${this.cachePrefix}${cleanPath}`;
-      
+
       // Vérifier le cache Redis
       const cached = await this.cacheManager.get<PageMetadata>(cacheKey);
       if (cached) {
-        this.logger.debug(`✅ Métadonnées trouvées en cache pour: ${cleanPath}`);
+        this.logger.debug(
+          `✅ Métadonnées trouvées en cache pour: ${cleanPath}`,
+        );
         return cached;
       }
 
@@ -87,22 +87,36 @@ export class OptimizedMetadataService extends SupabaseBaseService {
         // Construire les métadonnées depuis la table
         metadata = {
           title: data.mta_title || this.generateDefaultTitle(cleanPath),
-          description: data.mta_descrip || this.generateDefaultDescription(cleanPath),
-          keywords: data.mta_keywords ? data.mta_keywords.split(',').map(k => k.trim()).filter(k => k) : [],
-          h1: data.mta_h1 || data.mta_title || this.generateDefaultTitle(cleanPath),
+          description:
+            data.mta_descrip || this.generateDefaultDescription(cleanPath),
+          keywords: data.mta_keywords
+            ? data.mta_keywords
+                .split(',')
+                .map((k) => k.trim())
+                .filter((k) => k)
+            : [],
+          h1:
+            data.mta_h1 ||
+            data.mta_title ||
+            this.generateDefaultTitle(cleanPath),
           breadcrumb: data.mta_ariane || '',
           robots: data.mta_relfollow || 'index,follow',
           content: data.mta_content || '',
         };
-        this.logger.debug(`📄 Métadonnées récupérées depuis DB pour: ${cleanPath}`);
+        this.logger.debug(
+          `📄 Métadonnées récupérées depuis DB pour: ${cleanPath}`,
+        );
       }
 
       // Mettre en cache le résultat
       await this.cacheManager.set(cacheKey, metadata, this.cacheTTL);
-      
+
       return metadata;
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur récupération métadonnées pour ${path}:`,
+        error,
+      );
       return this.getDefaultMetadata(path);
     }
   }
@@ -111,22 +125,32 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    * Mettre à jour les métadonnées d'une page
    * 💾 Stockage dans ___meta_tags_ariane
    */
-  async updatePageMetadata(path: string, updateData: MetadataUpdateData): Promise<PageMetadata> {
+  async updatePageMetadata(
+    path: string,
+    updateData: MetadataUpdateData,
+  ): Promise<PageMetadata> {
     try {
       const cleanPath = this.cleanPath(path);
-      
+
       // Préparer les données pour la table ___meta_tags_ariane
       const dbData: any = {
         mta_alias: cleanPath,
       };
 
       if (updateData.title !== undefined) dbData.mta_title = updateData.title;
-      if (updateData.description !== undefined) dbData.mta_descrip = updateData.description;
-      if (updateData.keywords !== undefined) dbData.mta_keywords = Array.isArray(updateData.keywords) ? updateData.keywords.join(', ') : updateData.keywords;
+      if (updateData.description !== undefined)
+        dbData.mta_descrip = updateData.description;
+      if (updateData.keywords !== undefined)
+        dbData.mta_keywords = Array.isArray(updateData.keywords)
+          ? updateData.keywords.join(', ')
+          : updateData.keywords;
       if (updateData.h1 !== undefined) dbData.mta_h1 = updateData.h1;
-      if (updateData.breadcrumb !== undefined) dbData.mta_ariane = updateData.breadcrumb;
-      if (updateData.robots !== undefined) dbData.mta_relfollow = updateData.robots;
-      if (updateData.content !== undefined) dbData.mta_content = updateData.content;
+      if (updateData.breadcrumb !== undefined)
+        dbData.mta_ariane = updateData.breadcrumb;
+      if (updateData.robots !== undefined)
+        dbData.mta_relfollow = updateData.robots;
+      if (updateData.content !== undefined)
+        dbData.mta_content = updateData.content;
 
       // Upsert dans la table
       const { error } = await this.supabase
@@ -139,13 +163,16 @@ export class OptimizedMetadataService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.clearCache(cleanPath);
-      
+
       this.logger.log(`✅ Métadonnées mises à jour pour: ${cleanPath}`);
-      
+
       // Retourner les métadonnées mises à jour
       return await this.getPageMetadata(cleanPath);
     } catch (error) {
-      this.logger.error(`❌ Erreur mise à jour métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur mise à jour métadonnées pour ${path}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -156,7 +183,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   async deletePageMetadata(path: string): Promise<void> {
     try {
       const cleanPath = this.cleanPath(path);
-      
+
       const { error } = await this.supabase
         .from('___meta_tags_ariane')
         .delete()
@@ -168,10 +195,13 @@ export class OptimizedMetadataService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.clearCache(cleanPath);
-      
+
       this.logger.log(`🗑️ Métadonnées supprimées pour: ${cleanPath}`);
     } catch (error) {
-      this.logger.error(`❌ Erreur suppression métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur suppression métadonnées pour ${path}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -190,7 +220,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
         throw error;
       }
 
-      return data?.map(item => item.mta_alias).filter(alias => alias) || [];
+      return data?.map((item) => item.mta_alias).filter((alias) => alias) || [];
     } catch (error) {
       this.logger.error('❌ Erreur génération sitemap:', error);
       return [];
@@ -214,7 +244,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
           `${this.cachePrefix}/products`,
           `${this.cachePrefix}/products/brake-pads`,
         ];
-        
+
         for (const key of commonKeys) {
           try {
             await this.cacheManager.del(key);
@@ -222,7 +252,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
             // Ignorer les erreurs de clés inexistantes
           }
         }
-        
+
         this.logger.log('♻️ Cache métadonnées principal nettoyé');
       }
     } catch (error) {
@@ -236,11 +266,16 @@ export class OptimizedMetadataService extends SupabaseBaseService {
   private getDefaultMetadata(path: string): PageMetadata {
     const title = this.generateDefaultTitle(path);
     const description = this.generateDefaultDescription(path);
-    
+
     return {
       title,
       description,
-      keywords: ['pieces detachees', 'pieces auto', 'pieces voiture', 'pieces automobile'],
+      keywords: [
+        'pieces detachees',
+        'pieces auto',
+        'pieces voiture',
+        'pieces automobile',
+      ],
       h1: title,
       robots: 'index,follow',
       content: '',
@@ -255,10 +290,17 @@ export class OptimizedMetadataService extends SupabaseBaseService {
       return 'Vente pièces détachées auto neuves & à prix pas cher';
     }
 
-    const segments = path.split('/').filter(s => s).map(segment => 
-      segment.replace(/-/g, ' ').replace(/_/g, ' ')
-        .split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-    );
+    const segments = path
+      .split('/')
+      .filter((s) => s)
+      .map((segment) =>
+        segment
+          .replace(/-/g, ' ')
+          .replace(/_/g, ' ')
+          .split(' ')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' '),
+      );
 
     if (segments.length > 0) {
       return `${segments[segments.length - 1]} - Pièces détachées auto`;
@@ -272,12 +314,13 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    */
   private generateDefaultDescription(path: string): string {
     if (path === '/') {
-      return 'Votre catalogue de pièces détachées automobile neuves et d\'origine pour toutes les marques & modèles de voitures';
+      return "Votre catalogue de pièces détachées automobile neuves et d'origine pour toutes les marques & modèles de voitures";
     }
 
-    const segments = path.split('/').filter(s => s).map(segment => 
-      segment.replace(/-/g, ' ').replace(/_/g, ' ')
-    );
+    const segments = path
+      .split('/')
+      .filter((s) => s)
+      .map((segment) => segment.replace(/-/g, ' ').replace(/_/g, ' '));
 
     if (segments.length > 0) {
       const lastSegment = segments[segments.length - 1];
@@ -291,7 +334,9 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    * Récupérer toutes les métadonnées (pour interface admin)
    * 📋 Liste complète avec pagination possible
    */
-  async getAllMetadata(): Promise<Array<PageMetadata & { id: string; url: string }>> {
+  async getAllMetadata(): Promise<
+    Array<PageMetadata & { id: string; url: string }>
+  > {
     try {
       const { data, error } = await this.supabase
         .from('___meta_tags_ariane')
@@ -338,10 +383,13 @@ export class OptimizedMetadataService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.clearCache(cleanPath);
-      
+
       this.logger.log(`✅ Métadonnées supprimées pour: ${cleanPath}`);
     } catch (error) {
-      this.logger.error(`❌ Erreur suppression métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur suppression métadonnées pour ${path}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -393,11 +441,11 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    */
   private parseKeywords(keywords: any): string[] {
     if (!keywords) return [];
-    
+
     if (Array.isArray(keywords)) {
       return keywords;
     }
-    
+
     if (typeof keywords === 'string') {
       try {
         // Essayer de parser comme JSON
@@ -407,10 +455,13 @@ export class OptimizedMetadataService extends SupabaseBaseService {
         }
       } catch {
         // Si ce n'est pas du JSON, séparer par virgules
-        return keywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
+        return keywords
+          .split(',')
+          .map((k) => k.trim())
+          .filter((k) => k.length > 0);
       }
     }
-    
+
     return [];
   }
 

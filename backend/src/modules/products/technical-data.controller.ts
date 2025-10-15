@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 /**
  * 🎯 CONTRÔLEUR TECHNICAL DATA V5 ULTIMATE - API complète
- * 
+ *
  * Endpoints optimisés pour le service TechnicalDataV5Ultimate :
  * ✅ Données techniques avancées avec cache intelligent
  * ✅ Health check et monitoring
@@ -43,9 +43,7 @@ const BatchTechnicalDataSchema = z.object({
 export class TechnicalDataController {
   private readonly logger = new Logger(TechnicalDataController.name);
 
-  constructor(
-    private readonly technicalDataService: TechnicalDataService,
-  ) {}
+  constructor(private readonly technicalDataService: TechnicalDataService) {}
 
   /**
    * 🎯 DONNÉES TECHNIQUES AVANCÉES - Endpoint principal
@@ -58,7 +56,11 @@ export class TechnicalDataController {
   ) {
     try {
       // 🛡️ VALIDATION STRICTE
-      const productIdNum = z.number().int().positive().parse(parseInt(productId));
+      const productIdNum = z
+        .number()
+        .int()
+        .positive()
+        .parse(parseInt(productId));
       const validatedQuery = GetTechnicalDataQuerySchema.parse(query);
 
       this.logger.debug(
@@ -80,7 +82,7 @@ export class TechnicalDataController {
         `❌ [TechnicalDataV5Controller] Erreur produit ${productId}:`,
         error,
       );
-      
+
       return {
         success: false,
         error: error.message,
@@ -106,21 +108,27 @@ export class TechnicalDataController {
 
       // 🚀 TRAITEMENT PARALLÈLE OPTIMISÉ
       const results = await Promise.allSettled(
-        validatedBody.productIds.map(productId =>
+        validatedBody.productIds.map((productId) =>
           this.technicalDataService.getAdvancedTechnicalData({
             productId,
             ...validatedBody.options,
-          })
-        )
+          }),
+        ),
       );
 
       const successResults = results
-        .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
-        .map(result => result.value);
+        .filter(
+          (result): result is PromiseFulfilledResult<any> =>
+            result.status === 'fulfilled',
+        )
+        .map((result) => result.value);
 
       const errors = results
-        .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-        .map(result => result.reason);
+        .filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === 'rejected',
+        )
+        .map((result) => result.reason);
 
       return {
         success: true,
@@ -129,14 +137,16 @@ export class TechnicalDataController {
           total_requested: validatedBody.productIds.length,
           successful: successResults.length,
           failed: errors.length,
-          success_rate: Math.round((successResults.length / validatedBody.productIds.length) * 100),
+          success_rate: Math.round(
+            (successResults.length / validatedBody.productIds.length) * 100,
+          ),
         },
-        errors: errors.map(err => err.message),
+        errors: errors.map((err) => err.message),
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error(`❌ [TechnicalDataV5Controller] Erreur batch:`, error);
-      
+
       return {
         success: false,
         error: error.message,
@@ -153,13 +163,18 @@ export class TechnicalDataController {
   async healthCheck() {
     try {
       const health = await this.technicalDataService.getHealthStatus();
-      
-      this.logger.debug(`🏥 [TechnicalDataController] Health check: ${health.status}`);
+
+      this.logger.debug(
+        `🏥 [TechnicalDataController] Health check: ${health.status}`,
+      );
 
       return health;
     } catch (error) {
-      this.logger.error(`❌ [TechnicalDataController] Erreur health check:`, error);
-      
+      this.logger.error(
+        `❌ [TechnicalDataController] Erreur health check:`,
+        error,
+      );
+
       return {
         status: 'unhealthy',
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -169,7 +184,7 @@ export class TechnicalDataController {
   }
 
   /**
-   * 🏥 HEALTH CHECK DETAILED - Advanced health monitoring  
+   * 🏥 HEALTH CHECK DETAILED - Advanced health monitoring
    * GET /api/products/technical-data/_health
    */
   @Get('_health')
@@ -177,7 +192,7 @@ export class TechnicalDataController {
     try {
       const health = await this.technicalDataService.getHealthStatus();
       const stats = this.technicalDataService.getServiceStats();
-      
+
       return {
         success: true,
         health,
@@ -185,8 +200,11 @@ export class TechnicalDataController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ [TechnicalDataController] Erreur detailed health:`, error);
-      
+      this.logger.error(
+        `❌ [TechnicalDataController] Erreur detailed health:`,
+        error,
+      );
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -203,8 +221,10 @@ export class TechnicalDataController {
   async getServiceStats() {
     try {
       const stats = await this.technicalDataService.getServiceStats();
-      
-      this.logger.debug(`📊 [TechnicalDataV5Controller] Statistiques récupérées`);
+
+      this.logger.debug(
+        `📊 [TechnicalDataV5Controller] Statistiques récupérées`,
+      );
 
       return {
         success: true,
@@ -213,7 +233,7 @@ export class TechnicalDataController {
       };
     } catch (error) {
       this.logger.error(`❌ [TechnicalDataV5Controller] Erreur stats:`, error);
-      
+
       return {
         success: false,
         error: error.message,
@@ -229,19 +249,25 @@ export class TechnicalDataController {
   @Get(':productId/legacy')
   async getLegacyTechnicalData(@Param('productId') productId: string) {
     try {
-      const productIdNum = z.number().int().positive().parse(parseInt(productId));
-      
+      const productIdNum = z
+        .number()
+        .int()
+        .positive()
+        .parse(parseInt(productId));
+
       this.logger.debug(
         `🔄 [TechnicalDataV5Controller] Format legacy pour produit ${productIdNum}`,
       );
 
-      const result = await this.technicalDataService.getProductTechnicalData(productIdNum);
+      const result =
+        await this.technicalDataService.getProductTechnicalData(productIdNum);
 
       return {
         success: true,
         data: result,
         format: 'legacy',
-        migration_note: 'Use /api/products/technical-data-v5/:id for enhanced features',
+        migration_note:
+          'Use /api/products/technical-data-v5/:id for enhanced features',
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -249,7 +275,7 @@ export class TechnicalDataController {
         `❌ [TechnicalDataV5Controller] Erreur legacy produit ${productId}:`,
         error,
       );
-      
+
       return {
         success: false,
         error: error.message,
@@ -267,7 +293,9 @@ export class TechnicalDataController {
   async clearCache() {
     try {
       // Note: Cette méthode nécessiterait d'être ajoutée au service
-      this.logger.log(`🧹 [TechnicalDataV5Controller] Demande de nettoyage cache`);
+      this.logger.log(
+        `🧹 [TechnicalDataV5Controller] Demande de nettoyage cache`,
+      );
 
       return {
         success: true,
@@ -275,8 +303,11 @@ export class TechnicalDataController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ [TechnicalDataV5Controller] Erreur nettoyage cache:`, error);
-      
+      this.logger.error(
+        `❌ [TechnicalDataV5Controller] Erreur nettoyage cache:`,
+        error,
+      );
+
       return {
         success: false,
         error: error.message,
@@ -295,15 +326,16 @@ export class TechnicalDataController {
       this.logger.debug(`🧪 [TechnicalDataV5Controller] Test du service`);
 
       // Test simple avec un produit factice
-      const testResult = await this.technicalDataService.getAdvancedTechnicalData({
-        productId: 1,
-        includeRelations: false,
-        includeSuggestions: false,
-        groupByCategory: false,
-        limitPerGroup: 1,
-        includeUnits: false,
-        format: 'compact',
-      });
+      const testResult =
+        await this.technicalDataService.getAdvancedTechnicalData({
+          productId: 1,
+          includeRelations: false,
+          includeSuggestions: false,
+          groupByCategory: false,
+          limitPerGroup: 1,
+          includeUnits: false,
+          format: 'compact',
+        });
 
       const health = await this.technicalDataService.performHealthCheck();
       const stats = await this.technicalDataService.getServiceStats();
@@ -324,7 +356,7 @@ export class TechnicalDataController {
       };
     } catch (error) {
       this.logger.error(`❌ [TechnicalDataV5Controller] Erreur test:`, error);
-      
+
       return {
         success: false,
         error: error.message,

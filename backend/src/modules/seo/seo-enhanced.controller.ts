@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Logger,
+} from '@nestjs/common';
 import { SeoEnhancedService } from './seo-enhanced.service';
 
 // Interfaces pour les requêtes
@@ -40,8 +48,10 @@ export class SeoEnhancedController {
   @Post('generate')
   async generateSeoContent(@Body() body: SeoGenerationRequest) {
     try {
-      this.logger.log(`🎯 Génération SEO: pgId=${body.pgId}, typeId=${body.typeId}`);
-      
+      this.logger.log(
+        `🎯 Génération SEO: pgId=${body.pgId}, typeId=${body.typeId}`,
+      );
+
       const result = await this.seoEnhancedService.generateSeoContent(
         body.pgId,
         body.typeId,
@@ -70,9 +80,12 @@ export class SeoEnhancedController {
   @Post('pieces')
   async generatePiecesSeo(@Body() body: PiecesSeoRequest) {
     try {
-      this.logger.log(`🔧 SEO Pièces: ${body.marque} ${body.modele} ${body.type}`);
-      
-      const result = await this.seoEnhancedService.generatePiecesSeoContent(body);
+      this.logger.log(
+        `🔧 SEO Pièces: ${body.marque} ${body.modele} ${body.type}`,
+      );
+
+      const result =
+        await this.seoEnhancedService.generatePiecesSeoContent(body);
 
       return {
         success: true,
@@ -108,7 +121,8 @@ export class SeoEnhancedController {
         gamme: 'Pièces détachées', // Gamme par défaut
       };
 
-      const result = await this.seoEnhancedService.generatePiecesSeoContent(request);
+      const result =
+        await this.seoEnhancedService.generatePiecesSeoContent(request);
 
       return {
         success: true,
@@ -133,7 +147,7 @@ export class SeoEnhancedController {
   async getSeoAnalytics() {
     try {
       const analytics = await this.seoEnhancedService.getSeoAnalytics();
-      
+
       // Ajout de statistiques supplémentaires
       const enhancedAnalytics = {
         ...analytics,
@@ -184,7 +198,9 @@ export class SeoEnhancedController {
         type: queryParams.type || 'II (2013-2021)',
         annee: queryParams.annee || '2018',
         nbCh: queryParams.nbCh || '130',
-        minPrice: queryParams.minPrice ? parseFloat(queryParams.minPrice) : 25.99,
+        minPrice: queryParams.minPrice
+          ? parseFloat(queryParams.minPrice)
+          : 25.99,
       };
 
       const result = await this.seoEnhancedService.generateSeoContent(
@@ -204,7 +220,7 @@ export class SeoEnhancedController {
       this.logger.error(`❌ Erreur preview SEO: ${error.message}`);
       return {
         success: false,
-        error: 'Erreur lors de la génération de l\'aperçu',
+        error: "Erreur lors de la génération de l'aperçu",
         details: error.message,
       };
     }

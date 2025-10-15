@@ -21,8 +21,14 @@ import { ClaimService } from './services/claim.service';
 import { NotificationService } from './services/notification.service';
 import { SupportAnalyticsService } from './services/support-analytics.service';
 import { SupportConfigService } from './services/support-config.service';
-import { AISentimentService, AICategorizationService } from './services/ai-analysis.service';
-import { AISmartResponseService, AIPredictiveService } from './services/ai-smart-response.service';
+import {
+  AISentimentService,
+  AICategorizationService,
+} from './services/ai-analysis.service';
+import {
+  AISmartResponseService,
+  AIPredictiveService,
+} from './services/ai-smart-response.service';
 
 // External Modules
 import { DatabaseModule } from '../../database/database.module';

@@ -5,7 +5,7 @@
  * ✅ Délègue toutes les opérations CRUD à CartDataService
  * ✅ Utilise PromoService avancé (Zod + Cache Redis)
  * ✅ Gère uniquement la logique métier complexe (codes promo)
- * 
+ *
  * NOTE: Les opérations simples (get, add, update, delete) sont gérées
  * directement par CartDataService dans le controller pour plus de clarté
  */
@@ -39,7 +39,7 @@ export class CartService {
    * ✅ Utilise PromoService avec validation Zod + Cache Redis
    * ✅ Calcule le total du panier en temps réel
    * ✅ Valide la validité et les conditions du code promo
-   * 
+   *
    * @param sessionId - ID de session du panier
    * @param promoCode - Code promo à appliquer
    * @param userId - ID utilisateur optionnel

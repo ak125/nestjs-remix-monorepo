@@ -1,9 +1,9 @@
 /**
  * 🎯 ADVANCED SEO V5 ULTIMATE CONTROLLER
- * 
+ *
  * Contrôleur API pour le service SEO le plus avancé
  * Combinaison du meilleur de tous les services existants
- * 
+ *
  * @version 5.0.0
  * @package @monorepo/seo
  */
@@ -60,7 +60,7 @@ const AdvancedSeoRequestSchema = z.object({
     articlesCount: z.number().min(0).optional(),
     gammeLevel: z.number().int().min(1).max(3).optional(),
     isTopGamme: z.boolean().optional(),
-  })
+  }),
 });
 
 const SimpleVehicleSeoSchema = z.object({
@@ -94,7 +94,7 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/generate-complex
    */
   @Post('generate-complex')
-    @ApiOperation({
+  @ApiOperation({
     summary: 'Génère SEO complet V5 Ultimate',
     description:
       'Génère SEO complet avec switches externes, famille, liens dynamiques et validation Zod',
@@ -120,16 +120,21 @@ export class AdvancedSeoV5Controller {
             minPrice: { type: 'number' },
             mfId: { type: 'number' },
             articlesCount: { type: 'number' },
-            isTopGamme: { type: 'boolean' }
-          }
-        }
-      }
-    }
+            isTopGamme: { type: 'boolean' },
+          },
+        },
+      },
+    },
   })
-  async generateComplexSeo(@Body(new ZodValidationPipe(AdvancedSeoRequestSchema)) request: AdvancedSeoRequest) {
+  async generateComplexSeo(
+    @Body(new ZodValidationPipe(AdvancedSeoRequestSchema))
+    request: AdvancedSeoRequest,
+  ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🎯 [API V5] Génération SEO complexe: pgId=${request.pgId}, typeId=${request.typeId}, marque=${request.marqueId}, modele=${request.modeleId}`);
+
+    this.logger.log(
+      `🎯 [API V5] Génération SEO complexe: pgId=${request.pgId}, typeId=${request.typeId}, marque=${request.marqueId}, modele=${request.modeleId}`,
+    );
 
     try {
       const result = await this.advancedSeoService.generateComplexSeoContent(
@@ -137,12 +142,14 @@ export class AdvancedSeoV5Controller {
         request.typeId,
         request.marqueId,
         request.modeleId,
-        request.variables
+        request.variables,
       );
 
       const responseTime = Date.now() - startTime;
 
-      this.logger.log(`✅ [API V5] SEO complexe généré avec succès en ${responseTime}ms`);
+      this.logger.log(
+        `✅ [API V5] SEO complexe généré avec succès en ${responseTime}ms`,
+      );
 
       return {
         success: true,
@@ -152,20 +159,20 @@ export class AdvancedSeoV5Controller {
           response_time: responseTime,
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate',
-          methodology: 'Vérifier existant avant et utiliser le meilleur et améliorer',
+          methodology:
+            'Vérifier existant avant et utiliser le meilleur et améliorer',
           improvements_vs_original: {
             fonctionnalites: '+500%',
             performance: '+350%',
             switches_support: 'Complet (externes + famille + hiérarchie)',
             variables: '+200%',
             validation: 'Zod native complète',
-          }
-        }
+          },
+        },
       };
-
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.error(`❌ [API V5] Erreur génération SEO complexe:`, error);
 
       throw new HttpException(
@@ -178,9 +185,9 @@ export class AdvancedSeoV5Controller {
             response_time: responseTime,
             timestamp: new Date().toISOString(),
             service: 'AdvancedSeoV5Ultimate-Error',
-          }
+          },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -190,14 +197,24 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/generate-vehicle
    */
   @Post('generate-vehicle')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génération SEO véhicule simple V5',
-    description: 'Version simplifiée avec paramètres essentiels pour génération rapide'
+    description:
+      'Version simplifiée avec paramètres essentiels pour génération rapide',
   })
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['pgId', 'typeId', 'marqueId', 'modeleId', 'gamme', 'marque', 'modele', 'type'],
+      required: [
+        'pgId',
+        'typeId',
+        'marqueId',
+        'modeleId',
+        'gamme',
+        'marque',
+        'modele',
+        'type',
+      ],
       properties: {
         pgId: { type: 'number' },
         typeId: { type: 'number' },
@@ -209,14 +226,19 @@ export class AdvancedSeoV5Controller {
         type: { type: 'string' },
         annee: { type: 'string', required: false, example: '2023' },
         nbCh: { type: 'number', required: false, example: 150 },
-        minPrice: { type: 'number', required: false, example: 50 }
-      }
-    }
+        minPrice: { type: 'number', required: false, example: 50 },
+      },
+    },
   })
-  async generateVehicleSeoV5(@Body(new ZodValidationPipe(SimpleVehicleSeoSchema)) request: SimpleVehicleSeoRequest) {
+  async generateVehicleSeoV5(
+    @Body(new ZodValidationPipe(SimpleVehicleSeoSchema))
+    request: SimpleVehicleSeoRequest,
+  ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🚗 [API V5] SEO véhicule simple: ${request.marque} ${request.modele} ${request.type}`);
+
+    this.logger.log(
+      `🚗 [API V5] SEO véhicule simple: ${request.marque} ${request.modele} ${request.type}`,
+    );
 
     try {
       // Construction variables enrichies à partir des paramètres simples
@@ -246,7 +268,7 @@ export class AdvancedSeoV5Controller {
         request.typeId,
         request.marqueId,
         request.modeleId,
-        enrichedVariables
+        enrichedVariables,
       );
 
       const responseTime = Date.now() - startTime;
@@ -265,15 +287,14 @@ export class AdvancedSeoV5Controller {
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-Simplified',
           mode: 'simplified_vehicle',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur SEO véhicule simple:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la génération SEO véhicule V5',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -283,18 +304,47 @@ export class AdvancedSeoV5Controller {
    * GET /api/seo-advanced-v5/template/:pgId/vehicle/:marqueId/:modeleId/:typeId
    */
   @Get('template/:pgId/vehicle/:marqueId/:modeleId/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génération SEO par template et véhicule spécifiques',
-    description: 'Utilise pgId et véhicule pour génération avec variables minimales'
+    description:
+      'Utilise pgId et véhicule pour génération avec variables minimales',
   })
   @ApiParam({ name: 'pgId', type: 'number', description: 'ID de la gamme' })
-  @ApiParam({ name: 'marqueId', type: 'number', description: 'ID de la marque' })
+  @ApiParam({
+    name: 'marqueId',
+    type: 'number',
+    description: 'ID de la marque',
+  })
   @ApiParam({ name: 'modeleId', type: 'number', description: 'ID du modèle' })
-  @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type véhicule' })
-  @ApiQuery({ name: 'gamme', type: 'string', required: false, description: 'Nom de la gamme' })
-  @ApiQuery({ name: 'marque', type: 'string', required: false, description: 'Nom de la marque' })
-  @ApiQuery({ name: 'modele', type: 'string', required: false, description: 'Nom du modèle' })
-  @ApiQuery({ name: 'type', type: 'string', required: false, description: 'Nom du type' })
+  @ApiParam({
+    name: 'typeId',
+    type: 'number',
+    description: 'ID du type véhicule',
+  })
+  @ApiQuery({
+    name: 'gamme',
+    type: 'string',
+    required: false,
+    description: 'Nom de la gamme',
+  })
+  @ApiQuery({
+    name: 'marque',
+    type: 'string',
+    required: false,
+    description: 'Nom de la marque',
+  })
+  @ApiQuery({
+    name: 'modele',
+    type: 'string',
+    required: false,
+    description: 'Nom du modèle',
+  })
+  @ApiQuery({
+    name: 'type',
+    type: 'string',
+    required: false,
+    description: 'Nom du type',
+  })
   async generateByTemplateAndVehicle(
     @Param('pgId', ParseIntPipe) pgId: number,
     @Param('marqueId', ParseIntPipe) marqueId: number,
@@ -303,9 +353,11 @@ export class AdvancedSeoV5Controller {
     @Query('gamme') gamme: string = 'Pièces détachées',
     @Query('marque') marque: string = 'Véhicule',
     @Query('modele') modele: string = 'Modèle',
-    @Query('type') type: string = 'Type générique'
+    @Query('type') type: string = 'Type générique',
   ) {
-    this.logger.log(`🔧 [API V5] SEO par template et véhicule: template=${pgId}, véhicule=${marqueId}/${modeleId}/${typeId}`);
+    this.logger.log(
+      `🔧 [API V5] SEO par template et véhicule: template=${pgId}, véhicule=${marqueId}/${modeleId}/${typeId}`,
+    );
 
     try {
       // Variables minimales pour test
@@ -330,7 +382,11 @@ export class AdvancedSeoV5Controller {
       };
 
       const result = await this.advancedSeoService.generateComplexSeoContent(
-        pgId, typeId, marqueId, modeleId, variables
+        pgId,
+        typeId,
+        marqueId,
+        modeleId,
+        variables,
       );
 
       return {
@@ -349,12 +405,11 @@ export class AdvancedSeoV5Controller {
           modeleId,
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-Template',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur template véhicule:`, error);
-      
+
       return {
         success: false,
         error: error.message,
@@ -372,7 +427,7 @@ export class AdvancedSeoV5Controller {
           modeleId,
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-Fallback',
-        }
+        },
       };
     }
   }
@@ -382,13 +437,17 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/compare-with-original
    */
   @Post('compare-with-original')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Comparaison avec service SEO original',
-    description: 'Compare performance et fonctionnalités V5 vs service original'
+    description:
+      'Compare performance et fonctionnalités V5 vs service original',
   })
-  async compareWithOriginal(@Body(new ZodValidationPipe(AdvancedSeoRequestSchema)) request: AdvancedSeoRequest) {
+  async compareWithOriginal(
+    @Body(new ZodValidationPipe(AdvancedSeoRequestSchema))
+    request: AdvancedSeoRequest,
+  ) {
     const startTime = Date.now();
-    
+
     this.logger.log(`📊 [API V5] Comparaison V5 Ultimate vs Original`);
 
     try {
@@ -398,7 +457,7 @@ export class AdvancedSeoV5Controller {
         request.typeId,
         request.marqueId,
         request.modeleId,
-        request.variables
+        request.variables,
       );
 
       // Service Original (simulation basée sur le code fourni)
@@ -414,7 +473,7 @@ export class AdvancedSeoV5Controller {
           validation: 'Aucune',
           cache: 'Aucun',
           performance: 'Estimation 2000ms+',
-        }
+        },
       };
 
       const responseTime = Date.now() - startTime;
@@ -430,28 +489,30 @@ export class AdvancedSeoV5Controller {
             switches_externes: `${v5Result.metadata.externalSwitchesCount} vs 0 (+∞%)`,
             switches_famille: `${v5Result.metadata.familySwitchesCount} vs 0 (+∞%)`,
             liens_dynamiques: `${v5Result.metadata.linksGenerated} vs 0 (+∞%)`,
-            cache_intelligent: v5Result.metadata.cacheHit ? 'Multi-niveaux' : 'Multi-niveaux (première fois)' + ' vs Aucun',
+            cache_intelligent: v5Result.metadata.cacheHit
+              ? 'Multi-niveaux'
+              : 'Multi-niveaux (première fois)' + ' vs Aucun',
             validation: 'Zod complète vs Aucune',
             performance: `${v5Result.metadata.processingTime}ms vs estimation 2000ms+ (${Math.round((2000 / v5Result.metadata.processingTime) * 100)}% plus rapide)`,
             architecture: 'Modulaire + héritage vs Monolithique',
             maintenance: 'TypeScript typé vs JavaScript basique',
-          }
+          },
         },
         metadata: {
           api_version: '5.0.0-comparison',
           response_time: responseTime,
           timestamp: new Date().toISOString(),
-          methodology: 'Vérifier existant avant et utiliser le meilleur et améliorer',
+          methodology:
+            'Vérifier existant avant et utiliser le meilleur et améliorer',
           verdict: 'V5 Ultimate supérieur sur tous les aspects',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur comparaison:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la comparaison V5 Ultimate',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -461,16 +522,16 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/cache/clear
    */
   @Post('cache/clear')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Nettoyage du cache SEO V5',
-    description: 'Force le nettoyage du cache intelligent multi-niveaux'
+    description: 'Force le nettoyage du cache intelligent multi-niveaux',
   })
   async clearCacheV5() {
     this.logger.log(`🧹 [API V5] Nettoyage cache SEO V5`);
 
     try {
       this.advancedSeoService.invalidateCache();
-      
+
       return {
         success: true,
         message: 'Cache SEO V5 nettoyé avec succès',
@@ -479,12 +540,11 @@ export class AdvancedSeoV5Controller {
           cache_levels: 'Multi-niveaux (short, medium, long)',
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur nettoyage cache:`, error);
-      
+
       return {
         success: false,
         message: 'Erreur lors du nettoyage du cache V5',
@@ -492,7 +552,7 @@ export class AdvancedSeoV5Controller {
         metadata: {
           api_version: '5.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -502,9 +562,10 @@ export class AdvancedSeoV5Controller {
    * GET /api/seo-advanced-v5/stats
    */
   @Get('stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Statistiques du service SEO V5 Ultimate',
-    description: 'Retourne les statistiques et métriques complètes du service le plus avancé'
+    description:
+      'Retourne les statistiques et métriques complètes du service le plus avancé',
   })
   async getServiceStatsV5() {
     this.logger.log(`📊 [API V5] Récupération statistiques SEO V5 Ultimate`);
@@ -517,9 +578,10 @@ export class AdvancedSeoV5Controller {
         data: {
           service_version: '5.0.0',
           service_name: 'AdvancedSeoV5UltimateService',
-          methodology: 'Vérifier existant avant et utiliser le meilleur et améliorer',
+          methodology:
+            'Vérifier existant avant et utiliser le meilleur et améliorer',
           status: 'Production Ready',
-          
+
           features: [
             'Génération SEO complète (6 sections)',
             'Variables dynamiques enrichies (25+ variables)',
@@ -532,16 +594,17 @@ export class AdvancedSeoV5Controller {
             'Validation Zod native complète',
             'Fallbacks gracieux à 3 niveaux',
             'Nettoyage contenu avancé par type',
-            'Algorithmes intelligents (prix, switches, liens)'
+            'Algorithmes intelligents (prix, switches, liens)',
           ],
 
-          improvements_vs_original_service: serviceStats.improvements_vs_original,
-          
+          improvements_vs_original_service:
+            serviceStats.improvements_vs_original,
+
           services_combined: [
             'AdvancedSeoService (utilisateur) - Logique switches externes',
             'DynamicSeoV4UltimateService - Cache et performance',
             'SeoEnhancedService - Templates et processing',
-            'Frontend SEO Logic - Variables contextuelles'
+            'Frontend SEO Logic - Variables contextuelles',
           ],
 
           technical_specs: {
@@ -557,33 +620,32 @@ export class AdvancedSeoV5Controller {
             entries: serviceStats.cache_entries,
             levels: ['SHORT (30min)', 'MEDIUM (1h)', 'LONG (4h)'],
             adaptive_ttl: 'Basé sur popularité et niveau gamme',
-            hit_ratio_target: '80-95%'
+            hit_ratio_target: '80-95%',
           },
 
           api_endpoints: [
             'POST /api/seo-advanced-v5/generate-complex',
-            'POST /api/seo-advanced-v5/generate-vehicle', 
+            'POST /api/seo-advanced-v5/generate-vehicle',
             'GET /api/seo-advanced-v5/template/:pgId/vehicle/:marqueId/:modeleId/:typeId',
             'POST /api/seo-advanced-v5/compare-with-original',
             'POST /api/seo-advanced-v5/cache/clear',
-            'GET /api/seo-advanced-v5/stats'
-          ]
+            'GET /api/seo-advanced-v5/stats',
+          ],
         },
-        
+
         metadata: {
           api_version: '5.0.0',
           timestamp: new Date().toISOString(),
           generated_at: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-Stats',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur récupération stats:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la récupération des statistiques V5',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -593,9 +655,9 @@ export class AdvancedSeoV5Controller {
    * POST /api/seo-advanced-v5/validate-variables
    */
   @Post('validate-variables')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation variables SEO V5 Ultimate',
-    description: 'Valide la structure et contenu des variables SEO avec Zod'
+    description: 'Valide la structure et contenu des variables SEO avec Zod',
   })
   async validateVariablesV5(@Body() variables: any) {
     this.logger.log(`🎯 [API V5] Validation variables SEO`);
@@ -614,9 +676,9 @@ export class AdvancedSeoV5Controller {
         gammeLevel: z.number().int().min(1).max(3).optional(),
         isTopGamme: z.boolean().optional(),
       });
-      
+
       const validatedVars = variablesSchema.parse(variables);
-      
+
       return {
         success: true,
         data: {
@@ -627,20 +689,19 @@ export class AdvancedSeoV5Controller {
             optional_fields: 'OK - annee, nbCh, minPrice, etc.',
             data_types: 'OK - Zod validation passed',
             constraints: 'OK - Min/max values respected',
-            enrichment: 'Automatic for missing meta fields'
-          }
+            enrichment: 'Automatic for missing meta fields',
+          },
         },
         metadata: {
           api_version: '5.0.0',
           validation_system: 'Zod native + TypeScript',
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-Validation',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API V5] Erreur validation:`, error);
-      
+
       return {
         success: false,
         error: 'Variables SEO V5 invalides',
@@ -651,7 +712,7 @@ export class AdvancedSeoV5Controller {
           validation_system: 'Zod native + TypeScript',
           timestamp: new Date().toISOString(),
           service: 'AdvancedSeoV5Ultimate-ValidationError',
-        }
+        },
       };
     }
   }

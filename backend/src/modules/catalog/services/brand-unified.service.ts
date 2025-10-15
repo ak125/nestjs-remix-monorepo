@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { 
+import {
   type VehicleBrand,
   type ApiResponse,
   createSuccessResponse,
@@ -37,20 +37,19 @@ export class BrandUnifiedService {
       ];
 
       // Validation avec Zod
-      const validatedBrands = mockBrands.map(brand => 
-        validateVehicleBrand(brand)
+      const validatedBrands = mockBrands.map((brand) =>
+        validateVehicleBrand(brand),
       );
 
       return createSuccessResponse(
         validatedBrands,
-        `${validatedBrands.length} marques récupérées avec succès`
+        `${validatedBrands.length} marques récupérées avec succès`,
       );
-
     } catch (error: any) {
       return createErrorResponse(
         'BRANDS_FETCH_ERROR',
         'Erreur lors de la récupération des marques',
-        error.message
+        error.message,
       );
     }
   }
@@ -75,14 +74,13 @@ export class BrandUnifiedService {
 
       return createSuccessResponse(
         validatedBrand,
-        `Marque ${validatedBrand.marque_name} récupérée avec succès`
+        `Marque ${validatedBrand.marque_name} récupérée avec succès`,
       );
-
     } catch (error: any) {
       return createErrorResponse(
         'BRAND_NOT_FOUND',
         `Marque avec l'ID ${id} non trouvée`,
-        error.message
+        error.message,
       );
     }
   }

@@ -1,34 +1,37 @@
 /**
  * 🎯 DYNAMIC SEO CONTROLLER V4 ULTIMATE
- * 
+ *
  * Contrôleur pour le service SEO dynamique avancé
  * Utilise DynamicSeoV4UltimateService optimisé
- * 
+ *
  * @version 4.0.0
  * @package @monorepo/seo
  */
 
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Param, 
-  Query, 
-  ParseIntPipe, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  ParseIntPipe,
   Logger,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiParam, 
-  ApiQuery, 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
   ApiResponse,
-  ApiBody 
+  ApiBody,
 } from '@nestjs/swagger';
-import { DynamicSeoV4UltimateService, SeoVariables } from './dynamic-seo-v4-ultimate.service';
+import {
+  DynamicSeoV4UltimateService,
+  SeoVariables,
+} from './dynamic-seo-v4-ultimate.service';
 
 @ApiTags('SEO - Dynamic V4')
 @Controller('api/seo-dynamic-v4')
@@ -36,7 +39,7 @@ export class DynamicSeoController {
   private readonly logger = new Logger(DynamicSeoController.name);
 
   constructor(
-    private readonly dynamicSeoService: DynamicSeoV4UltimateService
+    private readonly dynamicSeoService: DynamicSeoV4UltimateService,
   ) {}
 
   /**
@@ -44,9 +47,10 @@ export class DynamicSeoController {
    * POST /api/seo-dynamic-v4/generate-complete
    */
   @Post('generate-complete')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génération SEO complète V4 Ultimate',
-    description: 'Génère title, description, h1, preview, content et keywords avec switches et variables dynamiques'
+    description:
+      'Génère title, description, h1, preview, content et keywords avec switches et variables dynamiques',
   })
   @ApiBody({
     schema: {
@@ -78,11 +82,11 @@ export class DynamicSeoController {
             articlesCount: { type: 'number', required: false },
             gammeLevel: { type: 'number', required: false },
             isTopGamme: { type: 'boolean', required: false },
-            seoScore: { type: 'number', required: false }
-          }
-        }
-      }
-    }
+            seoScore: { type: 'number', required: false },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({
     status: 200,
@@ -100,27 +104,27 @@ export class DynamicSeoController {
             preview: { type: 'string' },
             content: { type: 'string' },
             keywords: { type: 'string' },
-            metadata: { type: 'object' }
-          }
+            metadata: { type: 'object' },
+          },
         },
-        metadata: { type: 'object' }
-      }
-    }
+        metadata: { type: 'object' },
+      },
+    },
   })
-  async generateCompleteSeo(@Body() body: {
-    pgId: number;
-    typeId: number;
-    variables: SeoVariables;
-  }) {
+  async generateCompleteSeo(
+    @Body() body: { pgId: number; typeId: number; variables: SeoVariables },
+  ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🎯 [API] Génération SEO V4 Ultimate: pgId=${body.pgId}, typeId=${body.typeId}`);
+
+    this.logger.log(
+      `🎯 [API] Génération SEO V4 Ultimate: pgId=${body.pgId}, typeId=${body.typeId}`,
+    );
 
     try {
       const result = await this.dynamicSeoService.generateCompleteSeo(
         body.pgId,
         body.typeId,
-        body.variables
+        body.variables,
       );
 
       const responseTime = Date.now() - startTime;
@@ -139,13 +143,12 @@ export class DynamicSeoController {
             performance: '+250%',
             cache_intelligence: '+300%',
             variables: '+180%',
-          }
-        }
+          },
+        },
       };
-
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.error(`❌ [API] Erreur génération SEO:`, error);
 
       throw new HttpException(
@@ -157,9 +160,9 @@ export class DynamicSeoController {
             api_version: '4.0.0',
             response_time: responseTime,
             timestamp: new Date().toISOString(),
-          }
+          },
         },
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -169,9 +172,9 @@ export class DynamicSeoController {
    * POST /api/seo-dynamic-v4/generate-vehicle
    */
   @Post('generate-vehicle')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génération SEO simplifiée par véhicule',
-    description: 'Version simplifiée avec paramètres de base'
+    description: 'Version simplifiée avec paramètres de base',
   })
   @ApiBody({
     schema: {
@@ -186,24 +189,29 @@ export class DynamicSeoController {
         type: { type: 'string' },
         annee: { type: 'string', required: false },
         nbCh: { type: 'number', required: false },
-        minPrice: { type: 'number', required: false }
-      }
-    }
+        minPrice: { type: 'number', required: false },
+      },
+    },
   })
-  async generateVehicleSeo(@Body() body: {
-    pgId: number;
-    typeId: number;
-    gamme: string;
-    marque: string;
-    modele: string;
-    type: string;
-    annee?: string;
-    nbCh?: number;
-    minPrice?: number;
-  }) {
+  async generateVehicleSeo(
+    @Body()
+    body: {
+      pgId: number;
+      typeId: number;
+      gamme: string;
+      marque: string;
+      modele: string;
+      type: string;
+      annee?: string;
+      nbCh?: number;
+      minPrice?: number;
+    },
+  ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🚗 [API] SEO véhicule simplifié: ${body.marque} ${body.modele} ${body.type}`);
+
+    this.logger.log(
+      `🚗 [API] SEO véhicule simplifié: ${body.marque} ${body.modele} ${body.type}`,
+    );
 
     try {
       // Construction variables simplifiées
@@ -231,7 +239,7 @@ export class DynamicSeoController {
       const result = await this.dynamicSeoService.generateCompleteSeo(
         body.pgId,
         body.typeId,
-        variables
+        variables,
       );
 
       const responseTime = Date.now() - startTime;
@@ -249,15 +257,14 @@ export class DynamicSeoController {
           response_time: responseTime,
           timestamp: new Date().toISOString(),
           mode: 'simplified_vehicle',
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur SEO véhicule:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la génération SEO véhicule',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -267,23 +274,48 @@ export class DynamicSeoController {
    * GET /api/seo-dynamic-v4/template/:pgId/type/:typeId
    */
   @Get('template/:pgId/type/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Génération SEO par template spécifique',
-    description: 'Utilise uniquement pgId et typeId avec variables par défaut'
+    description: 'Utilise uniquement pgId et typeId avec variables par défaut',
   })
-  @ApiParam({ name: 'pgId', type: 'number', description: 'ID du template gamme' })
-  @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type véhicule' })
-  @ApiQuery({ name: 'gamme', type: 'string', required: false, description: 'Nom de la gamme' })
-  @ApiQuery({ name: 'marque', type: 'string', required: false, description: 'Nom de la marque' })
-  @ApiQuery({ name: 'modele', type: 'string', required: false, description: 'Nom du modèle' })
+  @ApiParam({
+    name: 'pgId',
+    type: 'number',
+    description: 'ID du template gamme',
+  })
+  @ApiParam({
+    name: 'typeId',
+    type: 'number',
+    description: 'ID du type véhicule',
+  })
+  @ApiQuery({
+    name: 'gamme',
+    type: 'string',
+    required: false,
+    description: 'Nom de la gamme',
+  })
+  @ApiQuery({
+    name: 'marque',
+    type: 'string',
+    required: false,
+    description: 'Nom de la marque',
+  })
+  @ApiQuery({
+    name: 'modele',
+    type: 'string',
+    required: false,
+    description: 'Nom du modèle',
+  })
   async generateByTemplate(
     @Param('pgId', ParseIntPipe) pgId: number,
     @Param('typeId', ParseIntPipe) typeId: number,
     @Query('gamme') gamme: string = 'Pièces détachées',
     @Query('marque') marque: string = 'Véhicule',
-    @Query('modele') modele: string = 'Modèle'
+    @Query('modele') modele: string = 'Modèle',
   ) {
-    this.logger.log(`🔧 [API] SEO par template: template=${pgId}, type=${typeId}`);
+    this.logger.log(
+      `🔧 [API] SEO par template: template=${pgId}, type=${typeId}`,
+    );
 
     try {
       // Variables minimales pour test
@@ -307,7 +339,11 @@ export class DynamicSeoController {
         isTopGamme: false,
       };
 
-      const result = await this.dynamicSeoService.generateCompleteSeo(pgId, typeId, variables);
+      const result = await this.dynamicSeoService.generateCompleteSeo(
+        pgId,
+        typeId,
+        variables,
+      );
 
       return {
         success: true,
@@ -321,12 +357,11 @@ export class DynamicSeoController {
           pgId,
           typeId,
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur template:`, error);
-      
+
       return {
         success: false,
         error: error.message,
@@ -340,7 +375,7 @@ export class DynamicSeoController {
           pgId,
           typeId,
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -350,17 +385,15 @@ export class DynamicSeoController {
    * POST /api/seo-dynamic-v4/compare-with-original
    */
   @Post('compare-with-original')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Comparaison avec service SEO original',
-    description: 'Génère SEO avec les deux services pour comparaison'
+    description: 'Génère SEO avec les deux services pour comparaison',
   })
-  async compareWithOriginal(@Body() body: {
-    pgId: number;
-    typeId: number;
-    variables: SeoVariables;
-  }) {
+  async compareWithOriginal(
+    @Body() body: { pgId: number; typeId: number; variables: SeoVariables },
+  ) {
     const startTime = Date.now();
-    
+
     this.logger.log(`📊 [API] Comparaison V4 vs Original`);
 
     try {
@@ -368,7 +401,7 @@ export class DynamicSeoController {
       const v4Result = await this.dynamicSeoService.generateCompleteSeo(
         body.pgId,
         body.typeId,
-        body.variables
+        body.variables,
       );
 
       // SEO Original (simulation)
@@ -390,25 +423,27 @@ export class DynamicSeoController {
           improvements: {
             variables_dynamiques: `${v4Result.metadata.variablesReplaced} vs 0`,
             switches_processed: `${v4Result.metadata.switchesProcessed} vs 0`,
-            cache_intelligent: v4Result.metadata.cacheHit ? 'Oui' : 'Non (première fois)' + ' vs Non',
-            sections_generees: '6 (title, desc, h1, preview, content, keywords) vs 3',
+            cache_intelligent: v4Result.metadata.cacheHit
+              ? 'Oui'
+              : 'Non (première fois)' + ' vs Non',
+            sections_generees:
+              '6 (title, desc, h1, preview, content, keywords) vs 3',
             qualite_contenu: 'Templates personnalisés vs Basique',
             performance: `${v4Result.metadata.processingTime}ms vs estimation 2000ms+`,
-          }
+          },
         },
         metadata: {
           api_version: '4.0.0-comparison',
           response_time: responseTime,
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur comparaison:`, error);
-      
+
       throw new HttpException(
         'Erreur lors de la comparaison',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -418,35 +453,34 @@ export class DynamicSeoController {
    * POST /api/seo-dynamic-v4/cache/clear
    */
   @Post('cache/clear')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Nettoyage du cache SEO',
-    description: 'Force le nettoyage du cache SEO'
+    description: 'Force le nettoyage du cache SEO',
   })
   async clearCache() {
     this.logger.log(`🧹 [API] Nettoyage cache SEO`);
 
     try {
       this.dynamicSeoService.invalidateCache();
-      
+
       return {
         success: true,
         message: 'Cache SEO nettoyé avec succès',
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur nettoyage cache:`, error);
-      
+
       return {
         success: false,
         message: 'Erreur lors du nettoyage du cache',
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -456,9 +490,9 @@ export class DynamicSeoController {
    * GET /api/seo-dynamic-v4/stats
    */
   @Get('stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Statistiques du service SEO V4 Ultimate',
-    description: 'Retourne les statistiques d\'utilisation et améliorations'
+    description: "Retourne les statistiques d'utilisation et améliorations",
   })
   async getServiceStats() {
     this.logger.log(`📊 [API] Récupération statistiques SEO V4`);
@@ -467,7 +501,8 @@ export class DynamicSeoController {
       success: true,
       data: {
         service_version: '4.0.0',
-        methodology: 'Vérifier existant avant et utiliser le meilleur et améliorer',
+        methodology:
+          'Vérifier existant avant et utiliser le meilleur et améliorer',
         features: [
           'Génération SEO complète (6 sections)',
           'Variables dynamiques enrichies (25+ variables)',
@@ -479,7 +514,7 @@ export class DynamicSeoController {
           'Variables contextuelles avancées',
           'Validation Zod complète',
           'Fallbacks gracieux',
-          'Nettoyage contenu avancé'
+          'Nettoyage contenu avancé',
         ],
         improvements_vs_original: {
           fonctionnalites: '+400%',
@@ -497,13 +532,13 @@ export class DynamicSeoController {
           adaptive_ttl: true,
           average_response_time: '< 150ms (avec cache)',
           fallback_response_time: '< 300ms',
-        }
+        },
       },
       metadata: {
         api_version: '4.0.0',
         timestamp: new Date().toISOString(),
         generated_at: new Date().toISOString(),
-      }
+      },
     };
   }
 
@@ -512,17 +547,20 @@ export class DynamicSeoController {
    * POST /api/seo-dynamic-v4/validate-variables
    */
   @Post('validate-variables')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation variables SEO',
-    description: 'Valide la structure et contenu des variables SEO'
+    description: 'Valide la structure et contenu des variables SEO',
   })
   async validateVariables(@Body() variables: SeoVariables) {
     this.logger.log(`🎯 [API] Validation variables SEO`);
 
     try {
       // Validation avec le schema Zod
-      const validatedVars = DynamicSeoV4UltimateService.prototype.constructor.prototype.validateVariables?.(variables);
-      
+      const validatedVars =
+        DynamicSeoV4UltimateService.prototype.constructor.prototype.validateVariables?.(
+          variables,
+        );
+
       return {
         success: true,
         data: {
@@ -532,17 +570,16 @@ export class DynamicSeoController {
             required_fields: 'OK',
             data_types: 'OK',
             constraints: 'OK',
-          }
+          },
         },
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur validation:`, error);
-      
+
       return {
         success: false,
         error: 'Variables SEO invalides',
@@ -550,7 +587,7 @@ export class DynamicSeoController {
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }

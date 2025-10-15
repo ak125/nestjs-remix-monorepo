@@ -49,7 +49,9 @@ export class StockController {
     private readonly stockService: StockManagementService,
     private readonly workingStockService: WorkingStockService,
   ) {
-    this.logger.log('✅ Stock Controller consolidé - 6 controllers fusionnés en 1');
+    this.logger.log(
+      '✅ Stock Controller consolidé - 6 controllers fusionnés en 1',
+    );
   }
 
   /**

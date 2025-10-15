@@ -1,22 +1,13 @@
 /**
  * 🎯 SEO Simple Controller - Version Consolidée
- * 
+ *
  * Contrôleur simplifié pour le SEO sans les erreurs complexes
  * Focus sur la stabilité et les fonctionnalités essentielles
  */
 
-import {
-  Controller,
-  Get,
-  Query,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Get, Query, Logger } from '@nestjs/common';
 
-import {
-  ApiTags,
-  ApiOperation,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('🎯 SEO Simple V5')
 @Controller('seo-simple-v5')
@@ -37,7 +28,7 @@ export class SeoSimpleController {
   @ApiQuery({
     name: 'marque',
     required: true,
-    type: 'string', 
+    type: 'string',
     example: 'bmw',
   })
   @ApiQuery({
@@ -59,7 +50,9 @@ export class SeoSimpleController {
     @Query('type') type: string,
   ) {
     try {
-      this.logger.log(`🎯 Génération SEO simple pour ${gamme}/${marque}/${modele}/${type}`);
+      this.logger.log(
+        `🎯 Génération SEO simple pour ${gamme}/${marque}/${modele}/${type}`,
+      );
 
       return {
         success: true,
@@ -87,7 +80,7 @@ export class SeoSimpleController {
     } catch (error) {
       const err = error as Error;
       this.logger.error(`❌ Erreur SEO simple: ${err.message}`);
-      
+
       return {
         success: false,
         error: err.message,

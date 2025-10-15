@@ -81,7 +81,9 @@ export class DatabaseConfigController {
     @Param('environment') environment: string,
     @Query('port') port?: number,
   ): Promise<DatabaseConfig> {
-    this.logger.debug(`Getting database config for ${environment}:${port || 'default'}`);
+    this.logger.debug(
+      `Getting database config for ${environment}:${port || 'default'}`,
+    );
     return this.databaseConfigService.getConfig(environment, port);
   }
 
@@ -93,7 +95,9 @@ export class DatabaseConfigController {
   async listConfigs(
     @Query('environment') environment?: string,
   ): Promise<DatabaseConfig[]> {
-    this.logger.debug(`Listing database configs for environment: ${environment || 'all'}`);
+    this.logger.debug(
+      `Listing database configs for environment: ${environment || 'all'}`,
+    );
     return this.databaseConfigService.listConfigs(environment);
   }
 
@@ -106,13 +110,15 @@ export class DatabaseConfigController {
   async createConfig(
     @Body() createDto: CreateDatabaseConfigDto,
   ): Promise<DatabaseConfig> {
-    this.logger.debug(`Creating database config for ${createDto.environment}:${createDto.port}`);
-    
+    this.logger.debug(
+      `Creating database config for ${createDto.environment}:${createDto.port}`,
+    );
+
     const config: DatabaseConfig = {
       ...createDto,
       isActive: true,
     };
-    
+
     return this.databaseConfigService.upsertConfig(config);
   }
 
@@ -128,10 +134,13 @@ export class DatabaseConfigController {
     @Body() updateDto: UpdateDatabaseConfigDto,
   ): Promise<DatabaseConfig> {
     this.logger.debug(`Updating database config for ${environment}:${port}`);
-    
+
     // Récupérer la config existante
-    const existingConfig = await this.databaseConfigService.getConfig(environment, port);
-    
+    const existingConfig = await this.databaseConfigService.getConfig(
+      environment,
+      port,
+    );
+
     // Merger avec les nouvelles données
     const updatedConfig: DatabaseConfig = {
       ...existingConfig,
@@ -139,7 +148,7 @@ export class DatabaseConfigController {
       environment,
       port,
     };
-    
+
     return this.databaseConfigService.upsertConfig(updatedConfig);
   }
 
@@ -166,8 +175,10 @@ export class DatabaseConfigController {
   async testConnection(
     @Body() testDto: TestConnectionDto,
   ): Promise<DatabaseConnectionTest> {
-    this.logger.debug(`Testing database connection to ${testDto.host}:${testDto.port}`);
-    
+    this.logger.debug(
+      `Testing database connection to ${testDto.host}:${testDto.port}`,
+    );
+
     const config: DatabaseConfig = {
       environment: 'test',
       host: testDto.host,
@@ -179,7 +190,7 @@ export class DatabaseConfigController {
       poolSize: 1, // Juste pour le test
       isActive: true,
     };
-    
+
     return this.databaseConfigService.testDatabaseConnection(config);
   }
 
@@ -193,9 +204,14 @@ export class DatabaseConfigController {
     @Param('environment') environment: string,
     @Query('port') port?: number,
   ): Promise<DatabaseConnectionTest> {
-    this.logger.debug(`Testing existing database config for ${environment}:${port || 'default'}`);
-    
-    const config = await this.databaseConfigService.getConfig(environment, port);
+    this.logger.debug(
+      `Testing existing database config for ${environment}:${port || 'default'}`,
+    );
+
+    const config = await this.databaseConfigService.getConfig(
+      environment,
+      port,
+    );
     return this.databaseConfigService.testDatabaseConnection(config);
   }
 
@@ -206,10 +222,12 @@ export class DatabaseConfigController {
   @Get('environments/list')
   async getEnvironments(): Promise<{ environments: string[] }> {
     this.logger.debug('Getting available environments');
-    
+
     const configs = await this.databaseConfigService.listConfigs();
-    const environments = [...new Set(configs.map(config => config.environment))];
-    
+    const environments = [
+      ...new Set(configs.map((config) => config.environment)),
+    ];
+
     return { environments };
   }
 
@@ -225,22 +243,23 @@ export class DatabaseConfigController {
     inactive: number;
   }> {
     this.logger.debug('Getting database config statistics');
-    
+
     const configs = await this.databaseConfigService.listConfigs();
-    
+
     const byEnvironment: Record<string, number> = {};
     let active = 0;
     let inactive = 0;
-    
-    configs.forEach(config => {
-      byEnvironment[config.environment] = (byEnvironment[config.environment] || 0) + 1;
+
+    configs.forEach((config) => {
+      byEnvironment[config.environment] =
+        (byEnvironment[config.environment] || 0) + 1;
       if (config.isActive) {
         active++;
       } else {
         inactive++;
       }
     });
-    
+
     return {
       total: configs.length,
       byEnvironment,

@@ -57,7 +57,7 @@ export class SimpleDatabaseConfigService {
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, config, this.CACHE_TTL);
-      
+
       this.logger.debug(`Database config built for ${env}:${dbPort}`);
       return config;
     } catch (error) {
@@ -147,18 +147,18 @@ export class SimpleDatabaseConfigService {
   }> {
     try {
       const configs = await this.listConfigs();
-      
+
       const byEnvironment: Record<string, number> = {};
       let active = 0;
       let withSsl = 0;
-      
+
       configs.forEach((config) => {
         byEnvironment[config.environment] =
           (byEnvironment[config.environment] || 0) + 1;
         if (config.isActive) active++;
         if (config.sslEnabled) withSsl++;
       });
-      
+
       return {
         total: configs.length,
         byEnvironment,
@@ -174,7 +174,10 @@ export class SimpleDatabaseConfigService {
   /**
    * Construit une configuration à partir de l'environnement
    */
-  private buildConfigFromEnvironment(environment: string, port: number): DatabaseConfig {
+  private buildConfigFromEnvironment(
+    environment: string,
+    port: number,
+  ): DatabaseConfig {
     const configs: Record<string, Partial<DatabaseConfig>> = {
       development: {
         host: process.env.DEV_DB_HOST || 'localhost',
@@ -188,10 +191,19 @@ export class SimpleDatabaseConfigService {
         maxConnections: 5,
       },
       staging: {
-        host: process.env.STAGING_DB_HOST || process.env.DB_HOST || 'staging.db.com',
-        port: port || parseInt(process.env.STAGING_DB_PORT || process.env.DB_PORT || '5432'),
-        database: process.env.STAGING_DB_NAME || process.env.DB_NAME || 'staging_db',
-        username: process.env.STAGING_DB_USER || process.env.DB_USER || 'staging_user',
+        host:
+          process.env.STAGING_DB_HOST ||
+          process.env.DB_HOST ||
+          'staging.db.com',
+        port:
+          port ||
+          parseInt(
+            process.env.STAGING_DB_PORT || process.env.DB_PORT || '5432',
+          ),
+        database:
+          process.env.STAGING_DB_NAME || process.env.DB_NAME || 'staging_db',
+        username:
+          process.env.STAGING_DB_USER || process.env.DB_USER || 'staging_user',
         password: process.env.STAGING_DB_PASS || process.env.DB_PASS,
         sslEnabled: true,
         poolSize: 10,
@@ -199,8 +211,13 @@ export class SimpleDatabaseConfigService {
         maxConnections: 10,
       },
       production: {
-        host: process.env.PROD_DB_HOST || process.env.DB_HOST || 'db.cxpojprgwgubzjyqzmoq.supabase.co',
-        port: port || parseInt(process.env.PROD_DB_PORT || process.env.DB_PORT || '5432'),
+        host:
+          process.env.PROD_DB_HOST ||
+          process.env.DB_HOST ||
+          'db.cxpojprgwgubzjyqzmoq.supabase.co',
+        port:
+          port ||
+          parseInt(process.env.PROD_DB_PORT || process.env.DB_PORT || '5432'),
         database: process.env.PROD_DB_NAME || process.env.DB_NAME || 'postgres',
         username: process.env.PROD_DB_USER || process.env.DB_USER || 'postgres',
         password: process.env.PROD_DB_PASS || process.env.DB_PASS,
@@ -212,7 +229,7 @@ export class SimpleDatabaseConfigService {
     };
 
     const baseConfig = configs[environment] || configs.development;
-    
+
     return {
       environment,
       host: baseConfig.host!,

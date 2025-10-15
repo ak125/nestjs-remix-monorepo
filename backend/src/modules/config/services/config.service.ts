@@ -1,6 +1,6 @@
 /**
  * 🔧 CONFIG SERVICE - Service Principal de Configuration Avancé
- * 
+ *
  * Service centralisé unifiant configuration environnement + base de données
  * Intègre les meilleures pratiques : cache, sécurité, validation, monitoring
  */
@@ -8,7 +8,11 @@
 import { Injectable, Inject, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { ConfigModuleOptions, FullConfigSchema, ConfigEnvironment } from '../interfaces/config.interfaces';
+import {
+  ConfigModuleOptions,
+  FullConfigSchema,
+  ConfigEnvironment,
+} from '../interfaces/config.interfaces';
 import { ConfigCacheService } from './config-cache.service';
 import { ConfigValidationService } from './config-validation.service';
 import { ConfigSecurityService } from './config-security.service';
@@ -66,26 +70,29 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
     private readonly monitoringService: ConfigMonitoringService,
     private readonly validator: ConfigValidator,
     @Inject('CONFIG_OPTIONS') private readonly options: ConfigModuleOptions,
-    @Inject('CONFIG_ENVIRONMENT') private readonly environment: ConfigEnvironment,
+    @Inject('CONFIG_ENVIRONMENT')
+    private readonly environment: ConfigEnvironment,
   ) {
     super();
     this.encryptionKey = process.env.CONFIG_ENCRYPTION_KEY || 'default-key';
   }
 
   async onModuleInit() {
-    this.logger.log(`🔧 ConfigService initialisé pour l'environnement: ${this.environment}`);
-    
+    this.logger.log(
+      `🔧 ConfigService initialisé pour l'environnement: ${this.environment}`,
+    );
+
     // Charger les configurations depuis ___config
     await this.loadAllConfigs();
-    
+
     // Charger les configurations par défaut
     await this.loadDefaultConfigurations();
-    
+
     // Valider les configurations critiques
     if (this.options.validationEnabled) {
       await this.validateCriticalConfigurations();
     }
-    
+
     // Démarrer le monitoring si activé
     if (this.options.monitoringEnabled) {
       await this.monitoringService.startMonitoring();
@@ -123,7 +130,7 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       // Mettre en cache si trouvé
       if (value !== undefined && value !== null) {
         this.configCache.set(key, value);
-        
+
         if (this.options.cacheEnabled) {
           await this.cacheService.set(key, value, this.options.cacheTTL);
         }
@@ -131,7 +138,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
 
       return value;
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération de la config '${key}':`, error);
+      this.logger.error(
+        `Erreur lors de la récupération de la config '${key}':`,
+        error,
+      );
       return defaultValue;
     }
   }
@@ -144,7 +154,9 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       // 🔍 Validation Zod améliorée
       const validationResult = this.validateConfigWithZod(key, value);
       if (!validationResult.success) {
-        throw new Error(`Validation échouée pour '${key}': ${validationResult.errors.join(', ')}`);
+        throw new Error(
+          `Validation échouée pour '${key}': ${validationResult.errors.join(', ')}`,
+        );
       }
 
       // Valider la valeur si activé
@@ -161,7 +173,8 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       let finalValue = value;
       if (this.shouldEncrypt(key) && this.options.securityEnabled) {
         // Conversion sécurisée pour le chiffrement
-        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        const stringValue =
+          typeof value === 'string' ? value : JSON.stringify(value);
         const encrypted = await this.securityService.encrypt(stringValue);
         finalValue = encrypted as T;
       }
@@ -190,7 +203,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
 
       this.logger.debug(`Configuration '${key}' mise à jour`);
     } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour de la config '${key}':`, error);
+      this.logger.error(
+        `Erreur lors de la mise à jour de la config '${key}':`,
+        error,
+      );
       throw error;
     }
   }
@@ -215,7 +231,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
 
       this.logger.debug(`Configuration '${key}' supprimée`);
     } catch (error) {
-      this.logger.error(`Erreur lors de la suppression de la config '${key}':`, error);
+      this.logger.error(
+        `Erreur lors de la suppression de la config '${key}':`,
+        error,
+      );
       throw error;
     }
   }
@@ -226,7 +245,7 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   async getAll(): Promise<FullConfigSchema> {
     try {
       const appConfig = getAppConfig();
-      
+
       const config: FullConfigSchema = {
         app: {
           name: await this.get('APP_NAME', 'NestJS Remix Monorepo'),
@@ -236,11 +255,16 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
           environment: this.environment,
           debug: await this.get('DEBUG', this.environment === 'development'),
           corsEnabled: await this.get('CORS_ENABLED', true),
-          allowedOrigins: await this.get('ALLOWED_ORIGINS', ['http://localhost:3000']),
+          allowedOrigins: await this.get('ALLOWED_ORIGINS', [
+            'http://localhost:3000',
+          ]),
         },
         database: {
           url: await this.get('SUPABASE_URL', appConfig.supabase.url),
-          serviceKey: await this.get('SUPABASE_SERVICE_ROLE_KEY', appConfig.supabase.serviceKey),
+          serviceKey: await this.get(
+            'SUPABASE_SERVICE_ROLE_KEY',
+            appConfig.supabase.serviceKey,
+          ),
           poolSize: await this.get('DATABASE_POOL_SIZE', 10),
           timeout: await this.get('DATABASE_TIMEOUT', 30000),
           ssl: await this.get('DATABASE_SSL', true),
@@ -266,9 +290,19 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
           alertOnError: await this.get('MONITORING_ALERT_ON_ERROR', true),
         },
         metadata: {
-          defaultTitle: await this.get('DEFAULT_TITLE', 'NestJS Remix Monorepo'),
-          defaultDescription: await this.get('DEFAULT_DESCRIPTION', 'Application moderne avec NestJS et Remix'),
-          defaultKeywords: await this.get('DEFAULT_KEYWORDS', ['nestjs', 'remix', 'typescript']),
+          defaultTitle: await this.get(
+            'DEFAULT_TITLE',
+            'NestJS Remix Monorepo',
+          ),
+          defaultDescription: await this.get(
+            'DEFAULT_DESCRIPTION',
+            'Application moderne avec NestJS et Remix',
+          ),
+          defaultKeywords: await this.get('DEFAULT_KEYWORDS', [
+            'nestjs',
+            'remix',
+            'typescript',
+          ]),
           author: await this.get('AUTHOR', 'Development Team'),
           defaultLanguage: await this.get('DEFAULT_LANGUAGE', 'fr'),
         },
@@ -283,7 +317,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
 
       return config;
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération de toutes les configurations:', error);
+      this.logger.error(
+        'Erreur lors de la récupération de toutes les configurations:',
+        error,
+      );
       throw error;
     }
   }
@@ -300,20 +337,22 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
             this.configCache.delete(key);
           }
         }
-        
+
         if (this.options.cacheEnabled) {
           await this.cacheService.deletePattern(pattern);
         }
       } else {
         // Invalider tout le cache
         this.configCache.clear();
-        
+
         if (this.options.cacheEnabled) {
           await this.cacheService.clear();
         }
       }
 
-      this.logger.log(`Cache invalidé ${pattern ? `pour le pattern '${pattern}'` : 'entièrement'}`);
+      this.logger.log(
+        `Cache invalidé ${pattern ? `pour le pattern '${pattern}'` : 'entièrement'}`,
+      );
     } catch (error) {
       this.logger.error("Erreur lors de l'invalidation du cache:", error);
       throw error;
@@ -327,10 +366,13 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
     try {
       await this.invalidateCache();
       await this.loadDefaultConfigurations();
-      
+
       this.logger.log('Configurations rechargées avec succès');
     } catch (error) {
-      this.logger.error('Erreur lors du rechargement des configurations:', error);
+      this.logger.error(
+        'Erreur lors du rechargement des configurations:',
+        error,
+      );
       throw error;
     }
   }
@@ -347,10 +389,7 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   }
 
   private async validateCriticalConfigurations(): Promise<void> {
-    const criticalKeys = [
-      'SUPABASE_URL',
-      'SUPABASE_SERVICE_ROLE_KEY',
-    ];
+    const criticalKeys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 
     for (const key of criticalKeys) {
       const value = await this.get(key);
@@ -361,16 +400,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   }
 
   private shouldEncrypt(key: string): boolean {
-    const sensitiveKeys = [
-      'password',
-      'secret',
-      'key',
-      'token',
-      'credential',
-    ];
+    const sensitiveKeys = ['password', 'secret', 'key', 'token', 'credential'];
 
-    return sensitiveKeys.some(sensitiveKey => 
-      key.toLowerCase().includes(sensitiveKey)
+    return sensitiveKeys.some((sensitiveKey) =>
+      key.toLowerCase().includes(sensitiveKey),
     );
   }
 
@@ -384,10 +417,20 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
     return {
       nodeEnv: this.nestConfigService.get<string>('NODE_ENV'),
       port: this.nestConfigService.get<number>('PORT'),
-      supabaseUrl: this.nestConfigService.get<string>('SUPABASE_URL') ? '[CONFIGURED]' : '[NOT SET]',
-      supabaseServiceKey: this.nestConfigService.get<string>('SUPABASE_SERVICE_ROLE_KEY') ? '[CONFIGURED]' : '[NOT SET]',
-      redisUrl: this.nestConfigService.get<string>('REDIS_URL') ? '[CONFIGURED]' : '[NOT SET]',
-      jwtSecret: this.nestConfigService.get<string>('JWT_SECRET') ? '[CONFIGURED]' : '[NOT SET]',
+      supabaseUrl: this.nestConfigService.get<string>('SUPABASE_URL')
+        ? '[CONFIGURED]'
+        : '[NOT SET]',
+      supabaseServiceKey: this.nestConfigService.get<string>(
+        'SUPABASE_SERVICE_ROLE_KEY',
+      )
+        ? '[CONFIGURED]'
+        : '[NOT SET]',
+      redisUrl: this.nestConfigService.get<string>('REDIS_URL')
+        ? '[CONFIGURED]'
+        : '[NOT SET]',
+      jwtSecret: this.nestConfigService.get<string>('JWT_SECRET')
+        ? '[CONFIGURED]'
+        : '[NOT SET]',
       version: process.env.npm_package_version || '1.0.0',
       timestamp: new Date().toISOString(),
     };
@@ -403,7 +446,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
         .select('*');
 
       if (error) {
-        this.logger.error('Erreur lors du chargement des configurations', error);
+        this.logger.error(
+          'Erreur lors du chargement des configurations',
+          error,
+        );
         return;
       }
 
@@ -411,21 +457,31 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       for (const config of configs || []) {
         try {
           // Pour ___config, config_value est déjà en JSON
-          const value = typeof config.config_value === 'string' 
-            ? JSON.parse(config.config_value)
-            : config.config_value;
-          
+          const value =
+            typeof config.config_value === 'string'
+              ? JSON.parse(config.config_value)
+              : config.config_value;
+
           this.configCache.set(config.config_key, value);
-          await this.cacheService.set(`config:${config.config_key}`, value, 3600);
+          await this.cacheService.set(
+            `config:${config.config_key}`,
+            value,
+            3600,
+          );
           loadedCount++;
         } catch (parseError) {
-          this.logger.warn(`Erreur lors du parsing de ${config.config_key}:`, parseError);
+          this.logger.warn(
+            `Erreur lors du parsing de ${config.config_key}:`,
+            parseError,
+          );
           // Stocker la valeur brute en cas d'erreur de parsing
           this.configCache.set(config.config_key, config.config_value);
         }
       }
 
-      this.logger.log(`✅ Chargé ${loadedCount} configurations depuis ___config`);
+      this.logger.log(
+        `✅ Chargé ${loadedCount} configurations depuis ___config`,
+      );
     } catch (error) {
       this.logger.error('Échec du chargement des configurations:', error);
     }
@@ -460,9 +516,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
       }
 
       // Traiter la valeur
-      const value = typeof data.config_value === 'string' 
-        ? JSON.parse(data.config_value)
-        : data.config_value;
+      const value =
+        typeof data.config_value === 'string'
+          ? JSON.parse(data.config_value)
+          : data.config_value;
 
       // Mettre en cache
       this.configCache.set(key, value);
@@ -478,12 +535,15 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   /**
    * Définit une configuration (compatible avec ___config)
    */
-  async setConfig(key: string, value: any, description?: string): Promise<void> {
+  async setConfig(
+    key: string,
+    value: any,
+    description?: string,
+  ): Promise<void> {
     try {
       // Préparer la valeur pour stockage
-      const configValue = typeof value === 'object' 
-        ? JSON.stringify(value)
-        : String(value);
+      const configValue =
+        typeof value === 'object' ? JSON.stringify(value) : String(value);
 
       // Tenter de mettre à jour d'abord
       const { data: updateResult, error: updateError } = await this.client
@@ -540,11 +600,12 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
         throw error;
       }
 
-      return (data || []).map(config => ({
+      return (data || []).map((config) => ({
         key: config.config_key,
-        value: typeof config.config_value === 'string' 
-          ? JSON.parse(config.config_value)
-          : config.config_value,
+        value:
+          typeof config.config_value === 'string'
+            ? JSON.parse(config.config_value)
+            : config.config_value,
         type: this.detectType(config.config_value),
         category: category,
         description: config.description,
@@ -552,7 +613,10 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
         updatedAt: config.updated_at ? new Date(config.updated_at) : undefined,
       }));
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération de la catégorie ${category}:`, error);
+      this.logger.error(
+        `Erreur lors de la récupération de la catégorie ${category}:`,
+        error,
+      );
       return [];
     }
   }
@@ -604,24 +668,29 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   /**
    * 🔍 Validation Zod pour les configurations
    */
-  private validateConfigWithZod(key: string, value: any): { success: boolean; errors: string[] } {
+  private validateConfigWithZod(
+    key: string,
+    value: any,
+  ): { success: boolean; errors: string[] } {
     try {
       // Validation basique de la clé
       z.string().min(1).parse(key);
-      
+
       // Validation de la valeur selon ConfigValueSchema
       ConfigValueSchema.parse(value);
-      
+
       return { success: true, errors: [] };
     } catch (error) {
       if (error instanceof z.ZodError) {
         return {
           success: false,
-          errors: error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`),
+          errors: error.issues.map(
+            (issue) => `${issue.path.join('.')}: ${issue.message}`,
+          ),
         };
       }
-      return { 
-        success: false, 
+      return {
+        success: false,
         errors: [(error as Error).message || 'Erreur de validation inconnue'],
       };
     }
@@ -654,11 +723,15 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   /**
    * 💾 Persister une configuration en base
    */
-  private async persistConfig(key: string, value: any, options: {
-    type: string;
-    category: string;
-    isSensitive: boolean;
-  }): Promise<void> {
+  private async persistConfig(
+    key: string,
+    value: any,
+    options: {
+      type: string;
+      category: string;
+      isSensitive: boolean;
+    },
+  ): Promise<void> {
     try {
       // Préparer la valeur pour stockage
       let storedValue = value;
@@ -666,16 +739,14 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
         storedValue = JSON.stringify(value);
       }
 
-      const { error } = await this.supabase
-        .from('___config')
-        .upsert({
-          config_key: key,
-          config_value: storedValue,
-          config_type: options.type,
-          category: options.category,
-          is_sensitive: options.isSensitive,
-          updated_at: new Date().toISOString(),
-        });
+      const { error } = await this.supabase.from('___config').upsert({
+        config_key: key,
+        config_value: storedValue,
+        config_type: options.type,
+        category: options.category,
+        is_sensitive: options.isSensitive,
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
         throw error;
@@ -691,7 +762,11 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
   /**
    * 📊 Tracker les changements de configuration
    */
-  private async trackConfigChange(key: string, oldValue: any, newValue: any): Promise<void> {
+  private async trackConfigChange(
+    key: string,
+    oldValue: any,
+    newValue: any,
+  ): Promise<void> {
     try {
       // Log simple pour le tracking
       this.logger.log(`🔄 Config '${key}' changed`, {
@@ -707,16 +782,20 @@ export class ConfigService extends SupabaseBaseService implements OnModuleInit {
         const trackingData = {
           config_key: key,
           action: 'update',
-          old_value: typeof oldValue === 'object' ? JSON.stringify(oldValue) : String(oldValue),
-          new_value: typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue),
+          old_value:
+            typeof oldValue === 'object'
+              ? JSON.stringify(oldValue)
+              : String(oldValue),
+          new_value:
+            typeof newValue === 'object'
+              ? JSON.stringify(newValue)
+              : String(newValue),
           timestamp: new Date().toISOString(),
         };
 
         // Tentative d'insertion dans une table de tracking (optionnel)
         try {
-          await this.supabase
-            .from('config_tracking')
-            .insert(trackingData);
+          await this.supabase.from('config_tracking').insert(trackingData);
         } catch (error) {
           // Le tracking ne doit pas faire échouer l'opération principale
           this.logger.debug('Tracking table non disponible');

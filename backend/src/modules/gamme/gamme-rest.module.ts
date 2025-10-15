@@ -8,6 +8,6 @@ import { GammeRestController } from './gamme-rest.controller';
 @Module({
   controllers: [GammeRestController],
   providers: [],
-  exports: []
+  exports: [],
 })
 export class GammeRestModule {}

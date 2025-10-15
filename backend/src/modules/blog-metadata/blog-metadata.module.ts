@@ -1,6 +1,6 @@
 /**
  * 📝 BLOG METADATA MODULE
- * 
+ *
  * Module pour gérer les métadonnées SEO des pages blog
  * depuis la table __blog_meta_tags_ariane
  */

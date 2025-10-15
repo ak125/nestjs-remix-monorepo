@@ -49,15 +49,19 @@ export class BlogController {
   async getSeoSwitches(@Param('pg_id') pg_id: string) {
     try {
       this.logger.log(`🔤 Récupération des switches SEO pour pg_id=${pg_id}`);
-      const switches = await this.blogService.getSeoItemSwitches(parseInt(pg_id));
-      
+      const switches = await this.blogService.getSeoItemSwitches(
+        parseInt(pg_id),
+      );
+
       return {
         success: true,
         data: switches,
-        count: switches.length
+        count: switches.length,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération switches SEO: ${error.message}`);
+      this.logger.error(
+        `❌ Erreur récupération switches SEO: ${error.message}`,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des switches SEO',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -136,7 +140,7 @@ export class BlogController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-  }  /**
+  } /**
    * 🏠 Page d'accueil du blog avec contenu complet
    * GET /api/blog/homepage
    */
@@ -227,7 +231,7 @@ export class BlogController {
   async getArticleByGamme(@Param('pg_alias') pg_alias: string) {
     try {
       this.logger.log(`🔄 Legacy URL - Gamme: ${pg_alias}`);
-      
+
       const article = await this.blogService.getArticleByGamme(pg_alias);
 
       if (!article) {
@@ -245,10 +249,10 @@ export class BlogController {
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       this.logger.error(`❌ Erreur gamme ${pg_alias}:`, error);
       throw new HttpException(
-        'Erreur lors de la récupération de l\'article par gamme',
+        "Erreur lors de la récupération de l'article par gamme",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -263,7 +267,7 @@ export class BlogController {
   async getArticleBySlug(@Param('slug') slug: string) {
     try {
       this.logger.log(`📄 Récupération article: ${slug}`);
-      
+
       const article = await this.blogService.getArticleBySlug(slug);
 
       if (!article) {
@@ -281,10 +285,10 @@ export class BlogController {
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       this.logger.error(`❌ Erreur article ${slug}:`, error);
       throw new HttpException(
-        'Erreur lors de la récupération de l\'article',
+        "Erreur lors de la récupération de l'article",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

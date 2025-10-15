@@ -5,7 +5,7 @@ export interface OrderCalculation {
   taxAmount: number;
   shippingCost: number;
   discountAmount: number;
-  consigne_total: number;  // ✅ Phase 5: Total consignes
+  consigne_total: number; // ✅ Phase 5: Total consignes
   total: number;
 }
 
@@ -14,8 +14,8 @@ export interface OrderLineItem {
   quantity: number;
   unitPrice: number;
   taxRate?: number;
-  consigne_unit?: number;  // ✅ Phase 5: Consigne unitaire
-  has_consigne?: boolean;  // ✅ Phase 5: Produit avec consigne
+  consigne_unit?: number; // ✅ Phase 5: Consigne unitaire
+  has_consigne?: boolean; // ✅ Phase 5: Produit avec consigne
 }
 
 @Injectable()
@@ -49,7 +49,8 @@ export class OrderCalculationService {
       const taxAmount = subtotal * taxRate;
 
       // Calcul du total (consignes incluses)
-      const total = subtotal + taxAmount + shippingCost + consigne_total - discountAmount;
+      const total =
+        subtotal + taxAmount + shippingCost + consigne_total - discountAmount;
 
       return {
         subtotal,

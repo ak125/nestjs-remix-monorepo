@@ -1,7 +1,13 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import type { Staff, CreateStaffDto, UpdateStaffDto, StaffFilters, PaginatedStaff } from '../dto/staff.dto';
+import type {
+  Staff,
+  CreateStaffDto,
+  UpdateStaffDto,
+  StaffFilters,
+  PaginatedStaff,
+} from '../dto/staff.dto';
 import * as bcrypt from 'bcrypt';
 
 /**
@@ -166,7 +172,8 @@ export class StaffDataService extends SupabaseBaseService {
       if (dto.lastName) updateData.cnfa_name = dto.lastName;
       if (dto.level !== undefined) updateData.cnfa_level = dto.level;
       if (dto.job) updateData.cnfa_job = dto.job;
-      if (dto.isActive !== undefined) updateData.cnfa_activ = dto.isActive ? '1' : '0';
+      if (dto.isActive !== undefined)
+        updateData.cnfa_activ = dto.isActive ? '1' : '0';
 
       const { data, error } = await this.supabase
         .from('___config_admin')

@@ -46,7 +46,7 @@ export class PiecesDbService extends SupabaseBaseService {
   }
 
   /**
-   * Récupère les vraies pièces de la base de données 
+   * Récupère les vraies pièces de la base de données
    * Implémente la même logique que votre code PHP
    */
   async getPiecesForVehicleAndGamme(
@@ -62,13 +62,14 @@ export class PiecesDbService extends SupabaseBaseService {
     this.logger.log(
       `🔧 [PIECES-DB-SERVICE] Récupération pour type_id: ${typeId}, pg_id: ${pgId}`,
     );
-    
+
     try {
       // 1. Requête principale pour récupérer les pièces
       // Copie de votre logique PHP avec les bonnes tables
       const { data: piecesData, error: piecesError } = await this.supabase
         .from('pieces_relation_type')
-        .select(`
+        .select(
+          `
           piece_id,
           rtp_pg_id,
           pieces!inner(
@@ -89,7 +90,8 @@ export class PiecesDbService extends SupabaseBaseService {
             price_pv_ttc,
             price_cs_ttc
           )
-        `)
+        `,
+        )
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
         .gt('pieces_price.price_pv_ttc', 0) // Seulement les prix > 0
@@ -97,12 +99,15 @@ export class PiecesDbService extends SupabaseBaseService {
         .range(offset, offset + limit - 1);
 
       if (piecesError) {
-        this.logger.error('❌ [PIECES-DB-SERVICE] Erreur requête pièces:', piecesError);
+        this.logger.error(
+          '❌ [PIECES-DB-SERVICE] Erreur requête pièces:',
+          piecesError,
+        );
         throw new Error(`Erreur récupération pièces: ${piecesError.message}`);
       }
 
       // 2. Transformation des données (comme votre PHP)
-      const pieces: DatabasePiece[] = (piecesData || []).map(item => {
+      const pieces: DatabasePiece[] = (piecesData || []).map((item) => {
         const piece = item.pieces;
         const marque = piece.pieces_marques;
         const price = item.pieces_price;
@@ -130,14 +135,15 @@ export class PiecesDbService extends SupabaseBaseService {
       // 4. Filtres disponibles
       const filters = await this.getFiltersForVehicleAndGamme(typeId, pgId);
 
-      this.logger.log(`✅ [PIECES-DB-SERVICE] ${pieces.length} pièces récupérées`);
+      this.logger.log(
+        `✅ [PIECES-DB-SERVICE] ${pieces.length} pièces récupérées`,
+      );
 
       return {
         pieces,
         stats,
         filters,
       };
-
     } catch (error) {
       this.logger.error('❌ [PIECES-DB-SERVICE] Erreur:', error);
       throw error;
@@ -147,46 +153,63 @@ export class PiecesDbService extends SupabaseBaseService {
   /**
    * Calcule les statistiques pour une combinaison véhicule/gamme
    */
-  async getStatsForVehicleAndGamme(typeId: number, pgId: number): Promise<DatabaseStats> {
+  async getStatsForVehicleAndGamme(
+    typeId: number,
+    pgId: number,
+  ): Promise<DatabaseStats> {
     const supabase = this.supabaseService.getServiceClient();
 
     try {
       // Statistiques de prix (comme votre PHP)
       const { data: priceStats, error: priceError } = await supabase
         .from('pieces_relation_type')
-        .select(`
+        .select(
+          `
           pieces_price!inner(
             price_pv_ttc
           )
-        `)
+        `,
+        )
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
         .gt('pieces_price.price_pv_ttc', 0);
 
       if (priceError) {
-        this.logger.error('❌ [PIECES-DB-SERVICE] Erreur stats prix:', priceError);
+        this.logger.error(
+          '❌ [PIECES-DB-SERVICE] Erreur stats prix:',
+          priceError,
+        );
         throw new Error(`Erreur statistiques prix: ${priceError.message}`);
       }
 
-      const prices = (priceStats || []).map(item => item.pieces_price.price_pv_ttc);
+      const prices = (priceStats || []).map(
+        (item) => item.pieces_price.price_pv_ttc,
+      );
       const totalCount = prices.length;
       const minPrice = totalCount > 0 ? Math.min(...prices) : 0;
       const maxPrice = totalCount > 0 ? Math.max(...prices) : 0;
-      const avgPrice = totalCount > 0 ? prices.reduce((a, b) => a + b, 0) / totalCount : 0;
+      const avgPrice =
+        totalCount > 0 ? prices.reduce((a, b) => a + b, 0) / totalCount : 0;
 
       // Nombre d'équipementiers distincts
       const { data: equipData, error: equipError } = await supabase
         .from('pieces_relation_type')
-        .select(`
+        .select(
+          `
           pieces!inner(
             pieces_marques!inner(pm_name)
           )
-        `)
+        `,
+        )
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
 
-      const uniqueEquipementiers = equipData 
-        ? [...new Set(equipData.map(item => item.pieces.pieces_marques.pm_name))]
+      const uniqueEquipementiers = equipData
+        ? [
+            ...new Set(
+              equipData.map((item) => item.pieces.pieces_marques.pm_name),
+            ),
+          ]
         : [];
 
       return {
@@ -196,7 +219,6 @@ export class PiecesDbService extends SupabaseBaseService {
         avg_price: Math.round(avgPrice * 100) / 100,
         equipementiers_count: uniqueEquipementiers.length,
       };
-
     } catch (error) {
       this.logger.error('❌ [PIECES-DB-SERVICE] Erreur stats:', error);
       return {
@@ -212,56 +234,76 @@ export class PiecesDbService extends SupabaseBaseService {
   /**
    * Récupère les filtres disponibles pour une combinaison véhicule/gamme
    */
-  async getFiltersForVehicleAndGamme(typeId: number, pgId: number): Promise<DatabaseFilters> {
+  async getFiltersForVehicleAndGamme(
+    typeId: number,
+    pgId: number,
+  ): Promise<DatabaseFilters> {
     const supabase = this.supabaseService.getServiceClient();
 
     try {
       // Équipementiers avec comptage
       const { data: equipData, error: equipError } = await supabase
         .from('pieces_relation_type')
-        .select(`
+        .select(
+          `
           pieces!inner(
             pieces_marques!inner(
               pm_name,
               pm_alias
             )
           )
-        `)
+        `,
+        )
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
 
-      const equipementiers = equipData 
+      const equipementiers = equipData
         ? Object.entries(
-            equipData.reduce((acc, item) => {
-              const marque = item.pieces.pieces_marques;
-              const key = marque.pm_name;
-              acc[key] = acc[key] || { pm_name: marque.pm_name, pm_alias: marque.pm_alias, count: 0 };
-              acc[key].count++;
-              return acc;
-            }, {} as Record<string, any>)
+            equipData.reduce(
+              (acc, item) => {
+                const marque = item.pieces.pieces_marques;
+                const key = marque.pm_name;
+                acc[key] = acc[key] || {
+                  pm_name: marque.pm_name,
+                  pm_alias: marque.pm_alias,
+                  count: 0,
+                };
+                acc[key].count++;
+                return acc;
+              },
+              {} as Record<string, any>,
+            ),
           ).map(([_, value]) => value)
         : [];
 
       // Qualités disponibles
       const { data: qualityData, error: qualityError } = await supabase
         .from('pieces_relation_type')
-        .select(`
+        .select(
+          `
           pieces!inner(
             pieces_marques!inner(pm_quality)
           )
-        `)
+        `,
+        )
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
         .not('pieces.pieces_marques.pm_quality', 'is', null);
 
-      const qualities = qualityData 
+      const qualities = qualityData
         ? Object.entries(
-            qualityData.reduce((acc, item) => {
-              const quality = item.pieces.pieces_marques.pm_quality;
-              acc[quality] = acc[quality] || { quality_name: quality, count: 0 };
-              acc[quality].count++;
-              return acc;
-            }, {} as Record<string, any>)
+            qualityData.reduce(
+              (acc, item) => {
+                const quality = item.pieces.pieces_marques.pm_quality;
+                acc[quality] = acc[quality] || {
+                  quality_name: quality,
+                  count: 0,
+                };
+                acc[quality].count++;
+                return acc;
+              },
+              {} as Record<string, any>,
+            ),
           ).map(([_, value]) => value)
         : [];
 
@@ -269,7 +311,6 @@ export class PiecesDbService extends SupabaseBaseService {
         equipementiers,
         qualities,
       };
-
     } catch (error) {
       this.logger.error('❌ [PIECES-DB-SERVICE] Erreur filtres:', error);
       return {

@@ -30,7 +30,8 @@ export class EnhancedConfigService extends SupabaseBaseService {
   protected readonly logger = new Logger(EnhancedConfigService.name);
   private readonly CACHE_PREFIX = 'config:';
   private readonly CACHE_TTL = 3600; // 1 hour
-  private readonly ENCRYPTION_KEY = process.env.CONFIG_ENCRYPTION_KEY || 'default-key-change-in-production';
+  private readonly ENCRYPTION_KEY =
+    process.env.CONFIG_ENCRYPTION_KEY || 'default-key-change-in-production';
 
   constructor(private readonly cacheService: CacheService) {
     super();
@@ -42,7 +43,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async loadAppConfig(): Promise<ConfigItem | null> {
     try {
       const cacheKey = `${this.CACHE_PREFIX}app_config`;
-      
+
       // Vérifier le cache d'abord
       const cached = await this.cacheService.get<ConfigItem>(cacheKey);
       if (cached) {
@@ -69,7 +70,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
       // Mettre en cache
       await this.cacheService.set(cacheKey, data, this.CACHE_TTL);
       this.logger.debug('App configuration loaded from database');
-      
+
       return data;
     } catch (error) {
       this.logger.error('Error in loadAppConfig:', error);
@@ -83,7 +84,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async get(key: string): Promise<string | null> {
     try {
       const cacheKey = `${this.CACHE_PREFIX}${key}`;
-      
+
       // Vérifier le cache d'abord
       const cached = await this.cacheService.get<string>(cacheKey);
       if (cached !== null) {
@@ -108,7 +109,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, data.config_value, this.CACHE_TTL);
-      
+
       return data.config_value;
     } catch (error) {
       this.logger.error(`Error in get(${key}):`, error);
@@ -121,14 +122,12 @@ export class EnhancedConfigService extends SupabaseBaseService {
    */
   async set(key: string, value: string, description?: string): Promise<void> {
     try {
-      const { error } = await this.supabase
-        .from('___config')
-        .upsert({
-          config_key: key,
-          config_value: value,
-          description: description || '',
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await this.supabase.from('___config').upsert({
+        config_key: key,
+        config_value: value,
+        description: description || '',
+        updated_at: new Date().toISOString(),
+      });
 
       if (error) {
         this.logger.error(`Error setting config ${key}:`, error);
@@ -137,7 +136,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.invalidateCache(key);
-      
+
       this.logger.debug(`Config ${key} set successfully`);
     } catch (error) {
       this.logger.error(`Error in set(${key}):`, error);
@@ -162,7 +161,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.invalidateCache(key);
-      
+
       this.logger.debug(`Config ${key} deleted successfully`);
     } catch (error) {
       this.logger.error(`Error in delete(${key}):`, error);
@@ -182,7 +181,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
         .order('config_key');
 
       if (error) {
-        this.logger.error(`Error searching configs with pattern ${pattern}:`, error);
+        this.logger.error(
+          `Error searching configs with pattern ${pattern}:`,
+          error,
+        );
         throw new Error(`Failed to search configs: ${error.message}`);
       }
 
@@ -205,7 +207,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
         .order('config_key');
 
       if (error) {
-        this.logger.error(`Error getting configs for category ${category}:`, error);
+        this.logger.error(
+          `Error getting configs for category ${category}:`,
+          error,
+        );
         throw new Error(`Failed to get configs for category: ${error.message}`);
       }
 
@@ -222,15 +227,15 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async backup(): Promise<ConfigBackup> {
     try {
       const configs = await this.loadAllConfigs();
-      
+
       const backup: ConfigBackup = {
         timestamp: new Date().toISOString(),
         configs,
         metadata: {
           total: configs.length,
           exported_by: 'EnhancedConfigService',
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       };
 
       this.logger.log(`Created backup with ${configs.length} configurations`);
@@ -247,9 +252,13 @@ export class EnhancedConfigService extends SupabaseBaseService {
   async restore(backup: ConfigBackup): Promise<void> {
     try {
       const { configs } = backup;
-      
+
       for (const config of configs) {
-        await this.set(config.config_key, config.config_value, config.description);
+        await this.set(
+          config.config_key,
+          config.config_value,
+          config.description,
+        );
       }
 
       this.logger.log(`Restored ${configs.length} configurations from backup`);
@@ -267,10 +276,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
       const iv = crypto.randomBytes(16);
       const key = this.ENCRYPTION_KEY;
       const cipher = crypto.createCipher('aes-256-cbc', key);
-      
+
       let encrypted = cipher.update(value, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      
+
       // Format: iv:encryptedData pour compatibilité future
       return `${iv.toString('hex')}:${encrypted}`;
     } catch (error) {
@@ -286,15 +295,15 @@ export class EnhancedConfigService extends SupabaseBaseService {
     try {
       const parts = encryptedValue.split(':');
       let encrypted = encryptedValue;
-      
+
       // Si nouveau format avec IV, utiliser la partie encrypted
       if (parts.length === 2) {
         encrypted = parts[1];
       }
-      
+
       const key = this.ENCRYPTION_KEY;
       const decipher = crypto.createDecipher('aes-256-cbc', key);
-      
+
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
       return decrypted;
@@ -329,7 +338,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
   }> {
     try {
       const configs = await this.loadAllConfigs();
-      
+
       const categories: Record<string, number> = {};
       let lastUpdated: string | null = null;
 
@@ -339,7 +348,10 @@ export class EnhancedConfigService extends SupabaseBaseService {
         categories[category] = (categories[category] || 0) + 1;
 
         // Trouver la dernière mise à jour
-        if (config.updated_at && (!lastUpdated || config.updated_at > lastUpdated)) {
+        if (
+          config.updated_at &&
+          (!lastUpdated || config.updated_at > lastUpdated)
+        ) {
           lastUpdated = config.updated_at;
         }
       }
@@ -347,7 +359,7 @@ export class EnhancedConfigService extends SupabaseBaseService {
       return {
         total: configs.length,
         categories,
-        lastUpdated
+        lastUpdated,
       };
     } catch (error) {
       this.logger.error('Error getting stats:', error);

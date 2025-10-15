@@ -16,17 +16,22 @@ export class EquipementiersController {
    */
   @Get()
   async getEquipementiers() {
-    this.logger.log('🏭 [GET] /api/catalog/equipementiers - Récupération équipementiers');
-    
+    this.logger.log(
+      '🏭 [GET] /api/catalog/equipementiers - Récupération équipementiers',
+    );
+
     try {
-      const equipementiersResult = await this.equipementiersService.getEquipementiers();
-      
-      this.logger.log(`✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`);
+      const equipementiersResult =
+        await this.equipementiersService.getEquipementiers();
+
+      this.logger.log(
+        `✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`,
+      );
       return {
         success: equipementiersResult.success,
         data: equipementiersResult.data,
         stats: equipementiersResult.stats,
-        message: `${equipementiersResult.stats.total_equipementiers} équipementiers récupérés avec succès`
+        message: `${equipementiersResult.stats.total_equipementiers} équipementiers récupérés avec succès`,
       };
     } catch (error) {
       this.logger.error('❌ Erreur récupération équipementiers:', error);
@@ -53,21 +58,29 @@ export class EquipementiersController {
       };
     }
 
-    this.logger.log(`🔍 [GET] /api/catalog/equipementiers/search?q=${searchTerm}`);
-    
+    this.logger.log(
+      `🔍 [GET] /api/catalog/equipementiers/search?q=${searchTerm}`,
+    );
+
     try {
-      const searchResult = await this.equipementiersService.searchEquipementiers(searchTerm);
-      
-      this.logger.log(`✅ ${searchResult.stats.results_count} résultats pour "${searchTerm}"`);
+      const searchResult =
+        await this.equipementiersService.searchEquipementiers(searchTerm);
+
+      this.logger.log(
+        `✅ ${searchResult.stats.results_count} résultats pour "${searchTerm}"`,
+      );
       return {
         success: searchResult.success,
         data: searchResult.data,
         stats: searchResult.stats,
         search_term: searchTerm,
-        message: `${searchResult.stats.results_count} équipementiers trouvés pour "${searchTerm}"`
+        message: `${searchResult.stats.results_count} équipementiers trouvés pour "${searchTerm}"`,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur recherche équipementiers "${searchTerm}":`, error);
+      this.logger.error(
+        `❌ Erreur recherche équipementiers "${searchTerm}":`,
+        error,
+      );
       return {
         success: false,
         data: [],
@@ -84,24 +97,27 @@ export class EquipementiersController {
   @Get(':id')
   async getEquipementierById(@Param('id') id: string) {
     this.logger.log(`🏭 [GET] /api/catalog/equipementiers/${id}`);
-    
+
     try {
-      const equipementier = await this.equipementiersService.getEquipementierById(id);
-      
+      const equipementier =
+        await this.equipementiersService.getEquipementierById(id);
+
       if (!equipementier) {
         this.logger.warn(`⚠️ Équipementier ${id} non trouvé`);
         return {
           success: false,
           data: null,
-          message: `Équipementier ${id} non trouvé`
+          message: `Équipementier ${id} non trouvé`,
         };
       }
 
-      this.logger.log(`✅ Équipementier ${id} trouvé: ${equipementier.pm_name}`);
+      this.logger.log(
+        `✅ Équipementier ${id} trouvé: ${equipementier.pm_name}`,
+      );
       return {
         success: true,
         data: equipementier,
-        message: `Équipementier ${equipementier.pm_name} récupéré avec succès`
+        message: `Équipementier ${equipementier.pm_name} récupéré avec succès`,
       };
     } catch (error) {
       this.logger.error(`❌ Erreur récupération équipementier ${id}:`, error);

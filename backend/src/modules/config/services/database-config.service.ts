@@ -1,5 +1,11 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { ConfigItemDto, CreateConfigDto, UpdateConfigDto, ConfigQueryDto, ConfigType } from '../dto/config.dto';
+import {
+  ConfigItemDto,
+  CreateConfigDto,
+  UpdateConfigDto,
+  ConfigQueryDto,
+  ConfigType,
+} from '../dto/config.dto';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 
@@ -20,7 +26,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
   async getAllConfigs(query: ConfigQueryDto = {}): Promise<ConfigItemDto[]> {
     try {
       const cacheKey = `${this.cachePrefix}all:${JSON.stringify(query)}`;
-      
+
       // Vérifier le cache si activé
       if (this.options.cacheEnabled !== false) {
         const cached = await this.cacheService.get(cacheKey);
@@ -30,9 +36,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
         }
       }
 
-      let queryBuilder = this.client
-        .from(this.tableName)
-        .select('*');
+      let queryBuilder = this.client.from(this.tableName).select('*');
 
       // Appliquer les filtres
       if (query.category) {
@@ -143,7 +147,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
     try {
       const configData = {
         config_key: createConfigDto.key,
-        config_value: this.serializeValue(createConfigDto.value, createConfigDto.type),
+        config_value: this.serializeValue(
+          createConfigDto.value,
+          createConfigDto.type,
+        ),
         description: createConfigDto.description,
         updated_at: new Date().toISOString(),
       };
@@ -177,7 +184,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
     }
   }
 
-  async updateConfig(key: string, updateConfigDto: UpdateConfigDto): Promise<ConfigItemDto | null> {
+  async updateConfig(
+    key: string,
+    updateConfigDto: UpdateConfigDto,
+  ): Promise<ConfigItemDto | null> {
     try {
       const updateData: any = {
         updated_at: new Date().toISOString(),
@@ -205,7 +215,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
         if (error.code === 'PGRST116') {
           return null; // Configuration non trouvée
         }
-        this.logger.error(`Erreur lors de la mise à jour de la configuration ${key}`, error);
+        this.logger.error(
+          `Erreur lors de la mise à jour de la configuration ${key}`,
+          error,
+        );
         throw new Error(`Erreur database: ${error.message}`);
       }
 
@@ -216,7 +229,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
 
       return config;
     } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour de la configuration ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la mise à jour de la configuration ${key}`,
+        error,
+      );
       throw error;
     }
   }
@@ -229,7 +245,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
         .eq('config_key', key);
 
       if (error) {
-        this.logger.error(`Erreur lors de la suppression de la configuration ${key}`, error);
+        this.logger.error(
+          `Erreur lors de la suppression de la configuration ${key}`,
+          error,
+        );
         throw new Error(`Erreur database: ${error.message}`);
       }
 
@@ -238,16 +257,21 @@ export class DatabaseConfigService extends SupabaseBaseService {
 
       return true;
     } catch (error) {
-      this.logger.error(`Erreur lors de la suppression de la configuration ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la suppression de la configuration ${key}`,
+        error,
+      );
       throw error;
     }
   }
 
   async clearCache(): Promise<void> {
     try {
-      // Implémentation simplifiée - dans un vrai projet, 
+      // Implémentation simplifiée - dans un vrai projet,
       // il faudrait implémenter une méthode de nettoyage par pattern
-      this.logger.log('Cache des configurations vidé (implémentation simplifiée)');
+      this.logger.log(
+        'Cache des configurations vidé (implémentation simplifiée)',
+      );
     } catch (error) {
       this.logger.error('Erreur lors du vidage du cache', error);
       throw error;
@@ -256,8 +280,11 @@ export class DatabaseConfigService extends SupabaseBaseService {
 
   private formatConfig(data: any): ConfigItemDto {
     // Adapter au format de la table ___config
-    const value = this.deserializeValue(data.config_value || '{}', ConfigType.JSON);
-    
+    const value = this.deserializeValue(
+      data.config_value || '{}',
+      ConfigType.JSON,
+    );
+
     return {
       key: data.config_key,
       value: value,
@@ -272,7 +299,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
   }
 
   private formatConfigs(data: any[]): ConfigItemDto[] {
-    return data.map(item => this.formatConfig(item));
+    return data.map((item) => this.formatConfig(item));
   }
 
   private serializeValue(value: any, type: ConfigType): string {
@@ -307,7 +334,10 @@ export class DatabaseConfigService extends SupabaseBaseService {
           return value;
       }
     } catch (error) {
-      this.logger.warn(`Erreur lors de la désérialisation de la valeur: ${value}`, error);
+      this.logger.warn(
+        `Erreur lors de la désérialisation de la valeur: ${value}`,
+        error,
+      );
       return value;
     }
   }
@@ -316,7 +346,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
     try {
       // Invalider la configuration spécifique
       await this.cacheService.del(`${this.cachePrefix}${key}`);
-      
+
       // Invalider les listes mises en cache - simplifiée car deletePattern n'existe pas
       // TODO: Implémenter une méthode de nettoyage plus sophistiquée
       this.logger.debug(`Cache invalidé pour la clé: ${key}`);

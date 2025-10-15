@@ -514,8 +514,10 @@ export class OrdersController {
     try {
       // Utiliser customerId fourni ou celui de monia123@gmail.com par défaut
       const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
-      
-      this.logger.log(`Creating test order with mock data for customer ${customerId}`);
+
+      this.logger.log(
+        `Creating test order with mock data for customer ${customerId}`,
+      );
 
       const mockOrderData: CreateOrderData = {
         customerId: customerId,
@@ -579,11 +581,15 @@ export class OrdersController {
   @Post('test/create-with-consignes')
   @ApiOperation({ summary: 'Créer commande test avec consignes (Phase 5)' })
   @ApiResponse({ status: 201, description: 'Commande avec consignes créée' })
-  async testCreateOrderWithConsignes(@Body() testData?: { customerId?: string | number }) {
+  async testCreateOrderWithConsignes(
+    @Body() testData?: { customerId?: string | number },
+  ) {
     try {
       const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
-      
-      this.logger.log(`✅ Phase 5: Creating test order WITH CONSIGNES for customer ${customerId}`);
+
+      this.logger.log(
+        `✅ Phase 5: Creating test order WITH CONSIGNES for customer ${customerId}`,
+      );
 
       const mockOrderData: CreateOrderData = {
         customerId: customerId,
@@ -596,8 +602,8 @@ export class OrdersController {
             unitPrice: 168.59,
             vatRate: 20,
             discount: 0,
-            consigne_unit: 72,  // ✅ Consigne unitaire
-            has_consigne: true,  // ✅ Produit avec consigne
+            consigne_unit: 72, // ✅ Consigne unitaire
+            has_consigne: true, // ✅ Produit avec consigne
           },
         ],
         billingAddress: {
@@ -616,7 +622,8 @@ export class OrdersController {
           city: 'Paris',
           country: 'France',
         },
-        customerNote: '✅ Phase 5: Test commande avec consignes alternateur (2x 72€ = 144€)',
+        customerNote:
+          '✅ Phase 5: Test commande avec consignes alternateur (2x 72€ = 144€)',
         shippingMethod: 'standard',
       };
 
@@ -629,7 +636,7 @@ export class OrdersController {
           consigne_unit: 72,
           quantity: 2,
           consigne_total: 144,
-          note: 'Les consignes sont stockées dans ord_deposit_ttc'
+          note: 'Les consignes sont stockées dans ord_deposit_ttc',
         },
         timestamp: new Date().toISOString(),
       };

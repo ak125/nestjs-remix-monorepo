@@ -163,17 +163,19 @@ export class ManufacturersController {
   @Get('brand/:alias')
   async getBrandByAlias(@Param('alias') alias: string) {
     this.logger.log(`GET /api/manufacturers/brand/${alias}`);
-    
+
     try {
-      const result = await this.manufacturersService.getBrandWithModelsByAlias(alias);
-      
+      const result =
+        await this.manufacturersService.getBrandWithModelsByAlias(alias);
+
       return {
         success: true,
         data: result,
         message: `Marque "${alias}" récupérée avec ${result.models.length} modèles`,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       this.logger.error(`Erreur getBrandByAlias: ${errorMessage}`);
       return {
         success: false,
@@ -193,21 +195,24 @@ export class ManufacturersController {
     @Param('brandAlias') brandAlias: string,
     @Param('modelAlias') modelAlias: string,
   ) {
-    this.logger.log(`GET /api/manufacturers/brand/${brandAlias}/model/${modelAlias}`);
-    
+    this.logger.log(
+      `GET /api/manufacturers/brand/${brandAlias}/model/${modelAlias}`,
+    );
+
     try {
       const result = await this.manufacturersService.getModelWithTypesByAlias(
         brandAlias,
         modelAlias,
       );
-      
+
       return {
         success: true,
         data: result,
         message: `Modèle "${modelAlias}" de "${brandAlias}" récupéré avec ${result.types.length} motorisations`,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       this.logger.error(`Erreur getModelByAlias: ${errorMessage}`);
       return {
         success: false,
@@ -741,7 +746,7 @@ export class ManufacturersController {
   @Get('display-levels')
   async getDisplayLevels() {
     this.logger.log('GET /api/manufacturers/display-levels');
-    
+
     try {
       const { data, error } = await this.manufacturersService.client
         .from('auto_marque')
@@ -757,7 +762,7 @@ export class ManufacturersController {
       const grouped: Record<number, any[]> = {};
       const stats: Record<number, number> = {};
 
-      data.forEach(m => {
+      data.forEach((m) => {
         const level = m.marque_display ?? 0;
         if (!grouped[level]) {
           grouped[level] = [];
@@ -775,11 +780,13 @@ export class ManufacturersController {
         success: true,
         total: data.length,
         statistics: stats,
-        levels: Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(level => ({
-          display: Number(level),
-          count: stats[Number(level)],
-          brands: grouped[Number(level)],
-        })),
+        levels: Object.keys(grouped)
+          .sort((a, b) => Number(b) - Number(a))
+          .map((level) => ({
+            display: Number(level),
+            count: stats[Number(level)],
+            brands: grouped[Number(level)],
+          })),
       };
     } catch (error: any) {
       return { success: false, error: error.message };

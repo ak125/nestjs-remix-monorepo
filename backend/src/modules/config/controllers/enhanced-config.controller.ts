@@ -11,7 +11,11 @@ import {
   HttpCode,
   Logger,
 } from '@nestjs/common';
-import { EnhancedConfigService, ConfigItem, ConfigBackup } from '../services/enhanced-config.service';
+import {
+  EnhancedConfigService,
+  ConfigItem,
+  ConfigBackup,
+} from '../services/enhanced-config.service';
 
 export interface SetConfigDto {
   key: string;
@@ -48,18 +52,19 @@ export class EnhancedConfigController {
   async testDatabase(): Promise<any> {
     try {
       this.logger.debug('Testing Supabase connection...');
-      
+
       // Test de connexion en listant les tables avec information_schema
-      const { data, error } = await this.enhancedConfigService['supabase']
-        .rpc('get_table_list');
+      const { data, error } =
+        await this.enhancedConfigService['supabase'].rpc('get_table_list');
 
       if (error) {
         // Si la fonction RPC n'existe pas, essayons une requête plus simple
-        const { data: simpleData, error: simpleError } = await this.enhancedConfigService['supabase']
-          .from('information_schema.tables')
-          .select('table_name')
-          .eq('table_schema', 'public')
-          .limit(5);
+        const { data: simpleData, error: simpleError } =
+          await this.enhancedConfigService['supabase']
+            .from('information_schema.tables')
+            .select('table_name')
+            .eq('table_schema', 'public')
+            .limit(5);
 
         if (simpleError) {
           return {
@@ -108,7 +113,9 @@ export class EnhancedConfigController {
    * Récupère une configuration par clé
    */
   @Get(':key')
-  async getConfig(@Param('key') key: string): Promise<{ key: string; value: string | null }> {
+  async getConfig(
+    @Param('key') key: string,
+  ): Promise<{ key: string; value: string | null }> {
     this.logger.debug(`Getting configuration: ${key}`);
     const value = await this.enhancedConfigService.get(key);
     return { key, value };
@@ -131,7 +138,7 @@ export class EnhancedConfigController {
   @Put(':key')
   async updateConfig(
     @Param('key') key: string,
-    @Body() dto: { value: string; description?: string }
+    @Body() dto: { value: string; description?: string },
   ): Promise<{ message: string }> {
     this.logger.debug(`Updating configuration: ${key}`);
     await this.enhancedConfigService.set(key, dto.value, dto.description);
@@ -152,7 +159,9 @@ export class EnhancedConfigController {
    * Recherche des configurations
    */
   @Get('search/:pattern')
-  async searchConfigs(@Param('pattern') pattern: string): Promise<ConfigItem[]> {
+  async searchConfigs(
+    @Param('pattern') pattern: string,
+  ): Promise<ConfigItem[]> {
     this.logger.debug(`Searching configurations with pattern: ${pattern}`);
     return this.enhancedConfigService.search(pattern);
   }
@@ -161,7 +170,9 @@ export class EnhancedConfigController {
    * Récupère les configurations par catégorie
    */
   @Get('category/:category')
-  async getByCategory(@Param('category') category: string): Promise<ConfigItem[]> {
+  async getByCategory(
+    @Param('category') category: string,
+  ): Promise<ConfigItem[]> {
     this.logger.debug(`Getting configurations for category: ${category}`);
     return this.enhancedConfigService.getByCategory(category);
   }
@@ -189,7 +200,9 @@ export class EnhancedConfigController {
    * Chiffre une valeur
    */
   @Post('encrypt')
-  async encryptValue(@Body() dto: { value: string }): Promise<{ encrypted: string }> {
+  async encryptValue(
+    @Body() dto: { value: string },
+  ): Promise<{ encrypted: string }> {
     this.logger.debug('Encrypting value');
     const encrypted = this.enhancedConfigService.encryptValue(dto.value);
     return { encrypted };
@@ -199,7 +212,9 @@ export class EnhancedConfigController {
    * Déchiffre une valeur
    */
   @Post('decrypt')
-  async decryptValue(@Body() dto: { encrypted: string }): Promise<{ decrypted: string }> {
+  async decryptValue(
+    @Body() dto: { encrypted: string },
+  ): Promise<{ decrypted: string }> {
     this.logger.debug('Decrypting value');
     const decrypted = this.enhancedConfigService.decryptValue(dto.encrypted);
     return { decrypted };

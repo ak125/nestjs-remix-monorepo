@@ -61,7 +61,7 @@ import { UserShipmentService } from './services/user-shipment.service';
   controllers: [
     // ✅ CONTRÔLEUR PRINCIPAL CONSOLIDÉ
     UsersFinalController, // Route unique: /api/users
-    
+
     // Controllers spécialisés
     PasswordController, // ✅ API REST pour gestion des mots de passe
     AddressesController, // ✅ Service d'adresses réactivé
@@ -71,10 +71,10 @@ import { UserShipmentService } from './services/user-shipment.service';
     // ✅ SERVICES PRINCIPAUX CONSOLIDÉS
     UsersFinalService, // Service métier avec cache Redis
     UserDataConsolidatedService, // Accès données Supabase
-    
+
     // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
     UsersService, // TODO: Migrer AuthModule vers UsersFinalService
-    
+
     // Services spécialisés
     ProfileService, // ✅ Service moderne de gestion des profils
     UsersAdminService, // ✅ Service opérations admin
@@ -92,10 +92,10 @@ import { UserShipmentService } from './services/user-shipment.service';
     // ✅ SERVICES PRINCIPAUX CONSOLIDÉS
     UsersFinalService, // Service métier principal
     UserDataConsolidatedService, // Accès données
-    
+
     // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
     UsersService, // TODO: Migrer AuthModule vers UsersFinalService
-    
+
     // Services spécialisés
     ProfileService, // ✅ Service de profils exporté
     UsersAdminService, // ✅ Service admin exporté

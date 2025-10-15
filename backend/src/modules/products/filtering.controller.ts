@@ -5,9 +5,7 @@ import { ProductFilteringService } from './services/product-filtering.service';
 @ApiTags('Product Filters')
 @Controller('api/products/filters')
 export class FilteringController {
-  constructor(
-    private readonly filteringService: ProductFilteringService,
-  ) {}
+  constructor(private readonly filteringService: ProductFilteringService) {}
 
   /**
    * 🏥 HEALTH CHECK
@@ -45,14 +43,15 @@ export class FilteringController {
    * ✅ ENDPOINT PRINCIPAL PROPRE
    */
   @Get(':pgId/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Récupérer tous les filtres V5 Clean',
-    description: 'Version propre et fonctionnelle du service V5 Ultimate avec code TypeScript parfait',
+    description:
+      'Version propre et fonctionnelle du service V5 Ultimate avec code TypeScript parfait',
   })
   @ApiParam({ name: 'pgId', description: 'ID de la gamme de produits' })
   @ApiParam({ name: 'typeId', description: 'ID du type de produit' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Filtres récupérés avec succès',
     schema: {
       example: {
@@ -70,7 +69,8 @@ export class FilteringController {
           response_time: 45,
           service_name: 'FilteringServiceV5UltimateClean',
           api_version: 'V5_ULTIMATE_CLEAN',
-          methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
+          methodology:
+            'vérifier existant avant et utiliser le meilleur et améliorer - VERSION PROPRE',
         },
       },
     },

@@ -190,7 +190,7 @@ export class AuthService {
       const existingUser = await this.checkIfUserExists({
         email: registerDto.email,
       });
-      
+
       if (existingUser) {
         this.logger.warn(`User already exists: ${registerDto.email}`);
         throw new BadRequestException(

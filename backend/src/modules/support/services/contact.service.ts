@@ -657,7 +657,9 @@ export class ContactService extends SupabaseBaseService {
     return this.getContactById(id);
   }
 
-  async submitContactForm(contactData: ContactFormData): Promise<ContactTicket> {
+  async submitContactForm(
+    contactData: ContactFormData,
+  ): Promise<ContactTicket> {
     // Version simplifiée - créer directement le ticket avec un client existant
     try {
       this.validateContactData(contactData);
@@ -677,9 +679,9 @@ export class ContactService extends SupabaseBaseService {
       if (allTickets && allTickets.length > 0) {
         // Convertir tous les IDs en nombres, filtrer les NaN, et trouver le maximum
         const numericIds = allTickets
-          .map(ticket => parseInt(ticket.msg_id))
-          .filter(id => !isNaN(id));
-        
+          .map((ticket) => parseInt(ticket.msg_id))
+          .filter((id) => !isNaN(id));
+
         if (numericIds.length > 0) {
           const maxId = Math.max(...numericIds);
           nextId = (maxId + 1).toString();
@@ -708,7 +710,9 @@ export class ContactService extends SupabaseBaseService {
         throw new BadRequestException('Impossible de créer le ticket');
       }
 
-      this.logger.log(`Nouveau ticket créé: ${data.msg_id} - ${contactData.subject}`);
+      this.logger.log(
+        `Nouveau ticket créé: ${data.msg_id} - ${contactData.subject}`,
+      );
 
       return {
         msg_id: data.msg_id,
@@ -775,7 +779,10 @@ export class ContactService extends SupabaseBaseService {
     return this.updateContactStatus(id, 'open', staffId);
   }
 
-  async addTicketResponse(ticketId: string, responseData: any): Promise<ContactTicket> {
+  async addTicketResponse(
+    ticketId: string,
+    responseData: any,
+  ): Promise<ContactTicket> {
     const response = {
       message_id: ticketId,
       message: responseData.message,
@@ -786,7 +793,11 @@ export class ContactService extends SupabaseBaseService {
     return this.getTicket(ticketId);
   }
 
-  async addSatisfactionRating(ticketId: string, rating: number, feedback?: string): Promise<ContactTicket> {
+  async addSatisfactionRating(
+    ticketId: string,
+    rating: number,
+    feedback?: string,
+  ): Promise<ContactTicket> {
     const satisfaction = {
       message_id: ticketId,
       message: `[SATISFACTION] Note: ${rating}/5${feedback ? ` - ${feedback}` : ''}`,

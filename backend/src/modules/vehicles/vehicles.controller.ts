@@ -56,12 +56,12 @@ export class VehiclesController {
   ) {
     const params = this.parseQueryParams(query);
     params.modelId = modelId;
-    
+
     // 🔧 Support du filtrage par année
     if (query.year) {
       params.year = parseInt(query.year);
     }
-    
+
     return this.vehiclesService.findTypesByModel(modelId, params);
   }
 

@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * 📊 ENHANCED ANALYTICS SERVICE - Configuration et Tracking Avancé
- * 
+ *
  * Architecture alignée sur les meilleures pratiques du projet :
  * ✅ SupabaseBaseService heritage pour consistance
  * ✅ Cache intégré pour performances optimales
@@ -148,7 +148,9 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, config, this.cacheTtl);
-      this.logger.log(`Analytics config loaded for provider: ${config.provider}`);
+      this.logger.log(
+        `Analytics config loaded for provider: ${config.provider}`,
+      );
 
       return config;
     } catch (error) {
@@ -161,15 +163,17 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
    * Génère le script de tracking optimisé
    * Compatible avec analytics.track.php, analytics.track.min.php, v7.analytics.track.php
    */
-  async getTrackingScript(options: ScriptConfig = {
-    provider: 'auto',
-    minified: false,
-    async: true,
-    defer: true,
-    version: 'latest'
-  }): Promise<string> {
+  async getTrackingScript(
+    options: ScriptConfig = {
+      provider: 'auto',
+      minified: false,
+      async: true,
+      defer: true,
+      version: 'latest',
+    },
+  ): Promise<string> {
     const config = await this.getConfig();
-    
+
     if (!config || !config.isActive) {
       return '<!-- Analytics disabled or not configured -->';
     }
@@ -188,10 +192,14 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
           script = this.generatePlausibleScript(config, options);
           break;
         case 'custom':
-          script = config.scriptUrl ? await this.generateCustomScript(config, options) : '';
+          script = config.scriptUrl
+            ? await this.generateCustomScript(config, options)
+            : '';
           break;
         default:
-          this.logger.warn(`Unsupported analytics provider: ${config.provider}`);
+          this.logger.warn(
+            `Unsupported analytics provider: ${config.provider}`,
+          );
           return '<!-- Unsupported analytics provider -->';
       }
 
@@ -208,7 +216,9 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Met à jour la configuration analytics
    */
-  async updateConfig(updates: Partial<AnalyticsConfig>): Promise<AnalyticsConfig> {
+  async updateConfig(
+    updates: Partial<AnalyticsConfig>,
+  ): Promise<AnalyticsConfig> {
     const currentConfig = await this.getConfig();
     if (!currentConfig) {
       throw new Error('No active analytics configuration found');
@@ -246,7 +256,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
     action: string,
     label?: string,
     value?: number,
-    customData?: Record<string, any>
+    customData?: Record<string, any>,
   ): Promise<void> {
     const config = await this.getConfig();
     if (!config || !config.isActive) return;
@@ -279,7 +289,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
    */
   async getMetrics(
     startDate?: Date,
-    endDate?: Date
+    endDate?: Date,
   ): Promise<AnalyticsMetrics> {
     const cacheKey = `${this.cachePrefix}:metrics:${startDate?.toISOString() || 'all'}:${endDate?.toISOString() || 'all'}`;
 
@@ -289,9 +299,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
         return cached;
       }
 
-      let query = this.supabase
-        .from('analytics_events')
-        .select('*');
+      let query = this.supabase.from('analytics_events').select('*');
 
       if (startDate) {
         query = query.gte('timestamp', startDate.toISOString());
@@ -305,7 +313,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
       if (error) throw error;
 
       const metrics = this.calculateMetrics(events || []);
-      
+
       // Cache pour 5 minutes
       await this.cacheService.set(cacheKey, metrics, 300);
 
@@ -319,7 +327,10 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Génère le script Google Analytics optimisé
    */
-  private generateGoogleAnalyticsScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generateGoogleAnalyticsScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     const asyncAttr = options.async ? 'async' : '';
     const deferAttr = options.defer ? 'defer' : '';
 
@@ -334,19 +345,31 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   const gtagConfig = {
     ${config.privacy.anonymizeIp ? "'anonymize_ip': true," : ''}
     ${config.privacy.cookieConsent ? "'cookie_consent': true," : ''}
-    ${config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `'custom_map': {'${k}': '${v}'}`).join(',') : ''}
-    ${Object.entries(config.config || {}).map(([k, v]) => `'${k}': ${JSON.stringify(v)}`).join(',')}
+    ${
+      config.customDimensions
+        ? Object.entries(config.customDimensions)
+            .map(([k, v]) => `'custom_map': {'${k}': '${v}'}`)
+            .join(',')
+        : ''
+    }
+    ${Object.entries(config.config || {})
+      .map(([k, v]) => `'${k}': ${JSON.stringify(v)}`)
+      .join(',')}
   };
   
   gtag('config', '${config.trackingId}', gtagConfig);
   
   // GDPR Compliance
-  ${config.privacy.cookieConsent ? `
+  ${
+    config.privacy.cookieConsent
+      ? `
   gtag('consent', 'default', {
     'analytics_storage': 'denied',
     'ad_storage': 'denied'
   });
-  ` : ''}
+  `
+      : ''
+  }
 </script>
 <!-- End Google Analytics -->`.trim();
   }
@@ -354,14 +377,23 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Génère le script Matomo optimisé
    */
-  private generateMatomoScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generateMatomoScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     return `
 <!-- Matomo ${options.version} -->
 <script>
   var _paq = window._paq = window._paq || [];
   ${config.privacy.anonymizeIp ? "_paq.push(['setDoNotTrack', true]);" : ''}
   ${config.privacy.cookieConsent ? "_paq.push(['requireConsent']);" : ''}
-  ${config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `_paq.push(['setCustomDimension', ${k}, '${v}']);`).join('\n  ') : ''}
+  ${
+    config.customDimensions
+      ? Object.entries(config.customDimensions)
+          .map(([k, v]) => `_paq.push(['setCustomDimension', ${k}, '${v}']);`)
+          .join('\n  ')
+      : ''
+  }
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
   (function() {
@@ -378,12 +410,21 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Génère le script Plausible optimisé
    */
-  private generatePlausibleScript(config: AnalyticsConfig, options: ScriptConfig): string {
+  private generatePlausibleScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): string {
     const attributes = [
       options.defer ? 'defer' : '',
       `data-domain="${config.domain}"`,
-      config.customDimensions ? Object.entries(config.customDimensions).map(([k, v]) => `data-${k}="${v}"`).join(' ') : ''
-    ].filter(Boolean).join(' ');
+      config.customDimensions
+        ? Object.entries(config.customDimensions)
+            .map(([k, v]) => `data-${k}="${v}"`)
+            .join(' ')
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return `
 <!-- Plausible ${options.version} -->
@@ -394,7 +435,10 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Génère un script personnalisé
    */
-  private async generateCustomScript(config: AnalyticsConfig, options: ScriptConfig): Promise<string> {
+  private async generateCustomScript(
+    config: AnalyticsConfig,
+    options: ScriptConfig,
+  ): Promise<string> {
     if (!config.scriptUrl) return '';
 
     return `
@@ -410,7 +454,10 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
   /**
    * Ajoute la configuration GDPR au script
    */
-  private enhanceScriptWithGDPR(script: string, config: AnalyticsConfig): string {
+  private enhanceScriptWithGDPR(
+    script: string,
+    config: AnalyticsConfig,
+  ): string {
     if (!config.privacy.cookieConsent) return script;
 
     const gdprScript = `
@@ -455,11 +502,14 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
    * Calcule les métriques à partir des événements
    */
   private calculateMetrics(events: any[]): AnalyticsMetrics {
-    const uniqueUsers = new Set(events.map(e => e.userId).filter(Boolean)).size;
-    const activeSessions = new Set(events.map(e => e.sessionId).filter(Boolean)).size;
+    const uniqueUsers = new Set(events.map((e) => e.userId).filter(Boolean))
+      .size;
+    const activeSessions = new Set(
+      events.map((e) => e.sessionId).filter(Boolean),
+    ).size;
 
     const eventCounts: Record<string, number> = {};
-    events.forEach(event => {
+    events.forEach((event) => {
       const key = `${event.category}:${event.action}`;
       eventCounts[key] = (eventCounts[key] || 0) + 1;
     });
@@ -473,7 +523,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
           category,
           action,
           count,
-          percentage: Math.round((count / events.length) * 100)
+          percentage: Math.round((count / events.length) * 100),
         };
       });
 

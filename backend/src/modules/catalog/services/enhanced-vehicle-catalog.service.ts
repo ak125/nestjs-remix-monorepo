@@ -6,7 +6,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 /**
  * 🚗 ENHANCED VEHICLE CATALOG SERVICE (VERSION SIMPLIFIÉE)
- * 
+ *
  * ✅ SERVICE TEMPORAIREMENT SIMPLIFIÉ pour éviter les erreurs de compilation
  * - Suppression des dépendances circulaires
  * - Fonctionnalités de base uniquement
@@ -26,21 +26,20 @@ export class EnhancedVehicleCatalogService extends SupabaseBaseService {
   async getVehicleCatalog() {
     try {
       this.logger.log('🚗 Service simplifié - Récupération véhicules');
-      
+
       // Retour simple pour éviter les erreurs
       return {
         success: true,
         message: 'Service en cours de développement',
         data: [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error('❌ Erreur service véhicules:', error);
       return {
         success: false,
         error: 'Service temporairement indisponible',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
@@ -52,7 +51,7 @@ export class EnhancedVehicleCatalogService extends SupabaseBaseService {
     return {
       service: 'EnhancedVehicleCatalogService',
       status: 'simplified',
-      message: 'Service simplifié pour éviter les dépendances circulaires'
+      message: 'Service simplifié pour éviter les dépendances circulaires',
     };
   }
 }

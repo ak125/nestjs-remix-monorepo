@@ -1,32 +1,32 @@
 /**
  * 🎯 DYNAMIC SEO SERVICE V4 ULTIMATE
- * 
+ *
  * Service SEO dynamique avec génération complète de contenu
  * Méthodologie appliquée : "Vérifier existant avant et utiliser le meilleur et améliorer"
- * 
+ *
  * ✅ EXISTANT ANALYSÉ :
  * - SeoEnhancedService : Templates dynamiques + switches conditionnels
  * - Variables SEO avancées : 22+ variables avec fallbacks intelligents
  * - Cache et performance : TTL adaptatif selon popularité
  * - Gestion d'erreurs : Fallbacks gracieux + logging structuré
- * 
+ *
  * ✨ MEILLEUR IDENTIFIÉ :
  * - Architecture templates SeoEnhancedService (robuste + flexible)
  * - Variables avec balises <b> pour contenus riches
  * - Switches externes pour gammes multiples
  * - Prix variations intelligentes avec modulo
  * - Cleaning avancé : espaces, ponctuation, balises vides
- * 
+ *
  * 🚀 AMÉLIORATIONS IMPLÉMENTÉES (+400% de fonctionnalités) :
  * - **Génération COMPLÈTE** : title + description + h1 + preview + content + keywords
  * - **Switches EXTERNES** : Support toutes gammes (#CompSwitch_X_PgId#)
- * - **Links dynamiques** : LinkGammeCar avec generation intelligente  
+ * - **Links dynamiques** : LinkGammeCar avec generation intelligente
  * - **Switches FAMILLE** : Alias 11-16 avec hiérarchie
  * - **Cache HYBRIDE** : Template + switches + variables avec invalidation
  * - **Variables ENRICHIES** : MinPrice, PrixPasCher, VousPropose, CompSwitch
  * - **Processing PARALLÈLE** : Traitement simultané des sections
  * - **Validation ZODE** : Types stricts + validation entrée
- * 
+ *
  * @version 4.0.0
  * @package @monorepo/seo
  */
@@ -55,21 +55,21 @@ export const SeoVariablesSchema = z.object({
   modeleMeta: z.string().min(1),
   type: z.string().min(1),
   typeMeta: z.string().min(1),
-  
+
   // Variables techniques
   annee: z.string(),
   nbCh: z.number().positive(),
   carosserie: z.string(),
   fuel: z.string(),
   codeMoteur: z.string(),
-  
+
   // Variables pricing
   minPrice: z.number().positive().optional(),
-  
+
   // Variables famille (nouvelles)
   mfId: z.number().int().positive().optional(),
   familyName: z.string().optional(),
-  
+
   // Métadonnées contextuelles (nouvelles)
   articlesCount: z.number().int().nonnegative().default(0),
   gammeLevel: z.number().int().min(1).max(3).default(1),
@@ -106,7 +106,7 @@ export interface CompleteSeoResult {
 @Injectable()
 export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   protected readonly logger = new Logger(DynamicSeoV4UltimateService.name);
-  
+
   // ✨ MEILLEUR IDENTIFIÉ : Variations prix étendues (du service existant)
   private prixPasCher = [
     'pas cher',
@@ -128,7 +128,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     'super prix',
   ];
 
-  // 🚀 AMÉLIORATION : Nouvelles variations "vous propose" 
+  // 🚀 AMÉLIORATION : Nouvelles variations "vous propose"
   private vousPropose = [
     'vous propose',
     'met à votre disposition',
@@ -142,13 +142,13 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     'sélectionne pour vous',
     'recommande',
     'vous conseille',
-    'présente'
+    'présente',
   ];
 
   // 🚀 AMÉLIORATION : Cache intelligent multi-niveaux
   private seoCache = new Map<string, { data: any; expires: number }>();
   private readonly CACHE_TTL_SHORT = 300000; // 5 min
-  private readonly CACHE_TTL_MEDIUM = 900000; // 15 min  
+  private readonly CACHE_TTL_MEDIUM = 900000; // 15 min
   private readonly CACHE_TTL_LONG = 3600000; // 1 heure
 
   /**
@@ -158,12 +158,14 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   async generateCompleteSeo(
     pgId: number,
     typeId: number,
-    variables: SeoVariables
+    variables: SeoVariables,
   ): Promise<CompleteSeoResult> {
     const startTime = Date.now();
     const validatedVars = SeoVariablesSchema.parse(variables);
-    
-    this.logger.log(`🎯 [SEO V4] Génération complète: pgId=${pgId}, typeId=${typeId}`);
+
+    this.logger.log(
+      `🎯 [SEO V4] Génération complète: pgId=${pgId}, typeId=${typeId}`,
+    );
 
     try {
       // ✅ PHASE 1: VÉRIFICATION CACHE INTELLIGENT
@@ -173,17 +175,18 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         this.logger.debug(`📦 [CACHE HIT] SEO complet: ${cacheKey}`);
         return {
           ...cached,
-          metadata: { ...cached.metadata, cacheHit: true }
+          metadata: { ...cached.metadata, cacheHit: true },
         };
       }
 
       // ✅ PHASE 2: RÉCUPÉRATION DONNÉES EN PARALLÈLE (Performance)
-      const [seoTemplate, itemSwitches, gammeSwitches, familySwitches] = await Promise.all([
-        this.getSeoTemplate(pgId),
-        this.getItemSwitches(pgId),
-        this.getGammeCarSwitches(pgId),
-        this.getFamilySwitches(validatedVars.mfId, pgId)
-      ]);
+      const [seoTemplate, itemSwitches, gammeSwitches, familySwitches] =
+        await Promise.all([
+          this.getSeoTemplate(pgId),
+          this.getItemSwitches(pgId),
+          this.getGammeCarSwitches(pgId),
+          this.getFamilySwitches(validatedVars.mfId, pgId),
+        ]);
 
       if (!seoTemplate) {
         return this.generateDefaultSeo(validatedVars, startTime);
@@ -191,11 +194,45 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
       // ✅ PHASE 3: TRAITEMENT EN PARALLÈLE (Performance)
       const [title, description, h1, preview, content] = await Promise.all([
-        this.processTitle(seoTemplate.sgc_title, validatedVars, itemSwitches, gammeSwitches, typeId, pgId),
-        this.processDescription(seoTemplate.sgc_descrip, validatedVars, itemSwitches, gammeSwitches, typeId, pgId),
-        this.processH1(seoTemplate.sgc_h1, validatedVars, itemSwitches, typeId, pgId),
-        this.processPreview(seoTemplate.sgc_preview, validatedVars, gammeSwitches, typeId, pgId),
-        this.processContent(seoTemplate.sgc_content, validatedVars, itemSwitches, gammeSwitches, familySwitches, typeId, pgId)
+        this.processTitle(
+          seoTemplate.sgc_title,
+          validatedVars,
+          itemSwitches,
+          gammeSwitches,
+          typeId,
+          pgId,
+        ),
+        this.processDescription(
+          seoTemplate.sgc_descrip,
+          validatedVars,
+          itemSwitches,
+          gammeSwitches,
+          typeId,
+          pgId,
+        ),
+        this.processH1(
+          seoTemplate.sgc_h1,
+          validatedVars,
+          itemSwitches,
+          typeId,
+          pgId,
+        ),
+        this.processPreview(
+          seoTemplate.sgc_preview,
+          validatedVars,
+          gammeSwitches,
+          typeId,
+          pgId,
+        ),
+        this.processContent(
+          seoTemplate.sgc_content,
+          validatedVars,
+          itemSwitches,
+          gammeSwitches,
+          familySwitches,
+          typeId,
+          pgId,
+        ),
       ]);
 
       // ✅ PHASE 4: GÉNÉRATION KEYWORDS + MÉTADONNÉES
@@ -211,12 +248,13 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         keywords,
         metadata: {
           templatesUsed: [seoTemplate.sgc_id?.toString() || 'default'],
-          switchesProcessed: itemSwitches.length + gammeSwitches.length + familySwitches.length,
+          switchesProcessed:
+            itemSwitches.length + gammeSwitches.length + familySwitches.length,
           variablesReplaced: this.countVariablesInTemplate(seoTemplate),
           processingTime,
           cacheHit: false,
           version: '4.0.0',
-        }
+        },
       };
 
       // ✅ PHASE 5: MISE EN CACHE INTELLIGENTE
@@ -224,7 +262,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
       this.logger.log(`✅ [SEO V4] Succès en ${processingTime}ms`);
       return result;
-
     } catch (error) {
       this.logger.error(`❌ [SEO V4] Erreur:`, error);
       return this.generateDefaultSeo(validatedVars, startTime);
@@ -244,7 +281,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     itemSwitches: any[],
     gammeSwitches: any[],
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -253,24 +290,33 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // ✅ EXISTANT : MinPrice (gardé + amélioré)
     if (variables.minPrice) {
-      processed = processed.replace(/#MinPrice#/g, `dès ${variables.minPrice}€`);
+      processed = processed.replace(
+        /#MinPrice#/g,
+        `dès ${variables.minPrice}€`,
+      );
     }
 
     // ✅ EXISTANT : Prix pas cher avec variation intelligente
     const prixIndex = ((pgId % 100) + 1 + typeId) % this.prixPasCher.length;
-    processed = processed.replace(/#PrixPasCher#/g, this.prixPasCher[prixIndex]);
+    processed = processed.replace(
+      /#PrixPasCher#/g,
+      this.prixPasCher[prixIndex],
+    );
 
     // 🚀 AMÉLIORATION : CompSwitch pour title avec fallback
     processed = await this.processCompSwitch(
-      processed, 
-      itemSwitches.filter(s => s.sis_alias === 1),
+      processed,
+      itemSwitches.filter((s) => s.sis_alias === 1),
       typeId,
-      'title'
+      'title',
     );
 
     // 🚀 AMÉLIORATION : Variables contextuelles
     if (variables.articlesCount > 0) {
-      processed = processed.replace(/#ArticlesCount#/g, variables.articlesCount.toString());
+      processed = processed.replace(
+        /#ArticlesCount#/g,
+        variables.articlesCount.toString(),
+      );
     }
 
     return this.cleanContent(processed, true); // Mode title = true
@@ -285,7 +331,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     itemSwitches: any[],
     gammeSwitches: any[],
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -294,27 +340,36 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // Prix variables
     if (variables.minPrice) {
-      processed = processed.replace(/#MinPrice#/g, `à partir de ${variables.minPrice}€`);
+      processed = processed.replace(
+        /#MinPrice#/g,
+        `à partir de ${variables.minPrice}€`,
+      );
     }
 
     const prixIndex = ((pgId % 100) + typeId) % this.prixPasCher.length;
-    processed = processed.replace(/#PrixPasCher#/g, this.prixPasCher[prixIndex]);
+    processed = processed.replace(
+      /#PrixPasCher#/g,
+      this.prixPasCher[prixIndex],
+    );
 
     // 🚀 AMÉLIORATION : CompSwitch description (alias 2) avec validation
     processed = await this.processCompSwitch(
       processed,
-      itemSwitches.filter(s => s.sis_alias === 2),
+      itemSwitches.filter((s) => s.sis_alias === 2),
       typeId,
-      'description'
+      'description',
     );
 
     // 🚀 AMÉLIORATION : CompSwitch_3_PG_ID spécifique
     const switch3Regex = new RegExp(`#CompSwitch_3_${pgId}#`, 'g');
     if (switch3Regex.test(processed)) {
-      const switch3 = gammeSwitches.filter(s => s.sgcs_alias === 3);
+      const switch3 = gammeSwitches.filter((s) => s.sgcs_alias === 3);
       if (switch3.length > 0) {
         const index = (typeId + pgId + 3) % switch3.length;
-        processed = processed.replace(switch3Regex, switch3[index].sgcs_content || '');
+        processed = processed.replace(
+          switch3Regex,
+          switch3[index].sgcs_content || '',
+        );
       }
     }
 
@@ -324,7 +379,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       gammeSwitches,
       variables,
       typeId,
-      pgId
+      pgId,
     );
 
     return this.cleanContent(processed);
@@ -338,7 +393,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     variables: SeoVariables,
     itemSwitches: any[],
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -348,8 +403,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     // 🚀 AMÉLIORATION : H1 spécifique avec variables enrichies
     if (variables.articlesCount > 0) {
       processed = processed.replace(
-        /#ArticlesCountFormatted#/g, 
-        `<b>${variables.articlesCount}</b> références`
+        /#ArticlesCountFormatted#/g,
+        `<b>${variables.articlesCount}</b> références`,
       );
     }
 
@@ -364,7 +419,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     variables: SeoVariables,
     gammeSwitches: any[],
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -373,11 +428,19 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // Prix variables pour preview
     if (variables.minPrice) {
-      processed = processed.replace(/#MinPriceFormatted#/g, `${variables.minPrice}€`);
+      processed = processed.replace(
+        /#MinPriceFormatted#/g,
+        `${variables.minPrice}€`,
+      );
     }
 
     // Switches gammes pour preview
-    processed = await this.processGammeSwitches(processed, gammeSwitches, typeId, pgId);
+    processed = await this.processGammeSwitches(
+      processed,
+      gammeSwitches,
+      typeId,
+      pgId,
+    );
 
     return this.cleanContent(processed);
   }
@@ -392,7 +455,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     gammeSwitches: any[],
     familySwitches: any[],
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -401,14 +464,24 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // ✅ EXISTANT : Prix pas cher
     const prixIndex = typeId % this.prixPasCher.length;
-    processed = processed.replace(/#PrixPasCher#/g, this.prixPasCher[prixIndex]);
+    processed = processed.replace(
+      /#PrixPasCher#/g,
+      this.prixPasCher[prixIndex],
+    );
 
     // ✅ EXISTANT : Vous propose
     const proposeIndex = typeId % this.vousPropose.length;
-    processed = processed.replace(/#VousPropose#/g, this.vousPropose[proposeIndex]);
+    processed = processed.replace(
+      /#VousPropose#/g,
+      this.vousPropose[proposeIndex],
+    );
 
     // 🚀 AMÉLIORATION : Traitement switches externes COMPLET
-    processed = await this.processExternalSwitchesEnhanced(processed, typeId, pgId);
+    processed = await this.processExternalSwitchesEnhanced(
+      processed,
+      typeId,
+      pgId,
+    );
 
     // 🚀 AMÉLIORATION : Switches famille (11-16) avec hiérarchie
     processed = await this.processFamilySwitchesEnhanced(
@@ -416,14 +489,24 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       familySwitches,
       variables,
       typeId,
-      pgId
+      pgId,
     );
 
     // 🚀 AMÉLIORATION : Tous les links dynamiques
-    processed = await this.processAllLinksEnhanced(processed, variables, typeId, pgId);
+    processed = await this.processAllLinksEnhanced(
+      processed,
+      variables,
+      typeId,
+      pgId,
+    );
 
     // 🚀 AMÉLIORATION : Variables contextuelles avancées
-    processed = this.processContextualVariables(processed, variables, typeId, pgId);
+    processed = this.processContextualVariables(
+      processed,
+      variables,
+      typeId,
+      pgId,
+    );
 
     return this.cleanContent(processed);
   }
@@ -438,12 +521,12 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processExternalSwitchesEnhanced(
     content: string,
     typeId: number,
-    pgId: number
+    pgId: number,
   ): Promise<string> {
     // ✅ EXISTANT OPTIMISÉ : Récupération gammes avec cache
     const cacheKey = `gammes:external:${typeId}:${pgId}`;
     let allGammes = this.getCachedData(cacheKey);
-    
+
     if (!allGammes) {
       const { data } = await this.supabase
         .from('pieces_gamme')
@@ -462,10 +545,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     const batchSize = 10;
     for (let i = 0; i < allGammes.length; i += batchSize) {
       const batch = allGammes.slice(i, i + batchSize);
-      const batchPromises = batch.map((gamme: any) => 
-        this.processSingleGammeSwitch(processed, gamme.pg_id, typeId)
+      const batchPromises = batch.map((gamme: any) =>
+        this.processSingleGammeSwitch(processed, gamme.pg_id, typeId),
       );
-      
+
       const results = await Promise.all(batchPromises);
       // Appliquer les résultats du batch
       results.forEach((result, index) => {
@@ -484,13 +567,15 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processSingleGammeSwitch(
     content: string,
     thisPgId: number,
-    typeId: number
+    typeId: number,
   ): Promise<{ processed: string; switchesFound: number }> {
     let processed = content;
     let switchesFound = 0;
 
     // Vérification rapide des patterns avant requête DB
-    const hasSimplePattern = new RegExp(`#CompSwitch_${thisPgId}#`).test(content);
+    const hasSimplePattern = new RegExp(`#CompSwitch_${thisPgId}#`).test(
+      content,
+    );
     const hasAliasPatterns = /CompSwitch_[123]_\d+#/.test(content);
 
     if (!hasSimplePattern && !hasAliasPatterns) {
@@ -506,7 +591,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         .from('seo_gamme_car_switch')
         .select('sgcs_content, sgcs_alias')
         .eq('sgcs_pg_id', thisPgId);
-      
+
       switches = data || [];
       this.setCachedData(cacheKey, switches, this.CACHE_TTL_MEDIUM);
     }
@@ -516,7 +601,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       const simpleRegex = new RegExp(`#CompSwitch_${thisPgId}#`, 'g');
       if (switches.length > 0) {
         const index = (typeId + thisPgId) % switches.length;
-        processed = processed.replace(simpleRegex, switches[index].sgcs_content || '');
+        processed = processed.replace(
+          simpleRegex,
+          switches[index].sgcs_content || '',
+        );
         switchesFound++;
       }
     }
@@ -525,10 +613,15 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     for (let alias = 1; alias <= 3; alias++) {
       const aliasRegex = new RegExp(`#CompSwitch_${alias}_${thisPgId}#`, 'g');
       if (aliasRegex.test(processed)) {
-        const aliasSwitches = switches.filter((s: any) => s.sgcs_alias === alias);
+        const aliasSwitches = switches.filter(
+          (s: any) => s.sgcs_alias === alias,
+        );
         if (aliasSwitches.length > 0) {
           const index = (typeId + thisPgId + alias) % aliasSwitches.length;
-          processed = processed.replace(aliasRegex, aliasSwitches[index].sgcs_content || '');
+          processed = processed.replace(
+            aliasRegex,
+            aliasSwitches[index].sgcs_content || '',
+          );
           switchesFound++;
         }
       }
@@ -544,7 +637,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     content: string,
     variables: SeoVariables,
     typeId: number,
-    pgId: number
+    pgId: number,
   ): string {
     let processed = content;
 
@@ -559,16 +652,25 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       } else {
         countText = `plus de ${variables.articlesCount} références`;
       }
-      
-      processed = processed.replace(/#ArticlesCountFormatted#/g, `<b>${countText}</b>`);
+
+      processed = processed.replace(
+        /#ArticlesCountFormatted#/g,
+        `<b>${countText}</b>`,
+      );
     }
 
     // Score SEO contextuel
     if (variables.seoScore) {
       if (variables.seoScore >= 80) {
-        processed = processed.replace(/#QualityBadge#/g, '<b>Sélection Premium</b>');
+        processed = processed.replace(
+          /#QualityBadge#/g,
+          '<b>Sélection Premium</b>',
+        );
       } else if (variables.seoScore >= 60) {
-        processed = processed.replace(/#QualityBadge#/g, '<b>Qualité Vérifiée</b>');
+        processed = processed.replace(
+          /#QualityBadge#/g,
+          '<b>Qualité Vérifiée</b>',
+        );
       } else {
         processed = processed.replace(/#QualityBadge#/g, '');
       }
@@ -576,8 +678,9 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // Variables famille contextuelles
     if (variables.familyName) {
-      processed = processed.replace(/#FamilyContext#/g, 
-        `dans la catégorie <b>${variables.familyName}</b>`
+      processed = processed.replace(
+        /#FamilyContext#/g,
+        `dans la catégorie <b>${variables.familyName}</b>`,
       );
     }
 
@@ -594,15 +697,21 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private replaceStandardVariables(
     content: string,
     variables: SeoVariables,
-    useMeta: boolean
+    useMeta: boolean,
   ): string {
     const replacements = {
       '#Gamme#': useMeta ? variables.gammeMeta : `<b>${variables.gamme}</b>`,
-      '#VMarque#': useMeta ? variables.marqueMetaTitle : `<b>${variables.marque}</b>`,
-      '#VModele#': useMeta ? variables.modeleMeta : `<b>${variables.modele}</b>`,
+      '#VMarque#': useMeta
+        ? variables.marqueMetaTitle
+        : `<b>${variables.marque}</b>`,
+      '#VModele#': useMeta
+        ? variables.modeleMeta
+        : `<b>${variables.modele}</b>`,
       '#VType#': useMeta ? variables.typeMeta : `<b>${variables.type}</b>`,
       '#VAnnee#': useMeta ? variables.annee : `<b>${variables.annee}</b>`,
-      '#VNbCh#': useMeta ? variables.nbCh.toString() : `<b>${variables.nbCh} ch</b>`,
+      '#VNbCh#': useMeta
+        ? variables.nbCh.toString()
+        : `<b>${variables.nbCh} ch</b>`,
       '#VCarosserie#': `<b>${variables.carosserie}</b>`,
       '#VMotorisation#': `<b>${variables.fuel}</b>`,
       '#VCodeMoteur#': `<b>${variables.codeMoteur}</b>`,
@@ -650,7 +759,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private getCacheTTL(variables: SeoVariables): number {
     // TTL adaptatif selon criticité
     if (variables.isTopGamme) return this.CACHE_TTL_LONG; // 1h pour top gammes
-    if (variables.seoScore && variables.seoScore >= 80) return this.CACHE_TTL_MEDIUM; // 15min pour bon SEO
+    if (variables.seoScore && variables.seoScore >= 80)
+      return this.CACHE_TTL_MEDIUM; // 15min pour bon SEO
     return this.CACHE_TTL_SHORT; // 5min par défaut
   }
 
@@ -668,18 +778,21 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private setCachedData(key: string, data: any, ttl: number): void {
     this.seoCache.set(key, {
       data,
-      expires: Date.now() + ttl
+      expires: Date.now() + ttl,
     });
   }
 
   /**
    * 🚀 AMÉLIORATION : SEO par défaut avec intelligence
    */
-  private generateDefaultSeo(variables: SeoVariables, startTime: number): CompleteSeoResult {
+  private generateDefaultSeo(
+    variables: SeoVariables,
+    startTime: number,
+  ): CompleteSeoResult {
     const processingTime = Date.now() - startTime;
-    
+
     // Génération intelligente selon le contexte
-    const title = variables.isTopGamme 
+    const title = variables.isTopGamme
       ? `${variables.gamme} Premium ${variables.marque} ${variables.modele} ${variables.type}`
       : `${variables.gamme} ${variables.marque} ${variables.modele} ${variables.type}`;
 
@@ -699,7 +812,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         processingTime,
         cacheHit: false,
         version: '4.0.0-fallback',
-      }
+      },
     };
   }
 
@@ -732,7 +845,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return data || [];
   }
 
-  private async getFamilySwitches(mfId: number | undefined, pgId: number): Promise<any[]> {
+  private async getFamilySwitches(
+    mfId: number | undefined,
+    pgId: number,
+  ): Promise<any[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
       .from('seo_family_switch')
@@ -742,27 +858,54 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return data || [];
   }
 
-  private async processCompSwitch(processed: string, switches: any[], typeId: number, context: string): Promise<string> {
+  private async processCompSwitch(
+    processed: string,
+    switches: any[],
+    typeId: number,
+    context: string,
+  ): Promise<string> {
     // Implementation selon besoin
     return processed;
   }
 
-  private async processLinkGammeCar(processed: string, switches: any[], variables: SeoVariables, typeId: number, pgId: number): Promise<string> {
+  private async processLinkGammeCar(
+    processed: string,
+    switches: any[],
+    variables: SeoVariables,
+    typeId: number,
+    pgId: number,
+  ): Promise<string> {
     // Implementation selon besoin
     return processed;
   }
 
-  private async processGammeSwitches(processed: string, switches: any[], typeId: number, pgId: number): Promise<string> {
+  private async processGammeSwitches(
+    processed: string,
+    switches: any[],
+    typeId: number,
+    pgId: number,
+  ): Promise<string> {
     // Implementation selon besoin
     return processed;
   }
 
-  private async processFamilySwitchesEnhanced(processed: string, switches: any[], variables: SeoVariables, typeId: number, pgId: number): Promise<string> {
+  private async processFamilySwitchesEnhanced(
+    processed: string,
+    switches: any[],
+    variables: SeoVariables,
+    typeId: number,
+    pgId: number,
+  ): Promise<string> {
     // Implementation selon besoin
     return processed;
   }
 
-  private async processAllLinksEnhanced(processed: string, variables: SeoVariables, typeId: number, pgId: number): Promise<string> {
+  private async processAllLinksEnhanced(
+    processed: string,
+    variables: SeoVariables,
+    typeId: number,
+    pgId: number,
+  ): Promise<string> {
     // Implementation selon besoin
     return processed;
   }
@@ -777,8 +920,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       variables.annee,
       variables.carosserie,
       variables.fuel,
-      variables.codeMoteur
-    ].filter(Boolean).join(', ');
+      variables.codeMoteur,
+    ]
+      .filter(Boolean)
+      .join(', ');
   }
 
   private countVariablesInTemplate(template: any): number {

@@ -1,21 +1,28 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CatalogFamily, CatalogFamilyWithGammes, CatalogGamme, CatalogFamiliesResponse } from '../interfaces/catalog-family.interface';
+import {
+  CatalogFamily,
+  CatalogFamilyWithGammes,
+  CatalogGamme,
+  CatalogFamiliesResponse,
+} from '../interfaces/catalog-family.interface';
 
 @Injectable()
 export class CatalogFamilyService extends SupabaseBaseService {
-
   /**
    * Reproduction exacte de la logique PHP index.php
    */
   async getCatalogFamiliesPhpLogic(): Promise<CatalogFamiliesResponse> {
     try {
-      this.logger.log('Récupération des familles de catalogue (logique PHP)...');
+      this.logger.log(
+        'Récupération des familles de catalogue (logique PHP)...',
+      );
 
       // Récupérer les familles avec la même logique que le PHP
       const { data: familiesData, error: familiesError } = await this.supabase
         .from('pieces_gamme')
-        .select(`
+        .select(
+          `
           catalog_gamme!inner(
             mc_mf_id,
             mc_sort,
@@ -29,7 +36,8 @@ export class CatalogFamilyService extends SupabaseBaseService {
               mf_sort
             )
           )
-        `)
+        `,
+        )
         .eq('pg_display', 1)
         .eq('pg_level', 1)
         .eq('catalog_gamme.catalog_family.mf_display', 1)
@@ -37,12 +45,14 @@ export class CatalogFamilyService extends SupabaseBaseService {
 
       if (familiesError) {
         this.logger.error('Erreur récupération familles:', familiesError);
-        throw new BadRequestException('Erreur lors de la récupération des familles');
+        throw new BadRequestException(
+          'Erreur lors de la récupération des familles',
+        );
       }
 
       // Extraire les familles uniques (logique DISTINCT du PHP)
       const uniqueFamilies = new Map<number, CatalogFamily>();
-      
+
       familiesData?.forEach((item: any) => {
         const family = item.catalog_gamme?.[0]?.catalog_family?.[0];
         if (family && !uniqueFamilies.has(family.mf_id)) {
@@ -53,7 +63,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
             mf_description: family.mf_description,
             mf_pic: family.mf_pic,
             mf_display: family.mf_display,
-            mf_sort: family.mf_sort
+            mf_sort: family.mf_sort,
           });
         }
       });
@@ -69,7 +79,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
         familiesWithGammes.push({
           ...family,
           gammes,
-          gammes_count: gammes.length
+          gammes_count: gammes.length,
         });
       }
 
@@ -77,16 +87,15 @@ export class CatalogFamilyService extends SupabaseBaseService {
         families: familiesWithGammes,
         success: true,
         totalFamilies: familiesWithGammes.length,
-        message: `${familiesWithGammes.length} familles récupérées avec succès`
+        message: `${familiesWithGammes.length} familles récupérées avec succès`,
       };
-
     } catch (error) {
       this.logger.error('Erreur familles catalogue:', error);
       return {
         families: [],
         success: false,
         totalFamilies: 0,
-        message: 'Erreur lors de la récupération des familles'
+        message: 'Erreur lors de la récupération des familles',
       };
     }
   }
@@ -95,7 +104,8 @@ export class CatalogFamilyService extends SupabaseBaseService {
     try {
       const { data: gammesData, error: gammesError } = await this.supabase
         .from('pieces_gamme')
-        .select(`
+        .select(
+          `
           pg_id,
           pg_alias,
           pg_name,
@@ -106,30 +116,34 @@ export class CatalogFamilyService extends SupabaseBaseService {
           catalog_gamme!inner(
             mc_sort
           )
-        `)
+        `,
+        )
         .eq('pg_display', 1)
         .eq('pg_level', 1)
         .eq('catalog_gamme.mc_mf_id', mf_id)
         .order('catalog_gamme.mc_sort', { ascending: true });
 
       if (gammesError) {
-        this.logger.error(`Erreur récupération gammes pour famille ${mf_id}:`, gammesError);
+        this.logger.error(
+          `Erreur récupération gammes pour famille ${mf_id}:`,
+          gammesError,
+        );
         return [];
       }
 
-      const gammes: CatalogGamme[] = gammesData?.map((item: any) => ({
-        pg_id: item.pg_id,
-        pg_alias: item.pg_alias,
-        pg_name: item.pg_name,
-        pg_name_url: item.pg_name_url,
-        pg_name_meta: item.pg_name_meta,
-        pg_pic: item.pg_pic,
-        pg_img: item.pg_img,
-        mc_sort: item.catalog_gamme?.[0]?.mc_sort
-      })) || [];
+      const gammes: CatalogGamme[] =
+        gammesData?.map((item: any) => ({
+          pg_id: item.pg_id,
+          pg_alias: item.pg_alias,
+          pg_name: item.pg_name,
+          pg_name_url: item.pg_name_url,
+          pg_name_meta: item.pg_name_meta,
+          pg_pic: item.pg_pic,
+          pg_img: item.pg_img,
+          mc_sort: item.catalog_gamme?.[0]?.mc_sort,
+        })) || [];
 
       return gammes;
-
     } catch (error) {
       this.logger.error(`Erreur gammes pour famille ${mf_id}:`, error);
       return [];

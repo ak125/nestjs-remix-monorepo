@@ -25,26 +25,26 @@ import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 /**
  * 🔄 CONTRÔLEUR PAYMENTS CONSOLIDÉ
  * ═══════════════════════════════════════════════════════════════
- * 
+ *
  * Ce contrôleur unifié gère toutes les opérations de paiement :
- * 
+ *
  * SECTIONS :
  * 1. Routes Client    → Création, consultation, annulation
  * 2. Routes Admin     → Liste, remboursements, statistiques
  * 3. Routes Callbacks → Webhooks bancaires Cyberplus/BNP
  * 4. Routes Utilitaires → Méthodes disponibles, statuts
- * 
+ *
  * SÉCURITÉ :
  * - AuthenticatedGuard sur routes client
  * - IsAdminGuard sur routes admin
  * - Validation signature sur callbacks
  * - Logs audit complets
- * 
+ *
  * INTÉGRATIONS :
  * - Cyberplus/BNP Paribas
  * - Orders module (ord_* tables)
  * - Users module (cst_* tables)
- * 
+ *
  * VERSION : 1.0.0
  * CRÉÉ : 2025-10-05
  * REFACTORING : Consolidation de 3 contrôleurs → 1
@@ -75,12 +75,13 @@ export class PaymentsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   // @UseGuards(AuthenticatedGuard) // TODO: Activer quand guards disponibles
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Créer un nouveau paiement',
-    description: 'Initialise un paiement pour une commande. Retourne les données nécessaires pour redirection vers passerelle.'
+    description:
+      'Initialise un paiement pour une commande. Retourne les données nécessaires pour redirection vers passerelle.',
   })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'Paiement créé avec succès',
     schema: {
       example: {
@@ -91,10 +92,12 @@ export class PaymentsController {
           status: 'pending',
           amount: 99.99,
           redirectUrl: 'https://secure-paypage.lyra.com/...',
-          formData: { /* ... */ }
-        }
-      }
-    }
+          formData: {
+            /* ... */
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'Données invalides' })
   @ApiResponse({ status: 401, description: 'Non authentifié' })
@@ -128,8 +131,12 @@ export class PaymentsController {
           currency: payment.currency,
           orderId: payment.orderId || payment.id,
           customerEmail: createPaymentDto.customerEmail || '',
-          returnUrl: createPaymentDto.returnUrl || `${process.env.BASE_URL}/payment/success`,
-          cancelUrl: createPaymentDto.cancelUrl || `${process.env.BASE_URL}/payment/cancel`,
+          returnUrl:
+            createPaymentDto.returnUrl ||
+            `${process.env.BASE_URL}/payment/success`,
+          cancelUrl:
+            createPaymentDto.cancelUrl ||
+            `${process.env.BASE_URL}/payment/cancel`,
           notifyUrl: `${process.env.BASE_URL}/api/payments/callback/cyberplus`,
           description: payment.description,
         });
@@ -146,8 +153,12 @@ export class PaymentsController {
         message: 'Paiement créé avec succès',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`❌ Failed to create payment: ${errorMessage}`, error instanceof Error ? error.stack : '');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `❌ Failed to create payment: ${errorMessage}`,
+        error instanceof Error ? error.stack : '',
+      );
       throw error;
     }
   }
@@ -207,14 +218,11 @@ export class PaymentsController {
    */
   @Get(':id')
   // @UseGuards(AuthenticatedGuard)
-  @ApiOperation({ summary: 'Obtenir les détails d\'un paiement' })
+  @ApiOperation({ summary: "Obtenir les détails d'un paiement" })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Détails du paiement' })
   @ApiResponse({ status: 404, description: 'Paiement non trouvé' })
-  async getPayment(
-    @Param('id') id: string,
-    @Request() req?: any,
-  ) {
+  async getPayment(@Param('id') id: string, @Request() req?: any) {
     try {
       this.logger.log(`Getting payment details for ID: ${id}`);
 
@@ -235,7 +243,8 @@ export class PaymentsController {
         data: payment,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get payment: ${errorMessage}`);
       throw error;
     }
@@ -248,8 +257,8 @@ export class PaymentsController {
    */
   @Get('user/:userId')
   // @UseGuards(AuthenticatedGuard)
-  @ApiOperation({ summary: 'Liste des paiements d\'un utilisateur' })
-  @ApiParam({ name: 'userId', description: 'ID de l\'utilisateur' })
+  @ApiOperation({ summary: "Liste des paiements d'un utilisateur" })
+  @ApiParam({ name: 'userId', description: "ID de l'utilisateur" })
   @ApiResponse({ status: 200, description: 'Liste des paiements' })
   async getUserPayments(
     @Param('userId') userId: string,
@@ -275,7 +284,8 @@ export class PaymentsController {
         count: payments.length,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get user payments: ${errorMessage}`);
       throw error;
     }
@@ -302,7 +312,8 @@ export class PaymentsController {
         data: payment,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get order payments: ${errorMessage}`);
       throw error;
     }
@@ -321,15 +332,19 @@ export class PaymentsController {
     try {
       this.logger.log(`Getting payment by reference: ${reference}`);
 
-      const payment = await this.paymentService.getPaymentByReference(reference);
+      const payment =
+        await this.paymentService.getPaymentByReference(reference);
 
       return {
         success: true,
         data: payment,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`❌ Failed to get payment by reference: ${errorMessage}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `❌ Failed to get payment by reference: ${errorMessage}`,
+      );
       throw new NotFoundException(`Payment not found: ${reference}`);
     }
   }
@@ -365,7 +380,8 @@ export class PaymentsController {
         data: payment,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to update payment status: ${errorMessage}`);
       throw error;
     }
@@ -383,10 +399,7 @@ export class PaymentsController {
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Paiement annulé' })
   @ApiResponse({ status: 400, description: 'Paiement non annulable' })
-  async cancelPayment(
-    @Param('id') id: string,
-    @Request() req?: any,
-  ) {
+  async cancelPayment(@Param('id') id: string, @Request() req?: any) {
     try {
       this.logger.log(`Cancelling payment: ${id}`);
 
@@ -406,7 +419,8 @@ export class PaymentsController {
         message: 'Paiement annulé avec succès',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to cancel payment: ${errorMessage}`);
       throw error;
     }
@@ -441,7 +455,8 @@ export class PaymentsController {
         message: 'Method to be implemented: findAllPayments',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to list payments: ${errorMessage}`);
       throw error;
     }
@@ -485,7 +500,8 @@ export class PaymentsController {
         message: 'Remboursement effectué avec succès',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to refund payment: ${errorMessage}`);
       throw error;
     }
@@ -502,12 +518,16 @@ export class PaymentsController {
    */
   @Post('callback/cyberplus')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Callback Cyberplus pour notifications de paiement',
-    description: 'Endpoint webhook appelé par Cyberplus/BNP pour notifier le statut des paiements'
+    description:
+      'Endpoint webhook appelé par Cyberplus/BNP pour notifier le statut des paiements',
   })
   @ApiResponse({ status: 200, description: 'Callback traité avec succès' })
-  @ApiResponse({ status: 400, description: 'Signature invalide ou données manquantes' })
+  @ApiResponse({
+    status: 400,
+    description: 'Signature invalide ou données manquantes',
+  })
   async handleCyberplusCallback(@Body() body: any) {
     try {
       this.logger.log('🔔 Received Cyberplus callback', {
@@ -540,9 +560,12 @@ export class PaymentsController {
       };
 
       // Traiter le callback
-      const payment = await this.paymentService.handlePaymentCallback(callbackData);
+      const payment =
+        await this.paymentService.handlePaymentCallback(callbackData);
 
-      this.logger.log(`✅ Callback processed successfully: ${payment.id} -> ${payment.status}`);
+      this.logger.log(
+        `✅ Callback processed successfully: ${payment.id} -> ${payment.status}`,
+      );
 
       return {
         success: true,
@@ -550,9 +573,13 @@ export class PaymentsController {
         paymentId: payment.id,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`❌ Failed to process callback: ${errorMessage}`, error instanceof Error ? error.stack : '');
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `❌ Failed to process callback: ${errorMessage}`,
+        error instanceof Error ? error.stack : '',
+      );
+
       return {
         success: false,
         message: 'Internal error',
@@ -582,7 +609,7 @@ export class PaymentsController {
       }
 
       const payment = await this.paymentService.getPaymentByOrderId(orderId);
-      
+
       if (!payment) {
         this.logger.warn(`⚠️ Payment not found for order: ${orderId}`);
         return {
@@ -603,7 +630,8 @@ export class PaymentsController {
         message: 'Payment completed successfully',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to handle success return: ${errorMessage}`);
       throw error;
     }
@@ -627,10 +655,13 @@ export class PaymentsController {
       const orderId = body.order_id || body.orderid;
       if (orderId) {
         const payment = await this.paymentService.getPaymentByOrderId(orderId);
-        
+
         if (payment && payment.status === PaymentStatus.PENDING) {
           // Mettre à jour le statut en FAILED
-          await this.paymentService.updatePaymentStatus(payment.id, PaymentStatus.FAILED);
+          await this.paymentService.updatePaymentStatus(
+            payment.id,
+            PaymentStatus.FAILED,
+          );
         }
       }
 
@@ -640,7 +671,8 @@ export class PaymentsController {
         error: body.error || body.error_message || 'Unknown error',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to handle error return: ${errorMessage}`);
       throw error;
     }
@@ -666,7 +698,8 @@ export class PaymentsController {
           id: PaymentMethod.CYBERPLUS,
           name: 'Cyberplus (BNP Paribas)',
           enabled: true,
-          description: 'Paiement sécurisé par carte bancaire via Cyberplus/BNP Paribas',
+          description:
+            'Paiement sécurisé par carte bancaire via Cyberplus/BNP Paribas',
           logo: '/assets/cyberplus-logo.png',
         },
         {
@@ -701,11 +734,12 @@ export class PaymentsController {
 
       return {
         success: true,
-        data: methods.filter(m => m.enabled),
+        data: methods.filter((m) => m.enabled),
         allMethods: methods,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get payment methods: ${errorMessage}`);
       throw error;
     }
@@ -718,14 +752,15 @@ export class PaymentsController {
    */
   @Get(':id/transactions')
   // @UseGuards(AuthenticatedGuard)
-  @ApiOperation({ summary: 'Historique des transactions d\'un paiement' })
+  @ApiOperation({ summary: "Historique des transactions d'un paiement" })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Liste des transactions' })
   async getPaymentTransactions(@Param('id') id: string) {
     try {
       this.logger.log(`Getting transactions for payment: ${id}`);
 
-      const transactions = await this.paymentDataService.findTransactionsByPaymentId(id);
+      const transactions =
+        await this.paymentDataService.findTransactionsByPaymentId(id);
 
       return {
         success: true,
@@ -733,7 +768,8 @@ export class PaymentsController {
         count: transactions.length,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(`❌ Failed to get transactions: ${errorMessage}`);
       throw error;
     }
@@ -747,11 +783,15 @@ export class PaymentsController {
   @Post('proceed-supplement')
   @HttpCode(HttpStatus.OK)
   // @UseGuards(AuthenticatedGuard)
-  @ApiOperation({ 
-    summary: 'Initialiser le paiement d\'un supplément de commande',
-    description: 'Génère le formulaire de paiement pour un supplément de commande (ORD_PARENT != 0)'
+  @ApiOperation({
+    summary: "Initialiser le paiement d'un supplément de commande",
+    description:
+      'Génère le formulaire de paiement pour un supplément de commande (ORD_PARENT != 0)',
   })
-  @ApiResponse({ status: 200, description: 'Redirection vers passerelle de paiement' })
+  @ApiResponse({
+    status: 200,
+    description: 'Redirection vers passerelle de paiement',
+  })
   @ApiResponse({ status: 400, description: 'Commande invalide ou déjà payée' })
   @ApiResponse({ status: 403, description: 'Accès non autorisé' })
   async proceedSupplementPayment(
@@ -769,11 +809,12 @@ export class PaymentsController {
       }
 
       // Récupérer les données de la commande
-      const { data: orderData, error: orderError } = await this.paymentDataService['supabase']
-        .from('___xtr_order')
-        .select('ord_id, ord_cst_id, ord_parent, ord_total_ttc, ord_is_pay')
-        .eq('ord_id', orderId)
-        .single();
+      const { data: orderData, error: orderError } =
+        await this.paymentDataService['supabase']
+          .from('___xtr_order')
+          .select('ord_id, ord_cst_id, ord_parent, ord_total_ttc, ord_is_pay')
+          .eq('ord_id', orderId)
+          .single();
 
       if (orderError || !orderData) {
         throw new NotFoundException(`Order not found: ${orderId}`);
@@ -781,7 +822,9 @@ export class PaymentsController {
 
       // Vérifications de sécurité
       if (orderData.ord_cst_id !== userId) {
-        throw new BadRequestException('Unauthorized access - order does not belong to user');
+        throw new BadRequestException(
+          'Unauthorized access - order does not belong to user',
+        );
       }
 
       if (orderData.ord_is_pay === 1 || orderData.ord_is_pay === true) {
@@ -798,7 +841,10 @@ export class PaymentsController {
         userId: userId,
         amount: parseFloat(orderData.ord_total_ttc),
         currency: 'EUR',
-        method: paymentMethod === 'PAYBOX' ? PaymentMethod.CYBERPLUS : PaymentMethod.PAYPAL,
+        method:
+          paymentMethod === 'PAYBOX'
+            ? PaymentMethod.CYBERPLUS
+            : PaymentMethod.PAYPAL,
         description: `Supplément commande ${orderData.ord_parent}/A - ${orderData.ord_id}/A`,
       });
 
@@ -836,8 +882,12 @@ export class PaymentsController {
         message: 'Paiement initialisé avec succès',
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.logger.error(`❌ Failed to proceed supplement payment: ${errorMessage}`, error instanceof Error ? error.stack : '');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(
+        `❌ Failed to proceed supplement payment: ${errorMessage}`,
+        error instanceof Error ? error.stack : '',
+      );
       throw error;
     }
   }
@@ -855,19 +905,25 @@ export class PaymentsController {
       const { error } = await this.paymentDataService['supabase']
         .from('ic_postback')
         .insert({
-          id_ic_postback: callbackData.transaction_id || callbackData.transactionid || '',
+          id_ic_postback:
+            callbackData.transaction_id || callbackData.transactionid || '',
           id_com: callbackData.order_id || callbackData.orderid || '',
           status: callbackData.status || callbackData.statuscode || '',
           statuscode: callbackData.statuscode || callbackData.status || '',
           orderid: callbackData.order_id || callbackData.orderid || '',
           paymentid: callbackData.payment_id || callbackData.paymentid || '',
-          transactionid: callbackData.transaction_id || callbackData.transactionid || '',
+          transactionid:
+            callbackData.transaction_id || callbackData.transactionid || '',
           amount: callbackData.amount || '0',
           currency: callbackData.currency || 'EUR',
-          paymentmethod: callbackData.payment_method || callbackData.paymentmethod || 'card',
+          paymentmethod:
+            callbackData.payment_method || callbackData.paymentmethod || 'card',
           ip: callbackData.ip || '',
           ips: callbackData.ips || '',
-          datepayment: callbackData.date_payment || callbackData.datepayment || new Date().toISOString(),
+          datepayment:
+            callbackData.date_payment ||
+            callbackData.datepayment ||
+            new Date().toISOString(),
         });
 
       if (error) {
@@ -887,7 +943,9 @@ export class PaymentsController {
   @Post('test/create-with-consignes')
   @ApiOperation({ summary: '[TEST] Créer un paiement incluant des consignes' })
   @HttpCode(HttpStatus.OK)
-  async testCreatePaymentWithConsignes(@Body() testData?: { orderId?: string }) {
+  async testCreatePaymentWithConsignes(
+    @Body() testData?: { orderId?: string },
+  ) {
     try {
       this.logger.log('🧪 [TEST] Creating payment with consignes...');
 
@@ -933,7 +991,9 @@ export class PaymentsController {
     } catch (error) {
       this.logger.error('Error creating test payment:', error);
       throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to create test payment',
+        error instanceof Error
+          ? error.message
+          : 'Failed to create test payment',
       );
     }
   }

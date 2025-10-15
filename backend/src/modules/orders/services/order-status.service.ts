@@ -307,9 +307,11 @@ export class OrderStatusService extends SupabaseBaseService {
   async getOrderStatusHistory(orderId: number): Promise<any[]> {
     // Temporairement désactivé car ___xtr_order_status n'a pas de colonne order_id
     // C'est une table de référence (enum) des statuts possibles
-    this.logger.warn(`Historique des statuts non disponible pour commande ${orderId} - table d'historique à créer`);
+    this.logger.warn(
+      `Historique des statuts non disponible pour commande ${orderId} - table d'historique à créer`,
+    );
     return [];
-    
+
     /* Code original à réactiver une fois la table d'historique créée
     const { data, error } = await this.supabase
       .from('___xtr_order_history')  // Utiliser une vraie table d'historique

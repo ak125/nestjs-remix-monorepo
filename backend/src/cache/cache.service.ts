@@ -114,7 +114,11 @@ export class CacheService implements OnModuleInit {
         return;
       }
 
-      const result = await this.redisClient.setex(key, ttl, JSON.stringify(value));
+      const result = await this.redisClient.setex(
+        key,
+        ttl,
+        JSON.stringify(value),
+      );
       console.log(`✅ Redis SET ${key} = ${result} (TTL: ${ttl}s)`);
     } catch (error) {
       console.error(`❌ Cache SET ${key} error:`, error);

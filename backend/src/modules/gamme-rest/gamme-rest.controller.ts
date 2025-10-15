@@ -3,19 +3,18 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 
 /**
  * 🔥 GAMME REST CONTROLLER - REPRODUCTION EXACTE DU FICHIER PHP ORIGINAL
- * 
+ *
  * Reproduit fidèlement la logique du fichier PHP avec toutes les sections :
  * - SEO complet (__seo_gamme)
  * - Motorisations (__cross_gamme_car_new + auto_*)
  * - Équipementiers (__seo_equip_gamme + pieces_marque)
- * - Catalogue même famille (catalog_gamme + catalog_family) 
+ * - Catalogue même famille (catalog_gamme + catalog_family)
  * - Conseils (__seo_gamme_conseil)
  * - Informations (__seo_gamme_info)
  * - Blog advice (__blog_advice)
  */
 @Controller('api/gamme-rest')
 export class GammeRestController extends SupabaseBaseService {
-
   @Get(':pgId/page-data')
   async getPageData(@Param('pgId') pgId: string) {
     const pgIdNum = parseInt(pgId, 10);
@@ -55,9 +54,9 @@ export class GammeRestController extends SupabaseBaseService {
       return {
         status: 412,
         error: 'Page disabled',
-        debug: { 
-          pg_display: selectorData.pg_display, 
-          pg_name: selectorData.pg_name 
+        debug: {
+          pg_display: selectorData.pg_display,
+          pg_name: selectorData.pg_name,
         },
       };
     }
@@ -87,11 +86,11 @@ export class GammeRestController extends SupabaseBaseService {
     const [
       catalogDataResult,
       seoDataResult,
-      conseilsDataResult, 
+      conseilsDataResult,
       informationsDataResult,
       crossGammeDataResult,
       equipGammeDataResult,
-      blogDataResult
+      blogDataResult,
     ] = await Promise.all([
       // 4. MF DATA (CATALOG_GAMME + CATALOG_FAMILY)
       this.client
@@ -99,28 +98,28 @@ export class GammeRestController extends SupabaseBaseService {
         .select('mc_mf_prime')
         .eq('mc_pg_id', pgIdNum)
         .single(),
-      
+
       // 5. SEO & CONTENT (__SEO_GAMME)
       this.client
         .from('__seo_gamme')
         .select('sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
         .eq('sg_pg_id', pgIdNum)
         .single(),
-      
+
       // 6. CONSEILS (__SEO_GAMME_CONSEIL)
       this.client
         .from('__seo_gamme_conseil')
         .select('sgc_id, sgc_title, sgc_content')
         .eq('sgc_pg_id', pgIdNum)
         .order('sgc_id', { ascending: true }),
-      
+
       // 7. INFORMATIONS (__SEO_GAMME_INFO)
       this.client
         .from('__seo_gamme_info')
         .select('sgi_content')
         .eq('sgi_pg_id', pgIdNum)
         .order('sgi_id', { ascending: true }),
-      
+
       // 9. MOTORISATIONS (__CROSS_GAMME_CAR_NEW)
       this.client
         .from('__cross_gamme_car_new')
@@ -128,7 +127,7 @@ export class GammeRestController extends SupabaseBaseService {
         .eq('cgc_pg_id', pgIdNum.toString())
         .eq('cgc_level', '1')
         .order('cgc_id', { ascending: true }),
-      
+
       // 10. ÉQUIPEMENTIERS (__SEO_EQUIP_GAMME)
       this.client
         .from('__seo_equip_gamme')
@@ -137,7 +136,7 @@ export class GammeRestController extends SupabaseBaseService {
         .not('seg_content', 'is', null)
         .order('seg_id', { ascending: true })
         .limit(4),
-      
+
       // 11. BLOG ADVICE (__BLOG_ADVICE)
       this.client
         .from('__blog_advice')
@@ -146,7 +145,7 @@ export class GammeRestController extends SupabaseBaseService {
         .order('ba_update', { ascending: false })
         .order('ba_create', { ascending: false })
         .limit(1)
-        .single()
+        .single(),
     ]);
 
     // Traitement des résultats
@@ -195,10 +194,22 @@ export class GammeRestController extends SupabaseBaseService {
     } else {
       // Contenu par défaut (exactement comme PHP else)
       pageTitle = pgNameMeta + ' neuf & à prix bas';
-      pageDescription = 'Votre ' + pgNameMeta + ' au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.';
+      pageDescription =
+        'Votre ' +
+        pgNameMeta +
+        ' au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.';
       pageKeywords = pgNameMeta;
       pageH1 = 'Choisissez ' + pgNameSite + ' pas cher pour votre véhicule';
-      pageContent = 'Le(s) <b>' + pgNameSite + '</b> commercialisés sur ' + pgNameSite + ' sont disponibles pour tous les modèles de véhicules et dans plusieurs marques d\'équipementiers de pièces détachées automobile.<br>Identifier la marque, l\'année, le modèle et la motorisation de votre véhicule sélectionnez le <b>' + pgNameSite + '</b> compatible avec votre voiture.<br>Nous commercialisons des <b>' + pgNameSite + '</b> de différentes qualités : qualité d\'origine, première monte et équivalente à l\'origine avec des prix pas cher.';
+      pageContent =
+        'Le(s) <b>' +
+        pgNameSite +
+        '</b> commercialisés sur ' +
+        pgNameSite +
+        " sont disponibles pour tous les modèles de véhicules et dans plusieurs marques d'équipementiers de pièces détachées automobile.<br>Identifier la marque, l'année, le modèle et la motorisation de votre véhicule sélectionnez le <b>" +
+        pgNameSite +
+        '</b> compatible avec votre voiture.<br>Nous commercialisons des <b>' +
+        pgNameSite +
+        "</b> de différentes qualités : qualité d'origine, première monte et équivalente à l'origine avec des prix pas cher.";
     }
 
     // Robot et canonical (exactement comme PHP)
@@ -241,10 +252,10 @@ export class GammeRestController extends SupabaseBaseService {
     // ========================================
     const catalogueFiltres = [];
     if (mfId) {
-      // PHP: SELECT DISTINCT PG_ID, PG_ALIAS, PG_NAME, PG_NAME_META, PG_PIC, PG_IMG 
+      // PHP: SELECT DISTINCT PG_ID, PG_ALIAS, PG_NAME, PG_NAME_META, PG_PIC, PG_IMG
       // FROM PIECES_GAMME JOIN CATALOG_GAMME ON MC_PG_ID = PG_ID
       // WHERE PG_DISPLAY = 1 AND PG_LEVEL IN (1,2) AND MC_MF_ID = $mf_id AND MC_PG_ID != $pg_id ORDER BY MC_SORT
-      
+
       const { data: catalogData } = await this.client
         .from('pieces_gamme')
         .select('pg_id, pg_name, pg_alias, pg_img')
@@ -281,13 +292,13 @@ export class GammeRestController extends SupabaseBaseService {
     // 9. MOTORISATIONS (__CROSS_GAMME_CAR_NEW) - exactement comme PHP
     // ========================================
     console.log('🚗 Récupération motorisations exactement comme PHP...');
-    
-    // PHP: SELECT DISTINCT CGC_TYPE_ID, TYPE_NAME, TYPE_POWER_PS, TYPE_MONTH_FROM, TYPE_YEAR_FROM, TYPE_YEAR_TO, 
-    // MODELE_ID, MODELE_NAME, MARQUE_ID, MARQUE_NAME FROM __CROSS_GAMME_CAR_NEW 
+
+    // PHP: SELECT DISTINCT CGC_TYPE_ID, TYPE_NAME, TYPE_POWER_PS, TYPE_MONTH_FROM, TYPE_YEAR_FROM, TYPE_YEAR_TO,
+    // MODELE_ID, MODELE_NAME, MARQUE_ID, MARQUE_NAME FROM __CROSS_GAMME_CAR_NEW
     // JOIN AUTO_TYPE ON TYPE_ID = CGC_TYPE_ID JOIN AUTO_MODELE ON MODELE_ID = TYPE_MODELE_ID
     // JOIN AUTO_MARQUE ON MARQUE_ID = MODELE_MARQUE_ID WHERE CGC_PG_ID = $pg_id AND CGC_LEVEL = 1
     // GROUP BY TYPE_MODELE_ID ORDER BY CGC_ID, MODELE_NAME, TYPE_NAME
-    
+
     const { data: crossGammeData } = await this.client
       .from('__cross_gamme_car_new')
       .select('cgc_type_id, cgc_id, cgc_modele_id')
@@ -297,11 +308,13 @@ export class GammeRestController extends SupabaseBaseService {
 
     const motorisations: any[] = [];
     if (crossGammeData && crossGammeData.length > 0) {
-      console.log(`✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`);
-      
+      console.log(
+        `✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`,
+      );
+
       // GROUP BY TYPE_MODELE_ID comme PHP
       const processedModeles = new Set();
-      
+
       for (const cross of crossGammeData) {
         if (processedModeles.has(cross.cgc_modele_id)) continue;
         processedModeles.add(cross.cgc_modele_id);
@@ -309,7 +322,9 @@ export class GammeRestController extends SupabaseBaseService {
         // JOIN AUTO_TYPE
         const { data: typeData } = await this.client
           .from('auto_type')
-          .select('type_id, type_name, type_power_ps, type_month_from, type_year_from, type_year_to, type_modele_id')
+          .select(
+            'type_id, type_name, type_power_ps, type_month_from, type_year_from, type_year_to, type_modele_id',
+          )
           .eq('type_id', cross.cgc_type_id)
           .eq('type_display', '1')
           .single();
@@ -355,15 +370,17 @@ export class GammeRestController extends SupabaseBaseService {
         }
       }
     }
-    
-    console.log(`✅ Motorisations finales PHP exactes: ${motorisations.length}`);
+
+    console.log(
+      `✅ Motorisations finales PHP exactes: ${motorisations.length}`,
+    );
 
     // ========================================
     // 10. ÉQUIPEMENTIERS (__SEO_EQUIP_GAMME) - exactement comme PHP
     // ========================================
     // PHP: SELECT DISTINCT PM_ID, PM_NAME, SEG_CONTENT, PM_LOGO FROM __SEO_EQUIP_GAMME
     // JOIN PIECES_MARQUE ON PM_ID = SEG_PM_ID WHERE SEG_PG_ID = $pg_id
-    
+
     const { data: equipGammeData } = await this.client
       .from('__seo_equip_gamme')
       .select('seg_pm_id, seg_content')
@@ -400,7 +417,7 @@ export class GammeRestController extends SupabaseBaseService {
     // PHP: SELECT BA_ID, BA_H1, BA_ALIAS, BA_PREVIEW, BA_WALL, BA_UPDATE, PG_NAME, PG_ALIAS, PG_IMG, PG_WALL
     // FROM __BLOG_ADVICE JOIN PIECES_GAMME ON PG_ID = BA_PG_ID
     // WHERE BA_PG_ID = $pg_id ORDER BY BA_UPDATE DESC, BA_CREATE DESC LIMIT 1
-    
+
     const { data: blogData, error: blogError } = await this.client
       .from('__blog_advice')
       .select('ba_id, ba_h1, ba_alias, ba_preview, ba_wall, ba_update')
@@ -453,68 +470,87 @@ export class GammeRestController extends SupabaseBaseService {
         pg_wall: pgWall,
       },
       // Section Guide/Blog (comme "Comment changer un filtre à huile")
-      guide: guide ? {
-        id: guide.id,
-        title: guide.title,
-        alias: guide.alias,
-        preview: guide.preview,
-        wall: guide.wall,
-        date: guide.date,
-        image: `/upload/articles/gammes-produits/catalogue/${pgAlias}.webp`,
-        link: `/blog-pieces-auto/conseils/${pgAlias}`,
-        h2_content: guide.h2_content
-      } : null,
+      guide: guide
+        ? {
+            id: guide.id,
+            title: guide.title,
+            alias: guide.alias,
+            preview: guide.preview,
+            wall: guide.wall,
+            date: guide.date,
+            image: `/upload/articles/gammes-produits/catalogue/${pgAlias}.webp`,
+            link: `/blog-pieces-auto/conseils/${pgAlias}`,
+            h2_content: guide.h2_content,
+          }
+        : null,
       // Section "Catalogue [Nom Gamme]" (comme "Catalogue Filtres")
-      catalogueMameFamille: catalogueFiltres.length > 0 ? {
-        title: `Catalogue ${pgNameSite}s`,
-        items: catalogueFiltres.map(item => ({
-          name: item.name,
-          link: item.link,
-          image: `/upload/articles/gammes-produits/catalogue/${item.alias}.webp`,
-          description: `Automecanik vous conseils de contrôlez l'état du ${item.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
-          meta_description: `${item.name} pas cher à contrôler régulièrement, changer si encrassé`
-        }))
-      } : null,
-      // Section "Les motorisations les plus consultées"  
-      motorisations: motorisations.length > 0 ? {
-        title: 'Les motorisations les plus consultées',
-        items: motorisations.map(moto => ({
-          title: `${pgNameSite} prix bas ${moto.marque_name} ${moto.modele_name} ${moto.motorisation}, changer si encrassé`,
-          marque_name: moto.marque_name,
-          modele_name: moto.modele_name,
-          type_name: moto.motorisation,
-          puissance: moto.puissance,
-          periode: moto.description,
-          image: `/upload/constructeurs-automobiles/marques-modeles/${moto.marque_name.toLowerCase()}/${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}.webp`,
-          link: `/pieces/${pgAlias}-${pgIdNum}/${moto.marque_name.toLowerCase()}-${moto.marque_name.toLowerCase()}-${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}/${moto.motorisation.toLowerCase().replace(/\s+/g, '-')}.html`,
-          description: `contrôler si témoin allumé les ${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance} et changer si encrassé, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur.`,
-          advice: `${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance}`
-        }))
-      } : null,
-      // Section "Équipementiers [Nom Gamme]" 
-      equipementiers: equipementiers.length > 0 ? {
-        title: `Équipementiers ${pgNameSite}`,
-        items: equipementiers.map(eq => ({
-          pm_id: eq.pm_id,
-          pm_name: eq.pm_name,
-          pm_logo: eq.pm_logo,
-          title: `${pgNameSite} ${eq.pm_name}`,
-          image: `/upload/equipementiers-automobiles/${eq.pm_name.toLowerCase()}.webp`,
-          description: eq.description
-        }))
-      } : null,
+      catalogueMameFamille:
+        catalogueFiltres.length > 0
+          ? {
+              title: `Catalogue ${pgNameSite}s`,
+              items: catalogueFiltres.map((item) => ({
+                name: item.name,
+                link: item.link,
+                image: `/upload/articles/gammes-produits/catalogue/${item.alias}.webp`,
+                description: `Automecanik vous conseils de contrôlez l'état du ${item.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
+                meta_description: `${item.name} pas cher à contrôler régulièrement, changer si encrassé`,
+              })),
+            }
+          : null,
+      // Section "Les motorisations les plus consultées"
+      motorisations:
+        motorisations.length > 0
+          ? {
+              title: 'Les motorisations les plus consultées',
+              items: motorisations.map((moto) => ({
+                title: `${pgNameSite} prix bas ${moto.marque_name} ${moto.modele_name} ${moto.motorisation}, changer si encrassé`,
+                marque_name: moto.marque_name,
+                modele_name: moto.modele_name,
+                type_name: moto.motorisation,
+                puissance: moto.puissance,
+                periode: moto.description,
+                image: `/upload/constructeurs-automobiles/marques-modeles/${moto.marque_name.toLowerCase()}/${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}.webp`,
+                link: `/pieces/${pgAlias}-${pgIdNum}/${moto.marque_name.toLowerCase()}-${moto.marque_name.toLowerCase()}-${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}/${moto.motorisation.toLowerCase().replace(/\s+/g, '-')}.html`,
+                description: `contrôler si témoin allumé les ${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance} et changer si encrassé, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur.`,
+                advice: `${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance}`,
+              })),
+            }
+          : null,
+      // Section "Équipementiers [Nom Gamme]"
+      equipementiers:
+        equipementiers.length > 0
+          ? {
+              title: `Équipementiers ${pgNameSite}`,
+              items: equipementiers.map((eq) => ({
+                pm_id: eq.pm_id,
+                pm_name: eq.pm_name,
+                pm_logo: eq.pm_logo,
+                title: `${pgNameSite} ${eq.pm_name}`,
+                image: `/upload/equipementiers-automobiles/${eq.pm_name.toLowerCase()}.webp`,
+                description: eq.description,
+              })),
+            }
+          : null,
       // Section "Conseils pour [Nom Gamme]" - Format comme sections
-      conseils: conseils.length > 0 ? {
-        title: `Conseils pour ${pgNameSite}`,
-        content: conseils.map(c => `<h3>${c.title}</h3><p>${c.content}</p>`).join(''),
-        items: conseils
-      } : null,
-      // Section "Informations sur les [Nom Gamme]" 
-      informations: informations.length > 0 ? {
-        title: `Informations sur les ${pgNameSite}`,
-        content: informations.map(info => `<p>- ${info}</p>`).join(''),
-        items: informations
-      } : null,
+      conseils:
+        conseils.length > 0
+          ? {
+              title: `Conseils pour ${pgNameSite}`,
+              content: conseils
+                .map((c) => `<h3>${c.title}</h3><p>${c.content}</p>`)
+                .join(''),
+              items: conseils,
+            }
+          : null,
+      // Section "Informations sur les [Nom Gamme]"
+      informations:
+        informations.length > 0
+          ? {
+              title: `Informations sur les ${pgNameSite}`,
+              content: informations.map((info) => `<p>- ${info}</p>`).join(''),
+              items: informations,
+            }
+          : null,
       // Stats pour affichage frontend
       performance: {
         motorisations_count: motorisations.length,
@@ -522,7 +558,7 @@ export class GammeRestController extends SupabaseBaseService {
         equipementiers_count: equipementiers.length,
         conseils_count: conseils.length,
         informations_count: informations.length,
-        guide_available: guide ? 1 : 0
+        guide_available: guide ? 1 : 0,
       },
       debug: {
         pgIdNum,
@@ -534,8 +570,8 @@ export class GammeRestController extends SupabaseBaseService {
           motorisations: motorisations.length,
           equipementiers: equipementiers.length,
           guide: guide ? 1 : 0,
-        }
-      }
+        },
+      },
     };
   }
 

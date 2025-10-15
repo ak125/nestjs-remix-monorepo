@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseIntPipe, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  Logger,
+} from '@nestjs/common';
 import { PiecesDbService } from './pieces-db.service';
 
 @Controller('pieces-db')
@@ -19,9 +26,11 @@ export class PiecesDbController {
     @Query('offset') offset?: string,
   ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🔧 [PIECES-DB] Récupération pièces pour type_id: ${typeId}, pg_id: ${pgId}`);
-    
+
+    this.logger.log(
+      `🔧 [PIECES-DB] Récupération pièces pour type_id: ${typeId}, pg_id: ${pgId}`,
+    );
+
     try {
       // Utilise votre service qui implémente la logique PHP
       const result = await this.piecesDbService.getPiecesForVehicleAndGamme(
@@ -32,10 +41,10 @@ export class PiecesDbController {
       );
 
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.log(
         `✅ [PIECES-DB] ${result.pieces.length} pièces trouvées en ${responseTime}ms ` +
-        `(prix min: ${result.stats.min_price}€)`
+          `(prix min: ${result.stats.min_price}€)`,
       );
 
       return {
@@ -70,13 +79,18 @@ export class PiecesDbController {
     @Param('typeId', ParseIntPipe) typeId: number,
     @Param('pgId', ParseIntPipe) pgId: number,
   ) {
-    this.logger.log(`📊 [PIECES-DB-STATS] Stats pour type_id: ${typeId}, pg_id: ${pgId}`);
-    
+    this.logger.log(
+      `📊 [PIECES-DB-STATS] Stats pour type_id: ${typeId}, pg_id: ${pgId}`,
+    );
+
     try {
-      const stats = await this.piecesDbService.getStatsForVehicleAndGamme(typeId, pgId);
-      
+      const stats = await this.piecesDbService.getStatsForVehicleAndGamme(
+        typeId,
+        pgId,
+      );
+
       this.logger.log(
-        `✅ [PIECES-DB-STATS] ${stats.total_count} pièces, prix: ${stats.min_price}€-${stats.max_price}€`
+        `✅ [PIECES-DB-STATS] ${stats.total_count} pièces, prix: ${stats.min_price}€-${stats.max_price}€`,
       );
 
       return stats;

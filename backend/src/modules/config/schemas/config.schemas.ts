@@ -52,7 +52,7 @@ export const CreateConfigSchema = z.object({
 export const UpdateConfigSchema = z
   .object({
     value: z.any().optional(),
-    
+
     type: z.nativeEnum(ConfigType).optional(),
 
     description: z

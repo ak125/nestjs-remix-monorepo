@@ -45,13 +45,21 @@ export class AISmartResponseService {
       const messageText = this.extractMessage(ticket);
       const category = categorization?.category || ticket.category || 'general';
       const urgency = sentiment?.urgency || 'medium';
-      
+
       const responseTemplate = this.getResponseTemplate(category, urgency);
       const tone = this.determineTone(sentiment, urgency);
       const response = this.personalizeResponse(responseTemplate, ticket, tone);
-      
-      const confidence = this.calculateConfidence(category, urgency, messageText);
-      const requiresHuman = this.shouldRequireHuman(urgency, confidence, category);
+
+      const confidence = this.calculateConfidence(
+        category,
+        urgency,
+        messageText,
+      );
+      const requiresHuman = this.shouldRequireHuman(
+        urgency,
+        confidence,
+        category,
+      );
       const suggestedActions = this.getSuggestedActions(category, urgency);
       const estimatedTime = this.estimateResolutionTime(category, urgency);
 
@@ -80,7 +88,7 @@ export class AISmartResponseService {
       const rating = review.rating;
       const isPositive = rating >= 4;
       const isNegative = rating <= 2;
-      
+
       let template: string;
       let tone: 'formal' | 'friendly' | 'apologetic' | 'professional';
 
@@ -108,7 +116,8 @@ export class AISmartResponseService {
     } catch (error) {
       this.logger.error(`Erreur réponse avis: ${error.message}`);
       return {
-        response: 'Merci pour votre avis. Nous prenons en compte vos commentaires.',
+        response:
+          'Merci pour votre avis. Nous prenons en compte vos commentaires.',
         confidence: 0.5,
         tone: 'professional',
         requiresHuman: true,
@@ -363,71 +372,104 @@ L'équipe {companyName}`;
     tone: string,
   ): string {
     let response = template;
-    
+
     // Personnalisation basique
     if ('name' in ticket) {
-      response = response.replace('{customerName}', ticket.name || 'Cher(e) client(e)');
+      response = response.replace(
+        '{customerName}',
+        ticket.name || 'Cher(e) client(e)',
+      );
     }
-    
+
     response = response.replace('{companyName}', 'notre entreprise');
-    
+
     return response;
   }
 
-  private personalizeReviewResponse(template: string, review: ReviewData): string {
+  private personalizeReviewResponse(
+    template: string,
+    review: ReviewData,
+  ): string {
     let response = template;
-    
-    response = response.replace('{customerName}', review.customer?.cst_name || 'Cher(e) client(e)');
+
+    response = response.replace(
+      '{customerName}',
+      review.customer?.cst_name || 'Cher(e) client(e)',
+    );
     response = response.replace('{productAspect}', 'notre produit');
     response = response.replace('{issueAspect}', 'les points mentionnés');
     response = response.replace('{companyName}', 'notre entreprise');
-    
+
     return response;
   }
 
-  private calculateConfidence(category: string, urgency: string, messageText: string): number {
+  private calculateConfidence(
+    category: string,
+    urgency: string,
+    messageText: string,
+  ): number {
     let confidence = 0.7; // Base confidence
-    
+
     // Bonus si catégorie bien définie
     if (['technical', 'billing', 'complaint'].includes(category)) {
       confidence += 0.1;
     }
-    
+
     // Malus si urgence critique (nécessite plus d'attention humaine)
     if (urgency === 'critical') {
       confidence -= 0.2;
     }
-    
+
     // Bonus si message court et simple
     if (messageText.length < 200) {
       confidence += 0.1;
     }
-    
+
     return Math.max(0.3, Math.min(0.9, confidence));
   }
 
-  private shouldRequireHuman(urgency: string, confidence: number, category: string): boolean {
+  private shouldRequireHuman(
+    urgency: string,
+    confidence: number,
+    category: string,
+  ): boolean {
     if (urgency === 'critical') return true;
     if (confidence < 0.6) return true;
     if (category === 'complaint' && urgency === 'high') return true;
-    
+
     return false;
   }
 
   private getSuggestedActions(category: string, urgency: string): string[] {
     const actions = {
-      technical: ['Vérifier les logs', 'Reproduire le problème', 'Contacter le support niveau 2'],
-      billing: ['Vérifier la facturation', 'Contrôler les paiements', 'Générer un avoir si nécessaire'],
-      complaint: ['Escalader au manager', 'Proposer une compensation', 'Suivre personnellement'],
-      general: ['Fournir les informations', 'Orienter vers la bonne équipe', 'Programmer un suivi'],
+      technical: [
+        'Vérifier les logs',
+        'Reproduire le problème',
+        'Contacter le support niveau 2',
+      ],
+      billing: [
+        'Vérifier la facturation',
+        'Contrôler les paiements',
+        'Générer un avoir si nécessaire',
+      ],
+      complaint: [
+        'Escalader au manager',
+        'Proposer une compensation',
+        'Suivre personnellement',
+      ],
+      general: [
+        'Fournir les informations',
+        'Orienter vers la bonne équipe',
+        'Programmer un suivi',
+      ],
     };
 
     const baseActions = actions[category] || actions.general;
-    
+
     if (urgency === 'critical') {
       return ['URGENCE: Traiter immédiatement', ...baseActions];
     }
-    
+
     return baseActions;
   }
 
@@ -445,21 +487,35 @@ L'équipe {companyName}`;
 
   private getReviewActions(rating: number): string[] {
     if (rating >= 4) {
-      return ['Remercier le client', 'Partager en interne', 'Utiliser comme témoignage'];
+      return [
+        'Remercier le client',
+        'Partager en interne',
+        'Utiliser comme témoignage',
+      ];
     } else if (rating <= 2) {
-      return ['Contacter le client', 'Investiguer le problème', 'Proposer une solution'];
+      return [
+        'Contacter le client',
+        'Investiguer le problème',
+        'Proposer une solution',
+      ];
     } else {
-      return ['Analyser les commentaires', 'Identifier les améliorations possibles'];
+      return [
+        'Analyser les commentaires',
+        'Identifier les améliorations possibles',
+      ];
     }
   }
 
-  private shouldPublishResponse(rating: number, sentiment?: SentimentAnalysis): boolean {
+  private shouldPublishResponse(
+    rating: number,
+    sentiment?: SentimentAnalysis,
+  ): boolean {
     // Publier automatiquement pour les avis positifs
     if (rating >= 4) return true;
-    
+
     // Ne pas publier automatiquement pour les avis très négatifs
     if (rating <= 2) return false;
-    
+
     // Pour les avis neutres, dépend du sentiment
     return sentiment?.sentiment !== 'negative';
   }
@@ -485,7 +541,7 @@ L'équipe support`,
 
   private extractMessage(ticket: ContactTicket | ContactFormData): string {
     if ('message' in ticket) return ticket.message;
-    
+
     try {
       const content = JSON.parse(ticket.msg_content || '{}');
       return content.message || '';
@@ -508,9 +564,14 @@ export class AIPredictiveService {
     categorization?: SmartCategorization,
   ): Promise<EscalationPrediction> {
     try {
-      const factors = this.calculateEscalationFactors(ticket, sentiment, categorization);
+      const factors = this.calculateEscalationFactors(
+        ticket,
+        sentiment,
+        categorization,
+      );
       const riskLevel = this.calculateRiskLevel(factors);
-      const escalationProbability = this.calculateEscalationProbability(factors);
+      const escalationProbability =
+        this.calculateEscalationProbability(factors);
       const timeToEscalation = this.estimateTimeToEscalation(factors);
       const priority = this.determinePriority(riskLevel);
       const suggestedActions = this.getEscalationActions(riskLevel, factors);
@@ -546,12 +607,15 @@ export class AIPredictiveService {
     try {
       const category = categorization?.category || ticket.category || 'general';
       const urgency = this.extractUrgency(ticket);
-      
+
       const recommendedAgent = this.getRecommendedAgent(category, urgency);
       const estimatedTime = this.estimateWorkflowTime(category, urgency);
       const priority = this.calculateWorkflowPriority(urgency, category);
       const nextSteps = this.getSuggestedNextSteps(category);
-      const automationOps = this.identifyAutomationOpportunities(category, ticket);
+      const automationOps = this.identifyAutomationOpportunities(
+        category,
+        ticket,
+      );
 
       return {
         recommendedAgent,
@@ -579,9 +643,18 @@ export class AIPredictiveService {
     categorization?: SmartCategorization,
   ) {
     return {
-      sentimentScore: sentiment?.sentiment === 'negative' ? 30 : sentiment?.sentiment === 'positive' ? -10 : 0,
-      urgencyScore: this.getUrgencyScore(sentiment?.urgency || this.extractUrgency(ticket)),
-      categoryScore: this.getCategoryRiskScore(categorization?.category || ticket.category),
+      sentimentScore:
+        sentiment?.sentiment === 'negative'
+          ? 30
+          : sentiment?.sentiment === 'positive'
+            ? -10
+            : 0,
+      urgencyScore: this.getUrgencyScore(
+        sentiment?.urgency || this.extractUrgency(ticket),
+      ),
+      categoryScore: this.getCategoryRiskScore(
+        categorization?.category || ticket.category,
+      ),
       emotionScore: sentiment?.emotions?.includes('colère') ? 25 : 0,
       timeScore: 0, // Pourrait être calculé selon l'heure/jour
       customerHistoryScore: 0, // À implémenter avec l'historique client
@@ -589,7 +662,10 @@ export class AIPredictiveService {
   }
 
   private calculateRiskLevel(factors: any): number {
-    const totalScore = Object.values(factors).reduce((sum: number, score: any) => sum + Number(score), 0);
+    const totalScore = Object.values(factors).reduce(
+      (sum: number, score: any) => sum + Number(score),
+      0,
+    );
     return Math.max(0, Math.min(100, 50 + totalScore));
   }
 
@@ -600,15 +676,17 @@ export class AIPredictiveService {
 
   private estimateTimeToEscalation(factors: any): number {
     const riskLevel = this.calculateRiskLevel(factors);
-    
+
     if (riskLevel >= 80) return 30; // 30 minutes
     if (riskLevel >= 60) return 120; // 2 heures
     if (riskLevel >= 40) return 480; // 8 heures
-    
+
     return 1440; // 24 heures
   }
 
-  private determinePriority(riskLevel: number): 'low' | 'medium' | 'high' | 'critical' {
+  private determinePriority(
+    riskLevel: number,
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (riskLevel >= 80) return 'critical';
     if (riskLevel >= 60) return 'high';
     if (riskLevel >= 40) return 'medium';
@@ -617,44 +695,44 @@ export class AIPredictiveService {
 
   private getEscalationActions(riskLevel: number, factors: any): string[] {
     const actions = [];
-    
+
     if (riskLevel >= 80) {
       actions.push('Escalader immédiatement au manager');
       actions.push('Contacter le client par téléphone');
     }
-    
+
     if (riskLevel >= 60) {
       actions.push('Assigner à un agent senior');
-      actions.push('Suivre de près l\'évolution');
+      actions.push("Suivre de près l'évolution");
     }
-    
+
     if (factors.emotionScore > 20) {
       actions.push('Réponse empathique requise');
     }
-    
+
     if (actions.length === 0) {
       actions.push('Traitement standard');
     }
-    
+
     return actions;
   }
 
   private generateReasoning(factors: any): string {
     const reasons = [];
-    
+
     if (factors.sentimentScore > 20) {
       reasons.push('sentiment très négatif détecté');
     }
-    
+
     if (factors.urgencyScore > 15) {
       reasons.push('urgence élevée');
     }
-    
+
     if (factors.emotionScore > 20) {
       reasons.push('émotions fortes exprimées');
     }
-    
-    return reasons.length > 0 
+
+    return reasons.length > 0
       ? `Risque élevé dû à: ${reasons.join(', ')}`
       : 'Facteurs de risque dans la normale';
   }
@@ -676,7 +754,7 @@ export class AIPredictiveService {
 
   private extractUrgency(ticket: ContactTicket | ContactFormData): string {
     if ('priority' in ticket) return ticket.priority;
-    
+
     try {
       const content = JSON.parse(ticket.msg_content || '{}');
       return content.priority || 'medium';
@@ -689,7 +767,8 @@ export class AIPredictiveService {
     const agentMapping = {
       technical: urgency === 'critical' ? 'senior-tech' : 'tech-support',
       billing: urgency === 'critical' ? 'billing-manager' : 'billing-team',
-      complaint: urgency === 'high' ? 'customer-relations-senior' : 'customer-relations',
+      complaint:
+        urgency === 'high' ? 'customer-relations-senior' : 'customer-relations',
       general: 'general-support',
     };
 
@@ -711,8 +790,13 @@ export class AIPredictiveService {
 
   private calculateWorkflowPriority(urgency: string, category: string): number {
     const urgencyPoints = { low: 1, medium: 3, high: 7, critical: 10 };
-    const categoryPoints = { complaint: 3, billing: 2, technical: 2, general: 1 };
-    
+    const categoryPoints = {
+      complaint: 3,
+      billing: 2,
+      technical: 2,
+      general: 1,
+    };
+
     return (urgencyPoints[urgency] || 3) + (categoryPoints[category] || 1);
   }
 
@@ -748,27 +832,29 @@ export class AIPredictiveService {
     ticket: ContactTicket | ContactFormData,
   ): string[] {
     const opportunities = [];
-    
+
     const message = this.extractMessage(ticket);
-    
+
     if (message.includes('mot de passe') || message.includes('password')) {
-      opportunities.push('Lien automatique de réinitialisation de mot de passe');
+      opportunities.push(
+        'Lien automatique de réinitialisation de mot de passe',
+      );
     }
-    
+
     if (message.includes('facture') || message.includes('invoice')) {
       opportunities.push('Envoi automatique de la facture par email');
     }
-    
+
     if (category === 'general' && message.includes('horaires')) {
-      opportunities.push('Réponse automatique avec les horaires d\'ouverture');
+      opportunities.push("Réponse automatique avec les horaires d'ouverture");
     }
-    
+
     return opportunities;
   }
 
   private extractMessage(ticket: ContactTicket | ContactFormData): string {
     if ('message' in ticket) return ticket.message;
-    
+
     try {
       const content = JSON.parse(ticket.msg_content || '{}');
       return content.message || '';

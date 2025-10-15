@@ -3,7 +3,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 /**
  * 🎯 ALIAS RESOLVER SERVICE V5
- * 
+ *
  * Résout les alias URL en vrais IDs pour le cross-selling
  * Exemple: "freins" → pg_id: 15, "bmw" → mf_id: 5
  */
@@ -16,7 +16,7 @@ interface ResolvedIds {
   success: boolean;
   aliases: {
     gamme: string;
-    marque: string;  
+    marque: string;
     modele: string;
     type: string;
   };
@@ -31,20 +31,22 @@ export class AliasResolverService extends SupabaseBaseService {
    */
   async resolveAliases(
     gammeAlias: string,
-    marqueAlias: string, 
+    marqueAlias: string,
     modeleAlias: string,
-    typeAlias: string
+    typeAlias: string,
   ): Promise<ResolvedIds> {
     const startTime = Date.now();
-    
+
     try {
-      this.logger.log(`🔍 Résolution aliases: ${gammeAlias}/${marqueAlias}/${modeleAlias}/${typeAlias}`);
-      
+      this.logger.log(
+        `🔍 Résolution aliases: ${gammeAlias}/${marqueAlias}/${modeleAlias}/${typeAlias}`,
+      );
+
       // 🚀 Résolution en parallèle
       const [gammeId, marqueId, typeData] = await Promise.allSettled([
         this.resolveGammeAlias(gammeAlias),
         this.resolveMarqueAlias(marqueAlias),
-        this.resolveVehicleAlias(marqueAlias, modeleAlias, typeAlias)
+        this.resolveVehicleAlias(marqueAlias, modeleAlias, typeAlias),
       ]);
 
       const result: ResolvedIds = {
@@ -52,30 +54,39 @@ export class AliasResolverService extends SupabaseBaseService {
         marqueId: marqueId.status === 'fulfilled' ? marqueId.value : 0,
         typeId: typeData.status === 'fulfilled' ? typeData.value.typeId : 0,
         modeleId: typeData.status === 'fulfilled' ? typeData.value.modeleId : 0,
-        success: gammeId.status === 'fulfilled' && marqueId.status === 'fulfilled' && typeData.status === 'fulfilled',
+        success:
+          gammeId.status === 'fulfilled' &&
+          marqueId.status === 'fulfilled' &&
+          typeData.status === 'fulfilled',
         aliases: {
           gamme: gammeAlias,
           marque: marqueAlias,
-          modele: modeleAlias, 
-          type: typeAlias
-        }
+          modele: modeleAlias,
+          type: typeAlias,
+        },
       };
 
       const responseTime = Date.now() - startTime;
-      this.logger.log(`✅ IDs résolus en ${responseTime}ms: pg=${result.pgId}, type=${result.typeId}, mf=${result.marqueId}`);
-      
-      return result;
+      this.logger.log(
+        `✅ IDs résolus en ${responseTime}ms: pg=${result.pgId}, type=${result.typeId}, mf=${result.marqueId}`,
+      );
 
+      return result;
     } catch (error) {
       this.logger.error('❌ Erreur résolution aliases:', error);
-      
+
       return {
         typeId: 0,
-        pgId: 0,  
+        pgId: 0,
         marqueId: 0,
         modeleId: 0,
         success: false,
-        aliases: { gamme: gammeAlias, marque: marqueAlias, modele: modeleAlias, type: typeAlias }
+        aliases: {
+          gamme: gammeAlias,
+          marque: marqueAlias,
+          modele: modeleAlias,
+          type: typeAlias,
+        },
       };
     }
   }
@@ -104,7 +115,6 @@ export class AliasResolverService extends SupabaseBaseService {
       }
 
       return data.pg_id;
-
     } catch (error) {
       this.logger.warn(`⚠️ Gamme alias '${alias}' non trouvé`);
       return 0;
@@ -117,7 +127,7 @@ export class AliasResolverService extends SupabaseBaseService {
   private async resolveMarqueAlias(alias: string): Promise<number> {
     try {
       const cleanAlias = alias.toLowerCase().replace(/[^a-z0-9-]/g, '');
-      
+
       // Recherche dans AUTO_MARQUE (→ auto_marque)
       const { data, error } = await this.supabase
         .from('auto_marque')
@@ -128,12 +138,13 @@ export class AliasResolverService extends SupabaseBaseService {
         .single();
 
       if (error || !data) {
-        this.logger.warn(`⚠️ Marque alias '${alias}' non trouvé dans auto_marque`);
+        this.logger.warn(
+          `⚠️ Marque alias '${alias}' non trouvé dans auto_marque`,
+        );
         return 0;
       }
 
       return data.marque_id;
-
     } catch (error) {
       this.logger.warn(`⚠️ Erreur résolution marque '${alias}':`, error);
       return 0;
@@ -189,9 +200,15 @@ export class AliasResolverService extends SupabaseBaseService {
     try {
       // Test basique des tables principales
       const [gammes, marques, types] = await Promise.allSettled([
-        this.supabase.from('pieces_gamme').select('count', { count: 'exact', head: true }),
-        this.supabase.from('catalog_marque_fr').select('count', { count: 'exact', head: true }),
-        this.supabase.from('catalog_type_2').select('count', { count: 'exact', head: true })
+        this.supabase
+          .from('pieces_gamme')
+          .select('count', { count: 'exact', head: true }),
+        this.supabase
+          .from('catalog_marque_fr')
+          .select('count', { count: 'exact', head: true }),
+        this.supabase
+          .from('catalog_type_2')
+          .select('count', { count: 'exact', head: true }),
       ]);
 
       return {
@@ -199,18 +216,17 @@ export class AliasResolverService extends SupabaseBaseService {
         status: 'healthy',
         tables: {
           pieces_gamme: gammes.status === 'fulfilled' ? 'ok' : 'error',
-          catalog_marque_fr: marques.status === 'fulfilled' ? 'ok' : 'error', 
-          catalog_type_2: types.status === 'fulfilled' ? 'ok' : 'error'
+          catalog_marque_fr: marques.status === 'fulfilled' ? 'ok' : 'error',
+          catalog_type_2: types.status === 'fulfilled' ? 'ok' : 'error',
         },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       return {
         service: 'AliasResolverService',
         status: 'unhealthy',
         error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
   }
