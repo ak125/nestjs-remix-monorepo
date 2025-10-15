@@ -10,12 +10,12 @@ import { type AppLoadContext } from "@remix-run/node";
  * Gère le bootstrap de l'application NestJS si nécessaire.
  */
 export async function getRemixIntegrationService(
-  context: AppLoadContext
+  context: AppLoadContext,
 ): Promise<any> {
   const ctx: any = context as any;
   if (ctx.remixIntegration) return ctx.remixIntegration;
   if (ctx.remixService?.integration) return ctx.remixService.integration;
   // Fallback sur le helper API
-  const { getRemixApiService } = await import("~/server/remix-api.server");
+  const { getRemixApiService } = await import("./remix-api.server");
   return getRemixApiService(context);
 }
