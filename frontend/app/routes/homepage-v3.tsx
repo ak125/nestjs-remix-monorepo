@@ -2,7 +2,7 @@ import  { type MetaFunction, type LoaderFunctionArgs , json } from "@remix-run/n
 import { useLoaderData } from "@remix-run/react";
 import { 
   Menu, X, Search, ShoppingCart, User, ChevronDown,
-  Phone, Mail, Clock, MapPin
+  Phone, Mail, Clock
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {

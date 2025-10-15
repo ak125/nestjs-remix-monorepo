@@ -91,7 +91,7 @@ const CONFIG_MODULES: ConfigModule[] = [
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const environment = url.searchParams.get('environment') || 'production';
-  const module = url.searchParams.get('module') || 'overview';
+  const _module = url.searchParams.get('module') || 'overview';
 
   try {
     const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
@@ -147,7 +147,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get('action') as string;
   const environment = formData.get('environment') as string || 'production';
-  const module = formData.get('module') as string;
+  const _module = formData.get('module') as string;
 
   try {
     const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';

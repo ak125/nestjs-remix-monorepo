@@ -109,7 +109,7 @@ interface LoaderData {
 }
 
 // Métadonnées SEO améliorées
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data: _data }) => {
   const title = "Blog Automecanik - Conseils et Guides Auto Experts";
   const description = "Découvrez nos conseils d'experts, guides de réparation et actualités du monde automobile. Plus de 500 articles pratiques pour l'entretien de votre véhicule.";
   
@@ -200,7 +200,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
-  const articleId = formData.get('articleId');
+  const _articleId = formData.get('articleId');
 
   try {
     switch (actionType) {

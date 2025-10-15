@@ -1,7 +1,6 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
 // ✅ Images WebP optimisées automatiquement
-import { Link } from "@remix-run/react";
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 interface Piece {
   pie_id: number;

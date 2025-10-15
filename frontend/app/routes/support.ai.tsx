@@ -34,7 +34,7 @@ interface CompleteAIAnalysis {
   };
 }
 
-interface ContactTicket {
+interface _ContactTicket {
   msg_id: string;
   msg_cst_id: string;
   msg_subject: string;

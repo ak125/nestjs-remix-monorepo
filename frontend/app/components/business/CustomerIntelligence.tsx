@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 🧠 Types pour l'intelligence client
 interface CustomerSegment {
@@ -270,7 +270,7 @@ export function CustomerIntelligence() {
 
   // 🎨 Couleurs pour les graphiques
   const segmentColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
-  const riskColors = { low: '#10b981', medium: '#f59e0b', high: '#ef4444' };
+  const _riskColors = { low: '#10b981', medium: '#f59e0b', high: '#ef4444' };
 
   if (isLoading) {
     return (

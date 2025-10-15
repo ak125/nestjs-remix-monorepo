@@ -108,7 +108,7 @@ export function ContactSection() {
     subject: '',
     message: ''
   });
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [_isChatOpen, setIsChatOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

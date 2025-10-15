@@ -10,13 +10,10 @@ import {
   X,
   LogOut,
   TrendingUp,
-  CreditCard,
   AlertTriangle,
-  CheckCircle
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
-import { Card } from "./ui/card"
 
 // Fonction utilitaire pour combiner les classes CSS
 function cn(...classes: (string | undefined | false | null)[]): string {

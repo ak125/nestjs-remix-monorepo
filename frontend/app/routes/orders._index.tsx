@@ -5,18 +5,14 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher, Form } from '@remix-run/react';
+import { useLoaderData, useSearchParams, useNavigate, useFetcher, Form } from '@remix-run/react';
 import { 
-  Package, ShoppingCart, Search, ChevronLeft, ChevronRight, Eye, Plus,
-  DollarSign, TrendingUp, AlertCircle, Filter, Download, RefreshCw, Mail, Phone,
-  CheckCircle, Clock, Truck, XCircle, Users, MapPin, Info, Send, Ban, Shield
+  Package, ShoppingCart, Eye, Plus,
+  DollarSign, Download, Mail, Phone,
+  CheckCircle, Clock, Truck, Users, MapPin, Info, Ban
 } from 'lucide-react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { requireUser } from '../auth/unified.server';
 import { getUserPermissions, getUserRole, type UserPermissions } from '../utils/permissions';
 
@@ -554,7 +550,7 @@ export default function UnifiedOrders() {
     }
   };
   
-  const formatNumber = (num: number) => {
+  const _formatNumber = (num: number) => {
     return new Intl.NumberFormat('fr-FR').format(num);
   };
   
@@ -566,7 +562,7 @@ export default function UnifiedOrders() {
   };
   
   // Appliquer filtres
-  const applyFilters = (newFilters: Partial<typeof filters>) => {
+  const _applyFilters = (newFilters: Partial<typeof filters>) => {
     const params = new URLSearchParams();
     Object.entries({ ...filters, ...newFilters }).forEach(([key, value]) => {
       if (value) params.set(key, value);
@@ -575,7 +571,7 @@ export default function UnifiedOrders() {
     navigate(`?${params.toString()}`);
   };
   
-  const getStatusBadge = (statusId: string) => {
+  const _getStatusBadge = (statusId: string) => {
     const statusMap: Record<string, { label: string; class: string }> = {
       "1": { label: "En cours", class: "bg-yellow-100 text-yellow-800 border-yellow-200" },
       "2": { label: "Confirmée", class: "bg-blue-100 text-blue-800 border-blue-200" },

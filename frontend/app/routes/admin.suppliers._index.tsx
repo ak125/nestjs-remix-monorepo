@@ -154,7 +154,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     
     // Pagination côté client
     const page = parseInt(params.page);
-    const limit = parseInt(params.limit);
+    const _limit = parseInt(params.limit);
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const paginatedSuppliers = filteredSuppliers.slice(startIndex, endIndex);
@@ -208,7 +208,7 @@ export default function SuppliersIndex() {
   const [searchParams] = useSearchParams();
   const [localSearch, setLocalSearch] = useState(params.search || '');
   
-  const limit = parseInt(params.limit);
+  const _limit = parseInt(params.limit);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

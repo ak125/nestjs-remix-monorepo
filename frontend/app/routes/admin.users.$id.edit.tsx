@@ -48,7 +48,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
+  const _formData = await request.formData();
   
   // Simuler la sauvegarde
   try {

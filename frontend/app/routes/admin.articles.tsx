@@ -186,8 +186,8 @@ export const meta: MetaFunction = () => {
 // Composant principal
 export default function AdminArticlesPage() {
   const { articles, totalCount, isError, errorMessage } = useLoaderData<LoaderData>();
-  const fetcher = useFetcher();
-  const navigation = useNavigation();
+  const _fetcher = useFetcher();
+  const _navigation = useNavigation();
   const [selectedType, setSelectedType] = useState<string>('');
 
   const getTypeColor = (type: string) => {

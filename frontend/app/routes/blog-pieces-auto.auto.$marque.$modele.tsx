@@ -1,6 +1,6 @@
 // app/routes/blog-pieces-auto.auto.$marque.$modele.tsx
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import {
   ArrowLeft,
   Calendar,

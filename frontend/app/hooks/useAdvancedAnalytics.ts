@@ -57,7 +57,7 @@ interface PerformanceMetrics {
 export function useAdvancedAnalytics() {
   const location = useLocation()
   const [sessionId] = useState(() => crypto.randomUUID())
-  const [insights, setInsights] = useState<UserBehaviorInsights | null>(null)
+  const [insights, _setInsights] = useState<UserBehaviorInsights | null>(null)
   const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics | null>(null)
   const [isOptimizationMode, setIsOptimizationMode] = useState(false)
 

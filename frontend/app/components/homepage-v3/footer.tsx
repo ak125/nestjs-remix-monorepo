@@ -28,11 +28,11 @@ export function Footer() {
           <div>
             <h4 className="font-bold mb-4">Suivez-Nous</h4>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white"><Facebook className="h-6 w-6" /></a>
-              <a href="#" className="text-gray-400 hover:text-white"><Twitter className="h-6 w-6" /></a>
-              <a href="#" className="text-gray-400 hover:text-white"><Instagram className="h-6 w-6" /></a>
-              <a href="#" className="text-gray-400 hover:text-white"><Youtube className="h-6 w-6" /></a>
-              <a href="#" className="text-gray-400 hover:text-white"><Linkedin className="h-6 w-6" /></a>
+              <a href="https://facebook.com/automecanik" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Facebook"><Facebook className="h-6 w-6" /></a>
+              <a href="https://twitter.com/automecanik" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Twitter"><Twitter className="h-6 w-6" /></a>
+              <a href="https://instagram.com/automecanik" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Instagram"><Instagram className="h-6 w-6" /></a>
+              <a href="https://youtube.com/automecanik" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Youtube"><Youtube className="h-6 w-6" /></a>
+              <a href="https://linkedin.com/company/automecanik" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Linkedin"><Linkedin className="h-6 w-6" /></a>
             </div>
           </div>
         </div>

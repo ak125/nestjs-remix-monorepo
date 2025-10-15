@@ -232,7 +232,7 @@ export default function ProductsRangesAdvanced() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Gestion des filtres
-  const handleSearch = (search: string) => {
+  const _handleSearch = (search: string) => {
     const newParams = new URLSearchParams(searchParams);
     if (search) {
       newParams.set('search', search);

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import  { type HeroProps, type TemplateBaseProps } from '../../types/layout';
+import  { type HeroProps, type TemplateBaseProps } from '../../../types/layout';
 
 interface HeroMinimalProps extends HeroProps, TemplateBaseProps {}
 
@@ -13,7 +13,6 @@ export const HeroMinimal: React.FC<HeroMinimalProps> = ({
   title,
   subtitle,
   action,
-  sectionId,
 }) => {
   return (
     <div className="hero-minimal">
