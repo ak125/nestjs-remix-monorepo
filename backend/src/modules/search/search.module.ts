@@ -20,7 +20,6 @@ import { SearchMonitoringService } from './services/search-monitoring.service';
 import { SearchCacheService } from './services/search-cache.service';
 import { SearchAnalyticsService } from './services/search-analytics.service';
 import { DatabaseAnalysisService } from './services/database-analysis.service';
-import { DatabaseTestService } from './services/database-test.service';
 import { VehicleNamingService } from './services/vehicle-naming.service';
 import { PiecesAnalysisService } from './services/pieces-analysis.service';
 import { SearchSuggestionService } from './services/search-suggestion.service';
@@ -62,7 +61,6 @@ import { DatabaseModule } from '../../database/database.module';
     SearchCacheService,
     SearchAnalyticsService,
     DatabaseAnalysisService,
-    DatabaseTestService,
     VehicleNamingService,
     PiecesAnalysisService,
     SearchSuggestionService,
