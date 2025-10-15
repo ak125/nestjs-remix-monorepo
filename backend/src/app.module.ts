@@ -20,7 +20,6 @@ import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy di
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule
-import { VehiclesZodTestModule } from './modules/vehicles/vehicles-zod-test.module'; // 🧪 TEST - Module test Zod !
 import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
@@ -90,7 +89,6 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
     // 🚗 MODULES VÉHICULES
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule
-    VehiclesZodTestModule, // 🧪 TEST - Module test Zod validation !
     ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !

@@ -17,7 +17,6 @@ import { PromoModule } from '../promo/promo.module';
 
 // Controllers
 import { CartController } from './cart.controller';
-import { TestSupabaseController } from './test-supabase.controller';
 
 // Services
 import { CartService } from './services/cart.service';
@@ -38,7 +37,6 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
   ],
   controllers: [
     CartController, // Controller principal
-    TestSupabaseController, // Controller de test debug
   ],
   providers: [
     // Services modernes

@@ -2,7 +2,6 @@ import { Controller, Post, Get, Logger } from '@nestjs/common';
 import { IndexationService } from '../services/indexation.service';
 import { SupabaseIndexationService } from '../services/supabase-indexation.service';
 import { DatabaseAnalysisService } from '../services/database-analysis.service';
-import { DatabaseTestService } from '../services/database-test.service';
 import { VehicleNamingService } from '../services/vehicle-naming.service';
 import { MeilisearchService } from '../services/meilisearch.service';
 
@@ -14,7 +13,6 @@ export class IndexationController {
     private readonly indexationService: IndexationService,
     private readonly supabaseIndexationService: SupabaseIndexationService,
     private readonly databaseAnalysisService: DatabaseAnalysisService,
-    private readonly databaseTestService: DatabaseTestService,
     private readonly vehicleNamingService: VehicleNamingService,
     private readonly meilisearchService: MeilisearchService,
   ) {}

@@ -9,7 +9,6 @@ import { EnhancedVehicleCatalogController } from './controllers/enhanced-vehicle
 import { CatalogGammeController } from './controllers/catalog-gamme.controller';
 import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
 import { GammeUnifiedController } from './controllers/gamme-unified.controller';
-import { ImageProcessingController } from './controllers/image-test.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
 import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
@@ -70,7 +69,6 @@ import { PricingService } from '../products/services/pricing.service';
     CatalogGammeController,
     FamilyGammeHierarchyController,
     GammeUnifiedController,
-    ImageProcessingController,
     EquipementiersController,
     VehicleFilteredCatalogV4Controller,
     PiecesCleanController,
