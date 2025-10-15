@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { z } from 'zod';
-import { SearchProductSchema } from '../../products/schemas/product.schemas';
 
 export class AdminProductFiltersDto {
   @ApiPropertyOptional({ description: 'Terme de recherche' })
@@ -119,16 +118,8 @@ export class AdminBulkOperationsDto {
   adminNotes?: string;
 }
 
-export const AdminProductFiltersSchema = SearchProductSchema.extend({
-  hasImage: z.boolean().optional(),
-  hasDescription: z.boolean().optional(),
-  lastModified: z.string().optional(),
-  createdBy: z.string().optional(),
-  modifiedBy: z.string().optional(),
-  missingPrice: z.boolean().optional(),
-  missingReference: z.boolean().optional(),
-  archived: z.boolean().optional(),
-});
+// AdminProductFiltersSchema supprimé - SearchProductSchema est un ZodEffects, pas un ZodObject
+// Impossible d'utiliser .extend() sur un ZodEffects. Si nécessaire, recréer le schéma manuellement.
 
 export const AdminBulkOperationsSchema = z.object({
   operation: z.enum([
@@ -158,5 +149,5 @@ export const AdminBulkOperationsSchema = z.object({
   adminNotes: z.string().optional(),
 });
 
-export type AdminProductFiltersType = z.infer<typeof AdminProductFiltersSchema>;
+// export type AdminProductFiltersType = z.infer<typeof AdminProductFiltersSchema>; // Supprimé - schéma non existant
 export type AdminBulkOperationsType = z.infer<typeof AdminBulkOperationsSchema>;
