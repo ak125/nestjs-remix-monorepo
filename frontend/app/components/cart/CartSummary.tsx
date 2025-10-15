@@ -2,7 +2,7 @@
  * 🛒 CART SUMMARY COMPONENT - Résumé du panier
  */
 
-import type { Cart } from "~/services/cart.server";
+import  { type Cart } from "~/services/cart.server";
 
 interface CartSummaryProps {
   cart: Cart;

@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { VehicleData } from "~/types/vehicle.types";
+import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================
 // 🎯 TYPES TYPESCRIPT STRICTS

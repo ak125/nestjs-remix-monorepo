@@ -1,11 +1,10 @@
-import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import  { type MetaFunction, type LoaderFunctionArgs , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { 
   Menu, X, Search, ShoppingCart, User, ChevronDown,
   Phone, Mail, Clock, MapPin
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import {
   HeroSection,
   FlashBanner,

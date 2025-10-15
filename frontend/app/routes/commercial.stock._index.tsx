@@ -9,15 +9,15 @@
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSearchParams, Form, Link } from '@remix-run/react';
-import { useState } from 'react';
 import { 
   Package, AlertTriangle, TrendingDown, TrendingUp,
   History, FileText, Download, Search
 } from "lucide-react";
+import { useState } from 'react';
+import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Badge } from "../components/ui/badge";
 
 interface StockItem {
   pri_piece_id: string;

@@ -12,11 +12,11 @@ import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { BrandLogoClient } from "../components/BrandLogoClient";
+import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
+import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
-import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 
 interface Brand {
   marque_id: number;

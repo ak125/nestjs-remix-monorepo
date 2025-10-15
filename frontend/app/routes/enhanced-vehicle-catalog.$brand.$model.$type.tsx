@@ -11,17 +11,17 @@ import {
 import { z } from "zod";
 
 // Composants vehicle
+import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+import { VehicleAnalytics } from "~/components/vehicle/VehicleAnalytics";
+import { VehicleGallery } from "~/components/vehicle/VehicleGallery";
 import { VehicleHeader } from "~/components/vehicle/VehicleHeader";
 import { VehicleInfo } from "~/components/vehicle/VehicleInfo";
-import { VehicleGallery } from "~/components/vehicle/VehicleGallery";
 import { VehiclePartsGrid } from "~/components/vehicle/VehiclePartsGrid";
-import { VehicleAnalytics } from "~/components/vehicle/VehicleAnalytics";
 
 // Composants UI
-import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
 
 // Types
-import type { VehicleData } from "~/types/vehicle.types";
+import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================
 // 🔍 VALIDATION SCHEMA

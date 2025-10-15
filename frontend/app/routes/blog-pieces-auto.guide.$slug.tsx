@@ -26,11 +26,11 @@ import {
 } from 'lucide-react';
 
 // UI Components
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
-import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
 // Types
 interface GuideSection {

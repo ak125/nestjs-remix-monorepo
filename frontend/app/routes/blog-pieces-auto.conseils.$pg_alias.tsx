@@ -30,8 +30,7 @@ import {
 import { useState, useEffect } from "react";
 
 // UI Components
-import { Badge } from "../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
@@ -40,10 +39,11 @@ import CTAButton from "~/components/blog/CTAButton";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
-import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
 
 // Analytics
 import { trackArticleView, trackReadingTime, trackShareArticle, trackBookmark } from "~/utils/analytics";
+import { Badge } from "../components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
 // Types
 interface CompatibleVehicle {

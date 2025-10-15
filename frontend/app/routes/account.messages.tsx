@@ -3,11 +3,11 @@ import { useLoaderData, Link } from "@remix-run/react";
 import { 
   Mail, Clock, AlertCircle, MessageCircle, Bell, Archive, Search, Send
 } from "lucide-react";
+import { requireUserWithRedirect } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { requireUserWithRedirect } from "../auth/unified.server";
 import { formatRelativeTime } from "../utils/date";
 
 // Interface pour les messages (basée sur l'API backend)

@@ -9,7 +9,6 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { 
   Mail, 
   Phone, 
@@ -21,6 +20,7 @@ import {
   ArrowRight,
   Heart
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface FooterData {
   company: {

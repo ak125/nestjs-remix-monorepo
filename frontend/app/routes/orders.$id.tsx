@@ -6,9 +6,9 @@
 import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigate } from "@remix-run/react";
 import { ArrowLeft, Package, MapPin, CreditCard, FileText, User, Phone, Mail } from "lucide-react";
+import { OrderLineActions } from "~/components/admin/OrderLineActions";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { OrderLineActions } from "~/components/admin/OrderLineActions";
 
 /**
  * 🎯 FORMAT BDD SUPABASE - Format legacy consolidé

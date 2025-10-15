@@ -3,7 +3,6 @@
  * Gestion avancée de 59,137 utilisateurs avec fonctionnalités étendues
  */
 
-import { useState } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher } from '@remix-run/react';
 import { 
@@ -11,6 +10,7 @@ import {
   Mail, MapPin, Building, Award, Filter, Download, RefreshCw,
   UserCheck, UserX, Star
 } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';

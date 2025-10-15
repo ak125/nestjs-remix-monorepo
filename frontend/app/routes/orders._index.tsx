@@ -4,7 +4,6 @@
  * Conserve toutes les améliorations : emails, badges REF, affichage références
  */
 
-import { useState } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, useNavigate, useFetcher, Form } from '@remix-run/react';
 import { 
@@ -12,11 +11,12 @@ import {
   DollarSign, TrendingUp, AlertCircle, Filter, Download, RefreshCw, Mail, Phone,
   CheckCircle, Clock, Truck, XCircle, Users, MapPin, Info, Send, Ban, Shield
 } from 'lucide-react';
+import { useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
-import toast, { Toaster } from 'react-hot-toast';
 import { requireUser } from '../auth/unified.server';
 import { getUserPermissions, getUserRole, type UserPermissions } from '../utils/permissions';
 

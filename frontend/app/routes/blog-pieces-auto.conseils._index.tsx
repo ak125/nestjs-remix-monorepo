@@ -1,13 +1,13 @@
 // app/routes/blog-pieces-auto.conseils._index.tsx
-import * as React from "react";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag, Sparkles, Clock, Wrench, CheckCircle2 } from "lucide-react";
+import * as React from "react";
+import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
 /* ===========================
    Types

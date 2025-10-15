@@ -4,8 +4,8 @@
  */
 
 import { useLocation } from '@remix-run/react'
-import { useCallback, useEffect, useState } from 'react'
 import { Brain, Sparkles, Lightbulb, TrendingUp } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import * as React from "react"
 
 interface AISuggestion {

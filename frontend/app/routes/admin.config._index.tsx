@@ -4,7 +4,6 @@
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import { useState, useEffect } from "react";
 import { 
   Settings, 
   Database, 
@@ -21,6 +20,7 @@ import {
   Copy,
   Search
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { requireAdmin } from "~/auth/unified.server";
 
 // Types simplifiés pour les configurations

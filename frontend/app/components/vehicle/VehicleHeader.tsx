@@ -1,4 +1,4 @@
-import type { VehicleData } from "~/types/vehicle.types";
+import  { type VehicleData } from "~/types/vehicle.types";
 
 interface VehicleHeaderProps {
   vehicle: VehicleData;

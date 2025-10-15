@@ -4,7 +4,7 @@
 import { Link } from '@remix-run/react';
 import { ChevronLeft, ChevronRight, Car, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { VehicleBrand } from '../../services/api/enhanced-vehicle.api';
+import  { type VehicleBrand } from '../../services/api/enhanced-vehicle.api';
 
 interface BrandCarouselProps {
   brands: VehicleBrand[];

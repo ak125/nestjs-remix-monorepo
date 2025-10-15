@@ -2,8 +2,8 @@
 // 🚗 Sélecteur de véhicule avancé - Inspiré des améliorations PHP découvertes
 // Version 2.0 - Cascade Marque→Année→Modèle→Type + Recherche Type Mine
 
-import { useState, useEffect, useRef } from 'react';
 import { Search, ChevronDown, Car, Calendar, Cog, FileText } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 
 // 🏗️ Interfaces TypeScript pour les données véhicules
 interface Brand {

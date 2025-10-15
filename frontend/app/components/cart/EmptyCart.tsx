@@ -2,8 +2,8 @@
  * 🛒 EMPTY CART COMPONENT - Affichage panier vide
  */
 
-import { ShoppingBag } from "lucide-react";
 import { Link } from "@remix-run/react";
+import { ShoppingBag } from "lucide-react";
 
 export function EmptyCart() {
   return (

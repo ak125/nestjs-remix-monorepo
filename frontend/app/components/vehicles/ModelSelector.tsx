@@ -1,7 +1,7 @@
 import { useFetcher } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
+import  { type VehicleModel, type ModelSelectorProps } from "../../types/vehicle.types";
 import { Combobox, type ComboboxItem } from "../ui/combobox";
-import type { VehicleModel, ModelSelectorProps } from "../../types/vehicle.types";
 
 // Garder la compatibilité avec l'ancienne interface Model
 export type Model = VehicleModel;

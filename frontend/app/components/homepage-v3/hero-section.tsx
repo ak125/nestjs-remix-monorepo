@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { ArrowRight, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface HeroSectionProps {
   stats: {
