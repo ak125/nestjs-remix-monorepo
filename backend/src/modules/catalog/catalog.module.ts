@@ -13,7 +13,7 @@ import { EquipementiersController } from './controllers/equipementiers.controlle
 import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
-import { PiecesRealController } from '../../pieces/pieces-real.controller';
+// PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
 // ========================================
 // 🔧 SERVICES PRINCIPAUX - Logique métier

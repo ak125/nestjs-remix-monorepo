@@ -64,7 +64,7 @@ export class SessionService extends SupabaseBaseService {
    */
   async getSession(sessionId: string): Promise<SessionData | null> {
     try {
-      const { data, error } = await this.supabaseService
+      const { data, error } = await this.supabase
         .from(this.SESSION_TABLE)
         .select('*')
         .eq('session_id', sessionId)
@@ -95,7 +95,7 @@ export class SessionService extends SupabaseBaseService {
    */
   async updateSessionActivity(sessionId: string): Promise<boolean> {
     try {
-      const { error } = await this.supabaseService
+      const { error } = await this.supabase
         .from(this.SESSION_TABLE)
         .update({
           last_activity: new Date().toISOString(),
@@ -115,7 +115,7 @@ export class SessionService extends SupabaseBaseService {
    */
   async destroySession(sessionId: string): Promise<boolean> {
     try {
-      const { error } = await this.supabaseService
+      const { error } = await this.supabase
         .from(this.SESSION_TABLE)
         .delete()
         .eq('session_id', sessionId);
@@ -136,18 +136,16 @@ export class SessionService extends SupabaseBaseService {
    */
   async cleanExpiredSessions(): Promise<number> {
     try {
-      const { data, error } = await this.supabaseService
+      const { error } = await this.supabase
         .from(this.SESSION_TABLE)
         .delete()
         .lt('expires_at', new Date().toISOString());
 
-      const deletedCount = Array.isArray(data) ? data.length : 0;
-
       if (!error) {
-        this.logger.log(`${deletedCount} sessions expirées nettoyées`);
+        this.logger.log('Sessions expirées nettoyées');
       }
 
-      return deletedCount;
+      return 0;
     } catch (error) {
       this.logger.error(`Erreur nettoyage sessions: ${error}`);
       return 0;
@@ -159,7 +157,7 @@ export class SessionService extends SupabaseBaseService {
    */
   async getUserActiveSessions(userId: string): Promise<SessionData[]> {
     try {
-      const { data, error } = await this.supabaseService
+      const { data, error } = await this.supabase
         .from(this.SESSION_TABLE)
         .select('*')
         .eq('user_id', userId)
@@ -203,7 +201,7 @@ export class SessionService extends SupabaseBaseService {
     try {
       const newExpiryTime = new Date(Date.now() + additionalTime);
 
-      const { error } = await this.supabaseService
+      const { error } = await this.supabase
         .from(this.SESSION_TABLE)
         .update({
           expires_at: newExpiryTime.toISOString(),

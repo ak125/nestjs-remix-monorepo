@@ -6,7 +6,7 @@ import { SearchController } from './controllers/search.controller';
 import { SearchEnhancedController } from './controllers/search-enhanced.controller';
 import { SearchEnhancedExistingController } from './controllers/search-enhanced-existing.controller';
 import { SearchDebugController } from './controllers/search-debug.controller';
-import { IndexationController } from './controllers/indexation.controller';
+// IndexationController supprimé - 2390 lignes inutilisées, aucune utilisation frontend
 import { PiecesController } from './controllers/pieces.controller';
 
 // Core Services
@@ -46,7 +46,7 @@ import { DatabaseModule } from '../../database/database.module';
     SearchEnhancedController,
     SearchEnhancedExistingController,
     SearchDebugController,
-    IndexationController,
+    // IndexationController supprimé - inutilisé
     PiecesController,
   ],
   providers: [
