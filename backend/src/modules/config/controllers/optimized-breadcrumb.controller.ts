@@ -1,15 +1,18 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Param, 
-  Body, 
-  Query, 
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
   Logger,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { OptimizedBreadcrumbService, BreadcrumbItem } from '../services/optimized-breadcrumb.service';
+import {
+  OptimizedBreadcrumbService,
+  BreadcrumbItem,
+} from '../services/optimized-breadcrumb.service';
 
 interface UpdateBreadcrumbDto {
   breadcrumbs: BreadcrumbItem[];
@@ -19,9 +22,7 @@ interface UpdateBreadcrumbDto {
 export class OptimizedBreadcrumbController {
   private readonly logger = new Logger(OptimizedBreadcrumbController.name);
 
-  constructor(
-    private readonly breadcrumbService: OptimizedBreadcrumbService,
-  ) {}
+  constructor(private readonly breadcrumbService: OptimizedBreadcrumbService) {}
 
   /**
    * Récupérer le fil d'Ariane d'une page
@@ -34,8 +35,11 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; data: BreadcrumbItem[] }> {
     try {
       this.logger.log(`Récupération breadcrumb pour: ${path}`);
-      
-      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(path, lang);
+
+      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(
+        path,
+        lang,
+      );
 
       return {
         success: true,
@@ -44,7 +48,7 @@ export class OptimizedBreadcrumbController {
     } catch (error) {
       this.logger.error(`Erreur récupération breadcrumb pour ${path}:`, error);
       throw new HttpException(
-        'Erreur lors de la récupération du fil d\'Ariane',
+        "Erreur lors de la récupération du fil d'Ariane",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -61,16 +65,23 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log(`Génération schema breadcrumb pour: ${path}`);
-      
-      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(path, lang);
-      const schema = this.breadcrumbService.generateBreadcrumbSchema(breadcrumbs);
+
+      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(
+        path,
+        lang,
+      );
+      const schema =
+        this.breadcrumbService.generateBreadcrumbSchema(breadcrumbs);
 
       return {
         success: true,
         data: schema,
       };
     } catch (error) {
-      this.logger.error(`Erreur génération schema breadcrumb pour ${path}:`, error);
+      this.logger.error(
+        `Erreur génération schema breadcrumb pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la génération du schema breadcrumb',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -89,17 +100,20 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`Mise à jour breadcrumb pour: ${path}`);
-      
-      await this.breadcrumbService.updateBreadcrumb(path, updateData.breadcrumbs);
+
+      await this.breadcrumbService.updateBreadcrumb(
+        path,
+        updateData.breadcrumbs,
+      );
 
       return {
         success: true,
-        message: 'Fil d\'Ariane mis à jour avec succès',
+        message: "Fil d'Ariane mis à jour avec succès",
       };
     } catch (error) {
       this.logger.error(`Erreur mise à jour breadcrumb pour ${path}:`, error);
       throw new HttpException(
-        'Erreur lors de la mise à jour du fil d\'Ariane',
+        "Erreur lors de la mise à jour du fil d'Ariane",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -115,7 +129,7 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log(`Récupération configuration breadcrumb`);
-      
+
       const config = await this.breadcrumbService.getBreadcrumbConfig(lang);
 
       return {
@@ -140,8 +154,10 @@ export class OptimizedBreadcrumbController {
     @Body('path') path?: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      this.logger.log(`Invalidation cache breadcrumb${path ? ` pour: ${path}` : ''}`);
-      
+      this.logger.log(
+        `Invalidation cache breadcrumb${path ? ` pour: ${path}` : ''}`,
+      );
+
       await this.breadcrumbService.clearCache(path);
 
       return {
@@ -151,7 +167,7 @@ export class OptimizedBreadcrumbController {
     } catch (error) {
       this.logger.error('Erreur invalidation cache breadcrumb:', error);
       throw new HttpException(
-        'Erreur lors de l\'invalidation du cache',
+        "Erreur lors de l'invalidation du cache",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

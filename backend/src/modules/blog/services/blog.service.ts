@@ -25,7 +25,8 @@ import {
 @Injectable()
 export class BlogService {
   private readonly logger = new Logger(BlogService.name);
-  private readonly SUPABASE_URL = process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
+  private readonly SUPABASE_URL =
+    process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co';
   private readonly CDN_BASE_URL = `${this.SUPABASE_URL}/storage/v1/object/public/uploads`;
 
   constructor(
@@ -38,28 +39,30 @@ export class BlogService {
    * 🖼️ Construire l'URL CDN complète pour une image
    */
   private buildImageUrl(
-    filename: string | null, 
-    folder: string, 
-    marqueAlias?: string
+    filename: string | null,
+    folder: string,
+    marqueAlias?: string,
   ): string | null {
     // 🔍 DEBUG avec LOG (pas debug)
-    this.logger.log(`   🖼️  buildImageUrl() appelé: filename="${filename}", folder="${folder}", marque="${marqueAlias || 'N/A'}"`);
-    
+    this.logger.log(
+      `   🖼️  buildImageUrl() appelé: filename="${filename}", folder="${folder}", marque="${marqueAlias || 'N/A'}"`,
+    );
+
     if (!filename) {
       this.logger.log(`   🖼️  → Retourne NULL (filename vide)`);
       return null;
     }
-    
+
     if (filename.startsWith('http://') || filename.startsWith('https://')) {
       this.logger.log(`   🖼️  → Retourne tel quel (déjà URL): ${filename}`);
       return filename;
     }
-    
+
     // Si marqueAlias fourni, utiliser structure marques-modeles/{marque}/{modele}.webp
-    const url = marqueAlias 
+    const url = marqueAlias
       ? `${this.CDN_BASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${filename}`
       : `${this.CDN_BASE_URL}/${folder}/${filename}`;
-    
+
     this.logger.log(`   🖼️  → URL construite: ${url}`);
     return url;
   }
@@ -107,8 +110,6 @@ export class BlogService {
       throw error;
     }
   }
-
-
 
   /**
    * 📝 Créer un nouvel article - VERSION AMÉLIORÉE
@@ -299,15 +300,18 @@ export class BlogService {
       // Ajouter le pg_alias et pg_id qu'on connaît déjà depuis la gamme
       article.pg_alias = pg_alias;
       article.pg_id = gammeData.pg_id;
-      
+
       // Ajouter l'image featured basée sur le pg_alias
       article.featuredImage = pg_alias
-        ? this.buildImageUrl(`${pg_alias}.webp`, 'articles/gammes-produits/catalogue')
+        ? this.buildImageUrl(
+            `${pg_alias}.webp`,
+            'articles/gammes-produits/catalogue',
+          )
         : null;
-      
+
       // Charger les articles croisés (related articles)
       article.relatedArticles = await this.getRelatedArticles(data.ba_id);
-      
+
       // Charger les véhicules compatibles avec cette gamme de pièce
       // Limite: 1000 véhicules (quasi illimité)
       article.compatibleVehicles = await this.getCompatibleVehicles(
@@ -315,7 +319,7 @@ export class BlogService {
         1000,
         pg_alias,
       );
-      
+
       return article;
     } catch (error) {
       this.logger.error(
@@ -338,13 +342,17 @@ export class BlogService {
         .eq('bac_ba_id', ba_id);
 
       if (!crossData || crossData.length === 0) {
-        this.logger.log(`   ℹ️  Aucun article croisé trouvé pour BA_ID: ${ba_id}`);
+        this.logger.log(
+          `   ℹ️  Aucun article croisé trouvé pour BA_ID: ${ba_id}`,
+        );
         return [];
       }
 
       // Récupérer les IDs des articles croisés
       const crossIds = crossData.map((c) => c.bac_ba_id_cross);
-      this.logger.log(`   ✅ ${crossIds.length} articles croisés trouvés (IDs: ${crossIds.join(', ')})`);
+      this.logger.log(
+        `   ✅ ${crossIds.length} articles croisés trouvés (IDs: ${crossIds.join(', ')})`,
+      );
 
       // Charger les articles complets
       const { data: articles } = await this.supabaseService.client
@@ -360,7 +368,9 @@ export class BlogService {
         this.transformAdviceToArticle(item),
       );
       const enriched = await this.enrichWithPgAlias(transformed);
-      this.logger.log(`   ✅ Articles croisés enrichis: ${enriched.map(a => a.pg_alias || a.slug).join(', ')}`);
+      this.logger.log(
+        `   ✅ Articles croisés enrichis: ${enriched.map((a) => a.pg_alias || a.slug).join(', ')}`,
+      );
       return enriched;
     } catch (error) {
       this.logger.error(
@@ -397,7 +407,7 @@ export class BlogService {
       // - Exemple: FIAT PUNTO, VW GOLF (grand public) avant AUDI A6, BMW (premium)
       let crossData = null;
       let crossError = null;
-      
+
       for (const level of [1, 2, 3, 4]) {
         const result = await this.supabaseService.client
           .from('__cross_gamme_car_new')
@@ -406,11 +416,13 @@ export class BlogService {
           .eq('cgc_level', level)
           .order('cgc_id', { ascending: true }) // 🔥 TEST: ID ASC = Plus anciens/premiers ajoutés
           .limit(limit);
-        
+
         if (result.data && result.data.length > 0) {
           crossData = result.data;
           crossError = result.error;
-          this.logger.log(`   ℹ️  Utilisation niveau ${level} (${result.data.length} véhicules trouvés)`);
+          this.logger.log(
+            `   ℹ️  Utilisation niveau ${level} (${result.data.length} véhicules trouvés)`,
+          );
           break;
         }
       }
@@ -428,7 +440,9 @@ export class BlogService {
       }
 
       // ⚠️  IMPORTANT: cgc_type_id est TEXT, mais type_id est INTEGER
-      const typeIds = crossData.map((item) => parseInt(item.cgc_type_id, 10)).filter((id) => !isNaN(id));
+      const typeIds = crossData
+        .map((item) => parseInt(item.cgc_type_id, 10))
+        .filter((id) => !isNaN(id));
       this.logger.log(
         `   📋 ${typeIds.length} TYPE_ID trouvés: ${typeIds.slice(0, 5).join(', ')}...`,
       );
@@ -454,31 +468,43 @@ export class BlogService {
         return [];
       }
 
-      this.logger.log(`   ✅ ${typesData.length} types chargés depuis auto_type`);
+      this.logger.log(
+        `   ✅ ${typesData.length} types chargés depuis auto_type`,
+      );
 
       // Étape 3 : Charger les modèles (AUTO_MODELE)
       const modeleIds = [
         ...new Set(typesData.map((t) => t.type_modele_id).filter((id) => id)),
       ];
-      this.logger.log(`   📋 ${modeleIds.length} MODELE_ID uniques: ${modeleIds.slice(0, 5).join(', ')}...`);
-      
-      const { data: modelesData, error: modelesError } = await this.supabaseService.client
-        .from('auto_modele')
-        .select('*')
-        .in('modele_id', modeleIds)
-        .eq('modele_display', 1);
+      this.logger.log(
+        `   📋 ${modeleIds.length} MODELE_ID uniques: ${modeleIds.slice(0, 5).join(', ')}...`,
+      );
+
+      const { data: modelesData, error: modelesError } =
+        await this.supabaseService.client
+          .from('auto_modele')
+          .select('*')
+          .in('modele_id', modeleIds)
+          .eq('modele_display', 1);
 
       if (modelesError) {
         this.logger.error(`   ❌ Erreur auto_modele:`, modelesError);
         return [];
       }
 
-      this.logger.log(`   ✅ ${modelesData?.length || 0} modèles chargés depuis auto_modele`);
-      
+      this.logger.log(
+        `   ✅ ${modelesData?.length || 0} modèles chargés depuis auto_modele`,
+      );
+
       // 🔍 DEBUG: Afficher les modele_ids réellement chargés
-      const loadedModeleIds = modelesData?.map(m => m.modele_id).slice(0, 5) || [];
-      this.logger.log(`   🔍 Modèles chargés (IDs réels): ${loadedModeleIds.join(', ')}...`);
-      this.logger.log(`   🔍 Modèles recherchés (type_modele_id): ${modeleIds.slice(0, 5).join(', ')}...`);
+      const loadedModeleIds =
+        modelesData?.map((m) => m.modele_id).slice(0, 5) || [];
+      this.logger.log(
+        `   🔍 Modèles chargés (IDs réels): ${loadedModeleIds.join(', ')}...`,
+      );
+      this.logger.log(
+        `   🔍 Modèles recherchés (type_modele_id): ${modeleIds.slice(0, 5).join(', ')}...`,
+      );
 
       if (!modelesData || modelesData.length === 0) {
         this.logger.warn(`   ⚠️  Aucun modèle trouvé - arrêt assemblage`);
@@ -491,19 +517,24 @@ export class BlogService {
           modelesData.map((m) => m.modele_marque_id).filter((id) => id),
         ),
       ];
-      this.logger.log(`   📋 ${marqueIds.length} MARQUE_ID uniques: ${marqueIds.slice(0, 5).join(', ')}...`);
-      const { data: marquesData, error: marquesError } = await this.supabaseService.client
-        .from('auto_marque')
-        .select('*')
-        .in('marque_id', marqueIds)
-        .eq('marque_display', 1);
+      this.logger.log(
+        `   📋 ${marqueIds.length} MARQUE_ID uniques: ${marqueIds.slice(0, 5).join(', ')}...`,
+      );
+      const { data: marquesData, error: marquesError } =
+        await this.supabaseService.client
+          .from('auto_marque')
+          .select('*')
+          .in('marque_id', marqueIds)
+          .eq('marque_display', 1);
 
       if (marquesError) {
         this.logger.error(`   ❌ Erreur auto_marque:`, marquesError);
         return [];
       }
 
-      this.logger.log(`   ✅ ${marquesData?.length || 0} marques chargées depuis auto_marque`);
+      this.logger.log(
+        `   ✅ ${marquesData?.length || 0} marques chargées depuis auto_marque`,
+      );
 
       if (!marquesData || marquesData.length === 0) {
         this.logger.warn(`   ⚠️  Aucune marque trouvée - arrêt assemblage`);
@@ -514,30 +545,41 @@ export class BlogService {
       const modelesMap = new Map(modelesData?.map((m) => [m.modele_id, m]));
       const marquesMap = new Map(marquesData?.map((m) => [m.marque_id, m]));
 
-      this.logger.log(`   🗺️  Maps créées: ${modelesMap.size} modèles, ${marquesMap.size} marques`);
+      this.logger.log(
+        `   🗺️  Maps créées: ${modelesMap.size} modèles, ${marquesMap.size} marques`,
+      );
 
       // 🔍 DEBUG: Vérifier les types de données
       const firstType = typesData[0];
       const firstModele = modelesData?.[0];
-      this.logger.log(`   🔍 Type de type_modele_id: ${typeof firstType?.type_modele_id} (valeur: ${firstType?.type_modele_id})`);
-      this.logger.log(`   🔍 Type de modele_id: ${typeof firstModele?.modele_id} (valeur: ${firstModele?.modele_id})`);
+      this.logger.log(
+        `   🔍 Type de type_modele_id: ${typeof firstType?.type_modele_id} (valeur: ${firstType?.type_modele_id})`,
+      );
+      this.logger.log(
+        `   🔍 Type de modele_id: ${typeof firstModele?.modele_id} (valeur: ${firstModele?.modele_id})`,
+      );
 
       // Étape 5 : Assembler les données
       let skipped = 0;
       const vehicles = typesData
         .map((type) => {
           // ⚠️  IMPORTANT: Convertir type_modele_id (string) en number pour lookup
-          const modeleId = typeof type.type_modele_id === 'string' 
-            ? parseInt(type.type_modele_id, 10) 
-            : type.type_modele_id;
-          
+          const modeleId =
+            typeof type.type_modele_id === 'string'
+              ? parseInt(type.type_modele_id, 10)
+              : type.type_modele_id;
+
           const modele = modelesMap.get(modeleId);
-          const marque = modele ? marquesMap.get(modele.modele_marque_id) : null;
+          const marque = modele
+            ? marquesMap.get(modele.modele_marque_id)
+            : null;
 
           if (!modele || !marque) {
             skipped++;
             if (skipped <= 3) {
-              this.logger.warn(`   ⚠️  Type ${type.type_id} skipped: modele=${!!modele}, marque=${!!marque}, modeleId=${modeleId}`);
+              this.logger.warn(
+                `   ⚠️  Type ${type.type_id} skipped: modele=${!!modele}, marque=${!!marque}, modeleId=${modeleId}`,
+              );
             }
             return null;
           }
@@ -552,7 +594,9 @@ export class BlogService {
 
           // 🔍 DEBUG: Logger les valeurs brutes de la DB (premier véhicule seulement)
           if (!modele._logged) {
-            this.logger.debug(`   🖼️  DB RAW - ${marque.marque_name}: marque_logo="${marque.marque_logo}", modele_pic="${modele.modele_pic}"`);
+            this.logger.debug(
+              `   🖼️  DB RAW - ${marque.marque_name}: marque_logo="${marque.marque_logo}", modele_pic="${modele.modele_pic}"`,
+            );
             modele._logged = true;
           }
 
@@ -590,7 +634,9 @@ export class BlogService {
         })
         .filter((v) => v !== null);
 
-      this.logger.log(`   ✅ ${vehicles.length} véhicules compatibles assemblés`);
+      this.logger.log(
+        `   ✅ ${vehicles.length} véhicules compatibles assemblés`,
+      );
       return vehicles;
     } catch (error) {
       this.logger.error(
@@ -872,7 +918,8 @@ export class BlogService {
         .order('ba_visit', { ascending: false })
         .limit(limit);
 
-      const articles = data?.map((item) => this.transformAdviceToArticle(item)) || [];
+      const articles =
+        data?.map((item) => this.transformAdviceToArticle(item)) || [];
       return await this.enrichWithPgAlias(articles);
     } catch (error) {
       this.logger.error(
@@ -897,7 +944,7 @@ export class BlogService {
 
     // Récupérer les IDs des H2 pour charger leurs H3
     const h2Ids = h2Sections?.map((h2: any) => h2.ba2_id) || [];
-    
+
     // Charger les H3 qui appartiennent à ces H2
     let h3Sections: any[] = [];
     if (h2Ids.length > 0) {
@@ -911,7 +958,7 @@ export class BlogService {
 
     // Construire les sections avec structure hiérarchique
     const sections: BlogSection[] = [];
-    
+
     // Traiter chaque H2
     h2Sections?.forEach((h2: any) => {
       sections.push({
@@ -923,7 +970,7 @@ export class BlogService {
         cta_link: h2.ba2_cta_link || null,
         wall: h2.ba2_wall || null,
       });
-      
+
       // Ajouter les H3 qui appartiennent à ce H2
       h3Sections?.forEach((h3: any) => {
         if (h3.ba3_ba2_id === h2.ba2_id) {
@@ -959,8 +1006,11 @@ export class BlogService {
       viewsCount: parseInt(advice.ba_visit) || 0,
       categorySlug: advice.pg_alias,
       vehicles: [],
-      featuredImage: advice.pg_alias 
-        ? this.buildImageUrl(`${advice.pg_alias}.webp`, 'articles/gammes-produits/catalogue')
+      featuredImage: advice.pg_alias
+        ? this.buildImageUrl(
+            `${advice.pg_alias}.webp`,
+            'articles/gammes-produits/catalogue',
+          )
         : null,
       sections, // Sections chargées depuis les tables
       legacy_id: advice.ba_id,
@@ -1006,7 +1056,7 @@ export class BlogService {
       },
       ba_pg_id: advice.ba_pg_id, // Garder temporairement pour enrichWithPgAlias()
     };
-    
+
     return article;
   }
 
@@ -1271,16 +1321,18 @@ export class BlogService {
   /**
    * � Enrichir les articles avec pg_alias depuis pieces_gamme
    */
-  private async enrichWithPgAlias(articles: BlogArticle[]): Promise<BlogArticle[]> {
+  private async enrichWithPgAlias(
+    articles: BlogArticle[],
+  ): Promise<BlogArticle[]> {
     if (!articles || articles.length === 0) return articles;
 
     try {
       // Récupérer tous les ba_pg_id uniques
-      const pgIds = [...new Set(
-        articles
-          .map(a => (a as any).ba_pg_id)
-          .filter(id => id != null)
-      )];
+      const pgIds = [
+        ...new Set(
+          articles.map((a) => (a as any).ba_pg_id).filter((id) => id != null),
+        ),
+      ];
 
       if (pgIds.length === 0) return articles;
 
@@ -1292,13 +1344,13 @@ export class BlogService {
 
       // Créer un map pour accès rapide
       const pgAliasMap = new Map();
-      gammes?.forEach(g => pgAliasMap.set(g.pg_id, g.pg_alias));
+      gammes?.forEach((g) => pgAliasMap.set(g.pg_id, g.pg_alias));
 
       // Enrichir chaque article
-      return articles.map(article => {
+      return articles.map((article) => {
         const ba_pg_id = (article as any).ba_pg_id;
         const pg_id = ba_pg_id ? parseInt(ba_pg_id, 10) : null;
-        
+
         return {
           ...article,
           pg_id: pg_id, // Convertir ba_pg_id (string) en pg_id (number) pour l'interface
@@ -1396,19 +1448,21 @@ export class BlogService {
    * 👀 Incrémenter les vues d'un article
    * POST /api/blog/article/:slug/increment-views
    */
-  async incrementArticleViews(slug: string): Promise<{ success: boolean; views: number }> {
+  async incrementArticleViews(
+    slug: string,
+  ): Promise<{ success: boolean; views: number }> {
     try {
       this.logger.log(`👀 Incrémentation vues pour: ${slug}`);
 
       // 1. Trouver l'article pour identifier sa table et son ID
       const article = await this.getArticleBySlug(slug);
-      
+
       if (!article) {
         throw new Error(`Article non trouvé: ${slug}`);
       }
 
       const { legacy_table, legacy_id } = article;
-      
+
       if (!legacy_table || !legacy_id) {
         throw new Error(`Article sans legacy_table/legacy_id: ${slug}`);
       }
@@ -1416,7 +1470,7 @@ export class BlogService {
       // 2. Déterminer le champ de compteur selon la table
       let viewField = '';
       let idField = '';
-      
+
       switch (legacy_table) {
         case '__blog_advice':
           viewField = 'ba_visit';
@@ -1488,7 +1542,7 @@ export class BlogService {
 
       // 1. Récupérer l'article actuel
       const currentArticle = await this.getArticleBySlug(slug);
-      
+
       if (!currentArticle) {
         return { previous: null, next: null };
       }
@@ -1514,7 +1568,9 @@ export class BlogService {
       }
 
       // 3. Construire la requête de base
-      let baseQuery = this.supabaseService.client.from(legacy_table).select('*');
+      let baseQuery = this.supabaseService.client
+        .from(legacy_table)
+        .select('*');
 
       // Filtrer par gamme si disponible (pour advice)
       if (pgIdField && (currentArticle as any).ba_pg_id) {
@@ -1523,7 +1579,12 @@ export class BlogService {
 
       // 4. Article précédent (date < current, ORDER BY date DESC, LIMIT 1)
       const { data: previousData } = await baseQuery
-        .lt(dateField, (currentArticle as any)[dateField.replace('ba_', '').replace('bg_', '')] || currentArticle.publishedAt)
+        .lt(
+          dateField,
+          (currentArticle as any)[
+            dateField.replace('ba_', '').replace('bg_', '')
+          ] || currentArticle.publishedAt,
+        )
         .order(dateField, { ascending: false })
         .limit(1)
         .single();
@@ -1535,7 +1596,12 @@ export class BlogService {
       }
 
       const { data: nextData } = await baseQuery
-        .gt(dateField, (currentArticle as any)[dateField.replace('ba_', '').replace('bg_', '')] || currentArticle.publishedAt)
+        .gt(
+          dateField,
+          (currentArticle as any)[
+            dateField.replace('ba_', '').replace('bg_', '')
+          ] || currentArticle.publishedAt,
+        )
         .order(dateField, { ascending: true })
         .limit(1)
         .single();
@@ -1558,9 +1624,10 @@ export class BlogService {
       );
 
       return { previous, next };
-
     } catch (error) {
-      this.logger.error(`❌ Erreur articles adjacents: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur articles adjacents: ${(error as Error).message}`,
+      );
       return { previous: null, next: null };
     }
   }
@@ -1592,9 +1659,10 @@ export class BlogService {
 
       this.logger.log(`✅ ${data.length} switches récupérés`);
       return data;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur getSeoItemSwitches: ${(error as Error).message}`);
+      this.logger.error(
+        `❌ Erreur getSeoItemSwitches: ${(error as Error).message}`,
+      );
       return [];
     }
   }
@@ -1725,9 +1793,7 @@ export class BlogService {
         message: `${h3Samples.length} H3 trouvés`,
         h3_samples: h3Samples,
         h2_parents: h2Data,
-        articles_with_h3: [
-          ...new Set(h2Data?.map((h2) => h2.ba2_ba_id) || []),
-        ],
+        articles_with_h3: [...new Set(h2Data?.map((h2) => h2.ba2_ba_id) || [])],
       };
     } catch (error) {
       this.logger.error(

@@ -1,9 +1,9 @@
 /**
  * 🛡️ EXEMPLE D'UTILISATION - PRODUCT VALIDATION V4 ULTIMATE
- * 
+ *
  * Démonstration des améliorations apportées par la méthodologie
  * "Vérifier existant avant et utiliser le meilleur et améliorer"
- * 
+ *
  * @version 4.0.0
  * @package @monorepo/catalog
  */
@@ -16,7 +16,7 @@ export class ProductValidationExampleService {
   private readonly logger = new Logger(ProductValidationExampleService.name);
 
   constructor(
-    private readonly validationService: ProductValidationV4UltimateService
+    private readonly validationService: ProductValidationV4UltimateService,
   ) {}
 
   /**
@@ -28,7 +28,7 @@ export class ProductValidationExampleService {
     // ====================================
     // 🔍 CE QUI A ÉTÉ ANALYSÉ (EXISTANT)
     // ====================================
-    
+
     console.log(`
     🔍 EXISTANT IDENTIFIÉ :
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -53,7 +53,7 @@ export class ProductValidationExampleService {
     // ====================================
     // ✨ CE QUI A ÉTÉ SÉLECTIONNÉ (MEILLEUR)
     // ====================================
-    
+
     console.log(`
     ✨ MEILLEUR IDENTIFIÉ :
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -68,7 +68,7 @@ export class ProductValidationExampleService {
     // ====================================
     // 🚀 CE QUI A ÉTÉ AMÉLIORÉ (ENHANCED)
     // ====================================
-    
+
     console.log(`
     🚀 AMÉLIORATIONS IMPLÉMENTÉES (+300% de robustesse) :
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -86,7 +86,7 @@ export class ProductValidationExampleService {
     // ====================================
     // 🧪 DÉMONSTRATION PRATIQUE
     // ====================================
-    
+
     await this.demonstratePracticalUsage();
   }
 
@@ -102,10 +102,10 @@ export class ProductValidationExampleService {
     try {
       // Exemple de validation complète BMW X3 / Filtres à huile
       const startTime = Date.now();
-      
+
       const result = await this.validationService.validateGammeCarPage(
         12, // pgId - Filtres à huile
-        2,  // marqueId - BMW
+        2, // marqueId - BMW
         45, // modeleId - X3
         123, // typeId - BMW X3 2.0d
         {
@@ -114,7 +114,7 @@ export class ProductValidationExampleService {
           minimumFamilies: 3,
           minimumGammes: 8,
           enableParallelValidation: true,
-        }
+        },
       );
 
       const responseTime = Date.now() - startTime;
@@ -135,18 +135,17 @@ export class ProductValidationExampleService {
       ⚡ Requêtes //    : ${result.performance.parallelQueries}
       
       💡 RECOMMANDATIONS :
-      ${result.recommendations?.map(r => `   • ${r}`).join('\\n') || '   • Aucune amélioration nécessaire'}
+      ${result.recommendations?.map((r) => `   • ${r}`).join('\\n') || '   • Aucune amélioration nécessaire'}
       `);
 
       // ====================================
       // 📈 MÉTRIQUES COMPARATIVES
       // ====================================
-      
-      this.showPerformanceComparison(responseTime, result);
 
+      this.showPerformanceComparison(responseTime, result);
     } catch (error) {
       console.log(`❌ Erreur lors de la démonstration: ${error.message}`);
-      
+
       // Démonstration de la gestion d'erreur améliorée
       console.log(`
       🛡️ GESTION D'ERREUR AMÉLIORÉE :
@@ -187,7 +186,7 @@ export class ProductValidationExampleService {
     // ====================================
     // 🎯 FONCTIONNALITÉS EXCLUSIVES V4
     // ====================================
-    
+
     console.log(`
     🎯 FONCTIONNALITÉS EXCLUSIVES V4 ULTIMATE :
     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -228,37 +227,49 @@ export class ProductValidationExampleService {
     // 1. Validation avec options personnalisées
     console.log('🔧 1. Validation avec critères SEO stricts :');
     const strictResult = await this.validationService.validateGammeCarPage(
-      15, 1, 1, 100,
+      15,
+      1,
+      1,
+      100,
       {
-        minimumFamilies: 10,  // Plus strict
-        minimumGammes: 20,    // Plus strict  
-        minimumArticles: 50,  // Plus strict
+        minimumFamilies: 10, // Plus strict
+        minimumGammes: 20, // Plus strict
+        minimumArticles: 50, // Plus strict
         validateSeo: true,
-      }
+      },
     );
-    
-    console.log(`   Score SEO strict : ${strictResult.seoValidation.score}/100`);
-    console.log(`   Recommandations : ${strictResult.recommendations?.length || 0}`);
+
+    console.log(
+      `   Score SEO strict : ${strictResult.seoValidation.score}/100`,
+    );
+    console.log(
+      `   Recommandations : ${strictResult.recommendations?.length || 0}`,
+    );
 
     // 2. Validation rapide sans SEO
     console.log('\\n⚡ 2. Validation rapide (sans SEO) :');
     const quickResult = await this.validationService.validateGammeCarPage(
-      15, 1, 1, 100,
+      15,
+      1,
+      1,
+      100,
       {
         validateSeo: false,
         minimumArticles: 1,
         enableParallelValidation: true,
-      }
+      },
     );
-    
-    console.log(`   Temps rapide : ${quickResult.performance.validationTime}ms`);
+
+    console.log(
+      `   Temps rapide : ${quickResult.performance.validationTime}ms`,
+    );
     console.log(`   Cache hits : ${quickResult.performance.cacheHits}`);
 
     // 3. Nettoyage cache pour test
     console.log('\\n🧹 3. Gestion cache :');
     this.validationService.clearExpiredCache();
     console.log('   Cache expiré nettoyé ✅');
-    
+
     this.validationService.invalidateCache();
     console.log('   Cache complet invalidé ✅');
 

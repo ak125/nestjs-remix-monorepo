@@ -75,7 +75,7 @@ export class PromoDataService extends SupabaseBaseService {
 
   /**
    * Valider un code promo avec toutes les règles AVANCÉES
-   * 
+   *
    * Validations:
    * - Dates de validité
    * - Limite globale d'utilisation
@@ -117,18 +117,25 @@ export class PromoDataService extends SupabaseBaseService {
 
       // ✅ 1. Vérifier limite globale d'utilisation
       if (promo.max_usage && promo.usage_count >= promo.max_usage) {
-        this.logger.warn(`❌ Limite globale atteinte pour ${code}: ${promo.usage_count}/${promo.max_usage}`);
+        this.logger.warn(
+          `❌ Limite globale atteinte pour ${code}: ${promo.usage_count}/${promo.max_usage}`,
+        );
         return {
           valid: false,
-          message: 'Ce code promo a atteint sa limite d\'utilisation',
+          message: "Ce code promo a atteint sa limite d'utilisation",
         };
       }
 
       // ✅ 2. Vérifier limite par client
       if (userId && promo.usage_limit_per_customer) {
-        const userUsageCount = await this.getUserPromoUsageCount(promo.id, parseInt(userId));
+        const userUsageCount = await this.getUserPromoUsageCount(
+          promo.id,
+          parseInt(userId),
+        );
         if (userUsageCount >= promo.usage_limit_per_customer) {
-          this.logger.warn(`❌ Limite client atteinte pour ${code}: ${userUsageCount}/${promo.usage_limit_per_customer}`);
+          this.logger.warn(
+            `❌ Limite client atteinte pour ${code}: ${userUsageCount}/${promo.usage_limit_per_customer}`,
+          );
           return {
             valid: false,
             message: `Vous avez déjà utilisé ce code promo ${userUsageCount} fois (limite: ${promo.usage_limit_per_customer})`,
@@ -139,7 +146,9 @@ export class PromoDataService extends SupabaseBaseService {
       // ✅ 3. Vérifier montant minimum d'achat
       if (promo.min_amount && cartSubtotal < parseFloat(promo.min_amount)) {
         const remaining = parseFloat(promo.min_amount) - cartSubtotal;
-        this.logger.warn(`❌ Montant minimum non atteint: ${cartSubtotal}€ < ${promo.min_amount}€`);
+        this.logger.warn(
+          `❌ Montant minimum non atteint: ${cartSubtotal}€ < ${promo.min_amount}€`,
+        );
         return {
           valid: false,
           message: `Ajoutez ${remaining.toFixed(2)}€ pour bénéficier de cette promo (minimum: ${promo.min_amount}€)`,
@@ -148,39 +157,50 @@ export class PromoDataService extends SupabaseBaseService {
 
       // ✅ 4. Vérifier produits applicables (si défini)
       if (promo.applicable_products && promo.applicable_products.length > 0) {
-        const hasApplicableProduct = cartItems.some(item => 
-          promo.applicable_products.includes(parseInt(item.product_id))
+        const hasApplicableProduct = cartItems.some((item) =>
+          promo.applicable_products.includes(parseInt(item.product_id)),
         );
         if (!hasApplicableProduct) {
-          this.logger.warn(`❌ Aucun produit applicable dans le panier pour ${code}`);
+          this.logger.warn(
+            `❌ Aucun produit applicable dans le panier pour ${code}`,
+          );
           return {
             valid: false,
-            message: 'Ce code promo ne s\'applique à aucun produit de votre panier',
+            message:
+              "Ce code promo ne s'applique à aucun produit de votre panier",
           };
         }
       }
 
       // ✅ 5. Vérifier catégories applicables (si défini)
-      if (promo.applicable_categories && promo.applicable_categories.length > 0) {
+      if (
+        promo.applicable_categories &&
+        promo.applicable_categories.length > 0
+      ) {
         const hasApplicableCategory = await this.checkCartHasCategories(
           cartItems,
-          promo.applicable_categories
+          promo.applicable_categories,
         );
         if (!hasApplicableCategory) {
-          this.logger.warn(`❌ Aucune catégorie applicable dans le panier pour ${code}`);
+          this.logger.warn(
+            `❌ Aucune catégorie applicable dans le panier pour ${code}`,
+          );
           return {
             valid: false,
-            message: 'Ce code promo ne s\'applique à aucune catégorie de votre panier',
+            message:
+              "Ce code promo ne s'applique à aucune catégorie de votre panier",
           };
         }
       }
 
       // ✅ 6. Vérifier stackable (cumulable avec autres promos)
       if (!promo.stackable && currentPromos.length > 0) {
-        this.logger.warn(`❌ Code ${code} non cumulable avec: ${currentPromos.join(', ')}`);
+        this.logger.warn(
+          `❌ Code ${code} non cumulable avec: ${currentPromos.join(', ')}`,
+        );
         return {
           valid: false,
-          message: 'Ce code promo n\'est pas cumulable avec d\'autres promotions',
+          message: "Ce code promo n'est pas cumulable avec d'autres promotions",
         };
       }
 
@@ -196,9 +216,12 @@ export class PromoDataService extends SupabaseBaseService {
       }
 
       // Normaliser le type de promo (DB: PERCENT/FIXED → App: percentage/fixed)
-      const normalizedType = promo.type === 'PERCENT' ? 'percentage' : 
-                             promo.type === 'FIXED' ? 'fixed' : 
-                             promo.type.toLowerCase();
+      const normalizedType =
+        promo.type === 'PERCENT'
+          ? 'percentage'
+          : promo.type === 'FIXED'
+            ? 'fixed'
+            : promo.type.toLowerCase();
 
       return {
         valid: true,
@@ -207,7 +230,9 @@ export class PromoDataService extends SupabaseBaseService {
           code: promo.code,
           discount_type: normalizedType, // Normalisé : PERCENT → percentage
           discount_value: parseFloat(promo.value), // Colonne réelle : value
-          min_purchase_amount: promo.min_amount ? parseFloat(promo.min_amount) : null, // Colonne réelle : min_amount
+          min_purchase_amount: promo.min_amount
+            ? parseFloat(promo.min_amount)
+            : null, // Colonne réelle : min_amount
           description: promo.description,
         },
       };
@@ -268,7 +293,10 @@ export class PromoDataService extends SupabaseBaseService {
   /**
    * Compte le nombre d'utilisations d'un promo par un client
    */
-  async getUserPromoUsageCount(promoId: number, userId: number): Promise<number> {
+  async getUserPromoUsageCount(
+    promoId: number,
+    userId: number,
+  ): Promise<number> {
     try {
       const response = await fetch(
         `${this.baseUrl}/promo_usage?promo_id=eq.${promoId}&user_id=eq.${userId}&select=id`,
@@ -285,10 +313,7 @@ export class PromoDataService extends SupabaseBaseService {
       const data = await response.json();
       return data.length;
     } catch (error) {
-      this.logger.error(
-        "Erreur lors du comptage d'utilisations",
-        error,
-      );
+      this.logger.error("Erreur lors du comptage d'utilisations", error);
       return 0;
     }
   }
@@ -330,10 +355,7 @@ export class PromoDataService extends SupabaseBaseService {
         categoryIds.includes(catId),
       );
     } catch (error) {
-      this.logger.error(
-        'Erreur lors de la vérification des catégories',
-        error,
-      );
+      this.logger.error('Erreur lors de la vérification des catégories', error);
       return false;
     }
   }

@@ -29,10 +29,7 @@ export class PiecesCleanController {
    * GET /api/catalog/pieces/php-logic/:typeId/:pgId
    */
   @Get('php-logic/:typeId/:pgId')
-  async phpLogic(
-    @Param('typeId') typeId: string,
-    @Param('pgId') pgId: string,
-  ) {
+  async phpLogic(@Param('typeId') typeId: string, @Param('pgId') pgId: string) {
     const startTime = Date.now();
 
     try {
@@ -42,9 +39,9 @@ export class PiecesCleanController {
         parseInt(typeId),
         parseInt(pgId),
       );
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         success: result.success,
         data: result,
@@ -54,11 +51,10 @@ export class PiecesCleanController {
         timestamp: new Date().toISOString(),
         version: 'PHP_LOGIC_COMPLETE',
       };
-      
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       this.logger.error(`❌ [PHP-LOGIC] Erreur: ${error.message}`, error.stack);
-      
+
       return {
         success: false,
         error: error.message,
@@ -80,17 +76,17 @@ export class PiecesCleanController {
     @Param('pgId') pgId: string,
   ) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.log(`🎯 [V4-WORKING] type_id=${typeId}, pg_id=${pgId}`);
-      
+
       const result = await this.piecesV4Service.getPiecesV4Working(
         parseInt(typeId),
         parseInt(pgId),
       );
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         success: result.success,
         data: result,
@@ -100,7 +96,6 @@ export class PiecesCleanController {
         timestamp: new Date().toISOString(),
         version: 'V4_WORKING_CLEAN',
       };
-      
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       return {
@@ -124,10 +119,10 @@ export class PiecesCleanController {
     @Param('pgId') pgId: string,
   ) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.log(`🔍 [COMPARE] type_id=${typeId}, pg_id=${pgId}`);
-      
+
       const [phpResult, v4Result] = await Promise.all([
         this.vehiclePiecesService.getPiecesExactPHP(
           parseInt(typeId),
@@ -138,9 +133,9 @@ export class PiecesCleanController {
           parseInt(pgId),
         ),
       ]);
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         success: true,
         comparison: {
@@ -163,7 +158,6 @@ export class PiecesCleanController {
         },
         timestamp: new Date().toISOString(),
       };
-      
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       return {
@@ -187,17 +181,17 @@ export class PiecesCleanController {
     @Param('pgId') pgId: string,
   ) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.log(`🚀 [PHP-COMPLETE] type_id=${typeId}, pg_id=${pgId}`);
-      
+
       const result = await this.piecesCompleteService.getPiecesCompletePHP(
         parseInt(typeId),
         parseInt(pgId),
       );
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         success: result.success,
         data: result,
@@ -207,11 +201,13 @@ export class PiecesCleanController {
         timestamp: new Date().toISOString(),
         version: 'PHP_COMPLETE_ALL_FEATURES',
       };
-      
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
-      this.logger.error(`❌ [PHP-COMPLETE] Erreur: ${error.message}`, error.stack);
-      
+      this.logger.error(
+        `❌ [PHP-COMPLETE] Erreur: ${error.message}`,
+        error.stack,
+      );
+
       return {
         success: false,
         error: error.message,
@@ -225,17 +221,14 @@ export class PiecesCleanController {
 
   /**
    * 🔍 DEBUG - Diagnostic des données
-   * GET /api/catalog/pieces/debug/:typeId/:pgId  
+   * GET /api/catalog/pieces/debug/:typeId/:pgId
    */
   @Get('debug/:typeId/:pgId')
-  async debug(
-    @Param('typeId') typeId: string,
-    @Param('pgId') pgId: string,
-  ) {
+  async debug(@Param('typeId') typeId: string, @Param('pgId') pgId: string) {
     try {
       const typeIdNum = parseInt(typeId);
       const pgIdNum = parseInt(pgId);
-      
+
       // 1. Relations
       const relationsResult = await this.piecesCompleteService['client']
         .from('pieces_relation_type')
@@ -252,13 +245,13 @@ export class PiecesCleanController {
       let rawPrices = [];
       let criterias = [];
       let images = [];
-      
+
       if (pieceId) {
         // 🎯 V5 ULTIMATE PRICING SERVICE - Plus besoin de logique manuelle !
         enhancedPricing = await this.pricingService.getAdvancedPricing(
           pieceId.toString(),
         );
-        
+
         // Récupération des données pour compatibilité (optionnel pour debug)
         const pricesResult = await this.piecesCompleteService['client']
           .from('pieces_price')
@@ -317,22 +310,19 @@ export class PiecesCleanController {
    * GET /api/catalog/pieces/enhanced/:typeId/:pgId
    */
   @Get('enhanced/:typeId/:pgId')
-  async enhanced(
-    @Param('typeId') typeId: string,
-    @Param('pgId') pgId: string,
-  ) {
+  async enhanced(@Param('typeId') typeId: string, @Param('pgId') pgId: string) {
     const startTime = Date.now();
-    
+
     try {
       this.logger.log(`🎯 [ENHANCED] type_id=${typeId}, pg_id=${pgId}`);
-      
+
       const result = await this.piecesEnhancedService.getPiecesEnhancedCatalog(
         parseInt(typeId),
         parseInt(pgId),
       );
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       return {
         ...result,
         api_info: {
@@ -341,11 +331,10 @@ export class PiecesCleanController {
           version: 'ENHANCED_CATALOG_V1',
         },
       };
-      
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       this.logger.error(`❌ [ENHANCED] Erreur: ${error.message}`, error.stack);
-      
+
       return {
         success: false,
         error: error.message,

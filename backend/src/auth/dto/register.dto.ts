@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * ✅ Schema Zod pour l'inscription utilisateur
  * Cohérent avec l'architecture existante (Zod déjà utilisé dans le projet)
- * 
+ *
  * Validation stricte pour sécurité production (59k+ utilisateurs)
  */
 export const RegisterSchema = z.object({
@@ -42,12 +42,12 @@ export const RegisterSchema = z.object({
 
   // Champs optionnels pour correspondre au schéma DB
   civility: z.enum(['M', 'Mme', 'Mlle']).optional(),
-  
+
   tel: z
     .string()
     .regex(/^[\d\s\+\-\(\)]+$/, 'Numéro de téléphone invalide')
     .optional(),
-  
+
   gsm: z
     .string()
     .regex(/^[\d\s\+\-\(\)]+$/, 'Numéro de mobile invalide')

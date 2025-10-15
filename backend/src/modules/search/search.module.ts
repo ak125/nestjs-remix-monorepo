@@ -35,7 +35,7 @@ import { DatabaseModule } from '../../database/database.module';
 
 /**
  * 🔍 SearchModule - Moteur de recherche clean
- * 
+ *
  * Version simplifiée et fonctionnelle avec uniquement
  * les services et contrôleurs qui existent réellement.
  */
@@ -56,7 +56,7 @@ import { DatabaseModule } from '../../database/database.module';
     ProductSheetService,
     VehicleSearchService,
     SearchMonitoringService,
-    
+
     // Specialized Services
     SearchCacheService,
     SearchAnalyticsService,

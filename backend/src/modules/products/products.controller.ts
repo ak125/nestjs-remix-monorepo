@@ -170,7 +170,7 @@ export class ProductsController {
       );
 
       this.logger.log(`✅ Trouvé ${results.length} résultats pour "${query}"`);
-      
+
       return { results };
     } catch (error) {
       this.logger.error(`❌ Erreur recherche produits: ${error.message}`);
@@ -266,7 +266,7 @@ export class ProductsController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const product = await this.productsService.findOne(id);
-    
+
     // Ajouter les informations de stock au produit
     try {
       const stock = await this.stockService.getProductStock(id);

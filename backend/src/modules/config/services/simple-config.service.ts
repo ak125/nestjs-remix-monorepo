@@ -35,7 +35,7 @@ export class SimpleConfigService extends SupabaseBaseService {
   async getAppConfig(): Promise<AppConfig | null> {
     try {
       const cacheKey = `${this.CACHE_PREFIX}main`;
-      
+
       // Vérifier le cache d'abord
       const cached = await this.cacheService.get<AppConfig>(cacheKey);
       if (cached) {
@@ -62,7 +62,7 @@ export class SimpleConfigService extends SupabaseBaseService {
       // Mettre en cache
       await this.cacheService.set(cacheKey, data, this.CACHE_TTL);
       this.logger.debug('App configuration loaded from database');
-      
+
       return data;
     } catch (error) {
       this.logger.error('Error in getAppConfig:', error);
@@ -79,10 +79,13 @@ export class SimpleConfigService extends SupabaseBaseService {
       if (!config) {
         return null;
       }
-      
+
       return config[key] || null;
     } catch (error) {
-      this.logger.error(`Error getting config value for key ${String(key)}:`, error);
+      this.logger.error(
+        `Error getting config value for key ${String(key)}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -93,7 +96,7 @@ export class SimpleConfigService extends SupabaseBaseService {
   async updateConfigValue(key: keyof AppConfig, value: string): Promise<void> {
     try {
       const updateData = { [key]: value };
-      
+
       const { error } = await this.supabase
         .from('___config')
         .update(updateData)
@@ -101,12 +104,14 @@ export class SimpleConfigService extends SupabaseBaseService {
 
       if (error) {
         this.logger.error(`Error updating config ${String(key)}:`, error);
-        throw new Error(`Failed to update config ${String(key)}: ${error.message}`);
+        throw new Error(
+          `Failed to update config ${String(key)}: ${error.message}`,
+        );
       }
 
       // Invalider le cache
       await this.invalidateCache();
-      
+
       this.logger.debug(`Config ${String(key)} updated successfully`);
     } catch (error) {
       this.logger.error(`Error in updateConfigValue(${String(key)}):`, error);
@@ -129,10 +134,11 @@ export class SimpleConfigService extends SupabaseBaseService {
       }
 
       const fields = Object.keys(config);
-      const filledFields = fields.filter(key => 
-        config[key] !== null && 
-        config[key] !== undefined && 
-        config[key] !== ''
+      const filledFields = fields.filter(
+        (key) =>
+          config[key] !== null &&
+          config[key] !== undefined &&
+          config[key] !== '',
       );
 
       return {

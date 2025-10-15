@@ -96,7 +96,9 @@ export class CartAnalyticsService {
         this.ANALYTICS_TTL,
       );
 
-      this.logger.log(`✅ Conversion trackée: ${sessionId} → Commande ${orderData.orderId}`);
+      this.logger.log(
+        `✅ Conversion trackée: ${sessionId} → Commande ${orderData.orderId}`,
+      );
     } catch (error) {
       this.logger.error('Erreur trackCartConverted:', error);
     }
@@ -135,7 +137,9 @@ export class CartAnalyticsService {
         this.ANALYTICS_TTL,
       );
 
-      this.logger.log(`❌ Abandon tracké: ${sessionId} - ${cartData.itemCount} articles`);
+      this.logger.log(
+        `❌ Abandon tracké: ${sessionId} - ${cartData.itemCount} articles`,
+      );
     } catch (error) {
       this.logger.error('Erreur trackCartAbandoned:', error);
     }
@@ -192,7 +196,7 @@ export class CartAnalyticsService {
       const values = await this.cacheService.get<number[]>(
         this.CART_VALUES_KEY,
       );
-      
+
       if (!values || values.length === 0) {
         return { average: 0, total: 0, count: 0 };
       }
@@ -349,10 +353,9 @@ export class CartAnalyticsService {
    */
   private async trackCartValue(value: number): Promise<void> {
     try {
-      const values = (await this.cacheService.get<number[]>(
-        this.CART_VALUES_KEY,
-      )) || [];
-      
+      const values =
+        (await this.cacheService.get<number[]>(this.CART_VALUES_KEY)) || [];
+
       values.push(value);
 
       // Garder seulement les 1000 dernières valeurs

@@ -3,20 +3,19 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 
 /**
  * 🚀 GAMME REST CONTROLLER OPTIMISÉ - REPRODUCTION EXACTE DU FICHIER PHP ORIGINAL
- * 
+ *
  * Version optimisée avec requêtes parallélisées pour réduire le temps de réponse
  * Reproduit fidèlement la logique du fichier PHP avec toutes les sections :
  * - SEO complet (__seo_gamme)
  * - Motorisations (__cross_gamme_car_new + auto_*)
  * - Équipementiers (__seo_equip_gamme + pieces_marque)
- * - Catalogue même famille (catalog_gamme + catalog_family) 
+ * - Catalogue même famille (catalog_gamme + catalog_family)
  * - Conseils (__seo_gamme_conseil)
  * - Informations (__seo_gamme_info)
  * - Blog advice (__blog_advice)
  */
 @Controller('api/gamme-rest-optimized')
 export class GammeRestOptimizedController extends SupabaseBaseService {
-
   @Get(':pgId/page-data')
   async getPageData(@Param('pgId') pgId: string) {
     const pgIdNum = parseInt(pgId, 10);
@@ -74,11 +73,11 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     const [
       catalogDataResult,
       seoDataResult,
-      conseilsDataResult, 
+      conseilsDataResult,
       informationsDataResult,
       crossGammeDataResult,
       equipGammeDataResult,
-      blogDataResult
+      blogDataResult,
     ] = await Promise.all([
       // 4. MF DATA (CATALOG_GAMME)
       this.client
@@ -86,28 +85,28 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         .select('mc_mf_prime')
         .eq('mc_pg_id', pgIdNum)
         .single(),
-      
+
       // 5. SEO & CONTENT (__SEO_GAMME)
       this.client
         .from('__seo_gamme')
         .select('sg_title, sg_descrip, sg_keywords, sg_h1, sg_content')
         .eq('sg_pg_id', pgIdNum)
         .single(),
-      
+
       // 6. CONSEILS (__SEO_GAMME_CONSEIL)
       this.client
         .from('__seo_gamme_conseil')
         .select('sgc_id, sgc_title, sgc_content')
         .eq('sgc_pg_id', pgIdNum)
         .order('sgc_id', { ascending: true }),
-      
+
       // 7. INFORMATIONS (__SEO_GAMME_INFO)
       this.client
         .from('__seo_gamme_info')
         .select('sgi_content')
         .eq('sgi_pg_id', pgIdNum)
         .order('sgi_id', { ascending: true }),
-      
+
       // 9. MOTORISATIONS (__CROSS_GAMME_CAR_NEW)
       this.client
         .from('__cross_gamme_car_new')
@@ -115,7 +114,7 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         .eq('cgc_pg_id', pgIdNum.toString())
         .eq('cgc_level', '1')
         .order('cgc_id', { ascending: true }),
-      
+
       // 10. ÉQUIPEMENTIERS (__SEO_EQUIP_GAMME)
       this.client
         .from('__seo_equip_gamme')
@@ -124,7 +123,7 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         .not('seg_content', 'is', null)
         .order('seg_id', { ascending: true })
         .limit(4),
-      
+
       // 11. BLOG ADVICE (__BLOG_ADVICE)
       this.client
         .from('__blog_advice')
@@ -133,11 +132,13 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         .order('ba_update', { ascending: false })
         .order('ba_create', { ascending: false })
         .limit(1)
-        .single()
+        .single(),
     ]);
 
     const parallelTime = performance.now();
-    console.log(`⚡ Requêtes parallèles: ${(parallelTime - startTime).toFixed(1)}ms`);
+    console.log(
+      `⚡ Requêtes parallèles: ${(parallelTime - startTime).toFixed(1)}ms`,
+    );
 
     // Traitement des résultats
     const { data: catalogData } = catalogDataResult;
@@ -199,24 +200,28 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     // ========================================
     // TRAITEMENT CONSEILS
     // ========================================
-    const conseils = conseilsData?.map((conseil) => ({
-      id: conseil.sgc_id,
-      title: this.contentCleaner(conseil.sgc_title || ''),
-      content: this.contentCleaner(conseil.sgc_content || ''),
-    })) || [];
+    const conseils =
+      conseilsData?.map((conseil) => ({
+        id: conseil.sgc_id,
+        title: this.contentCleaner(conseil.sgc_title || ''),
+        content: this.contentCleaner(conseil.sgc_content || ''),
+      })) || [];
 
     // ========================================
     // TRAITEMENT INFORMATIONS
     // ========================================
-    const informations = informationsData?.map((info) => info.sgi_content) || [];
+    const informations =
+      informationsData?.map((info) => info.sgi_content) || [];
 
     // ========================================
     // CATALOGUE MÊME FAMILLE - VERSION SIMPLIFIÉE
     // ========================================
     const catalogueFiltres = [];
     if (mfId && catalogData) {
-      console.log(`🔍 Recherche catalogue pour mfId=${mfId}, pgIdNum=${pgIdNum}`);
-      
+      console.log(
+        `🔍 Recherche catalogue pour mfId=${mfId}, pgIdNum=${pgIdNum}`,
+      );
+
       // Première étape : récupérer tous les pg_id de la même famille
       const { data: catalogItems, error: catalogItemsError } = await this.client
         .from('catalog_gamme')
@@ -225,10 +230,10 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         .neq('mc_pg_id', pgIdNum);
 
       console.log(`📊 Catalogue items trouvés: ${catalogItems?.length || 0}`);
-      
+
       if (catalogItems && catalogItems.length > 0) {
         // Deuxième étape : récupérer les détails des pièces
-        const pgIds = catalogItems.map(item => item.mc_pg_id);
+        const pgIds = catalogItems.map((item) => item.mc_pg_id);
         const { data: piecesItems } = await this.client
           .from('pieces_gamme')
           .select('pg_id, pg_name, pg_alias, pg_img')
@@ -241,11 +246,11 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         if (piecesItems && piecesItems.length > 0) {
           // Créer un map pour les sorts
           const sortMap = new Map();
-          catalogItems.forEach(item => {
+          catalogItems.forEach((item) => {
             sortMap.set(item.mc_pg_id, item.mc_sort || 0);
           });
 
-          piecesItems.forEach(piece => {
+          piecesItems.forEach((piece) => {
             catalogueFiltres.push({
               id: piece.pg_id,
               name: piece.pg_name,
@@ -255,7 +260,7 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
               sort: sortMap.get(piece.pg_id) || 0,
             });
           });
-          
+
           catalogueFiltres.sort((a, b) => a.sort - b.sort);
         }
       }
@@ -266,14 +271,16 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     // ========================================
     console.log('🚗 Récupération motorisations optimisée...');
     const motorisations = [];
-    
+
     if (crossGammeData?.length > 0) {
-      console.log(`✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`);
-      
+      console.log(
+        `✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`,
+      );
+
       // GROUP BY comme PHP mais optimisé
       const processedModeles = new Set();
       const typePromises = [];
-      
+
       for (const cross of crossGammeData) {
         if (processedModeles.has(cross.cgc_modele_id)) continue;
         processedModeles.add(cross.cgc_modele_id);
@@ -281,7 +288,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         // Jointure complète en une seule requête - CORRIGÉE
         const typePromise = this.client
           .from('auto_type')
-          .select(`
+          .select(
+            `
             type_id, 
             type_name, 
             type_power_ps, 
@@ -289,13 +297,14 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
             type_year_from, 
             type_year_to,
             type_modele_id
-          `)
+          `,
+          )
           .eq('type_id', cross.cgc_type_id)
           .eq('type_display', '1')
           .single()
           .then(async ({ data: typeData, error: typeError }) => {
             if (typeError || !typeData) return null;
-            
+
             // Récupération du modèle séparément
             const { data: modeleData } = await this.client
               .from('auto_modele')
@@ -303,23 +312,23 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
               .eq('modele_id', typeData.type_modele_id)
               .eq('modele_display', '1')
               .single();
-              
+
             if (!modeleData) return null;
-            
-            // Récupération de la marque séparément  
+
+            // Récupération de la marque séparément
             const { data: marqueData } = await this.client
               .from('auto_marque')
               .select('marque_id, marque_name')
               .eq('marque_id', modeleData.modele_marque_id)
               .eq('marque_display', '1')
               .single();
-              
+
             if (!marqueData) return null;
-            
+
             return {
               type: typeData,
               modele: modeleData,
-              marque: marqueData
+              marque: marqueData,
             };
           });
 
@@ -328,11 +337,15 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
 
       // Exécution parallèle des requêtes de motorisations
       const typeResults = await Promise.all(typePromises);
-      
+
       typeResults.forEach((result) => {
         if (result && result.type && result.modele && result.marque) {
-          const { type: typeData, modele: modeleData, marque: marqueData } = result;
-          
+          const {
+            type: typeData,
+            modele: modeleData,
+            marque: marqueData,
+          } = result;
+
           let typeDate = '';
           if (!typeData.type_year_to) {
             typeDate = `du ${typeData.type_month_from}/${typeData.type_year_from}`;
@@ -360,18 +373,18 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     // ========================================
     const equipementiers = [];
     if (equipGammeData?.length > 0) {
-      const marquePromises = equipGammeData.map(equip => 
+      const marquePromises = equipGammeData.map((equip) =>
         this.client
           .from('pieces_marque')
           .select('pm_id, pm_name, pm_logo')
           .eq('pm_id', equip.seg_pm_id)
           .eq('pm_display', 1)
           .single()
-          .then(({ data }) => ({ data, content: equip.seg_content }))
+          .then(({ data }) => ({ data, content: equip.seg_content })),
       );
 
       const marqueResults = await Promise.all(marquePromises);
-      
+
       marqueResults.forEach(({ data: marqueData, content }) => {
         if (marqueData) {
           equipementiers.push({
@@ -433,68 +446,87 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         pg_wall: pgWall,
       },
       // Section Guide/Blog
-      guide: guide ? {
-        id: guide.id,
-        title: guide.title,
-        alias: guide.alias,
-        preview: guide.preview,
-        wall: guide.wall,
-        date: guide.date,
-        image: `/upload/articles/gammes-produits/catalogue/${pgAlias}.webp`,
-        link: `/blog-pieces-auto/conseils/${pgAlias}`,
-        h2_content: guide.h2_content
-      } : null,
+      guide: guide
+        ? {
+            id: guide.id,
+            title: guide.title,
+            alias: guide.alias,
+            preview: guide.preview,
+            wall: guide.wall,
+            date: guide.date,
+            image: `/upload/articles/gammes-produits/catalogue/${pgAlias}.webp`,
+            link: `/blog-pieces-auto/conseils/${pgAlias}`,
+            h2_content: guide.h2_content,
+          }
+        : null,
       // Section "Catalogue [Nom Gamme]"
-      catalogueMameFamille: catalogueFiltres.length > 0 ? {
-        title: `Catalogue ${pgNameSite}s`,
-        items: catalogueFiltres.map(item => ({
-          name: item.name,
-          link: item.link,
-          image: `/upload/articles/gammes-produits/catalogue/${item.alias}.webp`,
-          description: `Automecanik vous conseils de contrôlez l'état du ${item.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
-          meta_description: `${item.name} pas cher à contrôler régulièrement, changer si encrassé`
-        }))
-      } : null,
-      // Section "Les motorisations les plus consultées"  
-      motorisations: motorisations.length > 0 ? {
-        title: 'Les motorisations les plus consultées',
-        items: motorisations.map(moto => ({
-          title: `${pgNameSite} prix bas ${moto.marque_name} ${moto.modele_name} ${moto.motorisation}, changer si encrassé`,
-          marque_name: moto.marque_name,
-          modele_name: moto.modele_name,
-          type_name: moto.motorisation,
-          puissance: moto.puissance,
-          periode: moto.description,
-          image: `/upload/constructeurs-automobiles/marques-modeles/${moto.marque_name.toLowerCase()}/${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}.webp`,
-          link: `/pieces/${pgAlias}-${pgIdNum}/${moto.marque_name.toLowerCase()}-${moto.marque_name.toLowerCase()}-${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}/${moto.motorisation.toLowerCase().replace(/\s+/g, '-')}.html`,
-          description: `contrôler si témoin allumé les ${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance} et changer si encrassé, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur.`,
-          advice: `${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance}`
-        }))
-      } : null,
-      // Section "Équipementiers [Nom Gamme]" 
-      equipementiers: equipementiers.length > 0 ? {
-        title: `Équipementiers ${pgNameSite}`,
-        items: equipementiers.map(eq => ({
-          pm_id: eq.pm_id,
-          pm_name: eq.pm_name,
-          pm_logo: eq.pm_logo,
-          title: `${pgNameSite} ${eq.pm_name}`,
-          image: `/upload/equipementiers-automobiles/${eq.pm_name.toLowerCase()}.webp`,
-          description: eq.description
-        }))
-      } : null,
+      catalogueMameFamille:
+        catalogueFiltres.length > 0
+          ? {
+              title: `Catalogue ${pgNameSite}s`,
+              items: catalogueFiltres.map((item) => ({
+                name: item.name,
+                link: item.link,
+                image: `/upload/articles/gammes-produits/catalogue/${item.alias}.webp`,
+                description: `Automecanik vous conseils de contrôlez l'état du ${item.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
+                meta_description: `${item.name} pas cher à contrôler régulièrement, changer si encrassé`,
+              })),
+            }
+          : null,
+      // Section "Les motorisations les plus consultées"
+      motorisations:
+        motorisations.length > 0
+          ? {
+              title: 'Les motorisations les plus consultées',
+              items: motorisations.map((moto) => ({
+                title: `${pgNameSite} prix bas ${moto.marque_name} ${moto.modele_name} ${moto.motorisation}, changer si encrassé`,
+                marque_name: moto.marque_name,
+                modele_name: moto.modele_name,
+                type_name: moto.motorisation,
+                puissance: moto.puissance,
+                periode: moto.description,
+                image: `/upload/constructeurs-automobiles/marques-modeles/${moto.marque_name.toLowerCase()}/${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}.webp`,
+                link: `/pieces/${pgAlias}-${pgIdNum}/${moto.marque_name.toLowerCase()}-${moto.marque_name.toLowerCase()}-${moto.modele_name.toLowerCase().replace(/\s+/g, '-')}/${moto.motorisation.toLowerCase().replace(/\s+/g, '-')}.html`,
+                description: `contrôler si témoin allumé les ${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance} et changer si encrassé, pour assurer une bonne qualité d'huile lubrifiante afin de garantir le bon fonctionnement du moteur.`,
+                advice: `${pgNameSite} ${moto.marque_name} ${moto.modele_name} ${moto.motorisation} ${moto.puissance}`,
+              })),
+            }
+          : null,
+      // Section "Équipementiers [Nom Gamme]"
+      equipementiers:
+        equipementiers.length > 0
+          ? {
+              title: `Équipementiers ${pgNameSite}`,
+              items: equipementiers.map((eq) => ({
+                pm_id: eq.pm_id,
+                pm_name: eq.pm_name,
+                pm_logo: eq.pm_logo,
+                title: `${pgNameSite} ${eq.pm_name}`,
+                image: `/upload/equipementiers-automobiles/${eq.pm_name.toLowerCase()}.webp`,
+                description: eq.description,
+              })),
+            }
+          : null,
       // Section "Conseils pour [Nom Gamme]"
-      conseils: conseils.length > 0 ? {
-        title: `Conseils pour ${pgNameSite}`,
-        content: conseils.map(c => `<h3>${c.title}</h3><p>${c.content}</p>`).join(''),
-        items: conseils
-      } : null,
-      // Section "Informations sur les [Nom Gamme]" 
-      informations: informations.length > 0 ? {
-        title: `Informations sur les ${pgNameSite}`,
-        content: informations.map(info => `<p>- ${info}</p>`).join(''),
-        items: informations
-      } : null,
+      conseils:
+        conseils.length > 0
+          ? {
+              title: `Conseils pour ${pgNameSite}`,
+              content: conseils
+                .map((c) => `<h3>${c.title}</h3><p>${c.content}</p>`)
+                .join(''),
+              items: conseils,
+            }
+          : null,
+      // Section "Informations sur les [Nom Gamme]"
+      informations:
+        informations.length > 0
+          ? {
+              title: `Informations sur les ${pgNameSite}`,
+              content: informations.map((info) => `<p>- ${info}</p>`).join(''),
+              items: informations,
+            }
+          : null,
       // Stats pour affichage frontend
       performance: {
         total_time_ms: totalTime,
@@ -504,7 +536,7 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         equipementiers_count: equipementiers.length,
         conseils_count: conseils.length,
         informations_count: informations.length,
-        guide_available: guide ? 1 : 0
+        guide_available: guide ? 1 : 0,
       },
       debug: {
         pgIdNum,
@@ -517,8 +549,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
           motorisations: motorisations.length,
           equipementiers: equipementiers.length,
           guide: guide ? 1 : 0,
-        }
-      }
+        },
+      },
     };
   }
 

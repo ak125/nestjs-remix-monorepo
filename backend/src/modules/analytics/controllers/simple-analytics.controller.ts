@@ -70,7 +70,7 @@ export class SimpleAnalyticsController {
   ): Promise<{ script: string; provider: string; version: string }> {
     const isMinified = minified === 'true' || minified === '1';
     const scriptVersion = version || 'latest';
-    
+
     const script = await this.analyticsService.getTrackingScript({
       provider: provider || 'auto',
       minified: isMinified,
@@ -88,7 +88,7 @@ export class SimpleAnalyticsController {
     };
   }
 
-    /**
+  /**
    * Endpoint moderne pour obtenir le script de tracking (remplace track.php)
    */
   @Get('track.js')
@@ -100,7 +100,7 @@ export class SimpleAnalyticsController {
   ): Promise<string> {
     const isMinified = min === '1' || min === 'true';
     const scriptVersion = version || 'v7';
-    
+
     const result = await this.getTrackingScript(
       isMinified ? 'true' : 'false',
       scriptVersion,
@@ -122,7 +122,7 @@ export class SimpleAnalyticsController {
   ): Promise<string> {
     const isMinified = min === '1' || min === 'true';
     const scriptVersion = version || 'v7';
-    
+
     const result = await this.getTrackingScript(
       isMinified ? 'true' : 'false',
       scriptVersion,
@@ -138,7 +138,9 @@ export class SimpleAnalyticsController {
   @Get('track.min.js')
   @Header('Content-Type', 'application/javascript')
   @Header('Cache-Control', 'public, max-age=3600')
-  async getMinifiedTrackingScriptModern(@Query('v') version?: string): Promise<string> {
+  async getMinifiedTrackingScriptModern(
+    @Query('v') version?: string,
+  ): Promise<string> {
     const result = await this.getTrackingScript('true', version || 'v7');
     return result.script;
   }
@@ -248,12 +250,15 @@ export class SimpleAnalyticsController {
    * Endpoint pour les rapports batch (compatibilité avec l'existant)
    */
   @Post('report')
-  async handleAnalyticsReport(@Body() batch: {
-    type: string;
-    events: any[];
-    sessionId: string;
-    timestamp: string;
-  }) {
+  async handleAnalyticsReport(
+    @Body()
+    batch: {
+      type: string;
+      events: any[];
+      sessionId: string;
+      timestamp: string;
+    },
+  ) {
     this.logger.log(
       `📊 Analytics batch received: ${batch.events.length} events`,
     );
@@ -265,7 +270,7 @@ export class SimpleAnalyticsController {
         event.action || 'unknown',
         event.label,
         event.value,
-        { 
+        {
           ...event.data,
           sessionId: batch.sessionId,
           batchType: batch.type,

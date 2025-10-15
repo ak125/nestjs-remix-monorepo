@@ -152,7 +152,10 @@ export class MessagesService {
   /**
    * Archiver un message
    */
-  async archiveMessage(messageId: string, userId: string): Promise<ModernMessage> {
+  async archiveMessage(
+    messageId: string,
+    userId: string,
+  ): Promise<ModernMessage> {
     this.logger.log(`Archiving message: ${messageId} by user ${userId}`);
 
     // Vérifier que le message appartient à l'utilisateur

@@ -44,7 +44,7 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   async getPiecesUnified(
     typeId: number,
     pgId: number,
-    options: GetPiecesOptions = {}
+    options: GetPiecesOptions = {},
   ): Promise<UnifiedCatalogResponse> {
     const startTime = Date.now();
     const requestId = this.generateRequestId();
@@ -68,7 +68,11 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
       }
 
       // 1️⃣ RÉCUPÉRATION RELATIONS (optimisée avec limitation)
-      const relationsResult = await this.getVehicleRelations(typeId, pgId, options);
+      const relationsResult = await this.getVehicleRelations(
+        typeId,
+        pgId,
+        options,
+      );
 
       if (!relationsResult.success || relationsResult.data.length === 0) {
         return this.buildEmptyResponse(
@@ -247,7 +251,10 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
         .select(
           'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo, pri_type',
         )
-        .in('pri_piece_id', pieceIds.map((id) => id.toString()))
+        .in(
+          'pri_piece_id',
+          pieceIds.map((id) => id.toString()),
+        )
         .eq('pri_dispo', '1')
         .order('pri_type', { ascending: false }),
 
@@ -286,7 +293,9 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
 
     // Vérification erreurs critiques
     if (piecesResult.error) {
-      throw new Error(`Erreur récupération pièces: ${piecesResult.error.message}`);
+      throw new Error(
+        `Erreur récupération pièces: ${piecesResult.error.message}`,
+      );
     }
 
     return {
@@ -308,18 +317,10 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
     options: GetPiecesOptions,
   ) {
     return {
-      relations: new Map(
-        relationsData.map((r) => [r.rtp_piece_id, r]),
-      ),
-      marques: new Map(
-        dataResults.marques.map((m: any) => [m.pm_id, m]),
-      ),
-      filtres: new Map(
-        dataResults.filtres.map((f: any) => [f.psf_id, f]),
-      ),
-      images: new Map(
-        dataResults.images.map((i: any) => [i.pmi_piece_id, i]),
-      ),
+      relations: new Map(relationsData.map((r) => [r.rtp_piece_id, r])),
+      marques: new Map(dataResults.marques.map((m: any) => [m.pm_id, m])),
+      filtres: new Map(dataResults.filtres.map((f: any) => [f.psf_id, f])),
+      images: new Map(dataResults.images.map((i: any) => [i.pmi_piece_id, i])),
       // Prix avec logique PHP : garde le meilleur prix par pièce
       prices: this.buildPricesMap(dataResults.prices),
       criterias: options.includeTechnicalCriteria
@@ -333,11 +334,13 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
    */
   private buildPricesMap(pricesData: any[]): Map<number, any> {
     const pricesMap = new Map();
-    
+
     pricesData.forEach((p: any) => {
       const pieceId = parseInt(p.pri_piece_id);
-      if (!pricesMap.has(pieceId) || 
-          parseInt(p.pri_type) > parseInt(pricesMap.get(pieceId).pri_type)) {
+      if (
+        !pricesMap.has(pieceId) ||
+        parseInt(p.pri_type) > parseInt(pricesMap.get(pieceId).pri_type)
+      ) {
         pricesMap.set(pieceId, p);
       }
     });
@@ -365,18 +368,29 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
 
       // CALCULS PRIX (logique PHP exacte)
       const pricingData = this.calculatePiecePricing(piece, price, marqueEquip);
-      
+
       // QUALITÉ (logique PHP exacte)
-      const qualityData = this.determineQuality(marqueEquip, pricingData.prixConsigne);
-      
+      const qualityData = this.determineQuality(
+        marqueEquip,
+        pricingData.prixConsigne,
+      );
+
       // NOM COMPLET (logique PHP)
       const nameData = this.buildCompleteName(piece, filtre);
-      
+
       // IMAGE (logique PHP)
-      const imageData = this.buildImageData(piece, image, nameData.nomComplet, marqueEquip);
-      
+      const imageData = this.buildImageData(
+        piece,
+        image,
+        nameData.nomComplet,
+        marqueEquip,
+      );
+
       // CRITÈRES TECHNIQUES (logique PHP, LIMIT 3)
-      const technicalCriteria = this.processTechnicalCriteria(criterias, options);
+      const technicalCriteria = this.processTechnicalCriteria(
+        criterias,
+        options,
+      );
 
       return {
         // IDENTIFIANTS
@@ -455,7 +469,8 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
     const quantiteVente = parseFloat(piece.piece_qty_sale || '1');
     const prixUnitaire = prixBrut > 0 ? prixBrut : 0;
     const prixTotal = prixUnitaire * quantiteVente;
-    const prixConsigne = parseFloat(price?.pri_consigne_ttc || '0') * quantiteVente;
+    const prixConsigne =
+      parseFloat(price?.pri_consigne_ttc || '0') * quantiteVente;
     const prixTotalAvecConsigne = prixTotal + prixConsigne;
 
     return {
@@ -493,14 +508,11 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
    */
   private buildCompleteName(piece: any, filtre: any) {
     const sideFromFilter = filtre?.psf_side || piece.piece_name_side || '';
-    const nomComplet = [
-      piece.piece_name,
-      sideFromFilter,
-      piece.piece_name_comp,
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || 'Pièce sans nom';
+    const nomComplet =
+      [piece.piece_name, sideFromFilter, piece.piece_name_comp]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || 'Pièce sans nom';
 
     return { nomComplet, sideFromFilter };
   }
@@ -508,7 +520,12 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   /**
    * 🖼️ Construction données image (logique PHP)
    */
-  private buildImageData(piece: any, image: any, nomComplet: string, marqueEquip: any) {
+  private buildImageData(
+    piece: any,
+    image: any,
+    nomComplet: string,
+    marqueEquip: any,
+  ) {
     let url = 'upload/articles/no.png'; // Default PHP
     let alt = '';
     let title = '';
@@ -525,7 +542,10 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   /**
    * 🔧 Traitement critères techniques (logique PHP, LIMIT 3)
    */
-  private processTechnicalCriteria(criterias: any[], options: GetPiecesOptions) {
+  private processTechnicalCriteria(
+    criterias: any[],
+    options: GetPiecesOptions,
+  ) {
     if (!options.includeTechnicalCriteria || !criterias.length) {
       return [];
     }
@@ -544,9 +564,12 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   /**
    * 📊 Groupement par blocs (logique PHP)
    */
-  private groupPiecesByBlocks(pieces: UnifiedPiece[], options: GetPiecesOptions) {
+  private groupPiecesByBlocks(
+    pieces: UnifiedPiece[],
+    options: GetPiecesOptions,
+  ) {
     const blocsMap = new Map();
-    
+
     pieces.forEach((piece) => {
       const key = `${piece.filtre_gamme}_${piece.filtre_side}`;
       if (!blocsMap.has(key)) {
@@ -563,11 +586,17 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
       const bloc = blocsMap.get(key);
       bloc.pieces.push(piece);
       bloc.count++;
-      
+
       // Calculs prix min/max du bloc
       if (piece.prix_unitaire > 0) {
-        bloc.minPrice = bloc.minPrice === null ? piece.prix_unitaire : Math.min(bloc.minPrice, piece.prix_unitaire);
-        bloc.maxPrice = bloc.maxPrice === null ? piece.prix_unitaire : Math.max(bloc.maxPrice, piece.prix_unitaire);
+        bloc.minPrice =
+          bloc.minPrice === null
+            ? piece.prix_unitaire
+            : Math.min(bloc.minPrice, piece.prix_unitaire);
+        bloc.maxPrice =
+          bloc.maxPrice === null
+            ? piece.prix_unitaire
+            : Math.max(bloc.maxPrice, piece.prix_unitaire);
       }
     });
 
@@ -577,7 +606,10 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   /**
    * 📈 Calculs statistiques globaux
    */
-  private calculateGlobalStats(pieces: UnifiedPiece[], options: GetPiecesOptions) {
+  private calculateGlobalStats(
+    pieces: UnifiedPiece[],
+    options: GetPiecesOptions,
+  ) {
     const validPrices = pieces
       .map((p) => p.prix_unitaire)
       .filter((price) => price > 0);
@@ -585,9 +617,13 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
     return {
       minPrice: validPrices.length > 0 ? Math.min(...validPrices) : null,
       maxPrice: validPrices.length > 0 ? Math.max(...validPrices) : null,
-      averagePrice: validPrices.length > 0 
-        ? Math.round((validPrices.reduce((a, b) => a + b, 0) / validPrices.length) * 100) / 100
-        : null,
+      averagePrice:
+        validPrices.length > 0
+          ? Math.round(
+              (validPrices.reduce((a, b) => a + b, 0) / validPrices.length) *
+                100,
+            ) / 100
+          : null,
       totalPieces: pieces.length,
       piecesWithPrices: validPrices.length,
     };
@@ -597,18 +633,30 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
    * 🔧 MÉTHODES UTILITAIRES
    */
 
-  private extractUniqueIds(data: any[], field: string, filterNull = false): number[] {
+  private extractUniqueIds(
+    data: any[],
+    field: string,
+    filterNull = false,
+  ): number[] {
     const values = data.map((item) => item[field]);
     const filtered = filterNull ? values.filter(Boolean) : values;
     return [...new Set(filtered)];
   }
 
-  private optimizePieceIds(pieceIds: number[], options: GetPiecesOptions): number[] {
-    const maxPieces = options.maxPieces || this.DEFAULT_CONFIG.maxPiecesPerQuery;
+  private optimizePieceIds(
+    pieceIds: number[],
+    options: GetPiecesOptions,
+  ): number[] {
+    const maxPieces =
+      options.maxPieces || this.DEFAULT_CONFIG.maxPiecesPerQuery;
     return pieceIds.slice(0, maxPieces);
   }
 
-  private buildCacheKey(typeId: number, pgId: number, options: GetPiecesOptions): string {
+  private buildCacheKey(
+    typeId: number,
+    pgId: number,
+    options: GetPiecesOptions,
+  ): string {
     const optionsHash = JSON.stringify(options);
     return `pieces:unified:${typeId}:${pgId}:${Buffer.from(optionsHash).toString('base64').slice(0, 10)}`;
   }
@@ -617,7 +665,10 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
     return Math.random().toString(36).substr(2, 9);
   }
 
-  private buildEmptyResponse(message: string, duration: number): UnifiedCatalogResponse {
+  private buildEmptyResponse(
+    message: string,
+    duration: number,
+  ): UnifiedCatalogResponse {
     return {
       pieces: [],
       blocs: [],
@@ -644,7 +695,11 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
     };
   }
 
-  private buildErrorResponse(error: any, duration: number, requestId: string): UnifiedCatalogResponse {
+  private buildErrorResponse(
+    error: any,
+    duration: number,
+    requestId: string,
+  ): UnifiedCatalogResponse {
     return {
       pieces: [],
       blocs: [],
@@ -677,15 +732,14 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
 
   private updateMetrics(startTime: number, cacheHit: boolean) {
     const duration = Date.now() - startTime;
-    
+
     // Simple moving average pour responseTime
-    this.metrics.averageResponseTime = 
-      (this.metrics.averageResponseTime * 0.9) + (duration * 0.1);
-    
+    this.metrics.averageResponseTime =
+      this.metrics.averageResponseTime * 0.9 + duration * 0.1;
+
     // Cache hit rate
     if (cacheHit) {
-      this.metrics.cacheHitRate = 
-        (this.metrics.cacheHitRate * 0.9) + (1 * 0.1);
+      this.metrics.cacheHitRate = this.metrics.cacheHitRate * 0.9 + 1 * 0.1;
     }
   }
 
@@ -702,15 +756,17 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
   /**
    * 🔧 Cache methods (à implémenter avec Redis)
    */
-  private async getCachedResult(key: string): Promise<UnifiedCatalogResponse | null> {
+  private async getCachedResult(
+    key: string,
+  ): Promise<UnifiedCatalogResponse | null> {
     // TODO: Implémenter avec Redis/Memory cache
     return null;
   }
 
   private async setCachedResult(
-    key: string, 
-    result: UnifiedCatalogResponse, 
-    duration?: number
+    key: string,
+    result: UnifiedCatalogResponse,
+    duration?: number,
   ): Promise<void> {
     // TODO: Implémenter avec Redis cache
   }
@@ -740,7 +796,7 @@ export class PiecesUnifiedEnhancedService extends SupabaseBaseService {
 
   private buildCriteriasMap(criteriasData: any[]): Map<number, any[]> {
     const criteriasMap = new Map();
-    
+
     criteriasData.forEach((c: any) => {
       if (!criteriasMap.has(c.pc_piece_id)) {
         criteriasMap.set(c.pc_piece_id, []);

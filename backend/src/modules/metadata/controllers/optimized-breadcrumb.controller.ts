@@ -1,11 +1,11 @@
 /**
  * 🧭 OPTIMIZED BREADCRUMB CONTROLLER - Contrôleur API Breadcrumb
- * 
+ *
  * ✅ API REST COMPLÈTE pour gestion des breadcrumbs
- * 
+ *
  * Endpoints disponibles :
  * ✅ GET  /api/breadcrumb/:path           → Récupérer breadcrumb
- * ✅ POST /api/breadcrumb/:path           → Mettre à jour breadcrumb  
+ * ✅ POST /api/breadcrumb/:path           → Mettre à jour breadcrumb
  * ✅ GET  /api/breadcrumb/schema/:path    → Schema.org SEO
  * ✅ GET  /api/breadcrumb/config          → Configuration
  * ✅ POST /api/breadcrumb/cache/clear     → Nettoyage cache
@@ -22,15 +22,16 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { OptimizedBreadcrumbService, BreadcrumbItem } from '../services/optimized-breadcrumb.service';
+import {
+  OptimizedBreadcrumbService,
+  BreadcrumbItem,
+} from '../services/optimized-breadcrumb.service';
 
 @Controller('api/breadcrumb')
 export class OptimizedBreadcrumbController {
   private readonly logger = new Logger(OptimizedBreadcrumbController.name);
 
-  constructor(
-    private readonly breadcrumbService: OptimizedBreadcrumbService,
-  ) {
+  constructor(private readonly breadcrumbService: OptimizedBreadcrumbService) {
     this.logger.log('🧭 OptimizedBreadcrumbController initialisé');
   }
 
@@ -72,7 +73,7 @@ export class OptimizedBreadcrumbController {
   async getConfig(@Query('lang') lang: string = 'fr') {
     try {
       const config = this.breadcrumbService.getBreadcrumbConfig(lang);
-      
+
       return {
         success: true,
         data: config,
@@ -95,10 +96,10 @@ export class OptimizedBreadcrumbController {
   async clearCache(@Body() body?: { path?: string }) {
     try {
       await this.breadcrumbService.clearCache(body?.path);
-      
+
       return {
         success: true,
-        message: body?.path 
+        message: body?.path
           ? `Cache invalidé pour: ${body.path}`
           : 'Cache breadcrumb nettoyé',
       };
@@ -123,18 +124,24 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; data: BreadcrumbItem[] }> {
     try {
       // Décoder le chemin et s'assurer qu'il commence par /
-      const decodedPath = path ? ('/' + decodeURIComponent(path)) : '/';
-      
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
+
       this.logger.debug(`🔍 Récupération breadcrumb pour: ${decodedPath}`);
-      
-      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(decodedPath, lang);
-      
+
+      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(
+        decodedPath,
+        lang,
+      );
+
       return {
         success: true,
         data: breadcrumbs,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération breadcrumb pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur récupération breadcrumb pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération du breadcrumb',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -152,18 +159,24 @@ export class OptimizedBreadcrumbController {
     @Body() breadcrumbData: any,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const decodedPath = path ? ('/' + decodeURIComponent(path)) : '/';
-      
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
+
       this.logger.log(`💾 Mise à jour breadcrumb pour: ${decodedPath}`);
-      
-      await this.breadcrumbService.updateBreadcrumb(decodedPath, breadcrumbData);
-      
+
+      await this.breadcrumbService.updateBreadcrumb(
+        decodedPath,
+        breadcrumbData,
+      );
+
       return {
         success: true,
-        message: 'Fil d\'Ariane mis à jour avec succès',
+        message: "Fil d'Ariane mis à jour avec succès",
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur mise à jour breadcrumb pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur mise à jour breadcrumb pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la mise à jour du breadcrumb',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -181,9 +194,9 @@ export class OptimizedBreadcrumbController {
   ): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.debug(`⚙️ Récupération config breadcrumb lang: ${lang}`);
-      
+
       const config = this.breadcrumbService.getBreadcrumbConfig(lang);
-      
+
       return {
         success: true,
         data: config,
@@ -206,13 +219,15 @@ export class OptimizedBreadcrumbController {
     @Body() body: { path?: string } = {},
   ): Promise<{ success: boolean; message: string }> {
     try {
-      this.logger.log(`♻️ Nettoyage cache breadcrumb${body.path ? ` pour: ${body.path}` : ' complet'}`);
-      
+      this.logger.log(
+        `♻️ Nettoyage cache breadcrumb${body.path ? ` pour: ${body.path}` : ' complet'}`,
+      );
+
       await this.breadcrumbService.clearCache(body.path);
-      
+
       return {
         success: true,
-        message: body.path 
+        message: body.path
           ? `Cache nettoyé pour: ${body.path}`
           : 'Cache breadcrumb entièrement nettoyé',
       };
@@ -235,19 +250,26 @@ export class OptimizedBreadcrumbController {
     @Query('lang') lang: string = 'fr',
   ): Promise<{ success: boolean; data: any }> {
     try {
-      const decodedPath = path ? ('/' + decodeURIComponent(path)) : '/';
-      
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
+
       this.logger.debug(`📈 Génération schema breadcrumb pour: ${decodedPath}`);
-      
-      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(decodedPath, lang);
-      const schema = this.breadcrumbService.generateBreadcrumbSchema(breadcrumbs);
-      
+
+      const breadcrumbs = await this.breadcrumbService.getBreadcrumbs(
+        decodedPath,
+        lang,
+      );
+      const schema =
+        this.breadcrumbService.generateBreadcrumbSchema(breadcrumbs);
+
       return {
         success: true,
         data: schema,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur génération schema breadcrumb pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur génération schema breadcrumb pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la génération du schema breadcrumb',
         HttpStatus.INTERNAL_SERVER_ERROR,

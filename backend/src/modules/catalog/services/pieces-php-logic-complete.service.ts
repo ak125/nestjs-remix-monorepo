@@ -177,7 +177,7 @@ export class PiecesPhpLogicCompleteService extends SupabaseBaseService {
       const criteriasLinksMap = new Map(
         criteriasLinksResult.data?.map((cl: any) => [cl.pcl_cri_id, cl]) || [],
       );
-      
+
       const criteriasMap = new Map();
       criteriasData.forEach((c: any) => {
         if (!criteriasMap.has(c.pc_piece_id)) {
@@ -333,10 +333,10 @@ export class PiecesPhpLogicCompleteService extends SupabaseBaseService {
 
       const blocs = Array.from(blocsMap.values());
 
-      // 6️⃣ CALCUL PRIX MINIMUM GLOBAL (logique PHP ligne 56-70 améliorée) 
+      // 6️⃣ CALCUL PRIX MINIMUM GLOBAL (logique PHP ligne 56-70 améliorée)
       // Note: Prix désactivés temporairement car table pieces_prices semble vide
       const globalMinPrice = null;
-      
+
       this.logger.log(
         `🔍 [DEBUG-PRIX] Prix désactivés - table pieces_prices vide ou structure différente`,
       );

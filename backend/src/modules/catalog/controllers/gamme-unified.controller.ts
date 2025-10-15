@@ -42,23 +42,20 @@ export class GammeUnifiedController {
    * 🔍 GET /api/catalog/gammes/search - Recherche de gammes
    */
   @Get('search')
-  async search(
-    @Query('q') query: string,
-    @Query('limit') limit?: string
-  ) {
+  async search(@Query('q') query: string, @Query('limit') limit?: string) {
     this.logger.log(`🔍 [GET] /api/catalog/gammes/search?q=${query}`);
-    
+
     if (!query) {
       return { gammes: [], total: 0, query: '' };
     }
 
     const limitNum = limit ? parseInt(limit) : 20;
     const gammes = await this.gammeService.searchGammes(query, limitNum);
-    
+
     return {
       gammes,
       total: gammes.length,
-      query
+      query,
     };
   }
 
@@ -68,15 +65,15 @@ export class GammeUnifiedController {
   @Get('stats')
   async getStats() {
     this.logger.log('📊 [GET] /api/catalog/gammes/stats');
-    
+
     const hierarchy = await this.gammeService.getHierarchy();
     const featured = await this.gammeService.getFeaturedGammes();
-    
+
     return {
       success: true,
       data: hierarchy.stats,
       featured_count: featured.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

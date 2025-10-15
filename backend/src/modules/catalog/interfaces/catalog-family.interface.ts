@@ -5,7 +5,7 @@
 /**
  * Interface pour les gammes de produits (pieces_gamme)
  * Basée sur la requête SQL PHP :
- * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_pic, pg_img 
+ * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_pic, pg_img
  * FROM pieces_gamme JOIN catalog_gamme ON mc_pg_id = pg_id
  * WHERE pg_display = 1 AND pg_level = 1 AND mc_mf_id = $mf_id
  * ORDER BY mc_sort
@@ -27,8 +27,8 @@ export interface CatalogGamme {
 /**
  * Interface pour les familles de produits (catalog_family)
  * Basée sur la requête SQL PHP :
- * SELECT DISTINCT mf_id, IF(mf_name_system IS NULL, mf_name, mf_name_system) AS mf_name, 
- * mf_description, mf_pic FROM pieces_gamme 
+ * SELECT DISTINCT mf_id, IF(mf_name_system IS NULL, mf_name, mf_name_system) AS mf_name,
+ * mf_description, mf_pic FROM pieces_gamme
  * JOIN catalog_gamme ON mc_pg_id = pg_id
  * JOIN catalog_family ON mf_id = mc_mf_id
  * WHERE pg_display = 1 AND pg_level = 1 AND mf_display = 1

@@ -1,6 +1,6 @@
 /**
  * 📊 Service de Monitoring et Métriques - Intégration Graduelle
- * 
+ *
  * Service TypeScript pour surveiller les performances et l'utilisation
  * du système de recherche amélioré.
  */
@@ -100,11 +100,19 @@ export class SearchMonitoringService {
     success: boolean;
     error?: string;
   }) {
-    const { service, query, responseTime, resultCount, fromCache, success, error } = params;
+    const {
+      service,
+      query,
+      responseTime,
+      resultCount,
+      fromCache,
+      success,
+      error,
+    } = params;
 
     // Mise à jour des métriques de base
     this.metrics.totalSearches++;
-    
+
     if (success) {
       this.metrics.successfulSearches++;
     } else {
@@ -124,18 +132,26 @@ export class SearchMonitoringService {
 
     // Mise à jour des performances par service
     const perfMetrics = this.metrics.performance[service];
-    
+
     // Calcul de la moyenne mobile
     const currentCount = this.metrics.serviceUsage[service];
-    perfMetrics.avgResponseTime = 
-      (perfMetrics.avgResponseTime * (currentCount - 1) + responseTime) / currentCount;
-    
-    perfMetrics.maxResponseTime = Math.max(perfMetrics.maxResponseTime, responseTime);
-    perfMetrics.minResponseTime = Math.min(perfMetrics.minResponseTime, responseTime);
+    perfMetrics.avgResponseTime =
+      (perfMetrics.avgResponseTime * (currentCount - 1) + responseTime) /
+      currentCount;
+
+    perfMetrics.maxResponseTime = Math.max(
+      perfMetrics.maxResponseTime,
+      responseTime,
+    );
+    perfMetrics.minResponseTime = Math.min(
+      perfMetrics.minResponseTime,
+      responseTime,
+    );
 
     // Mise à jour du taux de cache global
     const totalCacheHits = await this.getCacheHitCount();
-    this.metrics.cacheHitRate = (totalCacheHits / this.metrics.totalSearches) * 100;
+    this.metrics.cacheHitRate =
+      (totalCacheHits / this.metrics.totalSearches) * 100;
 
     // Mise à jour des requêtes populaires
     this.updatePopularQueries(query);
@@ -146,7 +162,9 @@ export class SearchMonitoringService {
     // Sauvegarde périodique
     await this.persistMetrics();
 
-    this.logger.debug(`📊 Search recorded: ${service} - ${query} - ${responseTime}ms`);
+    this.logger.debug(
+      `📊 Search recorded: ${service} - ${query} - ${responseTime}ms`,
+    );
   }
 
   /**
@@ -165,7 +183,7 @@ export class SearchMonitoringService {
       averageResponseTime: this.calculateGlobalAverageResponseTime(),
       // Nettoyer les erreurs anciennes (garder seulement les 24 dernières heures)
       errors: this.metrics.errors.filter(
-        error => Date.now() - error.timestamp.getTime() < 24 * 60 * 60 * 1000
+        (error) => Date.now() - error.timestamp.getTime() < 24 * 60 * 60 * 1000,
       ),
     };
   }
@@ -194,36 +212,45 @@ export class SearchMonitoringService {
       };
     };
     trends: {
-      hourly: Array<{ hour: string; searches: number; avgResponseTime: number }>;
+      hourly: Array<{
+        hour: string;
+        searches: number;
+        avgResponseTime: number;
+      }>;
       popular: Array<{ query: string; count: number }>;
     };
     recommendations: string[];
   }> {
     const metrics = await this.getMetrics();
-    
+
     const basicSuccess = await this.getServiceSuccessRate('basic');
     const enhancedSuccess = await this.getServiceSuccessRate('enhanced');
-    
-    const improvement = metrics.performance.basic.avgResponseTime > 0 
-      ? ((metrics.performance.basic.avgResponseTime - metrics.performance.enhanced.avgResponseTime) 
-         / metrics.performance.basic.avgResponseTime * 100).toFixed(1)
-      : '0';
+
+    const improvement =
+      metrics.performance.basic.avgResponseTime > 0
+        ? (
+            ((metrics.performance.basic.avgResponseTime -
+              metrics.performance.enhanced.avgResponseTime) /
+              metrics.performance.basic.avgResponseTime) *
+            100
+          ).toFixed(1)
+        : '0';
 
     return {
       summary: {
         totalSearches: metrics.totalSearches,
-        successRate: (metrics.successfulSearches / metrics.totalSearches * 100),
+        successRate: (metrics.successfulSearches / metrics.totalSearches) * 100,
         avgResponseTime: metrics.averageResponseTime,
         cacheHitRate: metrics.cacheHitRate,
       },
       comparison: {
         basic: {
-          usage: (metrics.serviceUsage.basic / metrics.totalSearches * 100),
+          usage: (metrics.serviceUsage.basic / metrics.totalSearches) * 100,
           avgResponseTime: metrics.performance.basic.avgResponseTime,
           successRate: basicSuccess,
         },
         enhanced: {
-          usage: (metrics.serviceUsage.enhanced / metrics.totalSearches * 100),
+          usage: (metrics.serviceUsage.enhanced / metrics.totalSearches) * 100,
           avgResponseTime: metrics.performance.enhanced.avgResponseTime,
           successRate: enhancedSuccess,
           improvement: `${improvement}%`,
@@ -257,8 +284,10 @@ export class SearchMonitoringService {
   }> {
     try {
       const metrics = await this.getMetrics();
-      const cacheStatus = await this.cache.get(this.metricsKey) ? 'connected' : 'unavailable';
-      
+      const cacheStatus = (await this.cache.get(this.metricsKey))
+        ? 'connected'
+        : 'unavailable';
+
       return {
         status: 'healthy',
         metricsCount: metrics.totalSearches,
@@ -279,8 +308,10 @@ export class SearchMonitoringService {
   // Méthodes privées
 
   private updatePopularQueries(query: string) {
-    const existing = this.metrics.popularQueries.find(pq => pq.query === query);
-    
+    const existing = this.metrics.popularQueries.find(
+      (pq) => pq.query === query,
+    );
+
     if (existing) {
       existing.count++;
     } else {
@@ -295,8 +326,10 @@ export class SearchMonitoringService {
 
   private updateHourlyStats(responseTime: number, fromCache: boolean) {
     const currentHour = new Date().toISOString().slice(0, 13) + ':00:00';
-    let hourStat = this.metrics.hourlyStats.find(hs => hs.hour === currentHour);
-    
+    let hourStat = this.metrics.hourlyStats.find(
+      (hs) => hs.hour === currentHour,
+    );
+
     if (!hourStat) {
       hourStat = {
         hour: currentHour,
@@ -308,14 +341,18 @@ export class SearchMonitoringService {
     }
 
     hourStat.searches++;
-    hourStat.avgResponseTime = 
-      (hourStat.avgResponseTime * (hourStat.searches - 1) + responseTime) / hourStat.searches;
-    
+    hourStat.avgResponseTime =
+      (hourStat.avgResponseTime * (hourStat.searches - 1) + responseTime) /
+      hourStat.searches;
+
     // Calcul simple du cache hit rate pour cette heure
     if (fromCache) {
-      hourStat.cacheHitRate = (hourStat.cacheHitRate * (hourStat.searches - 1) + 100) / hourStat.searches;
+      hourStat.cacheHitRate =
+        (hourStat.cacheHitRate * (hourStat.searches - 1) + 100) /
+        hourStat.searches;
     } else {
-      hourStat.cacheHitRate = (hourStat.cacheHitRate * (hourStat.searches - 1)) / hourStat.searches;
+      hourStat.cacheHitRate =
+        (hourStat.cacheHitRate * (hourStat.searches - 1)) / hourStat.searches;
     }
 
     // Garder seulement les 168 dernières heures (7 jours)
@@ -325,10 +362,15 @@ export class SearchMonitoringService {
   }
 
   private calculateGlobalAverageResponseTime(): number {
-    const totalBasic = this.metrics.serviceUsage.basic * this.metrics.performance.basic.avgResponseTime;
-    const totalEnhanced = this.metrics.serviceUsage.enhanced * this.metrics.performance.enhanced.avgResponseTime;
-    const totalRequests = this.metrics.serviceUsage.basic + this.metrics.serviceUsage.enhanced;
-    
+    const totalBasic =
+      this.metrics.serviceUsage.basic *
+      this.metrics.performance.basic.avgResponseTime;
+    const totalEnhanced =
+      this.metrics.serviceUsage.enhanced *
+      this.metrics.performance.enhanced.avgResponseTime;
+    const totalRequests =
+      this.metrics.serviceUsage.basic + this.metrics.serviceUsage.enhanced;
+
     return totalRequests > 0 ? (totalBasic + totalEnhanced) / totalRequests : 0;
   }
 
@@ -338,38 +380,51 @@ export class SearchMonitoringService {
     return Math.floor(this.metrics.totalSearches * 0.3); // 30% estimation
   }
 
-  private async getServiceSuccessRate(service: 'basic' | 'enhanced'): Promise<number> {
-    const serviceErrors = this.metrics.errors.filter(e => e.service === service).length;
+  private async getServiceSuccessRate(
+    service: 'basic' | 'enhanced',
+  ): Promise<number> {
+    const serviceErrors = this.metrics.errors.filter(
+      (e) => e.service === service,
+    ).length;
     const serviceRequests = this.metrics.serviceUsage[service];
-    
-    return serviceRequests > 0 ? ((serviceRequests - serviceErrors) / serviceRequests * 100) : 100;
+
+    return serviceRequests > 0
+      ? ((serviceRequests - serviceErrors) / serviceRequests) * 100
+      : 100;
   }
 
   private generateRecommendations(metrics: SearchMetrics): string[] {
     const recommendations: string[] = [];
-    
+
     // Recommandations basées sur les performances
-    if (metrics.performance.enhanced.avgResponseTime > metrics.performance.basic.avgResponseTime) {
+    if (
+      metrics.performance.enhanced.avgResponseTime >
+      metrics.performance.basic.avgResponseTime
+    ) {
       recommendations.push(
-        'Service amélioré plus lent que le service de base - vérifier la configuration'
+        'Service amélioré plus lent que le service de base - vérifier la configuration',
       );
     }
-    
+
     // Recommandations basées sur le cache
     if (metrics.cacheHitRate < 30) {
-      recommendations.push('Taux de cache faible - optimiser la stratégie de mise en cache');
+      recommendations.push(
+        'Taux de cache faible - optimiser la stratégie de mise en cache',
+      );
     }
-    
+
     // Recommandations basées sur les erreurs
     if (metrics.failedSearches / metrics.totalSearches > 0.05) {
-      recommendations.push('Taux d\'erreur élevé - examiner les logs d\'erreur');
+      recommendations.push("Taux d'erreur élevé - examiner les logs d'erreur");
     }
-    
+
     // Recommandations basées sur l'utilisation
     if (metrics.serviceUsage.enhanced / metrics.totalSearches < 0.1) {
-      recommendations.push('Faible adoption du service amélioré - promouvoir les nouvelles fonctionnalités');
+      recommendations.push(
+        'Faible adoption du service amélioré - promouvoir les nouvelles fonctionnalités',
+      );
     }
-    
+
     return recommendations;
   }
 

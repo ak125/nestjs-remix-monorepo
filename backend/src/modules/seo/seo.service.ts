@@ -28,15 +28,21 @@ interface SeoSwitch {
 @Injectable()
 export class SeoService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoService.name);
-  
+
   private priceVariations = [
-    'pas cher', 'à prix discount', 'au meilleur prix',
-    'prix bas', 'tarif réduit', 'économique'
+    'pas cher',
+    'à prix discount',
+    'au meilleur prix',
+    'prix bas',
+    'tarif réduit',
+    'économique',
   ];
 
   constructor(configService: ConfigService) {
     super(configService);
-    this.logger.log('🎯 SeoService enrichi initialisé avec templates dynamiques');
+    this.logger.log(
+      '🎯 SeoService enrichi initialisé avec templates dynamiques',
+    );
   }
 
   /**

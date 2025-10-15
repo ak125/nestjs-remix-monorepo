@@ -3,26 +3,26 @@
 
 export interface Gamme {
   // Identifiants
-  id: string;                    // pg_id ou gamme_id unifié
-  alias?: string;               // URL-friendly name
-  
+  id: string; // pg_id ou gamme_id unifié
+  alias?: string; // URL-friendly name
+
   // Affichage
-  name: string;                 // Nom d'affichage
-  description?: string;         // Description
-  image?: string;              // Image de la gamme
-  
+  name: string; // Nom d'affichage
+  description?: string; // Description
+  image?: string; // Image de la gamme
+
   // Métadonnées
-  is_active: boolean;          // Actif/inactif
-  is_featured: boolean;        // Mis en avant
-  is_displayed: boolean;       // Affiché sur le site
-  
+  is_active: boolean; // Actif/inactif
+  is_featured: boolean; // Mis en avant
+  is_displayed: boolean; // Affiché sur le site
+
   // Hiérarchie
-  family_id?: string;          // ID de la famille parent
-  level: number;               // Niveau hiérarchique
-  sort_order: number;          // Ordre de tri
-  
+  family_id?: string; // ID de la famille parent
+  level: number; // Niveau hiérarchique
+  sort_order: number; // Ordre de tri
+
   // Statistiques
-  products_count?: number;     // Nombre de produits
+  products_count?: number; // Nombre de produits
 }
 
 export interface GammeWithFamily extends Gamme {
@@ -42,10 +42,10 @@ export interface FamilyWithGammes {
   system_name: string;
   description?: string;
   image?: string;
-  
+
   // Gammes associées
   gammes: Gamme[];
-  
+
   // Statistiques
   stats: {
     total_gammes: number;

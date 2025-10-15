@@ -30,9 +30,7 @@ interface UpdateMetadataDto {
 export class EnhancedMetadataController {
   private readonly logger = new Logger(EnhancedMetadataController.name);
 
-  constructor(
-    private readonly metadataService: EnhancedMetadataService,
-  ) {}
+  constructor(private readonly metadataService: EnhancedMetadataService) {}
 
   /**
    * Analytics SEO
@@ -44,10 +42,10 @@ export class EnhancedMetadataController {
   ): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log('Récupération analytics SEO');
-      
+
       const limitValue = limit ? parseInt(limit.toString(), 10) : 1000;
       const analytics = await this.metadataService.getSeoAnalytics(limitValue);
-      
+
       return {
         success: true,
         data: analytics,
@@ -68,13 +66,17 @@ export class EnhancedMetadataController {
   @Get('pages/without-seo')
   async getPagesWithoutMetadata(
     @Query('limit') limit?: number,
-  ): Promise<{ success: boolean; data: { pages: string[]; count: number; timestamp: string } }> {
+  ): Promise<{
+    success: boolean;
+    data: { pages: string[]; count: number; timestamp: string };
+  }> {
     try {
       this.logger.log('Récupération pages sans métadonnées');
-      
+
       const limitValue = limit ? parseInt(limit.toString(), 10) : 100;
-      const data = await this.metadataService.getPagesWithoutMetadata(limitValue);
-      
+      const data =
+        await this.metadataService.getPagesWithoutMetadata(limitValue);
+
       return {
         success: true,
         data,
@@ -106,13 +108,13 @@ export class EnhancedMetadataController {
       }
 
       this.logger.log(`Recherche métadonnées: "${query}"`);
-      
+
       const limitValue = limit ? parseInt(limit.toString(), 10) : 50;
-      
+
       // Note: Cette recherche utilise la table existante ___meta_tags_ariane
       // On peut rechercher dans les titres, descriptions et mots-clés
       const results = await this.searchInMetadata(query, limitValue);
-      
+
       return {
         success: true,
         data: {
@@ -139,7 +141,7 @@ export class EnhancedMetadataController {
   ): Promise<{ success: boolean; data: { updated: number; errors: any[] } }> {
     try {
       this.logger.log(`Mise à jour en lot de ${batch.length} pages`);
-      
+
       const results = {
         updated: 0,
         errors: [] as any[],
@@ -147,7 +149,10 @@ export class EnhancedMetadataController {
 
       for (const item of batch) {
         try {
-          await this.metadataService.updatePageMetadata(item.path, item.metadata);
+          await this.metadataService.updatePageMetadata(
+            item.path,
+            item.metadata,
+          );
           results.updated++;
         } catch (error) {
           results.errors.push({
@@ -175,13 +180,15 @@ export class EnhancedMetadataController {
    * GET /api/metadata/:path
    */
   @Get(':path(*)')
-  async getMetadata(@Param('path') path: string): Promise<{ success: boolean; data: PageMetadata }> {
+  async getMetadata(
+    @Param('path') path: string,
+  ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       this.logger.log(`Récupération métadonnées pour: ${path}`);
-      
+
       const decodedPath = decodeURIComponent(path);
       const metadata = await this.metadataService.getPageMetadata(decodedPath);
-      
+
       return {
         success: true,
         data: metadata,
@@ -206,10 +213,13 @@ export class EnhancedMetadataController {
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       this.logger.log(`Mise à jour métadonnées pour: ${path}`);
-      
+
       const decodedPath = decodeURIComponent(path);
-      const metadata = await this.metadataService.updatePageMetadata(decodedPath, updateData);
-      
+      const metadata = await this.metadataService.updatePageMetadata(
+        decodedPath,
+        updateData,
+      );
+
       return {
         success: true,
         data: metadata,
@@ -228,13 +238,15 @@ export class EnhancedMetadataController {
    * DELETE /api/metadata/:path
    */
   @Delete(':path(*)')
-  async deleteMetadata(@Param('path') path: string): Promise<{ success: boolean; message: string }> {
+  async deleteMetadata(
+    @Param('path') path: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`Suppression métadonnées pour: ${path}`);
-      
+
       const decodedPath = decodeURIComponent(path);
       await this.metadataService.deletePageMetadata(decodedPath);
-      
+
       return {
         success: true,
         message: 'Métadonnées supprimées avec succès',
@@ -256,7 +268,7 @@ export class EnhancedMetadataController {
       // Pour l'instant, retourne un tableau vide
       // TODO: Implémenter la recherche directe dans la base de données
       this.logger.log(`Recherche "${query}" - fonctionnalité en développement`);
-      
+
       return [];
     } catch (error) {
       this.logger.error('Erreur recherche dans métadonnées:', error);

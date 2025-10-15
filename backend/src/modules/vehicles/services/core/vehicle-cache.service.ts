@@ -4,26 +4,26 @@ import { Cache } from 'cache-manager';
 
 /**
  * 🗄️ VEHICLE CACHE SERVICE - Gestion du cache Redis pour les véhicules
- * 
+ *
  * Centralise toute la logique de cache pour les données véhicules :
  * - Marques, modèles, types
  * - Résultats de recherche
  * - Données enrichies avec cars_engine
- * 
+ *
  * TTL par type de données :
  * - Marques/Modèles/Types : 1h (données statiques)
- * - Recherches : 30 min (résultats dynamiques)  
+ * - Recherches : 30 min (résultats dynamiques)
  * - Enrichissement moteur : 2h (données semi-statiques)
  */
 
 export enum CacheType {
   BRANDS = 'brands',
-  MODELS = 'models', 
+  MODELS = 'models',
   TYPES = 'types',
   SEARCH = 'search',
   ENRICHMENT = 'enrichment',
   MINE = 'mine',
-  ENGINE = 'engine'
+  ENGINE = 'engine',
 }
 
 export interface CacheConfig {
@@ -34,21 +34,19 @@ export interface CacheConfig {
 @Injectable()
 export class VehicleCacheService {
   private readonly logger = new Logger(VehicleCacheService.name);
-  
+
   // Configuration du cache par type
   private readonly cacheConfigs: Record<CacheType, CacheConfig> = {
-    [CacheType.BRANDS]: { ttl: 3600, prefix: 'vehicles:brands:' },      // 1h
-    [CacheType.MODELS]: { ttl: 3600, prefix: 'vehicles:models:' },      // 1h
-    [CacheType.TYPES]: { ttl: 3600, prefix: 'vehicles:types:' },        // 1h
-    [CacheType.SEARCH]: { ttl: 1800, prefix: 'vehicles:search:' },      // 30min
-    [CacheType.ENRICHMENT]: { ttl: 7200, prefix: 'vehicles:engine:' },  // 2h
-    [CacheType.MINE]: { ttl: 3600, prefix: 'vehicles:mine:' },          // 1h
-    [CacheType.ENGINE]: { ttl: 7200, prefix: 'vehicles:eng:' }          // 2h
+    [CacheType.BRANDS]: { ttl: 3600, prefix: 'vehicles:brands:' }, // 1h
+    [CacheType.MODELS]: { ttl: 3600, prefix: 'vehicles:models:' }, // 1h
+    [CacheType.TYPES]: { ttl: 3600, prefix: 'vehicles:types:' }, // 1h
+    [CacheType.SEARCH]: { ttl: 1800, prefix: 'vehicles:search:' }, // 30min
+    [CacheType.ENRICHMENT]: { ttl: 7200, prefix: 'vehicles:engine:' }, // 2h
+    [CacheType.MINE]: { ttl: 3600, prefix: 'vehicles:mine:' }, // 1h
+    [CacheType.ENGINE]: { ttl: 7200, prefix: 'vehicles:eng:' }, // 2h
   };
 
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
   /**
    * 📝 Générer une clé de cache
@@ -65,12 +63,12 @@ export class VehicleCacheService {
     try {
       const key = this.generateKey(type, identifier);
       const cached = await this.cacheManager.get<T>(key);
-      
+
       if (cached) {
         this.logger.debug(`Cache HIT: ${key}`);
         return cached;
       }
-      
+
       this.logger.debug(`Cache MISS: ${key}`);
       return null;
     } catch (error) {
@@ -86,7 +84,7 @@ export class VehicleCacheService {
     try {
       const key = this.generateKey(type, identifier);
       const config = this.cacheConfigs[type];
-      
+
       await this.cacheManager.set(key, value, config.ttl * 1000); // ms
       this.logger.debug(`Cache SET: ${key} (TTL: ${config.ttl}s)`);
     } catch (error) {
@@ -125,9 +123,9 @@ export class VehicleCacheService {
    * 🔄 Obtenir ou calculer une valeur avec mise en cache automatique
    */
   async getOrSet<T>(
-    type: CacheType, 
-    identifier: string, 
-    factory: () => Promise<T>
+    type: CacheType,
+    identifier: string,
+    factory: () => Promise<T>,
   ): Promise<T> {
     // Tentative de récupération depuis le cache
     const cached = await this.get<T>(type, identifier);
@@ -138,12 +136,12 @@ export class VehicleCacheService {
     // Calcul de la valeur
     try {
       const value = await factory();
-      
+
       // Mise en cache si la valeur n'est pas nulle/undefined
       if (value !== null && value !== undefined) {
         await this.set(type, identifier, value);
       }
-      
+
       return value;
     } catch (error) {
       this.logger.error(`Erreur factory ${type}:${identifier}`, error);
@@ -164,7 +162,7 @@ export class VehicleCacheService {
   generateSearchKey(searchParams: Record<string, any>): string {
     // Tri des clés pour garantir la cohérence
     const sortedKeys = Object.keys(searchParams).sort();
-    const keyParts = sortedKeys.map(key => `${key}:${searchParams[key]}`);
+    const keyParts = sortedKeys.map((key) => `${key}:${searchParams[key]}`);
     return keyParts.join('|');
   }
 }

@@ -12,7 +12,12 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ConfigService } from '../services/config.service';
 import { DatabaseConfigService } from '../services/database-config.service';
 import { ConfigValidator } from '../validators/config.validator';
@@ -42,7 +47,10 @@ export class ConfigController {
 
   @Get()
   @ApiOperation({ summary: 'Récupérer toutes les configurations' })
-  @ApiResponse({ status: 200, description: 'Configurations récupérées avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations récupérées avec succès',
+  })
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   async getAllConfigs(@Query() query: ConfigQueryDto) {
     try {
@@ -53,7 +61,10 @@ export class ConfigController {
         total: configs.length,
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des configurations', error);
+      this.logger.error(
+        'Erreur lors de la récupération des configurations',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des configurations',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -63,20 +74,29 @@ export class ConfigController {
 
   @Get(':key')
   @ApiOperation({ summary: 'Récupérer une configuration par clé' })
-  @ApiResponse({ status: 200, description: 'Configuration récupérée avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration récupérée avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   async getConfig(@Param('key') key: string) {
     try {
       const config = await this.dbConfigService.getConfig(key);
       if (!config) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
       return {
         success: true,
         data: config,
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération de la configuration: ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la récupération de la configuration: ${key}`,
+        error,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
@@ -95,7 +115,8 @@ export class ConfigController {
   async createConfig(@Body() createConfigDto: CreateConfigDto) {
     try {
       // Validation des données
-      const validationResult = await this.configValidator.validateCreateConfig(createConfigDto);
+      const validationResult =
+        await this.configValidator.validateCreateConfig(createConfigDto);
       if (!validationResult.isValid) {
         throw new HttpException(
           {
@@ -113,7 +134,10 @@ export class ConfigController {
         message: 'Configuration créée avec succès',
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la création de la configuration', error);
+      this.logger.error(
+        'Erreur lors de la création de la configuration',
+        error,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
@@ -126,7 +150,10 @@ export class ConfigController {
 
   @Put(':key')
   @ApiOperation({ summary: 'Mettre à jour une configuration' })
-  @ApiResponse({ status: 200, description: 'Configuration mise à jour avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration mise à jour avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   @Roles(UserRole.ADMIN)
   async updateConfig(
@@ -135,7 +162,8 @@ export class ConfigController {
   ) {
     try {
       // Validation des données
-      const validationResult = await this.configValidator.validateUpdateConfig(updateConfigDto);
+      const validationResult =
+        await this.configValidator.validateUpdateConfig(updateConfigDto);
       if (!validationResult.isValid) {
         throw new HttpException(
           {
@@ -146,9 +174,15 @@ export class ConfigController {
         );
       }
 
-      const config = await this.dbConfigService.updateConfig(key, updateConfigDto);
+      const config = await this.dbConfigService.updateConfig(
+        key,
+        updateConfigDto,
+      );
       if (!config) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return {
@@ -157,7 +191,10 @@ export class ConfigController {
         message: 'Configuration mise à jour avec succès',
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour de la configuration: ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la mise à jour de la configuration: ${key}`,
+        error,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
@@ -170,14 +207,20 @@ export class ConfigController {
 
   @Delete(':key')
   @ApiOperation({ summary: 'Supprimer une configuration' })
-  @ApiResponse({ status: 200, description: 'Configuration supprimée avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration supprimée avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   @Roles(UserRole.ADMIN)
   async deleteConfig(@Param('key') key: string) {
     try {
       const deleted = await this.dbConfigService.deleteConfig(key);
       if (!deleted) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return {
@@ -185,7 +228,10 @@ export class ConfigController {
         message: 'Configuration supprimée avec succès',
       };
     } catch (error) {
-      this.logger.error(`Erreur lors de la suppression de la configuration: ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la suppression de la configuration: ${key}`,
+        error,
+      );
       if (error instanceof HttpException) {
         throw error;
       }
@@ -217,8 +263,11 @@ export class ConfigController {
   }
 
   @Get('environment/info')
-  @ApiOperation({ summary: 'Récupérer les informations d\'environnement' })
-  @ApiResponse({ status: 200, description: 'Informations d\'environnement récupérées' })
+  @ApiOperation({ summary: "Récupérer les informations d'environnement" })
+  @ApiResponse({
+    status: 200,
+    description: "Informations d'environnement récupérées",
+  })
   @Roles(UserRole.ADMIN)
   async getEnvironmentInfo() {
     try {
@@ -228,9 +277,12 @@ export class ConfigController {
         data: envInfo,
       };
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération des informations d\'environnement', error);
+      this.logger.error(
+        "Erreur lors de la récupération des informations d'environnement",
+        error,
+      );
       throw new HttpException(
-        'Erreur lors de la récupération des informations d\'environnement',
+        "Erreur lors de la récupération des informations d'environnement",
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

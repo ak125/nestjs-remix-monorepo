@@ -4,9 +4,9 @@ import { z } from 'zod';
 
 /**
  * 🎯 PRODUCTS ENHANCEMENT SERVICE V5 ULTIMATE SIMPLE - MÉTHODOLOGIE APPLIQUÉE
- * 
+ *
  * "Vérifier existant avant et utiliser le meilleur et améliorer"
- * 
+ *
  * Version simplifiée pour démonstration de la méthodologie V5 Ultimate
  */
 
@@ -35,9 +35,11 @@ export class ProductEnhancementService {
   /**
    * 🎯 VALIDATION AVANCÉE V5 SIMPLIFIÉE
    */
-  async validateProductAdvanced(productDto: any): Promise<ProductValidationResult> {
+  async validateProductAdvanced(
+    productDto: any,
+  ): Promise<ProductValidationResult> {
     const startTime = Date.now();
-    
+
     try {
       const cacheKey = `validation:${productDto.sku}`;
       if (this.enhancementCache.has(cacheKey)) {
@@ -76,7 +78,6 @@ export class ProductEnhancementService {
       setTimeout(() => this.enhancementCache.delete(cacheKey), 5 * 60 * 1000);
 
       return result;
-
     } catch (error) {
       return {
         is_valid: false,
@@ -103,7 +104,11 @@ export class ProductEnhancementService {
       recommended_max_stock: Math.floor(Math.random() * 50) + 25,
       reorder_point: Math.floor(Math.random() * 15) + 10,
       confidence_score: Math.floor(Math.random() * 20) + 80,
-      reasoning: ['Analyse IA avancée', 'Historique des ventes', 'Tendances saisonnières'],
+      reasoning: [
+        'Analyse IA avancée',
+        'Historique des ventes',
+        'Tendances saisonnières',
+      ],
     };
 
     this.enhancementCache.set(cacheKey, result);
@@ -226,7 +231,7 @@ export class ProductEnhancementService {
       features: [
         'Validation avancée multi-niveaux',
         'Recommandations stock IA',
-        'Rapport qualité temps réel', 
+        'Rapport qualité temps réel',
         'Analytics business avec prédictions',
         'Cache intelligent (5min-1h)',
         'Health monitoring complet',
@@ -238,7 +243,8 @@ export class ProductEnhancementService {
         analytics: 'Business intelligence',
         performance: 'Cache intelligent',
       },
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE SUCCESS',
+      methodology:
+        'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE SUCCESS',
     };
   }
 
@@ -267,18 +273,22 @@ export class ProductEnhancementService {
         cache: 'Intelligent adaptatif',
         health: 'Monitoring complet',
       },
-      methodology: 'vérifier existant avant et utiliser le meilleur et améliorer - SUCCESS',
+      methodology:
+        'vérifier existant avant et utiliser le meilleur et améliorer - SUCCESS',
       status: 'V5_ULTIMATE_OPERATIONAL',
     };
   }
 
-  private generateRecommendations(errors: string[], warnings: string[]): string[] {
+  private generateRecommendations(
+    errors: string[],
+    warnings: string[],
+  ): string[] {
     const recommendations: string[] = [];
-    
+
     if (errors.length > 0) {
       recommendations.push('Corriger les erreurs de validation');
     }
-    
+
     if (warnings.length > 0) {
       recommendations.push('Améliorer les données produit');
     }

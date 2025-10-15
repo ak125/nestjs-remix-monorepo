@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 /**
  * 📊 ENHANCED ANALYTICS SERVICE FOR CONFIG MODULE
- * 
+ *
  * Service spécialisé pour l'intégration analytics dans le module de configuration
  * ✅ Heritage SupabaseBaseService pour consistance
  * ✅ Cache intégré pour performances
@@ -16,7 +16,11 @@ import { ConfigService } from '@nestjs/config';
 
 export interface ConfigAnalyticsEvent {
   id: string;
-  type: 'config_change' | 'metadata_update' | 'breadcrumb_generated' | 'config_access';
+  type:
+    | 'config_change'
+    | 'metadata_update'
+    | 'breadcrumb_generated'
+    | 'config_access';
   category: 'configuration' | 'metadata' | 'navigation' | 'security';
   action: string;
   label?: string;
@@ -57,7 +61,8 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly cacheService: CacheService,
-    @Inject('ANALYTICS_ENABLED') private readonly analyticsEnabled: boolean = true,
+    @Inject('ANALYTICS_ENABLED')
+    private readonly analyticsEnabled: boolean = true,
   ) {
     super(configService);
   }
@@ -65,7 +70,9 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Enregistrer un événement analytics lié à la configuration
    */
-  async trackConfigEvent(event: Omit<ConfigAnalyticsEvent, 'id' | 'timestamp'>): Promise<void> {
+  async trackConfigEvent(
+    event: Omit<ConfigAnalyticsEvent, 'id' | 'timestamp'>,
+  ): Promise<void> {
     if (!this.analyticsEnabled) {
       return;
     }
@@ -105,7 +112,9 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
       // Mettre à jour le cache des métriques
       await this.updateCachedMetrics();
 
-      this.logger.debug(`Analytics event tracked: ${fullEvent.type} - ${fullEvent.action}`);
+      this.logger.debug(
+        `Analytics event tracked: ${fullEvent.type} - ${fullEvent.action}`,
+      );
     } catch (error) {
       this.logger.error('Failed to track analytics event:', error);
     }
@@ -114,23 +123,35 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Récupérer les métriques analytics du module de configuration
    */
-  async getConfigMetrics(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<ConfigAnalyticsMetrics> {
+  async getConfigMetrics(
+    timeframe: 'day' | 'week' | 'month' = 'week',
+  ): Promise<ConfigAnalyticsMetrics> {
     try {
       const cacheKey = `${this.cachePrefix}metrics:${timeframe}`;
-      
+
       // Vérifier le cache
-      const cached = await this.cacheService.get<ConfigAnalyticsMetrics>(cacheKey);
+      const cached =
+        await this.cacheService.get<ConfigAnalyticsMetrics>(cacheKey);
       if (cached) {
         return cached;
       }
 
       // Calculer les métriques
       const timeframeSql = this.getTimeframeSql(timeframe);
-      
+
       const metrics: ConfigAnalyticsMetrics = {
-        totalConfigChanges: await this.getEventCount('config_change', timeframeSql),
-        metadataUpdates: await this.getEventCount('metadata_update', timeframeSql),
-        breadcrumbGenerations: await this.getEventCount('breadcrumb_generated', timeframeSql),
+        totalConfigChanges: await this.getEventCount(
+          'config_change',
+          timeframeSql,
+        ),
+        metadataUpdates: await this.getEventCount(
+          'metadata_update',
+          timeframeSql,
+        ),
+        breadcrumbGenerations: await this.getEventCount(
+          'breadcrumb_generated',
+          timeframeSql,
+        ),
         uniqueUsers: await this.getUniqueUsersCount(timeframeSql),
         popularConfigs: await this.getPopularConfigs(timeframeSql),
         performanceMetrics: await this.getPerformanceMetrics(timeframeSql),
@@ -149,7 +170,11 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Tracker l'accès à une configuration spécifique
    */
-  async trackConfigAccess(configId: string, userId?: string, route?: string): Promise<void> {
+  async trackConfigAccess(
+    configId: string,
+    userId?: string,
+    route?: string,
+  ): Promise<void> {
     await this.trackConfigEvent({
       type: 'config_access',
       category: 'configuration',
@@ -213,7 +238,9 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Obtenir les configurations les plus populaires
    */
-  private async getPopularConfigs(timeframeSql: string): Promise<ConfigAnalyticsMetrics['popularConfigs']> {
+  private async getPopularConfigs(
+    timeframeSql: string,
+  ): Promise<ConfigAnalyticsMetrics['popularConfigs']> {
     const result = await this.executeQuery(
       `SELECT 
         config_id,
@@ -228,7 +255,7 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
       LIMIT 10`,
     );
 
-    return result.data.map(row => ({
+    return result.data.map((row) => ({
       configId: row.config_id,
       accessCount: parseInt(row.access_count),
       lastAccessed: new Date(row.last_accessed),
@@ -238,7 +265,9 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Obtenir les métriques de performance
    */
-  private async getPerformanceMetrics(timeframeSql: string): Promise<ConfigAnalyticsMetrics['performanceMetrics']> {
+  private async getPerformanceMetrics(
+    timeframeSql: string,
+  ): Promise<ConfigAnalyticsMetrics['performanceMetrics']> {
     // Cette méthode devrait être implémentée selon vos besoins spécifiques
     // Pour l'instant, on retourne des valeurs par défaut
     return {
@@ -251,7 +280,10 @@ export class ConfigAnalyticsService extends SupabaseBaseService {
   /**
    * Obtenir le nombre d'événements d'un type donné
    */
-  private async getEventCount(eventType: string, timeframeSql: string): Promise<number> {
+  private async getEventCount(
+    eventType: string,
+    timeframeSql: string,
+  ): Promise<number> {
     const result = await this.executeQuery(
       `SELECT COUNT(*) as count 
       FROM ___analytics_config_events 

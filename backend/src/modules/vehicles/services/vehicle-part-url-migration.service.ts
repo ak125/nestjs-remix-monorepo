@@ -1,9 +1,9 @@
 /**
  * 🔄 SERVICE DE MIGRATION URLs PIÈCES VÉHICULES
- * 
+ *
  * Gestion des redirections 301 pour les anciennes URLs de pièces
  * vers la nouvelle architecture de catalogue
- * 
+ *
  * @version 1.0.0
  * @since 2025-09-14
  * @author SEO Migration Team
@@ -19,33 +19,33 @@ import { Injectable, Logger } from '@nestjs/common';
  * Structure des anciennes URLs de pièces
  */
 interface LegacyPartUrl {
-  category: string;      // ex: "filtre-a-huile"
-  categoryId: number;    // ex: 7
-  brand: string;         // ex: "audi"
-  brandId: number;       // ex: 22
-  model: string;         // ex: "a7-sportback"
-  modelId: number;       // ex: 22059
-  type: string;          // ex: "3-0-tfsi-quattro"
-  typeId: number;        // ex: 34940
+  category: string; // ex: "filtre-a-huile"
+  categoryId: number; // ex: 7
+  brand: string; // ex: "audi"
+  brandId: number; // ex: 22
+  model: string; // ex: "a7-sportback"
+  modelId: number; // ex: 22059
+  type: string; // ex: "3-0-tfsi-quattro"
+  typeId: number; // ex: 34940
 }
 
 /**
  * Structure des nouvelles URLs de pièces
  */
 interface ModernPartUrl {
-  brand: string;         // ex: "audi-22"
-  model: string;         // ex: "a7-sportback-22059"
-  type: string;          // ex: "type-34940"
-  category: string;      // ex: "filtres"
+  brand: string; // ex: "audi-22"
+  model: string; // ex: "a7-sportback-22059"
+  type: string; // ex: "type-34940"
+  category: string; // ex: "filtres"
 }
 
 /**
  * Mapping des catégories anciennes vers nouvelles
  */
 interface CategoryMapping {
-  legacyName: string;    // ex: "filtre-a-huile"
-  legacyId: number;      // ex: 7
-  modernName: string;    // ex: "filtres"
+  legacyName: string; // ex: "filtre-a-huile"
+  legacyId: number; // ex: 7
+  modernName: string; // ex: "filtres"
   seoKeywords: string[]; // ex: ["filtre", "huile", "moteur"]
 }
 
@@ -59,129 +59,129 @@ interface CategoryMapping {
 const CATEGORY_MAPPINGS: CategoryMapping[] = [
   // Filtres
   {
-    legacyName: "filtre-a-huile",
+    legacyName: 'filtre-a-huile',
     legacyId: 7,
-    modernName: "filtres",
-    seoKeywords: ["filtre", "huile", "moteur", "entretien"]
+    modernName: 'filtres',
+    seoKeywords: ['filtre', 'huile', 'moteur', 'entretien'],
   },
   {
-    legacyName: "filtre-a-air",
+    legacyName: 'filtre-a-air',
     legacyId: 8,
-    modernName: "filtres",
-    seoKeywords: ["filtre", "air", "admission", "moteur"]
+    modernName: 'filtres',
+    seoKeywords: ['filtre', 'air', 'admission', 'moteur'],
   },
   {
-    legacyName: "filtre-d-habitacle",
+    legacyName: 'filtre-d-habitacle',
     legacyId: 424,
-    modernName: "filtres",
-    seoKeywords: ["filtre", "habitacle", "pollen", "climatisation"]
+    modernName: 'filtres',
+    seoKeywords: ['filtre', 'habitacle', 'pollen', 'climatisation'],
   },
   {
-    legacyName: "filtre-a-gasoil",
+    legacyName: 'filtre-a-gasoil',
     legacyId: 9,
-    modernName: "filtres",
-    seoKeywords: ["filtre", "gasoil", "carburant", "diesel"]
+    modernName: 'filtres',
+    seoKeywords: ['filtre', 'gasoil', 'carburant', 'diesel'],
   },
-  
+
   // Freinage
   {
-    legacyName: "plaquettes-de-frein",
+    legacyName: 'plaquettes-de-frein',
     legacyId: 15,
-    modernName: "freinage",
-    seoKeywords: ["plaquettes", "frein", "freinage", "sécurité"]
+    modernName: 'freinage',
+    seoKeywords: ['plaquettes', 'frein', 'freinage', 'sécurité'],
   },
   {
-    legacyName: "disques-de-frein",
+    legacyName: 'disques-de-frein',
     legacyId: 16,
-    modernName: "freinage",
-    seoKeywords: ["disques", "frein", "freinage", "sécurité"]
+    modernName: 'freinage',
+    seoKeywords: ['disques', 'frein', 'freinage', 'sécurité'],
   },
   {
-    legacyName: "etriers-de-frein",
+    legacyName: 'etriers-de-frein',
     legacyId: 17,
-    modernName: "freinage",
-    seoKeywords: ["étriers", "frein", "freinage", "hydraulique"]
+    modernName: 'freinage',
+    seoKeywords: ['étriers', 'frein', 'freinage', 'hydraulique'],
   },
-  
+
   // Échappement
   {
-    legacyName: "pot-d-echappement",
+    legacyName: 'pot-d-echappement',
     legacyId: 25,
-    modernName: "echappement",
-    seoKeywords: ["pot", "échappement", "silencieux", "catalyseur"]
+    modernName: 'echappement',
+    seoKeywords: ['pot', 'échappement', 'silencieux', 'catalyseur'],
   },
   {
-    legacyName: "catalyseur",
+    legacyName: 'catalyseur',
     legacyId: 26,
-    modernName: "echappement",
-    seoKeywords: ["catalyseur", "échappement", "pollution", "normes"]
+    modernName: 'echappement',
+    seoKeywords: ['catalyseur', 'échappement', 'pollution', 'normes'],
   },
   {
-    legacyName: "silencieux",
+    legacyName: 'silencieux',
     legacyId: 27,
-    modernName: "echappement",
-    seoKeywords: ["silencieux", "échappement", "bruit", "résonateur"]
+    modernName: 'echappement',
+    seoKeywords: ['silencieux', 'échappement', 'bruit', 'résonateur'],
   },
-  
+
   // Suspension
   {
-    legacyName: "amortisseurs",
+    legacyName: 'amortisseurs',
     legacyId: 35,
-    modernName: "suspension",
-    seoKeywords: ["amortisseurs", "suspension", "confort", "tenue"]
+    modernName: 'suspension',
+    seoKeywords: ['amortisseurs', 'suspension', 'confort', 'tenue'],
   },
   {
-    legacyName: "ressorts",
+    legacyName: 'ressorts',
     legacyId: 36,
-    modernName: "suspension",
-    seoKeywords: ["ressorts", "suspension", "hauteur", "rigidité"]
+    modernName: 'suspension',
+    seoKeywords: ['ressorts', 'suspension', 'hauteur', 'rigidité'],
   },
   {
-    legacyName: "silent-blocs",
+    legacyName: 'silent-blocs',
     legacyId: 37,
-    modernName: "suspension",
-    seoKeywords: ["silent-blocs", "suspension", "bruit", "vibrations"]
+    modernName: 'suspension',
+    seoKeywords: ['silent-blocs', 'suspension', 'bruit', 'vibrations'],
   },
-  
+
   // Éclairage
   {
-    legacyName: "ampoules",
+    legacyName: 'ampoules',
     legacyId: 45,
-    modernName: "eclairage",
-    seoKeywords: ["ampoules", "éclairage", "phares", "feux"]
+    modernName: 'eclairage',
+    seoKeywords: ['ampoules', 'éclairage', 'phares', 'feux'],
   },
   {
-    legacyName: "phares",
+    legacyName: 'phares',
     legacyId: 46,
-    modernName: "eclairage",
-    seoKeywords: ["phares", "éclairage", "optique", "LED"]
+    modernName: 'eclairage',
+    seoKeywords: ['phares', 'éclairage', 'optique', 'LED'],
   },
   {
-    legacyName: "feux-arriere",
+    legacyName: 'feux-arriere',
     legacyId: 47,
-    modernName: "eclairage",
-    seoKeywords: ["feux", "arrière", "éclairage", "signalisation"]
+    modernName: 'eclairage',
+    seoKeywords: ['feux', 'arrière', 'éclairage', 'signalisation'],
   },
-  
+
   // Carrosserie
   {
-    legacyName: "pare-chocs",
+    legacyName: 'pare-chocs',
     legacyId: 55,
-    modernName: "carrosserie",
-    seoKeywords: ["pare-chocs", "carrosserie", "protection", "esthétique"]
+    modernName: 'carrosserie',
+    seoKeywords: ['pare-chocs', 'carrosserie', 'protection', 'esthétique'],
   },
   {
-    legacyName: "retroviseurs",
+    legacyName: 'retroviseurs',
     legacyId: 56,
-    modernName: "carrosserie",
-    seoKeywords: ["rétroviseurs", "carrosserie", "vision", "sécurité"]
+    modernName: 'carrosserie',
+    seoKeywords: ['rétroviseurs', 'carrosserie', 'vision', 'sécurité'],
   },
   {
-    legacyName: "portières",
+    legacyName: 'portières',
     legacyId: 57,
-    modernName: "carrosserie",
-    seoKeywords: ["portières", "carrosserie", "accès", "structure"]
-  }
+    modernName: 'carrosserie',
+    seoKeywords: ['portières', 'carrosserie', 'accès', 'structure'],
+  },
 ];
 
 // ====================================
@@ -198,10 +198,10 @@ export class VehiclePartUrlMigrationService {
   parseLegacyPartUrl(url: string): LegacyPartUrl | null {
     // Pattern: /pieces/{category-name-id}/{brand-brandId}/{model-modelId}/{type-typeId}.html
     // Exemple: /pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html
-    
+
     const cleanUrl = url.replace(/^\/+/, '').replace(/\.html$/, '');
     const segments = cleanUrl.split('/');
-    
+
     if (segments.length !== 5 || segments[0] !== 'pieces') {
       this.logger.warn(`URL format non reconnu: ${url}`);
       return null;
@@ -212,17 +212,17 @@ export class VehiclePartUrlMigrationService {
       const categoryPart = segments[1];
       const categoryMatch = categoryPart.match(/^(.+)-(\d+)$/);
       if (!categoryMatch) return null;
-      
+
       // Extraction brand-id
       const brandPart = segments[2];
       const brandMatch = brandPart.match(/^(.+)-(\d+)$/);
       if (!brandMatch) return null;
-      
+
       // Extraction model-id
       const modelPart = segments[3];
       const modelMatch = modelPart.match(/^(.+)-(\d+)$/);
       if (!modelMatch) return null;
-      
+
       // Extraction type-id
       const typePart = segments[4];
       const typeMatch = typePart.match(/^(.+)-(\d+)$/);
@@ -236,7 +236,7 @@ export class VehiclePartUrlMigrationService {
         model: modelMatch[1],
         modelId: parseInt(modelMatch[2]),
         type: typeMatch[1],
-        typeId: parseInt(typeMatch[2])
+        typeId: parseInt(typeMatch[2]),
       };
     } catch (error) {
       this.logger.error(`Erreur parsing URL ${url}:`, error);
@@ -247,28 +247,41 @@ export class VehiclePartUrlMigrationService {
   /**
    * Trouve le mapping de catégorie moderne pour une ancienne catégorie
    */
-  findCategoryMapping(legacyCategory: string, legacyCategoryId?: number): CategoryMapping | null {
-    return CATEGORY_MAPPINGS.find(mapping => 
-      mapping.legacyName === legacyCategory || 
-      (legacyCategoryId && mapping.legacyId === legacyCategoryId)
-    ) || null;
+  findCategoryMapping(
+    legacyCategory: string,
+    legacyCategoryId?: number,
+  ): CategoryMapping | null {
+    return (
+      CATEGORY_MAPPINGS.find(
+        (mapping) =>
+          mapping.legacyName === legacyCategory ||
+          (legacyCategoryId && mapping.legacyId === legacyCategoryId),
+      ) || null
+    );
   }
 
   /**
    * Génère la nouvelle URL moderne pour une pièce
    */
   generateModernPartUrl(legacy: LegacyPartUrl): string | null {
-    const categoryMapping = this.findCategoryMapping(legacy.category, legacy.categoryId);
-    
+    const categoryMapping = this.findCategoryMapping(
+      legacy.category,
+      legacy.categoryId,
+    );
+
     if (!categoryMapping) {
-      this.logger.warn(`Pas de mapping trouvé pour catégorie: ${legacy.category} (${legacy.categoryId})`);
+      this.logger.warn(
+        `Pas de mapping trouvé pour catégorie: ${legacy.category} (${legacy.categoryId})`,
+      );
       return null;
     }
 
     // Format moderne: /pieces/{brand-id}/{model-id}/type-{typeId}/{category}
     const modernUrl = `/pieces/${legacy.brand}-${legacy.brandId}/${legacy.model}-${legacy.modelId}/type-${legacy.typeId}/${categoryMapping.modernName}`;
-    
-    this.logger.debug(`URL migrée: ${legacy.category} → ${categoryMapping.modernName}`);
+
+    this.logger.debug(
+      `URL migrée: ${legacy.category} → ${categoryMapping.modernName}`,
+    );
     return modernUrl;
   }
 
@@ -282,8 +295,11 @@ export class VehiclePartUrlMigrationService {
     const newUrl = this.generateModernPartUrl(parsed);
     if (!newUrl) return null;
 
-    const categoryMapping = this.findCategoryMapping(parsed.category, parsed.categoryId);
-    
+    const categoryMapping = this.findCategoryMapping(
+      parsed.category,
+      parsed.categoryId,
+    );
+
     return {
       newUrl,
       metadata: {
@@ -295,18 +311,29 @@ export class VehiclePartUrlMigrationService {
         vehicle_model: parsed.model,
         vehicle_type: parsed.type,
         seo_keywords: categoryMapping?.seoKeywords || [],
-        migrated_at: new Date().toISOString()
-      }
+        migrated_at: new Date().toISOString(),
+      },
     };
   }
 
   /**
    * Génère toutes les redirections nécessaires pour un véhicule donné
    */
-  generateVehicleRedirections(brandSlug: string, brandId: number, modelSlug: string, modelId: number, typeSlug: string, typeId: number) {
-    const redirections: Array<{source: string, destination: string, metadata: any}> = [];
+  generateVehicleRedirections(
+    brandSlug: string,
+    brandId: number,
+    modelSlug: string,
+    modelId: number,
+    typeSlug: string,
+    typeId: number,
+  ) {
+    const redirections: Array<{
+      source: string;
+      destination: string;
+      metadata: any;
+    }> = [];
 
-    CATEGORY_MAPPINGS.forEach(mapping => {
+    CATEGORY_MAPPINGS.forEach((mapping) => {
       const legacyUrl = `/pieces/${mapping.legacyName}-${mapping.legacyId}/${brandSlug}-${brandId}/${modelSlug}-${modelId}/${typeSlug}-${typeId}.html`;
       const modernUrl = `/pieces/${brandSlug}-${brandId}/${modelSlug}-${modelId}/type-${typeId}/${mapping.modernName}`;
 
@@ -321,16 +348,16 @@ export class VehiclePartUrlMigrationService {
             model: modelSlug,
             model_id: modelId,
             type: typeSlug,
-            type_id: typeId
+            type_id: typeId,
           },
           category_info: {
             legacy_name: mapping.legacyName,
             legacy_id: mapping.legacyId,
             modern_name: mapping.modernName,
-            seo_keywords: mapping.seoKeywords
+            seo_keywords: mapping.seoKeywords,
           },
-          generated_at: new Date().toISOString()
-        }
+          generated_at: new Date().toISOString(),
+        },
       });
     });
 
@@ -342,13 +369,13 @@ export class VehiclePartUrlMigrationService {
    */
   async testMigrationExamples() {
     const testUrls = [
-      "/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html",
-      "/pieces/filtre-a-air-8/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html", 
-      "/pieces/filtre-d-habitacle-424/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html"
+      '/pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html',
+      '/pieces/filtre-a-air-8/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html',
+      '/pieces/filtre-d-habitacle-424/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html',
     ];
 
     this.logger.log("🧪 Test des migrations d'URLs...");
-    
+
     testUrls.forEach((url, index) => {
       const result = this.migratePartUrl(url);
       if (result) {
@@ -366,15 +393,16 @@ export class VehiclePartUrlMigrationService {
   getMappingStats() {
     const stats = {
       total_mappings: CATEGORY_MAPPINGS.length,
-      categories_count: new Set(CATEGORY_MAPPINGS.map(m => m.modernName)).size,
-      legacy_categories: CATEGORY_MAPPINGS.map(m => ({
+      categories_count: new Set(CATEGORY_MAPPINGS.map((m) => m.modernName))
+        .size,
+      legacy_categories: CATEGORY_MAPPINGS.map((m) => ({
         name: m.legacyName,
         id: m.legacyId,
-        modern_equivalent: m.modernName
-      }))
+        modern_equivalent: m.modernName,
+      })),
     };
 
-    this.logger.log("📊 Statistiques mappings:", stats);
+    this.logger.log('📊 Statistiques mappings:', stats);
     return stats;
   }
 
@@ -382,19 +410,21 @@ export class VehiclePartUrlMigrationService {
    * 🔧 Génère les règles de redirection pour Caddy
    */
   async generateCaddyRedirectRules(categoryFilter?: string): Promise<string[]> {
-    this.logger.log(`🔧 Génération règles Caddy - Filtre: ${categoryFilter || 'toutes'}`);
-    
+    this.logger.log(
+      `🔧 Génération règles Caddy - Filtre: ${categoryFilter || 'toutes'}`,
+    );
+
     let mappingsToUse = CATEGORY_MAPPINGS;
-    
+
     // Filtrer par catégorie si spécifié
     if (categoryFilter) {
-      mappingsToUse = CATEGORY_MAPPINGS.filter(m => 
-        m.modernName.toLowerCase() === categoryFilter.toLowerCase()
+      mappingsToUse = CATEGORY_MAPPINGS.filter(
+        (m) => m.modernName.toLowerCase() === categoryFilter.toLowerCase(),
       );
     }
 
     const rules: string[] = [];
-    
+
     for (const mapping of mappingsToUse) {
       // Format Caddy: redir /ancien/chemin /nouveau/chemin 301
       const rule = `    redir /pieces/${mapping.legacyName}-${mapping.legacyId}/{brand}/{model}/{type}.html /pieces/{brand}/{model}/type-{type}/${mapping.modernName} 301`;
@@ -410,7 +440,7 @@ export class VehiclePartUrlMigrationService {
    */
   async generateCaddyDeploymentScript(): Promise<string> {
     const allRules = await this.generateCaddyRedirectRules();
-    
+
     const script = `#!/bin/bash
 # 🔄 Script de déploiement Caddy - Généré le ${new Date().toISOString()}
 # Redirections 301 pour migration URLs pièces auto

@@ -19,11 +19,17 @@ export interface EnhancedSearchResult {
 @Injectable()
 export class PiecesSearchEnhancedService {
   private readonly logger = new Logger(PiecesSearchEnhancedService.name);
-  private searchMetrics = { totalSearches: 0, avgResponseTime: 0, cacheHitRate: 0 };
+  private searchMetrics = {
+    totalSearches: 0,
+    avgResponseTime: 0,
+    cacheHitRate: 0,
+  };
 
   constructor(private readonly searchService: SearchService) {}
 
-  async searchPiecesAdvanced(params: EnhancedSearchParams): Promise<EnhancedSearchResult> {
+  async searchPiecesAdvanced(
+    params: EnhancedSearchParams,
+  ): Promise<EnhancedSearchResult> {
     const startTime = Date.now();
     this.searchMetrics.totalSearches++;
 
@@ -35,7 +41,8 @@ export class PiecesSearchEnhancedService {
       });
 
       const executionTime = Date.now() - startTime;
-      this.searchMetrics.avgResponseTime = (this.searchMetrics.avgResponseTime + executionTime) / 2;
+      this.searchMetrics.avgResponseTime =
+        (this.searchMetrics.avgResponseTime + executionTime) / 2;
 
       return {
         items: result.items || [],
@@ -67,7 +74,10 @@ export class PiecesSearchEnhancedService {
     }
   }
 
-  async getSearchSuggestions(term: string, options?: any): Promise<{ suggestions: string[] }> {
+  async getSearchSuggestions(
+    term: string,
+    options?: any,
+  ): Promise<{ suggestions: string[] }> {
     return this.autocomplete(term);
   }
 
@@ -84,8 +94,15 @@ export class PiecesSearchEnhancedService {
     return {
       status: 'operational',
       features: [
-        'hybrid-search', 'intelligent-cache', 'analytics', 'ml-scoring',
-        'autocomplete', 'fuzzy-search', 'oom-search', 'multi-language', 'personalization'
+        'hybrid-search',
+        'intelligent-cache',
+        'analytics',
+        'ml-scoring',
+        'autocomplete',
+        'fuzzy-search',
+        'oom-search',
+        'multi-language',
+        'personalization',
       ],
       performance: {
         totalSearches: this.searchMetrics.totalSearches,

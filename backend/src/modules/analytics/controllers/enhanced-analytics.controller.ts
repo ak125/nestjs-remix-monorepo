@@ -45,9 +45,7 @@ export interface UpdateConfigDto {
 export class EnhancedAnalyticsController {
   private readonly logger = new Logger(EnhancedAnalyticsController.name);
 
-  constructor(
-    private readonly analyticsService: EnhancedAnalyticsService,
-  ) {}
+  constructor(private readonly analyticsService: EnhancedAnalyticsService) {}
 
   /**
    * Endpoint de santé pour vérifier que le service fonctionne
@@ -79,7 +77,9 @@ export class EnhancedAnalyticsController {
    * Met à jour la configuration analytics
    */
   @Put('config')
-  async updateConfig(@Body() updates: UpdateConfigDto): Promise<AnalyticsConfig> {
+  async updateConfig(
+    @Body() updates: UpdateConfigDto,
+  ): Promise<AnalyticsConfig> {
     return this.analyticsService.updateConfig(updates);
   }
 
@@ -95,7 +95,7 @@ export class EnhancedAnalyticsController {
   ): Promise<{ script: string; provider: string; version: string }> {
     const isMinified = minified === 'true' || minified === '1';
     const scriptVersion = version || 'latest';
-    
+
     const script = await this.analyticsService.getTrackingScript({
       provider: provider || 'auto',
       minified: isMinified,
@@ -123,7 +123,7 @@ export class EnhancedAnalyticsController {
   ): Promise<string> {
     const isMinified = min === '1' || min === 'true';
     const scriptVersion = version || 'v7';
-    
+
     const result = await this.getTrackingScript(
       isMinified ? 'true' : 'false',
       scriptVersion,
@@ -137,7 +137,9 @@ export class EnhancedAnalyticsController {
    * Endpoint de compatibilité pour analytics.track.min.php
    */
   @Get('track.min.php')
-  async getMinifiedTrackingScript(@Query('v') version?: string): Promise<string> {
+  async getMinifiedTrackingScript(
+    @Query('v') version?: string,
+  ): Promise<string> {
     const result = await this.getTrackingScript('true', version || 'v7');
     return result.script;
   }
@@ -243,27 +245,32 @@ export class EnhancedAnalyticsController {
    * Endpoint pour les rapports batch (compatibilité avec l'existant)
    */
   @Post('report')
-  async handleAnalyticsReport(@Body() batch: {
-    type: string;
-    events: any[];
-    sessionId: string;
-    timestamp: string;
-  }) {
-    this.logger.log(`📊 Analytics batch received: ${batch.events.length} events`);
+  async handleAnalyticsReport(
+    @Body()
+    batch: {
+      type: string;
+      events: any[];
+      sessionId: string;
+      timestamp: string;
+    },
+  ) {
+    this.logger.log(
+      `📊 Analytics batch received: ${batch.events.length} events`,
+    );
 
     // Traiter chaque événement du batch
-    const promises = batch.events.map(event =>
+    const promises = batch.events.map((event) =>
       this.analyticsService.trackEvent(
         event.category || 'batch',
         event.action || 'unknown',
         event.label,
         event.value,
-        { 
+        {
           ...event.data,
           sessionId: batch.sessionId,
           batchType: batch.type,
-        }
-      )
+        },
+      ),
     );
 
     await Promise.all(promises);

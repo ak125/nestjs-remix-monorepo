@@ -302,12 +302,22 @@ export class UsersFinalService {
 
     const stats: GlobalStats = {
       totalUsers,
-      activeUsers: Math.round((activeUsers / sampleUsers.users.length) * totalUsers),
+      activeUsers: Math.round(
+        (activeUsers / sampleUsers.users.length) * totalUsers,
+      ),
       proUsers: Math.round((proUsers / sampleUsers.users.length) * totalUsers),
-      companyUsers: Math.round((companyUsers / sampleUsers.users.length) * totalUsers),
-      newUsersToday: Math.round((newUsersToday / sampleUsers.users.length) * totalUsers),
-      newUsersThisWeek: Math.round((newUsersThisWeek / sampleUsers.users.length) * totalUsers),
-      newUsersThisMonth: Math.round((newUsersThisMonth / sampleUsers.users.length) * totalUsers),
+      companyUsers: Math.round(
+        (companyUsers / sampleUsers.users.length) * totalUsers,
+      ),
+      newUsersToday: Math.round(
+        (newUsersToday / sampleUsers.users.length) * totalUsers,
+      ),
+      newUsersThisWeek: Math.round(
+        (newUsersThisWeek / sampleUsers.users.length) * totalUsers,
+      ),
+      newUsersThisMonth: Math.round(
+        (newUsersThisMonth / sampleUsers.users.length) * totalUsers,
+      ),
       averageLevel,
     };
 

@@ -29,10 +29,10 @@ export class ImageProcessingController {
   @Get('info/:imageName')
   async getImageInfo(@Param('imageName') imageName: string) {
     this.logger.log(`📊 [GET] /api/catalog/images/info/${imageName}`);
-    
+
     try {
       const imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/${imageName}.webp`;
-      
+
       return {
         success: true,
         data: {

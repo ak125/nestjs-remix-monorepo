@@ -7,11 +7,14 @@ export class ConfigMonitoringService {
 
   async startMonitoring(): Promise<void> {
     this.logger.log('Démarrage du monitoring des configurations');
-    
+
     // Monitor every 30 minutes
-    this.monitoringInterval = setInterval(() => {
-      this.performHealthCheck();
-    }, 30 * 60 * 1000);
+    this.monitoringInterval = setInterval(
+      () => {
+        this.performHealthCheck();
+      },
+      30 * 60 * 1000,
+    );
   }
 
   async stopMonitoring(): Promise<void> {
@@ -25,16 +28,26 @@ export class ConfigMonitoringService {
   private async performHealthCheck(): Promise<void> {
     try {
       // Check critical environment variables
-      const criticalVars = ['NODE_ENV', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'JWT_SECRET'];
-      const missing = criticalVars.filter(varName => !process.env[varName]);
-      
+      const criticalVars = [
+        'NODE_ENV',
+        'SUPABASE_URL',
+        'SUPABASE_SERVICE_ROLE_KEY',
+        'JWT_SECRET',
+      ];
+      const missing = criticalVars.filter((varName) => !process.env[varName]);
+
       if (missing.length > 0) {
-        this.logger.error(`Variables d'environnement manquantes: ${missing.join(', ')}`);
+        this.logger.error(
+          `Variables d'environnement manquantes: ${missing.join(', ')}`,
+        );
       } else {
         this.logger.debug('Health check des configurations réussi');
       }
     } catch (error) {
-      this.logger.error('Erreur lors du health check des configurations', error);
+      this.logger.error(
+        'Erreur lors du health check des configurations',
+        error,
+      );
     }
   }
 }

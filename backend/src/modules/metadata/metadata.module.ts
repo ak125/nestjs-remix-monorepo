@@ -1,8 +1,8 @@
 /**
  * 🔍 METADATA MODULE - Module de Métadonnées Optimisé
- * 
+ *
  * ✅ MISSION : "Vérifier existant et utiliser le meilleur"
- * 
+ *
  * Architecture optimisée pour :
  * ✅ Services de métadonnées avancés
  * ✅ Breadcrumb intelligent (DB + génération auto)
@@ -43,10 +43,7 @@ import { BreadcrumbAdminController } from './controllers/breadcrumb-admin.contro
     OptimizedBreadcrumbController,
     BreadcrumbAdminController,
   ],
-  providers: [
-    OptimizedMetadataService,
-    OptimizedBreadcrumbService,
-  ],
+  providers: [OptimizedMetadataService, OptimizedBreadcrumbService],
   exports: [
     // Exporté pour réutilisation dans d'autres modules
     OptimizedMetadataService,

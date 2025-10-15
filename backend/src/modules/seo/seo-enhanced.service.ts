@@ -50,12 +50,12 @@ interface PiecesSeoRequest {
 @Injectable()
 export class SeoEnhancedService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoEnhancedService.name);
-  
+
   // Variations de prix pour la diversité du contenu
   private enhancedPriceVariations = [
     'à prix imbattables',
     'pas cher',
-    'à petit prix',  
+    'à petit prix',
     'économique',
     'à prix réduit',
     'à tarif avantageux',
@@ -95,11 +95,17 @@ export class SeoEnhancedService extends SupabaseBaseService {
         .select('*');
 
       // Traitement du template
-      const result = await this.processTemplate(template, typeId, variables, switches || []);
-      
-      this.logger.log(`✅ Contenu SEO généré pour pgId=${pgId}, typeId=${typeId}`);
-      return result;
+      const result = await this.processTemplate(
+        template,
+        typeId,
+        variables,
+        switches || [],
+      );
 
+      this.logger.log(
+        `✅ Contenu SEO généré pour pgId=${pgId}, typeId=${typeId}`,
+      );
+      return result;
     } catch (error) {
       this.logger.error(`❌ Erreur génération SEO: ${error.message}`);
       return this.getFallbackSeoContent(variables);
@@ -116,18 +122,50 @@ export class SeoEnhancedService extends SupabaseBaseService {
     switches: SeoSwitch[],
   ): Promise<SeoGenerationResult> {
     // Traitement de base des variables
-    let processedTitle = this.replaceVariables(template.pg_title, variables, typeId);
-    let processedDescription = this.replaceVariables(template.pg_description, variables, typeId);
+    let processedTitle = this.replaceVariables(
+      template.pg_title,
+      variables,
+      typeId,
+    );
+    let processedDescription = this.replaceVariables(
+      template.pg_description,
+      variables,
+      typeId,
+    );
     let processedH1 = this.replaceVariables(template.pg_h1, variables, typeId);
-    let processedContent = this.replaceVariables(template.pg_content, variables, typeId);
-    let processedKeywords = this.replaceVariables(template.pg_keywords, variables, typeId);
+    let processedContent = this.replaceVariables(
+      template.pg_content,
+      variables,
+      typeId,
+    );
+    let processedKeywords = this.replaceVariables(
+      template.pg_keywords,
+      variables,
+      typeId,
+    );
 
     // Traitement des switches dynamiques
-    processedTitle = await this.processSwitches(processedTitle, typeId, switches);
-    processedDescription = await this.processSwitches(processedDescription, typeId, switches);
+    processedTitle = await this.processSwitches(
+      processedTitle,
+      typeId,
+      switches,
+    );
+    processedDescription = await this.processSwitches(
+      processedDescription,
+      typeId,
+      switches,
+    );
     processedH1 = await this.processSwitches(processedH1, typeId, switches);
-    processedContent = await this.processSwitches(processedContent, typeId, switches);
-    processedKeywords = await this.processSwitches(processedKeywords, typeId, switches);
+    processedContent = await this.processSwitches(
+      processedContent,
+      typeId,
+      switches,
+    );
+    processedKeywords = await this.processSwitches(
+      processedKeywords,
+      typeId,
+      switches,
+    );
 
     return {
       title: this.cleanText(processedTitle),
@@ -141,7 +179,11 @@ export class SeoEnhancedService extends SupabaseBaseService {
   /**
    * Remplace les variables dans un template
    */
-  private replaceVariables(content: string, variables: SeoVariables, typeId: number): string {
+  private replaceVariables(
+    content: string,
+    variables: SeoVariables,
+    typeId: number,
+  ): string {
     let processed = content;
 
     // Variables de base
@@ -182,7 +224,11 @@ export class SeoEnhancedService extends SupabaseBaseService {
   /**
    * Traite les switches dynamiques
    */
-  private async processSwitches(content: string, typeId: number, switches: SeoSwitch[]): Promise<string> {
+  private async processSwitches(
+    content: string,
+    typeId: number,
+    switches: SeoSwitch[],
+  ): Promise<string> {
     let processed = content;
 
     // Recherche des patterns #CompSwitch_X_Y#
@@ -204,8 +250,9 @@ export class SeoEnhancedService extends SupabaseBaseService {
         );
 
         if (relevantSwitches.length > 0) {
-          // Sélection basée sur typeId et optionIndex  
-          const selectedIndex = (typeId + optionIndex) % relevantSwitches.length;
+          // Sélection basée sur typeId et optionIndex
+          const selectedIndex =
+            (typeId + optionIndex) % relevantSwitches.length;
           const selectedSwitch = relevantSwitches[selectedIndex];
           processed = processed.replace(fullMatch, selectedSwitch.sgcs_content);
         } else {
@@ -213,7 +260,9 @@ export class SeoEnhancedService extends SupabaseBaseService {
           processed = processed.replace(fullMatch, '');
         }
       } catch (error) {
-        this.logger.warn(`⚠️ Erreur switch ${aliasId}_${optionIndex}: ${error.message}`);
+        this.logger.warn(
+          `⚠️ Erreur switch ${aliasId}_${optionIndex}: ${error.message}`,
+        );
         processed = processed.replace(fullMatch, '');
       }
     }
@@ -235,10 +284,10 @@ export class SeoEnhancedService extends SupabaseBaseService {
    * Contenu SEO de fallback en cas d'erreur
    */
   private getFallbackSeoContent(variables: SeoVariables): SeoGenerationResult {
-    const baseTitle = variables.gamme 
-      ? `${variables.gamme} ${variables.marque} ${variables.modele}` 
+    const baseTitle = variables.gamme
+      ? `${variables.gamme} ${variables.marque} ${variables.modele}`
       : `Pièces ${variables.marque} ${variables.modele}`;
-    
+
     return {
       title: baseTitle,
       description: `${baseTitle} - Pièces détachées de qualité à prix compétitif`,
@@ -251,7 +300,9 @@ export class SeoEnhancedService extends SupabaseBaseService {
   /**
    * Génération SEO spécifique aux pièces détachées
    */
-  async generatePiecesSeoContent(request: PiecesSeoRequest): Promise<SeoGenerationResult> {
+  async generatePiecesSeoContent(
+    request: PiecesSeoRequest,
+  ): Promise<SeoGenerationResult> {
     const variables: SeoVariables = {
       gamme: request.gamme,
       marque: request.marque,
@@ -272,7 +323,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
   async getSeoAnalytics(): Promise<any> {
     try {
       const supabase = this.supabase;
-      
+
       // Statistiques des templates
       const { data: templates, count: totalTemplates } = await supabase
         .from('seo_gamme_car')
@@ -280,7 +331,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
 
       // Statistiques des switches
       const { data: switches, count: totalSwitches } = await supabase
-        .from('seo_gamme_car_switch') 
+        .from('seo_gamme_car_switch')
         .select('*', { count: 'exact' });
 
       return {

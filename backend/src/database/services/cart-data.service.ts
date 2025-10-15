@@ -123,20 +123,20 @@ export class CartDataService extends SupabaseBaseService {
   async getCartWithMetadata(sessionId: string) {
     try {
       // this.logger.log(`🛒 Récupération panier Redis: ${sessionId}`);
-      
+
       // Récupérer items du panier depuis Redis
       const cartItems = await this.getCartFromRedis(sessionId);
-      
+
       // LOG DE DEBUG pour voir ce qui est stocké
       // this.logger.log(
       //   `📦 Items bruts depuis Redis (${cartItems.length} items):`,
       //   JSON.stringify(cartItems, null, 2),
       // );
-      
+
       if (cartItems.length === 0) {
         this.logger.warn(`⚠️ Panier vide pour session ${sessionId}`);
       }
-      
+
       // Enrichir avec les données produits depuis les tables existantes
       const enrichedItems = await Promise.all(
         cartItems.map(async (item) => {
@@ -149,11 +149,11 @@ export class CartDataService extends SupabaseBaseService {
               product.piece_marque && product.piece_marque !== 'MARQUE INCONNUE'
                 ? product.piece_marque
                 : 'Non spécifiée';
-            
+
             // ✅ PHASE 4: Extraire la consigne depuis product
             const consigneUnit = (product as any).consigne_ttc || 0;
             const hasConsigne = consigneUnit > 0;
-            
+
             return {
               ...item,
               product_name: product.piece_name || item.product_name,
@@ -179,7 +179,7 @@ export class CartDataService extends SupabaseBaseService {
               item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
                 ? item.product_brand
                 : 'Non spécifiée';
-            
+
             return {
               ...item,
               product_brand: fallbackBrand,
@@ -187,10 +187,10 @@ export class CartDataService extends SupabaseBaseService {
           }
         }),
       );
-      
+
       // Récupérer le code promo appliqué s'il existe
       const appliedPromo = await this.getAppliedPromo(sessionId);
-      
+
       // Récupérer la méthode de livraison appliquée
       const appliedShipping = await this.getAppliedShipping(sessionId);
 
@@ -199,7 +199,7 @@ export class CartDataService extends SupabaseBaseService {
         (sum, item) => sum + ((item as any).consigne_total || 0),
         0,
       );
-      
+
       // Calculer statistiques comme l'ancien système PHP
       const stats = {
         itemCount: enrichedItems.length,
@@ -220,9 +220,13 @@ export class CartDataService extends SupabaseBaseService {
         shippingCost: appliedShipping?.cost || 0,
         shippingMethod: appliedShipping?.method_name,
       };
-      
+
       // Appliquer la réduction promo, ajouter les consignes et les frais de port
-      stats.total = stats.subtotal + consigneTotal - stats.promoDiscount + stats.shippingCost;
+      stats.total =
+        stats.subtotal +
+        consigneTotal -
+        stats.promoDiscount +
+        stats.shippingCost;
 
       return {
         metadata: {
@@ -251,10 +255,10 @@ export class CartDataService extends SupabaseBaseService {
   async getCartItems(sessionId: string): Promise<CartItem[]> {
     try {
       this.logger.log(`🛒 Récupération items panier Redis: ${sessionId}`);
-      
+
       const cartItems = await this.getCartFromRedis(sessionId);
       this.logger.log(`✅ Panier trouvé: ${cartItems.length} items`);
-      
+
       return cartItems;
     } catch (error) {
       this.logger.error('Erreur getCartItems:', error);
@@ -285,12 +289,12 @@ export class CartDataService extends SupabaseBaseService {
 
       // 2. Récupérer le panier existant depuis Redis
       const cartItems = await this.getCartFromRedis(sessionId);
-      
+
       // 3. Vérifier si le produit est déjà dans le panier
       const existingItemIndex = cartItems.findIndex(
         (item) => item.product_id === productId.toString(),
       );
-      
+
       const newItem: CartItem = {
         id: `${sessionId}-${productId}-${Date.now()}`,
         user_id: sessionId,
@@ -305,11 +309,11 @@ export class CartDataService extends SupabaseBaseService {
         product_description: product.piece_des,
         weight: product.piece_weight_kgm,
       };
-      
+
       if (existingItemIndex >= 0) {
         // 4a. Mettre à jour la quantité si produit déjà présent
         const updatedItems = [...cartItems];
-        
+
         if (replace) {
           // Remplacer la quantité (pour les contrôles +/- du frontend)
           updatedItems[existingItemIndex].quantity = quantity;
@@ -323,7 +327,7 @@ export class CartDataService extends SupabaseBaseService {
             `🔄 Quantité additionnée Redis: ${product.piece_name} (${updatedItems[existingItemIndex].quantity})`,
           );
         }
-        
+
         updatedItems[existingItemIndex].updated_at = new Date().toISOString();
         await this.saveCartToRedis(sessionId, updatedItems);
         return updatedItems[existingItemIndex];
@@ -335,13 +339,13 @@ export class CartDataService extends SupabaseBaseService {
         this.logger.log(
           `➕ Nouveau produit ajouté Redis: ${product.piece_name} (${quantity})`,
         );
-        
+
         // VÉRIFICATION: relire immédiatement pour confirmer
         const verification = await this.getCartFromRedis(sessionId);
         this.logger.log(
           `🔍 Vérification immédiate: ${verification.length} items trouvés`,
         );
-        
+
         return newItem;
       }
     } catch (error) {
@@ -355,7 +359,7 @@ export class CartDataService extends SupabaseBaseService {
   async getProductWithAllData(productId: number) {
     try {
       // this.logger.log(`🔍 Récupération complète produit ID ${productId}...`);
-      
+
       // REQUÊTE SIMPLE POUR RÉCUPÉRER LA PIÈCE
       const { data: pieceData, error: pieceError } = await this.client
         .from('pieces')
@@ -373,7 +377,7 @@ export class CartDataService extends SupabaseBaseService {
       //   piece_pm_id: pieceData.piece_pm_id,
       //   type_piece_pm_id: typeof pieceData.piece_pm_id,
       // });
-      
+
       // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
       const { data: priceData, error: priceError } = await this.client
         .from('pieces_price')
@@ -383,26 +387,26 @@ export class CartDataService extends SupabaseBaseService {
 
       // REQUÊTE POUR LA MARQUE SI piece_pm_id existe
       let brandName = 'MARQUE INCONNUE'; // fallback par défaut
-      
+
       if (pieceData.piece_pm_id) {
         try {
           // this.logger.log(
           //   `🔍 Recherche marque pour piece_pm_id: ${pieceData.piece_pm_id}`,
           // );
-          
+
           // Rechercher dans pieces_marque avec pm_id
           const { data: brandData, error: brandError } = await this.client
             .from('pieces_marque')
             .select('pm_name, pm_alias, pm_id, pm_sort')
             .eq('pm_id', pieceData.piece_pm_id.toString())
             .single();
-          
+
           // this.logger.log(`🔍 Résultat recherche marque:`, {
           //   piece_pm_id: pieceData.piece_pm_id,
           //   brandData,
           //   brandError,
           // });
-          
+
           if (!brandError && brandData) {
             brandName =
               brandData.pm_name ||
@@ -438,12 +442,12 @@ export class CartDataService extends SupabaseBaseService {
           priceTTC = parseFloat(priceStr) || 0;
         }
       }
-      
+
       // Si pas de prix dans pieces_price, essayer pieces.piece_price_ttc
       if (priceTTC === 0 && pieceData.piece_price_ttc) {
         priceTTC = parseFloat(pieceData.piece_price_ttc) || 0;
       }
-      
+
       // Prix de test par défaut si toujours 0 (pour les tests E2E)
       if (priceTTC === 0) {
         priceTTC = 99.99; // Prix par défaut pour tests
@@ -451,7 +455,7 @@ export class CartDataService extends SupabaseBaseService {
           `⚠️ Aucun prix trouvé pour ${productId}, utilisation prix par défaut: ${priceTTC}€`,
         );
       }
-      
+
       // Extraire la consigne (caution remboursable)
       let consigneTTC = 0;
       if (!priceError && priceData && priceData.length > 0) {
@@ -460,11 +464,11 @@ export class CartDataService extends SupabaseBaseService {
           consigneTTC = parseFloat(consigneStr) || 0;
         }
       }
-      
+
       // this.logger.log(
       //   `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€ - Consigne: ${consigneTTC}€`,
       // );
-      
+
       return {
         ...pieceData,
         piece_marque: brandName, // Nom de marque complet
@@ -507,18 +511,18 @@ export class CartDataService extends SupabaseBaseService {
       this.logger.log(
         `🗑️ Suppression produit ${productId} du panier session: ${sessionId}`,
       );
-      
+
       // Récupérer le panier existant
       const cartItems = await this.getCartFromRedis(sessionId);
-      
+
       // Filtrer pour retirer le produit
       const updatedItems = cartItems.filter(
         (item) => item.product_id !== productId.toString(),
       );
-      
+
       // Sauvegarder le panier mis à jour
       await this.saveCartToRedis(sessionId, updatedItems);
-      
+
       this.logger.log(
         `✅ Produit ${productId} supprimé du panier ${sessionId}`,
       );

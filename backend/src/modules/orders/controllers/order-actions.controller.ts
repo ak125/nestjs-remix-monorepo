@@ -14,7 +14,7 @@ import { EmailService } from '../../../services/email.service';
 
 /**
  * 🎮 Controller Actions Commandes
- * 
+ *
  * Endpoints pour toutes les actions backoffice
  */
 @Controller('api/admin/orders')

@@ -22,7 +22,7 @@ export interface VehicleDetailsEnhanced {
   type_month_from?: string;
   type_month_to?: string;
   type_display: boolean;
-  
+
   // Relations enrichies
   auto_marque: {
     marque_id: number;
@@ -32,7 +32,7 @@ export interface VehicleDetailsEnhanced {
     marque_logo?: string;
     marque_relfollow: boolean;
   };
-  
+
   auto_modele: {
     modele_id: number;
     modele_name: string;
@@ -42,7 +42,7 @@ export interface VehicleDetailsEnhanced {
     modele_year_from?: string;
     modele_year_to?: string;
   };
-  
+
   auto_type_motor_code?: Array<{
     tmc_code: string;
     tmc_description?: string;
@@ -59,7 +59,7 @@ export interface VehicleDetailsEnhanced {
  * - Cache intelligent intégré avec TTL
  * - Gestion d'erreurs robuste et logging détaillé
  * - Types TypeScript stricts pour meilleure maintenance
- * 
+ *
  * Tables utilisées :
  * - auto_marque (40 marques actives avec logos et SEO)
  * - auto_modele (5745 modèles avec périodes de production)
@@ -70,7 +70,7 @@ export interface VehicleDetailsEnhanced {
 export class VehiclesService extends SupabaseBaseService {
   // Pas de constructeur - utilise celui du parent sans ConfigService
   // Cela évite les dépendances circulaires
-  
+
   // Cache en mémoire simple pour éviter les requêtes répétitives
   private cache = new Map<string, { data: any; expires: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -118,7 +118,8 @@ export class VehiclesService extends SupabaseBaseService {
 
       const { data, error } = await this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_name_meta,
@@ -155,7 +156,8 @@ export class VehiclesService extends SupabaseBaseService {
             tmc_code,
             tmc_description
           )
-        `)
+        `,
+        )
         .eq('type_id', typeId)
         .eq('type_marque_id', marqueId)
         .eq('type_modele_id', modeleId)
@@ -212,7 +214,8 @@ export class VehiclesService extends SupabaseBaseService {
 
       const { data, error } = await this.client
         .from('auto_modele')
-        .select(`
+        .select(
+          `
           modele_id,
           modele_name,
           modele_alias,
@@ -230,7 +233,8 @@ export class VehiclesService extends SupabaseBaseService {
             type_year_to,
             type_display
           )
-        `)
+        `,
+        )
         .eq('modele_marque_id', marqueId)
         .eq('modele_display', true)
         .eq('auto_type.type_display', true)
@@ -265,9 +269,9 @@ export class VehiclesService extends SupabaseBaseService {
         total: 0,
         page: 0,
         limit: 100,
-        meta: { 
-          marqueId, 
-          error: error instanceof Error ? error.message : 'Erreur inconnue' 
+        meta: {
+          marqueId,
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
         },
       };
     }
@@ -323,7 +327,7 @@ export class VehiclesService extends SupabaseBaseService {
         this.logger.debug(
           `📅 Filtrage optimisé des modèles avec motorisations pour l'année ${filters.year}`,
         );
-        
+
         // Requête optimisée : récupérer les modele_id qui ont des motorisations pour l'année
         const { data: modelIdsWithTypes, error: typeError } = await this.client
           .from('auto_type')
@@ -333,7 +337,10 @@ export class VehiclesService extends SupabaseBaseService {
           .or(`type_year_to.is.null,type_year_to.gte.${filters.year}`);
 
         if (typeError) {
-          this.logger.error('Erreur récupération types avec années:', typeError);
+          this.logger.error(
+            'Erreur récupération types avec années:',
+            typeError,
+          );
           throw typeError;
         }
 
@@ -347,12 +354,15 @@ export class VehiclesService extends SupabaseBaseService {
         }
 
         // Extraire les IDs uniques des modèles ayant des motorisations
-        const uniqueModelIds = [...new Set(modelIdsWithTypes.map(t => t.type_modele_id))];
+        const uniqueModelIds = [
+          ...new Set(modelIdsWithTypes.map((t) => t.type_modele_id)),
+        ];
 
         // Récupérer les modèles correspondants avec filtrage par année de production
         let query = this.client
           .from('auto_modele')
-          .select(`
+          .select(
+            `
             modele_id,
             modele_parent,
             modele_marque_id,
@@ -990,12 +1000,14 @@ export class VehiclesService extends SupabaseBaseService {
       // 🔄 Récupérer les infos du modèle
       const { data: modelData, error: modelError } = await this.client
         .from('auto_modele')
-        .select(`
+        .select(
+          `
           modele_id,
           modele_name,
           modele_ful_name,
           modele_marque_id
-        `)
+        `,
+        )
         .eq('modele_id', typeData.type_modele_id)
         .single();
 
@@ -1007,10 +1019,12 @@ export class VehiclesService extends SupabaseBaseService {
       // 🏷️ Récupérer les infos de la marque
       const { data: brandData, error: brandError } = await this.client
         .from('auto_marque')
-        .select(`
+        .select(
+          `
           marque_id,
           marque_name
-        `)
+        `,
+        )
         .eq('marque_id', modelData.modele_marque_id)
         .single();
 
@@ -1024,8 +1038,8 @@ export class VehiclesService extends SupabaseBaseService {
         ...typeData,
         auto_modele: {
           ...modelData,
-          auto_marque: brandData
-        }
+          auto_marque: brandData,
+        },
       };
 
       return { data: [enrichedData], error: null };
@@ -1064,7 +1078,7 @@ export class VehiclesService extends SupabaseBaseService {
         const yearTo = item.modele_year_to
           ? parseInt(item.modele_year_to)
           : new Date().getFullYear();
-        
+
         // Ajouter toutes les années de production
         for (let year = yearFrom; year <= yearTo; year++) {
           if (year >= 1950 && year <= new Date().getFullYear() + 1) {
@@ -1109,7 +1123,9 @@ export class VehiclesService extends SupabaseBaseService {
       }
     }
 
-    this.logger.log(`🧹 Cache partiel nettoyé: ${deleted} entrées avec pattern "${pattern}"`);
+    this.logger.log(
+      `🧹 Cache partiel nettoyé: ${deleted} entrées avec pattern "${pattern}"`,
+    );
     return deleted;
   }
 

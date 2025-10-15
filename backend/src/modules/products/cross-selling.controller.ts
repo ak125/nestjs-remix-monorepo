@@ -1,23 +1,29 @@
-import { Controller, Get, Logger, Param, HttpException, HttpStatus, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  HttpException,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { CrossSellingService } from './services/cross-selling.service';
 
 /**
  * 🎯 CONTRÔLEUR CROSS-SELLING - ROUTES PUBLIQUES
- * 
+ *
  * Ce contrôleur expose les endpoints cross-selling attendus par le frontend :
  * - GET /api/cross-selling/v5/:typeId/:pgId
  * - GET /api/cross-selling/v5/by-alias (avec query params)
  * - GET /api/cross-selling/health
- * 
+ *
  * Consolidé Phase 3 - utilise CrossSellingService
  */
 @Controller('api/cross-selling')
 export class CrossSellingController {
   private readonly logger = new Logger(CrossSellingController.name);
 
-  constructor(
-    private readonly crossSellingService: CrossSellingService,
-  ) {}
+  constructor(private readonly crossSellingService: CrossSellingService) {}
 
   /**
    * Cross-selling V5 par IDs

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * 🎯 DTOs pour le PERSONNEL ADMINISTRATIF (table ___config_admin)
- * 
+ *
  * IMPORTANT: Staff = Employés de la société (pas les clients)
  */
 

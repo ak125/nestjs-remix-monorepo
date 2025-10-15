@@ -1,11 +1,11 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Put, 
-  Delete, 
-  Param, 
-  Body, 
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
   Query,
   HttpException,
   HttpStatus,
@@ -30,7 +30,10 @@ const CreateConfigSchema = z.object({
   category: z.string().optional().default('general'),
   description: z.string().optional(),
   isSensitive: z.boolean().optional().default(false),
-  type: z.enum(['string', 'number', 'boolean', 'json']).optional().default('string'),
+  type: z
+    .enum(['string', 'number', 'boolean', 'json'])
+    .optional()
+    .default('string'),
 });
 
 const UpdateConfigSchema = z.object({
@@ -95,7 +98,7 @@ export class ConfigController {
         key: 'app.debug',
         value: false,
         category: 'app',
-        description: 'Mode debug de l\'application',
+        description: "Mode debug de l'application",
         isSensitive: false,
         type: 'boolean',
       },
@@ -111,13 +114,13 @@ export class ConfigController {
         key: 'api.limits',
         value: { requests: 1000, window: 3600 },
         category: 'api',
-        description: 'Limites de l\'API',
+        description: "Limites de l'API",
         isSensitive: false,
         type: 'json',
       },
     ];
 
-    defaults.forEach(config => {
+    defaults.forEach((config) => {
       this.configs.set(config.key, {
         ...config,
         createdAt: new Date(),
@@ -138,7 +141,7 @@ export class ConfigController {
   private setCachedValue(key: string, value: any, ttlSeconds: number = 300) {
     this.cache.set(key, {
       value,
-      expiry: Date.now() + (ttlSeconds * 1000),
+      expiry: Date.now() + ttlSeconds * 1000,
     });
   }
 
@@ -158,47 +161,55 @@ export class ConfigController {
 
   @Get()
   @ApiOperation({ summary: 'Récupérer toutes les configurations' })
-  @ApiResponse({ status: 200, description: 'Configurations récupérées avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations récupérées avec succès',
+  })
   async getAllConfigs(@Query() query: ConfigQueryDto) {
     try {
       this.analytics.reads++;
-      
+
       // Valider les paramètres de requête
       const validatedQuery = ConfigQuerySchema.parse(query);
-      
+
       // Récupérer toutes les configurations
       let configs = Array.from(this.configs.values());
-      
+
       // Filtrer par catégorie
       if (validatedQuery.category) {
-        configs = configs.filter(config => config.category === validatedQuery.category);
+        configs = configs.filter(
+          (config) => config.category === validatedQuery.category,
+        );
       }
-      
+
       // Filtrer par recherche
       if (validatedQuery.search) {
         const searchTerm = validatedQuery.search.toLowerCase();
-        configs = configs.filter(config => 
-          config.key.toLowerCase().includes(searchTerm) ||
-          config.description?.toLowerCase().includes(searchTerm)
+        configs = configs.filter(
+          (config) =>
+            config.key.toLowerCase().includes(searchTerm) ||
+            config.description?.toLowerCase().includes(searchTerm),
         );
       }
-      
+
       // Filtrer par sensibilité
       if (validatedQuery.sensitive !== undefined) {
-        configs = configs.filter(config => config.isSensitive === validatedQuery.sensitive);
+        configs = configs.filter(
+          (config) => config.isSensitive === validatedQuery.sensitive,
+        );
       }
-      
+
       // Pagination
       const start = (validatedQuery.page - 1) * validatedQuery.limit;
       const end = start + validatedQuery.limit;
       const paginatedConfigs = configs.slice(start, end);
-      
+
       // Masquer les valeurs sensibles pour les utilisateurs non autorisés
-      const safeConfigs = paginatedConfigs.map(config => ({
+      const safeConfigs = paginatedConfigs.map((config) => ({
         ...config,
         value: config.isSensitive ? '[MASKED]' : config.value,
       }));
-      
+
       return {
         success: true,
         data: safeConfigs,
@@ -212,7 +223,10 @@ export class ConfigController {
       };
     } catch (error) {
       this.analytics.errors++;
-      this.logger.error('Erreur lors de la récupération des configurations', error);
+      this.logger.error(
+        'Erreur lors de la récupération des configurations',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des configurations',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -222,12 +236,15 @@ export class ConfigController {
 
   @Get(':key')
   @ApiOperation({ summary: 'Récupérer une configuration par clé' })
-  @ApiResponse({ status: 200, description: 'Configuration récupérée avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration récupérée avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   async getConfigByKey(@Param('key') key: string) {
     try {
       this.analytics.reads++;
-      
+
       // Vérifier le cache
       const cachedValue = this.getCachedValue(key);
       if (cachedValue !== null) {
@@ -238,21 +255,24 @@ export class ConfigController {
           timestamp: new Date().toISOString(),
         };
       }
-      
+
       const config = this.configs.get(key);
       if (!config) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
-      
+
       let value = config.value;
       if (config.isSensitive) {
         // En production, vérifier les permissions ici
         value = '[MASKED]';
       }
-      
+
       // Mettre en cache
       this.setCachedValue(key, value);
-      
+
       return {
         success: true,
         data: {
@@ -271,7 +291,10 @@ export class ConfigController {
         throw error;
       }
       this.analytics.errors++;
-      this.logger.error(`Erreur lors de la récupération de la configuration ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la récupération de la configuration ${key}`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération de la configuration',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -288,21 +311,24 @@ export class ConfigController {
   async createConfig(@Body() createConfigDto: CreateConfigDto) {
     try {
       this.analytics.writes++;
-      
+
       // Valider les données
       const validatedData = CreateConfigSchema.parse(createConfigDto);
-      
+
       // Vérifier si la clé existe déjà
       if (this.configs.has(validatedData.key)) {
-        throw new HttpException('La configuration existe déjà', HttpStatus.CONFLICT);
+        throw new HttpException(
+          'La configuration existe déjà',
+          HttpStatus.CONFLICT,
+        );
       }
-      
+
       // Traiter la valeur sensible
       let processedValue = validatedData.value;
       if (validatedData.isSensitive) {
         processedValue = this.encryptSensitiveValue(validatedData.value);
       }
-      
+
       // Créer la configuration
       const newConfig: ConfigItem = {
         key: validatedData.key,
@@ -314,14 +340,14 @@ export class ConfigController {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      
+
       this.configs.set(validatedData.key, newConfig);
-      
+
       // Invalider le cache
       this.cache.delete(validatedData.key);
-      
+
       this.logger.log(`Configuration créée: ${validatedData.key}`);
-      
+
       return {
         success: true,
         message: 'Configuration créée avec succès',
@@ -338,7 +364,10 @@ export class ConfigController {
         throw error;
       }
       this.analytics.errors++;
-      this.logger.error('Erreur lors de la création de la configuration', error);
+      this.logger.error(
+        'Erreur lors de la création de la configuration',
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la création de la configuration',
         HttpStatus.BAD_REQUEST,
@@ -348,29 +377,38 @@ export class ConfigController {
 
   @Put(':key')
   @ApiOperation({ summary: 'Mettre à jour une configuration' })
-  @ApiResponse({ status: 200, description: 'Configuration mise à jour avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration mise à jour avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   @ApiBody({ type: Object })
-  async updateConfig(@Param('key') key: string, @Body() updateConfigDto: UpdateConfigDto) {
+  async updateConfig(
+    @Param('key') key: string,
+    @Body() updateConfigDto: UpdateConfigDto,
+  ) {
     try {
       this.analytics.writes++;
-      
+
       // Valider les données
       const validatedData = UpdateConfigSchema.parse(updateConfigDto);
-      
+
       const existingConfig = this.configs.get(key);
       if (!existingConfig) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
-      
+
       // Traiter la nouvelle valeur si fournie
       let processedValue = existingConfig.value;
       if (validatedData.value !== undefined) {
-        processedValue = existingConfig.isSensitive 
+        processedValue = existingConfig.isSensitive
           ? this.encryptSensitiveValue(validatedData.value)
           : validatedData.value;
       }
-      
+
       // Mettre à jour la configuration
       const updatedConfig: ConfigItem = {
         ...existingConfig,
@@ -380,14 +418,14 @@ export class ConfigController {
         isSensitive: validatedData.isSensitive ?? existingConfig.isSensitive,
         updatedAt: new Date(),
       };
-      
+
       this.configs.set(key, updatedConfig);
-      
+
       // Invalider le cache
       this.cache.delete(key);
-      
+
       this.logger.log(`Configuration mise à jour: ${key}`);
-      
+
       return {
         success: true,
         message: 'Configuration mise à jour avec succès',
@@ -403,7 +441,10 @@ export class ConfigController {
         throw error;
       }
       this.analytics.errors++;
-      this.logger.error(`Erreur lors de la mise à jour de la configuration ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la mise à jour de la configuration ${key}`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la mise à jour de la configuration',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -413,25 +454,31 @@ export class ConfigController {
 
   @Delete(':key')
   @ApiOperation({ summary: 'Supprimer une configuration' })
-  @ApiResponse({ status: 200, description: 'Configuration supprimée avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configuration supprimée avec succès',
+  })
   @ApiResponse({ status: 404, description: 'Configuration non trouvée' })
   async deleteConfig(@Param('key') key: string) {
     try {
       this.analytics.writes++;
-      
+
       const existingConfig = this.configs.get(key);
       if (!existingConfig) {
-        throw new HttpException('Configuration non trouvée', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Configuration non trouvée',
+          HttpStatus.NOT_FOUND,
+        );
       }
-      
+
       // Supprimer la configuration
       this.configs.delete(key);
-      
+
       // Invalider le cache
       this.cache.delete(key);
-      
+
       this.logger.log(`Configuration supprimée: ${key}`);
-      
+
       return {
         success: true,
         message: 'Configuration supprimée avec succès',
@@ -443,7 +490,10 @@ export class ConfigController {
         throw error;
       }
       this.analytics.errors++;
-      this.logger.error(`Erreur lors de la suppression de la configuration ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la suppression de la configuration ${key}`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la suppression de la configuration',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -453,13 +503,16 @@ export class ConfigController {
 
   @Get('cache/stats')
   @ApiOperation({ summary: 'Statistiques du cache' })
-  @ApiResponse({ status: 200, description: 'Statistiques récupérées avec succès' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistiques récupérées avec succès',
+  })
   async getCacheStats() {
     const cacheSize = this.cache.size;
     const activeEntries = Array.from(this.cache.values()).filter(
-      entry => entry.expiry > Date.now()
+      (entry) => entry.expiry > Date.now(),
     ).length;
-    
+
     return {
       success: true,
       data: {
@@ -480,9 +533,9 @@ export class ConfigController {
   async clearCache() {
     const previousSize = this.cache.size;
     this.cache.clear();
-    
+
     this.logger.log(`Cache vidé: ${previousSize} entrées supprimées`);
-    
+
     return {
       success: true,
       message: 'Cache vidé avec succès',
@@ -496,16 +549,18 @@ export class ConfigController {
   @ApiResponse({ status: 200, description: 'Cache réchauffé avec succès' })
   async warmupCache() {
     let warmedCount = 0;
-    
+
     for (const [key, config] of this.configs.entries()) {
       if (!config.isSensitive) {
         this.setCachedValue(key, config.value);
         warmedCount++;
       }
     }
-    
-    this.logger.log(`Cache réchauffé: ${warmedCount} configurations mises en cache`);
-    
+
+    this.logger.log(
+      `Cache réchauffé: ${warmedCount} configurations mises en cache`,
+    );
+
     return {
       success: true,
       message: 'Cache réchauffé avec succès',
@@ -516,17 +571,20 @@ export class ConfigController {
 
   @Get('public')
   @ApiOperation({ summary: 'Récupérer les configurations publiques' })
-  @ApiResponse({ status: 200, description: 'Configurations publiques récupérées' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations publiques récupérées',
+  })
   async getPublicConfigs() {
     const publicConfigs = Array.from(this.configs.values())
-      .filter(config => !config.isSensitive)
-      .map(config => ({
+      .filter((config) => !config.isSensitive)
+      .map((config) => ({
         key: config.key,
         value: config.value,
         category: config.category,
         description: config.description,
       }));
-    
+
     return {
       success: true,
       data: publicConfigs,
@@ -536,7 +594,7 @@ export class ConfigController {
   }
 
   @Get('metrics')
-  @ApiOperation({ summary: 'Métriques d\'utilisation' })
+  @ApiOperation({ summary: "Métriques d'utilisation" })
   @ApiResponse({ status: 200, description: 'Métriques récupérées avec succès' })
   async getMetrics() {
     return {
@@ -545,12 +603,19 @@ export class ConfigController {
         analytics: this.analytics,
         configurations: {
           total: this.configs.size,
-          sensitive: Array.from(this.configs.values()).filter(c => c.isSensitive).length,
-          public: Array.from(this.configs.values()).filter(c => !c.isSensitive).length,
+          sensitive: Array.from(this.configs.values()).filter(
+            (c) => c.isSensitive,
+          ).length,
+          public: Array.from(this.configs.values()).filter(
+            (c) => !c.isSensitive,
+          ).length,
         },
         cache: {
           size: this.cache.size,
-          hitRate: this.analytics.reads > 0 ? (this.analytics.cachehits / this.analytics.reads) * 100 : 0,
+          hitRate:
+            this.analytics.reads > 0
+              ? (this.analytics.cachehits / this.analytics.reads) * 100
+              : 0,
         },
       },
       timestamp: new Date().toISOString(),
@@ -580,10 +645,12 @@ export class ConfigController {
         changes: { value: '[ENCRYPTED]' },
       },
     ];
-    
+
     return {
       success: true,
-      data: key ? auditEntries.filter(entry => entry.configKey === key) : auditEntries,
+      data: key
+        ? auditEntries.filter((entry) => entry.configKey === key)
+        : auditEntries,
       timestamp: new Date().toISOString(),
     };
   }
@@ -593,13 +660,13 @@ export class ConfigController {
   @ApiResponse({ status: 200, description: 'Configuration database récupérée' })
   async getDatabaseConfig() {
     const dbConfigs = Array.from(this.configs.values())
-      .filter(config => config.category === 'database')
-      .map(config => ({
+      .filter((config) => config.category === 'database')
+      .map((config) => ({
         key: config.key,
         value: config.isSensitive ? '[MASKED]' : config.value,
         description: config.description,
       }));
-    
+
     return {
       success: true,
       data: dbConfigs,
@@ -632,17 +699,22 @@ export class ConfigController {
 
   @Get('system/all')
   @ApiOperation({ summary: 'Toutes les configurations système' })
-  @ApiResponse({ status: 200, description: 'Configurations système récupérées' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurations système récupérées',
+  })
   async getAllSystemConfigs() {
     const systemConfigs = Array.from(this.configs.values())
-      .filter(config => ['database', 'cache', 'api'].includes(config.category))
-      .map(config => ({
+      .filter((config) =>
+        ['database', 'cache', 'api'].includes(config.category),
+      )
+      .map((config) => ({
         key: config.key,
         value: config.isSensitive ? '[MASKED]' : config.value,
         category: config.category,
         description: config.description,
       }));
-    
+
     return {
       success: true,
       data: systemConfigs,

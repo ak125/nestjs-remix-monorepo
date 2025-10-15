@@ -1,6 +1,6 @@
 /**
  * 🎯 GAMME REST CONTROLLER - API Simple et directe
- * 
+ *
  * Utilise les vraies tables de la base de données :
  * - pieces_gamme : table des gammes/catégories
  * - pieces : table des produits avec piece_pg_id
@@ -18,7 +18,7 @@ export class GammeRestController {
   constructor() {
     this.supabase = createClient(
       process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_ANON_KEY || ''
+      process.env.SUPABASE_ANON_KEY || '',
     );
   }
 
@@ -32,10 +32,12 @@ export class GammeRestController {
     @Query('limit') limit = '24',
     @Query('search') search = '',
     @Query('sortBy') sortBy = 'piece_name',
-    @Query('sortOrder') sortOrder = 'asc'
+    @Query('sortOrder') sortOrder = 'asc',
   ) {
     try {
-      this.logger.log(`🔍 Recherche produits gamme ${gammeId} avec piece_pg_id`);
+      this.logger.log(
+        `🔍 Recherche produits gamme ${gammeId} avec piece_pg_id`,
+      );
 
       // 1. Vérifier que la gamme existe
       const { data: gammeInfo, error: gammeError } = await this.supabase
@@ -48,7 +50,7 @@ export class GammeRestController {
         this.logger.warn(`Gamme ${gammeId} non trouvée:`, gammeError);
         return {
           statusCode: 404,
-          message: `Gamme ${gammeId} non trouvée`
+          message: `Gamme ${gammeId} non trouvée`,
         };
       }
 
@@ -68,7 +70,7 @@ export class GammeRestController {
       // 3. Ajouter la recherche si fournie
       if (search && search.trim()) {
         query = query.or(
-          `piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%,piece_des.ilike.%${search}%`
+          `piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%,piece_des.ilike.%${search}%`,
         );
       }
 
@@ -90,7 +92,7 @@ export class GammeRestController {
         return {
           statusCode: 400,
           message: 'Erreur lors de la récupération des produits',
-          error: productsError.message
+          error: productsError.message,
         };
       }
 
@@ -103,31 +105,30 @@ export class GammeRestController {
           name: gammeInfo.pg_name || `Gamme ${gammeId}`,
           alias: gammeInfo.pg_alias,
           image: gammeInfo.pg_pic,
-          is_active: Boolean(gammeInfo.pg_display)
+          is_active: Boolean(gammeInfo.pg_display),
         },
         products: products || [],
         pagination: {
           total: count || 0,
           page: pageNum,
           limit: limitNum,
-          totalPages
+          totalPages,
         },
         filters: {
           search,
           sortBy,
-          sortOrder
-        }
+          sortOrder,
+        },
       };
 
       this.logger.log(`✅ Trouvé ${count} produits pour gamme ${gammeId}`);
       return response;
-
     } catch (error) {
       this.logger.error('Erreur dans getProductsByGamme:', error);
       return {
         statusCode: 500,
         message: 'Erreur interne du serveur',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -140,7 +141,9 @@ export class GammeRestController {
     try {
       const { data: gammes, error } = await this.supabase
         .from('pieces_gamme')
-        .select('pg_id as id, pg_lib_fr as name, pg_alias as alias, pg_pic as image, pg_display as is_active')
+        .select(
+          'pg_id as id, pg_lib_fr as name, pg_alias as alias, pg_pic as image, pg_display as is_active',
+        )
         .eq('pg_display', '1')
         .order('pg_lib_fr');
 
@@ -149,7 +152,7 @@ export class GammeRestController {
         return {
           statusCode: 400,
           message: 'Erreur lors de la récupération des gammes',
-          error: error.message
+          error: error.message,
         };
       }
 
@@ -159,7 +162,7 @@ export class GammeRestController {
       return {
         statusCode: 500,
         message: 'Erreur interne du serveur',
-        error: error.message
+        error: error.message,
       };
     }
   }

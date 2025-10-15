@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * 🎯 DTOs pour les CLIENTS du site (table ___xtr_customer)
- * 
+ *
  * IMPORTANT: Clients = Acheteurs du site (pas le personnel admin)
  */
 

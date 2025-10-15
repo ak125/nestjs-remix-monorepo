@@ -1,28 +1,28 @@
-import { 
-  Controller, 
-  Get, 
+import {
+  Controller,
+  Get,
   Post,
-  Query, 
+  Query,
   Body,
   Logger,
   HttpException,
   HttpStatus,
   UseGuards,
-  Req
+  Req,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiResponse, 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
   ApiQuery,
-  ApiBody 
+  ApiBody,
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { PiecesSearchEnhancedService } from '../services/pieces-search-enhanced.service';
-import type { 
+import type {
   AdvancedSearchParams,
   PieceSearchResponse,
-  PieceSearchResult 
+  PieceSearchResult,
 } from '../services/pieces-search-enhanced.service';
 
 /**
@@ -43,35 +43,65 @@ import type {
 export class PiecesSearchController {
   private readonly logger = new Logger(PiecesSearchController.name);
 
-  constructor(
-    private readonly searchService: PiecesSearchEnhancedService,
-  ) {}
+  constructor(private readonly searchService: PiecesSearchEnhancedService) {}
 
   /**
    * 🔍 Recherche principale de pièces
    */
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Recherche avancée de pièces',
-    description: 'Recherche multi-critères avec cache intelligent et analytics' 
+    description: 'Recherche multi-critères avec cache intelligent et analytics',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Résultats de recherche avec métadonnées',
-    type: Object
+    type: Object,
   })
   @ApiQuery({ name: 'q', description: 'Terme de recherche', required: true })
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
-  @ApiQuery({ name: 'limit', description: 'Nombre de résultats par page', required: false })
-  @ApiQuery({ name: 'manufacturers', description: 'Filtres fabricants (séparés par virgule)', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Nombre de résultats par page',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'manufacturers',
+    description: 'Filtres fabricants (séparés par virgule)',
+    required: false,
+  })
   @ApiQuery({ name: 'minPrice', description: 'Prix minimum', required: false })
   @ApiQuery({ name: 'maxPrice', description: 'Prix maximum', required: false })
-  @ApiQuery({ name: 'availability', description: 'Statuts de disponibilité', required: false })
-  @ApiQuery({ name: 'sortBy', description: 'Champ de tri (relevance|price|name|stock)', required: false })
-  @ApiQuery({ name: 'sortOrder', description: 'Ordre de tri (asc|desc)', required: false })
-  @ApiQuery({ name: 'includeAlternatives', description: 'Inclure les alternatives', required: false })
-  @ApiQuery({ name: 'fuzzySearch', description: 'Recherche floue', required: false })
-  @ApiQuery({ name: 'userId', description: 'ID utilisateur pour personnalisation', required: false })
+  @ApiQuery({
+    name: 'availability',
+    description: 'Statuts de disponibilité',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    description: 'Champ de tri (relevance|price|name|stock)',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    description: 'Ordre de tri (asc|desc)',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'includeAlternatives',
+    description: 'Inclure les alternatives',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'fuzzySearch',
+    description: 'Recherche floue',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'userId',
+    description: 'ID utilisateur pour personnalisation',
+    required: false,
+  })
   async search(
     @Query('q') searchTerm: string,
     @Query('page') page: string = '1',
@@ -115,7 +145,10 @@ export class PiecesSearchController {
           manufacturers: manufacturers?.split(',').filter(Boolean),
           gammes: gammes?.split(',').filter(Boolean),
           qualities: qualities?.split(',').filter(Boolean),
-          stars: stars?.split(',').map(Number).filter(n => !isNaN(n)),
+          stars: stars
+            ?.split(',')
+            .map(Number)
+            .filter((n) => !isNaN(n)),
           minPrice: minPrice ? parseFloat(minPrice) : undefined,
           maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
           availability: availability?.split(',').filter(Boolean) as any,
@@ -167,10 +200,10 @@ export class PiecesSearchController {
         data: result,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       const executionTime = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
 
       this.logger.error(
         `❌ Erreur recherche "${searchTerm}" après ${executionTime}ms: ${errorMessage}`,
@@ -193,12 +226,24 @@ export class PiecesSearchController {
   @Get('autocomplete')
   @ApiOperation({
     summary: 'Auto-complétion intelligente',
-    description: 'Suggestions avec scoring et biais utilisateur'
+    description: 'Suggestions avec scoring et biais utilisateur',
   })
   @ApiQuery({ name: 'q', description: 'Terme partiel', required: true })
-  @ApiQuery({ name: 'limit', description: 'Nombre de suggestions', required: false })
-  @ApiQuery({ name: 'includePopular', description: 'Inclure suggestions populaires', required: false })
-  @ApiQuery({ name: 'userBias', description: 'Appliquer biais utilisateur', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Nombre de suggestions',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'includePopular',
+    description: 'Inclure suggestions populaires',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'userBias',
+    description: 'Appliquer biais utilisateur',
+    required: false,
+  })
   @ApiQuery({ name: 'userId', description: 'ID utilisateur', required: false })
   async autocomplete(
     @Query('q') term: string,
@@ -241,13 +286,12 @@ export class PiecesSearchController {
         data: suggestions,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur autocomplete "${term}": ${error.message}`);
-      
+
       return {
         success: false,
-        error: 'Erreur lors de l\'auto-complétion',
+        error: "Erreur lors de l'auto-complétion",
         timestamp: new Date().toISOString(),
       };
     }
@@ -259,7 +303,7 @@ export class PiecesSearchController {
   @Post('oem')
   @ApiOperation({
     summary: 'Recherche par codes OEM',
-    description: 'Recherche spécialisée par codes fabricants'
+    description: 'Recherche spécialisée par codes fabricants',
   })
   @ApiBody({
     description: 'Codes OEM à rechercher',
@@ -269,22 +313,23 @@ export class PiecesSearchController {
         codes: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Liste des codes OEM'
+          description: 'Liste des codes OEM',
         },
         includeAlternatives: {
           type: 'boolean',
-          description: 'Inclure les alternatives'
+          description: 'Inclure les alternatives',
         },
         limit: {
           type: 'number',
-          description: 'Nombre maximum de résultats'
-        }
+          description: 'Nombre maximum de résultats',
+        },
       },
-      required: ['codes']
-    }
+      required: ['codes'],
+    },
   })
   async searchByOEM(
-    @Body() body: {
+    @Body()
+    body: {
       codes: string[];
       includeAlternatives?: boolean;
       limit?: number;
@@ -296,20 +341,14 @@ export class PiecesSearchController {
     timestamp: string;
   }> {
     if (!body.codes || !Array.isArray(body.codes) || body.codes.length === 0) {
-      throw new HttpException(
-        'Codes OEM requis',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException('Codes OEM requis', HttpStatus.BAD_REQUEST);
     }
 
     try {
-      const results = await this.searchService.searchByOEM(
-        body.codes,
-        {
-          includeAlternatives: body.includeAlternatives !== false,
-          limit: body.limit || 50,
-        },
-      );
+      const results = await this.searchService.searchByOEM(body.codes, {
+        includeAlternatives: body.includeAlternatives !== false,
+        limit: body.limit || 50,
+      });
 
       this.logger.log(
         `🔧 Recherche OEM: ${body.codes.length} codes → ${results.length} résultats`,
@@ -320,10 +359,9 @@ export class PiecesSearchController {
         data: results,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur recherche OEM: ${error.message}`);
-      
+
       throw new HttpException(
         'Erreur lors de la recherche OEM',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -337,12 +375,20 @@ export class PiecesSearchController {
   @Get('personalized')
   @ApiOperation({
     summary: 'Recherche personnalisée',
-    description: 'Recherche avec scoring basé sur l\'historique utilisateur'
+    description: "Recherche avec scoring basé sur l'historique utilisateur",
   })
   @ApiQuery({ name: 'q', description: 'Terme de recherche', required: true })
   @ApiQuery({ name: 'userId', description: 'ID utilisateur', required: true })
-  @ApiQuery({ name: 'boostFactor', description: 'Facteur de boost personnalisé', required: false })
-  @ApiQuery({ name: 'includeHistory', description: 'Inclure historique', required: false })
+  @ApiQuery({
+    name: 'boostFactor',
+    description: 'Facteur de boost personnalisé',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'includeHistory',
+    description: 'Inclure historique',
+    required: false,
+  })
   async searchPersonalized(
     @Query('q') searchTerm: string,
     @Query('userId') userId: string,
@@ -380,10 +426,9 @@ export class PiecesSearchController {
         data: result,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur recherche personnalisée: ${error.message}`);
-      
+
       throw new HttpException(
         'Erreur lors de la recherche personnalisée',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -397,12 +442,20 @@ export class PiecesSearchController {
   @Get('suggestions')
   @ApiOperation({
     summary: 'Suggestions de recherche',
-    description: 'Suggestions basées sur l\'historique et les tendances'
+    description: "Suggestions basées sur l'historique et les tendances",
   })
   @ApiQuery({ name: 'userId', description: 'ID utilisateur', required: false })
   @ApiQuery({ name: 'category', description: 'Catégorie', required: false })
-  @ApiQuery({ name: 'includePopular', description: 'Inclure populaires', required: false })
-  @ApiQuery({ name: 'includeTrending', description: 'Inclure tendances', required: false })
+  @ApiQuery({
+    name: 'includePopular',
+    description: 'Inclure populaires',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'includeTrending',
+    description: 'Inclure tendances',
+    required: false,
+  })
   async getSuggestions(
     @Query('userId') userId?: string,
     @Query('category') category?: string,
@@ -427,10 +480,9 @@ export class PiecesSearchController {
         data: suggestions,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur suggestions: ${error.message}`);
-      
+
       return {
         success: false,
         error: 'Erreur lors de la récupération des suggestions',
@@ -445,7 +497,7 @@ export class PiecesSearchController {
   @Get('metrics')
   @ApiOperation({
     summary: 'Métriques de performance',
-    description: 'Statistiques détaillées du service de recherche'
+    description: 'Statistiques détaillées du service de recherche',
   })
   async getMetrics(): Promise<{
     success: boolean;
@@ -461,10 +513,9 @@ export class PiecesSearchController {
         data: metrics,
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Erreur métriques: ${error.message}`);
-      
+
       return {
         success: false,
         error: 'Erreur lors de la récupération des métriques',
@@ -479,7 +530,7 @@ export class PiecesSearchController {
   @Get('health')
   @ApiOperation({
     summary: 'Vérification santé du service',
-    description: 'Status et performance du service de recherche'
+    description: 'Status et performance du service de recherche',
   })
   async healthCheck(): Promise<{
     success: boolean;
@@ -489,7 +540,7 @@ export class PiecesSearchController {
   }> {
     try {
       const startTime = Date.now();
-      
+
       // Test simple de recherche
       const testResult = await this.searchService.searchPieces({
         searchTerm: 'test',
@@ -511,10 +562,9 @@ export class PiecesSearchController {
         },
         timestamp: new Date().toISOString(),
       };
-
     } catch (error) {
       this.logger.error(`❌ Health check failed: ${error.message}`);
-      
+
       return {
         success: false,
         status: 'unhealthy',

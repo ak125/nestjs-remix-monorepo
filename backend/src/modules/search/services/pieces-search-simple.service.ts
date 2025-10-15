@@ -330,7 +330,11 @@ export class PiecesSearchEnhancedService {
     const userPreferences = await this.getUserPreferences(userId);
     results.results = results.results.map((result) => ({
       ...result,
-      score: this.calculatePersonalizedScore(result, userPreferences, boostFactor),
+      score: this.calculatePersonalizedScore(
+        result,
+        userPreferences,
+        boostFactor,
+      ),
     }));
 
     // Re-tri par score
@@ -370,12 +374,14 @@ export class PiecesSearchEnhancedService {
   /**
    * 💡 Suggestions de recherche
    */
-  async getSearchSuggestions(context: {
-    userId?: string;
-    category?: string;
-    includePopular?: boolean;
-    includeTrending?: boolean;
-  } = {}): Promise<string[]> {
+  async getSearchSuggestions(
+    context: {
+      userId?: string;
+      category?: string;
+      includePopular?: boolean;
+      includeTrending?: boolean;
+    } = {},
+  ): Promise<string[]> {
     const suggestions = new Set<string>();
 
     try {
@@ -385,7 +391,10 @@ export class PiecesSearchEnhancedService {
       }
 
       if (context.userId) {
-        const userSuggestions = await this.getUserSearchSuggestions(context.userId, 10);
+        const userSuggestions = await this.getUserSearchSuggestions(
+          context.userId,
+          10,
+        );
         userSuggestions.forEach((term) => suggestions.add(term));
       }
 
@@ -411,9 +420,12 @@ export class PiecesSearchEnhancedService {
 
       return {
         totalSearches: this.searchMetrics.totalSearches,
-        cacheHitRate: this.searchMetrics.totalSearches > 0 
-          ? (this.searchMetrics.cacheHits / this.searchMetrics.totalSearches) * 100 
-          : 0,
+        cacheHitRate:
+          this.searchMetrics.totalSearches > 0
+            ? (this.searchMetrics.cacheHits /
+                this.searchMetrics.totalSearches) *
+              100
+            : 0,
         avgResponseTime: this.searchMetrics.avgResponseTime,
         popularTerms: Array.from(this.searchMetrics.popularTerms.entries())
           .map(([term, count]) => ({ term, count }))
@@ -448,7 +460,9 @@ export class PiecesSearchEnhancedService {
     );
   }
 
-  private normalizeSearchParams(params: AdvancedSearchParams): AdvancedSearchParams {
+  private normalizeSearchParams(
+    params: AdvancedSearchParams,
+  ): AdvancedSearchParams {
     return {
       ...params,
       searchTerm: this.cleanSearchTerm(params.searchTerm),
@@ -509,7 +523,8 @@ export class PiecesSearchEnhancedService {
       imageUrl = `/rack/${imgData.folder}/${imgData.name}.webp`;
     }
 
-    const pieceName = `${item.piece_name} ${item.piece_name_side || ''} ${item.piece_name_comp || ''}`.trim();
+    const pieceName =
+      `${item.piece_name} ${item.piece_name_side || ''} ${item.piece_name_comp || ''}`.trim();
     const priceData = this.calculatePriceData(item);
 
     return {
@@ -527,7 +542,10 @@ export class PiecesSearchEnhancedService {
         alias: item.manufacturer?.pm_alias || item.pieces_marque?.pm_alias,
         logo: item.manufacturer?.pm_logo || item.pieces_marque?.pm_logo,
         quality,
-        stars: item.manufacturer?.pm_nb_stars || item.pieces_marque?.pm_nb_stars || 0,
+        stars:
+          item.manufacturer?.pm_nb_stars ||
+          item.pieces_marque?.pm_nb_stars ||
+          0,
       },
       price: priceData,
       image: imageUrl,
@@ -536,7 +554,8 @@ export class PiecesSearchEnhancedService {
         pg: this.urlTitle(item.gamme?.pg_alias || item.pieces_gamme?.pg_alias),
         quality: this.urlTitle(quality),
         stars: `st${item.manufacturer?.pm_nb_stars || item.pieces_marque?.pm_nb_stars || 0}ars`,
-        manufacturer: item.manufacturer?.pm_alias || item.pieces_marque?.pm_alias,
+        manufacturer:
+          item.manufacturer?.pm_alias || item.pieces_marque?.pm_alias,
       },
       availability: {
         stock: item.piece_qty_sale || 0,
@@ -552,12 +571,18 @@ export class PiecesSearchEnhancedService {
     };
   }
 
-  private calculatePriceData(item: any): { ttc: number; consigne: number; total: number } {
+  private calculatePriceData(item: any): {
+    ttc: number;
+    consigne: number;
+    total: number;
+  } {
     const priceBase = item.pieces_price?.[0];
     const qty = item.piece_qty_sale || 1;
 
     const ttc = priceBase?.pri_vente_ttc ? priceBase.pri_vente_ttc * qty : 0;
-    const consigne = priceBase?.pri_consigne_ttc ? priceBase.pri_consigne_ttc * qty : 0;
+    const consigne = priceBase?.pri_consigne_ttc
+      ? priceBase.pri_consigne_ttc * qty
+      : 0;
 
     return { ttc, consigne, total: ttc + consigne };
   }
@@ -588,7 +613,9 @@ export class PiecesSearchEnhancedService {
     return score;
   }
 
-  private determineAvailabilityStatus(item: any): 'available' | 'on-order' | 'unavailable' {
+  private determineAvailabilityStatus(
+    item: any,
+  ): 'available' | 'on-order' | 'unavailable' {
     const stock = item.piece_qty_sale || 0;
     const isDisplayed = item.piece_display;
 
@@ -651,13 +678,15 @@ export class PiecesSearchEnhancedService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
   }
 
-  private async getCachedResult(key: string): Promise<PieceSearchResponse | null> {
+  private async getCachedResult(
+    key: string,
+  ): Promise<PieceSearchResponse | null> {
     try {
       return await this.cache.get(key);
     } catch (error) {
@@ -778,7 +807,10 @@ export class PiecesSearchEnhancedService {
     return [];
   }
 
-  private async getUserSearchSuggestions(userId: string, limit: number): Promise<string[]> {
+  private async getUserSearchSuggestions(
+    userId: string,
+    limit: number,
+  ): Promise<string[]> {
     return [];
   }
 }

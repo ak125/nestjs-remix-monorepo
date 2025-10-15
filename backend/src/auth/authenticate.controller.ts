@@ -44,7 +44,7 @@ export class AuthenticateController {
 
     try {
       const body = (request as any).body;
-      console.log('📝 Données d\'inscription reçues:', {
+      console.log("📝 Données d'inscription reçues:", {
         email: body.email,
         firstName: body.firstName,
         lastName: body.lastName,

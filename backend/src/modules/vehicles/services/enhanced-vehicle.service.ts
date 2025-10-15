@@ -16,24 +16,24 @@ import {
 
 /**
  * 🚗 ENHANCED VEHICLE SERVICE - Service Véhicule Orchestrateur Refactorisé
- * 
+ *
  * ✅ ARCHITECTURE MODULAIRE - Maintenant propre et maintenable !
- * 
+ *
  * Remplace le fichier monolithique de 1476 lignes par une architecture modulaire :
- * 
+ *
  * 🏗️ Services Core :
  * - VehicleCacheService : Gestion cache Redis optimisée
  * - VehicleEnrichmentService : Enrichissement cars_engine
- * 
+ *
  * 🔍 Services Recherche :
  * - VehicleSearchService : Recherches avancées et suggestions
  * - VehicleMineService : Recherches par codes mine
- * 
+ *
  * 📊 Services Données :
  * - VehicleBrandsService : Gestion des marques
- * - VehicleModelsService : Gestion des modèles  
+ * - VehicleModelsService : Gestion des modèles
  * - VehicleTypesService : Gestion des types/motorisations
- * 
+ *
  * 🎯 MIGRATION COMPLÈTE DES 7 MÉTHODES :
  * ✅ searchByCode (1/7)
  * ✅ getMinesByModel (2/7)
@@ -71,7 +71,7 @@ export class EnhancedVehicleService {
    */
   async searchByCode(
     code: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     return await this.searchService.searchByCode(code, options);
   }
@@ -82,7 +82,7 @@ export class EnhancedVehicleService {
    */
   async getMinesByModel(
     modeleId: number,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     return await this.mineService.getMinesByModel(modeleId, options);
   }
@@ -93,7 +93,7 @@ export class EnhancedVehicleService {
    */
   async getTypeById(
     typeId: number,
-    includeEngine: boolean = true
+    includeEngine: boolean = true,
   ): Promise<VehicleType | null> {
     return await this.typesService.getTypeById(typeId, includeEngine);
   }
@@ -104,7 +104,7 @@ export class EnhancedVehicleService {
    */
   async searchByCnit(
     cnitCode: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     return await this.searchService.searchByCnit(cnitCode, options);
   }
@@ -115,7 +115,7 @@ export class EnhancedVehicleService {
    */
   async searchByMineCode(
     mineCode: string,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     return await this.mineService.searchByMineCode(mineCode, options);
   }
@@ -130,7 +130,7 @@ export class EnhancedVehicleService {
       searchIn?: string[];
       exactMatch?: boolean;
       includeEngine?: boolean;
-    } & PaginationOptions = {}
+    } & PaginationOptions = {},
   ): Promise<VehicleResponse<any>> {
     return await this.searchService.searchAdvanced(
       { query },
@@ -138,8 +138,8 @@ export class EnhancedVehicleService {
         searchIn: options.searchIn || ['marque', 'modele', 'type'],
         exactMatch: options.exactMatch || false,
         includeEngine: options.includeEngine !== false,
-        ...options
-      }
+        ...options,
+      },
     );
   }
 
@@ -147,7 +147,9 @@ export class EnhancedVehicleService {
    * 🏷️ 7/7 - Obtenir toutes les marques (bonus intégré)
    * ✅ MIGRÉ vers VehicleBrandsService
    */
-  async getBrands(options: PaginationOptions = {}): Promise<VehicleResponse<VehicleBrand>> {
+  async getBrands(
+    options: PaginationOptions = {},
+  ): Promise<VehicleResponse<VehicleBrand>> {
     return await this.brandsService.getBrands(options);
   }
 
@@ -160,7 +162,7 @@ export class EnhancedVehicleService {
    */
   async getModelsByBrand(
     marqueId: number,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<VehicleModel>> {
     return await this.modelsService.getModelsByBrand(marqueId, options);
   }
@@ -170,7 +172,7 @@ export class EnhancedVehicleService {
    */
   async getTypesByModel(
     modeleId: number,
-    options: PaginationOptions & { includeEngine?: boolean } = {}
+    options: PaginationOptions & { includeEngine?: boolean } = {},
   ): Promise<VehicleResponse<VehicleType>> {
     return await this.typesService.getTypesByModel(modeleId, options);
   }
@@ -180,7 +182,7 @@ export class EnhancedVehicleService {
    */
   async getYearsByBrand(
     marqueId: number,
-    options: PaginationOptions = {}
+    options: PaginationOptions = {},
   ): Promise<VehicleResponse<{ year: number; count: number }>> {
     return await this.brandsService.getYearsByBrand(marqueId, options);
   }
@@ -191,7 +193,7 @@ export class EnhancedVehicleService {
   async getSuggestions(
     query: string,
     type: 'marque' | 'modele' | 'type' = 'marque',
-    limit: number = 10
+    limit: number = 10,
   ): Promise<string[]> {
     return await this.searchService.getSuggestions(query, type, limit);
   }
@@ -239,10 +241,20 @@ export class EnhancedVehicleService {
         enrichment,
         cache: {
           configs: Object.fromEntries(
-            Object.values(['BRANDS', 'MODELS', 'TYPES', 'SEARCH', 'ENRICHMENT', 'MINE', 'ENGINE'])
-              .map(type => [type, this.cacheService.getCacheConfig(type as any)])
-          )
-        }
+            Object.values([
+              'BRANDS',
+              'MODELS',
+              'TYPES',
+              'SEARCH',
+              'ENRICHMENT',
+              'MINE',
+              'ENGINE',
+            ]).map((type) => [
+              type,
+              this.cacheService.getCacheConfig(type as any),
+            ]),
+          ),
+        },
       };
     } catch (error) {
       this.logger.error('Erreur getGlobalStats:', error);
@@ -268,7 +280,7 @@ export class EnhancedVehicleService {
       return {
         brands,
         models,
-        engines: typeStats.topEngines.map(e => e.engineCode).slice(0, 10)
+        engines: typeStats.topEngines.map((e) => e.engineCode).slice(0, 10),
       };
     } catch (error) {
       this.logger.error('Erreur getPopularItems:', error);
@@ -284,7 +296,7 @@ export class EnhancedVehicleService {
     options: {
       searchTypes?: Array<'brands' | 'models' | 'types' | 'mines'>;
       limit?: number;
-    } = {}
+    } = {},
   ): Promise<{
     brands: VehicleBrand[];
     models: VehicleModel[];
@@ -293,10 +305,10 @@ export class EnhancedVehicleService {
     total: number;
   }> {
     const { searchTypes = ['brands', 'models', 'types'], limit = 5 } = options;
-    
+
     try {
       const searches = await Promise.allSettled([
-        searchTypes.includes('brands') 
+        searchTypes.includes('brands')
           ? this.brandsService.searchBrands(query, { limit })
           : Promise.resolve({ data: [] }),
         searchTypes.includes('models')
@@ -310,8 +322,8 @@ export class EnhancedVehicleService {
           : Promise.resolve({ data: [] }),
       ]);
 
-      const results = searches.map(result => 
-        result.status === 'fulfilled' ? result.value.data : []
+      const results = searches.map((result) =>
+        result.status === 'fulfilled' ? result.value.data : [],
       );
 
       return {
@@ -319,7 +331,7 @@ export class EnhancedVehicleService {
         models: results[1] || [],
         types: results[2] || [],
         mines: results[3] || [],
-        total: results.reduce((sum, arr) => sum + arr.length, 0)
+        total: results.reduce((sum, arr) => sum + arr.length, 0),
       };
     } catch (error) {
       this.logger.error('Erreur globalSearch:', error);
@@ -369,14 +381,14 @@ export class EnhancedVehicleService {
       return {
         status,
         services,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     } catch (error) {
       this.logger.error('Erreur healthCheck:', error);
       return {
         status: 'unhealthy',
         services: {},
-        timestamp: new Date()
+        timestamp: new Date(),
       };
     }
   }
@@ -398,17 +410,17 @@ export class EnhancedVehicleService {
       version: '2.0.0-refactored',
       services: [
         'VehicleCacheService',
-        'VehicleEnrichmentService', 
+        'VehicleEnrichmentService',
         'VehicleSearchService',
         'VehicleMineService',
         'VehicleBrandsService',
         'VehicleModelsService',
-        'VehicleTypesService'
+        'VehicleTypesService',
       ],
       migration: {
         completed: 7,
         total: 7,
-        percentage: 100
+        percentage: 100,
       },
       features: [
         'Cache Redis optimisé',
@@ -417,8 +429,8 @@ export class EnhancedVehicleService {
         'Codes mine spécialisés',
         'Architecture modulaire',
         'Health check intégré',
-        'Statistiques complètes'
-      ]
+        'Statistiques complètes',
+      ],
     };
   }
 }

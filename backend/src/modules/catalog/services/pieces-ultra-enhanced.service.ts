@@ -13,7 +13,9 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
     const startTime = Date.now();
 
     try {
-      this.logger.log(`🎯 [ULTRA-ENHANCED] Recherche type_id=${typeId}, pg_id=${pgId}`);
+      this.logger.log(
+        `🎯 [ULTRA-ENHANCED] Recherche type_id=${typeId}, pg_id=${pgId}`,
+      );
 
       // 1️⃣ RÉCUPÉRATION DES RELATIONS (optimisée)
       const relationsResult = await this.client
@@ -36,18 +38,32 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
       }
 
       const relationsData = relationsResult.data;
-      const pieceIds = [...new Set(relationsData.map(r => r.rtp_piece_id))];
-      const pmIds = [...new Set(relationsData.map(r => r.rtp_pm_id).filter(Boolean))];
-      const psfIds = [...new Set(relationsData.map(r => r.rtp_psf_id).filter(Boolean))];
+      const pieceIds = [...new Set(relationsData.map((r) => r.rtp_piece_id))];
+      const pmIds = [
+        ...new Set(relationsData.map((r) => r.rtp_pm_id).filter(Boolean)),
+      ];
+      const psfIds = [
+        ...new Set(relationsData.map((r) => r.rtp_psf_id).filter(Boolean)),
+      ];
 
-      this.logger.log(`🚀 [ULTRA-ENHANCED] ${relationsData.length} relations → ${pieceIds.length} pièces`);
+      this.logger.log(
+        `🚀 [ULTRA-ENHANCED] ${relationsData.length} relations → ${pieceIds.length} pièces`,
+      );
 
       // 2️⃣ REQUÊTES PARALLÈLES OPTIMISÉES
-      const [piecesResult, marquesResult, pricesResult, filtresResult, imagesResult] = await Promise.all([
+      const [
+        piecesResult,
+        marquesResult,
+        pricesResult,
+        filtresResult,
+        imagesResult,
+      ] = await Promise.all([
         // PIÈCES avec sélection optimisée
         this.client
           .from('pieces')
-          .select('piece_id, piece_ref, piece_ref_clean, piece_name, piece_name_side, piece_name_comp, piece_des, piece_pm_id, piece_has_img, piece_has_oem, piece_qty_sale, piece_fil_id, piece_fil_name, piece_display')
+          .select(
+            'piece_id, piece_ref, piece_ref_clean, piece_name, piece_name_side, piece_name_comp, piece_des, piece_pm_id, piece_has_img, piece_has_oem, piece_qty_sale, piece_fil_id, piece_fil_name, piece_display',
+          )
           .in('piece_id', pieceIds)
           .eq('piece_display', 1),
 
@@ -60,8 +76,13 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
         // PRIX (avec gestion d'erreur)
         this.client
           .from('pieces_price')
-          .select('pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo, pri_type')
-          .in('pri_piece_id', pieceIds.map(id => id.toString()))
+          .select(
+            'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo, pri_type',
+          )
+          .in(
+            'pri_piece_id',
+            pieceIds.map((id) => id.toString()),
+          )
           .eq('pri_dispo', '1')
           .order('pri_type', { ascending: false }),
 
@@ -76,7 +97,7 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
           .from('pieces_media_img')
           .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display')
           .in('pmi_piece_id', pieceIds)
-          .eq('pmi_display', 1)
+          .eq('pmi_display', 1),
       ]);
 
       // Vérification d'erreurs
@@ -91,27 +112,36 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
       const filtresData = filtresResult.data || [];
       const imagesData = imagesResult.data || [];
 
-      this.logger.log(`🔍 [ULTRA-DEBUG] Données: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${imagesData.length} images`);
+      this.logger.log(
+        `🔍 [ULTRA-DEBUG] Données: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${imagesData.length} images`,
+      );
 
       // 3️⃣ CONSTRUCTION DES MAPS OPTIMISÉES
-      const relationsMap = new Map(relationsData.map(r => [r.rtp_piece_id, r]));
-      const marquesMap = new Map(marquesData.map(m => [m.pm_id, m]));
-      const filtresMap = new Map(filtresData.map(f => [f.psf_id, f]));
-      const imagesMap = new Map(imagesData.map(i => [i.pmi_piece_id, i]));
+      const relationsMap = new Map(
+        relationsData.map((r) => [r.rtp_piece_id, r]),
+      );
+      const marquesMap = new Map(marquesData.map((m) => [m.pm_id, m]));
+      const filtresMap = new Map(filtresData.map((f) => [f.psf_id, f]));
+      const imagesMap = new Map(imagesData.map((i) => [i.pmi_piece_id, i]));
 
       // Prix avec gestion spéciale
       const pricesMap = new Map();
-      pricesData.forEach(p => {
+      pricesData.forEach((p) => {
         const pieceId = parseInt(p.pri_piece_id);
-        if (!pricesMap.has(pieceId) || parseInt(p.pri_type) > parseInt(pricesMap.get(pieceId).pri_type)) {
+        if (
+          !pricesMap.has(pieceId) ||
+          parseInt(p.pri_type) > parseInt(pricesMap.get(pieceId).pri_type)
+        ) {
           pricesMap.set(pieceId, p);
         }
       });
 
       // 4️⃣ TRANSFORMATION AVEC DONNÉES ENRICHIES
-      const pieces = piecesData.map(piece => {
+      const pieces = piecesData.map((piece) => {
         const relation = relationsMap.get(piece.piece_id);
-        const marqueEquip = marquesMap.get(relation?.rtp_pm_id || piece.piece_pm_id);
+        const marqueEquip = marquesMap.get(
+          relation?.rtp_pm_id || piece.piece_pm_id,
+        );
         const price = pricesMap.get(piece.piece_id);
         const filtre = filtresMap.get(relation?.rtp_psf_id);
         const image = imagesMap.get(piece.piece_id);
@@ -119,7 +149,7 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
         // CALCUL PRIX avec simulation si manquant
         let prixUnitaire = parseFloat(price?.pri_vente_ttc || '0');
         let prixConsigne = parseFloat(price?.pri_consigne_ttc || '0');
-        
+
         // SIMULATION DE PRIX RÉALISTES si manquant (pour développement)
         if (prixUnitaire === 0 && process.env.NODE_ENV === 'development') {
           prixUnitaire = Math.random() * 500 + 50; // Prix entre 50€ et 550€
@@ -128,7 +158,7 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
 
         const quantiteVente = parseFloat(piece.piece_qty_sale || '1');
         const prixTotal = prixUnitaire * quantiteVente;
-        const prixTotalAvecConsigne = prixTotal + (prixConsigne * quantiteVente);
+        const prixTotalAvecConsigne = prixTotal + prixConsigne * quantiteVente;
 
         // QUALITÉ (logique PHP améliorée)
         let qualite = 'AFTERMARKET';
@@ -144,10 +174,11 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
 
         // NOM COMPLET optimisé
         const sideFromFilter = filtre?.psf_side || piece.piece_name_side || '';
-        const nomComplet = [piece.piece_name, sideFromFilter, piece.piece_name_comp]
-          .filter(Boolean)
-          .join(' ')
-          .trim() || 'Pièce sans nom';
+        const nomComplet =
+          [piece.piece_name, sideFromFilter, piece.piece_name_comp]
+            .filter(Boolean)
+            .join(' ')
+            .trim() || 'Pièce sans nom';
 
         // IMAGE avec URL complète
         let imageUrl = '/upload/articles/no.png';
@@ -178,7 +209,9 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
           // MARQUE
           marque: marqueEquip?.pm_name || 'Marque inconnue',
           marque_id: marqueEquip?.pm_id || null,
-          marque_logo: marqueEquip?.pm_logo ? `/upload/equipementiers-automobiles/${marqueEquip.pm_logo}` : null,
+          marque_logo: marqueEquip?.pm_logo
+            ? `/upload/equipementiers-automobiles/${marqueEquip.pm_logo}`
+            : null,
           marque_alias: marqueEquip?.pm_alias || null,
 
           // PRIX (structure HTML complète)
@@ -193,7 +226,8 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
           qualite_code: qualite.toLowerCase().replace(/\s+/g, '-'),
           nb_stars: qualiteScore,
           pm_oes: marqueEquip?.pm_oes || 'A',
-          stars_display: '★'.repeat(qualiteScore) + '☆'.repeat(6 - qualiteScore),
+          stars_display:
+            '★'.repeat(qualiteScore) + '☆'.repeat(6 - qualiteScore),
 
           // IMAGES
           image: imageUrl,
@@ -222,7 +256,7 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
 
       // 5️⃣ GROUPEMENT PAR BLOCS (comme dans HTML)
       const blocksMap = new Map();
-      pieces.forEach(piece => {
+      pieces.forEach((piece) => {
         const key = `${piece.filtre_gamme}_${piece.filtre_side}`;
         if (!blocksMap.has(key)) {
           blocksMap.set(key, {
@@ -238,25 +272,53 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
         block.pieces.push(piece);
         block.count++;
         if (piece.prix_unitaire > 0) {
-          block.minPrice = block.minPrice === null ? piece.prix_unitaire : Math.min(block.minPrice, piece.prix_unitaire);
+          block.minPrice =
+            block.minPrice === null
+              ? piece.prix_unitaire
+              : Math.min(block.minPrice, piece.prix_unitaire);
         }
       });
 
       const blocks = Array.from(blocksMap.values());
 
       // 6️⃣ CALCUL PRIX MINIMUM GLOBAL
-      const validPrices = pieces.map(p => p.prix_unitaire).filter(price => price > 0);
-      const globalMinPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
+      const validPrices = pieces
+        .map((p) => p.prix_unitaire)
+        .filter((price) => price > 0);
+      const globalMinPrice =
+        validPrices.length > 0 ? Math.min(...validPrices) : null;
 
       // 7️⃣ GÉNÉRATION DES FILTRES (comme dans HTML)
       const filters = {
-        qualite: [...new Set(pieces.map(p => ({ value: p.qualite_code, label: p.qualite })))],
-        performance: [...new Set(pieces.map(p => ({ value: `st${p.nb_stars}ars`, label: p.stars_display })))],
-        equipementiers: [...new Set(pieces.filter(p => p.marque !== 'Marque inconnue').map(p => ({ value: p.marque.toLowerCase().replace(/\s+/g, ''), label: p.marque })))],
+        qualite: [
+          ...new Set(
+            pieces.map((p) => ({ value: p.qualite_code, label: p.qualite })),
+          ),
+        ],
+        performance: [
+          ...new Set(
+            pieces.map((p) => ({
+              value: `st${p.nb_stars}ars`,
+              label: p.stars_display,
+            })),
+          ),
+        ],
+        equipementiers: [
+          ...new Set(
+            pieces
+              .filter((p) => p.marque !== 'Marque inconnue')
+              .map((p) => ({
+                value: p.marque.toLowerCase().replace(/\s+/g, ''),
+                label: p.marque,
+              })),
+          ),
+        ],
       };
 
       const duration = Date.now() - startTime;
-      this.logger.log(`✅ [ULTRA-ENHANCED] ${pieces.length} pièces, ${blocks.length} blocs, prix min: ${globalMinPrice}€ en ${duration}ms`);
+      this.logger.log(
+        `✅ [ULTRA-ENHANCED] ${pieces.length} pièces, ${blocks.length} blocs, prix min: ${globalMinPrice}€ en ${duration}ms`,
+      );
 
       return {
         pieces,
@@ -281,13 +343,15 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
           maps_performance: true,
           price_simulation: process.env.NODE_ENV === 'development',
           limit_applied: pieceIds.length,
-        }
+        },
       };
-
     } catch (error: any) {
       const duration = Date.now() - startTime;
-      this.logger.error(`❌ [ULTRA-ENHANCED] Erreur: ${error.message}`, error.stack);
-      
+      this.logger.error(
+        `❌ [ULTRA-ENHANCED] Erreur: ${error.message}`,
+        error.stack,
+      );
+
       return {
         pieces: [],
         blocks: [],

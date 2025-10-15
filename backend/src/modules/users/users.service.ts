@@ -53,15 +53,11 @@ export class UsersService extends SupabaseBaseService {
     super(configService);
   }
 
-
   /**
    * Inscription d'un nouvel utilisateur
    */
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
-    console.log(
-      '🔐 UsersService.register:',
-      registerDto.email,
-    );
+    console.log('🔐 UsersService.register:', registerDto.email);
 
     try {
       const authUser = await this.authService.register({
@@ -96,10 +92,7 @@ export class UsersService extends SupabaseBaseService {
    * Connexion utilisateur
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    console.log(
-      '🔑 UsersService.login:',
-      loginDto.email,
-    );
+    console.log('🔑 UsersService.login:', loginDto.email);
 
     try {
       const loginResult = await this.authService.login(
@@ -131,7 +124,6 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-
   /**
    * Récupérer le profil d'un utilisateur
    */
@@ -139,10 +131,7 @@ export class UsersService extends SupabaseBaseService {
    * Récupérer profil utilisateur
    */
   async getProfile(userId: number): Promise<UserResponseDto> {
-    console.log(
-      '👤 UsersService.getProfile:',
-      userId,
-    );
+    console.log('👤 UsersService.getProfile:', userId);
 
     try {
       return await this.profileService.getProfile(String(userId));
@@ -159,11 +148,7 @@ export class UsersService extends SupabaseBaseService {
     userId: number,
     updateDto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
-    console.log(
-      '✏️ UsersService.updateProfile:',
-      userId,
-      updateDto,
-    );
+    console.log('✏️ UsersService.updateProfile:', userId, updateDto);
 
     try {
       return await this.profileService.updateProfile(String(userId), updateDto);
@@ -172,7 +157,6 @@ export class UsersService extends SupabaseBaseService {
       throw error; // Propager erreur de ProfileService
     }
   }
-
 
   /**
    * Récupérer tous les utilisateurs avec pagination
@@ -604,7 +588,6 @@ export class UsersService extends SupabaseBaseService {
     }
   }
 
-
   /**
    * Mettre à jour les adresses - TEMPORAIREMENT DÉSACTIVÉE
    */
@@ -628,10 +611,7 @@ export class UsersService extends SupabaseBaseService {
     userId: number,
     messageDto: UserMessageDto,
   ): Promise<{ success: boolean; messageId: string }> {
-    console.log(
-      '📝 UsersService.createMessage:',
-      userId,
-    );
+    console.log('📝 UsersService.createMessage:', userId);
 
     try {
       // ✅ Déléguer vers MessagesService
@@ -655,10 +635,7 @@ export class UsersService extends SupabaseBaseService {
    * Récupérer les messages d'un utilisateur
    */
   async getUserMessages(userId: number): Promise<any[]> {
-    console.log(
-      '📬 UsersService.getUserMessages:',
-      userId,
-    );
+    console.log('📬 UsersService.getUserMessages:', userId);
 
     try {
       // ✅ Déléguer vers MessagesService avec filtres
@@ -732,7 +709,6 @@ export class UsersService extends SupabaseBaseService {
     throw new Error('Not implemented yet');
   }
 
-
   /**
    * Trouver un utilisateur par email
    */
@@ -740,10 +716,7 @@ export class UsersService extends SupabaseBaseService {
    * Trouver utilisateur par email
    */
   async findByEmail(email: string): Promise<UserResponseDto | null> {
-    console.log(
-      '📧 UsersService.findByEmail:',
-      email,
-    );
+    console.log('📧 UsersService.findByEmail:', email);
 
     try {
       return await this.profileService.findByEmail(email);
@@ -766,7 +739,6 @@ export class UsersService extends SupabaseBaseService {
       return null; // Retourner null en cas d'erreur (pas d'exception)
     }
   }
-
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const registerDto: RegisterDto = {
@@ -793,7 +765,6 @@ export class UsersService extends SupabaseBaseService {
   async remove(id: string): Promise<void> {
     await this.deleteUser(id);
   }
-
 
   /**
    * Trouver tous les utilisateurs avec pagination

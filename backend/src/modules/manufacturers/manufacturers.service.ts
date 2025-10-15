@@ -997,7 +997,7 @@ export class ManufacturersService extends SupabaseBaseService {
   async getBrandsWithLogos(limit = 100) {
     try {
       const cacheKey = `brands_logos:${limit}`;
-      
+
       // Vérifier le cache
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
@@ -1009,7 +1009,9 @@ export class ManufacturersService extends SupabaseBaseService {
 
       const { data, error } = await this.client
         .from('auto_marque')
-        .select('marque_id, marque_name, marque_alias, marque_logo, marque_display')
+        .select(
+          'marque_id, marque_name, marque_alias, marque_logo, marque_display',
+        )
         .eq('marque_display', 1)
         .order('marque_name', { ascending: true })
         .limit(limit);
@@ -1019,7 +1021,7 @@ export class ManufacturersService extends SupabaseBaseService {
         throw new Error(`Supabase error: ${error.message}`);
       }
 
-      const formattedBrands = data.map(brand => ({
+      const formattedBrands = data.map((brand) => ({
         id: brand.marque_id,
         name: brand.marque_name,
         alias: brand.marque_alias,
@@ -1051,7 +1053,9 @@ export class ManufacturersService extends SupabaseBaseService {
     typeId?: number,
   ) {
     try {
-      this.logger.log(`🔍 Récupération SEO pour marque=${marqueId}, modele=${modeleId}, type=${typeId}`);
+      this.logger.log(
+        `🔍 Récupération SEO pour marque=${marqueId}, modele=${modeleId}, type=${typeId}`,
+      );
 
       let title = '';
       let description = '';
@@ -1099,9 +1103,10 @@ export class ManufacturersService extends SupabaseBaseService {
       // 4. Construire le SEO selon le niveau
       if (type && modele) {
         // Niveau TYPE
-        const dateRange = type.type_year_from && type.type_year_to
-          ? ` (${type.type_year_from}-${type.type_year_to})`
-          : '';
+        const dateRange =
+          type.type_year_from && type.type_year_to
+            ? ` (${type.type_year_from}-${type.type_year_to})`
+            : '';
         title = `${marque.marque_name} ${modele.modele_name} ${type.type_name}${dateRange} - Pièces Auto`;
         h1 = `Pièces détachées pour ${marque.marque_name} ${modele.modele_name} ${type.type_name}`;
         description = `Trouvez toutes les pièces détachées pour votre ${marque.marque_name} ${modele.modele_name} ${type.type_name}${dateRange}. Large catalogue, prix compétitifs.`;
@@ -1124,8 +1129,18 @@ export class ManufacturersService extends SupabaseBaseService {
         description,
         h1,
         breadcrumb: {
-          marque: { id: marqueId, name: marque.marque_name, alias: marque.marque_alias },
-          modele: modele ? { id: modeleId, name: modele.modele_name, alias: modele.modele_alias } : null,
+          marque: {
+            id: marqueId,
+            name: marque.marque_name,
+            alias: marque.marque_alias,
+          },
+          modele: modele
+            ? {
+                id: modeleId,
+                name: modele.modele_name,
+                alias: modele.modele_alias,
+              }
+            : null,
           type: type ? { id: typeId, name: type.type_name } : null,
         },
       };
@@ -1142,7 +1157,7 @@ export class ManufacturersService extends SupabaseBaseService {
   async getPopularModelsWithImages(limit = 10) {
     try {
       const cacheKey = `popular_models:${limit}`;
-      
+
       // Vérifier le cache
       const cached = await this.cacheManager.get(cacheKey);
       if (cached) {
@@ -1150,13 +1165,17 @@ export class ManufacturersService extends SupabaseBaseService {
         return cached;
       }
 
-      this.logger.log(`🔍 Récupération des ${limit} modèles populaires (4 requêtes séparées)...`);
+      this.logger.log(
+        `🔍 Récupération des ${limit} modèles populaires (4 requêtes séparées)...`,
+      );
 
       // 1️⃣ Récupérer les types (véhicules) les plus populaires
       // NOTE: tous les champs auto_type sont STRING dans Supabase
       const { data: types, error: typesError } = await this.client
         .from('auto_type')
-        .select('type_id, type_name, type_year_from, type_year_to, type_modele_id')
+        .select(
+          'type_id, type_name, type_year_from, type_year_to, type_modele_id',
+        )
         .eq('type_display', '1') // STRING pas NUMBER
         .order('type_id', { ascending: false })
         .limit(limit * 3); // x3 car beaucoup de modèles ont "no.webp"
@@ -1169,10 +1188,12 @@ export class ManufacturersService extends SupabaseBaseService {
       this.logger.log(`✅ ${types.length} types récupérés`);
 
       // 2️⃣ Récupérer les modèles correspondants (avec images valides)
-      const modeleIds = [...new Set(types.map(t => t.type_modele_id))];
+      const modeleIds = [...new Set(types.map((t) => t.type_modele_id))];
       const { data: modeles, error: modelesError } = await this.client
         .from('auto_modele')
-        .select('modele_id, modele_name, modele_alias, modele_mdg_id, modele_pic')
+        .select(
+          'modele_id, modele_name, modele_alias, modele_mdg_id, modele_pic',
+        )
         .in('modele_id', modeleIds)
         .gte('modele_display', 1)
         .not('modele_pic', 'is', null)
@@ -1186,7 +1207,7 @@ export class ManufacturersService extends SupabaseBaseService {
       this.logger.log(`✅ ${modeles.length} modèles récupérés`);
 
       // 3️⃣ Récupérer les groupes de modèles
-      const mdgIds = [...new Set(modeles.map(m => m.modele_mdg_id))];
+      const mdgIds = [...new Set(modeles.map((m) => m.modele_mdg_id))];
       const { data: groups, error: groupsError } = await this.client
         .from('auto_modele_group')
         .select('mdg_id, mdg_name, mdg_marque_id')
@@ -1200,7 +1221,7 @@ export class ManufacturersService extends SupabaseBaseService {
       this.logger.log(`✅ ${groups.length} groupes récupérés`);
 
       // 4️⃣ Récupérer les marques
-      const marqueIds = [...new Set(groups.map(g => g.mdg_marque_id))];
+      const marqueIds = [...new Set(groups.map((g) => g.mdg_marque_id))];
       const { data: marques, error: marquesError } = await this.client
         .from('auto_marque')
         .select('marque_id, marque_name, marque_alias')
@@ -1215,23 +1236,30 @@ export class ManufacturersService extends SupabaseBaseService {
 
       // 5️⃣ JOINTURE MANUELLE : Associer toutes les données
       const formattedModels = types
-        .map(type => {
-          const modele = modeles.find(m => m.modele_id === parseInt(type.type_modele_id));
+        .map((type) => {
+          const modele = modeles.find(
+            (m) => m.modele_id === parseInt(type.type_modele_id),
+          );
           if (!modele) return null;
 
-          const group = groups.find(g => g.mdg_id === modele.modele_mdg_id);
+          const group = groups.find((g) => g.mdg_id === modele.modele_mdg_id);
           if (!group) return null;
 
-          const marque = marques.find(m => m.marque_id === group.mdg_marque_id);
+          const marque = marques.find(
+            (m) => m.marque_id === group.mdg_marque_id,
+          );
           if (!marque) return null;
 
           // Construire l'URL de l'image depuis le modèle
-          const imageName = modele.modele_pic.replace('.webp', '.jpg').replace(/\\/g, '/');
+          const imageName = modele.modele_pic
+            .replace('.webp', '.jpg')
+            .replace(/\\/g, '/');
           const imageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${marque.marque_alias}/${imageName}`;
 
-          const dateRange = type.type_year_from && type.type_year_to
-            ? `${type.type_year_from}-${type.type_year_to}`
-            : '';
+          const dateRange =
+            type.type_year_from && type.type_year_to
+              ? `${type.type_year_from}-${type.type_year_to}`
+              : '';
 
           return {
             id: parseInt(type.type_id),
@@ -1241,13 +1269,17 @@ export class ManufacturersService extends SupabaseBaseService {
             typeName: type.type_name,
             dateRange,
             imageUrl,
-            slug: this.generateSlug(`${marque.marque_name}-${modele.modele_name}-${type.type_name}`),
+            slug: this.generateSlug(
+              `${marque.marque_name}-${modele.modele_name}-${type.type_name}`,
+            ),
           };
         })
         .filter(Boolean) // Supprimer les null
         .slice(0, limit); // Limiter au nombre demandé
 
-      this.logger.log(`✅ ${formattedModels.length} modèles populaires formatés`);
+      this.logger.log(
+        `✅ ${formattedModels.length} modèles populaires formatés`,
+      );
 
       // Mise en cache
       await this.cacheManager.set(cacheKey, formattedModels, 3600);
@@ -1270,12 +1302,16 @@ export class ManufacturersService extends SupabaseBaseService {
    */
   async getBrandWithModelsByAlias(alias: string) {
     try {
-      this.logger.log(`🔍 Récupération marque et modèles pour alias="${alias}"`);
+      this.logger.log(
+        `🔍 Récupération marque et modèles pour alias="${alias}"`,
+      );
 
       // 1. Récupérer la marque par alias
       const { data: brandData, error: brandError } = await this.client
         .from('auto_marque')
-        .select('marque_id, marque_name, marque_name_meta, marque_alias, marque_logo, marque_relfollow, marque_display')
+        .select(
+          'marque_id, marque_name, marque_name_meta, marque_alias, marque_logo, marque_relfollow, marque_display',
+        )
         .eq('marque_alias', alias)
         .eq('marque_display', 1)
         .single();
@@ -1285,12 +1321,14 @@ export class ManufacturersService extends SupabaseBaseService {
         return null;
       }
 
-      this.logger.log(`✅ Marque trouvée: ${brandData.marque_name} (ID: ${brandData.marque_id})`);
+      this.logger.log(
+        `✅ Marque trouvée: ${brandData.marque_name} (ID: ${brandData.marque_id})`,
+      );
 
       // 2. Récupérer les modèles groupés (modele_parent = 0) avec TOUTES les infos
       const { data: modelsData, error: modelsError } = await this.client
         .from('auto_modele')
-        .select('*')  // Récupérer TOUTES les colonnes disponibles
+        .select('*') // Récupérer TOUTES les colonnes disponibles
         .eq('modele_marque_id', brandData.marque_id)
         .eq('modele_parent', 0)
         .eq('modele_display', 1)
@@ -1298,15 +1336,20 @@ export class ManufacturersService extends SupabaseBaseService {
         .order('modele_name', { ascending: true });
 
       if (modelsError) {
-        this.logger.error('❌ Erreur récupération modèles:', modelsError.message);
+        this.logger.error(
+          '❌ Erreur récupération modèles:',
+          modelsError.message,
+        );
         throw modelsError;
       }
 
       this.logger.log(`✅ ${modelsData?.length || 0} modèles récupérés`);
-      
+
       // Log des colonnes disponibles pour debug (première fois seulement)
       if (modelsData && modelsData.length > 0) {
-        this.logger.log(`📋 Colonnes disponibles: ${Object.keys(modelsData[0]).join(', ')}`);
+        this.logger.log(
+          `📋 Colonnes disponibles: ${Object.keys(modelsData[0]).join(', ')}`,
+        );
       }
 
       // 3. Récupérer le contenu SEO depuis __BLOG_SEO_MARQUE
@@ -1324,18 +1367,30 @@ export class ManufacturersService extends SupabaseBaseService {
           .select('sm_content')
           .eq('sm_marque_id', brandData.marque_id)
           .single();
-        
+
         seoContent = fallbackSeoData?.sm_content || null;
       }
 
       // 5. Construire les métadonnées
       const metadata = {
-        title: seoData?.bsm_title || `Pièces détachées ${brandData.marque_name_meta} à prix pas cher`,
-        description: seoData?.bsm_descrip || `Automecanik vous offre tous les conseilles d'achat de toutes les pièces et accessoires autos à prix pas cher du constructeur ${brandData.marque_name_meta}`,
+        title:
+          seoData?.bsm_title ||
+          `Pièces détachées ${brandData.marque_name_meta} à prix pas cher`,
+        description:
+          seoData?.bsm_descrip ||
+          `Automecanik vous offre tous les conseilles d'achat de toutes les pièces et accessoires autos à prix pas cher du constructeur ${brandData.marque_name_meta}`,
         keywords: seoData?.bsm_keywords || brandData.marque_name,
-        h1: seoData?.bsm_h1 || `Choisissez votre véhicule ${brandData.marque_name}`,
-        content: seoData?.bsm_content || seoContent || `Un vaste choix de pièces détachées <b>${brandData.marque_name}</b> au meilleur tarif et de qualité irréprochable proposées par les grandes marques d'équipementiers automobile de première monte d'origine.`,
-        relfollow: brandData.marque_relfollow === 1 ? 'index, follow' : 'noindex, nofollow',
+        h1:
+          seoData?.bsm_h1 ||
+          `Choisissez votre véhicule ${brandData.marque_name}`,
+        content:
+          seoData?.bsm_content ||
+          seoContent ||
+          `Un vaste choix de pièces détachées <b>${brandData.marque_name}</b> au meilleur tarif et de qualité irréprochable proposées par les grandes marques d'équipementiers automobile de première monte d'origine.`,
+        relfollow:
+          brandData.marque_relfollow === 1
+            ? 'index, follow'
+            : 'noindex, nofollow',
       };
 
       // 6. Pour chaque modèle, compter ses motorisations (types) ET récupérer les carburants disponibles
@@ -1349,13 +1404,13 @@ export class ManufacturersService extends SupabaseBaseService {
       // Créer un map pour compter les motorisations ET les carburants par modèle
       const motorisationsCount: Record<string, number> = {};
       const fuelTypesByModel: Record<string, Set<string>> = {};
-      
+
       if (typesCountData) {
         typesCountData.forEach((type: any) => {
           // Compter les motorisations
           motorisationsCount[type.type_modele_id] =
             (motorisationsCount[type.type_modele_id] || 0) + 1;
-          
+
           // Collecter les types de carburant uniques
           if (!fuelTypesByModel[type.type_modele_id]) {
             fuelTypesByModel[type.type_modele_id] = new Set();
@@ -1431,31 +1486,34 @@ export class ManufacturersService extends SupabaseBaseService {
           sort: model.modele_sort,
           display: model.modele_display,
           // Infos supplémentaires si disponibles dans la DB
-          ...Object.keys(model).reduce((acc: Record<string, any>, key) => {
-            // Exclure les colonnes déjà mappées
-            if (
-              !key.startsWith('modele_') ||
-              [
-                'modele_id',
-                'modele_name',
-                'modele_alias',
-                'modele_pic',
-                'modele_year_from',
-                'modele_year_to',
-                'modele_month_from',
-                'modele_month_to',
-                'modele_parent',
-                'modele_sort',
-                'modele_display',
-                'modele_marque_id',
-              ].includes(key)
-            ) {
+          ...Object.keys(model).reduce(
+            (acc: Record<string, any>, key) => {
+              // Exclure les colonnes déjà mappées
+              if (
+                !key.startsWith('modele_') ||
+                [
+                  'modele_id',
+                  'modele_name',
+                  'modele_alias',
+                  'modele_pic',
+                  'modele_year_from',
+                  'modele_year_to',
+                  'modele_month_from',
+                  'modele_month_to',
+                  'modele_parent',
+                  'modele_sort',
+                  'modele_display',
+                  'modele_marque_id',
+                ].includes(key)
+              ) {
+                return acc;
+              }
+              // Ajouter les autres colonnes disponibles
+              acc[key] = (model as any)[key];
               return acc;
-            }
-            // Ajouter les autres colonnes disponibles
-            acc[key] = (model as any)[key];
-            return acc;
-          }, {} as Record<string, any>),
+            },
+            {} as Record<string, any>,
+          ),
         };
       });
 
@@ -1464,7 +1522,7 @@ export class ManufacturersService extends SupabaseBaseService {
           id: brandData.marque_id,
           name: brandData.marque_name,
           alias: brandData.marque_alias,
-          logo: brandData.marque_logo 
+          logo: brandData.marque_logo
             ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${brandData.marque_logo}`
             : null,
         },
@@ -1608,7 +1666,8 @@ export class ManufacturersService extends SupabaseBaseService {
         metadata: null, // TODO: Ajouter les métadonnées SEO si nécessaire
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
       this.logger.error('❌ Erreur getModelWithTypesByAlias:', errorMessage);
       throw error;
     }
@@ -1634,19 +1693,24 @@ export class ManufacturersService extends SupabaseBaseService {
         .single();
 
       if (error) {
-        this.logger.warn(`⚠️ Aucune métadonnée trouvée pour "${alias}":`, error.message);
-        
+        this.logger.warn(
+          `⚠️ Aucune métadonnée trouvée pour "${alias}":`,
+          error.message,
+        );
+
         // Retourner des métadonnées par défaut
         const defaultMeta = {
           title: 'Catalogue Technique Auto - Pièces détachées | Automecanik',
-          description: 'Découvrez notre catalogue complet de pièces détachées automobiles. Qualité OEM garantie pour toutes les marques.',
-          keywords: 'pièces auto, catalogue, constructeurs, pièces détachées, OEM',
+          description:
+            'Découvrez notre catalogue complet de pièces détachées automobiles. Qualité OEM garantie pour toutes les marques.',
+          keywords:
+            'pièces auto, catalogue, constructeurs, pièces détachées, OEM',
           h1: 'Pièces Auto & Accessoires',
           ariane: 'Accueil > Blog > Pièces Auto',
           content: null,
           relfollow: 'index, follow',
         };
-        
+
         return defaultMeta;
       }
 
@@ -1660,9 +1724,10 @@ export class ManufacturersService extends SupabaseBaseService {
         h1: data.mta_h1 || data.mta_title || '',
         ariane: data.mta_ariane || '',
         content: data.mta_content || null,
-        relfollow: data.mta_relfollow === '1' || data.mta_relfollow === 'index, follow' 
-          ? 'index, follow' 
-          : 'noindex, nofollow',
+        relfollow:
+          data.mta_relfollow === '1' || data.mta_relfollow === 'index, follow'
+            ? 'index, follow'
+            : 'noindex, nofollow',
       };
 
       // Mise en cache (1 heure)
@@ -1671,7 +1736,7 @@ export class ManufacturersService extends SupabaseBaseService {
       return metadata;
     } catch (error) {
       this.logger.error('❌ Erreur getPageMetadata:', error.message);
-      
+
       // Retourner des métadonnées par défaut en cas d'erreur
       return {
         title: 'Catalogue Technique Auto | Automecanik',

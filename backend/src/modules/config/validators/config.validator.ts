@@ -157,7 +157,7 @@ export class ConfigValidator {
           };
         }
         break;
-      
+
       case ConfigType.JSON:
         try {
           if (typeof value === 'string') {

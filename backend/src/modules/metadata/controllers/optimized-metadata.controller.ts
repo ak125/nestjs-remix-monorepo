@@ -1,8 +1,8 @@
 /**
  * 📄 OPTIMIZED METADATA CONTROLLER - Contrôleur API Métadonnées
- * 
+ *
  * ✅ API REST pour gestion des métadonnées
- * 
+ *
  * Endpoints disponibles :
  * ✅ GET  /api/metadata/:path    → Récupérer métadonnées
  * ✅ PUT  /api/metadata/:path    → Mettre à jour métadonnées
@@ -20,10 +20,10 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { 
-  OptimizedMetadataService, 
-  PageMetadata, 
-  MetadataUpdateData 
+import {
+  OptimizedMetadataService,
+  PageMetadata,
+  MetadataUpdateData,
 } from '../services/optimized-metadata.service';
 
 @Controller('api/metadata')
@@ -39,20 +39,25 @@ export class OptimizedMetadataController {
    * GET /api/metadata/:path
    */
   @Get(':path(*)')
-  async getMetadata(@Param('path') path: string): Promise<{ success: boolean; data: PageMetadata }> {
+  async getMetadata(
+    @Param('path') path: string,
+  ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
-      
+
       this.logger.debug(`📄 Récupération métadonnées pour: ${decodedPath}`);
-      
+
       const metadata = await this.metadataService.getPageMetadata(decodedPath);
-      
+
       return {
         success: true,
         data: metadata,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur récupération métadonnées pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la récupération des métadonnées',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -71,17 +76,23 @@ export class OptimizedMetadataController {
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
       const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
-      
+
       this.logger.log(`💾 Mise à jour métadonnées pour: ${decodedPath}`);
-      
-      const metadata = await this.metadataService.updatePageMetadata(decodedPath, updateData);
-      
+
+      const metadata = await this.metadataService.updatePageMetadata(
+        decodedPath,
+        updateData,
+      );
+
       return {
         success: true,
         data: metadata,
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur mise à jour métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur mise à jour métadonnées pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la mise à jour des métadonnées',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -94,20 +105,25 @@ export class OptimizedMetadataController {
    * DELETE /api/metadata/:path
    */
   @Delete(':path(*)')
-  async deleteMetadata(@Param('path') path: string): Promise<{ success: boolean; message: string }> {
+  async deleteMetadata(
+    @Param('path') path: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
-      
+
       this.logger.log(`🗑️ Suppression métadonnées pour: ${decodedPath}`);
-      
+
       await this.metadataService.deletePageMetadata(decodedPath);
-      
+
       return {
         success: true,
         message: 'Métadonnées supprimées avec succès',
       };
     } catch (error) {
-      this.logger.error(`❌ Erreur suppression métadonnées pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur suppression métadonnées pour ${path}:`,
+        error,
+      );
       throw new HttpException(
         'Erreur lors de la suppression des métadonnées',
         HttpStatus.INTERNAL_SERVER_ERROR,

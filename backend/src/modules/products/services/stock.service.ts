@@ -22,33 +22,36 @@ export class StockService extends SupabaseBaseService {
 
   // 🔧 Configuration du mode de stock
   private readonly STOCK_MODE: 'UNLIMITED' | 'TRACKED';
-  
+
   // Seuils de stock pour le mode TRACKED
   private readonly LOW_STOCK_THRESHOLD = 10; // Alerte stock faible
   private readonly REORDER_THRESHOLD = 20; // Seuil de réapprovisionnement
   private readonly DEFAULT_STOCK = 50; // Stock par défaut si non défini
-  
+
   // Configuration flux tendu
   private readonly UNLIMITED_DISPLAY_STOCK = 999; // Stock affiché en mode illimité
   private readonly REORDER_QUANTITY = 100; // Quantité de réapprovisionnement
 
   constructor(configService: ConfigService) {
     super(configService);
-    
+
     // Lire le mode depuis les variables d'environnement
     // Par défaut: UNLIMITED pour flux tendu
-    this.STOCK_MODE = (configService.get<string>('STOCK_MODE') as any) || 'UNLIMITED';
-    
+    this.STOCK_MODE =
+      (configService.get<string>('STOCK_MODE') as any) || 'UNLIMITED';
+
     this.logger.log(`🔧 StockService initialized - Mode: ${this.STOCK_MODE}`);
-    
+
     if (this.STOCK_MODE === 'UNLIMITED') {
-      this.logger.warn('⚠️  MODE FLUX TENDU ACTIVÉ - Stock illimité avec réapprovisionnement automatique');
+      this.logger.warn(
+        '⚠️  MODE FLUX TENDU ACTIVÉ - Stock illimité avec réapprovisionnement automatique',
+      );
     }
   }
 
   /**
    * 📊 Récupérer les informations de stock d'un produit
-   * 
+   *
    * En mode UNLIMITED: Retourne toujours un stock disponible
    * En mode TRACKED: Suit le stock réel et génère des alertes
    */
@@ -92,7 +95,7 @@ export class StockService extends SupabaseBaseService {
 
       // Calculer le stock total (utiliser pri_qte_cond ou valeur par défaut)
       let totalStock = this.DEFAULT_STOCK;
-      
+
       if (priceData && priceData.length > 0) {
         const qtyString = priceData[0]?.pri_qte_cond;
         if (qtyString && qtyString.trim() !== '') {
@@ -165,7 +168,7 @@ export class StockService extends SupabaseBaseService {
 
   /**
    * ✅ Valider si une quantité est disponible pour un produit
-   * 
+   *
    * En mode UNLIMITED: Accepte toujours (flux tendu)
    * En mode TRACKED: Vérifie le stock réel
    */
@@ -219,9 +222,7 @@ export class StockService extends SupabaseBaseService {
   /**
    * 📊 Récupérer le stock pour plusieurs produits
    */
-  async getBulkStock(
-    productIds: (number | string)[],
-  ): Promise<
+  async getBulkStock(productIds: (number | string)[]): Promise<
     Record<
       string,
       {

@@ -1,13 +1,17 @@
 /**
  * Exemple d'utilisation du Service de Redirection Amélioré
- * 
+ *
  * Ce fichier montre comment utiliser le RedirectService optimisé
  * avec compatibilité totale pour l'ancien code utilisateur.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { RedirectService, RedirectEntry, RedirectRule } from '../services/redirect.service';
+import {
+  RedirectService,
+  RedirectEntry,
+  RedirectRule,
+} from '../services/redirect.service';
 
 @Injectable()
 export class RedirectServiceUsageExamples {
@@ -31,9 +35,13 @@ export class RedirectServiceUsageExamples {
     this.logger.log('Redirection créée:', created);
 
     // Recherche avec l'ancienne méthode
-    const found = await this.redirectService.findRedirect('/old-product/smartphone');
+    const found = await this.redirectService.findRedirect(
+      '/old-product/smartphone',
+    );
     if (found) {
-      this.logger.log(`Redirection trouvée: ${found.old_path || found.source_path} → ${found.new_path || found.destination_path}`);
+      this.logger.log(
+        `Redirection trouvée: ${found.old_path || found.source_path} → ${found.new_path || found.destination_path}`,
+      );
     }
   }
 
@@ -51,7 +59,7 @@ export class RedirectServiceUsageExamples {
     for (const page of gonePages) {
       await this.redirectService.markAsGone(
         page,
-        'Page supprimée lors de la refonte 2025'
+        'Page supprimée lors de la refonte 2025',
       );
       this.logger.log(`Page marquée comme 410: ${page}`);
     }
@@ -63,29 +71,28 @@ export class RedirectServiceUsageExamples {
   async redirectionMiddleware(req: Request, res: Response, next: Function) {
     try {
       const redirect = await this.redirectService.findRedirect(req.path);
-      
+
       if (redirect) {
-        const statusCode = redirect.redirect_type || redirect.status_code || 301;
+        const statusCode =
+          redirect.redirect_type || redirect.status_code || 301;
         const destination = redirect.new_path || redirect.destination_path;
-        
+
         if (statusCode === 410) {
           // Ressource supprimée définitivement
           return res.status(410).json({
             error: 'Cette page a été définitivement supprimée',
             reason: redirect.reason || redirect.description,
-            alternatives: [
-              '/products',
-              '/search',
-              '/contact',
-            ],
+            alternatives: ['/products', '/search', '/contact'],
           });
         }
-        
+
         // Redirection normale
-        this.logger.log(`Redirection ${statusCode}: ${req.path} → ${destination}`);
+        this.logger.log(
+          `Redirection ${statusCode}: ${req.path} → ${destination}`,
+        );
         return res.redirect(statusCode, destination);
       }
-      
+
       next();
     } catch (error) {
       this.logger.error('Erreur dans le middleware de redirection:', error);
@@ -124,7 +131,9 @@ export class RedirectServiceUsageExamples {
       };
 
       await this.redirectService.createRedirect(redirect);
-      this.logger.log(`Migration créée: ${migration.pattern} → ${migration.replacement}`);
+      this.logger.log(
+        `Migration créée: ${migration.pattern} → ${migration.replacement}`,
+      );
     }
   }
 
@@ -153,23 +162,25 @@ export class RedirectServiceUsageExamples {
     try {
       // Récupérer les statistiques
       const stats = await this.redirectService.getRedirectStats();
-      
+
       this.logger.log('=== Statistiques de Redirection ===');
       this.logger.log(`Total des règles: ${stats.total_rules}`);
       this.logger.log(`Règles actives: ${stats.active_rules}`);
       this.logger.log(`Total des hits: ${stats.total_hits}`);
-      
+
       // Afficher les redirections les plus utilisées
       this.logger.log('\n=== Top 5 Redirections ===');
       stats.top_redirects.slice(0, 5).forEach((redirect, index) => {
         this.logger.log(
-          `${index + 1}. ${redirect.source_path} → ${redirect.destination_path} (${redirect.hit_count} hits)`
+          `${index + 1}. ${redirect.source_path} → ${redirect.destination_path} (${redirect.hit_count} hits)`,
         );
       });
 
       // Alerter si trop de redirections
       if (stats.total_hits > 10000) {
-        this.logger.warn('⚠️  Nombre élevé de redirections détecté. Considérer la mise à jour des liens.');
+        this.logger.warn(
+          '⚠️  Nombre élevé de redirections détecté. Considérer la mise à jour des liens.',
+        );
       }
 
       return stats;
@@ -189,19 +200,13 @@ export class RedirectServiceUsageExamples {
 
       for (const rule of allRules) {
         // Supprimer les règles sans hits depuis 90 jours
-        if (
-          rule.hit_count === 0 && 
-          rule.msg_date < obsoleteThreshold
-        ) {
+        if (rule.hit_count === 0 && rule.msg_date < obsoleteThreshold) {
           await this.redirectService.deleteRedirectRule(rule.msg_id!);
           this.logger.log(`Règle obsolète supprimée: ${rule.source_path}`);
         }
-        
+
         // Désactiver les règles 410 anciennes
-        if (
-          rule.status_code === 410 && 
-          rule.msg_date < obsoleteThreshold
-        ) {
+        if (rule.status_code === 410 && rule.msg_date < obsoleteThreshold) {
           await this.redirectService.updateRedirectRule(rule.msg_id!, {
             is_active: false,
           });
@@ -218,10 +223,10 @@ export class RedirectServiceUsageExamples {
    */
   async importRedirectionsFromCSV(csvData: string) {
     const lines = csvData.split('\n').slice(1); // Skip header
-    
+
     for (const line of lines) {
       const [oldPath, newPath, statusCode, reason] = line.split(',');
-      
+
       if (oldPath && newPath) {
         const redirect: RedirectEntry = {
           old_path: oldPath.trim(),
@@ -238,20 +243,22 @@ export class RedirectServiceUsageExamples {
 
   async exportRedirectionsToCSV(): Promise<string> {
     const rules = await this.redirectService.getAllRedirectRules();
-    
+
     const csvLines = [
-      'Source Path,Destination Path,Status Code,Description,Hit Count,Last Hit'
+      'Source Path,Destination Path,Status Code,Description,Hit Count,Last Hit',
     ];
 
     for (const rule of rules) {
-      csvLines.push([
-        rule.source_path,
-        rule.destination_path,
-        rule.status_code.toString(),
-        rule.description || '',
-        (rule.hit_count || 0).toString(),
-        rule.last_hit?.toISOString() || '',
-      ].join(','));
+      csvLines.push(
+        [
+          rule.source_path,
+          rule.destination_path,
+          rule.status_code.toString(),
+          rule.description || '',
+          (rule.hit_count || 0).toString(),
+          rule.last_hit?.toISOString() || '',
+        ].join(','),
+      );
     }
 
     return csvLines.join('\n');
@@ -263,7 +270,10 @@ export class RedirectServiceUsageExamples {
   async testRedirections() {
     const testCases = [
       { input: '/old-product/123', expected: '/products/123' },
-      { input: '/blog/category/tech/post/ai-future', expected: '/blog/ai-future/category/tech' },
+      {
+        input: '/blog/category/tech/post/ai-future',
+        expected: '/blog/ai-future/category/tech',
+      },
       { input: '/user/john/profile', expected: '/users/john' },
       { input: '/api/v1/users', expected: '/api/latest/users' },
     ];
@@ -272,8 +282,10 @@ export class RedirectServiceUsageExamples {
 
     for (const testCase of testCases) {
       const redirect = await this.redirectService.findRedirect(testCase.input);
-      const actual = redirect ? (redirect.new_path || redirect.destination_path) : null;
-      
+      const actual = redirect
+        ? redirect.new_path || redirect.destination_path
+        : null;
+
       const result = {
         input: testCase.input,
         expected: testCase.expected,
@@ -282,16 +294,21 @@ export class RedirectServiceUsageExamples {
       };
 
       results.push(result);
-      
+
       if (result.success) {
         this.logger.log(`✅ ${testCase.input} → ${actual}`);
       } else {
-        this.logger.error(`❌ ${testCase.input}: attendu ${testCase.expected}, reçu ${actual}`);
+        this.logger.error(
+          `❌ ${testCase.input}: attendu ${testCase.expected}, reçu ${actual}`,
+        );
       }
     }
 
-    const successRate = results.filter(r => r.success).length / results.length;
-    this.logger.log(`Taux de réussite des tests: ${(successRate * 100).toFixed(1)}%`);
+    const successRate =
+      results.filter((r) => r.success).length / results.length;
+    this.logger.log(
+      `Taux de réussite des tests: ${(successRate * 100).toFixed(1)}%`,
+    );
 
     return results;
   }
@@ -299,7 +316,10 @@ export class RedirectServiceUsageExamples {
   /**
    * Exemple 10: Intégration avec analytics
    */
-  async trackRedirectionAnalytics(req: Request, redirect: RedirectEntry | RedirectRule) {
+  async trackRedirectionAnalytics(
+    req: Request,
+    redirect: RedirectEntry | RedirectRule,
+  ) {
     const analyticsData = {
       event: 'redirection',
       source_path: redirect.old_path || redirect.source_path,

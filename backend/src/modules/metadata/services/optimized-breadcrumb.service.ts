@@ -1,14 +1,14 @@
 /**
  * 🧭 OPTIMIZED BREADCRUMB SERVICE - Service de Breadcrumb Optimisé
- * 
+ *
  * ✅ MISSION ACCOMPLIE : "Vérifier existant et utiliser le meilleur"
- * 
+ *
  * Combine le meilleur de :
  * ✅ Service original proposé : Stockage DB
- * ✅ BreadcrumbService existant : Cache + génération automatique  
+ * ✅ BreadcrumbService existant : Cache + génération automatique
  * ✅ Tables existantes : ___meta_tags_ariane (champ mta_ariane)
  * ✅ Architecture consolidée : SupabaseBaseService
- * 
+ *
  * Fonctionnalités avancées :
  * ✅ Double source : DB + génération automatique
  * ✅ Cache Redis intelligent (TTL 1h)
@@ -45,9 +45,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   private readonly cachePrefix = 'breadcrumb:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
     super();
     this.logger.log('🧭 OptimizedBreadcrumbService initialisé');
   }
@@ -56,7 +54,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Récupérer le fil d'Ariane pour un chemin donné
    * 🔥 DOUBLE SOURCE : Base de données + Génération automatique
    */
-  async getBreadcrumbs(currentPath: string, lang: string = 'fr'): Promise<BreadcrumbItem[]> {
+  async getBreadcrumbs(
+    currentPath: string,
+    lang: string = 'fr',
+  ): Promise<BreadcrumbItem[]> {
     try {
       const cleanPath = this.cleanPath(currentPath);
       const cacheKey = `${this.cachePrefix}${cleanPath}:${lang}`;
@@ -73,19 +74,23 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       // 2. Essayer de récupérer depuis la table ___meta_tags_ariane
       const storedBreadcrumb = await this.getBreadcrumbFromMetadata(cleanPath);
-      
+
       if (storedBreadcrumb && storedBreadcrumb.length > 0) {
         // ✅ Utiliser le breadcrumb stocké en base
         breadcrumbs = [...storedBreadcrumb];
-        this.logger.debug(`📄 Breadcrumb récupéré depuis DB pour: ${cleanPath}`);
+        this.logger.debug(
+          `📄 Breadcrumb récupéré depuis DB pour: ${cleanPath}`,
+        );
       } else {
         // 3. 🤖 Générer automatiquement depuis l'URL (fallback intelligent)
         breadcrumbs = await this.generateBreadcrumbFromPath(cleanPath, lang);
-        this.logger.debug(`🤖 Breadcrumb généré automatiquement pour: ${cleanPath}`);
+        this.logger.debug(
+          `🤖 Breadcrumb généré automatiquement pour: ${cleanPath}`,
+        );
       }
 
       // 4. Toujours s'assurer qu'on a "Accueil" en premier
-      if (config.showHome && !breadcrumbs.some(b => b.path === '/')) {
+      if (config.showHome && !breadcrumbs.some((b) => b.path === '/')) {
         breadcrumbs.unshift({
           label: config.homeLabel,
           path: '/',
@@ -96,14 +101,20 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       }
 
       // 5. Nettoyer et valider les breadcrumbs
-      breadcrumbs = breadcrumbs.filter(item => 
-        item.label && item.label.trim().length > 0 && 
-        item.path !== undefined && item.path !== ''
+      breadcrumbs = breadcrumbs.filter(
+        (item) =>
+          item.label &&
+          item.label.trim().length > 0 &&
+          item.path !== undefined &&
+          item.path !== '',
       );
 
       // 6. Marquer le dernier élément comme actif
       if (breadcrumbs.length > 0) {
-        breadcrumbs.forEach(b => { b.active = false; b.isClickable = true; });
+        breadcrumbs.forEach((b) => {
+          b.active = false;
+          b.isClickable = true;
+        });
         breadcrumbs[breadcrumbs.length - 1].active = true;
         breadcrumbs[breadcrumbs.length - 1].isClickable = false;
       }
@@ -116,7 +127,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       return finalBreadcrumbs;
     } catch (error) {
-      this.logger.error(`❌ Erreur récupération breadcrumb pour ${currentPath}:`, error);
+      this.logger.error(
+        `❌ Erreur récupération breadcrumb pour ${currentPath}:`,
+        error,
+      );
       return this.getFallbackBreadcrumb(currentPath, lang);
     }
   }
@@ -128,10 +142,13 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   async updateBreadcrumb(path: string, breadcrumbData: any): Promise<void> {
     try {
       const cleanPath = this.cleanPath(path);
-      
+
       // Supporter différents formats d'entrée
       let arianeData;
-      if (breadcrumbData.breadcrumbs && Array.isArray(breadcrumbData.breadcrumbs)) {
+      if (
+        breadcrumbData.breadcrumbs &&
+        Array.isArray(breadcrumbData.breadcrumbs)
+      ) {
         arianeData = JSON.stringify(breadcrumbData);
       } else if (Array.isArray(breadcrumbData)) {
         arianeData = JSON.stringify({ breadcrumbs: breadcrumbData });
@@ -158,14 +175,12 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       } else {
         // Créer un nouvel enregistrement
         const newId = Date.now(); // Générer un ID temporaire
-        result = await this.supabase
-          .from('___meta_tags_ariane')
-          .insert({
-            mta_id: newId,
-            mta_url: cleanPath,
-            mta_alias: cleanPath,
-            mta_ariane: arianeData,
-          });
+        result = await this.supabase.from('___meta_tags_ariane').insert({
+          mta_id: newId,
+          mta_url: cleanPath,
+          mta_alias: cleanPath,
+          mta_ariane: arianeData,
+        });
       }
 
       if (result.error) {
@@ -174,10 +189,13 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       // Invalider le cache
       await this.clearCache(cleanPath);
-      
+
       this.logger.log(`✅ Breadcrumb mis à jour pour: ${cleanPath}`);
     } catch (error) {
-      this.logger.error(`❌ Erreur mise à jour breadcrumb pour ${path}:`, error);
+      this.logger.error(
+        `❌ Erreur mise à jour breadcrumb pour ${path}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -190,11 +208,11 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
     return {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      'itemListElement': items.map((item, index) => ({
+      itemListElement: items.map((item, index) => ({
         '@type': 'ListItem',
-        'position': index + 1,
-        'name': item.label,
-        'item': `https://www.automecanik.com${item.path}`,
+        position: index + 1,
+        name: item.label,
+        item: `https://www.automecanik.com${item.path}`,
       })),
     };
   }
@@ -211,11 +229,11 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
           `${this.cachePrefix}${cleanPath}:fr`,
           `${this.cachePrefix}${cleanPath}:en`,
         ];
-        
+
         for (const key of cacheKeys) {
           await this.cacheManager.del(key);
         }
-        
+
         this.logger.log(`♻️ Cache invalidé pour: ${cleanPath}`);
       } else {
         // Nettoyer quelques clés communes (plus sûr que pattern matching)
@@ -225,7 +243,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
           `${this.cachePrefix}products/brake-pads/premium:fr`,
           `${this.cachePrefix}config:fr`,
         ];
-        
+
         for (const key of commonKeys) {
           try {
             await this.cacheManager.del(key);
@@ -233,7 +251,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
             // Ignorer les erreurs de clés inexistantes
           }
         }
-        
+
         this.logger.log('♻️ Cache breadcrumb principal nettoyé');
       }
     } catch (error) {
@@ -260,7 +278,9 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Récupérer breadcrumb depuis la table ___meta_tags_ariane
    * 📄 Utilise UNIQUEMENT les tables existantes
    */
-  private async getBreadcrumbFromMetadata(path: string): Promise<BreadcrumbItem[] | null> {
+  private async getBreadcrumbFromMetadata(
+    path: string,
+  ): Promise<BreadcrumbItem[] | null> {
     try {
       const { data, error } = await this.supabase
         .from('___meta_tags_ariane')
@@ -283,53 +303,69 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Parser le breadcrumb depuis le format stocké en base
    * 🔄 Parsing flexible : JSON métadonnées + breadcrumb + string "A > B > C"
    */
-  private parseBreadcrumbString(breadcrumbString: string, currentPath: string): BreadcrumbItem[] {
+  private parseBreadcrumbString(
+    breadcrumbString: string,
+    currentPath: string,
+  ): BreadcrumbItem[] {
     if (!breadcrumbString || breadcrumbString.trim().length === 0) {
       return [];
     }
 
     try {
       // Si c'est du JSON, l'analyser
-      if (breadcrumbString.trim().startsWith('{') || breadcrumbString.trim().startsWith('[')) {
+      if (
+        breadcrumbString.trim().startsWith('{') ||
+        breadcrumbString.trim().startsWith('[')
+      ) {
         const parsed = JSON.parse(breadcrumbString);
-        
+
         // 🆕 Si c'est un objet de métadonnées avec title/description (format stocké)
         if (parsed.title && typeof parsed.title === 'string') {
           // Générer un breadcrumb à partir du titre et du chemin
-          return this.generateBreadcrumbFromTitleAndPath(parsed.title, currentPath);
+          return this.generateBreadcrumbFromTitleAndPath(
+            parsed.title,
+            currentPath,
+          );
         }
-        
+
         // Si c'est un objet avec une propriété breadcrumbs
         if (parsed.breadcrumbs && Array.isArray(parsed.breadcrumbs)) {
           return parsed.breadcrumbs.map((item: any, index: number) => ({
             label: item.label || item.name || item.title || 'Page',
             path: item.path || item.url || item.href || currentPath,
             icon: item.icon,
-            isClickable: item.isClickable !== false && index < parsed.breadcrumbs.length - 1,
-            active: item.active || (index === parsed.breadcrumbs.length - 1),
+            isClickable:
+              item.isClickable !== false &&
+              index < parsed.breadcrumbs.length - 1,
+            active: item.active || index === parsed.breadcrumbs.length - 1,
           }));
         }
-        
+
         // Si c'est directement un array de breadcrumbs
         if (Array.isArray(parsed)) {
           return parsed.map((item: any, index: number) => ({
             label: item.label || item.name || item.title || 'Page',
             path: item.path || item.url || item.href || currentPath,
             icon: item.icon,
-            isClickable: item.isClickable !== false && index < parsed.length - 1,
-            active: item.active || (index === parsed.length - 1),
+            isClickable:
+              item.isClickable !== false && index < parsed.length - 1,
+            active: item.active || index === parsed.length - 1,
           }));
         }
       }
 
       // Sinon, traiter comme une chaîne de type "Accueil > Catégorie > Page"
-      const segments = breadcrumbString.split('>').map(s => s.trim()).filter(s => s.length > 0);
+      const segments = breadcrumbString
+        .split('>')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
       const items: BreadcrumbItem[] = [];
 
       segments.forEach((segment, index) => {
-        const segmentPath = index === segments.length - 1 
-          ? currentPath 
-          : this.generatePathFromIndex(currentPath, index, segments.length);
+        const segmentPath =
+          index === segments.length - 1
+            ? currentPath
+            : this.generatePathFromIndex(currentPath, index, segments.length);
 
         items.push({
           label: segment,
@@ -341,7 +377,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       return items;
     } catch (error) {
-      this.logger.warn(`⚠️ Erreur parsing breadcrumb string: ${breadcrumbString}`, error);
+      this.logger.warn(
+        `⚠️ Erreur parsing breadcrumb string: ${breadcrumbString}`,
+        error,
+      );
       return [];
     }
   }
@@ -350,12 +389,17 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * 🆕 Générer breadcrumb à partir du titre et du chemin
    * Analyse le titre pour extraire les segments (ex: "Filtre à huile AUDI A3 II 2.0 TDI")
    */
-  private generateBreadcrumbFromTitleAndPath(title: string, currentPath: string): BreadcrumbItem[] {
+  private generateBreadcrumbFromTitleAndPath(
+    title: string,
+    currentPath: string,
+  ): BreadcrumbItem[] {
     const breadcrumbs: BreadcrumbItem[] = [];
-    
+
     // Analyser le chemin pour extraire les segments
-    const pathSegments = currentPath.split('/').filter(segment => segment.length > 0);
-    
+    const pathSegments = currentPath
+      .split('/')
+      .filter((segment) => segment.length > 0);
+
     // Patterns de reconnaissance pour pièces auto
     const patterns = {
       pieces: /^pieces$/i,
@@ -368,13 +412,13 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
     // Construire le breadcrumb progressivement
     let currentPathBuilder = '';
-    
+
     for (let i = 0; i < pathSegments.length; i++) {
       const segment = pathSegments[i];
       currentPathBuilder += '/' + segment;
-      
+
       let label = segment;
-      
+
       // Améliorer le label selon le contexte
       if (patterns.pieces.test(segment)) {
         label = 'Pièces détachées';
@@ -387,10 +431,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
         // Traiter les segments avec tirets
         label = segment
           .replace(/-\d+$/, '') // Supprimer les IDs numériques à la fin
-          .replace(/-/g, ' ')   // Remplacer tirets par espaces
-          .replace(/\b\w/g, l => l.toUpperCase()); // Capitaliser
+          .replace(/-/g, ' ') // Remplacer tirets par espaces
+          .replace(/\b\w/g, (l) => l.toUpperCase()); // Capitaliser
       }
-      
+
       breadcrumbs.push({
         label,
         path: currentPathBuilder,
@@ -398,13 +442,13 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
         active: i === pathSegments.length - 1,
       });
     }
-    
+
     // Si on a un titre riche, utiliser le titre pour le dernier élément
     if (title && breadcrumbs.length > 0) {
       const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
       lastBreadcrumb.label = title;
     }
-    
+
     return breadcrumbs;
   }
 
@@ -412,18 +456,23 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Générer breadcrumb depuis le chemin URL
    * 🤖 Génération automatique intelligente
    */
-  private async generateBreadcrumbFromPath(currentPath: string, lang: string): Promise<BreadcrumbItem[]> {
+  private async generateBreadcrumbFromPath(
+    currentPath: string,
+    lang: string,
+  ): Promise<BreadcrumbItem[]> {
     const breadcrumbs: BreadcrumbItem[] = [];
     const config = await this.getBreadcrumbConfig(lang);
-    
+
     if (currentPath === '/' || !currentPath) {
-      return [{
-        label: config.homeLabel,
-        path: '/',
-        icon: 'home',
-        isClickable: false,
-        active: true,
-      }];
+      return [
+        {
+          label: config.homeLabel,
+          path: '/',
+          icon: 'home',
+          isClickable: false,
+          active: true,
+        },
+      ];
     }
 
     // Diviser le chemin en segments non vides
@@ -432,10 +481,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
     segments.forEach((segment, index) => {
       currentFullPath += `/${segment}`;
-      
+
       const label = this.transformSegmentToLabel(segment);
       const isLast = index === segments.length - 1;
-      
+
       breadcrumbs.push({
         label,
         path: currentFullPath,
@@ -456,7 +505,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       .replace(/-/g, ' ')
       .replace(/_/g, ' ')
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   }
 
@@ -466,8 +515,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   private parseRoute(path: string): string[] {
     return path
       .split('/')
-      .filter(segment => segment && segment.trim())
-      .map(segment => segment.trim());
+      .filter((segment) => segment && segment.trim())
+      .map((segment) => segment.trim());
   }
 
   /**
@@ -485,19 +534,23 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    */
   private humanizeSegment(segment: string): string {
     return segment
-      .replace(/[-_]/g, ' ')           // Remplacer tirets et underscores par espaces
-      .replace(/\d+/g, '')             // Supprimer les chiffres
-      .replace(/\s+/g, ' ')            // Normaliser les espaces
+      .replace(/[-_]/g, ' ') // Remplacer tirets et underscores par espaces
+      .replace(/\d+/g, '') // Supprimer les chiffres
+      .replace(/\s+/g, ' ') // Normaliser les espaces
       .trim()
       .split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 
   /**
    * Générer un path depuis un index
    */
-  private generatePathFromIndex(currentPath: string, index: number, totalSegments: number): string {
+  private generatePathFromIndex(
+    currentPath: string,
+    index: number,
+    totalSegments: number,
+  ): string {
     const segments = this.parseRoute(currentPath);
     return '/' + segments.slice(0, index + 1).join('/');
   }
@@ -505,14 +558,17 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   /**
    * Appliquer la limite d'éléments
    */
-  private applyMaxItems(breadcrumbs: BreadcrumbItem[], config: BreadcrumbConfig): BreadcrumbItem[] {
+  private applyMaxItems(
+    breadcrumbs: BreadcrumbItem[],
+    config: BreadcrumbConfig,
+  ): BreadcrumbItem[] {
     if (breadcrumbs.length <= config.maxItems) {
       return breadcrumbs;
     }
 
     // Garder le premier (Accueil), ellipsis, et les derniers
     const result = [breadcrumbs[0]];
-    
+
     if (config.ellipsis) {
       result.push({
         label: config.ellipsis,
@@ -531,15 +587,20 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   /**
    * Breadcrumb de fallback en cas d'erreur
    */
-  private getFallbackBreadcrumb(currentPath: string, lang: string): BreadcrumbItem[] {
+  private getFallbackBreadcrumb(
+    currentPath: string,
+    lang: string,
+  ): BreadcrumbItem[] {
     const config = this.getBreadcrumbConfig(lang);
-    
-    return [{
-      label: config.homeLabel,
-      path: '/',
-      icon: 'home',
-      isClickable: currentPath !== '/',
-      active: currentPath === '/',
-    }];
+
+    return [
+      {
+        label: config.homeLabel,
+        path: '/',
+        icon: 'home',
+        isClickable: currentPath !== '/',
+        active: currentPath === '/',
+      },
+    ];
   }
 }

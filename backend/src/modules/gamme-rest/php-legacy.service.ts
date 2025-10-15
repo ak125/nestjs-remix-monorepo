@@ -14,24 +14,24 @@ interface PhpLegacyResponse {
     pg_img: string;
     pg_wall: string;
     pg_pic: string;
-    
+
     // Données famille
     mf_id: string;
     mf_name_site: string;
     mf_name_meta: string;
-    
+
     // Contenu de la page
     page_title: string;
     page_description: string;
-    breadcrumb: Array<{name: string, url?: string}>;
-    
+    breadcrumb: Array<{ name: string; url?: string }>;
+
     // Articles de conseil
     conseil_article?: {
       title: string;
       date: string;
       content: string;
     };
-    
+
     // Catalogue des filtres
     catalog_sections: Array<{
       name: string;
@@ -39,7 +39,7 @@ interface PhpLegacyResponse {
       url: string;
       image?: string;
     }>;
-    
+
     // Motorisations populaires
     popular_vehicles: Array<{
       brand: string;
@@ -49,17 +49,17 @@ interface PhpLegacyResponse {
       description: string;
       url: string;
     }>;
-    
+
     // Équipementiers
     brands: Array<{
       name: string;
       description: string;
       logo?: string;
     }>;
-    
+
     // Informations techniques
     technical_info: Array<string>;
-    
+
     isMacVersion?: boolean;
   };
   error?: string;
@@ -71,13 +71,16 @@ export class PhpLegacyService extends SupabaseBaseService {
     super();
   }
 
-  async processGammeRequest(pg_id: string, userAgent?: string): Promise<PhpLegacyResponse> {
+  async processGammeRequest(
+    pg_id: string,
+    userAgent?: string,
+  ): Promise<PhpLegacyResponse> {
     try {
       // REDIRECTION - Exact PHP logic
       if (pg_id === '3940') {
         return {
           status: 301,
-          redirect: '/pieces/corps-papillon-158.html'
+          redirect: '/pieces/corps-papillon-158.html',
         };
       }
 
@@ -89,17 +92,22 @@ export class PhpLegacyService extends SupabaseBaseService {
         .in('pg_level', ['1', '2'])
         .single();
 
-      if (selectorError || !selectorResult || selectorResult.pg_display !== '1') {
+      if (
+        selectorError ||
+        !selectorResult ||
+        selectorResult.pg_display !== '1'
+      ) {
         return {
           status: 404,
-          error: 'Gamme non trouvée ou non affichable'
+          error: 'Gamme non trouvée ou non affichable',
         };
       }
 
       // QUERY PAGE - Exact PHP JOIN query
       const { data: pageResult, error: pageError } = await this.client
         .from('pieces_gamme')
-        .select(`
+        .select(
+          `
           pg_alias,
           pg_name,
           pg_name_meta,
@@ -114,7 +122,8 @@ export class PhpLegacyService extends SupabaseBaseService {
               mf_display
             )
           )
-        `)
+        `,
+        )
         .eq('pg_id', pg_id)
         .eq('pg_display', '1')
         .in('pg_level', ['1', '2'])
@@ -124,7 +133,7 @@ export class PhpLegacyService extends SupabaseBaseService {
       if (pageError || !pageResult) {
         return {
           status: 500,
-          error: 'Erreur lors de la récupération des données'
+          error: 'Erreur lors de la récupération des données',
         };
       }
 
@@ -132,14 +141,18 @@ export class PhpLegacyService extends SupabaseBaseService {
       const family = pageResult.catalog_gamme?.[0]?.catalog_family?.[0];
 
       // Detect Mac version from User-Agent
-      const isMacVersion = userAgent?.includes('Macintosh') || userAgent?.includes('Mac OS') || false;
+      const isMacVersion =
+        userAgent?.includes('Macintosh') ||
+        userAgent?.includes('Mac OS') ||
+        false;
 
       // WALL - Exact PHP image logic
       let pg_pic: string;
       if (!isMacVersion) {
         pg_pic = pageResult.pg_img;
       } else {
-        pg_pic = pageResult.pg_img?.replace('.webp', '.jpg') || pageResult.pg_img;
+        pg_pic =
+          pageResult.pg_img?.replace('.webp', '.jpg') || pageResult.pg_img;
       }
 
       return {
@@ -156,15 +169,14 @@ export class PhpLegacyService extends SupabaseBaseService {
           mf_id: family?.mf_id,
           mf_name_site: family?.mf_name,
           mf_name_meta: family?.mf_name_meta,
-          isMacVersion
-        }
+          isMacVersion,
+        },
       };
-
     } catch (error) {
       console.error('PhpLegacyService Error:', error);
       return {
         status: 500,
-        error: 'Erreur système'
+        error: 'Erreur système',
       };
     }
   }

@@ -66,7 +66,11 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       // Générer le breadcrumb
       const config = await this.getBreadcrumbConfig(lang);
-      const breadcrumb = await this.buildBreadcrumbFromRoute(route, config, lang);
+      const breadcrumb = await this.buildBreadcrumbFromRoute(
+        route,
+        config,
+        lang,
+      );
 
       // Mettre en cache
       await this.cacheService.set(cacheKey, breadcrumb, this.cacheTTL);
@@ -83,7 +87,10 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       return breadcrumb;
     } catch (error) {
-      this.logger.error(`Failed to generate breadcrumb for route ${route}:`, error);
+      this.logger.error(
+        `Failed to generate breadcrumb for route ${route}:`,
+        error,
+      );
       return this.getDefaultBreadcrumb(route);
     }
   }
@@ -115,9 +122,12 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i];
       currentPath += `/${segment}`;
-      
+
       const isLast = i === segments.length - 1;
-      const breadcrumbData = await this.getBreadcrumbDataForPath(currentPath, lang);
+      const breadcrumbData = await this.getBreadcrumbDataForPath(
+        currentPath,
+        lang,
+      );
 
       breadcrumb.push({
         label: breadcrumbData.label || this.formatSegmentLabel(segment),

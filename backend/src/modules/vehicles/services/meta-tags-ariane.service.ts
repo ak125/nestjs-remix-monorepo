@@ -28,7 +28,7 @@ export class MetaTagsArianeService extends SupabaseBaseService {
     try {
       this.logger.log(`🔍 Recherche meta tags pour alias: ${alias}`);
 
-      const { data, error} = await this.supabase
+      const { data, error } = await this.supabase
         .from('___meta_tags_ariane')
         .select('*')
         .eq('mta_alias', alias)

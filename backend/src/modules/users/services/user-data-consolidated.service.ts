@@ -84,7 +84,9 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         limit,
       } = filters;
 
-      let query = this.supabase.from('___xtr_customer').select('*', { count: 'exact' });
+      let query = this.supabase
+        .from('___xtr_customer')
+        .select('*', { count: 'exact' });
 
       // Filtres
       if (status === 'active') query = query.eq('cst_activ', '1');
@@ -298,7 +300,10 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
 
       return (data || []).map(mapSupabaseToUser);
     } catch (error) {
-      this.logger.error(`Error searching users with term: ${searchTerm}`, error);
+      this.logger.error(
+        `Error searching users with term: ${searchTerm}`,
+        error,
+      );
       return [];
     }
   }

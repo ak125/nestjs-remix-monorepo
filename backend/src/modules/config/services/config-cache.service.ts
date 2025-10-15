@@ -15,7 +15,10 @@ export class ConfigCacheService {
       const cached = await this.cacheService.get(cacheKey);
       return cached as T;
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération du cache pour ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la récupération du cache pour ${key}`,
+        error,
+      );
       return null;
     }
   }
@@ -34,15 +37,20 @@ export class ConfigCacheService {
       const cacheKey = `${this.prefix}${key}`;
       await this.cacheService.del(cacheKey);
     } catch (error) {
-      this.logger.error(`Erreur lors de la suppression du cache pour ${key}`, error);
+      this.logger.error(
+        `Erreur lors de la suppression du cache pour ${key}`,
+        error,
+      );
     }
   }
 
   async clear(): Promise<void> {
     try {
-      // Implementation simplifiée - dans un vrai projet, 
+      // Implementation simplifiée - dans un vrai projet,
       // il faudrait implémenter une méthode de nettoyage par pattern
-      this.logger.log('Cache des configurations vidé (implémentation simplifiée)');
+      this.logger.log(
+        'Cache des configurations vidé (implémentation simplifiée)',
+      );
     } catch (error) {
       this.logger.error('Erreur lors du vidage du cache', error);
     }
@@ -56,7 +64,7 @@ export class ConfigCacheService {
       // TODO: Implémenter quand le CacheService supportera les patterns
       this.logger.debug(`Pattern d'invalidation: ${pattern} (non implémenté)`);
     } catch (error) {
-      this.logger.error('Erreur lors de l\'invalidation par pattern', error);
+      this.logger.error("Erreur lors de l'invalidation par pattern", error);
     }
   }
 }

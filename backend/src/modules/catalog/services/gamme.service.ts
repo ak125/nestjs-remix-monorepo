@@ -1,7 +1,15 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { VehicleCacheService, CacheType } from '../../vehicles/services/core/vehicle-cache.service';
+import {
+  VehicleCacheService,
+  CacheType,
+} from '../../vehicles/services/core/vehicle-cache.service';
 
 // ========================================
 // 🔍 VALIDATION SCHEMAS ZOD
@@ -94,7 +102,7 @@ export interface GammeHierarchy {
 
 /**
  * 🔧 GAMME SERVICE - Service des gammes de produits moderne
- * 
+ *
  * ✅ FONCTIONNALITÉS :
  * - CRUD complet des gammes de produits
  * - Cache intelligent multi-niveaux
@@ -103,7 +111,7 @@ export interface GammeHierarchy {
  * - Intégration avec ProductCatalog
  * - Gestion SEO et métadonnées
  * - Statistiques en temps réel
- * 
+ *
  * 🎯 OPTIMISÉ POUR :
  * - Page d'accueil avec ProductCatalog
  * - Sélection de véhicule -> Gammes
@@ -114,9 +122,7 @@ export interface GammeHierarchy {
 export class GammeService extends SupabaseBaseService {
   private readonly logger = new Logger(GammeService.name);
 
-  constructor(
-    private readonly cacheService: VehicleCacheService,
-  ) {
+  constructor(private readonly cacheService: VehicleCacheService) {
     super();
     this.logger.log('🔧 GammeService initialisé avec cache intelligent');
   }
@@ -128,23 +134,26 @@ export class GammeService extends SupabaseBaseService {
   /**
    * 🏠 Obtient les données complètes pour la page d'accueil
    */
-  async getHomepageGammeData(params: z.infer<typeof HomepageGammeSchema> = {}): Promise<HomepageGammeData> {
+  async getHomepageGammeData(
+    params: z.infer<typeof HomepageGammeSchema> = {},
+  ): Promise<HomepageGammeData> {
     const validatedParams = HomepageGammeSchema.parse(params);
-    
+
     const cacheKey = `homepage-gamme-data:${JSON.stringify(validatedParams)}`;
-    
+
     return this.cacheService.getOrSetWithTTL(
       cacheKey,
       async () => {
         this.logger.log('🏠 Génération données homepage gammes');
 
         // Requêtes parallèles pour performance optimale
-        const [featuredGammes, popularGammes, allGammes, stats] = await Promise.all([
-          this.getFeaturedGammes(validatedParams.maxCategories),
-          this.getPopularGammes(8), // Top 8 pour homepage
-          this.getAllGammes({ limit: validatedParams.maxCategories }),
-          validatedParams.includeStats ? this.getGammeStats() : null,
-        ]);
+        const [featuredGammes, popularGammes, allGammes, stats] =
+          await Promise.all([
+            this.getFeaturedGammes(validatedParams.maxCategories),
+            this.getPopularGammes(8), // Top 8 pour homepage
+            this.getAllGammes({ limit: validatedParams.maxCategories }),
+            validatedParams.includeStats ? this.getGammeStats() : null,
+          ]);
 
         const result: HomepageGammeData = {
           featured_gammes: featuredGammes,
@@ -153,16 +162,18 @@ export class GammeService extends SupabaseBaseService {
           stats: stats || {
             total_gammes: allGammes.length,
             total_products: 0,
-            featured_count: featuredGammes.length
+            featured_count: featuredGammes.length,
           },
-          last_updated: new Date().toISOString()
+          last_updated: new Date().toISOString(),
         };
 
-        this.logger.log(`✅ Données homepage: ${featuredGammes.length} featured, ${popularGammes.length} populaires`);
+        this.logger.log(
+          `✅ Données homepage: ${featuredGammes.length} featured, ${popularGammes.length} populaires`,
+        );
         return result;
       },
       CacheType.MEDIUM, // 30 minutes
-      'homepage-gamme'
+      'homepage-gamme',
     );
   }
 
@@ -171,7 +182,7 @@ export class GammeService extends SupabaseBaseService {
    */
   async getFeaturedGammes(limit: number = 12): Promise<ProductGamme[]> {
     const cacheKey = `featured-gammes:${limit}`;
-    
+
     return this.cacheService.getOrSetWithTTL(
       cacheKey,
       async () => {
@@ -179,7 +190,8 @@ export class GammeService extends SupabaseBaseService {
 
         const { data, error } = await this.supabase
           .from('products_gamme')
-          .select(`
+          .select(
+            `
             gamme_id,
             gamme_name,
             gamme_alias,
@@ -192,7 +204,8 @@ export class GammeService extends SupabaseBaseService {
             gamme_featured,
             gamme_seo_title,
             gamme_seo_description
-          `)
+          `,
+          )
           .eq('gamme_display', true)
           .eq('gamme_featured', true)
           .order('gamme_sort', { ascending: true })
@@ -200,17 +213,23 @@ export class GammeService extends SupabaseBaseService {
 
         if (error) {
           this.logger.error('❌ Erreur récupération gammes featured:', error);
-          throw new BadRequestException('Erreur lors de la récupération des gammes featured');
+          throw new BadRequestException(
+            'Erreur lors de la récupération des gammes featured',
+          );
         }
 
         // Enrichir avec le nombre de produits
-        const enrichedGammes = await this.enrichGammesWithProductCount(data || []);
-        
-        this.logger.log(`✅ ${enrichedGammes.length} gammes featured récupérées`);
+        const enrichedGammes = await this.enrichGammesWithProductCount(
+          data || [],
+        );
+
+        this.logger.log(
+          `✅ ${enrichedGammes.length} gammes featured récupérées`,
+        );
         return enrichedGammes;
       },
       CacheType.MEDIUM,
-      'featured-gammes'
+      'featured-gammes',
     );
   }
 
@@ -219,44 +238,49 @@ export class GammeService extends SupabaseBaseService {
    */
   async getPopularGammes(limit: number = 8): Promise<ProductGamme[]> {
     const cacheKey = `popular-gammes:${limit}`;
-    
+
     return this.cacheService.getOrSetWithTTL(
       cacheKey,
       async () => {
         this.logger.log(`🔥 Récupération gammes populaires (limite: ${limit})`);
 
         // Requête complexe avec jointures pour calculer la popularité
-        const { data, error } = await this.supabase
-          .rpc('get_popular_gammes', {
-            limit_count: limit
-          });
+        const { data, error } = await this.supabase.rpc('get_popular_gammes', {
+          limit_count: limit,
+        });
 
         if (error) {
-          this.logger.warn('⚠️ Erreur RPC popularité, fallback sur gammes featured');
+          this.logger.warn(
+            '⚠️ Erreur RPC popularité, fallback sur gammes featured',
+          );
           // Fallback sur gammes featured si RPC échoue
           return this.getFeaturedGammes(limit);
         }
 
         const popularGammes = (data || []).map((item: any) => ({
           ...item,
-          is_popular: true
+          is_popular: true,
         }));
 
-        this.logger.log(`✅ ${popularGammes.length} gammes populaires récupérées`);
+        this.logger.log(
+          `✅ ${popularGammes.length} gammes populaires récupérées`,
+        );
         return popularGammes;
       },
       CacheType.LONG, // 2 heures - les stats de popularité changent moins souvent
-      'popular-gammes'
+      'popular-gammes',
     );
   }
 
   /**
    * 📋 Obtient toutes les gammes avec filtres
    */
-  async getAllGammes(filters: z.infer<typeof GammeFilterSchema> = {}): Promise<ProductGamme[]> {
+  async getAllGammes(
+    filters: z.infer<typeof GammeFilterSchema> = {},
+  ): Promise<ProductGamme[]> {
     const validatedFilters = GammeFilterSchema.parse(filters);
     const cacheKey = `all-gammes:${JSON.stringify(validatedFilters)}`;
-    
+
     return this.cacheService.getOrSetWithTTL(
       cacheKey,
       async () => {
@@ -264,7 +288,8 @@ export class GammeService extends SupabaseBaseService {
 
         let query = this.supabase
           .from('products_gamme')
-          .select(`
+          .select(
+            `
             gamme_id,
             gamme_name,
             gamme_alias,
@@ -277,7 +302,8 @@ export class GammeService extends SupabaseBaseService {
             gamme_featured,
             gamme_seo_title,
             gamme_seo_description
-          `)
+          `,
+          )
           .eq('gamme_display', true);
 
         // Application des filtres
@@ -286,37 +312,54 @@ export class GammeService extends SupabaseBaseService {
         }
 
         if (validatedFilters.categoryFilter) {
-          query = query.ilike('gamme_name', `%${validatedFilters.categoryFilter}%`);
+          query = query.ilike(
+            'gamme_name',
+            `%${validatedFilters.categoryFilter}%`,
+          );
         }
 
         // Ordre et pagination
         const { data, error } = await query
           .order('gamme_sort', { ascending: true })
-          .range(validatedFilters.offset, validatedFilters.offset + validatedFilters.limit - 1);
+          .range(
+            validatedFilters.offset,
+            validatedFilters.offset + validatedFilters.limit - 1,
+          );
 
         if (error) {
           this.logger.error('❌ Erreur récupération toutes gammes:', error);
-          throw new BadRequestException('Erreur lors de la récupération des gammes');
+          throw new BadRequestException(
+            'Erreur lors de la récupération des gammes',
+          );
         }
 
         // Enrichir avec compteurs de produits
-        const enrichedGammes = await this.enrichGammesWithProductCount(data || []);
-        
-        this.logger.log(`✅ ${enrichedGammes.length} gammes récupérées avec filtres`);
+        const enrichedGammes = await this.enrichGammesWithProductCount(
+          data || [],
+        );
+
+        this.logger.log(
+          `✅ ${enrichedGammes.length} gammes récupérées avec filtres`,
+        );
         return enrichedGammes;
       },
       CacheType.MEDIUM,
-      'all-gammes'
+      'all-gammes',
     );
   }
 
   /**
    * 🔍 Obtient une gamme par ID avec détails complets
    */
-  async getGammeById(gammeId: number, includeProducts: boolean = false): Promise<GammeWithProducts> {
-    const validatedParams = GammeParamsSchema.parse({ gammeId: gammeId.toString() });
+  async getGammeById(
+    gammeId: number,
+    includeProducts: boolean = false,
+  ): Promise<GammeWithProducts> {
+    const validatedParams = GammeParamsSchema.parse({
+      gammeId: gammeId.toString(),
+    });
     const cacheKey = `gamme-detail:${validatedParams.gammeId}:${includeProducts}`;
-    
+
     return this.cacheService.getOrSetWithTTL(
       cacheKey,
       async () => {
@@ -324,7 +367,8 @@ export class GammeService extends SupabaseBaseService {
 
         const { data, error } = await this.supabase
           .from('products_gamme')
-          .select(`
+          .select(
+            `
             gamme_id,
             gamme_name,
             gamme_alias,
@@ -338,35 +382,46 @@ export class GammeService extends SupabaseBaseService {
             gamme_seo_title,
             gamme_seo_description,
             updated_at
-          `)
+          `,
+          )
           .eq('gamme_id', validatedParams.gammeId)
           .single();
 
         if (error || !data) {
-          this.logger.error(`❌ Gamme ${validatedParams.gammeId} non trouvée:`, error);
-          throw new NotFoundException(`Gamme avec l'ID ${validatedParams.gammeId} non trouvée`);
+          this.logger.error(
+            `❌ Gamme ${validatedParams.gammeId} non trouvée:`,
+            error,
+          );
+          throw new NotFoundException(
+            `Gamme avec l'ID ${validatedParams.gammeId} non trouvée`,
+          );
         }
 
         let result: GammeWithProducts = {
           ...data,
-          products_count: 0
+          products_count: 0,
         };
 
         // Enrichir avec produits populaires si demandé
         if (includeProducts) {
-          const popularProducts = await this.getPopularProductsForGamme(validatedParams.gammeId, 6);
+          const popularProducts = await this.getPopularProductsForGamme(
+            validatedParams.gammeId,
+            6,
+          );
           result.popular_products = popularProducts;
         }
 
         // Toujours enrichir avec le count
-        const [enrichedGamme] = await this.enrichGammesWithProductCount([result]);
+        const [enrichedGamme] = await this.enrichGammesWithProductCount([
+          result,
+        ]);
         result = { ...result, ...enrichedGamme };
 
         this.logger.log(`✅ Gamme ${validatedParams.gammeId} récupérée`);
         return result;
       },
       CacheType.MEDIUM,
-      'gamme-detail'
+      'gamme-detail',
     );
   }
 
@@ -377,20 +432,26 @@ export class GammeService extends SupabaseBaseService {
   /**
    * 📊 Enrichit les gammes avec le nombre de produits
    */
-  private async enrichGammesWithProductCount(gammes: ProductGamme[]): Promise<ProductGamme[]> {
+  private async enrichGammesWithProductCount(
+    gammes: ProductGamme[],
+  ): Promise<ProductGamme[]> {
     if (gammes.length === 0) return [];
 
     try {
-      const gammeIds = gammes.map(g => g.gamme_id);
-      
-      const { data: productCounts, error } = await this.supabase
-        .rpc('get_products_count_by_gamme', {
-          gamme_ids: gammeIds
-        });
+      const gammeIds = gammes.map((g) => g.gamme_id);
+
+      const { data: productCounts, error } = await this.supabase.rpc(
+        'get_products_count_by_gamme',
+        {
+          gamme_ids: gammeIds,
+        },
+      );
 
       if (error) {
-        this.logger.warn('⚠️ Erreur comptage produits, valeurs par défaut utilisées');
-        return gammes.map(g => ({ ...g, products_count: 0 }));
+        this.logger.warn(
+          '⚠️ Erreur comptage produits, valeurs par défaut utilisées',
+        );
+        return gammes.map((g) => ({ ...g, products_count: 0 }));
       }
 
       // Créer un map pour lookup rapide
@@ -400,14 +461,13 @@ export class GammeService extends SupabaseBaseService {
       });
 
       // Enrichir les gammes
-      return gammes.map(gamme => ({
+      return gammes.map((gamme) => ({
         ...gamme,
-        products_count: countMap.get(gamme.gamme_id) || 0
+        products_count: countMap.get(gamme.gamme_id) || 0,
       }));
-
     } catch (error) {
       this.logger.warn('⚠️ Erreur enrichissement produits count:', error);
-      return gammes.map(g => ({ ...g, products_count: 0 }));
+      return gammes.map((g) => ({ ...g, products_count: 0 }));
     }
   }
 
@@ -416,20 +476,28 @@ export class GammeService extends SupabaseBaseService {
    */
   private async getPopularProductsForGamme(gammeId: number, limit: number = 6) {
     try {
-      const { data, error } = await this.supabase
-        .rpc('get_popular_products_by_gamme', {
+      const { data, error } = await this.supabase.rpc(
+        'get_popular_products_by_gamme',
+        {
           gamme_id: gammeId,
-          limit_count: limit
-        });
+          limit_count: limit,
+        },
+      );
 
       if (error) {
-        this.logger.warn(`⚠️ Erreur produits populaires gamme ${gammeId}:`, error);
+        this.logger.warn(
+          `⚠️ Erreur produits populaires gamme ${gammeId}:`,
+          error,
+        );
         return [];
       }
 
       return data || [];
     } catch (error) {
-      this.logger.warn(`⚠️ Exception produits populaires gamme ${gammeId}:`, error);
+      this.logger.warn(
+        `⚠️ Exception produits populaires gamme ${gammeId}:`,
+        error,
+      );
       return [];
     }
   }
@@ -439,29 +507,30 @@ export class GammeService extends SupabaseBaseService {
    */
   private async getGammeStats() {
     try {
-      const { data, error } = await this.supabase
-        .rpc('get_gamme_statistics');
+      const { data, error } = await this.supabase.rpc('get_gamme_statistics');
 
       if (error) {
         this.logger.warn('⚠️ Erreur statistiques gammes:', error);
         return {
           total_gammes: 0,
           total_products: 0,
-          featured_count: 0
+          featured_count: 0,
         };
       }
 
-      return data?.[0] || {
-        total_gammes: 0,
-        total_products: 0,
-        featured_count: 0
-      };
+      return (
+        data?.[0] || {
+          total_gammes: 0,
+          total_products: 0,
+          featured_count: 0,
+        }
+      );
     } catch (error) {
       this.logger.warn('⚠️ Exception statistiques gammes:', error);
       return {
         total_gammes: 0,
         total_products: 0,
-        featured_count: 0
+        featured_count: 0,
       };
     }
   }
@@ -471,7 +540,7 @@ export class GammeService extends SupabaseBaseService {
    */
   async invalidateGammeCache(): Promise<void> {
     this.logger.log('♻️ Invalidation cache gammes');
-    
+
     await Promise.all([
       this.cacheService.invalidatePattern('homepage-gamme*'),
       this.cacheService.invalidatePattern('featured-gammes*'),
@@ -491,17 +560,20 @@ export class GammeService extends SupabaseBaseService {
    * 🔍 Récupère une gamme spécifique avec ses pièces
    * Méthode améliorée avec cache et validation
    */
-  async getGammeWithPieces(gammeCode: string): Promise<GammeWithProducts | null> {
+  async getGammeWithPieces(
+    gammeCode: string,
+  ): Promise<GammeWithProducts | null> {
     const cacheKey = `gamme-with-pieces:${gammeCode}`;
-    
+
     try {
       // TODO: Réactiver cache une fois VehicleCacheService corrigé
       // return this.cacheService.getOrSetWithTTL(cacheKey, async () => {
-        this.logger.log(`🔍 Récupération gamme avec pièces: ${gammeCode}`);
+      this.logger.log(`🔍 Récupération gamme avec pièces: ${gammeCode}`);
 
-        const { data: gamme, error } = await this.supabase
-          .from('products_gamme')
-          .select(`
+      const { data: gamme, error } = await this.supabase
+        .from('products_gamme')
+        .select(
+          `
             *,
             pieces:products_pieces(
               piece_id,
@@ -513,18 +585,21 @@ export class GammeService extends SupabaseBaseService {
               piece_stock_status,
               piece_brand
             )
-          `)
-          .eq('gamme_alias', gammeCode)
-          .eq('gamme_display', true)
-          .single();
+          `,
+        )
+        .eq('gamme_alias', gammeCode)
+        .eq('gamme_display', true)
+        .single();
 
-        if (error) {
-          this.logger.warn(`⚠️ Gamme ${gammeCode} non trouvée:`, error);
-          return null;
-        }
+      if (error) {
+        this.logger.warn(`⚠️ Gamme ${gammeCode} non trouvée:`, error);
+        return null;
+      }
 
-        this.logger.log(`✅ Gamme ${gammeCode} récupérée avec ${gamme?.pieces?.length || 0} pièces`);
-        return gamme;
+      this.logger.log(
+        `✅ Gamme ${gammeCode} récupérée avec ${gamme?.pieces?.length || 0} pièces`,
+      );
+      return gamme;
       // }, CacheType.MEDIUM, 'gamme-with-pieces');
     } catch (error) {
       this.logger.error(`❌ Erreur récupération gamme ${gammeCode}:`, error);
@@ -538,15 +613,16 @@ export class GammeService extends SupabaseBaseService {
    */
   async getGammeHierarchy(): Promise<GammeHierarchy[]> {
     const cacheKey = 'gamme-hierarchy';
-    
+
     try {
       // TODO: Réactiver cache une fois VehicleCacheService corrigé
       // return this.cacheService.getOrSetWithTTL(cacheKey, async () => {
-        this.logger.log('🏗️ Construction hiérarchie gammes');
+      this.logger.log('🏗️ Construction hiérarchie gammes');
 
-        const { data, error } = await this.supabase
-          .from('products_gamme')
-          .select(`
+      const { data, error } = await this.supabase
+        .from('products_gamme')
+        .select(
+          `
             gamme_id,
             gamme_alias,
             gamme_name,
@@ -558,36 +634,43 @@ export class GammeService extends SupabaseBaseService {
               gamme_name,
               gamme_sort
             )
-          `)
-          .is('gamme_parent_id', null)
-          .eq('gamme_display', true)
-          .order('gamme_sort', { ascending: true });
+          `,
+        )
+        .is('gamme_parent_id', null)
+        .eq('gamme_display', true)
+        .order('gamme_sort', { ascending: true });
 
-        if (error) {
-          this.logger.error('❌ Erreur hiérarchie gammes:', error);
-          throw new BadRequestException('Erreur lors de la récupération de la hiérarchie des gammes');
-        }
+      if (error) {
+        this.logger.error('❌ Erreur hiérarchie gammes:', error);
+        throw new BadRequestException(
+          'Erreur lors de la récupération de la hiérarchie des gammes',
+        );
+      }
 
-        const hierarchy = (data || []).map(item => ({
-          id: item.gamme_id,
-          code: item.gamme_alias,
-          name: item.gamme_name,
-          parent_id: item.gamme_parent_id,
-          display_order: item.gamme_sort || 0,
-          children: (item.children || []).map((child: any) => ({
-            id: child.gamme_id,
-            code: child.gamme_alias,
-            name: child.gamme_name,
-            display_order: child.gamme_sort || 0
-          }))
-        }));
+      const hierarchy = (data || []).map((item) => ({
+        id: item.gamme_id,
+        code: item.gamme_alias,
+        name: item.gamme_name,
+        parent_id: item.gamme_parent_id,
+        display_order: item.gamme_sort || 0,
+        children: (item.children || []).map((child: any) => ({
+          id: child.gamme_id,
+          code: child.gamme_alias,
+          name: child.gamme_name,
+          display_order: child.gamme_sort || 0,
+        })),
+      }));
 
-        this.logger.log(`✅ Hiérarchie construite: ${hierarchy.length} gammes principales`);
-        return hierarchy;
+      this.logger.log(
+        `✅ Hiérarchie construite: ${hierarchy.length} gammes principales`,
+      );
+      return hierarchy;
       // }, CacheType.LONG, 'gamme-hierarchy');
     } catch (error) {
       this.logger.error('❌ Exception hiérarchie gammes:', error);
-      throw new BadRequestException('Erreur lors de la récupération de la hiérarchie des gammes');
+      throw new BadRequestException(
+        'Erreur lors de la récupération de la hiérarchie des gammes',
+      );
     }
   }
 
@@ -597,44 +680,48 @@ export class GammeService extends SupabaseBaseService {
    */
   async getGammeMetadata(gammeCode: string): Promise<GammeMetadata | null> {
     const cacheKey = `gamme-metadata:${gammeCode}`;
-    
+
     try {
       // TODO: Réactiver cache une fois VehicleCacheService corrigé
       // return this.cacheService.getOrSetWithTTL(cacheKey, async () => {
-        this.logger.log(`🎯 Génération métadonnées SEO: ${gammeCode}`);
+      this.logger.log(`🎯 Génération métadonnées SEO: ${gammeCode}`);
 
-        const { data: gamme, error } = await this.supabase
-          .from('products_gamme')
-          .select('*')
-          .eq('gamme_alias', gammeCode)
-          .eq('gamme_display', true)
-          .single();
+      const { data: gamme, error } = await this.supabase
+        .from('products_gamme')
+        .select('*')
+        .eq('gamme_alias', gammeCode)
+        .eq('gamme_display', true)
+        .single();
 
-        if (error || !gamme) {
-          this.logger.warn(`⚠️ Gamme ${gammeCode} non trouvée pour métadonnées`);
-          return null;
-        }
+      if (error || !gamme) {
+        this.logger.warn(`⚠️ Gamme ${gammeCode} non trouvée pour métadonnées`);
+        return null;
+      }
 
-        // Générer les métadonnées SEO optimisées
-        const metadata: GammeMetadata = {
-          title: gamme.gamme_seo_title || `${gamme.gamme_name} - Pièces auto pas cher | Automecanik`,
-          description: gamme.gamme_seo_description || gamme.gamme_description || 
-                      `Découvrez notre gamme ${gamme.gamme_name}. Large choix de pièces détachées auto au meilleur prix. Livraison rapide.`,
-          keywords: [
-            gamme.gamme_name,
-            'pièces auto',
-            gamme.gamme_alias,
-            'pièces détachées',
-            'automecanik'
-          ].filter(Boolean),
-          ogTitle: `${gamme.gamme_name} - Automecanik`,
-          ogDescription: `Gamme complète ${gamme.gamme_name} disponible sur Automecanik`,
-          ogImage: gamme.gamme_image || '/images/default-gamme.jpg',
-          breadcrumbs: await this.getGammeBreadcrumbs(gammeCode)
-        };
+      // Générer les métadonnées SEO optimisées
+      const metadata: GammeMetadata = {
+        title:
+          gamme.gamme_seo_title ||
+          `${gamme.gamme_name} - Pièces auto pas cher | Automecanik`,
+        description:
+          gamme.gamme_seo_description ||
+          gamme.gamme_description ||
+          `Découvrez notre gamme ${gamme.gamme_name}. Large choix de pièces détachées auto au meilleur prix. Livraison rapide.`,
+        keywords: [
+          gamme.gamme_name,
+          'pièces auto',
+          gamme.gamme_alias,
+          'pièces détachées',
+          'automecanik',
+        ].filter(Boolean),
+        ogTitle: `${gamme.gamme_name} - Automecanik`,
+        ogDescription: `Gamme complète ${gamme.gamme_name} disponible sur Automecanik`,
+        ogImage: gamme.gamme_image || '/images/default-gamme.jpg',
+        breadcrumbs: await this.getGammeBreadcrumbs(gammeCode),
+      };
 
-        this.logger.log(`✅ Métadonnées générées pour ${gamme.gamme_name}`);
-        return metadata;
+      this.logger.log(`✅ Métadonnées générées pour ${gamme.gamme_name}`);
+      return metadata;
       // }, CacheType.MEDIUM, 'gamme-metadata');
     } catch (error) {
       this.logger.error(`❌ Erreur métadonnées gamme ${gammeCode}:`, error);
@@ -646,10 +733,12 @@ export class GammeService extends SupabaseBaseService {
    * 🍞 Génère le fil d'Ariane pour une gamme
    * Méthode privée avec support hiérarchie avancée
    */
-  private async getGammeBreadcrumbs(gammeCode: string): Promise<Array<{ label: string; path: string }>> {
+  private async getGammeBreadcrumbs(
+    gammeCode: string,
+  ): Promise<Array<{ label: string; path: string }>> {
     const breadcrumbs = [
       { label: 'Accueil', path: '/' },
-      { label: 'Catalogue', path: '/catalog' }
+      { label: 'Catalogue', path: '/catalog' },
     ];
 
     try {
@@ -671,7 +760,7 @@ export class GammeService extends SupabaseBaseService {
           if (parentGamme) {
             breadcrumbs.push({
               label: parentGamme.gamme_name,
-              path: `/catalog/gamme/${parentGamme.gamme_alias}`
+              path: `/catalog/gamme/${parentGamme.gamme_alias}`,
             });
           }
         }
@@ -679,11 +768,14 @@ export class GammeService extends SupabaseBaseService {
         // Ajouter la gamme courante
         breadcrumbs.push({
           label: gamme.gamme_name,
-          path: `/catalog/gamme/${gamme.gamme_alias}`
+          path: `/catalog/gamme/${gamme.gamme_alias}`,
         });
       }
     } catch (error) {
-      this.logger.warn(`⚠️ Erreur génération breadcrumbs pour ${gammeCode}:`, error);
+      this.logger.warn(
+        `⚠️ Erreur génération breadcrumbs pour ${gammeCode}:`,
+        error,
+      );
     }
 
     return breadcrumbs;
@@ -694,21 +786,26 @@ export class GammeService extends SupabaseBaseService {
    * Nouvelle méthode pour recherche avancée
    */
   async searchGammes(
-    query: string, 
+    query: string,
     options: {
       limit?: number;
       includeProducts?: boolean;
       onlyFeatured?: boolean;
-    } = {}
+    } = {},
   ): Promise<ProductGamme[]> {
-    const { limit = 20, includeProducts = false, onlyFeatured = false } = options;
-    
+    const {
+      limit = 20,
+      includeProducts = false,
+      onlyFeatured = false,
+    } = options;
+
     try {
       this.logger.log(`🔍 Recherche gammes: "${query}" (limite: ${limit})`);
 
       let queryBuilder = this.supabase
         .from('products_gamme')
-        .select(`
+        .select(
+          `
           gamme_id,
           gamme_name,
           gamme_alias,
@@ -717,9 +814,12 @@ export class GammeService extends SupabaseBaseService {
           gamme_featured,
           gamme_display
           ${includeProducts ? ', products_pieces(piece_id, piece_name, piece_ref)' : ''}
-        `)
+        `,
+        )
         .eq('gamme_display', true)
-        .or(`gamme_name.ilike.%${query}%, gamme_description.ilike.%${query}%, gamme_alias.ilike.%${query}%`);
+        .or(
+          `gamme_name.ilike.%${query}%, gamme_description.ilike.%${query}%, gamme_alias.ilike.%${query}%`,
+        );
 
       if (onlyFeatured) {
         queryBuilder = queryBuilder.eq('gamme_featured', true);
@@ -735,7 +835,9 @@ export class GammeService extends SupabaseBaseService {
         throw new BadRequestException('Erreur lors de la recherche de gammes');
       }
 
-      this.logger.log(`✅ Recherche "${query}": ${data?.length || 0} résultats`);
+      this.logger.log(
+        `✅ Recherche "${query}": ${data?.length || 0} résultats`,
+      );
       return data || [];
     } catch (error) {
       this.logger.error(`❌ Exception recherche gammes: ${query}`, error);

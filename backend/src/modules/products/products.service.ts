@@ -592,13 +592,16 @@ export class ProductsService extends SupabaseBaseService {
         marquesError ||
         lowStockError
       ) {
-        this.logger.error('⚠️ Erreur getStats (certaines requêtes ont échoué):', {
-          piecesError: piecesError?.message,
-          activeError: activeError?.message,
-          gammesError: gammesError?.message,
-          marquesError: marquesError?.message,
-          lowStockError: lowStockError?.message,
-        });
+        this.logger.error(
+          '⚠️ Erreur getStats (certaines requêtes ont échoué):',
+          {
+            piecesError: piecesError?.message,
+            activeError: activeError?.message,
+            gammesError: gammesError?.message,
+            marquesError: marquesError?.message,
+            lowStockError: lowStockError?.message,
+          },
+        );
       }
 
       const stats = {
@@ -609,7 +612,10 @@ export class ProductsService extends SupabaseBaseService {
         lowStockItems: lowStockCount || 0,
       };
 
-      this.logger.log('📊 Statistiques produits (affichables uniquement):', stats);
+      this.logger.log(
+        '📊 Statistiques produits (affichables uniquement):',
+        stats,
+      );
       return stats;
     } catch (error) {
       this.logger.error('❌ Erreur dans getStats:', error);
@@ -1540,21 +1546,23 @@ export class ProductsService extends SupabaseBaseService {
   /**
    * 🏪 INTERFACE COMMERCIALE - Récupérer produits avec TOUS les détails
    * Pour page /products/admin (commercial level 3+)
-   * 
+   *
    * Retourne: produits avec prix (TTC/HT), stock, marque, activation
    */
-  async getProductsForCommercial(options: {
-    search?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    isActive?: boolean;
-    lowStock?: boolean;
-    gammeId?: number;
-    categoryId?: number;
-    brandId?: number;
-  } = {}) {
+  async getProductsForCommercial(
+    options: {
+      search?: string;
+      page?: number;
+      limit?: number;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      isActive?: boolean;
+      lowStock?: boolean;
+      gammeId?: number;
+      categoryId?: number;
+      brandId?: number;
+    } = {},
+  ) {
     try {
       const {
         search = '',
@@ -1572,9 +1580,7 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🏪 getProductsForCommercial - Options:', options);
 
       // Étape 1 : Récupérer les pièces
-      let query = this.client
-        .from('pieces')
-        .select('*', { count: 'exact' });
+      let query = this.client.from('pieces').select('*', { count: 'exact' });
 
       // Filtres
       if (search) {
@@ -1842,7 +1848,10 @@ export class ProductsService extends SupabaseBaseService {
       );
 
       if (brandsError) {
-        this.logger.error('Erreur getPieceBrandsForFilters (RPC):', brandsError);
+        this.logger.error(
+          'Erreur getPieceBrandsForFilters (RPC):',
+          brandsError,
+        );
         throw brandsError;
       }
 

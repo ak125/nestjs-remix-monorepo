@@ -73,7 +73,7 @@ interface EnhancedConfigModuleOptions {
     BreadcrumbService,
     OptimizedBreadcrumbService,
     ConfigAnalyticsService,
-    
+
     // Services de sécurité et validation
     ConfigSecurityService,
     ConfigValidationService,

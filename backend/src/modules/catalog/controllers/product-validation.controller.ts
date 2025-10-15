@@ -1,29 +1,29 @@
 /**
  * 🛡️ PRODUCT VALIDATION CONTROLLER V4
- * 
+ *
  * Contrôleur pour les validations de produits/gammes
  * Utilise ProductValidationV4UltimateService optimisé
- * 
+ *
  * @version 4.0.0
  * @package @monorepo/catalog
  */
 
-import { 
-  Controller, 
-  Get, 
-  Param, 
-  Query, 
-  ParseIntPipe, 
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  ParseIntPipe,
   Logger,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiParam, 
-  ApiQuery, 
-  ApiResponse 
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { ProductValidationV4UltimateService } from '../services/product-validation-v4-ultimate.service';
 
@@ -33,7 +33,7 @@ export class ProductValidationController {
   private readonly logger = new Logger(ProductValidationController.name);
 
   constructor(
-    private readonly validationService: ProductValidationV4UltimateService
+    private readonly validationService: ProductValidationV4UltimateService,
   ) {}
 
   /**
@@ -41,18 +41,43 @@ export class ProductValidationController {
    * GET /api/catalog/validation/gamme-car/:pgId/:marqueId/:modeleId/:typeId
    */
   @Get('gamme-car/:pgId/:marqueId/:modeleId/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation complète page gamme-car V4',
-    description: 'Valide véhicule, gamme, articles compatibles et critères SEO avec cache intelligent'
+    description:
+      'Valide véhicule, gamme, articles compatibles et critères SEO avec cache intelligent',
   })
   @ApiParam({ name: 'pgId', type: 'number', description: 'ID de la gamme' })
-  @ApiParam({ name: 'marqueId', type: 'number', description: 'ID de la marque' })
+  @ApiParam({
+    name: 'marqueId',
+    type: 'number',
+    description: 'ID de la marque',
+  })
   @ApiParam({ name: 'modeleId', type: 'number', description: 'ID du modèle' })
   @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type' })
-  @ApiQuery({ name: 'validateSeo', type: 'boolean', required: false, description: 'Valider critères SEO' })
-  @ApiQuery({ name: 'minArticles', type: 'number', required: false, description: 'Minimum d\'articles requis' })
-  @ApiQuery({ name: 'minFamilies', type: 'number', required: false, description: 'Minimum de familles SEO' })
-  @ApiQuery({ name: 'minGammes', type: 'number', required: false, description: 'Minimum de gammes SEO' })
+  @ApiQuery({
+    name: 'validateSeo',
+    type: 'boolean',
+    required: false,
+    description: 'Valider critères SEO',
+  })
+  @ApiQuery({
+    name: 'minArticles',
+    type: 'number',
+    required: false,
+    description: "Minimum d'articles requis",
+  })
+  @ApiQuery({
+    name: 'minFamilies',
+    type: 'number',
+    required: false,
+    description: 'Minimum de familles SEO',
+  })
+  @ApiQuery({
+    name: 'minGammes',
+    type: 'number',
+    required: false,
+    description: 'Minimum de gammes SEO',
+  })
   @ApiResponse({
     status: 200,
     description: 'Validation réussie',
@@ -68,14 +93,17 @@ export class ProductValidationController {
             articleCount: { type: 'number' },
             seoValidation: { type: 'object' },
             globalValidation: { type: 'object' },
-            performance: { type: 'object' }
-          }
+            performance: { type: 'object' },
+          },
         },
-        metadata: { type: 'object' }
-      }
-    }
+        metadata: { type: 'object' },
+      },
+    },
   })
-  @ApiResponse({ status: 410, description: 'Véhicule ou gamme non trouvé/désactivé' })
+  @ApiResponse({
+    status: 410,
+    description: 'Véhicule ou gamme non trouvé/désactivé',
+  })
   @ApiResponse({ status: 412, description: 'Aucun article compatible' })
   async validateGammeCarPage(
     @Param('pgId', ParseIntPipe) pgId: number,
@@ -85,11 +113,13 @@ export class ProductValidationController {
     @Query('validateSeo') validateSeo: string = 'true',
     @Query('minArticles') minArticles: string = '1',
     @Query('minFamilies') minFamilies: string = '3',
-    @Query('minGammes') minGammes: string = '5'
+    @Query('minGammes') minGammes: string = '5',
   ) {
     const startTime = Date.now();
-    
-    this.logger.log(`🛡️ [API] Validation gamme-car: pgId=${pgId}, typeId=${typeId}`);
+
+    this.logger.log(
+      `🛡️ [API] Validation gamme-car: pgId=${pgId}, typeId=${typeId}`,
+    );
 
     try {
       const options = {
@@ -105,12 +135,14 @@ export class ProductValidationController {
         marqueId,
         modeleId,
         typeId,
-        options
+        options,
       );
 
       const responseTime = Date.now() - startTime;
 
-      this.logger.log(`✅ [API] Validation réussie: score=${result.globalValidation.score}% en ${responseTime}ms`);
+      this.logger.log(
+        `✅ [API] Validation réussie: score=${result.globalValidation.score}% en ${responseTime}ms`,
+      );
 
       return {
         success: true,
@@ -120,12 +152,11 @@ export class ProductValidationController {
           response_time: responseTime,
           timestamp: new Date().toISOString(),
           cache_enabled: true,
-        }
+        },
       };
-
     } catch (error) {
       const responseTime = Date.now() - startTime;
-      
+
       this.logger.error(`❌ [API] Erreur validation:`, error);
 
       if (error instanceof HttpException) {
@@ -134,7 +165,7 @@ export class ProductValidationController {
 
       throw new HttpException(
         'Erreur lors de la validation',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -144,19 +175,25 @@ export class ProductValidationController {
    * GET /api/catalog/validation/vehicle/:marqueId/:modeleId/:typeId
    */
   @Get('vehicle/:marqueId/:modeleId/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation véhicule uniquement',
-    description: 'Valide l\'existence et statut d\'un véhicule'
+    description: "Valide l'existence et statut d'un véhicule",
   })
-  @ApiParam({ name: 'marqueId', type: 'number', description: 'ID de la marque' })
+  @ApiParam({
+    name: 'marqueId',
+    type: 'number',
+    description: 'ID de la marque',
+  })
   @ApiParam({ name: 'modeleId', type: 'number', description: 'ID du modèle' })
   @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type' })
   async validateVehicle(
     @Param('marqueId', ParseIntPipe) marqueId: number,
     @Param('modeleId', ParseIntPipe) modeleId: number,
-    @Param('typeId', ParseIntPipe) typeId: number
+    @Param('typeId', ParseIntPipe) typeId: number,
   ) {
-    this.logger.log(`🚗 [API] Validation véhicule: ${marqueId}/${modeleId}/${typeId}`);
+    this.logger.log(
+      `🚗 [API] Validation véhicule: ${marqueId}/${modeleId}/${typeId}`,
+    );
 
     try {
       // Utilise le service interne (private devient accessible via une méthode publique)
@@ -169,7 +206,7 @@ export class ProductValidationController {
           validateSeo: false,
           minimumArticles: 0, // Pas de validation articles
           enableParallelValidation: false,
-        }
+        },
       );
 
       return {
@@ -181,12 +218,11 @@ export class ProductValidationController {
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur validation véhicule:`, error);
-      
+
       return {
         success: false,
         data: {
@@ -194,13 +230,16 @@ export class ProductValidationController {
             exists: false,
             display: false,
             relfollow: false,
-            error: error instanceof HttpException ? error.message : 'Erreur technique'
-          }
+            error:
+              error instanceof HttpException
+                ? error.message
+                : 'Erreur technique',
+          },
         },
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -210,14 +249,12 @@ export class ProductValidationController {
    * GET /api/catalog/validation/gamme/:pgId
    */
   @Get('gamme/:pgId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation gamme uniquement',
-    description: 'Valide l\'existence et statut d\'une gamme'
+    description: "Valide l'existence et statut d'une gamme",
   })
   @ApiParam({ name: 'pgId', type: 'number', description: 'ID de la gamme' })
-  async validateGamme(
-    @Param('pgId', ParseIntPipe) pgId: number
-  ) {
+  async validateGamme(@Param('pgId', ParseIntPipe) pgId: number) {
     this.logger.log(`🎮 [API] Validation gamme: ${pgId}`);
 
     try {
@@ -231,7 +268,7 @@ export class ProductValidationController {
           validateSeo: false,
           minimumArticles: 0, // Pas de validation articles
           enableParallelValidation: false,
-        }
+        },
       );
 
       return {
@@ -243,12 +280,11 @@ export class ProductValidationController {
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur validation gamme:`, error);
-      
+
       return {
         success: false,
         data: {
@@ -256,13 +292,16 @@ export class ProductValidationController {
             exists: false,
             display: false,
             relfollow: false,
-            error: error instanceof HttpException ? error.message : 'Erreur technique'
-          }
+            error:
+              error instanceof HttpException
+                ? error.message
+                : 'Erreur technique',
+          },
         },
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -272,15 +311,20 @@ export class ProductValidationController {
    * GET /api/catalog/validation/articles/:typeId/:pgId
    */
   @Get('articles/:typeId/:pgId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Comptage articles compatibles',
-    description: 'Compte les articles compatibles pour un véhicule et une gamme'
+    description:
+      'Compte les articles compatibles pour un véhicule et une gamme',
   })
-  @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type de véhicule' })
+  @ApiParam({
+    name: 'typeId',
+    type: 'number',
+    description: 'ID du type de véhicule',
+  })
   @ApiParam({ name: 'pgId', type: 'number', description: 'ID de la gamme' })
   async countCompatibleArticles(
     @Param('typeId', ParseIntPipe) typeId: number,
-    @Param('pgId', ParseIntPipe) pgId: number
+    @Param('pgId', ParseIntPipe) pgId: number,
   ) {
     this.logger.log(`📊 [API] Comptage articles: type=${typeId}, pg=${pgId}`);
 
@@ -294,7 +338,7 @@ export class ProductValidationController {
           validateSeo: false,
           minimumArticles: 0, // Pas de minimum pour le comptage
           enableParallelValidation: false,
-        }
+        },
       );
 
       return {
@@ -307,22 +351,22 @@ export class ProductValidationController {
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur comptage articles:`, error);
-      
+
       return {
         success: false,
         data: {
           articleCount: 0,
-          error: error instanceof HttpException ? error.message : 'Erreur technique'
+          error:
+            error instanceof HttpException ? error.message : 'Erreur technique',
         },
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -332,17 +376,32 @@ export class ProductValidationController {
    * GET /api/catalog/validation/seo/:typeId
    */
   @Get('seo/:typeId')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Validation critères SEO',
-    description: 'Valide les critères SEO pour un type de véhicule (familles, gammes)'
+    description:
+      'Valide les critères SEO pour un type de véhicule (familles, gammes)',
   })
-  @ApiParam({ name: 'typeId', type: 'number', description: 'ID du type de véhicule' })
-  @ApiQuery({ name: 'minFamilies', type: 'number', required: false, description: 'Minimum de familles requises' })
-  @ApiQuery({ name: 'minGammes', type: 'number', required: false, description: 'Minimum de gammes requises' })
+  @ApiParam({
+    name: 'typeId',
+    type: 'number',
+    description: 'ID du type de véhicule',
+  })
+  @ApiQuery({
+    name: 'minFamilies',
+    type: 'number',
+    required: false,
+    description: 'Minimum de familles requises',
+  })
+  @ApiQuery({
+    name: 'minGammes',
+    type: 'number',
+    required: false,
+    description: 'Minimum de gammes requises',
+  })
   async validateSeo(
     @Param('typeId', ParseIntPipe) typeId: number,
     @Query('minFamilies') minFamilies: string = '3',
-    @Query('minGammes') minGammes: string = '5'
+    @Query('minGammes') minGammes: string = '5',
   ) {
     this.logger.log(`🎯 [API] Validation SEO: type=${typeId}`);
 
@@ -358,7 +417,7 @@ export class ProductValidationController {
           minimumGammes: parseInt(minGammes, 10),
           minimumArticles: 0, // Pas de validation articles
           enableParallelValidation: false,
-        }
+        },
       );
 
       return {
@@ -370,12 +429,11 @@ export class ProductValidationController {
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur validation SEO:`, error);
-      
+
       return {
         success: false,
         data: {
@@ -385,12 +443,13 @@ export class ProductValidationController {
             gammes: 0,
             score: 0,
           },
-          error: error instanceof HttpException ? error.message : 'Erreur technique'
+          error:
+            error instanceof HttpException ? error.message : 'Erreur technique',
         },
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -400,35 +459,34 @@ export class ProductValidationController {
    * POST /api/catalog/validation/cache/clear
    */
   @Get('cache/clear')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Nettoyage du cache de validation',
-    description: 'Force le nettoyage du cache de validation'
+    description: 'Force le nettoyage du cache de validation',
   })
   async clearCache() {
     this.logger.log(`🧹 [API] Nettoyage cache validation`);
 
     try {
       this.validationService.invalidateCache();
-      
+
       return {
         success: true,
         message: 'Cache de validation nettoyé avec succès',
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
-
     } catch (error) {
       this.logger.error(`❌ [API] Erreur nettoyage cache:`, error);
-      
+
       return {
         success: false,
         message: 'Erreur lors du nettoyage du cache',
         metadata: {
           api_version: '4.0.0',
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     }
   }
@@ -438,9 +496,9 @@ export class ProductValidationController {
    * GET /api/catalog/validation/stats
    */
   @Get('stats')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Statistiques du service de validation',
-    description: 'Retourne les statistiques d\'utilisation et performance'
+    description: "Retourne les statistiques d'utilisation et performance",
   })
   async getValidationStats() {
     this.logger.log(`📊 [API] Récupération statistiques validation`);
@@ -457,7 +515,7 @@ export class ProductValidationController {
           'Cache granulaire avec TTL adaptatif',
           'Validation en parallèle',
           'Scores et recommandations',
-          'Gestion d\'erreurs robuste'
+          "Gestion d'erreurs robuste",
         ],
         performance: {
           cache_enabled: true,
@@ -470,13 +528,14 @@ export class ProductValidationController {
           performance: '+250%',
           cache_intelligence: '+400%',
           validation_coverage: '+200%',
-        }
+        },
       },
       metadata: {
         api_version: '4.0.0',
         timestamp: new Date().toISOString(),
-        methodology: 'Vérifier existant avant et utiliser le meilleur et améliorer',
-      }
+        methodology:
+          'Vérifier existant avant et utiliser le meilleur et améliorer',
+      },
     };
   }
 }

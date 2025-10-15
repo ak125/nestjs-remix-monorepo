@@ -37,7 +37,9 @@ export const CreateUserSchema = UserSchema.omit({
   updatedAt: true,
   lastLoginAt: true,
 }).extend({
-  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+  password: z
+    .string()
+    .min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
 });
 
 export const UpdateUserSchema = UserSchema.omit({
@@ -118,14 +120,18 @@ export function mapSupabaseToUser(data: any): User {
     siret: data.cst_siret || undefined,
     createdAt: data.cst_created_at ? new Date(data.cst_created_at) : undefined,
     updatedAt: data.cst_updated_at ? new Date(data.cst_updated_at) : undefined,
-    lastLoginAt: data.cst_last_login ? new Date(data.cst_last_login) : undefined,
+    lastLoginAt: data.cst_last_login
+      ? new Date(data.cst_last_login)
+      : undefined,
   };
 }
 
 /**
  * Mapper DTO → Supabase
  */
-export function mapUserToSupabase(user: Partial<CreateUserDto | UpdateUserDto>): any {
+export function mapUserToSupabase(
+  user: Partial<CreateUserDto | UpdateUserDto>,
+): any {
   const mapped: any = {};
 
   if (user.email !== undefined) mapped.cst_mail = user.email;
@@ -137,7 +143,8 @@ export function mapUserToSupabase(user: Partial<CreateUserDto | UpdateUserDto>):
   if (user.zipCode !== undefined) mapped.cst_zip_code = user.zipCode;
   if (user.country !== undefined) mapped.cst_country = user.country;
   if (user.isPro !== undefined) mapped.cst_is_pro = user.isPro ? '1' : '0';
-  if (user.isCompany !== undefined) mapped.cst_is_cpy = user.isCompany ? '1' : '0';
+  if (user.isCompany !== undefined)
+    mapped.cst_is_cpy = user.isCompany ? '1' : '0';
   if (user.isActive !== undefined) mapped.cst_activ = user.isActive ? '1' : '0';
   if (user.level !== undefined) mapped.cst_level = user.level.toString();
   if (user.civility !== undefined) mapped.cst_civility = user.civility;
