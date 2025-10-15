@@ -47,20 +47,34 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const orderData = await orderResponse.json();
     const orderDetails = orderData.data;
 
+    console.log('📦 Order details from API:', JSON.stringify(orderDetails, null, 2));
+
+    // Mapper les lignes de commande (lines) vers items
+    const items = (orderDetails.lines || []).map((line: any) => ({
+      id: line.orl_id,
+      name: line.orl_pg_name || 'Produit',
+      quantity: parseInt(line.orl_art_quantity || '1'),
+      price: parseFloat(line.orl_art_price_sell_unit_ttc || '0'),
+      total: parseFloat(line.orl_art_price_sell_ttc || '0'),
+      image: '/placeholder-product.png', // TODO: ajouter l'image
+    }));
+
     // Transformer les données de la commande pour l'interface OrderSummary
     const order: OrderSummary = {
       id: orderDetails.ord_id,
       orderNumber: orderDetails.ord_id,
       status: parseInt(orderDetails.ord_is_pay || '0'),
-      items: orderDetails.items || [],
-      subtotalHT: parseFloat(orderDetails.ord_subtotal_ht || '0'),
-      tva: parseFloat(orderDetails.ord_tax_amount || '0'),
-      shippingFee: parseFloat(orderDetails.ord_shipping_cost || '0'),
+      items,
+      subtotalHT: parseFloat(orderDetails.ord_amount_ttc || '0') / 1.2, // Approximation
+      tva: parseFloat(orderDetails.ord_amount_ttc || '0') * 0.2 / 1.2, // 20% de la base HT
+      shippingFee: parseFloat(orderDetails.ord_shipping_fee_ttc || '0'),
       totalTTC: parseFloat(orderDetails.ord_total_ttc || '0'),
       currency: 'EUR',
       // ✅ Phase 7: Récupérer le montant des consignes
       consigneTotal: parseFloat(orderDetails.ord_deposit_ttc || '0'),
     };
+
+    console.log('✅ Order transformed:', order);
 
     // Si la commande est déjà payée, rediriger vers la page de commande
     if (order.status !== 0) {
@@ -166,6 +180,8 @@ export default function PaymentPage() {
   const actionData = useActionData<typeof action>();
   const formRef = useRef<HTMLFormElement>(null);
   const cyberplusFormRef = useRef<HTMLFormElement>(null);
+
+  console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
 
   const isProcessing = navigation.state === "submitting";
 

@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vente pièces détachées auto neuves & à prix pas cher | AutoMecanik</title>
+  
+  <!-- SEO optimisé -->
+  <meta name="title" content="Vente pièces détachées auto neuves & à prix pas cher | AutoMecanik" />
+  <meta name="description" content="Votre fournisseur de pièces détachées automobile neuves et d'origine pour toutes les marques & modèles. Livraison rapide, garantie constructeur, prix compétitifs." />
+  <meta name="keywords" content="pieces detachees, pieces auto, pieces de rechange, pieces voiture, pieces automobile, pieces pas cher, renault, peugeot, citroen, audi, bmw, mercedes, ford, volkswagen" />
+  <meta name="robots" content="index, follow" />
+  <meta name="author" content="AutoMecanik" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.automecanik.com/" />
+  <meta property="og:title" content="AutoMecanik - Pièces détachées auto à prix pas cher" />
+  <meta property="og:description" content="Découvrez notre vaste catalogue de pièces automobiles neuves pour toutes marques" />
+  <meta property="og:image" content="https://www.automecanik.com/assets/img/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://www.automecanik.com/" />
+  <meta property="twitter:title" content="AutoMecanik - Pièces détachées auto à prix pas cher" />
+  <meta property="twitter:description" content="Découvrez notre vaste catalogue de pièces automobiles neuves pour toutes marques" />
+  <meta property="twitter:image" content="https://www.automecanik.com/assets/img/og-image.jpg" />
+
+  <!-- Canonical & base -->
+  <base href="https://www.automecanik.com" />
+  <link rel="canonical" href="https://www.automecanik.com" />
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
+  <!-- Preconnect pour performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/styles.css">
+  
+  <!-- Inline critical CSS pour performance -->
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #fff;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Navbar optimisée */
+    .navbar {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .navbar .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ff6b35;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .navbar-brand:hover {
+      color: #ff8555;
+    }
+    
+    .navbar-nav {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+    }
+    
+    .nav-item {
+      color: #fff;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .nav-item:hover {
+      color: #ff6b35;
+    }
+    
+    /* Hero Section améliorée */
+    .hero-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 120px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,165.3C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom;
+      background-size: cover;
+    }
+    
+    .hero-section h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      animation: fadeInUp 1s ease;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-section p {
+      font-size: 1.3rem;
+      margin-bottom: 2rem;
+      opacity: 0.95;
+      position: relative;
+      z-index: 1;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Buttons */
+    .btn, .cta-button {
+      display: inline-block;
+      padding: 12px 30px;
+      background: #ff6b35;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    }
+    
+    .btn:hover, .cta-button:hover {
+      background: #ff8555;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    }
+    
+    /* Section commune */
+    section {
+      padding: 80px 0;
+    }
+    
+    section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+      text-align: center;
+    }
+    
+    section h3 {
+      font-size: 1.8rem;
+      margin: 2rem 0 1rem;
+      color: #333;
+    }
+    
+    /* Features Section */
+    .features-section {
+      background: #f8f9fa;
+      text-align: center;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .feature-card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #667eea;
+    }
+    
+    .feature-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    
+    .feature-card p {
+      color: #666;
+      line-height: 1.8;
+    }
+    
+    /* Catalog Section */
+    .catalog-section {
+      background: #fff;
+    }
+    
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .catalog-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    
+    .catalog-item:hover {
+      transform: scale(1.03);
+    }
+    
+    .catalog-item img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .catalog-content {
+      padding: 1.5rem;
+      background: #fff;
+    }
+    
+    .catalog-content h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.3rem;
+      text-align: left;
+    }
+    
+    .catalog-content ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    
+    .catalog-content li {
+      padding: 0.3rem 0;
+    }
+    
+    .catalog-content a {
+      color: #667eea;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .catalog-content a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+    
+    /* Testimonials */
+    .testimonial-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    
+    .testimonial-section h2 {
+      color: #fff;
+    }
+    
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    
+    .testimonial-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .testimonial-card p {
+      font-style: italic;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      line-height: 1.8;
+    }
+    
+    .testimonial-card footer {
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      background: #f8f9fa;
+      text-align: center;
+    }
+    
+    .cta-section p {
+      font-size: 1.2rem;
+      color: #666;
+      max-width: 600px;
+      margin: 1rem auto 2rem;
+    }
+    
+    /* Newsletter */
+    .newsletter-section {
+      background: #1a1a1a;
+      color: #fff;
+      text-align: center;
+    }
+    
+    .newsletter-section h2 {
+      color: #fff;
+    }
+    
+    .newsletter-form {
+      max-width: 500px;
+      margin: 2rem auto 0;
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .newsletter-form input[type="email"] {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid #333;
+      border-radius: 50px;
+      background: #2a2a2a;
+      color: #fff;
+      font-size: 1rem;
+    }
+    
+    .newsletter-form input[type="email"]:focus {
+      outline: none;
+      border-color: #ff6b35;
+    }
+    
+    .newsletter-form button {
+      padding: 12px 30px;
+      background: #ff6b35;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+    
+    .newsletter-form button:hover {
+      background: #ff8555;
+    }
+    
+    /* Footer */
+    footer {
+      background: #0a0a0a;
+      color: #fff;
+      padding: 3rem 0 1rem;
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    .footer-section h4 {
+      margin-bottom: 1rem;
+      color: #ff6b35;
+    }
+    
+    .footer-section ul {
+      list-style: none;
+    }
+    
+    .footer-section li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .footer-section a {
+      color: #ccc;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    
+    .footer-section a:hover {
+      color: #ff6b35;
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid #333;
+      color: #999;
+    }
+    
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .social-links a {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      background: #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+    
+    .social-links a:hover {
+      background: #ff6b35;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar-nav {
+        gap: 1rem;
+      }
+      
+      .hero-section h1 {
+        font-size: 2rem;
+      }
+      
+      .hero-section p {
+        font-size: 1.1rem;
+      }
+      
+      section h2 {
+        font-size: 2rem;
+      }
+      
+      .newsletter-form {
+        flex-direction: column;
+      }
+    }
+    
+    /* Stats Section */
+    .stats-section {
+      background: #fff;
+      padding: 60px 0;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      text-align: center;
+    }
+    
+    .stat-item {
+      padding: 1.5rem;
+    }
+    
+    .stat-number {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    /* Brands carousel */
+    .brands-section {
+      background: #f8f9fa;
+      padding: 60px 0;
+    }
+    
+    .brands-carousel {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    
+    .brand-logo {
+      width: 120px;
+      height: 80px;
+      object-fit: contain;
+      filter: grayscale(100%);
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    
+    .brand-logo:hover {
+      filter: grayscale(0%);
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  </style>
+
+  <!-- Données structurées JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AutoMecanik",
+    "url": "https://www.automecanik.com",
+    "logo": "https://www.automecanik.com/assets/img/logo.png",
+    "description": "Vente de pièces détachées automobiles neuves et d'origine",
+    "address": {
+      "@type": "PostalAddress",
+      "addressCountry": "FR"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+33-1-48-49-78-69",
+      "contactType": "Customer Service",
+      "availableLanguage": "French"
+    },
+    "sameAs": [
+      "https://www.facebook.com/automecanik",
+      "https://www.instagram.com/automecanik"
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://www.automecanik.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.automecanik.com/find/?quest={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- JavaScript différé -->
+  <script defer src="/scripts.js"></script>
+</head>
+
+<body>
+
+  <!-- Navbar améliorée -->
+  <nav id="navbar" class="navbar" role="navigation" aria-label="Navigation principale">
+    <div class="container">
+      <a href="#home" class="navbar-brand" aria-label="AutoMecanik - Accueil">AutoMecanik</a>
+      <ul class="navbar-nav" role="menubar">
+        <li role="none"><a href="#home" class="nav-item" role="menuitem">Accueil</a></li>
+        <li role="none"><a href="#features" class="nav-item" role="menuitem">Services</a></li>
+        <li role="none"><a href="#catalog" class="nav-item" role="menuitem">Catalogue</a></li>
+        <li role="none"><a href="#testimonials" class="nav-item" role="menuitem">Témoignages</a></li>
+        <li role="none"><a href="#contact" class="nav-item" role="menuitem">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section améliorée -->
+  <header id="home" class="hero-section" role="banner">
+    <div class="container">
+      <h1>Bienvenue sur AutoMecanik</h1>
+      <p>Votre fournisseur de confiance pour des pièces automobiles de qualité premium</p>
+      <p style="margin-bottom: 2rem; opacity: 0.9;">Des pièces neuves d'origine • Garantie constructeur • Livraison rapide • Prix imbattables</p>
+      <a href="#catalog" class="cta-button">Découvrir le catalogue</a>
+    </div>
+  </header>
+
+  <!-- Stats Section -->
+  <section class="stats-section" aria-labelledby="stats-title">
+    <div class="container">
+      <h2 id="stats-title" class="sr-only">Nos chiffres clés</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" data-target="50000">0</div>
+          <div class="stat-label">Pièces en stock</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="15000">0</div>
+          <div class="stat-label">Clients satisfaits</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="120">0</div>
+          <div class="stat-label">Marques disponibles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="48">0</div>
+          <div class="stat-label">Livraison sous 48h</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section améliorée -->
+  <section id="features" class="features-section" aria-labelledby="features-title">
+    <div class="container">
+      <h2 id="features-title">Pourquoi choisir AutoMecanik ?</h2>
+      <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 1rem;">La vente de pièces automobiles en ligne révolutionne l'industrie automobile. Découvrez nos avantages.</p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🚗</div>
+          <h3>Qualité garantie</h3>
+          <p>Toutes nos pièces sont neuves, d'origine constructeur ou équipementier, avec garantie fabricant incluse.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>Prix compétitifs</h3>
+          <p>Grâce à notre plateforme en ligne, nous vous proposons les meilleurs tarifs du marché sans intermédiaire.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Livraison rapide</h3>
+          <p>Expédition sous 24h pour les pièces en stock. Livraison à domicile ou en point relais partout en France.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Recherche facilitée</h3>
+          <p>Trouvez vos pièces par référence, marque de véhicule ou type mine en quelques clics seulement.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3>Paiement sécurisé</h3>
+          <p>Transactions 100% sécurisées avec cryptage SSL. Plusieurs modes de paiement disponibles.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📞</div>
+          <h3>Service client expert</h3>
+          <p>Une équipe de passionnés à votre écoute pour vous conseiller et vous accompagner dans vos achats.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brands Section -->
+  <section class="brands-section" aria-labelledby="brands-title">
+    <div class="container">
+      <h2 id="brands-title">Marques disponibles</h2>
+      <div class="brands-carousel" role="list" aria-label="Marques automobiles">
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">PEUGEOT</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">RENAULT</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">CITROËN</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">BMW</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">AUDI</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">MERCEDES</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">VOLKSWAGEN</div>
+        </div>
+        <div role="listitem" style="text-align: center;">
+          <div style="font-size: 2rem; font-weight: bold; color: #333;">FORD</div>
+        </div>
+      </div>
+      <p style="text-align: center; margin-top: 2rem; color: #666;">
+        Et plus de 100 autres marques disponibles dans notre catalogue
+      </p>
+    </div>
+  </section>
+
+  <!-- Catalog Section -->
+  <section id="catalog" class="catalog-section" aria-labelledby="catalog-title">
+    <div class="container">
+      <h2 id="catalog-title">Notre catalogue de pièces auto</h2>
+      <p style="text-align: center; color: #666; max-width: 700px; margin: 0 auto 1rem;">
+        Découvrez notre sélection complète de pièces détachées pour toutes les marques et modèles
+      </p>
+      
+      <div class="catalog-grid">
+        <article class="catalog-item" aria-labelledby="cat-filtration">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%23667eea' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EFiltration%3C/text%3E%3C/svg%3E" alt="Système de filtration" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-filtration">Système de filtration</h3>
+            <ul>
+              <li><a href="/pieces/filtre-a-huile-7.html">Filtre à huile</a></li>
+              <li><a href="/pieces/filtre-a-air-8.html">Filtre à air</a></li>
+              <li><a href="/pieces/filtre-a-carburant-9.html">Filtre à carburant</a></li>
+              <li><a href="/pieces/filtre-d-habitacle-424.html">Filtre d'habitacle</a></li>
+              <li><a href="/pieces/filtre-de-boite-auto-416.html">Filtre de boîte auto</a></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="catalog-item" aria-labelledby="cat-freinage">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%23764ba2' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EFreinage%3C/text%3E%3C/svg%3E" alt="Système de freinage" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-freinage">Système de freinage</h3>
+            <ul>
+              <li><a href="/pieces/plaquettes-de-frein-1.html">Plaquettes de frein</a></li>
+              <li><a href="/pieces/disque-de-frein-2.html">Disque de frein</a></li>
+              <li><a href="/pieces/tambour-de-frein-3.html">Tambour de frein</a></li>
+              <li><a href="/pieces/machoires-de-frein-4.html">Mâchoires de frein</a></li>
+              <li><a href="/pieces/kit-de-frein-5.html">Kit de frein complet</a></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="catalog-item" aria-labelledby="cat-distribution">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%23ff6b35' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EDistribution%3C/text%3E%3C/svg%3E" alt="Courroies de distribution" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-distribution">Courroies de distribution</h3>
+            <ul>
+              <li><a href="/pieces/kit-de-distribution-11.html">Kit de distribution</a></li>
+              <li><a href="/pieces/courroie-de-distribution-12.html">Courroie de distribution</a></li>
+              <li><a href="/pieces/courroie-d-accessoires-13.html">Courroie d'accessoires</a></li>
+              <li><a href="/pieces/tendeur-de-courroie-14.html">Tendeur de courroie</a></li>
+              <li><a href="/pieces/pompe-a-eau-15.html">Pompe à eau</a></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="catalog-item" aria-labelledby="cat-allumage">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%2352c41a' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EAllumage%3C/text%3E%3C/svg%3E" alt="Système d'allumage" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-allumage">Système d'allumage</h3>
+            <ul>
+              <li><a href="/pieces/bougies-d-allumage-20.html">Bougies d'allumage</a></li>
+              <li><a href="/pieces/bobine-d-allumage-21.html">Bobine d'allumage</a></li>
+              <li><a href="/pieces/cable-d-allumage-22.html">Câble d'allumage</a></li>
+              <li><a href="/pieces/bougies-de-prechauffage-23.html">Bougies de préchauffage</a></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="catalog-item" aria-labelledby="cat-direction">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%23f093fb' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EDirection%3C/text%3E%3C/svg%3E" alt="Direction et suspension" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-direction">Direction et suspension</h3>
+            <ul>
+              <li><a href="/pieces/rotule-de-direction-30.html">Rotule de direction</a></li>
+              <li><a href="/pieces/biellette-de-direction-31.html">Biellette de direction</a></li>
+              <li><a href="/pieces/rotule-de-suspension-32.html">Rotule de suspension</a></li>
+              <li><a href="/pieces/bras-de-suspension-33.html">Bras de suspension</a></li>
+              <li><a href="/pieces/silent-bloc-34.html">Silent-bloc</a></li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="catalog-item" aria-labelledby="cat-amortisseurs">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250'%3E%3Crect fill='%234facfe' width='400' height='250'/%3E%3Ctext fill='white' font-size='24' font-family='Arial' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EAmortisseurs%3C/text%3E%3C/svg%3E" alt="Amortisseurs et ressorts" loading="lazy" />
+          <div class="catalog-content">
+            <h3 id="cat-amortisseurs">Amortisseurs et ressorts</h3>
+            <ul>
+              <li><a href="/pieces/amortisseur-40.html">Amortisseur</a></li>
+              <li><a href="/pieces/ressort-de-suspension-41.html">Ressort de suspension</a></li>
+              <li><a href="/pieces/coupelle-d-amortisseur-42.html">Coupelle d'amortisseur</a></li>
+              <li><a href="/pieces/butee-de-suspension-43.html">Butée de suspension</a></li>
+            </ul>
+          </div>
+        </article>
+      </div>
+      
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="/pieces/" class="cta-button">Voir tout le catalogue</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evolution Section -->
+  <section id="features-list" class="features-section" aria-labelledby="evolution-title">
+    <div class="container">
+      <h2 id="evolution-title">L'évolution du commerce électronique dans l'automobile</h2>
+      
+      <div style="max-width: 900px; margin: 2rem auto; text-align: left;">
+        <h3>📈 Croissance du marché</h3>
+        <p style="color: #666; line-height: 1.8; margin-bottom: 2rem;">
+          Le marché des pièces détachées automobiles en ligne connaît une croissance exponentielle. De plus en plus de particuliers et professionnels se tournent vers l'e-commerce pour bénéficier de prix compétitifs, d'un choix plus large et d'une livraison rapide. Cette transformation digitale permet une transparence totale sur les prix et la disponibilité des pièces.
+        </p>
+
+        <h3>🔧 Avantages pour les consommateurs</h3>
+        <ul style="color: #666; line-height: 1.8; margin-bottom: 2rem; padding-left: 2rem;">
+          <li><strong>Gain de temps :</strong> Plus besoin de se déplacer, commandez 24h/24 depuis chez vous</li>
+          <li><strong>Économies :</strong> Jusqu'à 40% moins cher qu'en concession automobile</li>
+          <li><strong>Comparaison facile :</strong> Comparez les prix et les caractéristiques en quelques clics</li>
+          <li><strong>Large choix :</strong> Accès à des milliers de références immédiatement disponibles</li>
+          <li><strong>Conseils experts :</strong> Guides d'achat, tutoriels vidéo et assistance personnalisée</li>
+        </ul>
+
+        <h3>🌍 Impact environnemental positif</h3>
+        <p style="color: #666; line-height: 1.8; margin-bottom: 2rem;">
+          L'achat en ligne de pièces détachées contribue à la réduction de l'empreinte carbone en optimisant les livraisons et en prolongeant la durée de vie des véhicules grâce à un entretien facilité. Nos emballages sont recyclables et nous travaillons avec des partenaires logistiques engagés dans la réduction des émissions.
+        </p>
+
+        <h3>🔐 Sécurité et confiance</h3>
+        <p style="color: #666; line-height: 1.8;">
+          Tous nos produits sont certifiés et conformes aux normes européennes. Nous garantissons l'authenticité de chaque pièce et offrons une politique de retour flexible de 30 jours. Notre service client est disponible pour vous accompagner à chaque étape de votre achat.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section améliorée -->
+  <section id="testimonials" class="testimonial-section" aria-labelledby="testimonials-title">
+    <div class="container">
+      <h2 id="testimonials-title">Ce que disent nos clients</h2>
+      <p style="text-align: center; opacity: 0.9; margin-bottom: 1rem;">Plus de 15 000 clients nous font confiance</p>
+      
+      <div class="testimonials-grid">
+        <blockquote class="testimonial-card">
+          <p>"Excellent service et qualité des pièces. Je recommande AutoMecanik ! Livraison rapide et produits conformes à la description. Je reviendrai c'est sûr !"</p>
+          <footer>— Jean D., Paris</footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card">
+          <p>"Très satisfait de mon achat. Les pièces sont d'origine et parfaitement compatibles avec mon véhicule. Le service client m'a aidé à choisir la bonne référence."</p>
+          <footer>— Marie L., Lyon</footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card">
+          <p>"Des prix imbattables ! J'ai économisé plus de 200€ par rapport à ma concession. La qualité est identique et la garantie constructeur est incluse."</p>
+          <footer>— Pierre M., Marseille</footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card">
+          <p>"Site très pratique avec une recherche intuitive. J'ai trouvé mes pièces en 2 minutes grâce au système de recherche par type mine. Livré en 48h !"</p>
+          <footer>— Sophie B., Toulouse</footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card">
+          <p>"Service client au top ! Ils m'ont aidé à identifier la bonne pièce rapidement et ont répondu à toutes mes questions. Merci à toute l'équipe !"</p>
+          <footer>— Thomas R., Bordeaux</footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card">
+          <p>"Garage professionnel, je commande régulièrement chez AutoMecanik. Fiabilité, qualité et rapidité sont toujours au rendez-vous. Un vrai partenaire !"</p>
+          <footer>— Garage Dupont, Lille</footer>
+        </blockquote>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section améliorée -->
+  <section id="cta" class="cta-section" aria-labelledby="cta-title">
+    <div class="container">
+      <h2 id="cta-title">Prêt à découvrir nos produits ?</h2>
+      <p>Explorez notre vaste gamme de pièces automobiles et profitez de nos promotions exclusives. Plus de 50 000 références en stock pour toutes les marques !</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+        <a href="#catalog" class="cta-button">Explorer le catalogue</a>
+        <a href="#newsletter" class="btn" style="background: transparent; border: 2px solid #ff6b35; color: #ff6b35;">Recevoir les offres</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section améliorée -->
+  <section id="newsletter" class="newsletter-section" aria-labelledby="newsletter-title">
+    <div class="container">
+      <h2 id="newsletter-title">📧 Inscrivez-vous à notre newsletter</h2>
+      <p style="opacity: 0.9; margin-bottom: 0.5rem;">Recevez en avant-première nos promotions, nouveautés et conseils d'experts</p>
+      <p style="opacity: 0.8; font-size: 0.9rem; margin-bottom: 2rem;">✓ Offres exclusives · ✓ Guides pratiques · ✓ Conseils d'entretien</p>
+      
+      <form action="/newsletter" method="post" class="newsletter-form" aria-label="Formulaire d'inscription newsletter">
+        <input 
+          type="email" 
+          name="email" 
+          id="newsletter-email"
+          placeholder="Votre adresse email" 
+          required 
+          aria-label="Adresse email"
+          autocomplete="email" />
+        <button type="submit" aria-label="S'inscrire à la newsletter">S'inscrire</button>
+      </form>
+      
+      <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 1rem;">
+        🔒 Vos données sont protégées. Vous pouvez vous désabonner à tout moment.
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer amélioré -->
+  <footer id="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-section">
+          <h4>À propos d'AutoMecanik</h4>
+          <p style="color: #ccc; line-height: 1.6;">
+            Spécialiste de la vente de pièces détachées automobiles neuves et d'origine depuis plus de 10 ans. Votre satisfaction est notre priorité.
+          </p>
+          <div class="social-links">
+            <a href="https://www.facebook.com/automecanik" target="_blank" rel="noopener" aria-label="Facebook">
+              <span style="font-size: 1.2rem;">f</span>
+            </a>
+            <a href="https://www.instagram.com/automecanik" target="_blank" rel="noopener" aria-label="Instagram">
+              <span style="font-size: 1.2rem;">📷</span>
+            </a>
+            <a href="https://twitter.com/automecanik" target="_blank" rel="noopener" aria-label="Twitter">
+              <span style="font-size: 1.2rem;">🐦</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4>Informations</h4>
+          <ul>
+            <li><a href="/qui-sommes-nous.html">Qui sommes-nous ?</a></li>
+            <li><a href="/mentions-legales.html">Mentions légales</a></li>
+            <li><a href="/cgv.html">CGV</a></li>
+            <li><a href="/politique-confidentialite.html">Confidentialité</a></li>
+            <li><a href="/livraison.html">Livraison</a></li>
+            <li><a href="/retours.html">Retours & SAV</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Aide & Support</h4>
+          <ul>
+            <li><a href="/faq.html">FAQ</a></li>
+            <li><a href="/contact.html">Nous contacter</a></li>
+            <li><a href="/guide-achat.html">Guide d'achat</a></li>
+            <li><a href="/tutoriels.html">Tutoriels vidéo</a></li>
+            <li><a href="/garanties.html">Garanties</a></li>
+            <li><a href="/partenaires.html">Devenir partenaire</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Nous contacter</h4>
+          <p style="color: #ccc; margin-bottom: 0.5rem;">
+            <strong style="color: #ff6b35;">📞 Téléphone :</strong><br />
+            <a href="tel:+33148497869" style="color: #ccc;">01 48 49 78 69</a><br />
+            <small style="opacity: 0.8;">Lun-Ven : 9h-18h</small>
+          </p>
+          <p style="color: #ccc; margin-bottom: 0.5rem;">
+            <strong style="color: #ff6b35;">✉️ Email :</strong><br />
+            <a href="mailto:contact@automecanik.com" style="color: #ccc;">contact@automecanik.com</a>
+          </p>
+          <p style="color: #ccc;">
+            <strong style="color: #ff6b35;">📍 Adresse :</strong><br />
+            <small style="opacity: 0.8;">Paris, France</small>
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 AutoMecanik. Tous droits réservés. | Conception et développement avec ❤️</p>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.7;">
+          🔒 Paiement sécurisé · 🚚 Livraison rapide · ✓ Garantie constructeur · 📞 Service client réactif
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts inline pour performances -->
+  <script>
+    // Animation des chiffres (stats counter)
+    function animateValue(element, start, end, duration) {
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        element.textContent = Math.floor(progress * (end - start) + start).toLocaleString('fr-FR');
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          element.textContent = end.toLocaleString('fr-FR');
+        }
+      };
+      window.requestAnimationFrame(step);
+    }
+
+    // Observer pour déclencher l'animation au scroll
+    const observerOptions = {
+      threshold: 0.5,
+      rootMargin: '0px'
+    };
+
+    const statsObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const statNumbers = entry.target.querySelectorAll('.stat-number');
+          statNumbers.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'));
+            animateValue(stat, 0, target, 2000);
+          });
+          statsObserver.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Observer la section stats
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) {
+      statsObserver.observe(statsSection);
+    }
+
+    // Smooth scroll pour les ancres
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Navbar sticky avec effet
+    let lastScroll = 0;
+    const navbar = document.getElementById('navbar');
+    
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      
+      if (currentScroll > 100) {
+        navbar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+      } else {
+        navbar.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+      }
+      
+      lastScroll = currentScroll;
+    });
+
+    // Formulaire newsletter avec validation
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+      newsletterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = this.querySelector('input[type="email"]').value;
+        
+        if (email) {
+          // Simulation d'envoi (remplacer par votre logique serveur)
+          const button = this.querySelector('button');
+          const originalText = button.textContent;
+          button.textContent = '✓ Inscrit !';
+          button.style.background = '#52c41a';
+          
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+            this.reset();
+          }, 3000);
+        }
+      });
+    }
+
+    // Lazy loading amélioré pour les images
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+            }
+            imageObserver.unobserve(img);
+          }
+        });
+      });
+
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+      });
+    }
+
+    // Analytics (à personnaliser avec votre code)
+    console.log('✓ Page chargée - AutoMecanik');
+  </script>
+
+</body>
+
+</html>

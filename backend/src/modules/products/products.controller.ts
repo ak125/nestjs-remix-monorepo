@@ -144,6 +144,41 @@ export class ProductsController {
   }
 
   /**
+   * 🔍 PHASE 9: Recherche produits pour ProductSearch component
+   * Endpoint: GET /api/products/search?query=...&limit=10
+   */
+  @Get('search')
+  @CacheTTL(60) // Cache 1 minute
+  async searchProducts(
+    @Query('query') query: string,
+    @Query('limit') limit?: string,
+  ) {
+    try {
+      if (!query || query.trim().length < 2) {
+        return { results: [] };
+      }
+
+      const searchLimit = limit ? Math.min(parseInt(limit, 10), 50) : 10;
+
+      this.logger.log(
+        `🔍 Recherche produits: "${query}" (limit: ${searchLimit})`,
+      );
+
+      const results = await this.productsService.searchProducts(
+        query,
+        searchLimit,
+      );
+
+      this.logger.log(`✅ Trouvé ${results.length} résultats pour "${query}"`);
+      
+      return { results };
+    } catch (error) {
+      this.logger.error(`❌ Erreur recherche produits: ${error.message}`);
+      return { results: [] }; // Retourner tableau vide plutôt qu'erreur
+    }
+  }
+
+  /**
    * Récupérer toutes les marques automobiles
    */
   @Get('brands')
