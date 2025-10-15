@@ -1,9 +1,12 @@
 // PARTIE 2/3 - Composants restants pour homepage.v3.tsx
+import { useState } from 'react';
+import { Link } from '@remix-run/react';
+import { Trophy, Rocket, BookOpen, Facebook, Twitter, Linkedin, ArrowRight, Star, ShoppingCart, TrendingUp, Award, DollarSign, Youtube } from 'lucide-react';
 
 // ================================
 // WHY CHOOSE US - Avantages
 // ================================
-function WhyChooseUs({ stats }: any) {
+function WhyChooseUs({ stats: _stats }: any) {
   return (
     <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
       <div className="container mx-auto px-4">
@@ -81,7 +84,7 @@ function SocialShareButton({ icon, label }: any) {
 // ================================
 // PRODUITS VEDETTES (Carrousel)
 // ================================
-function FeaturedProducts({ products }: any) {
+function FeaturedProducts({ products: _products }: any) {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -280,7 +283,7 @@ function ComparisonRow({ label, values }: { label: string; values: string[] }) {
 // ================================
 // TÉMOIGNAGES (Diaporama)
 // ================================
-function TestimonialsSection({ testimonials }: any) {
+function TestimonialsSection({ testimonials: _testimonials }: any) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const testimonialsList = [

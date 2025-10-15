@@ -5,7 +5,7 @@
  * dans toutes les pages du blog
  */
 
-import { type MetaFunction } from "@remix-run/node";
+import { Fragment } from 'react';
 
 export interface BlogMetadata {
   title: string;
@@ -213,7 +213,7 @@ export function Breadcrumb({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       {items.map((item, index) => (
-        <React.Fragment key={index}>
+        <Fragment key={index}>
           {index > 0 && <span className={itemClassName}>{separator}</span>}
           {item.url ? (
             <a href={item.url} className={`${itemClassName} hover:text-white transition-colors`}>
@@ -224,11 +224,8 @@ export function Breadcrumb({
               {item.label}
             </span>
           )}
-        </React.Fragment>
+        </Fragment>
       ))}
     </div>
   );
 }
-
-// Note: React import for Breadcrumb component
-import * as React from "react";
