@@ -897,6 +897,56 @@ export class AdviceService {
   }
 
   /**
+   * Incrémenter les vues d'un conseil (méthode publique)
+   */
+  async incrementAdviceViews(adviceId: number): Promise<void> {
+    return this.incrementViews(adviceId);
+  }
+
+  /**
+   * Rechercher des conseils par mots-clés
+   */
+  async getAdviceByKeywords(
+    keywords: string[],
+    limit: number = 10,
+  ): Promise<BlogArticle[]> {
+    try {
+      const result = await this.getAllAdvice({
+        limit,
+        filters: { keywords },
+      });
+      return result.articles;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur recherche par mots-clés: ${(error as Error).message}`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Obtenir les conseils liés à une famille de produits
+   */
+  async getAdviceForProduct(
+    productFamily: string,
+    limit: number = 10,
+  ): Promise<BlogArticle[]> {
+    try {
+      // Recherche par gamme ou catégorie liée au produit
+      const result = await this.getAllAdvice({
+        limit,
+        filters: { category: productFamily },
+      });
+      return result.articles;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur recherche conseils produit: ${(error as Error).message}`,
+      );
+      return [];
+    }
+  }
+
+  /**
    * 🔗 Enrichir les articles avec pg_alias depuis pieces_gamme
    * Optimisé avec une seule requête pour tous les articles
    */

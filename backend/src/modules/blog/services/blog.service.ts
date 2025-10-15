@@ -131,13 +131,12 @@ export class BlogService {
       const newArticle: Partial<BlogArticle> = {
         ...article,
         slug,
-        authorId,
+        // authorId n'existe pas sur BlogArticle
         readingTime,
         content: cleanedContent,
-        status: article.status || 'draft',
-        publishedAt: article.status === 'published' ? new Date() : undefined,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        // status n'existe pas non plus - utilisé en interne seulement
+        publishedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
       // Insérer dans les tables modernes
@@ -1004,8 +1003,7 @@ export class BlogService {
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
-      categorySlug: advice.pg_alias,
-      vehicles: [],
+      // categorySlug et vehicles ne sont pas dans BlogArticle
       featuredImage: advice.pg_alias
         ? this.buildImageUrl(
             `${advice.pg_alias}.webp`,
