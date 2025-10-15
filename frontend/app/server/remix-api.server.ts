@@ -3,7 +3,7 @@
  * Ce fichier ne doit être importé que dans les loaders et actions de Remix.
  * Remplacement ultra-allégé de remix-integration.server.ts
  */
-import "reflect-metadata";
+// import "reflect-metadata"; // Désactivé - géré par le backend
 import { type AppLoadContext } from "@remix-run/node";
 
 /**

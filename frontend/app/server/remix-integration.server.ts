@@ -2,7 +2,7 @@
  * Point d'entrée côté serveur pour l'intégration Remix <-> NestJS
  * Ce fichier ne doit être importé que dans les loaders et actions de Remix.
  */
-import "reflect-metadata";
+// import "reflect-metadata"; // Désactivé - géré par le backend
 import { type AppLoadContext } from "@remix-run/node";
 
 /**
