@@ -9,10 +9,10 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Header } from './Header';
+import  { type LayoutData, type LayoutConfig, type ModularSection } from '../types/layout';
 import { FooterEnhanced } from './FooterEnhanced';
+import { Header } from './Header';
 import { SectionsContainer } from './ModularSections';
-import type { LayoutData, LayoutConfig, ModularSection } from '../types/layout';
 
 interface LayoutUnifiedProps {
   config: LayoutConfig;

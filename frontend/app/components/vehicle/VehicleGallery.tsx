@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { VehicleData } from "~/types/vehicle.types";
+import  { type VehicleData } from "~/types/vehicle.types";
 
 interface VehicleGalleryProps {
   vehicle: VehicleData;

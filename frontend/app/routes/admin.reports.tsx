@@ -8,8 +8,8 @@ import { BarChart3, TrendingUp, Download, Eye, Calendar, PieChart, AlertTriangle
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { requireUser } from "../auth/unified.server";
 import { getRemixApiService } from "~/server/remix-api.server";
+import { requireUser } from "../auth/unified.server";
 
 export const loader: LoaderFunction = async ({ request, context }) => {
   const user = await requireUser({ context });

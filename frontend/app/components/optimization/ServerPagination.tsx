@@ -5,11 +5,11 @@
  * avec navigation intelligente et saut rapide
  */
 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Card } from "~/components/ui/card";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
 
 interface ServerPaginationProps {
   currentPage: number;

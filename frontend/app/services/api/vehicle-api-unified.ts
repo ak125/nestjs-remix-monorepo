@@ -2,12 +2,12 @@
  * Enhanced Vehicle API Service - Migration vers types unifiés
  */
 
-import type {
-  VehicleBrand,
-  VehicleModel, 
-  VehicleType,
-  ApiResponse,
-  PaginationOptions
+import  {
+  type VehicleBrand,
+  type VehicleModel, 
+  type VehicleType,
+  type ApiResponse,
+  type PaginationOptions
 } from '@monorepo/shared-types';
 
 const API_BASE_URL = '/api';

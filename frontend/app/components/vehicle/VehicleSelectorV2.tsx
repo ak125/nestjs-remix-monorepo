@@ -1,11 +1,11 @@
 // 📁 frontend/app/components/vehicle/VehicleSelectorV2.tsx
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
+import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
 import { Form, useNavigate } from '@remix-run/react';
 import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
-import type { VehicleBrand, VehicleModel, VehicleType } from "@monorepo/shared-types";
 import { Button } from "../ui/button";
 
 interface VehicleSelectorV2Props {

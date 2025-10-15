@@ -2,10 +2,10 @@ import { json, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams } from "@remix-run/react";
 import { Mail, MailOpen, Package } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Alert, AlertDescription } from "../components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 
 /**
  * Route: /account/messages

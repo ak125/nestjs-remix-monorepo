@@ -17,7 +17,7 @@
 
 import { useFetcher } from '@remix-run/react';
 import { useState, useEffect, useCallback } from 'react';
-import type { CartData, CartItem, CartSummary } from '../types/cart';
+import  { type CartData, type CartItem, type CartSummary } from '../types/cart';
 
 interface UseCartReturn {
   items: CartItem[];

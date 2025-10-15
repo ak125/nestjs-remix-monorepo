@@ -10,9 +10,9 @@
  * - Reset filtres
  */
 
-import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from '@remix-run/react';
 import { Search, Filter, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';

@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
-import type { VehicleType, TypeSelectorProps } from "../../types/vehicle.types";
+import  { type VehicleType, type TypeSelectorProps } from "../../types/vehicle.types";
 import { Combobox, type ComboboxItem } from "../ui/combobox";
 
 export function TypeSelector({

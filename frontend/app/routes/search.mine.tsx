@@ -7,12 +7,12 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
-import { useState } from "react";
 import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
-import { VehicleCard } from "~/components/vehicles/VehicleCard";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { VehicleCard } from "~/components/vehicles/VehicleCard";
 
 interface LoaderData {
   vehicle?: {

@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import type { HeroProps, TemplateBaseProps } from '../../types/layout';
+import  { type HeroProps, type TemplateBaseProps } from '../../types/layout';
 
 interface HeroMinimalProps extends HeroProps, TemplateBaseProps {}
 

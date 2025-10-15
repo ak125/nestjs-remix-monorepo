@@ -13,8 +13,8 @@ import { Form, useNavigate, useSearchParams } from '@remix-run/react';
 import { Search, X, Clock, TrendingUp, Loader2, Sparkles, Zap } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-import { cn } from '../../lib/utils';
 import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
+import { cn } from '../../lib/utils';
 
 interface SearchBarProps {
   initialQuery?: string;

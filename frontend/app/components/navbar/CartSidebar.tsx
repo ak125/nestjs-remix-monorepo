@@ -21,7 +21,7 @@ import { Link } from '@remix-run/react';
 import { X, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useCart, formatPrice, getProductImageUrl } from '../../hooks/useCart';
 import { cn } from '../../lib/utils';
-import type { CartItem } from '../../types/cart';
+import  { type CartItem } from '../../types/cart';
 import { Button } from '../ui/button';
 
 interface CartSidebarProps {

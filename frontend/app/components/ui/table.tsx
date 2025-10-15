@@ -2,7 +2,7 @@
  * Table Component - Version simple pour les tableaux
  */
 
-import type { ReactNode } from "react";
+import  { type ReactNode } from "react";
 
 interface TableProps {
   className?: string;

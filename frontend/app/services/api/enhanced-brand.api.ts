@@ -2,12 +2,12 @@
 // 🏭 Service API amélioré pour les marques - Basé sur l'analyse des fichiers PHP fournis
 // Version 2.0 - Intégration des nouvelles fonctionnalités et optimisations
 
-import type { 
-  BrandData, 
-  SeoData, 
-  PopularVehicle, 
-  PopularPart, 
-  BlogContent 
+import  { 
+  type BrandData, 
+  type SeoData, 
+  type PopularVehicle, 
+  type PopularPart, 
+  type BlogContent 
 } from "../../routes/constructeurs.$brand";
 
 // 🎯 Configuration basée sur l'analyse des versions PHP

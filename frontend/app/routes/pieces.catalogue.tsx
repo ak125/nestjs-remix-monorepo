@@ -1,9 +1,8 @@
 // 📁 frontend/app/routes/pieces.catalogue.tsx
 // 🛍️ Page catalogue de pièces automobiles moderne
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs , type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { type MetaFunction } from "@remix-run/node";
 import ProductCatalog, { type ProductCategory, type Product } from "../components/catalog/ProductCatalog";
 
 export const meta: MetaFunction = () => {

@@ -9,7 +9,6 @@
  * - Monitoring en temps réel
  */
 
-import { useState, useEffect } from 'react';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import { 
@@ -30,6 +29,7 @@ import {
   Activity,
   RotateCcw
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import SystemBreadcrumb from '../components/admin/SystemBreadcrumb';
 
 // Types pour les configurations

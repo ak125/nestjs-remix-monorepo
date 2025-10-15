@@ -8,7 +8,7 @@
  * @package frontend
  */
 
-import type { ApiResponse } from '@monorepo/shared-types';
+import  { type ApiResponse } from '@monorepo/shared-types';
 
 // ====================================
 // 🔧 CONFIGURATION API
