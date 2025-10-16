@@ -18,7 +18,7 @@ import * as bcrypt from 'bcrypt';
  */
 @Injectable()
 export class CustomerDataService extends SupabaseBaseService {
-  private readonly logger = new Logger(CustomerDataService.name);
+  protected readonly logger = new Logger(CustomerDataService.name);
 
   constructor(configService?: ConfigService) {
     super(configService);
