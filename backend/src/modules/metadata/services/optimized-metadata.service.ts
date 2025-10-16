@@ -43,7 +43,7 @@ export interface MetadataUpdateData {
 
 @Injectable()
 export class OptimizedMetadataService extends SupabaseBaseService {
-  private readonly logger = new Logger(OptimizedMetadataService.name);
+  protected readonly logger = new Logger(OptimizedMetadataService.name);
   private readonly cachePrefix = 'metadata:';
   private readonly cacheTTL = 3600; // 1 heure
 
@@ -248,7 +248,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
         for (const key of commonKeys) {
           try {
             await this.cacheManager.del(key);
-          } catch (error) {
+          } catch {
             // Ignorer les erreurs de clés inexistantes
           }
         }
