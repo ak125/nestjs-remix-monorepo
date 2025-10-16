@@ -136,8 +136,8 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
         }))
         .filter((family) => family.gammes_count > 0) // Seulement les familles avec gammes
         .sort((a, b) => {
-          const sortA = parseInt(a.mf_sort) || 0;
-          const sortB = parseInt(b.mf_sort) || 0;
+          const sortA = a.mf_sort || 0;
+          const sortB = b.mf_sort || 0;
           return sortA - sortB;
         });
 
@@ -165,7 +165,7 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
     // Cette logique peut être raffinée selon vos besoins métier
     for (const family of families) {
       // Exemple: famille 1 = fabricants 1-3, famille 2 = fabricants 4-6, etc.
-      const familyIndex = parseInt(family.mf_id);
+      const familyIndex = family.mf_id;
       const startManufacturer = (familyIndex - 1) * 3 + 1;
       const endManufacturer = familyIndex * 3;
 
@@ -174,7 +174,7 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
         mfId <= endManufacturer && mfId <= 20;
         mfId++
       ) {
-        mapping[mfId.toString()] = family.mf_id;
+        mapping[mfId.toString()] = family.mf_id.toString();
       }
     }
 
