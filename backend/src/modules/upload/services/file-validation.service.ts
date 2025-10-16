@@ -5,10 +5,10 @@
  * Compatible avec les standards de sécurité moderne
  */
 
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UploadType } from '../dto/upload.dto';
-import * as fileType from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import * as crypto from 'crypto';
 import * as path from 'path';
 
@@ -309,7 +309,7 @@ export class FileValidationService {
   ): Promise<void> {
     try {
       // Détection du type réel
-      const detectedType = await fileType.fromBuffer(file.buffer);
+      const detectedType = await fileTypeFromBuffer(file.buffer);
 
       if (detectedType) {
         result.detectedType = {

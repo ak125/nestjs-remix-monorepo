@@ -3,7 +3,11 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 @Injectable()
 export class PiecesUltraEnhancedService extends SupabaseBaseService {
-  private readonly logger = new Logger(PiecesUltraEnhancedService.name);
+  protected readonly logger = new Logger(PiecesUltraEnhancedService.name);
+
+  constructor() {
+    super();
+  }
 
   /**
    * 🚀 SERVICE ULTRA-ENHANCED - Structure similaire à l'HTML de production

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, Logger } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { ReviewService } from './review.service';
@@ -98,13 +99,12 @@ export class SupportAnalyticsService {
     try {
       const [contactStats, reviewStats, quoteStats, claimStats, faqStats] =
         await Promise.all([
-          this.contactService.getStats(period),
+          this.contactService.getStats(),
           this.reviewService.getReviewStats(),
           this.quoteService.getQuoteStats(period),
           this.claimService.getClaimStats(period),
           this.faqService.getFAQStats(),
         ]);
-
       const overview = {
         totalTickets: contactStats.total + claimStats.total,
         activeTickets:
@@ -192,7 +192,7 @@ export class SupportAnalyticsService {
 
     const [contactStats, reviewStats, quoteStats, claimStats] =
       await Promise.all([
-        this.contactService.getStats(period),
+        this.contactService.getStats(),
         this.reviewService.getReviewStats(),
         this.quoteService.getQuoteStats(period),
         this.claimService.getClaimStats(period),
@@ -284,8 +284,8 @@ export class SupportAnalyticsService {
     return trend;
   }
 
-  private generateTimeSeriesData(period?: { start: Date; end: Date }) {
-    // This would typically fetch from database
+  private generateTimeSeriesData(_period?: { start: Date; end: Date }) {
+    // This would typically fetch from database based on period
     // For now, generate mock data
     const data = [];
     const days = 30;
@@ -307,8 +307,8 @@ export class SupportAnalyticsService {
     return data;
   }
 
-  private calculateTrends(period?: { start: Date; end: Date }) {
-    // Mock trend calculations
+  private calculateTrends(_period?: { start: Date; end: Date }) {
+    // Mock trend calculations (period would be used for real data)
     return {
       ticketsGrowth: Math.round((Math.random() * 20 - 10) * 100) / 100, // -10% to +10%
       satisfactionTrend: Math.round((Math.random() * 1 - 0.5) * 100) / 100, // -0.5 to +0.5
@@ -317,7 +317,8 @@ export class SupportAnalyticsService {
     };
   }
 
-  private getTopIssues(contactStats: any, claimStats: any) {
+  private getTopIssues(_contactStats: any, _claimStats: any) {
+    // Mock data - would use contactStats and claimStats for real aggregation
     const issues = [
       { category: 'Livraison', count: 25, percentage: 35 },
       { category: 'Produit défectueux', count: 18, percentage: 25 },
@@ -329,7 +330,8 @@ export class SupportAnalyticsService {
     return issues;
   }
 
-  private calculatePerformanceMetrics(contactStats: any, claimStats: any) {
+  private calculatePerformanceMetrics(contactStats: any, _claimStats: any) {
+    // claimStats would be used for more detailed performance analysis
     return {
       firstResponseTime: contactStats.avgResponseTime || 45, // minutes
       resolutionTime: Math.round(
@@ -342,8 +344,9 @@ export class SupportAnalyticsService {
 
   private generateInsights(
     analytics: SupportAnalytics,
-    keyMetrics: Record<string, number>,
+    _keyMetrics: Record<string, number>,
   ): string[] {
+    // keyMetrics would be used for more detailed insights generation
     const insights = [];
 
     if (analytics.overview.averageResponseTime > 60) {
