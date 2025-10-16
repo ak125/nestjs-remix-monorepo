@@ -48,14 +48,14 @@ export class SectionController {
     const header = await this.headerService.getHeader(context, userId);
 
     // Personnaliser le header selon les paramètres
-    if (!showActions) {
-      header.actions = [];
+    if (!showActions && 'actions' in header) {
+      (header as any).actions = [];
     }
-    if (!showNotifications) {
-      header.notifications = undefined;
+    if (!showNotifications && 'notifications' in header) {
+      (header as any).notifications = undefined;
     }
-    if (!showBreadcrumbs) {
-      header.breadcrumbs = [];
+    if (!showBreadcrumbs && 'breadcrumbs' in header) {
+      (header as any).breadcrumbs = [];
     }
 
     return header;
