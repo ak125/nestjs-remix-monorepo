@@ -223,10 +223,12 @@ export class EnhancedConfigService extends SupabaseBaseService {
 
   /**
    * Sauvegarde toutes les configurations
+   * DÉSACTIVÉ - loadAllConfigs() n'existe pas
    */
   async backup(): Promise<ConfigBackup> {
     try {
-      const configs = await this.loadAllConfigs();
+      // const configs = await this.loadAllConfigs();
+      const configs: ConfigItem[] = []; // TODO: Implémenter loadAllConfigs
 
       const backup: ConfigBackup = {
         timestamp: new Date().toISOString(),
@@ -337,7 +339,8 @@ export class EnhancedConfigService extends SupabaseBaseService {
     lastUpdated: string | null;
   }> {
     try {
-      const configs = await this.loadAllConfigs();
+      // const configs = await this.loadAllConfigs();
+      const configs: ConfigItem[] = []; // TODO: Implémenter loadAllConfigs
 
       const categories: Record<string, number> = {};
       let lastUpdated: string | null = null;
