@@ -377,12 +377,18 @@ export class StockManagementService {
       }
 
       // Mettre à jour le stock réservé en base
+      // NOTE: Supabase ne supporte pas .raw(), on récupère d'abord la valeur actuelle
+      const { data: currentPiece } = await this.client
+        .from('pieces')
+        .select('piece_stock_reserved')
+        .eq('piece_id', productId)
+        .single();
+
       const { error } = await this.client
         .from('pieces')
         .update({
-          piece_stock_reserved: this.client.raw('piece_stock_reserved + ?', [
-            reservation.quantity,
-          ]),
+          piece_stock_reserved:
+            (currentPiece?.piece_stock_reserved || 0) + reservation.quantity,
         })
         .eq('piece_id', productId);
 

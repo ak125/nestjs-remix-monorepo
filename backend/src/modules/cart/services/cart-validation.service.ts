@@ -119,12 +119,12 @@ export class CartValidationService extends SupabaseBaseService {
       errors.push('Sous-total invalide');
     }
 
-    if (cart.metadata.total_amount < 0) {
+    if (cart.metadata.total < 0) {
       errors.push('Total invalide');
     }
 
     // Avertissements pour gros montants
-    if (cart.metadata.total_amount > 1000) {
+    if (cart.metadata.total > 1000) {
       warnings.push('Montant élevé, vérification recommandée');
     }
 

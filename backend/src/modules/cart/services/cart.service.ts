@@ -136,4 +136,61 @@ export class CartService {
       );
     }
   }
+
+  /**
+   * Mettre à jour la quantité d'un article dans le panier
+   *
+   * @param sessionId - ID de session du panier
+   * @param itemId - ID de l'article à mettre à jour
+   * @param quantity - Nouvelle quantité
+   * @param userId - ID utilisateur optionnel
+   * @returns Panier mis à jour
+   */
+  async updateQuantity(
+    sessionId: string,
+    itemId: string,
+    quantity: number,
+    userId?: string,
+  ): Promise<any> {
+    this.logger.log(
+      `📝 Mise à jour quantité article ${itemId}: ${quantity} pour ${userId || sessionId}`,
+    );
+
+    // Récupérer le panier complet
+    const cart = await this.cartDataService.getCartWithMetadata(sessionId);
+
+    if (!cart || !cart.items) {
+      throw new BadRequestException('Panier introuvable');
+    }
+
+    // Trouver l'article à mettre à jour
+    const item = cart.items.find((i: any) => i.id === itemId);
+
+    if (!item) {
+      throw new BadRequestException('Article introuvable dans le panier');
+    }
+
+    // Si quantity = 0, supprimer l'article
+    if (quantity <= 0) {
+      await this.cartDataService.deleteCartItem(itemId, sessionId);
+      return this.cartDataService.getCartWithMetadata(sessionId);
+    }
+
+    // Convertir product_id en nombre si nécessaire
+    const productId =
+      typeof item.product_id === 'string'
+        ? parseInt(item.product_id, 10)
+        : item.product_id;
+
+    // Mettre à jour la quantité via addCartItem (qui gère l'update)
+    await this.cartDataService.addCartItem(
+      sessionId,
+      productId,
+      quantity - item.quantity, // Delta de quantité
+      item.price,
+    );
+
+    // Retourner le panier mis à jour
+    return this.cartDataService.getCartWithMetadata(sessionId);
+  }
 }

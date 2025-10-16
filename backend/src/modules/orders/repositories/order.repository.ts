@@ -242,7 +242,7 @@ export class OrderRepository
 
       return {
         total_orders: data?.length || 0,
-        total_amount:
+        total:
           data?.reduce(
             (sum: number, order: any) => sum + (order.total || 0),
             0,
