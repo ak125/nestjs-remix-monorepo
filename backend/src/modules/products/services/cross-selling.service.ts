@@ -329,7 +329,7 @@ export class CrossSellingService extends SupabaseBaseService {
       if (cached) return cached;
 
       // 🚀 REQUÊTE BATCH OPTIMISÉE
-      const { data, error } = await this.supabase
+      const { data, error } = (await this.supabase
         .from('pieces_gamme_cross')
         .select(
           `
@@ -347,7 +347,21 @@ export class CrossSellingService extends SupabaseBaseService {
         .neq('pgc_pg_cross', pgId)
         .order('pgc_level')
         .order('pieces_gamme.pg_name')
-        .limit(15);
+        .limit(15)) as {
+        data:
+          | {
+              pgc_pg_cross: any;
+              pgc_level: any;
+              pieces_gamme: {
+                pg_id: any;
+                pg_name: any;
+                pg_alias: any;
+                pg_img: any;
+              };
+            }[]
+          | null;
+        error: any;
+      };
 
       if (error || !data) {
         this.logger.error('❌ Erreur cross-selling config:', error);

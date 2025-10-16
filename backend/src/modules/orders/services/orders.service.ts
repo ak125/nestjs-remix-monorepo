@@ -379,7 +379,7 @@ export class OrdersService extends SupabaseBaseService {
         dataToUpdate.order_status = updateData.status;
         // Créer historique
         await this.statusService.createStatusHistory(
-          orderId,
+          parseInt(orderId, 10),
           updateData.status,
           'Statut mis à jour',
         );
@@ -419,7 +419,7 @@ export class OrdersService extends SupabaseBaseService {
       // Statut annulée = 99
       await this.updateOrder(orderId, { status: 99 });
       await this.statusService.createStatusHistory(
-        orderId,
+        parseInt(orderId, 10),
         99,
         reason || 'Commande annulée',
       );

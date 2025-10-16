@@ -144,8 +144,18 @@ export class SearchController {
         query: body.query.trim(),
         type: 'v8',
         filters: body.filters,
-        sort: body.sort,
-        pagination: body.pagination,
+        sort: body.sort
+          ? {
+              field: body.sort.field || 'relevance',
+              order: body.sort.order || 'asc',
+            }
+          : undefined,
+        pagination: body.pagination
+          ? {
+              page: body.pagination.page || 1,
+              limit: body.pagination.limit || 20,
+            }
+          : { page: 1, limit: 20 },
         options: { facets: true, suggestions: true },
       });
 
