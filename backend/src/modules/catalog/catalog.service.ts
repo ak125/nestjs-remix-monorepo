@@ -85,7 +85,7 @@ export class CatalogService
     this.logger.log(
       '👨‍👩‍👧‍👦 Récupération de toutes les familles comme gammes via CatalogService',
     );
-    return this.catalogFamilyService.getAllFamiliesAsGammes();
+    return this.catalogFamilyService.getFamiliesWithGammes();
   }
 
   /**
@@ -109,7 +109,7 @@ export class CatalogService
     try {
       // Récupérer les deux sources en parallèle
       const [familiesGammes, catalogGammes] = await Promise.all([
-        this.catalogFamilyService.getAllFamiliesAsGammes(),
+        this.catalogFamilyService.getFamiliesWithGammes(),
         this.catalogGammeService.getGammesForDisplay(),
       ]);
 
@@ -741,11 +741,11 @@ export class CatalogService
       // Exécution parallèle pour performance optimale
       const [brandsResult, statsResult] = await Promise.allSettled([
         this.getAutoBrands(20), // Top 20 marques pour homepage
-        this.getGlobalStats(),
+        this.getCatalogStats(),
       ]);
 
       // Extraction sécurisée des résultats
-      const brands =
+      const brands: { success: boolean; data: any[]; count: number } =
         brandsResult.status === 'fulfilled'
           ? brandsResult.value
           : {
