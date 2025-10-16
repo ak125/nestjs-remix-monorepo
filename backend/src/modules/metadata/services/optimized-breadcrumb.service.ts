@@ -41,7 +41,7 @@ export interface BreadcrumbConfig {
 
 @Injectable()
 export class OptimizedBreadcrumbService extends SupabaseBaseService {
-  private readonly logger = new Logger(OptimizedBreadcrumbService.name);
+  protected readonly logger = new Logger(OptimizedBreadcrumbService.name);
   private readonly cachePrefix = 'breadcrumb:';
   private readonly cacheTTL = 3600; // 1 heure
 
@@ -247,7 +247,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
         for (const key of commonKeys) {
           try {
             await this.cacheManager.del(key);
-          } catch (error) {
+          } catch {
             // Ignorer les erreurs de clés inexistantes
           }
         }
@@ -293,7 +293,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       }
 
       return this.parseBreadcrumbString(data.mta_ariane, path);
-    } catch (error) {
+    } catch {
       this.logger.debug(`📄 Pas de breadcrumb en DB pour: ${path}`);
       return null;
     }
@@ -365,7 +365,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
         const segmentPath =
           index === segments.length - 1
             ? currentPath
-            : this.generatePathFromIndex(currentPath, index, segments.length);
+            : this.generatePathFromIndex(currentPath, index);
 
         items.push({
           label: segment,
@@ -546,11 +546,7 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
   /**
    * Générer un path depuis un index
    */
-  private generatePathFromIndex(
-    currentPath: string,
-    index: number,
-    totalSegments: number,
-  ): string {
+  private generatePathFromIndex(currentPath: string, index: number): string {
     const segments = this.parseRoute(currentPath);
     return '/' + segments.slice(0, index + 1).join('/');
   }
