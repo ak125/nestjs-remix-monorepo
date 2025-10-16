@@ -397,10 +397,8 @@ export class CatalogController {
 
       // Rechercher la gamme dans les données du catalogue
       const gamme =
-        catalogData.data.mainCategories.find((cat: any) => cat.code === code) ||
-        catalogData.data.featuredCategories.find(
-          (cat: any) => cat.code === code,
-        );
+        catalogData.mainCategories.find((cat: any) => cat.code === code) ||
+        catalogData.featuredCategories.find((cat: any) => cat.code === code);
 
       if (!gamme) {
         return {
