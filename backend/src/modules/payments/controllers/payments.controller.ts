@@ -10,7 +10,6 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
-  UseGuards,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
@@ -440,10 +439,7 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Liste tous les paiements (admin)' })
   @ApiResponse({ status: 200, description: 'Liste des paiements' })
   @ApiResponse({ status: 403, description: 'Accès refusé' })
-  async listAllPayments(
-    @Query('status') status?: PaymentStatus,
-    @Query('limit') limit?: string,
-  ) {
+  async listAllPayments() {
     try {
       this.logger.log('Admin: Listing all payments');
 
@@ -976,8 +972,8 @@ export class PaymentsController {
           id: payment.id,
           reference: payment.paymentReference,
           amount: payment.amount,
-          consigne_total: payment.consigne_total,
-          consigne_details: payment.consigne_details,
+          consigne_total: payment.metadata?.consigne_total || 0,
+          consigne_details: payment.metadata?.consigne_details || [],
           status: payment.status,
         },
         breakdown: {

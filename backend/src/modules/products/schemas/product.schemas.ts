@@ -388,18 +388,18 @@ export const VehicleCompatibilitySchema = z.object({
  * Recherche de véhicules compatible
  */
 export const VehicleSearchSchema = z.object({
-  brand_id: z.number().int().positive().optional(),
-  model_id: z.number().int().positive().optional(),
-  type_id: z.number().int().positive().optional(),
+  brandId: z.number().int().positive().optional(),
+  modelId: z.number().int().positive().optional(),
+  typeId: z.number().int().positive().optional(),
   year: z
     .number()
     .int()
     .min(1900)
     .max(new Date().getFullYear() + 1)
     .optional(),
-  fuel_type: VehicleCompatibilitySchema.shape.fuel_type.optional(),
-  power_min: z.number().int().min(0).optional(),
-  power_max: z.number().int().min(0).optional(),
+  fuelType: VehicleCompatibilitySchema.shape.fuel_type.optional(),
+  powerMin: z.number().int().min(0).optional(),
+  powerMax: z.number().int().min(0).optional(),
   limit: z.number().int().min(1).max(100).default(20),
   page: z.number().int().min(1).default(1),
 });

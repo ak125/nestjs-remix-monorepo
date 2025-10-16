@@ -14,8 +14,7 @@ export { CyberplusService } from './services/cyberplus.service';
 export { PaymentValidationService } from './services/payment-validation.service';
 
 // Controllers
-export { PaymentController } from './controllers/payment.controller';
-export { PaymentCallbackController } from './controllers/payment-callback.controller';
+export { PaymentsController } from './controllers/payments.controller';
 
 // Data Services
 export { PaymentDataService } from './repositories/payment-data.service';
