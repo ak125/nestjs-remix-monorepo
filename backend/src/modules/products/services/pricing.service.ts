@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -35,7 +36,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
  */
 @Injectable()
 export class PricingService extends SupabaseBaseService {
-  private readonly logger = new Logger(PricingService.name);
+  protected readonly logger = new Logger(PricingService.name);
 
   // Cache intelligent (AMÉLIORATION vs original sans cache)
   private readonly priceCache = new Map<string, any>();
@@ -48,6 +49,10 @@ export class PricingService extends SupabaseBaseService {
     avg_response_time: 0,
     start_time: Date.now(),
   };
+
+  constructor(configService?: ConfigService) {
+    super(configService);
+  }
 
   /**
    * 🎯 MÉTHODE PRINCIPALE - getProductPricing AMÉLIORÉ avec VRAIES DONNÉES
@@ -453,7 +458,7 @@ export class PricingService extends SupabaseBaseService {
 
     try {
       // 1. Recherche dans pieces_price par référence (simple d'abord)
-      const { data: priceData, error: priceError } = await this.client
+      const { data: priceData } = await this.client
         .from('pieces_price')
         .select('*')
         .ilike('pri_ref', `%${reference}%`)
