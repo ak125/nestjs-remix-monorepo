@@ -31,7 +31,6 @@ import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-com
 import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
-import { PiecesDbService } from '../../pieces/pieces-db.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 
@@ -89,8 +88,7 @@ import { PricingService } from '../products/services/pricing.service';
     PiecesPhpLogicCompleteService,
     PiecesEnhancedService,
     PiecesUltraEnhancedService,
-    PiecesDbService,
-    PiecesRealService,
+    PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
     // Alias pour compatibilité
