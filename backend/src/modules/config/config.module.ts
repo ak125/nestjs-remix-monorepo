@@ -27,7 +27,7 @@ import { SimpleDatabaseConfigController } from './controllers/simple-database-co
 import { EnhancedConfigService } from './services/enhanced-config.service';
 import { EnhancedMetadataService } from './services/enhanced-metadata.service';
 import { BreadcrumbService } from './services/breadcrumb.service';
-import { ConfigAnalyticsService } from './services/config-analytics.service';
+// import { ConfigAnalyticsService } from './services/config-analytics.service'; // SUPPRIMÉ - executeQuery n'existe pas
 import { DatabaseConfigService } from './services/database-config.service';
 import { SimpleConfigService } from './services/simple-config.service';
 import { SimpleDatabaseConfigService } from './services/simple-database-config.service';
@@ -71,7 +71,7 @@ interface ConfigModuleOptions {
     EnhancedConfigService,
     EnhancedMetadataService,
     BreadcrumbService,
-    ConfigAnalyticsService,
+    // ConfigAnalyticsService, // SUPPRIMÉ - executeQuery n'existe pas
     DatabaseConfigService,
     // Services Simple pour fallback
     SimpleConfigService,
@@ -95,7 +95,7 @@ interface ConfigModuleOptions {
     EnhancedConfigService,
     EnhancedMetadataService,
     BreadcrumbService,
-    ConfigAnalyticsService,
+    // ConfigAnalyticsService, // SUPPRIMÉ
     DatabaseConfigService,
     // Services Simple pour compatibilité
     SimpleConfigService,

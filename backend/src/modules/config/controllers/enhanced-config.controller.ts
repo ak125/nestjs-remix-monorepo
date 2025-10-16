@@ -102,12 +102,13 @@ export class EnhancedConfigController {
 
   /**
    * Récupère toutes les configurations
+   * DÉSACTIVÉ - loadAllConfigs() n'existe pas dans EnhancedConfigService
    */
-  @Get()
-  async getAllConfigs(): Promise<ConfigItem[]> {
-    this.logger.debug('Getting all configurations');
-    return this.enhancedConfigService.loadAllConfigs();
-  }
+  // @Get()
+  // async getAllConfigs(): Promise<ConfigItem[]> {
+  //   this.logger.debug('Getting all configurations');
+  //   return this.enhancedConfigService.loadAllConfigs();
+  // }
 
   /**
    * Récupère une configuration par clé
