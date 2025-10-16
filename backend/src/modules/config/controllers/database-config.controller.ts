@@ -12,10 +12,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import {
-  SimpleDatabaseConfigService,
+  EnhancedDatabaseConfigService,
   DatabaseConfig,
   DatabaseConnectionTest,
-} from '../services/simple-database-config.service';
+} from '../services/enhanced-database-config.service';
 
 export interface CreateDatabaseConfigDto {
   environment: string;
@@ -57,7 +57,7 @@ export class DatabaseConfigController {
   private readonly logger = new Logger(DatabaseConfigController.name);
 
   constructor(
-    private readonly databaseConfigService: SimpleDatabaseConfigService,
+    private readonly databaseConfigService: EnhancedDatabaseConfigService,
   ) {}
 
   /**

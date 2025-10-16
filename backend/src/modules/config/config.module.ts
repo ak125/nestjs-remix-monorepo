@@ -21,7 +21,7 @@ import { EnhancedConfigController } from './controllers/enhanced-config.controll
 import { EnhancedMetadataController } from './controllers/enhanced-metadata.controller';
 import { SimpleConfigController } from './controllers/simple-config.controller';
 import { SimpleDatabaseConfigController } from './controllers/simple-database-config.controller';
-import { ConfigController } from './config.controller';
+// import { ConfigController } from './config.controller'; // SUPPRIMÉ - Guards manquants
 
 // Services - Services Enhanced optimisés + fallback Simple
 import { EnhancedConfigService } from './services/enhanced-config.service';
@@ -64,8 +64,7 @@ interface ConfigModuleOptions {
     // Controllers Simple pour compatibilité
     SimpleConfigController,
     SimpleDatabaseConfigController,
-    // Nouveau contrôleur de test pour les fonctionnalités
-    ConfigController,
+    // ConfigController - SUPPRIMÉ (Guards manquants)
   ],
   providers: [
     // Services Enhanced principaux

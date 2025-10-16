@@ -12,7 +12,11 @@ import {
 
 @Injectable()
 export class GammeUnifiedService extends SupabaseBaseService {
-  private readonly logger = new Logger(GammeUnifiedService.name);
+  protected readonly logger = new Logger(GammeUnifiedService.name);
+
+  constructor() {
+    super();
+  }
 
   /**
    * 🎯 Récupère toutes les gammes avec leurs vraies données
