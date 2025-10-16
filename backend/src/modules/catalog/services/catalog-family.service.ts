@@ -149,4 +149,11 @@ export class CatalogFamilyService extends SupabaseBaseService {
       return [];
     }
   }
+
+  /**
+   * Alias pour compatibilité - appelle getCatalogFamiliesPhpLogic
+   */
+  async getFamiliesWithGammes(): Promise<CatalogFamiliesResponse> {
+    return this.getCatalogFamiliesPhpLogic();
+  }
 }
