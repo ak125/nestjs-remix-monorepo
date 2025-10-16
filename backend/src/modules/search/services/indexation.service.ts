@@ -50,15 +50,39 @@ export class IndexationService {
       const vehicleData =
         await this.supabase.getAllVehiclesFromSupabase(batchSize);
 
-      if (!vehicleData.success) {
+      // Type guard: vérifier si c'est un array ou un objet { success, data }
+      if (Array.isArray(vehicleData)) {
+        // Ancien format: array direct
+        if (vehicleData.length === 0) {
+          return {
+            success: true,
+            count: 0,
+            message: 'Aucun véhicule trouvé dans Supabase',
+          };
+        }
+
+        await this.meilisearch.indexVehicles(vehicleData);
+        this.logger.log(
+          `✅ ${vehicleData.length} véhicules RÉELS indexés avec succès`,
+        );
+
         return {
-          success: false,
-          count: 0,
-          message: `Erreur récupération Supabase: ${vehicleData.error}`,
+          success: true,
+          count: vehicleData.length,
+          message: `${vehicleData.length} véhicules réels indexés depuis Supabase`,
         };
       }
 
-      if (vehicleData.data.length === 0) {
+      // Nouveau format: objet { success, data, count }
+      if (!('success' in vehicleData) || !vehicleData.success) {
+        return {
+          success: false,
+          count: 0,
+          message: `Erreur récupération Supabase: ${vehicleData.error || 'Erreur inconnue'}`,
+        };
+      }
+
+      if (!vehicleData.data || vehicleData.data.length === 0) {
         return {
           success: true,
           count: 0,

@@ -235,12 +235,6 @@ export class PaymentService {
       const updatedPayment = await this.paymentDataService.updatePaymentStatus(
         payment.id,
         status,
-        {
-          providerTransactionId: callbackData.transactionId,
-          ...(status === PaymentStatus.FAILED && {
-            failureReason: `Provider status: ${callbackData.status}`,
-          }),
-        },
       );
 
       // Créer une transaction de log
