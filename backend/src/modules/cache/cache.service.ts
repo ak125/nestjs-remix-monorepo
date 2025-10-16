@@ -70,6 +70,13 @@ export class CacheService {
   }
 
   /**
+   * 🧹 Alias for del() method
+   */
+  async delete(key: string): Promise<void> {
+    return this.del(key);
+  }
+
+  /**
    * 🔄 Clear cache by pattern
    */
   async clearByPattern(pattern: string): Promise<void> {
