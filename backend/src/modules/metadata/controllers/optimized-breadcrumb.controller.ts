@@ -185,60 +185,12 @@ export class OptimizedBreadcrumbController {
   }
 
   /**
-   * Récupérer la configuration breadcrumb
-   * GET /api/breadcrumb/config
+   * SUPPRIMÉ: Fonction dupliquée @Get('config') déjà définie ligne 72
    */
-  @Get('config')
-  async getBreadcrumbConfig(
-    @Query('lang') lang: string = 'fr',
-  ): Promise<{ success: boolean; data: any }> {
-    try {
-      this.logger.debug(`⚙️ Récupération config breadcrumb lang: ${lang}`);
-
-      const config = this.breadcrumbService.getBreadcrumbConfig(lang);
-
-      return {
-        success: true,
-        data: config,
-      };
-    } catch (error) {
-      this.logger.error('❌ Erreur récupération config breadcrumb:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération de la configuration',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 
   /**
-   * Nettoyer le cache breadcrumb
-   * POST /api/breadcrumb/cache/clear
+   * SUPPRIMÉ: Fonction dupliquée clearCache() déjà définie ligne 96
    */
-  @Post('cache/clear')
-  async clearCache(
-    @Body() body: { path?: string } = {},
-  ): Promise<{ success: boolean; message: string }> {
-    try {
-      this.logger.log(
-        `♻️ Nettoyage cache breadcrumb${body.path ? ` pour: ${body.path}` : ' complet'}`,
-      );
-
-      await this.breadcrumbService.clearCache(body.path);
-
-      return {
-        success: true,
-        message: body.path
-          ? `Cache nettoyé pour: ${body.path}`
-          : 'Cache breadcrumb entièrement nettoyé',
-      };
-    } catch (error) {
-      this.logger.error('❌ Erreur nettoyage cache breadcrumb:', error);
-      throw new HttpException(
-        'Erreur lors du nettoyage du cache',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 
   /**
    * Récupérer le schema.org pour un breadcrumb

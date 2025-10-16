@@ -111,11 +111,13 @@ export class ManufacturersController {
     const models =
       await this.manufacturersService.getPopularModelsWithImages(limitNumber);
 
+    const modelsArray = Array.isArray(models) ? models : [];
+    
     return {
       success: true,
-      data: models,
-      total: models.length,
-      message: `${models.length} modèles populaires récupérés`,
+      data: modelsArray,
+      total: modelsArray.length,
+      message: `${modelsArray.length} modèles populaires récupérés`,
     };
   }
 
@@ -131,11 +133,13 @@ export class ManufacturersController {
     const brands =
       await this.manufacturersService.getBrandsWithLogos(limitNumber);
 
+    const brandsArray = Array.isArray(brands) ? brands : [];
+    
     return {
       success: true,
-      data: brands,
-      total: brands.length,
-      message: `${brands.length} logos de marques récupérés`,
+      data: brandsArray,
+      total: brandsArray.length,
+      message: `${brandsArray.length} logos de marques récupérés`,
     };
   }
 
@@ -438,16 +442,6 @@ export class ManufacturersController {
     };
 
     return this.manufacturersService.getTypesByModel(modelIdNumber, filters);
-  }
-
-  /**
-   * GET /api/manufacturers/types/fuel-types
-   * Récupérer tous les types de carburant
-   */
-  @Get('types/fuel-types')
-  async getFuelTypes() {
-    this.logger.log('GET /api/manufacturers/types/fuel-types');
-    return this.manufacturersService.getFuelTypes();
   }
 
   /**
