@@ -9,10 +9,9 @@ export class CacheService {
 
   constructor(private configService: ConfigService) {
     this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-      password: this.configService.get('REDIS_PASSWORD'),
-      retryDelayOnFailover: 100,
+      host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+      port: parseInt(this.configService.get<string>('REDIS_PORT', '6379'), 10),
+      password: this.configService.get<string>('REDIS_PASSWORD'),
       maxRetriesPerRequest: 3,
     });
 
