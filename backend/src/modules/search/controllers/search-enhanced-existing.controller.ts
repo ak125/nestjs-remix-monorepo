@@ -177,9 +177,9 @@ export class SearchEnhancedExistingController {
       const result =
         await this.searchEnhancedService.searchPiecesByVehicle(searchParams);
 
-      if (result.success) {
+      if (result.success && 'data' in result) {
         this.logger.log(
-          `✅ [SEARCH-VEHICLE] ${result.data?.items?.length || 0} résultats`,
+          `✅ [SEARCH-VEHICLE] ${result.data.items?.length || 0} résultats`,
         );
       }
 
