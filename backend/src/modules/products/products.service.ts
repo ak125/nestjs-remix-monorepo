@@ -408,7 +408,7 @@ export class ProductsService extends SupabaseBaseService {
    */
   async remove(id: string) {
     try {
-      const { data: _data, error } = await this.client
+      const { error } = await this.client
         .from('products')
         .update({
           is_active: false,
@@ -699,7 +699,7 @@ export class ProductsService extends SupabaseBaseService {
 
       const rangeCounts: any = {};
       for (const range of ranges) {
-        const { count, error: _error } = await this.client
+        const { count } = await this.client
           .from('pieces')
           .select('*', { count: 'exact', head: true })
           .eq('piece_display', true)
@@ -780,11 +780,20 @@ export class ProductsService extends SupabaseBaseService {
       } = options;
 
       // Récupérer les infos de la gamme
-      const { data: gammeInfo, error: gammeError } = await this.client
+      const { data: gammeInfo, error: gammeError } = (await this.client
         .from('pieces_gamme')
         .select('pg_id, pg_name, pg_alias, pg_pic, pg_display')
         .eq('pg_id', gammeId)
-        .single();
+        .single()) as {
+        data: {
+          pg_id: any;
+          pg_name: any;
+          pg_alias: any;
+          pg_pic: any;
+          pg_display: any;
+        } | null;
+        error: any;
+      };
 
       if (gammeError || !gammeInfo) {
         throw new Error(`Gamme ${gammeId} non trouvée`);

@@ -445,4 +445,38 @@ export class PiecesController {
       };
     }
   }
+
+  /**
+   * Extraire la marque depuis une référence produit
+   */
+  private extractBrandFromRef(reference: string): string {
+    if (!reference) return 'INCONNU';
+
+    const ref = reference.toLowerCase().replace(/\s+/g, '');
+
+    // Patterns de références courantes
+    const brandPatterns = {
+      bosch: ['0986', '0 986', 'bosch'],
+      'mann-filter': ['mann', 'hum', 'w'],
+      mahle: ['lx', 'ox', 'kx', 'mahle'],
+      fram: ['fram', 'ca'],
+      purflux: ['purflux', 'a', 'l'],
+      knecht: ['knecht', 'lx'],
+      champion: ['champion', 'cof'],
+      febi: ['febi', '49', '48'],
+      sachs: ['sachs', 'zf'],
+      valeo: ['valeo', '585'],
+    };
+
+    // Recherche de correspondance
+    for (const [brand, patterns] of Object.entries(brandPatterns)) {
+      if (patterns.some((pattern) => ref.includes(pattern))) {
+        return brand.toUpperCase();
+      }
+    }
+
+    // Si aucune correspondance, retourner le début de la référence
+    const firstPart = reference.split(' ')[0] || reference.substring(0, 4);
+    return firstPart.toUpperCase();
+  }
 }
