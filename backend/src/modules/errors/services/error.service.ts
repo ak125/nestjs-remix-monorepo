@@ -656,16 +656,6 @@ export class ErrorService {
    */
   async getSuggestionsForUrl(url: string): Promise<string[]> {
     try {
-      // Créer un objet Request minimal pour la méthode privée
-      const mockRequest = {
-        path: url,
-        originalUrl: url,
-        url: url,
-        headers: {},
-        query: {},
-        get: () => undefined,
-      } as any;
-
       // Appeler la méthode privée avec les bons paramètres
       return await this.findSuggestions(url);
     } catch (error) {

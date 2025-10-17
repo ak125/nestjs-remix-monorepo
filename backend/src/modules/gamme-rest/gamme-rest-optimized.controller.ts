@@ -223,7 +223,7 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
       );
 
       // Première étape : récupérer tous les pg_id de la même famille
-      const { data: catalogItems, error: catalogItemsError } = await this.client
+      const { data: catalogItems } = await this.client
         .from('catalog_gamme')
         .select('mc_pg_id, mc_sort')
         .eq('mc_mf_id', mfId)

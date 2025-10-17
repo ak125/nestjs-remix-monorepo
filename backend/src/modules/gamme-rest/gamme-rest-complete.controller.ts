@@ -97,7 +97,6 @@ export class GammeRestCompleteController extends SupabaseBaseService {
       ? catalogData.catalog_family[0]
       : catalogData?.catalog_family;
     const mfId = catalogFamily?.mf_id;
-    const mfNameSite = catalogFamily?.mf_name;
 
     // 3. SEO & CONTENT (comme PHP)
     const { data: seoData } = await this.client

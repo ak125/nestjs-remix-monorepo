@@ -19,11 +19,10 @@ export class SectionController {
   async getSection(
     @Param('section') section: string,
     @Query('context') context: 'admin' | 'commercial' | 'public' = 'public',
-    @Query('user') userId?: string,
   ) {
     switch (section) {
       case 'header':
-        return this.headerService.getHeader(context, userId);
+        return this.headerService.getHeader(context);
       case 'footer':
         return this.footerService.getFooter(context);
       case 'search-data':
@@ -40,12 +39,11 @@ export class SectionController {
   @Get('header/custom')
   async getCustomHeader(
     @Query('context') context: 'admin' | 'commercial' | 'public' = 'public',
-    @Query('user') userId?: string,
     @Query('showActions') showActions = true,
     @Query('showNotifications') showNotifications = true,
     @Query('showBreadcrumbs') showBreadcrumbs = true,
   ) {
-    const header = await this.headerService.getHeader(context, userId);
+    const header = await this.headerService.getHeader(context);
 
     // Personnaliser le header selon les paramètres
     if (!showActions && 'actions' in header) {
