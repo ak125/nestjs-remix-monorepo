@@ -93,8 +93,8 @@ export class GammeRestCompleteController extends SupabaseBaseService {
     const pgWall = pageData.pg_wall;
 
     // MF data (catalog_family est un tableau)
-    const catalogFamily = Array.isArray(catalogData?.catalog_family) 
-      ? catalogData.catalog_family[0] 
+    const catalogFamily = Array.isArray(catalogData?.catalog_family)
+      ? catalogData.catalog_family[0]
       : catalogData?.catalog_family;
     const mfId = catalogFamily?.mf_id;
     const mfNameSite = catalogFamily?.mf_name;

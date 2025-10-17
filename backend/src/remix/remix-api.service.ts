@@ -208,7 +208,7 @@ export class RemixApiService {
     };
   }
 
-  async getSuppliersForRemix(_params: any) {
+  async getSuppliersForRemix() {
     // TODO: Implémenter quand le module suppliers sera prêt
     return {
       success: true,

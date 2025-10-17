@@ -7,7 +7,6 @@ import {
   Param,
   Query,
   Body,
-  UseGuards,
   HttpStatus,
   HttpCode,
   PreconditionFailedException,

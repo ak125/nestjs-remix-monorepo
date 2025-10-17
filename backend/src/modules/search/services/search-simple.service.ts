@@ -179,7 +179,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // FALLBACK: Si pieces_ref_search est vide, rechercher dans pieces_price.pri_ref (beaucoup plus rapide !)
     let pieceIds: number[] = [];
-    let prsKindMap = new Map<string, string>();
+    const prsKindMap = new Map<string, string>();
 
     if (searchRefs.length === 0) {
       this.logger.log(

@@ -168,7 +168,7 @@ export class ConfigValidator {
               errors: ['La valeur doit être un JSON valide'],
             };
           }
-        } catch (_error) {
+        } catch {
           return {
             isValid: false,
             errors: ['La valeur doit être un JSON valide'],
@@ -188,7 +188,7 @@ export class ConfigValidator {
               errors: ['La valeur doit être un tableau'],
             };
           }
-        } catch (_error) {
+        } catch {
           return {
             isValid: false,
             errors: ['La valeur doit être un tableau valide'],

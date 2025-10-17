@@ -57,7 +57,10 @@ export class SearchCacheService {
       }
     } catch (error) {
       this.stats.misses++;
-      this.logger.error(`💥 Cache ERROR: ${key}:`, error instanceof Error ? error.message : String(error));
+      this.logger.error(
+        `💥 Cache ERROR: ${key}:`,
+        error instanceof Error ? error.message : String(error),
+      );
       return null;
     }
   }

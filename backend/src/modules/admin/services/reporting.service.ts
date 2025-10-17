@@ -73,9 +73,7 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 📊 Génération du rapport global d'analytics
    */
-  async generateAnalyticsReport(
-    filters: ReportFilters = {},
-  ): Promise<ReportData> {
+  async generateAnalyticsReport(): Promise<ReportData> {
     try {
       this.logger.log('🔄 Génération rapport analytics...');
 
