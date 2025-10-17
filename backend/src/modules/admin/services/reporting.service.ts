@@ -91,8 +91,8 @@ export class ReportingService extends SupabaseBaseService {
       const reportData: ReportData = {
         users: await this.getUsersAnalytics(),
         orders: await this.getOrdersAnalytics(),
-        performance: await this.getPerformanceMetrics(filters),
-        trends: await this.getTrendsAnalytics(filters),
+        performance: await this.getPerformanceMetrics(),
+        trends: await this.getTrendsAnalytics(),
       };
 
       // Cache pour 5 minutes
@@ -222,9 +222,7 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 📈 Métriques de performance
    */
-  private async getPerformanceMetrics(
-    filters: ReportFilters,
-  ): Promise<ReportData['performance']> {
+  private async getPerformanceMetrics(): Promise<ReportData['performance']> {
     try {
       const users = await this.getUsersAnalytics();
       const orders = await this.getOrdersAnalytics();
@@ -257,11 +255,9 @@ export class ReportingService extends SupabaseBaseService {
   }
 
   /**
-   * 📊 Analytics des tendances
+   * 📊 Tendances et évolution
    */
-  private async getTrendsAnalytics(
-    filters: ReportFilters,
-  ): Promise<ReportData['trends']> {
+  private async getTrendsAnalytics(): Promise<ReportData['trends']> {
     try {
       const users = await this.getUsersAnalytics();
       const orders = await this.getOrdersAnalytics();

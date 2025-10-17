@@ -107,11 +107,9 @@ export class EnhancedMetadataController {
 
       this.logger.log(`Recherche métadonnées: "${query}"`);
 
-      const limitValue = limit ? parseInt(limit.toString(), 10) : 50;
-
       // Note: Cette recherche utilise la table existante ___meta_tags_ariane
       // On peut rechercher dans les titres, descriptions et mots-clés
-      const results = await this.searchInMetadata(query, limitValue);
+      const results = await this.searchInMetadata(query);
 
       return {
         success: true,
@@ -261,7 +259,7 @@ export class EnhancedMetadataController {
   /**
    * Méthode privée pour rechercher dans les métadonnées
    */
-  private async searchInMetadata(query: string, limit: number): Promise<any[]> {
+  private async searchInMetadata(query: string): Promise<any[]> {
     try {
       // Pour l'instant, retourne un tableau vide
       // TODO: Implémenter la recherche directe dans la base de données

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -34,8 +34,7 @@ export class StockManagementService {
       'SUPABASE_SERVICE_ROLE_KEY',
     );
 
-    // Import dynamique pour éviter les problèmes de build
-    const { createClient } = require('@supabase/supabase-js');
+    // Initialisation du client Supabase
     this.client = createClient(supabaseUrl, supabaseKey);
 
     this.logger.log('StockManagementService initialized');
@@ -262,7 +261,7 @@ export class StockManagementService {
       const key = `stock:temp:${productId}`;
       const temp = await this.cacheService.get<number>(key);
       return temp || 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }

@@ -9,8 +9,6 @@ import {
   Users, 
   CheckCircle, 
   Clock,
-  MapPin,
-  Phone,
   Package,
   AlertTriangle,
   Calendar,
