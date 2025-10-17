@@ -18,28 +18,28 @@ export function CartSummary({ cart, children }: CartSummaryProps) {
       
       <div className="space-y-2 mb-4">
         <div className="flex justify-between">
-          <span>Sous-total ({totals.item_count} articles)</span>
+          <span>Sous-total ({totals.total_items} articles)</span>
           <span>{totals.subtotal.toFixed(2)} €</span>
         </div>
         
-        {totals.discount > 0 && (
+        {totals.discount_amount && totals.discount_amount > 0 && (
           <div className="flex justify-between text-green-600">
             <span>Réduction</span>
-            <span>-{totals.discount.toFixed(2)} €</span>
+            <span>-{totals.discount_amount.toFixed(2)} €</span>
           </div>
         )}
         
         <div className="flex justify-between">
           <span>Livraison</span>
           <span>
-            {totals.shipping === 0 ? 'Gratuite' : `${totals.shipping.toFixed(2)} €`}
+            {totals.shipping_cost === 0 ? 'Gratuite' : `${totals.shipping_cost.toFixed(2)} €`}
           </span>
         </div>
         
-        {totals.tax > 0 && (
+        {totals.tax_amount > 0 && (
           <div className="flex justify-between text-sm text-gray-600">
             <span>TVA</span>
-            <span>{totals.tax.toFixed(2)} €</span>
+            <span>{totals.tax_amount.toFixed(2)} €</span>
           </div>
         )}
       </div>
@@ -47,7 +47,7 @@ export function CartSummary({ cart, children }: CartSummaryProps) {
       <div className="border-t pt-2 mb-6">
         <div className="flex justify-between text-lg font-semibold">
           <span>Total</span>
-          <span>{totals.total.toFixed(2)} € {totals.currency}</span>
+          <span>{totals.total_price.toFixed(2)} {totals.currency}</span>
         </div>
       </div>
       

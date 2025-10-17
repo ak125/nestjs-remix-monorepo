@@ -196,6 +196,7 @@ export function AutomationCenter() {
           category: 'operations',
           trigger: {
             type: 'time',
+            condition: 'schedule',
             schedule: 'weekly_monday_9am'
           },
           actions: [

@@ -320,11 +320,11 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
               </Button>
             </div>
 
-            {fetcher.data && (
+            {fetcher.data && typeof fetcher.data === 'object' && (
               <div
-                className={`mt-4 p-2 rounded ${fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                className={`mt-4 p-2 rounded ${'success' in fetcher.data && fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
               >
-                {fetcher.data.message || fetcher.data.error}
+                {String('message' in fetcher.data ? fetcher.data.message : 'error' in fetcher.data ? fetcher.data.error : '')}
               </div>
             )}
           </div>
