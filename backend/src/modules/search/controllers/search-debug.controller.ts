@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { SearchEnhancedExistingService } from '../services/search-enhanced-existing.service';
 
 @Controller('api/search-debug')

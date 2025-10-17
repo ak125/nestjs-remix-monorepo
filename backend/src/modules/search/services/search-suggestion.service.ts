@@ -22,10 +22,7 @@ export class SearchSuggestionService {
   /**
    * Obtient des suggestions populaires
    */
-  async getPopularSuggestions(
-    indexName: string = 'vehicles',
-    limit: number = 10,
-  ) {
+  async getPopularSuggestions(limit: number = 10) {
     try {
       // Recherche les termes les plus fréquents (simulation)
       const results = await this.meilisearchService.searchVehicles('', {

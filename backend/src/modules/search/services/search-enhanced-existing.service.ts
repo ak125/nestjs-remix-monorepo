@@ -70,25 +70,24 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         cleanQuery.replace(/([a-z])(\d)/gi, '$1-$2'), // "kh-22"
       ];
 
-      const [refSearchResult, refOemResult, directPiecesResult] =
-        await Promise.all([
-          // Recherche par référence équipementier (indexation)
-          this.client
-            .from('pieces_ref_search')
-            .select('prs_piece_id, prs_kind, prs_ref')
-            .or(queryVariants.map((v) => `prs_search.eq.${v}`).join(',')),
-          // Recherche par référence OEM constructeur (indexation)
-          this.client
-            .from('pieces_ref_oem')
-            .select('pro_piece_id, pro_oem')
-            .or(queryVariants.map((v) => `pro_oem_serach.eq.${v}`).join(',')),
-          // Recherche DIRECTE dans pieces (fallback automatique)
-          this.client
-            .from('pieces')
-            .select('piece_id, piece_ref, piece_pg_id, piece_pm_id')
-            .or(queryVariants.map((v) => `piece_ref.ilike.%${v}%`).join(','))
-            .limit(100),
-        ]);
+      const [refSearchResult, refOemResult] = await Promise.all([
+        // Recherche par référence équipementier (indexation)
+        this.client
+          .from('pieces_ref_search')
+          .select('prs_piece_id, prs_kind, prs_ref')
+          .or(queryVariants.map((v) => `prs_search.eq.${v}`).join(',')),
+        // Recherche par référence OEM constructeur (indexation)
+        this.client
+          .from('pieces_ref_oem')
+          .select('pro_piece_id, pro_oem')
+          .or(queryVariants.map((v) => `pro_oem_serach.eq.${v}`).join(',')),
+        // Recherche DIRECTE dans pieces (fallback automatique)
+        this.client
+          .from('pieces')
+          .select('piece_id, piece_ref, piece_pg_id, piece_pm_id')
+          .or(queryVariants.map((v) => `piece_ref.ilike.%${v}%`).join(','))
+          .limit(100),
+      ]);
 
       // Combiner les résultats des deux tables + capturer prs_kind pour tri
       const allPieceIds = new Set<number>();
