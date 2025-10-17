@@ -213,15 +213,10 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         this.processH1(
           seoTemplate.sgc_h1,
           validatedVars,
-          typeId,
-          pgId,
         ),
         this.processPreview(
           seoTemplate.sgc_preview,
           validatedVars,
-          gammeSwitches,
-          typeId,
-          pgId,
         ),
         this.processContent(
           seoTemplate.sgc_content,
@@ -302,13 +297,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       this.prixPasCher[prixIndex],
     );
 
-    // 🚀 AMÉLIORATION : CompSwitch pour title avec fallback
-    processed = await this.processCompSwitch(
-      processed,
-      itemSwitches.filter((s) => s.sis_alias === 1),
-      typeId,
-      'title',
-    );
+    // 🚀 AMÉLIORATION : CompSwitch pour title (TODO: implement full logic)
+    processed = await this.processCompSwitch(processed);
 
     // 🚀 AMÉLIORATION : Variables contextuelles
     if (variables.articlesCount > 0) {
@@ -351,13 +341,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       this.prixPasCher[prixIndex],
     );
 
-    // 🚀 AMÉLIORATION : CompSwitch description (alias 2) avec validation
-    processed = await this.processCompSwitch(
-      processed,
-      itemSwitches.filter((s) => s.sis_alias === 2),
-      typeId,
-      'description',
-    );
+    // 🚀 AMÉLIORATION : CompSwitch pour description (TODO: implement)
+    processed = await this.processCompSwitch(processed);
 
     // 🚀 AMÉLIORATION : CompSwitch_3_PG_ID spécifique
     const switch3Regex = new RegExp(`#CompSwitch_3_${pgId}#`, 'g');
@@ -372,26 +357,18 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       }
     }
 
-    // 🚀 AMÉLIORATION : LinkGammeCar avec génération intelligente
-    processed = await this.processLinkGammeCar(
-      processed,
-      gammeSwitches,
-      variables,
-      typeId,
-      pgId,
-    );
+    // 🚀 AMÉLIORATION : LinkGammeCar (TODO: implement intelligent generation)
+    processed = await this.processLinkGammeCar(processed);
 
     return this.cleanContent(processed);
   }
 
   /**
-   * 🚀 AMÉLIORATION : Traitement H1 optimisé SEO
+   * 🎯 Traitement H1 optimisé SEO
    */
   private async processH1(
     template: string,
     variables: SeoVariables,
-    typeId: number,
-    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -410,14 +387,11 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   }
 
   /**
-   * 🚀 AMÉLIORATION : Traitement preview avec switches
+   * 🎯 Traitement PREVIEW optimisé
    */
   private async processPreview(
     template: string,
     variables: SeoVariables,
-    gammeSwitches: any[],
-    typeId: number,
-    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -432,13 +406,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       );
     }
 
-    // Switches gammes pour preview
-    processed = await this.processGammeSwitches(
-      processed,
-      gammeSwitches,
-      typeId,
-      pgId,
-    );
+    // Switches gammes pour preview (TODO: implement)
+    processed = await this.processGammeSwitches(processed);
 
     return this.cleanContent(processed);
   }
@@ -481,30 +450,14 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       pgId,
     );
 
-    // 🚀 AMÉLIORATION : Switches famille (11-16) avec hiérarchie
-    processed = await this.processFamilySwitchesEnhanced(
-      processed,
-      familySwitches,
-      variables,
-      typeId,
-      pgId,
-    );
+        // 🚀 AMÉLIORATION : FamilySwitches (TODO: implement)
+    processed = await this.processFamilySwitchesEnhanced(processed);
 
-    // 🚀 AMÉLIORATION : Tous les links dynamiques
-    processed = await this.processAllLinksEnhanced(
-      processed,
-      variables,
-      typeId,
-      pgId,
-    );
+    // 🚀 AMÉLIORATION : All links (TODO: implement)
+    processed = await this.processAllLinksEnhanced(processed);
 
     // 🚀 AMÉLIORATION : Variables contextuelles avancées
-    processed = this.processContextualVariables(
-      processed,
-      variables,
-      typeId,
-      pgId,
-    );
+    processed = this.processContextualVariables(processed, variables);
 
     return this.cleanContent(processed);
   }
@@ -549,7 +502,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
       const results = await Promise.all(batchPromises);
       // Appliquer les résultats du batch
-      results.forEach((result, index) => {
+      results.forEach((result) => {
         if (result.processed !== processed) {
           processed = result.processed;
         }
@@ -634,8 +587,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private processContextualVariables(
     content: string,
     variables: SeoVariables,
-    typeId: number,
-    pgId: number,
   ): string {
     let processed = content;
 
@@ -856,55 +807,45 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     return data || [];
   }
 
-  private async processCompSwitch(
-    processed: string,
-    switches: any[],
-    typeId: number,
-    context: string,
-  ): Promise<string> {
-    // Implementation selon besoin
+  /**
+   * 🔧 Process CompSwitch - Placeholder for future implementation
+   */
+  private async processCompSwitch(processed: string): Promise<string> {
+    // TODO: Implement switches logic (CompSwitch_1, CompSwitch_2, etc.)
     return processed;
   }
 
-  private async processLinkGammeCar(
-    processed: string,
-    switches: any[],
-    variables: SeoVariables,
-    typeId: number,
-    pgId: number,
-  ): Promise<string> {
-    // Implementation selon besoin
+  /**
+   * 🔧 Process LinkGammeCar - Placeholder for future implementation
+   */
+  private async processLinkGammeCar(processed: string): Promise<string> {
+    // TODO: Implement LinkGammeCar logic
     return processed;
   }
 
-  private async processGammeSwitches(
-    processed: string,
-    switches: any[],
-    typeId: number,
-    pgId: number,
-  ): Promise<string> {
-    // Implementation selon besoin
+  /**
+   * 🔧 Process GammeSwitches - Placeholder for future implementation
+   */
+  private async processGammeSwitches(processed: string): Promise<string> {
+    // TODO: Implement GammeSwitches logic
     return processed;
   }
 
+  /**
+   * 🔧 Process FamilySwitchesEnhanced - Placeholder for future implementation
+   */
   private async processFamilySwitchesEnhanced(
     processed: string,
-    switches: any[],
-    variables: SeoVariables,
-    typeId: number,
-    pgId: number,
   ): Promise<string> {
-    // Implementation selon besoin
+    // TODO: Implement FamilySwitchesEnhanced logic
     return processed;
   }
 
-  private async processAllLinksEnhanced(
-    processed: string,
-    variables: SeoVariables,
-    typeId: number,
-    pgId: number,
-  ): Promise<string> {
-    // Implementation selon besoin
+  /**
+   * 🔧 Process AllLinksEnhanced - Placeholder for future implementation
+   */
+  private async processAllLinksEnhanced(processed: string): Promise<string> {
+    // TODO: Implement AllLinksEnhanced logic
     return processed;
   }
 
