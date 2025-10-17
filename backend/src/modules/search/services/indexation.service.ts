@@ -311,7 +311,7 @@ export class IndexationService {
       );
 
       // Index vehicles dans Meilisearch
-      const result = await this.meilisearch.indexVehicles(meilisearchData);
+      await this.meilisearch.indexVehicles(meilisearchData);
 
       this.logger.log(
         `✅ ${meilisearchData.length} véhicules RÉELS indexés avec succès`,

@@ -100,15 +100,7 @@ export class SearchMonitoringService {
     success: boolean;
     error?: string;
   }) {
-    const {
-      service,
-      query,
-      responseTime,
-      resultCount,
-      fromCache,
-      success,
-      error,
-    } = params;
+    const { service, query, responseTime, fromCache, success, error } = params;
 
     // Mise à jour des métriques de base
     this.metrics.totalSearches++;

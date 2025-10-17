@@ -90,7 +90,6 @@ export class VehicleNamingService extends SupabaseBaseService {
   private formatPeriod(
     yearFrom?: string,
     yearTo?: string,
-    monthFrom?: string,
     monthTo?: string,
   ): string | null {
     if (!yearFrom) return null;

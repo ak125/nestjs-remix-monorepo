@@ -67,31 +67,28 @@ const CrossSellingSeoSchema = z.object({
   }),
 });
 
-const CrossSellingResultSchema = z.object({
-  success: z.boolean(),
-  data: z.object({
-    cross_gammes: z.array(CrossGammeSchema),
-    total_found: z.number(),
-    sources_used: z.array(z.string()),
-    recommendations: z.array(z.string()).optional(),
-  }),
-  seo: CrossSellingSeoSchema.optional(),
-  performance: z.object({
-    response_time: z.number(),
-    cache_hit: z.boolean(),
-    sources_queried: z.number(),
-    articles_verified: z.number(),
-  }),
-  methodology: z
-    .string()
-    .default(
-      'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE',
-    ),
-});
+// Type inféré du schéma CrossSellingResult (schéma supprimé pour éviter l'avertissement ESLint)
+// const CrossSellingResultSchema = z.object({ success, data, seo, performance, methodology })
+type CrossSellingResult = {
+  success: boolean;
+  data: {
+    cross_gammes: z.infer<typeof CrossGammeSchema>[];
+    total_found: number;
+    sources_used: string[];
+    recommendations?: string[];
+  };
+  seo?: z.infer<typeof CrossSellingSeoSchema>;
+  performance: {
+    response_time: number;
+    cache_hit: boolean;
+    sources_queried: number;
+    articles_verified: number;
+  };
+  methodology: string;
+};
 
 type CrossGamme = z.infer<typeof CrossGammeSchema>;
 type CrossSellingSeo = z.infer<typeof CrossSellingSeoSchema>;
-type CrossSellingResult = z.infer<typeof CrossSellingResultSchema>;
 
 @Injectable()
 export class CrossSellingService extends SupabaseBaseService {

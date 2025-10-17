@@ -38,29 +38,29 @@ const FilterGroupSchema = z.object({
   options: z.array(FilterOptionSchema),
 });
 
-const FilterResultSchema = z.object({
-  success: z.boolean(),
-  data: z.object({
-    filters: z.array(FilterGroupSchema),
-    summary: z.object({
-      total_filters: z.number(),
-      total_options: z.number(),
-      trending_options: z.number(),
-    }),
-  }),
-  metadata: z.object({
-    cached: z.boolean(),
-    response_time: z.number(),
-    service_name: z.string(),
-    api_version: z.string(),
-    methodology: z.string(),
-  }),
-});
-
+// Types inférés (schémas Zod supprimés pour éviter avertissement ESLint)
 type FilterMetadata = z.infer<typeof FilterMetadataSchema>;
 type FilterOption = z.infer<typeof FilterOptionSchema>;
 type FilterGroup = z.infer<typeof FilterGroupSchema>;
-type FilterResult = z.infer<typeof FilterResultSchema>;
+
+type FilterResult = {
+  success: boolean;
+  data: {
+    filters: FilterGroup[];
+    summary: {
+      total_filters: number;
+      total_options: number;
+      trending_options: number;
+    };
+  };
+  metadata: {
+    cached: boolean;
+    response_time: number;
+    service_name: string;
+    api_version: string;
+    methodology: string;
+  };
+};
 
 @Injectable()
 export class ProductFilteringService extends SupabaseBaseService {

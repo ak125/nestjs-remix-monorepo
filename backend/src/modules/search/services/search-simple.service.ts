@@ -55,7 +55,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     const lower = query.toLowerCase();
     const words = lower.split(/\s+/);
 
-    for (const [cat, keywords] of Object.entries(this.CATEGORY_KEYWORDS)) {
+    for (const [_cat, keywords] of Object.entries(this.CATEGORY_KEYWORDS)) {
       for (const kw of keywords) {
         if (words.includes(kw)) {
           const refPart = query

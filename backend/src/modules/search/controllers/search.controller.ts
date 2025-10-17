@@ -37,7 +37,6 @@ export class SearchController {
     @Query('query') query?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('clear_cache') clearCache?: string,
   ) {
     const searchParams = {
       query: query || '',
