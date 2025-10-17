@@ -3,12 +3,8 @@ import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import {
   Order,
-  OrderLine,
-  OrderDbEntity,
-  OrderLineDbEntity,
   OrderMapper,
   OrderStatus,
-  OrderWithDetails,
 } from '../../types/order.types';
 
 @Injectable()
