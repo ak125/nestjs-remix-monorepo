@@ -49,7 +49,7 @@ export class SearchCacheService {
       if (cachedData) {
         this.stats.hits++;
         this.logger.debug(`✅ Cache HIT: ${key} (${responseTime}ms)`);
-        return this.deserializeData(cachedData);
+        return this.deserializeData(String(cachedData));
       } else {
         this.stats.misses++;
         this.logger.debug(`❌ Cache MISS: ${key} (${responseTime}ms)`);
@@ -57,7 +57,7 @@ export class SearchCacheService {
       }
     } catch (error) {
       this.stats.misses++;
-      this.logger.error(`💥 Cache ERROR: ${key}:`, error.message);
+      this.logger.error(`💥 Cache ERROR: ${key}:`, error instanceof Error ? error.message : String(error));
       return null;
     }
   }
