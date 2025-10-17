@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  MetricsService,
-  PerformanceMetrics,
-} from './metrics.service';
+import { MetricsService, PerformanceMetrics } from './metrics.service';
 import {
   DatabaseMonitorService,
   DatabaseHealth,

@@ -189,7 +189,9 @@ export class QuickSearchService {
   /**
    * Recherche pour le commercial
    */
-  private async searchForCommercial(query: string): Promise<QuickSearchResult[]> {
+  private async searchForCommercial(
+    query: string,
+  ): Promise<QuickSearchResult[]> {
     const results: QuickSearchResult[] = [];
 
     try {

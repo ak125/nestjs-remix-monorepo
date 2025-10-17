@@ -210,14 +210,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
           typeId,
           pgId,
         ),
-        this.processH1(
-          seoTemplate.sgc_h1,
-          validatedVars,
-        ),
-        this.processPreview(
-          seoTemplate.sgc_preview,
-          validatedVars,
-        ),
+        this.processH1(seoTemplate.sgc_h1, validatedVars),
+        this.processPreview(seoTemplate.sgc_preview, validatedVars),
         this.processContent(
           seoTemplate.sgc_content,
           validatedVars,
@@ -450,7 +444,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       pgId,
     );
 
-        // 🚀 AMÉLIORATION : FamilySwitches (TODO: implement)
+    // 🚀 AMÉLIORATION : FamilySwitches (TODO: implement)
     processed = await this.processFamilySwitchesEnhanced(processed);
 
     // 🚀 AMÉLIORATION : All links (TODO: implement)
