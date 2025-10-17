@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import ImageOptimizer, { type ImageOptimizationOptions } from '~/utils/image-optimizer';
+import { default as ImageOptimizer, type ImageOptimizationOptions } from '~/utils/image-optimizer';
 
 interface OptimizedImageProps {
   /** Chemin de l'image dans Supabase Storage (ex: 'articles/familles-produits/piece.jpg') */

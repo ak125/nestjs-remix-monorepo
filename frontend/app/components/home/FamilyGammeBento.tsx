@@ -163,7 +163,7 @@ export default function FamilyGammeBento({ className = "" }: FamilyGammeBentoPro
                       Exemples de gammes
                     </h4>
                     <div className="space-y-1">
-                      {family.gammes.slice(0, 3).map((gamme, idx) => (
+                      {family.gammes.slice(0, 3).map((gamme) => (
                         <div 
                           key={gamme.mc_id}
                           className="text-xs text-gray-600 bg-white/50 rounded px-2 py-1"

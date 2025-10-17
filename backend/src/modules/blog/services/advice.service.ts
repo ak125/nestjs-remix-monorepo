@@ -754,7 +754,7 @@ export class AdviceService {
       await this.supabaseService.client.rpc('increment_advice_views', {
         advice_id: adviceId,
       });
-    } catch (_error) {
+    } catch {
       // Fallback - mise à jour manuelle si la fonction RPC n'existe pas
       await this.supabaseService.client
         .from('__blog_advice')

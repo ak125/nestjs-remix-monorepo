@@ -116,7 +116,7 @@ export class BlogService {
    */
   async createArticle(
     article: Partial<BlogArticle>,
-    authorId: string,
+    _authorId: string,
   ): Promise<BlogArticle> {
     try {
       // Générer un slug unique
