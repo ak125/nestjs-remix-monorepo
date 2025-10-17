@@ -16,14 +16,14 @@ import {
   UserWithStats,
 } from './dto/user.dto';
 
-interface DashboardData {
+export interface DashboardData {
   user: User;
   stats: UserStats;
   recentOrders: any[];
   notifications: number;
 }
 
-interface GlobalStats {
+export interface GlobalStats {
   totalUsers: number;
   activeUsers: number;
   proUsers: number;
@@ -414,15 +414,17 @@ export class UsersFinalService {
    * Invalider le cache d'un utilisateur spécifique
    */
   private invalidateUserCache(userId: string): void {
-    this.cacheService.delete(`user:${userId}`);
-    this.cacheService.delete(`user:stats:${userId}`);
-    this.cacheService.delete(`user:dashboard:${userId}`);
+    this.cacheService.del(`user:${userId}`);
+    this.cacheService.del(`user:stats:${userId}`);
+    this.cacheService.del(`user:dashboard:${userId}`);
   }
 
   /**
    * Invalider tous les caches utilisateurs (listes, stats globales)
    */
   private invalidateUserCaches(): void {
-    this.cacheService.deletePattern('users:*');
+    // TODO: Implémenter delPattern() dans CacheService
+    // this.cacheService.delPattern('users:*');
+    this.logger.warn('invalidateUserCaches: delPattern non implémenté');
   }
 }

@@ -127,7 +127,8 @@ export class VehicleNamingService extends SupabaseBaseService {
           type_year_from,
           type_year_to,
           type_month_from,
-          type_month_to
+          type_month_to,
+          type_display
         `,
         )
         .eq('type_display', '1')

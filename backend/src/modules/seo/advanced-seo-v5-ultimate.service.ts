@@ -45,7 +45,7 @@ const SeoVariablesSchema = z.object({
 type AdvancedSeoVariables = z.infer<typeof SeoVariablesSchema>;
 
 // 🎯 Interface pour le résultat SEO complet V5
-interface CompleteSeoV5Result {
+export interface CompleteSeoV5Result {
   title: string;
   description: string;
   h1: string;

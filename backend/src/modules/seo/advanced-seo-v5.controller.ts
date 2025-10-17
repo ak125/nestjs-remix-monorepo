@@ -224,9 +224,9 @@ export class AdvancedSeoV5Controller {
         marque: { type: 'string' },
         modele: { type: 'string' },
         type: { type: 'string' },
-        annee: { type: 'string', required: false, example: '2023' },
-        nbCh: { type: 'number', required: false, example: 150 },
-        minPrice: { type: 'number', required: false, example: 50 },
+        annee: { type: 'string', example: '2023' },
+        nbCh: { type: 'number', example: 150 },
+        minPrice: { type: 'number', example: 50 },
       },
     },
   })

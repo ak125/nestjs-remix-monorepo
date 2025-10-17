@@ -42,9 +42,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       } = this.supabase.storage.from(this.bucketName).getPublicUrl(filePath);
 
       return {
+        id: data.path, // Utiliser le path comme id
         fileName,
         originalName: file.originalname,
-        filePath: data.path,
         url: publicUrl,
         mimeType: file.mimetype,
         size: file.size,

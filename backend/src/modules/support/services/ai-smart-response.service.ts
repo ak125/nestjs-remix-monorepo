@@ -665,7 +665,7 @@ export class AIPredictiveService {
     const totalScore = Object.values(factors).reduce(
       (sum: number, score: any) => sum + Number(score),
       0,
-    );
+    ) as number;
     return Math.max(0, Math.min(100, 50 + totalScore));
   }
 

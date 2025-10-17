@@ -108,6 +108,7 @@ export class VehicleMineService extends SupabaseBaseService {
           );
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -184,6 +185,7 @@ export class VehicleMineService extends SupabaseBaseService {
           );
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -254,6 +256,7 @@ export class VehicleMineService extends SupabaseBaseService {
           );
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -372,6 +375,7 @@ export class VehicleMineService extends SupabaseBaseService {
           );
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,

@@ -230,9 +230,9 @@ export function mapUserDtoToSupabase(
   if (userData.companyName) result.cst_rs = userData.companyName;
   if (userData.siret) result.cst_siret = userData.siret;
 
-  if (typeof userData.isCompany !== 'undefined')
+  if ('isCompany' in userData && typeof userData.isCompany !== 'undefined')
     result.cst_is_cpy = userData.isCompany ? '1' : '0';
-  if (typeof userData.isPro !== 'undefined')
+  if ('isPro' in userData && typeof userData.isPro !== 'undefined')
     result.cst_is_pro = userData.isPro ? '1' : '0';
 
   return result;
