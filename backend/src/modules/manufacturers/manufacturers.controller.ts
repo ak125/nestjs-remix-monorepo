@@ -69,11 +69,7 @@ export class ManufacturersController {
   }
 
   @Get()
-  async getAllManufacturers(
-    @Query('search') search?: string,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
-  ) {
+  async getAllManufacturers(@Query('search') search?: string) {
     return this.manufacturersService.getAllManufacturers(search);
   }
 
@@ -325,7 +321,7 @@ export class ManufacturersController {
    * Recherche de constructeurs (inspiré de votre version)
    */
   @Get('search')
-  async search(@Query('q') query: string, @Query('limit') limit?: string) {
+  async search(@Query('q') query: string) {
     this.logger.log(`GET /api/manufacturers/search?q=${query}`);
     return this.manufacturersService.getAllManufacturers(query);
   }
