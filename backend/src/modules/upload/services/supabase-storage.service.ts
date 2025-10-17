@@ -3,7 +3,7 @@
  * Interface avec Supabase Storage pour upload de fichiers
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { FileUploadResult } from '../dto/upload.dto';
