@@ -77,7 +77,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     }
 
-    const data = await response.json();
+    await response.json();
     
     // Données de démonstration basées sur les vraies statistiques
     const demoArticles: Article[] = [

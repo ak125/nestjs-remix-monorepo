@@ -15,7 +15,7 @@ export class AdminAuthGuard implements CanActivate {
 
     // TODO: Implémenter la vraie logique d'authentification admin
     // Pour l'instant, on simule qu'on a un utilisateur admin connecté
-    const user = this.extractUserFromRequest(request);
+    const user = this.extractUserFromRequest();
 
     if (!user) {
       throw new UnauthorizedException('Authentification requise');
@@ -41,7 +41,7 @@ export class AdminAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractUserFromRequest(_request?: any): any {
+  private extractUserFromRequest(): any {
     // TODO: Extraire l'utilisateur depuis le token JWT, session, etc.
     // Pour l'instant, on simule un utilisateur admin
     return {

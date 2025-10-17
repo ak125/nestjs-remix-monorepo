@@ -41,15 +41,7 @@ interface InvoiceStats {
   averageInvoiceAmount: number;
 }
 
-interface InvoicesData {
-  invoices: Invoice[];
-  stats: InvoiceStats;
-  pagination: {
-    page: number;
-    totalPages: number;
-    totalItems: number;
-  };
-}
+
 
 // Fonction loader pour récupérer les données des factures
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -163,10 +155,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function InvoicesIndex() {
-  const { invoices, stats, pagination, user } = useLoaderData<typeof loader>();
+  const { invoices, stats, pagination } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const isLoading = navigation.state === "loading";
 
