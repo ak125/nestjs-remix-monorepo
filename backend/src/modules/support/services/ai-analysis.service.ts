@@ -120,8 +120,9 @@ export class AISentimentService {
     ticket: ContactTicket | ContactFormData,
   ): Promise<SentimentAnalysis> {
     try {
+      const subject = 'subject' in ticket ? ticket.subject : '';
       const text =
-        `${ticket.subject || ''} ${this.extractMessageFromTicket(ticket)}`.trim();
+        `${subject || ''} ${this.extractMessageFromTicket(ticket)}`.trim();
 
       const criticalKeywords = [
         'urgent',
@@ -322,8 +323,9 @@ export class AICategorizationService {
     ticket: ContactTicket | ContactFormData,
   ): Promise<SmartCategorization> {
     try {
+      const subject = 'subject' in ticket ? ticket.subject : '';
       const text =
-        `${ticket.subject || ''} ${this.extractMessage(ticket)}`.toLowerCase();
+        `${subject || ''} ${this.extractMessage(ticket)}`.toLowerCase();
 
       const categories = this.getCategoryRules();
       let bestMatch = {
@@ -344,7 +346,7 @@ export class AICategorizationService {
             category,
             confidence,
             subcategory: this.findSubcategory(text, rules.subcategories),
-            suggestedAgent: rules.suggestedAgent,
+            // suggestedAgent: rules.suggestedAgent, // Propriété non définie dans SmartCategorization
           };
         }
       }

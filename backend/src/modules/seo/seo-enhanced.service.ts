@@ -29,7 +29,7 @@ interface SeoSwitch {
   sgcs_content: string;
 }
 
-interface SeoGenerationResult {
+export interface SeoGenerationResult {
   title: string;
   description: string;
   h1: string;

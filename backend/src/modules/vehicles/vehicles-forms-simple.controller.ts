@@ -97,7 +97,6 @@ export class VehiclesFormsController {
           type_power_kw: type.type_power_kw
             ? parseInt(type.type_power_kw)
             : undefined,
-          model: result.model,
         }));
 
         const responseTime = Date.now() - startTime;

@@ -85,6 +85,7 @@ export class VehicleModelsService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: data || [],
             total: count || 0,
             page,
@@ -307,6 +308,7 @@ export class VehicleModelsService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: data || [],
             total: count || 0,
             page,

@@ -131,6 +131,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -261,6 +262,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -349,6 +351,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: enrichedData,
             total: count || 0,
             page,
@@ -678,7 +681,7 @@ export class VehicleTypesService extends SupabaseBaseService {
             )
             .eq(
               'type_modele_id',
-              (type.auto_modele as any)?.modele_id || type.type_modele_id,
+              ((type as any).auto_modele as any)?.modele_id || (type as any).type_modele_id,
             )
             .eq('type_display', 1)
             .neq('type_id', typeId)

@@ -39,7 +39,7 @@ export class ReviewController {
     >,
   ): Promise<ReviewData> {
     this.logger.log('Submitting review');
-    return this.reviewService.submitReview(reviewData);
+    return this.reviewService.submitReview(reviewData as any);
   }
 
   @Get()
@@ -59,8 +59,8 @@ export class ReviewController {
     if (published !== undefined) filters.published = published === 'true';
     if (moderated !== undefined) filters.moderated = moderated === 'true';
     if (verified !== undefined) filters.verified = verified === 'true';
-    if (productId) filters.productId = productId;
-    if (customerId) filters.customerId = customerId;
+    if (productId) filters.product_id = productId;
+    if (customerId) filters.customer_id = customerId;
     if (startDate) filters.startDate = new Date(startDate);
     if (endDate) filters.endDate = new Date(endDate);
 
@@ -82,8 +82,8 @@ export class ReviewController {
     if (rating) filters.rating = parseInt(rating);
     if (moderated !== undefined) filters.moderated = moderated === 'true';
     if (verified !== undefined) filters.verified = verified === 'true';
-    if (productId) filters.productId = productId;
-    if (customerId) filters.customerId = customerId;
+    if (productId) filters.product_id = productId;
+    if (customerId) filters.customer_id = customerId;
     if (startDate) filters.startDate = new Date(startDate);
     if (endDate) filters.endDate = new Date(endDate);
 

@@ -104,12 +104,6 @@ export class UploadService {
       const uploadResult = await this.supabaseStorageService.uploadFile(
         file,
         folder,
-        options.uploadType,
-        {
-          generateThumbnails: options.generateThumbnails,
-          compressionLevel: options.compressionLevel,
-          customFileName: options.customFileName,
-        },
       );
 
       // 4. Enrichissement des métadonnées
@@ -209,9 +203,8 @@ export class UploadService {
             return { success: true, file, result: uploadResult };
           } catch (error: any) {
             const failureInfo = {
-              fileName: file.originalname,
-              error: error.message,
-              size: file.size,
+              file: file.originalname,
+              error: error.message || String(error),
             };
 
             result.failed.push(failureInfo);

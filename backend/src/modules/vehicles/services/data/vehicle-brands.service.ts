@@ -77,6 +77,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
           }
 
           return {
+            success: true,
             data: data || [],
             total: count || 0,
             page,
