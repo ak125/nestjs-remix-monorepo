@@ -12,7 +12,6 @@ import {
   HttpException,
   HttpStatus,
   Logger,
-  UseGuards,
   Request,
 } from '@nestjs/common';
 import { PasswordService } from '../services/password.service';
