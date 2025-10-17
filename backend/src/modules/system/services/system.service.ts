@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   MetricsService,
-  SystemMetric,
   PerformanceMetrics,
 } from './metrics.service';
 import {
@@ -210,7 +209,7 @@ export class SystemService {
           // En réel, nettoyer les anciennes métriques
           executed.push('Cleaned old metrics from cache');
         }
-      } catch (error) {
+      } catch {
         failed.push('Failed to clean metrics cache');
       }
 
@@ -224,7 +223,7 @@ export class SystemService {
             executed.push(`Auto-resolved old info alert: ${alert.title}`);
           }
         }
-      } catch (error) {
+      } catch {
         failed.push('Failed to auto-resolve alerts');
       }
 

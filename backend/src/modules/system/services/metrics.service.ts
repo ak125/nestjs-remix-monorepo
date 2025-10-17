@@ -176,7 +176,7 @@ export class MetricsService extends SupabaseBaseService {
     try {
       this.logger.log('🔍 Collecting SEO metrics from production tables');
 
-      const [sitemapCount, metaCount, optimizedCount] = await Promise.all([
+      const [sitemapCount, , optimizedCount] = await Promise.all([
         this.supabase
           .from('__sitemap_p_link')
           .select('*', { count: 'exact', head: true }),

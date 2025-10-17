@@ -63,12 +63,9 @@ export class DatabaseMonitorService extends SupabaseBaseService {
 
       for (const table of this.CRITICAL_TABLES) {
         try {
-          const startTableTime = Date.now();
           const { count, error } = await this.supabase
             .from(table)
             .select('*', { count: 'exact', head: true });
-
-          const responseTime = Date.now() - startTableTime;
 
           if (!error && count !== null) {
             tableResults[table] = {
