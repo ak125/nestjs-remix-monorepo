@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from 'react';
 import  { type VehicleData } from "~/types/vehicle.types";
 
 interface VehicleAnalyticsProps {
@@ -26,7 +26,7 @@ interface AnalyticsEvent {
 
 export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
   
-  const trackEvent = (eventType: AnalyticsEvent['eventType'], additionalData?: any) => {
+  const trackEvent = useCallback((eventType: AnalyticsEvent['eventType'], additionalData?: any) => {
     const event: AnalyticsEvent = {
       eventType,
       vehicleData: {
@@ -63,7 +63,7 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
     if (process.env.NODE_ENV === 'development') {
       console.log('🔍 Vehicle Analytics Event:', event);
     }
-  };
+  }, [vehicle, userId]);
 
   const getSessionId = (): string => {
     let sessionId = sessionStorage.getItem('analytics_session_id');
@@ -105,17 +105,17 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
     };
   }, [vehicle.brand, vehicle.model, vehicle.type, trackEvent]);
 
-  // Fonction utilitaires pour les composants enfants
-  const _trackPartClick = (partId: number, partName: string) => {
-    trackEvent('part_click', { partId, partName });
+  // Fonction utilitaires pour les composants enfants (non utilisées actuellement)
+  const _trackPartClick = (_partId: number, _partName: string) => {
+    // Placeholder pour future utilisation
   };
 
-  const trackImageView = (imageIndex: number) => {
-    trackEvent('image_view', { imageIndex });
+  const _trackImageView = (_imageIndex: number) => {
+    // Placeholder pour future utilisation
   };
 
-  const trackSearch = (searchTerm: string, resultsCount: number) => {
-    trackEvent('search', { searchTerm, resultsCount });
+  const _trackSearch = (_searchTerm: string, _resultsCount: number) => {
+    // Placeholder pour future utilisation
   };
 
   // Performance monitoring
@@ -140,7 +140,7 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
       
       return () => perfObserver.disconnect();
     }
-  }, []);
+  }, [trackEvent]);
 
   // Tracking des erreurs JavaScript
   useEffect(() => {
@@ -156,7 +156,7 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
 
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);
-  }, []);
+  }, [trackEvent]);
 
   // Le composant ne rend rien visuellement mais expose des méthodes
   // pour que les composants parent puissent tracker des événements
@@ -164,23 +164,21 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
 }
 
 // Export des fonctions utilitaires pour les autres composants
-export const useVehicleAnalytics = (vehicle: VehicleData, userId?: string) => {
-  const analytics = {
-    trackPartClick: (partId: number, partName: string) => {
-      // Implementation similaire à trackPartClick ci-dessus
+export const useVehicleAnalytics = (_vehicle: VehicleData, _userId?: string) => {
+  return {
+    trackPartClick: (_partId: number, _partName: string) => {
+      // Placeholder pour future utilisation
     },
-    trackImageView: (imageIndex: number) => {
-      // Implementation similaire à trackImageView ci-dessus
+    trackImageView: (_imageIndex: number) => {
+      // Placeholder pour future utilisation
     },
-    trackSearch: (searchTerm: string, resultsCount: number) => {
-      // Implementation similaire à trackSearch ci-dessus
+    trackSearch: (_searchTerm: string, _resultsCount: number) => {
+      // Placeholder pour future utilisation
     },
-    trackCustomEvent: (eventData: any) => {
-      // Implementation pour événements personnalisés
+    trackCustomEvent: (_eventData: any) => {
+      // Placeholder pour future utilisation
     }
   };
-
-  return analytics;
 };
 
 // Types pour TypeScript

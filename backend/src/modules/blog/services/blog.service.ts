@@ -171,7 +171,7 @@ export class BlogService {
 
       // Si le titre change, régénérer le slug
       if (updates.title) {
-        updateData.slug = await this.generateUniqueSlug(updates.title, id);
+        updateData.slug = await this.generateUniqueSlug(updates.title);
       }
 
       // Recalculer le temps de lecture si le contenu change
@@ -1265,7 +1265,6 @@ export class BlogService {
    */
   private async generateUniqueSlug(
     title: string,
-    _excludeId?: number,
   ): Promise<string> {
     // Slugify simple: minuscules, espaces → tirets, remove accents
     const slug = BlogCacheService.decodeHtmlEntities(title)
@@ -1427,7 +1426,7 @@ export class BlogService {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -1436,7 +1435,7 @@ export class BlogService {
    * 🆕 Récupérer article depuis tables modernes (placeholder)
    */
   private async getArticleFromModernTables(
-    slug: string,
+    _slug: string,
   ): Promise<BlogArticle | null> {
     // Pour l'instant retourne null, à implémenter quand les tables modernes seront créées
     return null;
