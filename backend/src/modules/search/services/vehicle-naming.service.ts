@@ -61,8 +61,6 @@ export class VehicleNamingService extends SupabaseBaseService {
     const period = this.formatPeriod(
       vehicle.type_year_from,
       vehicle.type_year_to,
-      vehicle.type_month_from,
-      vehicle.type_month_to,
     );
     if (period) {
       parts.push(period);
@@ -87,11 +85,7 @@ export class VehicleNamingService extends SupabaseBaseService {
   /**
    * 📅 Formater la période (années et mois si disponibles)
    */
-  private formatPeriod(
-    yearFrom?: string,
-    yearTo?: string,
-    monthTo?: string,
-  ): string | null {
+  private formatPeriod(yearFrom?: string, yearTo?: string): string | null {
     if (!yearFrom) return null;
 
     const startYear = yearFrom;
