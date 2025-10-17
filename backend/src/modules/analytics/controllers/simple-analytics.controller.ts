@@ -205,7 +205,7 @@ export class SimpleAnalyticsController {
    */
   @Get('metrics/:period')
   async getMetricsForPeriod(
-    @Param('period') period: 'today' | 'week' | 'month' | 'year',
+    @Param('period') _period: 'today' | 'week' | 'month' | 'year',
   ): Promise<AnalyticsMetrics> {
     // Pour la version simplifiée, on retourne toujours les mêmes métriques
     // Dans une version complète, on filtrerait par période

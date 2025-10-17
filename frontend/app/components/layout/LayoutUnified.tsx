@@ -8,7 +8,7 @@
  * ✅ Configuration centralisée
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import  { type LayoutData, type LayoutConfig, type ModularSection } from '../../types/layout';
 import { FooterEnhanced } from './FooterEnhanced';
 // TODO: Créer les fichiers Header.tsx et ModularSections.tsx
@@ -40,12 +40,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Charger les données de layout
-  useEffect(() => {
-    loadLayoutData();
-  }, [config]);
-
-  const loadLayoutData = async () => {
+  const loadLayoutData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -88,7 +83,12 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [config]);
+
+  // Charger les données de layout
+  useEffect(() => {
+    loadLayoutData();
+  }, [loadLayoutData]);
 
   // Affichage pendant le chargement
   if (isLoading) {
@@ -247,7 +247,7 @@ const PerformanceIndicator: React.FC<PerformanceIndicatorProps> = ({ performance
 /**
  * 🎨 Génère les styles CSS personnalisés pour le layout
  */
-function getLayoutStyles(config: LayoutConfig, layoutData: LayoutData): string {
+function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string {
   const styles: string[] = [];
 
   // Styles basés sur le type de layout

@@ -41,7 +41,7 @@ export class AdminAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractUserFromRequest(_request: any): any {
+  private extractUserFromRequest(_request?: any): any {
     // TODO: Extraire l'utilisateur depuis le token JWT, session, etc.
     // Pour l'instant, on simule un utilisateur admin
     return {

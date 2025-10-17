@@ -103,10 +103,10 @@ export function VehicleAnalytics({ vehicle, userId }: VehicleAnalyticsProps) {
         action: 'page_exit'
       });
     };
-  }, [vehicle.brand, vehicle.model, vehicle.type]);
+  }, [vehicle.brand, vehicle.model, vehicle.type, trackEvent]);
 
   // Fonction utilitaires pour les composants enfants
-  const trackPartClick = (partId: number, partName: string) => {
+  const _trackPartClick = (partId: number, partName: string) => {
     trackEvent('part_click', { partId, partName });
   };
 
