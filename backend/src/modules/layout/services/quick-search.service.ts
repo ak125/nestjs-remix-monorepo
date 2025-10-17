@@ -111,13 +111,13 @@ export class QuickSearchService {
 
     switch (context) {
       case 'admin':
-        results.push(...(await this.searchForAdmin(query, limit)));
+        results.push(...(await this.searchForAdmin(query)));
         break;
       case 'commercial':
-        results.push(...(await this.searchForCommercial(query, limit)));
+        results.push(...(await this.searchForCommercial(query)));
         break;
       case 'public':
-        results.push(...(await this.searchForPublic(query, limit)));
+        results.push(...(await this.searchForPublic(query)));
         break;
     }
 
@@ -127,10 +127,7 @@ export class QuickSearchService {
   /**
    * Recherche pour l'administration
    */
-  private async searchForAdmin(
-    query: string,
-    limit: number,
-  ): Promise<QuickSearchResult[]> {
+  private async searchForAdmin(query: string): Promise<QuickSearchResult[]> {
     const results: QuickSearchResult[] = [];
 
     try {
@@ -192,10 +189,7 @@ export class QuickSearchService {
   /**
    * Recherche pour le commercial
    */
-  private async searchForCommercial(
-    query: string,
-    _limit: number,
-  ): Promise<QuickSearchResult[]> {
+  private async searchForCommercial(query: string): Promise<QuickSearchResult[]> {
     const results: QuickSearchResult[] = [];
 
     try {
@@ -235,10 +229,7 @@ export class QuickSearchService {
   /**
    * Recherche pour le public
    */
-  private async searchForPublic(
-    query: string,
-    _limit: number,
-  ): Promise<QuickSearchResult[]> {
+  private async searchForPublic(query: string): Promise<QuickSearchResult[]> {
     const results: QuickSearchResult[] = [];
 
     try {

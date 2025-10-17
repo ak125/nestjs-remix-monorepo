@@ -560,7 +560,7 @@ export class RedirectService extends SupabaseBaseService {
       this.logger.debug(
         `Tentative d'incrémentation legacy pour ID: ${redirectId}`,
       );
-    } catch (_error) {
+    } catch {
       // Ignore silencieusement
     }
   }
