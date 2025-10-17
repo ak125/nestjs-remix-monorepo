@@ -114,10 +114,7 @@ export class BlogService {
   /**
    * 📝 Créer un nouvel article - VERSION AMÉLIORÉE
    */
-  async createArticle(
-    article: Partial<BlogArticle>,
-    _authorId: string,
-  ): Promise<BlogArticle> {
+  async createArticle(article: Partial<BlogArticle>): Promise<BlogArticle> {
     try {
       // Générer un slug unique
       const slug = await this.generateUniqueSlug(article.title || '');
@@ -1263,9 +1260,7 @@ export class BlogService {
   /**
    * 🔗 Générer un slug unique - VERSION AMÉLIORÉE
    */
-  private async generateUniqueSlug(
-    title: string,
-  ): Promise<string> {
+  private async generateUniqueSlug(title: string): Promise<string> {
     // Slugify simple: minuscules, espaces → tirets, remove accents
     const slug = BlogCacheService.decodeHtmlEntities(title)
       .toLowerCase()
@@ -1434,9 +1429,7 @@ export class BlogService {
   /**
    * 🆕 Récupérer article depuis tables modernes (placeholder)
    */
-  private async getArticleFromModernTables(
-    _slug: string,
-  ): Promise<BlogArticle | null> {
+  private async getArticleFromModernTables(): Promise<BlogArticle | null> {
     // Pour l'instant retourne null, à implémenter quand les tables modernes seront créées
     return null;
   }

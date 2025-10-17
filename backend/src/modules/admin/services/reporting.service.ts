@@ -89,8 +89,8 @@ export class ReportingService extends SupabaseBaseService {
 
       // Génération des données de rapport
       const reportData: ReportData = {
-        users: await this.getUsersAnalytics(filters),
-        orders: await this.getOrdersAnalytics(filters),
+        users: await this.getUsersAnalytics(),
+        orders: await this.getOrdersAnalytics(),
         performance: await this.getPerformanceMetrics(filters),
         trends: await this.getTrendsAnalytics(filters),
       };
@@ -111,9 +111,7 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 👥 Analytics des utilisateurs
    */
-  private async getUsersAnalytics(
-    _filters: ReportFilters,
-  ): Promise<ReportData['users']> {
+  private async getUsersAnalytics(): Promise<ReportData['users']> {
     try {
       // Requête vers Supabase pour les utilisateurs
       const usersQuery = `${this.baseUrl}/___xtr_customer?select=*`;
@@ -168,9 +166,7 @@ export class ReportingService extends SupabaseBaseService {
   /**
    * 🛒 Analytics des commandes
    */
-  private async getOrdersAnalytics(
-    _filters: ReportFilters,
-  ): Promise<ReportData['orders']> {
+  private async getOrdersAnalytics(): Promise<ReportData['orders']> {
     try {
       // Requête vers Supabase pour les commandes
       const ordersQuery = `${this.baseUrl}/___xtr_order?select=*`;
@@ -230,8 +226,8 @@ export class ReportingService extends SupabaseBaseService {
     filters: ReportFilters,
   ): Promise<ReportData['performance']> {
     try {
-      const users = await this.getUsersAnalytics(filters);
-      const orders = await this.getOrdersAnalytics(filters);
+      const users = await this.getUsersAnalytics();
+      const orders = await this.getOrdersAnalytics();
 
       // Calculs des taux
       const conversionRate =
@@ -267,8 +263,8 @@ export class ReportingService extends SupabaseBaseService {
     filters: ReportFilters,
   ): Promise<ReportData['trends']> {
     try {
-      const users = await this.getUsersAnalytics(filters);
-      const orders = await this.getOrdersAnalytics(filters);
+      const users = await this.getUsersAnalytics();
+      const orders = await this.getOrdersAnalytics();
 
       // Calculs des tendances mensuelles
       const usersThisMonth = users.newThisMonth;
@@ -406,7 +402,7 @@ export class ReportingService extends SupabaseBaseService {
   }> {
     try {
       // Test de connexion aux données
-      await this.getUsersAnalytics({});
+      await this.getUsersAnalytics();
 
       return {
         status: 'healthy',

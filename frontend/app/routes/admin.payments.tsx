@@ -13,7 +13,7 @@ import {
   Users,
   Calendar
 } from 'lucide-react';
-import { getOptionalUser, requireAuth } from '../auth/unified.server';
+import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données de paiements
 interface PaymentStats {
@@ -49,7 +49,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function AdminPaymentsLayout() {
-  const { user, paymentStats } = useLoaderData<typeof loader>();
+  const { paymentStats } = useLoaderData<typeof loader>();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('fr-FR', {

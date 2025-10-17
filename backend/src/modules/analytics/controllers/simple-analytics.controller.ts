@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Query,
-  Param,
   HttpCode,
   HttpStatus,
   Logger,
@@ -204,9 +203,7 @@ export class SimpleAnalyticsController {
    * Récupère les métriques pour une période spécifique
    */
   @Get('metrics/:period')
-  async getMetricsForPeriod(
-    @Param('period') _period: 'today' | 'week' | 'month' | 'year',
-  ): Promise<AnalyticsMetrics> {
+  async getMetricsForPeriod(): Promise<AnalyticsMetrics> {
     // Pour la version simplifiée, on retourne toujours les mêmes métriques
     // Dans une version complète, on filtrerait par période
     return this.analyticsService.getMetrics();
