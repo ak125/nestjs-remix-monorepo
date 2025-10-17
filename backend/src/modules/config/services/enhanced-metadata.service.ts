@@ -231,7 +231,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
   /**
    * Analytics SEO - Statistiques sur les métadonnées
    */
-  async getSeoAnalytics(limit: number = 1000): Promise<SeoAnalytics> {
+  async getSeoAnalytics(): Promise<SeoAnalytics> {
     try {
       // Compter le total de pages avec métadonnées
       const { count: totalWithMetadata, error: countError } = await this.client

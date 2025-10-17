@@ -112,7 +112,7 @@ export class ManufacturersController {
       await this.manufacturersService.getPopularModelsWithImages(limitNumber);
 
     const modelsArray = Array.isArray(models) ? models : [];
-    
+
     return {
       success: true,
       data: modelsArray,
@@ -134,7 +134,7 @@ export class ManufacturersController {
       await this.manufacturersService.getBrandsWithLogos(limitNumber);
 
     const brandsArray = Array.isArray(brands) ? brands : [];
-    
+
     return {
       success: true,
       data: brandsArray,

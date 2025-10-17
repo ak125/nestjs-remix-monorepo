@@ -53,8 +53,7 @@ export class ReportingController {
         filters.category = category;
       }
 
-      const report =
-        await this.reportingService.generateAnalyticsReport(filters);
+      const report = await this.reportingService.generateAnalyticsReport();
 
       this.logger.log('✅ Rapport analytics généré');
 

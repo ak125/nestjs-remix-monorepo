@@ -37,14 +37,11 @@ export class EnhancedMetadataController {
    * GET /api/metadata/analytics/seo
    */
   @Get('analytics/seo')
-  async getSeoAnalytics(
-    @Query('limit') limit?: number,
-  ): Promise<{ success: boolean; data: any }> {
+  async getSeoAnalytics(): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log('Récupération analytics SEO');
 
-      const limitValue = limit ? parseInt(limit.toString(), 10) : 1000;
-      const analytics = await this.metadataService.getSeoAnalytics(limitValue);
+      const analytics = await this.metadataService.getSeoAnalytics();
 
       return {
         success: true,
@@ -95,7 +92,6 @@ export class EnhancedMetadataController {
   @Get('search')
   async searchMetadata(
     @Query('q') query: string,
-    @Query('limit') limit?: number,
   ): Promise<{ success: boolean; data: { results: any[]; count: number } }> {
     try {
       if (!query || query.trim().length < 2) {
