@@ -131,7 +131,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
         updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await this.client
+      const { error } = await this.client
         .from('___meta_tags_ariane')
         .upsert(updateData)
         .select()

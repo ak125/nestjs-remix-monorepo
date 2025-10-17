@@ -203,7 +203,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function SuppliersIndex() {
-  const { suppliers, totalSuppliers, totalPages, currentPage, statistics, params } = useLoaderData<typeof loader>();
+  const { suppliers, totalPages, currentPage, statistics, params } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [localSearch, setLocalSearch] = useState(params.search || '');

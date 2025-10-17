@@ -237,7 +237,7 @@ export class BreadcrumbService {
     try {
       const config = await this.dbConfigService.getConfig(key);
       return config?.value !== undefined ? config.value : defaultValue;
-    } catch (_error) {
+    } catch {
       this.logger.debug(
         `Configuration non trouvée pour ${key}, utilisation de la valeur par défaut`,
       );
