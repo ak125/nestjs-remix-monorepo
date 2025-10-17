@@ -5,11 +5,7 @@
  * ✅ Compatible avec l'écosystème NestJS
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 import { ZodSchema, ZodError } from 'zod';
 
 @Injectable()
