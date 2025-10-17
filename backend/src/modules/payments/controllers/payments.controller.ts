@@ -485,7 +485,6 @@ export class PaymentsController {
       const refundedPayment = await this.paymentService.processRefund(
         id,
         body.amount,
-        body.reason,
       );
 
       this.logger.log(`✅ Refund processed for payment: ${id}`);

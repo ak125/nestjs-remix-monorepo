@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Param,
-  UseGuards,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Logger } from '@nestjs/common';
 import { PromoService } from './promo.service';
 // import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 

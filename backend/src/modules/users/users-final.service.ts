@@ -13,7 +13,6 @@ import {
   UserFilters,
   PaginatedUsers,
   UserStats,
-  UserWithStats,
 } from './dto/user.dto';
 
 export interface DashboardData {
@@ -236,8 +235,8 @@ export class UsersFinalService {
       return cached;
     }
 
-    // Récupérer les commandes de l'utilisateur
-    const orders = await this.userDataService.search(userId, 1000); // Workaround temporaire
+    // Récupérer les commandes de l'utilisateur (actuellement non utilisées)
+    // const orders = await this.userDataService.search(userId, 1000);
 
     // Calculer les stats
     const stats: UserStats = {
