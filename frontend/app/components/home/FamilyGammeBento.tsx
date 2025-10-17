@@ -165,10 +165,10 @@ export default function FamilyGammeBento({ className = "" }: FamilyGammeBentoPro
                     <div className="space-y-1">
                       {family.gammes.slice(0, 3).map((gamme) => (
                         <div 
-                          key={gamme.mc_id}
+                          key={gamme.pg_id}
                           className="text-xs text-gray-600 bg-white/50 rounded px-2 py-1"
                         >
-                          {gamme.pg_name || `Gamme #${gamme.mc_pg_id}`}
+                          {gamme.pg_name || `Gamme #${gamme.pg_id}`}
                         </div>
                       ))}
                       {family.gammes.length > 3 && (
