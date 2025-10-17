@@ -324,13 +324,13 @@ export class SeoEnhancedService extends SupabaseBaseService {
     try {
       const supabase = this.supabase;
 
-      // Statistiques des templates
-      const { data: templates, count: totalTemplates } = await supabase
+      // Statistiques des templates (pour usage futur)
+      const { count: totalTemplates } = await supabase
         .from('seo_gamme_car')
         .select('*', { count: 'exact' });
 
-      // Statistiques des switches
-      const { data: switches, count: totalSwitches } = await supabase
+      // Statistiques des switches (pour usage futur)
+      const { count: totalSwitches } = await supabase
         .from('seo_gamme_car_switch')
         .select('*', { count: 'exact' });
 

@@ -213,7 +213,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         this.processH1(
           seoTemplate.sgc_h1,
           validatedVars,
-          itemSwitches,
           typeId,
           pgId,
         ),
@@ -391,7 +390,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processH1(
     template: string,
     variables: SeoVariables,
-    itemSwitches: any[],
     typeId: number,
     pgId: number,
   ): Promise<string> {

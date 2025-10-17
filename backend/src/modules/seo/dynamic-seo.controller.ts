@@ -555,11 +555,10 @@ export class DynamicSeoController {
     this.logger.log(`🎯 [API] Validation variables SEO`);
 
     try {
-      // Validation avec le schema Zod
-      const validatedVars =
-        DynamicSeoV4UltimateService.prototype.constructor.prototype.validateVariables?.(
-          variables,
-        );
+      // Validation avec le schema Zod (pour debug seulement)
+      DynamicSeoV4UltimateService.prototype.constructor.prototype.validateVariables?.(
+        variables,
+      );
 
       return {
         success: true,

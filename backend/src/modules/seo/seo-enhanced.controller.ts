@@ -46,7 +46,7 @@ export class SeoEnhancedController {
    * POST /api/seo-enhanced/generate
    */
   @Post('generate')
-  async generateSeoContent(@Body() body: SeoGenerationRequest) {
+  async generateSeoEnhanced(@Body() body: SeoGenerationRequest) {
     try {
       this.logger.log(
         `🎯 Génération SEO: pgId=${body.pgId}, typeId=${body.typeId}`,
@@ -111,7 +111,6 @@ export class SeoEnhancedController {
     @Param('marque') marque: string,
     @Param('modele') modele: string,
     @Param('type') type: string,
-    @Query('typeId') typeId?: number,
   ) {
     try {
       const request: PiecesSeoRequest = {
