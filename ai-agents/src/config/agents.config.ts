@@ -41,6 +41,14 @@ export const config: DriverConfig = {
       },
     },
     {
+      type: 'graphe-imports',
+      enabled: true,
+      options: {
+        maxCycles: 50,       // Nombre max de cycles à reporter
+        includeDiagram: true, // Générer diagramme Mermaid
+      },
+    },
+    {
       type: 'perf-observabilite',
       enabled: true,
       options: {

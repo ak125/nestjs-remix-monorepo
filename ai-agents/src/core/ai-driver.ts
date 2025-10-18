@@ -38,7 +38,13 @@ export class AIDriver {
       return new DetecteurDoublonsAgent(config.rootPath);
     });
 
-    // Agent 10: Perf & Observabilité
+    // Agent 4: Graphe Imports & Cycles (lazy loading)
+    this.agentFactories.set('graphe-imports', async () => {
+      const { GrapheImportsCyclesAgent } = await import('../agents/graphe-imports-cycles.agent');
+      return new GrapheImportsCyclesAgent(config.rootPath);
+    });
+
+    // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
       return new PerfObservabiliteAgent(config.rootPath);
