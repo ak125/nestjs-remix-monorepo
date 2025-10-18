@@ -2,6 +2,8 @@ import { IAgent, AuditReport, AgentResult } from '../types';
 import { config } from '../config/agents.config';
 import { CartographeMonorepoAgent } from '../agents/cartographe-monorepo.agent';
 import { ChasseurFichiersMassifsAgent } from '../agents/chasseur-fichiers-massifs.agent';
+// NOTE: Import dynamique pour éviter les side-effects de jscpd au chargement
+// import { DetecteurDoublonsAgent } from '../agents/detecteur-doublons.agent';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,6 +14,7 @@ import * as path from 'path';
  */
 export class AIDriver {
   private agents: Map<string, IAgent> = new Map();
+  private agentFactories: Map<string, () => Promise<IAgent>> = new Map();
 
   constructor() {
     this.registerAgents();
@@ -29,8 +32,13 @@ export class AIDriver {
     const chasseurFichiers = new ChasseurFichiersMassifsAgent(config.rootPath);
     this.agents.set('fichiers-massifs', chasseurFichiers);
 
+    // Agent 3: Détecteur de Doublons (lazy import pour éviter side-effects)
+    this.agentFactories.set('detecteur-doublons', async () => {
+      const { DetecteurDoublonsAgent } = await import('../agents/detecteur-doublons.agent');
+      return new DetecteurDoublonsAgent(config.rootPath);
+    });
+
     // Futurs agents à ajouter ici
-    // Agent 3: Détecteur de Doublons
     // Agent 4: Graphe Imports & Cycles
     // Agent 10: Perf & Observabilité
     // etc.
@@ -50,32 +58,49 @@ export class AIDriver {
 
     if (config.parallel) {
       // Exécution parallèle
-      const promises = enabledAgents.map(agentConfig => {
-        const agent = this.agents.get(agentConfig.type);
+      const promises = enabledAgents.map(async agentConfig => {
+        let agent = this.agents.get(agentConfig.type);
+        
+        // Si l'agent n'est pas encore instancié, vérifier si une factory existe
         if (!agent) {
-          console.warn(`⚠️  Agent "${agentConfig.type}" non trouvé`);
-          return null;
+          const factory = this.agentFactories.get(agentConfig.type);
+          if (factory) {
+            agent = await factory();
+            this.agents.set(agentConfig.type, agent);
+          } else {
+            console.warn(`⚠️  Agent "${agentConfig.type}" non trouvé`);
+            return null;
+          }
         }
+        
         return agent.execute();
       });
 
-      const settled = await Promise.allSettled(promises.filter(p => p !== null) as Promise<AgentResult>[]);
+      const settled = await Promise.allSettled(promises.filter(p => p !== null) as Promise<AgentResult | null>[]);
       
       for (const result of settled) {
-        if (result.status === 'fulfilled') {
+        if (result.status === 'fulfilled' && result.value !== null) {
           results.push(result.value);
-        } else {
+        } else if (result.status === 'rejected') {
           console.error('❌ Erreur agent:', result.reason);
         }
       }
     } else {
       // Exécution séquentielle
       for (const agentConfig of enabledAgents) {
-        const agent = this.agents.get(agentConfig.type);
+        let agent = this.agents.get(agentConfig.type);
         
+        // Si l'agent n'est pas encore instancié, vérifier si une factory existe
         if (!agent) {
-          console.warn(`⚠️  Agent "${agentConfig.type}" non trouvé`);
-          continue;
+          const factory = this.agentFactories.get(agentConfig.type);
+          if (factory) {
+            // Lazy loading de l'agent
+            agent = await factory();
+            this.agents.set(agentConfig.type, agent);
+          } else {
+            console.warn(`⚠️  Agent "${agentConfig.type}" non trouvé`);
+            continue;
+          }
         }
 
         console.log(`\n▶️  Exécution de l'agent: ${agent.name}`);

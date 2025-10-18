@@ -31,6 +31,15 @@ export const config: DriverConfig = {
         top: 20,           // Top 20 fichiers massifs
       },
     },
+    {
+      type: 'detecteur-doublons',
+      enabled: true,
+      options: {
+        minLines: 5,       // Minimum 5 lignes pour détecter une duplication
+        minOccurrences: 3, // Clusters avec ≥3 occurrences
+        top: 5,            // Top 5 clusters
+      },
+    },
     // Autres agents à ajouter ici
   ],
 };
