@@ -68,7 +68,8 @@ class MonitoringService {
       let clsScore = 0
       new PerformanceObserver((entryList) => {
         for (const entry of entryList.getEntries()) {
-          if (!entry.hadRecentInput) {
+          // Type guard for hadRecentInput property
+          if ('hadRecentInput' in entry && !(entry as any).hadRecentInput) {
             clsScore += (entry as any).value
           }
         }
@@ -80,10 +81,10 @@ class MonitoringService {
     window.addEventListener('load', () => {
       setTimeout(() => {
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-        if (navigation) {
+        if (navigation && 'navigationStart' in navigation) {
           this.recordPerformanceMetric('ttfb', navigation.responseStart - navigation.requestStart)
           this.recordPerformanceMetric('fcp', navigation.responseEnd - navigation.requestStart)
-          this.recordPerformanceMetric('load_time', navigation.loadEventEnd - navigation.navigationStart)
+          this.recordPerformanceMetric('load_time', navigation.loadEventEnd - (navigation as any).navigationStart)
         }
       }, 0)
     })
