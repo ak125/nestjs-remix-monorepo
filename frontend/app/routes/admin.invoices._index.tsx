@@ -108,6 +108,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats,
       pagination,
       user,
+      selectedStatus: status,
+      searchTerm: search,
     });
 
   } catch (error) {
@@ -132,12 +134,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         totalItems: 0,
       },
       user,
+      selectedStatus: '',
+      searchTerm: '',
     });
   }
 }
 
 export default function InvoicesIndex() {
-  const { invoices, stats, pagination } = useLoaderData<typeof loader>();
+  const { invoices, stats, pagination, selectedStatus, searchTerm } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
 
   const isLoading = navigation.state === "loading";
@@ -298,7 +302,7 @@ export default function InvoicesIndex() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {invoices.map((invoice) => (
+              {(invoices as any[]).filter(invoice => invoice !== null).map((invoice: any) => (
                 <tr key={invoice.inv_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
