@@ -49,6 +49,14 @@ export const config: DriverConfig = {
       },
     },
     {
+      type: 'upgrade-nestjs',
+      enabled: true,
+      options: {
+        targetVersion: '11.0.0',
+        analyzeTests: true,
+      },
+    },
+    {
       type: 'perf-observabilite',
       enabled: true,
       options: {
