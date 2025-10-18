@@ -114,9 +114,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Récupérer les données spécifiques au module si nécessaire
     let moduleData = null;
-    if (module !== 'overview') {
+    if (_module !== 'overview') {
       const moduleResponse = await fetch(
-        `${baseUrl}/api/admin/system-config/${module}?environment=${environment}`,
+        `${baseUrl}/api/admin/system-config/${_module}?environment=${environment}`,
         {
           headers: {
             'Authorization': `Bearer ${process.env.ADMIN_TOKEN}`,
@@ -133,7 +133,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       overview: overviewData.data,
       moduleData,
       environment,
-      currentModule: module,
+      currentModule: _module,
     });
   } catch (error) {
     throw new Response('Erreur lors du chargement des configurations', {

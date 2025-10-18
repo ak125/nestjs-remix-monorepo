@@ -254,7 +254,7 @@ export default function UsersConsolidatedPage() {
    * Formater le nom complet
    */
   const getFullName = (user: User) => {
-    const parts = [];
+    const parts: string[] = [];
     if (user.civility) parts.push(user.civility);
     if (user.firstName) parts.push(user.firstName);
     if (user.lastName) parts.push(user.lastName);
@@ -515,12 +515,12 @@ export default function UsersConsolidatedPage() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
                           <Link to={`/admin/users/${user.id}`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="outline" size="sm">
                               <Eye className="w-4 h-4" />
                             </Button>
                           </Link>
                           <Link to={`/admin/users/${user.id}/edit`}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="outline" size="sm">
                               <Edit className="w-4 h-4" />
                             </Button>
                           </Link>
@@ -528,7 +528,7 @@ export default function UsersConsolidatedPage() {
                             <input type="hidden" name="_action" value="toggle" />
                             <input type="hidden" name="userId" value={user.id} />
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               type="submit"
                             >

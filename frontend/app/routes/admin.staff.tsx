@@ -147,7 +147,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        level: parseInt(user.level || '9'),
+        level: typeof user.level === 'number' ? user.level : parseInt(user.level || '9'),
         isActive: true,
         department: 'Administration',
         phone: '',
