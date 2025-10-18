@@ -50,6 +50,12 @@ export class AIDriver {
       return new UpgradeNestJSAgent(config.rootPath);
     });
 
+    // Agent 6: Upgrade Remix (lazy loading)
+    this.agentFactories.set('upgrade-remix', async () => {
+      const { UpgradeRemixAgent } = await import('../agents/upgrade-remix.agent');
+      return new UpgradeRemixAgent(config.rootPath);
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');

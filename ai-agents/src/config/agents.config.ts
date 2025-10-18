@@ -57,6 +57,14 @@ export const config: DriverConfig = {
       },
     },
     {
+      type: 'upgrade-remix',
+      enabled: true,
+      options: {
+        targetVersion: '2.17.0',
+        analyzeRoutes: true,
+      },
+    },
+    {
       type: 'perf-observabilite',
       enabled: true,
       options: {
