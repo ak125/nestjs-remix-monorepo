@@ -90,6 +90,16 @@ export const config: DriverConfig = {
       analyzeMigrations: true,
     },
   },
+  {
+    type: 'meta-agent',
+    enabled: true,
+    options: {
+      aggregateKPIs: true,
+      detectInsights: true,
+      generateRoadmap: true,
+      cicdIntegration: true,
+    },
+  },
     {
       type: 'perf-observabilite',
       enabled: true,
