@@ -56,6 +56,12 @@ export class AIDriver {
       return new UpgradeRemixAgent(config.rootPath);
     });
 
+    // Agent 7: Upgrade React (lazy loading)
+    this.agentFactories.set('upgrade-react', async () => {
+      const { UpgradeReactAgent } = await import('../agents/upgrade-react.agent');
+      return new UpgradeReactAgent();
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
