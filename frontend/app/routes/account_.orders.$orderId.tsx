@@ -16,7 +16,7 @@ import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { getOrderDetail } from "../services/orders.server";
+import { getOrderDetails } from "../services/orders.server";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   // Authentification requise
@@ -34,7 +34,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   }
 
   try {
-    const order = await getOrderDetail({ 
+    const order = await getOrderDetails({ 
       orderId, 
       userId,
       request 
