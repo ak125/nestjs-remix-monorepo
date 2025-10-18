@@ -47,7 +47,7 @@ export function ManufacturerCard({
               <div className="flex-shrink-0">
                 <div className="w-12 h-12">
                   <BrandLogoClient
-                    logoPath={manufacturer.logo_path}
+                    logoPath={manufacturer.logo_path ?? null}
                     brandName={manufacturer.name}
                   />
                 </div>
@@ -96,7 +96,7 @@ export function ManufacturerCard({
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 relative">
               <BrandLogoClient
-                logoPath={manufacturer.logo_path}
+                logoPath={manufacturer.logo_path ?? null}
                 brandName={manufacturer.name}
               />
             </div>

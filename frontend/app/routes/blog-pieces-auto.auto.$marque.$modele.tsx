@@ -5,9 +5,7 @@ import {
   ArrowLeft,
   Calendar,
   Car,
-  Fuel,
   Gauge,
-  Info,
   Wrench
 } from "lucide-react";
 import * as React from "react";
@@ -165,12 +163,12 @@ export default function BlogPiecesAutoMarqueModele() {
   }, [models]);
 
   // Gammes de puissance
-  const powerRanges = [
+  const powerRanges = React.useMemo(() => [
     { id: '0-100', label: '0-100 ch', min: 0, max: 100 },
     { id: '100-150', label: '100-150 ch', min: 100, max: 150 },
     { id: '150-200', label: '150-200 ch', min: 150, max: 200 },
     { id: '200+', label: '200+ ch', min: 200, max: Infinity },
-  ];
+  ], []);
 
   // Filtrer les motorisations
   const filteredModels = React.useMemo(() => {
@@ -191,7 +189,7 @@ export default function BlogPiecesAutoMarqueModele() {
         return fuelMatch && powerMatch;
       })
     })).filter(model => model.types.length > 0);
-  }, [models, selectedFuel, selectedPowerRange]);
+  }, [models, selectedFuel, selectedPowerRange, powerRanges]);
 
   const filteredCount = React.useMemo(() => {
     return filteredModels.reduce((sum, model) => sum + model.types.length, 0);

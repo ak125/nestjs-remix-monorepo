@@ -9,18 +9,18 @@ export { PiecesGrid } from './PiecesGrid';
 export { AIPredictionsPanel } from './ai-predictions/AIPredictionsPanel';
 
 // Sections spécialisées
-export { GuideSection } from './GuideSection';
-export { ConseilsSection } from './ConseilsSection';
-export { MotorisationsSection } from './MotorisationsSection';
-export { EquipementiersSection } from './EquipementiersSection';
-export { CatalogueSection } from './CatalogueSection';
-export { InformationsSection } from './InformationsSection';
+export { default as GuideSection } from './GuideSection';
+export { default as ConseilsSection } from './ConseilsSection';
+export { default as MotorisationsSection } from './MotorisationsSection';
+export { default as EquipementiersSection } from './EquipementiersSection';
+export { default as CatalogueSection } from './CatalogueSection';
+export { default as InformationsSection } from './InformationsSection';
 
 // Composants utilitaires
-export { PerformanceIndicator } from './PerformanceIndicator';
-export { LoadingState } from './LoadingState';
-export { ErrorState } from './ErrorState';
-export { FadeIn } from './FadeIn';
+export { default as PerformanceIndicator } from './PerformanceIndicator';
+export { default as LoadingState } from './LoadingState';
+export { default as ErrorState } from './ErrorState';
+export { default as FadeIn } from './FadeIn';
 
 // Types partagés
 export type { PieceData, VehicleData, GammeData, FilterState } from './types';
