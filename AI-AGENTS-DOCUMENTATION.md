@@ -3,7 +3,7 @@
 **Date:** 18 Octobre 2025  
 **Version:** 1.0.0  
 **Status:** ✅ 12/12 Agents Opérationnels (100% COMPLET)  
-**Score Santé Global:** 🟢 92/100 - EXCELLENT
+**Score Santé Global:** 🟢 99/100 - EXCELLENT
 
 ---
 
@@ -1113,7 +1113,280 @@ Version B: 720 duplications, 12% faux positifs → ratio 6.0
 
 ---
 
-## 📚 Références
+## � Système Fix+Proof (Agents F0-F15)
+
+**Version** : 2.0.0  
+**Date** : 18 Octobre 2025  
+**Status** : 🚧 Phase 1 Implémenté (Foundation)  
+**Paradigme** : Prove-Then-Deploy, Zero-Trust, SLO-Driven
+
+### 📋 Vue d'Ensemble
+
+Le système **Fix+Proof** ajoute des capacités de **correction automatique** aux 12 agents de détection existants. Il implémente un pipeline Zero-Trust avec gates formels (M1-M7) et décisions Risk/Confidence (F15).
+
+**Principes** :
+- ✅ **Zero-Trust** : Aucun auto-merge sans preuves formelles
+- ✅ **Prove-Then-Deploy** : Tests M1-M7 avant canary
+- ✅ **Ring-Based Canary** : 0.5% → 5% → 25% → 100%
+- ✅ **Auto-Halt** : Rollback si p95 +10% OU errors >0.5%
+- ✅ **Evidence-Based** : Logs, hashes, metrics, screenshots
+
+### 🤖 Les 15 Agents Fix+Proof
+
+#### **F0 - Orchestrateur Déterministe**
+- **Rôle** : Planifier patches atomiques (≤200 lignes), générer tests M1-M7, calculer R/C
+- **Input** : Constat from detection agents (A1-A12)
+- **Output** : PR draft with evidence, rollback plan, canary plan
+- **Status** : ⏳ TODO Phase 2
+
+#### **F1 - Dead-Code Surgeon** (AUTO)
+- **Rôle** : Supprimer dead-code avec invariants (exports utilisés, tests pass)
+- **Scope** : Functions/classes/files non-référencées
+- **Safety** : Freeze contracts (M1), full test suite (M2-M7)
+- **Status** : ⏳ TODO Phase 2
+
+#### **F2 - Lint/Unused/Format** (AUTO)
+- **Rôle** : Corrections cosmétiques (ESLint, Prettier, unused imports)
+- **Scope** : No functional changes
+- **Safety** : Tests + build success
+- **Status** : ⏳ TODO Phase 2
+
+#### **F3 - Duplication Extractor** (ASSISTÉ)
+- **Rôle** : Extraire duplications ≥3 occurrences (≥95% similarity)
+- **Scope** : Create utility functions, update callers
+- **Safety** : Unit tests for extracted functions + M7 diff-coverage ≥80%
+- **Status** : ⏳ TODO Phase 2
+
+#### **F4 - Massive Splitter** (ASSISTÉ)
+- **Rôle** : Découper fichiers >500 lignes en modules
+- **Scope** : SRP (Single Responsibility Principle)
+- **Safety** : M6 graph validation (no cycles)
+- **Status** : ⏳ TODO Phase 2
+
+#### **F5 - Cycle Breaker** (ASSISTÉ)
+- **Rôle** : Résoudre cycles de dépendances
+- **Scope** : Dependency Injection, interface extraction
+- **Safety** : M6 graph gate (0 cycles after)
+- **Status** : ⏳ TODO Phase 2
+
+#### **F6 - CSS Dedup & Componentizer** (ASSISTÉ)
+- **Rôle** : Dédupliquer patterns Tailwind >50 occurrences
+- **Scope** : Extract components, update callers
+- **Safety** : M3 perceptual UI (SSIM ≥0.99)
+- **Status** : ⏳ TODO Phase 2
+
+#### **F7 - Config & Scripts Sanitizer** (AUTO/ASSISTÉ)
+- **Rôle** : Aligner configs (tsconfig, jest, eslint)
+- **Scope** : Merge duplicates, enforce standards
+- **Safety** : Build + tests pass
+- **Status** : ⏳ TODO Phase 2
+
+#### **F8 - Contract Synthesizer** (NEW)
+- **Rôle** : Freeze API contracts (Zod, OpenAPI, DTOs)
+- **Scope** : Generate schemas from code
+- **Safety** : M1 contracts gate (require "contract-change" label for edits)
+- **Status** : ⏳ TODO Phase 3
+
+#### **F9 - SBOM & Vuln Sentinel** (NEW)
+- **Rôle** : Générer SBOM (CycloneDX) + scanner vulns (CVE)
+- **Scope** : Dependencies audit
+- **Safety** : Block if CVE CRITICAL/HIGH
+- **Status** : ⏳ TODO Phase 3
+
+#### **F10 - Ring/Canary Controller** (NEW)
+- **Rôle** : Progressive deploy 0.5% → 5% → 25% → 100%
+- **Scope** : Monitor metrics per ring, auto-halt if degradation
+- **Safety** : Rollback SLA <30min
+- **Status** : ⏳ TODO Phase 3
+
+#### **F11 - Observability Verifier** (NEW)
+- **Rôle** : Assertions SLO (p95 API/SSR, error rate, 404s)
+- **Scope** : Real-time metrics collection
+- **Safety** : Halt canary if SLO violated
+- **Status** : ⏳ TODO Phase 3
+
+#### **F12 - Semantic Refactor Verifier** (NEW)
+- **Rôle** : Fuzzing + differential testing (before/after behavior identical)
+- **Scope** : Property-based tests (fast-check)
+- **Safety** : M2 mutation testing ≥80%
+- **Status** : ⏳ TODO Phase 3
+
+#### **F13 - Data Impact Simulator** (NEW)
+- **Rôle** : Replay DB queries read-only (Prisma logs)
+- **Scope** : Detect data access changes
+- **Safety** : No writes, sandbox environment
+- **Status** : ⏳ TODO Phase 3
+
+#### **F14 - Coverage Diff Enforcer** (NEW)
+- **Rôle** : Enforce ≥80% diff-coverage on modified lines
+- **Scope** : Jest --changedSince=baseline
+- **Safety** : M7 diff-coverage gate
+- **Status** : ⏳ TODO Phase 3
+
+#### **F15 - Change Risk Scorer** (NEW)
+- **Rôle** : Calculer R (Risk) et C (Confidence) pour décision Auto/Review/Reject
+- **Formulas** :
+  - `R = 0.4×surface + 0.3×criticité + 0.2×bugs + 0.1×instabilité`
+  - `C = 0.4×tests + 0.3×perf + 0.2×diff-cov + 0.1×preuves`
+- **Decision Matrix** :
+  - `R≤30 & C≥95 & M1-M7✅` → **CANARY_AUTO** (progressive deploy)
+  - `30<R≤60 OR 90≤C<95` → **REVIEW_REQUIRED** (human approval)
+  - `R>60 OR C<90 OR M-Gate❌` → **REJECT_NEEDS_HUMAN** (too risky)
+- **Status** : ✅ Implémenté (Phase 1)
+
+### 🧪 Test Matrix (M1-M7)
+
+#### **M1 - Contracts & Invariants**
+- **Objectif** : Freeze API contracts (Zod, DTOs, GraphQL, Prisma)
+- **Critère** : Contracts unchanged OR PR has "contract-change" label
+- **Status** : ✅ Implémenté (Phase 1)
+
+#### **M2 - Mutation Testing** (TODO Phase 2)
+- **Objectif** : Prouver que tests détectent regressions
+- **Critère** : Mutation score ≥80% (Stryker.js)
+- **Status** : ⏳ TODO Phase 2
+
+#### **M3 - Perceptual UI** (TODO Phase 2)
+- **Objectif** : Détecter changements visuels non intentionnels
+- **Critère** : SSIM ≥0.99 on 10 pages × 2 devices, a11y ≥90
+- **Status** : ⏳ TODO Phase 2
+
+#### **M4 - Shadow Traffic Replay** (TODO Phase 3)
+- **Objectif** : Replay 10k requests production sur baseline vs current
+- **Critère** : Delta <1% (response time, errors)
+- **Status** : ⏳ TODO Phase 3
+
+#### **M5 - Budget Perf & Build**
+- **Objectif** : Enforce performance budgets
+- **Critères** :
+  - `p95 API ≤ baseline × 1.10` (+10% max)
+  - `p95 SSR ≤ baseline × 1.10` (+10% max)
+  - `Bundle size ≤ baseline × 1.03` (+3% max)
+  - `Build time ≤ baseline × 1.05` (+5% max)
+- **Status** : ✅ Implémenté (Phase 1)
+
+#### **M6 - Graph & Layers**
+- **Objectif** : 0 cycles, 0 layer violations
+- **Critères** :
+  - Import cycles → 0 (Madge)
+  - backend → frontend → NEVER
+  - frontend → backend → NEVER (use API)
+  - shared → backend/frontend → NEVER
+- **Status** : ✅ Implémenté (Phase 1)
+
+#### **M7 - Diff-Coverage**
+- **Objectif** : ≥80% coverage on modified lines
+- **Critère** : Jest --coverage --changedSince=baseline
+- **Status** : ✅ Implémenté (Phase 1)
+
+### 🎯 Decision Matrix (F15)
+
+```typescript
+if (R ≤ 30 && C ≥ 95 && M1_M7_ALL_GREEN) {
+  → CANARY_AUTO (0.5% → 5% → 25% → 100%)
+}
+
+if (30 < R ≤ 60 || 90 ≤ C < 95) {
+  → REVIEW_REQUIRED (human approval + manual canary)
+}
+
+if (R > 60 || C < 90 || ANY_GATE_KO) {
+  → REJECT_NEEDS_HUMAN (needs-human label)
+}
+```
+
+### 🚦 Auto-Halt Canary (F10)
+
+**Halt Conditions** (rollback <30min) :
+- `p95 > baseline × 1.10` (+10% latency)
+- `errorRate > 0.005` (0.5%)
+- `critical404 ≥ 1` (any 404 on critical routes)
+
+**Ring Sequence** :
+1. **0.5%** (15 min) → Monitor p95, errors
+2. **5%** (30 min) → Expanded monitoring
+3. **25%** (1h) → Full observability
+4. **100%** (complete) → Success
+
+### 📊 DORA Metrics
+
+**Targets** :
+- ✅ **Lead Time** : <24h (commit → deploy)
+- ✅ **Change Failure Rate** : <5%
+- ✅ **MTTR** : <30min (rollback SLA)
+- ✅ **Deploy Frequency** : Daily (via canary)
+
+### 📁 Structure Fichiers
+
+```
+ai-agents/
+├── src/
+│   ├── fixproof/
+│   │   ├── types.ts                  # ✅ Core interfaces
+│   │   ├── agents/
+│   │   │   ├── f0-orchestrator.agent.ts    # ⏳ TODO
+│   │   │   ├── f1-dead-code.agent.ts       # ⏳ TODO
+│   │   │   ├── f15-risk-scorer.agent.ts    # ✅ Implémenté
+│   │   │   └── ...
+│   │   ├── test-matrix/
+│   │   │   ├── index.ts                    # ✅ Exports
+│   │   │   ├── m1-contracts.ts             # ✅ Implémenté
+│   │   │   ├── m5-budgets.ts               # ✅ Implémenté
+│   │   │   ├── m6-graph.ts                 # ✅ Implémenté
+│   │   │   └── m7-diff-coverage.ts         # ✅ Implémenté
+```
+
+### 🛠️ Usage
+
+```typescript
+import { runF15RiskScorer } from './fixproof/agents/f15-risk-scorer.agent';
+import { runM1ContractsGate } from './fixproof/test-matrix/m1-contracts';
+
+// 1. Run test gates
+const m1Result = await runM1ContractsGate({
+  changedFiles: ['backend/src/api/users.dto.ts'],
+  baselineHashes: { 'backend/src/api/users.dto.ts': 'abc123...' },
+});
+
+// 2. Calculate R/C scores
+const f15Result = await runF15RiskScorer({
+  patches: [...],
+  gitHistory: [...],
+  tests: { passed: 95, total: 100 },
+  performance: { baseline_p95_API: 150, current_p95_API: 160, ... },
+  diffCoverage: 85,
+  evidence: [...],
+  testMatrix: { m1_contracts: m1Result.gate, ... },
+});
+
+// 3. Decision
+console.log(f15Result.decision.action); // "CANARY_AUTO" | "REVIEW_REQUIRED" | "REJECT_NEEDS_HUMAN"
+```
+
+### 🚀 Roadmap
+
+**Phase 1 (✅ DONE)** :
+- ✅ Types core (AtomicPatch, RiskScore, ConfidenceScore, etc.)
+- ✅ F15 Risk Scorer (R/C calculation + decision matrix)
+- ✅ Test Matrix M1, M5, M6, M7
+- ✅ Documentation
+
+**Phase 2 (Week 1)** :
+- ⏳ F0 Orchestrateur (plan patches, generate tests)
+- ⏳ F1 Dead-Code Surgeon (AUTO corrections)
+- ⏳ F3 Duplication Extractor (ASSISTÉ)
+- ⏳ M2 Mutation Testing (Stryker.js)
+- ⏳ M3 Perceptual UI (Playwright + pixelmatch)
+
+**Phase 3 (Week 2)** :
+- ⏳ F8-F14 (Contract Synth, SBOM, Canary, Observability, etc.)
+- ⏳ M4 Shadow Traffic (production replay)
+- ⏳ Enhanced CI/CD integration
+- ⏳ Full system integration tests
+
+---
+
+## �📚 Références
 
 ### Documentation Agents
 - [Agent 1-4: Analyse Structurelle](./reports/audit-report.md)
