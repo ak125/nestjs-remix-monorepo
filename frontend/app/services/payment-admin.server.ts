@@ -2,8 +2,9 @@ import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment
 
 /**
  * Obtenir l'URL du backend à partir des variables d'environnement
+ * Unused but kept for future use
  */
-function getBackendUrl(): string {
+function _getBackendUrl(): string {
   return process.env.BACKEND_URL || 'http://localhost:3000';
 }
 
@@ -91,7 +92,7 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
  */
 export async function getAdminPayments(params: AdminPaymentListParams = {}): Promise<AdminPaymentListResult> {
   try {
-    const { page = 1, limit = 10, search = '', status = '' } = params;
+    const { page = 1, limit = 10, search = '' } = params;
     
     // Utiliser l'API legacy orders car les paiements sont intégrés aux commandes
     const response = await fetch(
