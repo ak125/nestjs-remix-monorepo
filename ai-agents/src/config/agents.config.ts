@@ -73,6 +73,14 @@ export const config: DriverConfig = {
       },
     },
     {
+      type: 'upgrade-nodejs',
+      enabled: true,
+      options: {
+        targetVersion: '20.18.0',
+        scanCVE: true,
+      },
+    },
+    {
       type: 'perf-observabilite',
       enabled: true,
       options: {

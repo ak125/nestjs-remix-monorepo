@@ -62,6 +62,12 @@ export class AIDriver {
       return new UpgradeReactAgent();
     });
 
+    // Agent 8: Upgrade Node.js (lazy loading)
+    this.agentFactories.set('upgrade-nodejs', async () => {
+      const { UpgradeNodeJSAgent } = await import('../agents/upgrade-nodejs.agent');
+      return new UpgradeNodeJSAgent();
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
