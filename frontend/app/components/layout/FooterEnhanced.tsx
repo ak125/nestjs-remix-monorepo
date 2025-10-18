@@ -58,6 +58,8 @@ interface FooterEnhancedProps {
   staticData?: FooterData;
   showNewsletter?: boolean;
   showSocial?: boolean;
+  config?: any;
+  isEditable?: boolean;
 }
 
 export function FooterEnhanced({ 
