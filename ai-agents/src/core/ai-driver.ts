@@ -80,6 +80,12 @@ export class AIDriver {
       return new DataSanityAgent();
     });
 
+    // Agent 12: Meta-Agent (lazy loading) - FINAL!
+    this.agentFactories.set('meta-agent', async () => {
+      const { MetaAgent } = await import('../agents/meta-agent.agent');
+      return new MetaAgent();
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
