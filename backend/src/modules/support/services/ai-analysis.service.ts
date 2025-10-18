@@ -137,18 +137,6 @@ export class AISentimentService {
         'important',
       ];
 
-      const emotionalKeywords = [
-        'frustré',
-        'énervé',
-        'déçu',
-        'furieux',
-        'inacceptable',
-        'satisfait',
-        'content',
-        'heureux',
-        'reconnaissant',
-      ];
-
       const sentiment = this.analyzeTextSentiment(text);
       const urgency = this.calculateTicketUrgency(
         text,
@@ -381,7 +369,7 @@ export class AICategorizationService {
       const issues = review.rating <= 3 ? this.extractIssues(text) : [];
 
       return {
-        category: this.getReviewCategory(review.rating, themes),
+        category: this.getReviewCategory(review.rating),
         subcategory: this.getReviewSubcategory(themes, issues),
         confidence: 0.8,
         themes,
@@ -506,7 +494,7 @@ export class AICategorizationService {
     return themes;
   }
 
-  private getReviewCategory(rating: number, themes: string[]): string {
+  private getReviewCategory(rating: number): string {
     if (rating >= 4) return 'positive_feedback';
     if (rating <= 2) return 'negative_feedback';
     return 'neutral_feedback';

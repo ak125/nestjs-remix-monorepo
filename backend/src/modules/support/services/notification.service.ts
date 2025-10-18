@@ -102,7 +102,7 @@ export class NotificationService {
 
       // Send webhook notification
       if (config.webhookUrl) {
-        await this.sendWebhookNotification(payload);
+        await this.sendWebhookNotification();
       }
 
       this.logger.log(`Notification sent successfully: ${payload.title}`);
@@ -126,12 +126,10 @@ export class NotificationService {
     payload: NotificationPayload,
   ): Promise<void> {
     // Implementation would integrate with push notification service
-    this.logger.debug(`Push notification would be sent: ${payload.title}`);
+    this.logger.debug(`Push notification: ${payload.title}`);
   }
 
-  private async sendWebhookNotification(
-    payload: NotificationPayload,
-  ): Promise<void> {
+  private async sendWebhookNotification(): Promise<void> {
     try {
       const config = this.supportConfig.getNotificationSettings();
       if (!config.webhookUrl) return;

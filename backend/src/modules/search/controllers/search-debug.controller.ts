@@ -82,40 +82,41 @@ export class SearchDebugController {
       }
 
       // Récupérer toutes les données
-      const [piece, prices, images, refSearch, refOem, gamme, marque] =
-        await Promise.all([
-          this.searchService['client']
-            .from('pieces')
-            .select('*')
-            .eq('piece_id', id)
-            .single(),
-          this.searchService['client']
-            .from('pieces_price')
-            .select('*')
-            .eq('pri_piece_id', id),
-          this.searchService['client']
-            .from('pieces_media_img')
-            .select('*')
-            .eq('pmi_piece_id', id),
-          this.searchService['client']
-            .from('pieces_ref_search')
-            .select('*')
-            .eq('prs_piece_id', id.toString()),
-          this.searchService['client']
-            .from('pieces_ref_oem')
-            .select('*')
-            .eq('pro_piece_id', id.toString()),
-          this.searchService['client']
-            .from('pieces_gamme')
-            .select('*')
-            .limit(1),
-          this.searchService['client']
-            .from('pieces_marque')
-            .select('*')
-            .limit(1),
-        ]);
+      const [piece, prices, images, refSearch, refOem] = await Promise.all([
+        this.searchService['client']
+          .from('pieces')
+          .select('*')
+          .eq('piece_id', id)
+          .single(),
+        this.searchService['client']
+          .from('pieces_price')
+          .select('*')
+          .eq('pri_piece_id', id),
+        this.searchService['client']
+          .from('pieces_media_img')
+          .select('*')
+          .eq('pmi_piece_id', id),
+        this.searchService['client']
+          .from('pieces_ref_search')
+          .select('*')
+          .eq('prs_piece_id', id),
+        this.searchService['client']
+          .from('pieces_ref_oem')
+          .select('*')
+          .eq('pro_piece_id', id),
+      ]);
 
-      // Récupérer gamme et marque spécifiques
+      return {
+        success: true,
+        data: {
+          piece: piece.data,
+          prices: prices.data,
+          images: images.data,
+          refSearch: refSearch.data,
+          refOem: refOem.data,
+        },
+        timestamp: new Date().toISOString(),
+      }; // Récupérer gamme et marque spécifiques
       let gammeData = null;
       let marqueData = null;
 

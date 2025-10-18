@@ -172,7 +172,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       const cacheKey = `seo:complete:${pgId}:${typeId}:${JSON.stringify(validatedVars)}`;
       const cached = this.getCachedData(cacheKey);
       if (cached) {
-        this.logger.debug(`📦 [CACHE HIT] SEO complet: ${cacheKey}`);
+        this.logger.debug(`📦 [CACHE HIT] SEO complet`);
         return {
           ...cached,
           metadata: { ...cached.metadata, cacheHit: true },
@@ -219,7 +219,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
           gammeSwitches,
           familySwitches,
           typeId,
-          pgId,
         ),
       ]);
 
@@ -416,7 +415,6 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     gammeSwitches: any[],
     familySwitches: any[],
     typeId: number,
-    pgId: number,
   ): Promise<string> {
     let processed = template;
 
@@ -438,11 +436,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     );
 
     // 🚀 AMÉLIORATION : Traitement switches externes COMPLET
-    processed = await this.processExternalSwitchesEnhanced(
-      processed,
-      typeId,
-      pgId,
-    );
+    processed = await this.processExternalSwitchesEnhanced(processed, typeId);
 
     // 🚀 AMÉLIORATION : FamilySwitches (TODO: implement)
     processed = await this.processFamilySwitchesEnhanced(processed);
@@ -466,10 +460,9 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private async processExternalSwitchesEnhanced(
     content: string,
     typeId: number,
-    pgId: number,
   ): Promise<string> {
     // ✅ EXISTANT OPTIMISÉ : Récupération gammes avec cache
-    const cacheKey = `gammes:external:${typeId}:${pgId}`;
+    const cacheKey = `gammes:external:${typeId}`;
     let allGammes = this.getCachedData(cacheKey);
 
     if (!allGammes) {
