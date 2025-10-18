@@ -174,7 +174,7 @@ function getStatusVariant(status: string | null | undefined): "default" | "secon
 }
 
 export default function CommercialDashboard() {
-  const { dashboardData, user } = useLoaderData<typeof loader>();
+  const { dashboardData } = useLoaderData<typeof loader>();
   const { orders, stock, suppliers } = dashboardData;
   
   const stats = [
