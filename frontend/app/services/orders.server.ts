@@ -3,7 +3,7 @@
  * Connexion avec OrdersSimpleService existant
  */
 
-import { type Order, type OrdersResponse } from "../utils/orders";
+import { type Order } from "../utils/orders";
 
 export interface GetUserOrdersParams {
   userId: string;
