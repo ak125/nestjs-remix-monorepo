@@ -4,7 +4,22 @@
 
 export type AgentStatus = 'idle' | 'running' | 'completed' | 'error';
 
-export type AgentType = 'cartographe' | 'optimizer' | 'security' | 'performance';
+export type AgentType = 
+  | 'cartographe' 
+  | 'fichiers-massifs'
+  | 'detecteur-doublons'
+  | 'graphe-imports'
+  | 'hygiene-config'
+  | 'diff-dependances'
+  | 'routes-sante'
+  | 'ui-snapshot'
+  | 'css-hygiene'
+  | 'perf-observabilite'
+  | 'data-sanity'
+  | 'meta-amelioration'
+  | 'optimizer' 
+  | 'security' 
+  | 'performance';
 
 /**
  * Interface de base pour tous les agents
@@ -148,4 +163,60 @@ export interface AuditReport {
     warningCount: number;
   };
   kpis: KPI[];
+}
+
+/**
+ * Fichier massif détecté par l'Agent 2
+ */
+export interface MassiveFile {
+  rank: number;
+  path: string;
+  absolutePath: string;
+  size: number;
+  lines: number;
+  workspace: string;
+  category: 'route' | 'service' | 'component' | 'util' | 'other';
+  threshold: 'critical' | 'warning'; // critical: >500 lignes, warning: >300
+  splittingPlan?: SplittingPlan;
+}
+
+/**
+ * Plan de scission d'un fichier massif
+ */
+export interface SplittingPlan {
+  originalFile: string;
+  suggestedSplits: SuggestedSplit[];
+  rationale: string;
+  estimatedImpact: {
+    filesCreated: number;
+    avgLinesPerFile: number;
+    maintainabilityGain: string; // low, medium, high
+  };
+}
+
+/**
+ * Scission suggérée
+ */
+export interface SuggestedSplit {
+  fileName: string;
+  purpose: 'UI' | 'Data' | 'Helpers' | 'Types' | 'Hooks' | 'Services';
+  estimatedLines: number;
+  description: string;
+}
+
+/**
+ * Rapport de l'Agent 2
+ */
+export interface MassiveFilesReport {
+  timestamp: Date;
+  totalFilesScanned: number;
+  massiveFilesCount: number;
+  criticalCount: number; // >500 lignes
+  warningCount: number; // >300 lignes
+  top20Files: MassiveFile[];
+  cumulativeSize: {
+    top10: number; // taille cumulée des 10 pires
+    top20: number;
+  };
+  recommendations: string[];
 }

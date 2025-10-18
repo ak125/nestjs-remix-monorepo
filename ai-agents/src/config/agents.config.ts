@@ -19,6 +19,18 @@ export const config: DriverConfig = {
         weightDriftThreshold: 5, // ±5%
       },
     },
+    {
+      type: 'fichiers-massifs',
+      enabled: true,
+      options: {
+        thresholds: {
+          route: 400,      // lignes pour routes Remix
+          service: 300,    // lignes pour services NestJS
+          general: 500,    // lignes pour autres TS/TSX
+        },
+        top: 20,           // Top 20 fichiers massifs
+      },
+    },
     // Autres agents à ajouter ici
   ],
 };
