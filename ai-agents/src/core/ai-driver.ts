@@ -68,6 +68,12 @@ export class AIDriver {
       return new UpgradeNodeJSAgent();
     });
 
+    // Agent 9: Refacto CSS (lazy loading)
+    this.agentFactories.set('refacto-css', async () => {
+      const { RefactoCSSAgent } = await import('../agents/refacto-css.agent');
+      return new RefactoCSSAgent();
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');

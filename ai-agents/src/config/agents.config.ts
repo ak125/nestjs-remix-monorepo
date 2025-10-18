@@ -73,7 +73,15 @@ export const config: DriverConfig = {
       },
     },
     {
-      type: 'upgrade-nodejs',
+      type: 'refacto-css',
+      enabled: true,
+      options: {
+        detectDuplications: true,
+        suggestComponents: true,
+      },
+    },
+    {
+      type: 'perf-observabilite',
       enabled: true,
       options: {
         targetVersion: '20.18.0',
