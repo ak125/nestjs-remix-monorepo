@@ -38,9 +38,14 @@ export class AIDriver {
       return new DetecteurDoublonsAgent(config.rootPath);
     });
 
+    // Agent 10: Perf & Observabilité
+    this.agentFactories.set('perf-observabilite', async () => {
+      const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
+      return new PerfObservabiliteAgent(config.rootPath);
+    });
+
     // Futurs agents à ajouter ici
     // Agent 4: Graphe Imports & Cycles
-    // Agent 10: Perf & Observabilité
     // etc.
   }
 
