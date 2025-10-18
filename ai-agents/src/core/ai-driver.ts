@@ -1,6 +1,7 @@
 import { IAgent, AuditReport, AgentResult } from '../types';
 import { config } from '../config/agents.config';
 import { CartographeMonorepoAgent } from '../agents/cartographe-monorepo.agent';
+import { ChasseurFichiersMassifsAgent } from '../agents/chasseur-fichiers-massifs.agent';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -20,13 +21,19 @@ export class AIDriver {
    * Enregistrer tous les agents disponibles
    */
   private registerAgents(): void {
-    // Agent Cartographe
+    // Agent 1: Cartographe Monorepo
     const cartographe = new CartographeMonorepoAgent();
     this.agents.set('cartographe', cartographe);
 
+    // Agent 2: Chasseur de Fichiers Massifs
+    const chasseurFichiers = new ChasseurFichiersMassifsAgent(config.rootPath);
+    this.agents.set('fichiers-massifs', chasseurFichiers);
+
     // Futurs agents à ajouter ici
-    // const optimizer = new OptimizerAgent();
-    // this.agents.set('optimizer', optimizer);
+    // Agent 3: Détecteur de Doublons
+    // Agent 4: Graphe Imports & Cycles
+    // Agent 10: Perf & Observabilité
+    // etc.
   }
 
   /**
