@@ -11,9 +11,11 @@ const authentictedUserSchema = z.object({
 export const getOptionalUser =async ({ context }:{ context: AppLoadContext }) => {
   const user = authentictedUserSchema.optional().nullable().parse(context.user);
   if (user) {
-    return await context.remixService.getUser({
-      userId: user.id 
-    });
+    // TODO: Fix remixService.getUser implementation
+    // return await context.remixService.getUser({
+    //   userId: user.id 
+    // });
+    return user;
   }
   return null;
 }
