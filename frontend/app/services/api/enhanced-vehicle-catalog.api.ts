@@ -176,12 +176,12 @@ async function fetchWithTimeout(
       throw error;
     }
     
-    if (error.name === "AbortError") {
+    if (error instanceof Error && error.name === "AbortError") {
       throw new ApiError("Request timeout", 408, "Request Timeout", url);
     }
     
     throw new ApiError(
-      error.message || "Network error",
+      error instanceof Error ? error.message : "Network error",
       0,
       "Network Error",
       url
