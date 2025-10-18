@@ -28,7 +28,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
 }
 
 export default function CommercialLayout() {
-  const { user, stats } = useLoaderData<typeof loader>();
+  const { stats } = useLoaderData<typeof loader>();
   
   return (
     <div className="min-h-screen bg-background">

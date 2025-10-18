@@ -24,7 +24,7 @@ import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { useImagePreloader, getBrandLogoUrl } from "../hooks/useImagePreloader";
+import { useImagePreloader } from "../hooks/useImagePreloader";
 
 interface Brand {
   marque_id: number;
