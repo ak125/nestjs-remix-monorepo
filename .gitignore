@@ -73,3 +73,10 @@ cache/dump.rdb
 
 # Vite timestamped config artifacts (ne jamais versionner)
 frontend/vite.config.ts.timestamp-*
+
+# AI Agents - Reports & Generated Files (ne jamais versionner)
+ai-agents/reports/
+ai-agents/dist/
+ai-agents/node_modules/
+ai-agents/.temp/
+ai-agents/*.log
