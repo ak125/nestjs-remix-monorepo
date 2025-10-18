@@ -24,7 +24,6 @@ import {
   Eye,
   Share2,
   Bookmark,
-  ChevronRight,
   Tag
 } from 'lucide-react';
 import { useState, useEffect } from "react";

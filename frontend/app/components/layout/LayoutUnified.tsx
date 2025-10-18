@@ -140,13 +140,16 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
     className,
   ].filter(Boolean).join(' ');
 
+  // Filtrer le type de contexte pour les composants qui n'acceptent pas "core" ou "massdoc"
+  const validContext = (config.type === 'core' || config.type === 'massdoc') ? 'public' : config.type;
+
   return (
     <div className={layoutClasses}>
       {/* Header */}
       {config.showHeader !== false && layoutData.header?.show && (
         <Header
           config={layoutData.header}
-          context={config.type}
+          context={validContext}
           isEditable={isEditable}
         />
       )}
@@ -157,7 +160,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
         {layoutData.sections && layoutData.sections.length > 0 && (
           <SectionsContainer
             sections={layoutData.sections}
-            context={config.type}
+            context={validContext}
             isEditable={isEditable}
             onEditSection={onEditSection}
             onAddSection={onAddSection}
@@ -177,7 +180,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
       {config.showFooter !== false && layoutData.footer?.show && (
         <FooterEnhanced
           config={layoutData.footer}
-          context={config.type}
+          context={validContext}
           isEditable={isEditable}
         />
       )}
