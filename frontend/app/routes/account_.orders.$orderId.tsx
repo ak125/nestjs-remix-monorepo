@@ -228,7 +228,7 @@ export default function OrderDetailPage() {
                   )}
                   <div className="flex justify-between font-medium text-lg border-t pt-2">
                     <span>Total TTC</span>
-                    <span>{formatPrice(order.totalTTC || order.totalPrice)}</span>
+                    <span>{formatPrice(order.totalTTC || order.totalPrice || 0)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -290,8 +290,8 @@ export default function OrderDetailPage() {
                 
                 <div>
                   <p className="text-sm font-medium">Statut</p>
-                  <Badge variant={getPaymentStatusVariant(order.paymentStatus)}>
-                    {order.paymentStatus}
+                  <Badge variant={getPaymentStatusVariant(order.paymentStatus || 'pending')}>
+                    {order.paymentStatus || 'En attente'}
                   </Badge>
                 </div>
                 

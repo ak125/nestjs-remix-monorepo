@@ -261,13 +261,14 @@ export default function AdminConfigIndexPage() {
     }
   }, [configs, categories]);
 
-  const filteredConfigs = configs?.filter(config => {
+  const filteredConfigs = (configs?.filter(config => {
+    if (!config) return false;
     const matchesCategory = config.category === selectedCategory;
     const matchesSearch = !searchTerm || 
       config.key.toLowerCase().includes(searchTerm.toLowerCase()) ||
       config.description?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
-  }) || [];
+  }) || []) as ConfigItem[];
 
   const selectedCategoryData = categories.find(cat => cat.key === selectedCategory);
   const configsInCategory = stats?.configsByCategory?.[selectedCategory] || 0;
@@ -289,9 +290,9 @@ export default function AdminConfigIndexPage() {
 
   const hasSuccess = actionData && 'success' in actionData && actionData.success;
   const hasError = actionData && 'error' in actionData;
-  const successMessage = hasSuccess && 'message' in actionData ? actionData.message : '';
-  const errorMessage = hasError && 'error' in actionData ? actionData.error : '';
-  const backupId = hasSuccess && 'backupId' in actionData ? actionData.backupId : undefined;
+  const successMessage = (hasSuccess && 'message' in actionData ? actionData.message : '') as string;
+  const errorMessage = (hasError && 'error' in actionData ? actionData.error : '') as string;
+  const backupId = (hasSuccess && 'backupId' in actionData ? actionData.backupId : undefined) as string | undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -633,7 +634,7 @@ export default function AdminConfigIndexPage() {
             </div>
             <p className="text-gray-600">Gérer les connexions et paramètres de base de données</p>
             <div className="text-sm text-blue-600 mt-2">
-              {stats?.configsByCategory?.database || 0} configuration{(stats?.configsByCategory?.database || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.database || 0} configuration{((stats?.configsByCategory as any)?.database || 0) !== 1 ? 's' : ''}
             </div>
           </Link>
           
@@ -647,7 +648,7 @@ export default function AdminConfigIndexPage() {
             </div>
             <p className="text-gray-600">Configurer les services d'envoi d'emails</p>
             <div className="text-sm text-green-600 mt-2">
-              {stats?.configsByCategory?.email || 0} configuration{(stats?.configsByCategory?.email || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.email || 0} configuration{((stats?.configsByCategory as any)?.email || 0) !== 1 ? 's' : ''}
             </div>
           </Link>
           
@@ -661,7 +662,7 @@ export default function AdminConfigIndexPage() {
             </div>
             <p className="text-gray-600">Paramétrer le tracking et les analytics</p>
             <div className="text-sm text-purple-600 mt-2">
-              {stats?.configsByCategory?.analytics || 0} configuration{(stats?.configsByCategory?.analytics || 0) !== 1 ? 's' : ''}
+              {(stats?.configsByCategory as any)?.analytics || 0} configuration{((stats?.configsByCategory as any)?.analytics || 0) !== 1 ? 's' : ''}
             </div>
           </Link>
         </div>
