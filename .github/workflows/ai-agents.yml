@@ -53,7 +53,7 @@ jobs:
         id: health
         run: |
           if [ -f ai-agents/reports/meta-agent.json ]; then
-            SCORE=$(cat ai-agents/reports/meta-agent.json | jq -r '.data.healthScore.overall // 0')
+            SCORE=$(cat ai-agents/reports/meta-agent.json | jq -r '.healthScore.overall // 0')
             echo "score=$SCORE" >> $GITHUB_OUTPUT
             echo "Health Score: $SCORE/100"
           else
