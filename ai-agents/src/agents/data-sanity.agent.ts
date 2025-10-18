@@ -6,6 +6,38 @@ import { execSync } from 'child_process';
 /**
  * 🔍 AGENT 11: DATA SANITY CHECKER
  *
+ * 🎯 MÉTHODOLOGIE
+ * - **Outils**:
+ *   - Prisma introspect pour schema analysis
+ *   - Supabase SQL queries (information_schema)
+ *   - Redis SCAN pour cache keys analysis
+ * - **Confidence**: MEDIUM (nécessite accès DB en lecture)
+ * - **Detection**: Schema diff + constraint validation
+ * 
+ * 📊 CLASSIFICATION PAR GRAVITÉ (116 incohérences détectées)
+ * 
+ * 🔴 **0 CRITIQUES** - Excellent! Aucun problème bloquant
+ * 
+ * 🟠 **3 HAUTES** - Action Requise ≤10 jours
+ * - Prisma models (User, Session) sans tables Supabase correspondantes
+ * - **Owner**: Backend Lead
+ * - **Action**: Supprimer backend/prisma/schema.prisma (vestige)
+ * - **Effort**: 2h (suppression fichier + vérification PrismaService)
+ * - **Deadline**: ≤10 jours
+ * 
+ * 🟡 **113 MOYENNES** - Attendu (Pas d'action)
+ * - Tables Supabase sans models Prisma correspondants
+ * - **Status**: EXPECTED (architecture 100% Supabase intentionnelle)
+ * - **Raison**: Le projet utilise Supabase directement (112 tables)
+ * - **Action**: Aucune (faux positif de l'analyse)
+ * - **Note**: L'agent détecte correctement mais l'architecture est intentionnelle
+ * 
+ * 💡 CONTEXTE ARCHITECTURAL
+ * - **Architecture actuelle**: 100% Supabase (112 tables opérationnelles)
+ * - **Prisma**: Vestige (2 models orphelins User + Session)
+ * - **Migration historique**: Prisma → Supabase (migration complétée)
+ * - **Recommandation**: Cleanup final du fichier schema.prisma
+ * 
  * Analyse la cohérence et la qualité des données:
  * - Schéma Prisma (contraintes, indexes, relations)
  * - Tables Supabase (existence, types, null constraints)

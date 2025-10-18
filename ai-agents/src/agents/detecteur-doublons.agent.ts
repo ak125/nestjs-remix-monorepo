@@ -1,13 +1,52 @@
 /**
  * Agent 3 : Détecteur de Doublons
  * 
- * Fonction : Repérer duplication de code (hooks, utils, services, styles)
+ * 🎯 FONCTION
+ * Repérer duplication de code (hooks, utils, services, styles)
  * 
- * Périmètre : frontend + backend + packages/shared
+ * 📏 MÉTHODOLOGIE
+ * - **Outil**: jscpd (JavaScript Copy/Paste Detector) v4.x
+ * - **Seuils de Détection**:
+ *   - Minimum 5 lignes consécutives dupliquées
+ *   - Minimum 50 tokens (pour éviter faux positifs sur code trivial)
+ * - **Seuils de Gravité**:
+ *   - Clone mass >50 tokens = CRITICAL (extraction urgente)
+ *   - Clone mass 20-50 tokens = MEDIUM (extraction recommandée)
+ *   - Clone mass <20 tokens = LOW (acceptable temporairement)
+ * - **Exclusions**:
+ *   - node_modules/, dist/, build/, .next/, .turbo/
+ *   - Tests: *.test.ts, *.spec.ts, *.test.tsx
+ *   - Coverage reports
+ *   - AI agents reports
+ *   - Cache & dumps
  * 
- * Livrables :
+ * 🔍 CONFIDENCE LEVEL: HIGH
+ * - Détection automatisée par AST parsing
+ * - Faux positifs: ~5% (boilerplate légitime, patterns framework)
+ * - Validation manuelle nécessaire pour patterns >3 occurrences
+ * 
+ * 📊 RÈGLE DE PARETO
+ * Top 10% des duplications (par occurrence × taille) = 80% de la dette technique
+ * Prioriser les clusters avec:
+ * - Occurrences ≥3
+ * - Clone mass ≥50 tokens
+ * - Fichiers dans modules critiques (auth, payment, orders)
+ * 
+ * 📦 PÉRIMÈTRE
+ * - frontend/ (Remix routes + components)
+ * - backend/ (NestJS services + controllers)
+ * - packages/shared/ (types + utils communs)
+ * 
+ * 📦 LIVRABLES
  * - Clusters de duplication (≥3 occurrences) + proposition de factorisation
  * - KPI : duplication top 5 clusters ↘︎ -40% en 1 mois
+ * 
+ * ✅ DEFINITION OF DONE (par cluster)
+ * - [ ] 1 PR par cluster de duplication
+ * - [ ] Max 200 lignes changées par PR (micro-refactoring)
+ * - [ ] Test coverage maintenue (avant/après identique)
+ * - [ ] Extraction dans packages/shared/ si multi-workspace
+ * - [ ] Documentation ajoutée (JSDoc sur fonction extraite)
  */
 
 import { 

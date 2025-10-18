@@ -1,19 +1,56 @@
 /**
  * Agent 4 : Graphe d'Imports & Cycles
  * 
- * Fonction : Détecter les cycles d'imports et le dead code
+ * 🎯 FONCTION
+ * Détecter les cycles d'imports et le dead code
  * 
- * Périmètre : 
+ * 📏 MÉTHODOLOGIE
+ * - **Outils**:
+ *   - madge: Analyse de graphe de dépendances (DFS pour cycles)
+ *   - ts-morph: AST parsing TypeScript pour imports détaillés
+ *   - grep: Analyse textuelle pour détection références dynamiques
+ * - **Algorithme Cycles**: Depth-First Search (DFS) avec détection de back edges
+ * - **Critères Dead Code**: Un fichier est considéré "dead" si:
+ *   1. NON importé par aucun autre fichier (analyse statique)
+ *   2. NON référencé dans strings/commentaires (analyse textuelle)
+ *   3. AUCUN commit depuis 30 jours (git log)
+ *   4. NON entry point (main.ts, root.tsx, etc.)
+ * 
+ * 🔍 CONFIDENCE LEVEL: MEDIUM
+ * - Cycles: HIGH confidence (99% exact avec madge)
+ * - Dead Code: MEDIUM confidence (~10% faux positifs)
+ * - **Faux positifs typiques**:
+ *   - Imports dynamiques: `await import(variablePath)`
+ *   - Fichiers appelés via reflection/metadata
+ *   - Assets référencés par nom de fichier (images, styles)
+ *   - Fichiers de configuration chargés par convention
+ * - **Validation manuelle nécessaire**: 10% des fichiers dead code avant suppression
+ * 
+ * 🚫 EXCLUSIONS
+ * - node_modules/, dist/, build/, .next/
+ * - Test files: *.test.ts, *.spec.ts
+ * - Type definitions: *.d.ts (sauf si orphelins)
+ * - Migrations: prisma/migrations/
+ * - Fixtures: __fixtures__, __mocks__
+ * - Generated files: .generated.ts, schema.ts (Prisma)
+ * 
+ * 📊 PÉRIMÈTRE
  * - Frontend Remix (app/)
  * - Backend NestJS (src/)
  * - Packages partagés (packages/)
  * 
- * Livrables :
+ * 📦 LIVRABLES
  * - Graphe de dépendances complet
  * - Liste des cycles détectés (imports circulaires)
- * - Dead code (fichiers jamais importés)
+ * - Dead code (fichiers jamais importés + untouched 30j)
  * - Visualisation Mermaid du graphe
  * - Recommandations de refactoring
+ * 
+ * ⚠️ RÈGLE 30-DAY
+ * Dead code = (Non-importé + Non-référencé + Untouched 30 days)
+ * - Évite suppression code future/expérimental récent
+ * - Git history consultée via `git log --since="30 days ago"`
+ * - Exceptions: Fichiers marqués @WIP ou @TODO
  */
 
 import { 

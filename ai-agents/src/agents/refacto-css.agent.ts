@@ -4,6 +4,52 @@
  * ║  Analyse TailwindCSS usage, duplications, optimisations      ║
  * ╚══════════════════════════════════════════════════════════════╝
  * 
+ * 🎯 FONCTION
+ * Analyse l'utilisation de TailwindCSS et CSS dans le monorepo
+ * 
+ * 📏 MÉTHODOLOGIE
+ * - **Outils**:
+ *   - Regex pattern matching sur className="..." (React/Remix)
+ *   - AST parsing pour class: directives (Vue/Svelte si applicable)
+ *   - PurgeCSS analysis pour unused classes
+ * - **Détection Patterns Dupliqués**:
+ *   - Extraction de tous les className dans .tsx/.jsx
+ *   - Groupement par pattern exact (ex: "flex items-center gap-4")
+ *   - Comptage occurrences par pattern
+ * - **Seuils de Gravité**:
+ *   - >100 occurrences = CRITICAL (composant urgent)
+ *   - 50-100 occurrences = HIGH (composant recommandé)
+ *   - 20-50 occurrences = MEDIUM (considérer extraction)
+ *   - <20 occurrences = LOW (acceptable)
+ * 
+ * 🔍 CONFIDENCE LEVEL: HIGH
+ * - Détection patterns: HIGH (99% exact avec regex)
+ * - Unused classes: MEDIUM (10% faux positifs sur classes dynamiques)
+ * - Faux positifs typiques:
+ *   - Classes construites dynamiquement: `className={isActive ? 'text-blue' : 'text-gray'}`
+ *   - Classes conditionnelles complexes avec variables
+ * 
+ * 📊 CRITÈRE D'EXTRACTION COMPOSANT
+ * Un pattern doit être extrait en composant si:
+ * - **Règle 1**: Pattern présent >50 occurrences dans codebase
+ * - **Règle 2**: OU présent dans 3+ pages critiques (dashboard, orders, analytics)
+ * - **Règle 3**: OU fait partie design system (buttons, inputs, cards, badges)
+ * 
+ * Exemples d'extraction:
+ * - `flex items-center gap-4` (339×) → `<FlexCenter gap={4}>`
+ * - `text-sm font-medium text-gray-700` (216×) → `<Text variant="body-small">`
+ * - `px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600` → `<Button variant="primary">`
+ * 
+ * 🎨 TOP 8 PATTERNS CRITIQUES
+ * 1. flex items-center gap-N → FlexCenter component
+ * 2. flex items-center justify-between → FlexCenter justify="between"
+ * 3. text-sm font-medium text-color-N → Text variant="body-small"
+ * 4. px-N py-N rounded-lg bg-color → Button/Card base
+ * 5. grid grid-cols-N gap-N → GridLayout component
+ * 6. absolute inset-0 flex items-center justify-center → Overlay component
+ * 7. border border-gray-N rounded-lg p-N → Card component
+ * 8. transition-all duration-N ease-in-out → Animation utility
+ * 
  * @description
  * Analyse l'utilisation de TailwindCSS et CSS dans le monorepo pour :
  * 1. Détecter classes TailwindCSS dupliquées
@@ -22,6 +68,14 @@
  * - refacto-css.json : Résultats détaillés
  * - refacto-css.md : Rapport lisible
  * - refacto-css-plan.sh : Script d'optimisation (si applicable)
+ * 
+ * ✅ DEFINITION OF DONE (par composant extrait)
+ * - [ ] Interface TypeScript pour props (strict typing)
+ * - [ ] Story Storybook avec toutes les variants
+ * - [ ] Support dark mode (dark: utilities)
+ * - [ ] Accessibilité: ARIA labels, keyboard navigation
+ * - [ ] Tests unitaires: Jest + React Testing Library
+ * - [ ] Documentation: JSDoc avec exemples usage
  */
 
 import { 

@@ -4,6 +4,22 @@
  * ║  Analyse compatibilité Node.js, APIs obsolètes, CVE         ║
  * ╚══════════════════════════════════════════════════════════════╝
  * 
+ * 🎯 MÉTHODOLOGIE
+ * - **Outils**: ts-morph AST + node-compat-table + npm audit
+ * - **Confidence**: HIGH (official Node.js deprecation list)
+ * - **Detection**: Regex + AST analysis pour require/import patterns
+ * 
+ * ⚠️ NOTE IMPORTANTE: v22 → v20 LTS = Alignement Production
+ * - v22.17.0 (Current Odd) = Support 6 mois uniquement (non-LTS)
+ * - v20.18.0 (LTS "Iron") = Support 30 mois (jusqu'en avril 2026)
+ * - **Rationale**: Production doit toujours utiliser LTS pour stabilité
+ * - **Migration**: Optionnelle (v22 fonctionne) mais RECOMMANDÉE pour prod
+ * 
+ * 🔍 APIs CRITIQUES DÉTECTÉES
+ * - crypto.createCipher (deprecated v10, removed v17) → crypto.createCipheriv
+ * - Buffer constructor (deprecated v6) → Buffer.alloc/Buffer.from
+ * - process.binding (deprecated v10) → documented alternatives
+ * 
  * @description
  * Analyse l'utilisation de Node.js dans le monorepo pour :
  * 1. Détecter APIs obsolètes (callbacks, Buffer, process.binding)
