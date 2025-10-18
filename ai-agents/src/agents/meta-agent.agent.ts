@@ -443,34 +443,85 @@ export class MetaAgent implements IAgent {
   // CALCULATE HEALTH SCORE
   // =====================================================
 
+  /**
+   * Calcul du Health Score avec formule documentée
+   * 
+   * Formule Overall:
+   * Score = (CodeQuality × 0.20) + (Architecture × 0.25) + (Performance × 0.20) + 
+   *         (Security × 0.15) + (Maintainability × 0.10) + (Upgrades × 0.10)
+   * 
+   * Pondérations justifiées:
+   * - Architecture (25%): Base structurelle, impacts long terme
+   * - Code Quality + Performance (20% chacun): Vélocité développement
+   * - Security (15%): Risques business critiques
+   * - Maintainability + Upgrades (10% chacun): Dette technique contrôlée
+   */
   private async calculateHealthScore(reports: AgentReport[], globalKPIs: GlobalKPI[]): Promise<MonorepoHealthScore> {
-    // Code Quality Score (0-100)
-    const codeQualityKPIs = globalKPIs.filter((k) => k.category === 'code-quality');
-    const codeQuality = this.calculateCategoryScore(codeQualityKPIs);
-
-    // Architecture Score
-    const architectureKPIs = globalKPIs.filter((k) => k.category === 'architecture');
-    const architecture = this.calculateCategoryScore(architectureKPIs);
-
-    // Performance Score
-    const performanceKPIs = globalKPIs.filter((k) => k.category === 'performance');
-    const performance = this.calculateCategoryScore(performanceKPIs);
-
-    // Security Score (default high if no critical issues)
-    const security = 85;
-
-    // Maintainability Score (based on duplications, massive files)
+    // 1. CODE QUALITY SCORE
+    // Formule: 100 - (duplications/10 + massive_files/5)
     const doublons = reports.find((r) => r.agentType === 'detecteur-doublons');
+    const massifs = reports.find((r) => r.agentType === 'fichiers-massifs');
+    
     const duplicationsCount = doublons?.kpis['Duplications détectées'] || 0;
-    const maintainability = Math.max(0, 100 - (duplicationsCount / 10));
+    const massiveFilesCount = massifs?.kpis['Fichiers massifs'] || 0;
+    
+    const codeQuality = Math.max(0, Math.min(100, 
+      100 - (duplicationsCount / 10 + massiveFilesCount / 5)
+    ));
 
-    // Upgrades Score (lower is better for breaking changes)
-    const upgradeKPIs = globalKPIs.filter((k) => k.category === 'upgrades');
-    const upgrades = this.calculateCategoryScore(upgradeKPIs);
+    // 2. ARCHITECTURE SCORE
+    // Formule: 100 - (cycles×20 + inconsistencies/2)
+    const graphe = reports.find((r) => r.agentType === 'graphe-imports');
+    const dataSanity = reports.find((r) => r.agentType === 'data-sanity');
+    
+    const cycles = graphe?.kpis['Cycles détectés'] || 0;
+    const inconsistencies = dataSanity?.kpis['Incohérences CRITICAL'] || 0;
+    
+    const architecture = Math.max(0, Math.min(100,
+      100 - (cycles * 20 + inconsistencies / 2)
+    ));
 
-    // Overall Score (weighted average)
+    // 3. PERFORMANCE SCORE
+    // Formule: 100 - bottlenecks×15
+    const perf = reports.find((r) => r.agentType === 'perf-observabilite');
+    const bottlenecks = perf?.kpis['Bottlenecks détectés'] || 0;
+    
+    const performance = Math.max(0, Math.min(100, 100 - (bottlenecks * 15)));
+
+    // 4. SECURITY SCORE
+    // Formule: 100 - (critical_vulns×40 + deprecated_apis×10)
+    // Note: Actuellement pas d'agent security dédié, score par défaut
+    // TODO Agent 13: Security Scanner (npm audit, Snyk)
+    const criticalVulns = 0; // À implémenter avec Agent 13
+    const deprecatedApis = 1; // crypto.createCipher détecté (Agent 10)
+    
+    const security = Math.max(0, Math.min(100,
+      100 - (criticalVulns * 40 + deprecatedApis * 10)
+    ));
+
+    // 5. MAINTAINABILITY SCORE
+    // Formule: 100 - dead_code/5
+    const deadCodeCount = graphe?.kpis['Dead code'] || 0;
+    
+    const maintainability = Math.max(0, Math.min(100, 100 - (deadCodeCount / 5)));
+
+    // 6. UPGRADES SCORE
+    // Formule: 100 - breaking_changes×5
+    const upgradeAgents = reports.filter((r) => r.agentType.startsWith('upgrade-'));
+    const totalBreakingChanges = upgradeAgents.reduce((sum, agent) => {
+      return sum + (agent.kpis['Breaking Changes'] || 0);
+    }, 0);
+    
+    const upgrades = Math.max(0, Math.min(100, 100 - (totalBreakingChanges * 5)));
+
+    // 7. OVERALL SCORE (weighted average with documented pondérations)
     const overall = Math.round(
-      codeQuality * 0.25 + architecture * 0.2 + performance * 0.15 + security * 0.1 + maintainability * 0.2 + upgrades * 0.1,
+      codeQuality * 0.20 +      // 20% Code Quality
+      architecture * 0.25 +      // 25% Architecture (highest weight)
+      performance * 0.20 +       // 20% Performance
+      security * 0.15 +          // 15% Security
+      maintainability * 0.10 +   // 10% Maintainability
+      upgrades * 0.10            // 10% Upgrades
     );
 
     return {
