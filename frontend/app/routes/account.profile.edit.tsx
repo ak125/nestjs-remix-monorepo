@@ -29,9 +29,9 @@ type ActionData = {
   };
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request, context }) => {
   // Authentification requise
-  const authUser = await requireUser({ context: request });
+  const authUser = await requireUser({ context });
   
   try {
     // TODO: Récupérer le profil complet depuis l'API
@@ -51,9 +51,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, context }) => {
   // Authentification requise
-  const authUser = await requireUser({ context: request });
+  const authUser = await requireUser({ context });
   
   const formData = await request.formData();
   const firstName = formData.get("firstName")?.toString() || "";

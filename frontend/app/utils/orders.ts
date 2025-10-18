@@ -49,6 +49,23 @@ export interface Order {
   totalTTC: number;
   createdAt: string;
   lines: OrderLine[];
+  trackingNumber?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  transactionId?: string;
+  deliveryMethod?: string;
+  hasReview?: boolean;
+  canReturn?: boolean;
+  statusHistory?: Array<{ status: number; date: string; comment?: string }>;
+  subtotalHT?: number;
+  subtotalPrice?: number;
+  tva?: number;
+  shippingFee?: number;
+  deliveryPrice?: number;
+  discountAmount?: number;
+  totalPrice?: number;
+  shippingAddress?: any;
+  deliveryAddress?: any;
 }
 
 export interface OrdersResponse {

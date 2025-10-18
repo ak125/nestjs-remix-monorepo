@@ -27,7 +27,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
     setShowModal(true);
   };
 
-  const confirmAction = async () => {
+  const confirmAction = () => {
     const lineId = line.orl_id;
 
     switch (action) {
@@ -324,7 +324,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
               <div
                 className={`mt-4 p-2 rounded ${'success' in fetcher.data && fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
               >
-                {String('message' in fetcher.data ? fetcher.data.message : 'error' in fetcher.data ? fetcher.data.error : '')}
+                {String('message' in fetcher.data ? (fetcher.data as any).message : 'error' in fetcher.data ? (fetcher.data as any).error : '') as React.ReactNode}
               </div>
             )}
           </div>

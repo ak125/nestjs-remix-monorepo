@@ -132,7 +132,11 @@ export default function VehicleSelectorV2({
     if (selectedBrand && year) {
       setLoadingModels(true);
       try {
-        const modelsData = await enhancedVehicleApi.getModels(selectedBrand.marque_id, { year });
+        const modelsData = await enhancedVehicleApi.getModels(selectedBrand.marque_id, { 
+          year, 
+          page: 1, 
+          limit: 100 
+        });
         setModels(modelsData);
       } catch (error) {
         console.warn('❌ Erreur chargement modèles:', error);

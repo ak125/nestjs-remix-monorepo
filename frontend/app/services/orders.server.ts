@@ -22,7 +22,16 @@ export async function getUserOrders(params: {
   status?: string;
   year?: number;
   request: Request;
-}): Promise<{ orders: Order[]; total: number; page: number }> {
+}): Promise<{ 
+  orders: Order[]; 
+  total: number; 
+  page: number;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+  };
+}> {
   const { page = 1, status = "all", year, request } = params;
 
   try {
@@ -39,7 +48,7 @@ export async function getUserOrders(params: {
     }
 
     if (year) {
-      searchParams.append("year", year);
+      searchParams.append("year", year.toString());
     }
 
     // Récupération des headers avec cookies pour l'authentification
@@ -97,7 +106,12 @@ export async function getUserOrders(params: {
       totalCount: orders.length,
     };
 
-    return { orders, pagination };
+    return { 
+      orders, 
+      pagination,
+      total: pagination.totalCount,
+      page: pagination.currentPage,
+    };
   } catch (error) {
     console.error("Error fetching user orders:", error);
 
@@ -109,6 +123,8 @@ export async function getUserOrders(params: {
         totalPages: 1,
         totalCount: 0,
       },
+      total: 0,
+      page: 1,
     };
   }
 }
