@@ -19,7 +19,7 @@ import {
   Copy,
   Search
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
 
 // Types simplifiés pour les configurations
@@ -240,7 +240,7 @@ export default function AdminConfigIndexPage() {
   
   // Type guards pour gérer les types de retour possibles
   const categories = 'categories' in data ? data.categories : CATEGORIES;
-  const configs = 'configs' in data ? data.configs : [];
+  const configs = useMemo(() => 'configs' in data ? data.configs : [], [data]);
   const stats = 'stats' in data ? data.stats : { totalConfigs: 0, configsByCategory: {} };
   const error = 'error' in data ? data.error : undefined;
   

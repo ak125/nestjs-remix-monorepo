@@ -7,28 +7,10 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
 import { requireAdmin } from "../auth/unified.server";
 
-// Types pour la gestion des factures
-interface Invoice {
-  inv_id: string;
-  inv_number: string;
-  inv_ord_id?: string;
-  inv_spl_id?: string;
-  inv_date: string;
-  inv_due_date?: string;
-  inv_amount: number;
-  inv_tax_amount?: number;
-  inv_total_amount: number;
-  inv_currency?: string;
-  inv_status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
-  inv_payment_terms?: string;
-  inv_notes?: string;
-  inv_is_credit?: boolean;
-  inv_created_at?: string;
-  inv_updated_at?: string;
-}
+// Types pour la gestion des factures (utilisé dans le loader/action)
+// interface Invoice { inv_id, inv_number, inv_status, inv_date, inv_amount, etc. }
 
 interface InvoiceStats {
   totalInvoices: number;
