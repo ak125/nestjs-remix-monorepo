@@ -22,13 +22,23 @@ export interface Payment {
   status: PaymentStatus;
   paymentMethod: string;
   transactionId?: string;
+  gatewayTransactionId?: string;
   gatewayData?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  processedAt?: string;
   failureReason?: string;
   refundAmount?: number;
   refundedAt?: string;
+  billingAddress?: {
+    firstName?: string;
+    lastName?: string;
+    street?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+  };
 }
 
 export enum PaymentStatus {
