@@ -3,7 +3,7 @@
  * Service optimisé pour gérer les définitions et termes techniques avec cache intelligent
  */
 
-const API_BASE_URL = typeof window !== 'undefined' && window.ENV?.API_BASE_URL 
+const _API_BASE_URL = typeof window !== 'undefined' && window.ENV?.API_BASE_URL 
   ? window.ENV.API_BASE_URL 
   : "http://localhost:3000";
 
@@ -282,8 +282,8 @@ class GlossaryApiService {
       const relatedArticles = DEMO_ARTICLES.filter(article =>
         article.title.toLowerCase().includes(wordLower) ||
         article.excerpt.toLowerCase().includes(wordLower) ||
-        wordLower.includes('abs') && article.title.toLowerCase().includes('abs') ||
-        wordLower.includes('turbo') && article.title.toLowerCase().includes('turbo')
+        (wordLower.includes('abs') && article.title.toLowerCase().includes('abs')) ||
+        (wordLower.includes('turbo') && article.title.toLowerCase().includes('turbo'))
       ).slice(0, limit);
 
       console.log('[DEMO] Found related articles for:', word, relatedArticles.length);

@@ -15,6 +15,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
 import { cn } from '../../lib/utils';
+import { searchApi } from '../../services/api/search.api';
 
 interface SearchBarProps {
   initialQuery?: string;

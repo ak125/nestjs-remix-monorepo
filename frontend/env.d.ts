@@ -11,6 +11,9 @@ declare global {
       [key: string]: any;
     };
   }
+
+  // Google Analytics gtag
+  function gtag(...args: any[]): void;
 }
 
 export {};
