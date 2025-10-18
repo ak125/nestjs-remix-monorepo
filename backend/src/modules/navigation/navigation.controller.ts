@@ -1,13 +1,5 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Logger,
-  Delete,
-  Post,
-  Body,
-} from '@nestjs/common';
-import { NavigationService, MenuConfig } from './navigation.service';
+import { Controller, Get, Query, Logger, Delete } from '@nestjs/common';
+import { NavigationService } from './navigation.service';
 import { CommercialMenuService } from './services/commercial-menu.service';
 import { ExpeditionMenuService } from './services/expedition-menu.service';
 import { SeoMenuService } from './services/seo-menu.service';

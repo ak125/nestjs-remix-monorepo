@@ -37,14 +37,11 @@ export class EnhancedMetadataController {
    * GET /api/metadata/analytics/seo
    */
   @Get('analytics/seo')
-  async getSeoAnalytics(
-    @Query('limit') limit?: number,
-  ): Promise<{ success: boolean; data: any }> {
+  async getSeoAnalytics(): Promise<{ success: boolean; data: any }> {
     try {
       this.logger.log('Récupération analytics SEO');
 
-      const limitValue = limit ? parseInt(limit.toString(), 10) : 1000;
-      const analytics = await this.metadataService.getSeoAnalytics(limitValue);
+      const analytics = await this.metadataService.getSeoAnalytics();
 
       return {
         success: true,
@@ -95,7 +92,6 @@ export class EnhancedMetadataController {
   @Get('search')
   async searchMetadata(
     @Query('q') query: string,
-    @Query('limit') limit?: number,
   ): Promise<{ success: boolean; data: { results: any[]; count: number } }> {
     try {
       if (!query || query.trim().length < 2) {
@@ -107,11 +103,9 @@ export class EnhancedMetadataController {
 
       this.logger.log(`Recherche métadonnées: "${query}"`);
 
-      const limitValue = limit ? parseInt(limit.toString(), 10) : 50;
-
       // Note: Cette recherche utilise la table existante ___meta_tags_ariane
       // On peut rechercher dans les titres, descriptions et mots-clés
-      const results = await this.searchInMetadata(query, limitValue);
+      const results = await this.searchInMetadata(query);
 
       return {
         success: true,
@@ -261,7 +255,7 @@ export class EnhancedMetadataController {
   /**
    * Méthode privée pour rechercher dans les métadonnées
    */
-  private async searchInMetadata(query: string, limit: number): Promise<any[]> {
+  private async searchInMetadata(query: string): Promise<any[]> {
     try {
       // Pour l'instant, retourne un tableau vide
       // TODO: Implémenter la recherche directe dans la base de données

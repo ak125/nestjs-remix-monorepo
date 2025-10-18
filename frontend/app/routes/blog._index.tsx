@@ -225,7 +225,7 @@ export default function BlogIndex() {
   const fetcher = useFetcher();
   const [searchQuery, setSearchQuery] = useState(searchParams.query || '');
   const [selectedType, setSelectedType] = useState(searchParams.type || '');
-  const [animatedStats, setAnimatedStats] = useState({
+  const [_animatedStats, setAnimatedStats] = useState({
     articles: 0,
     advice: 0,
     guides: 0,

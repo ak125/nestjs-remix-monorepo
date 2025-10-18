@@ -25,9 +25,8 @@ export interface ContactRequest {
   customer_id?: string; // ID du client existant si connecté
 }
 
-export interface ContactFormData extends ContactRequest {
-  // Interface pour le contrôleur
-}
+// Interface ContactFormData hérite de toutes les propriétés de ContactRequest
+export type ContactFormData = ContactRequest;
 
 export interface ContactResponse {
   message_id: string;
@@ -556,7 +555,7 @@ export class ContactService extends SupabaseBaseService {
         priority = metadata.priority || 'normal';
         category = metadata.category || 'general';
       }
-    } catch (e) {
+    } catch {
       // Ignore parsing errors
     }
 
@@ -734,7 +733,7 @@ export class ContactService extends SupabaseBaseService {
     }
   }
 
-  async getAllTickets(filters: any): Promise<ContactTicket[]> {
+  async getAllTickets(): Promise<ContactTicket[]> {
     // Version simplifiée temporaire sans jointures
     try {
       const { data, error } = await this.supabase

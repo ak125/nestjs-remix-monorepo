@@ -198,7 +198,7 @@ export class UploadController {
         success: true,
         data: config,
       };
-    } catch (error: any) {
+    } catch {
       throw new HttpException("Type d'upload invalide", HttpStatus.BAD_REQUEST);
     }
   }

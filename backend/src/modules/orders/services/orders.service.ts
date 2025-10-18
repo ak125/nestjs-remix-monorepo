@@ -106,7 +106,7 @@ export class OrdersService extends SupabaseBaseService {
       const orderNumber = await this.generateOrderNumber();
 
       // Calculer frais de port
-      const shippingCost = await this.calculateShippingCost(orderData);
+      const shippingCost = await this.calculateShippingCost();
 
       // Calculer totaux
       // ✅ Phase 5: Les prix sont TTC, donc taxRate = 0 (pas de TVA supplémentaire)
@@ -379,7 +379,7 @@ export class OrdersService extends SupabaseBaseService {
         dataToUpdate.order_status = updateData.status;
         // Créer historique
         await this.statusService.createStatusHistory(
-          orderId,
+          parseInt(orderId, 10),
           updateData.status,
           'Statut mis à jour',
         );
@@ -419,7 +419,7 @@ export class OrdersService extends SupabaseBaseService {
       // Statut annulée = 99
       await this.updateOrder(orderId, { status: 99 });
       await this.statusService.createStatusHistory(
-        orderId,
+        parseInt(orderId, 10),
         99,
         reason || 'Commande annulée',
       );
@@ -539,9 +539,7 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Calculer frais de port
    */
-  private async calculateShippingCost(
-    _orderData: CreateOrderData,
-  ): Promise<number> {
+  private async calculateShippingCost(): Promise<number> {
     try {
       // Pour l'instant, logique simple basée sur le montant
       // ShippingService.calculateShippingFee() nécessite orderId

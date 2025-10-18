@@ -12,9 +12,9 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
-  ArrowLeft, Filter, Package, TrendingUp, BarChart3, Star, 
+  ArrowLeft, Package, 
   Search, ChevronLeft, ChevronRight, Eye, Edit, Grid, List,
-  SortAsc, SortDesc, RefreshCw
+  RefreshCw
 } from 'lucide-react';
 import { requireUser } from '../auth/unified.server';
 import { Badge } from '../components/ui/badge';

@@ -532,7 +532,7 @@ export class RedirectService extends SupabaseBaseService {
           })
           .eq('msg_id', ruleId);
       }
-    } catch (_error) {
+    } catch {
       // Ne pas logger cette erreur car ce n'est pas critique
     }
   }
@@ -560,7 +560,7 @@ export class RedirectService extends SupabaseBaseService {
       this.logger.debug(
         `Tentative d'incrémentation legacy pour ID: ${redirectId}`,
       );
-    } catch (_error) {
+    } catch {
       // Ignore silencieusement
     }
   }

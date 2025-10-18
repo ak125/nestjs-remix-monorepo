@@ -116,14 +116,14 @@ export class PiecesRealService extends SupabaseBaseService {
   }> {
     try {
       // Comptage des pièces dans cette gamme
-      const { count, error: countError } = await this.supabase
+      const { count } = await this.supabase
         .from('pieces')
         .select('*', { count: 'exact', head: true })
         .eq('piece_pg_id', pgId)
         .eq('piece_display', true);
 
       // Info gamme
-      const { data: gammeData, error: gammeError } = await this.supabase
+      const { data: gammeData } = await this.supabase
         .from('pieces_gamme')
         .select('pg_name, pg_alias')
         .eq('pg_id', pgId)

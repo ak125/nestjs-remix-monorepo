@@ -127,6 +127,13 @@ export class PiecesAnalysisService extends SupabaseBaseService {
   /**
    * 🔍 Obtenir la structure complète de la table pieces
    */
+  /**
+   * Alias pour getCompleteStructure - compatibilité contrôleur
+   */
+  async getPiecesStructure() {
+    return this.getCompleteStructure();
+  }
+
   async getCompleteStructure() {
     try {
       // Récupérer un échantillon avec toutes les colonnes
@@ -287,7 +294,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
               recordCount: data.length,
             };
           }
-        } catch (err) {
+        } catch {
           // Table n'existe pas, continuer
         }
       }

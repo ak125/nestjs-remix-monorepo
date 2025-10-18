@@ -10,7 +10,7 @@ interface OrderLineActionsProps {
 }
 
 export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsProps) {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ success?: boolean; message?: string; error?: string }>();
   const [showModal, setShowModal] = useState(false);
   const [action, setAction] = useState<string>('');
   const [supplierData, setSupplierData] = useState({
@@ -27,7 +27,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
     setShowModal(true);
   };
 
-  const confirmAction = async () => {
+  const confirmAction = () => {
     const lineId = line.orl_id;
 
     switch (action) {
@@ -308,7 +308,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
             )}
 
             <div className="flex gap-2">
-              <Button onClick={confirmAction} className="flex-1">
+              <Button onClick={() => confirmAction()} className="flex-1">
                 ✅ Confirmer
               </Button>
               <Button
@@ -320,11 +320,11 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
               </Button>
             </div>
 
-            {fetcher.data && (
+            {fetcher.data && typeof fetcher.data === 'object' && (
               <div
-                className={`mt-4 p-2 rounded ${fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                className={`mt-4 p-2 rounded ${'success' in fetcher.data && fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
               >
-                {fetcher.data.message || fetcher.data.error}
+                {'message' in fetcher.data ? String((fetcher.data as any).message) : 'error' in fetcher.data ? String((fetcher.data as any).error) : ''}
               </div>
             )}
           </div>

@@ -31,13 +31,15 @@ interface LegacyPartUrl {
 
 /**
  * Structure des nouvelles URLs de pièces
+ * Note: Cette interface n'est pas utilisée actuellement mais garde la documentation
+ *
+ * interface ModernPartUrl {
+ *   brand: string; // ex: "audi-22"
+ *   model: string; // ex: "a7-sportback-22059"
+ *   type: string; // ex: "type-34940"
+ *   category: string; // ex: "filtres"
+ * }
  */
-interface ModernPartUrl {
-  brand: string; // ex: "audi-22"
-  model: string; // ex: "a7-sportback-22059"
-  type: string; // ex: "type-34940"
-  category: string; // ex: "filtres"
-}
 
 /**
  * Mapping des catégories anciennes vers nouvelles

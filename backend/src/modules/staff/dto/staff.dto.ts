@@ -25,7 +25,7 @@ export const CreateStaffSchema = z.object({
   password: z.string().min(8),
   firstName: z.string().min(2),
   lastName: z.string().min(2),
-  level: z.enum(['7', '8', '9']).transform(Number).default(7),
+  level: z.enum(['7', '8', '9']).default('7').transform(Number),
   job: z.string().optional(),
 });
 

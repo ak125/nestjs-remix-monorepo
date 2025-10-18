@@ -49,7 +49,7 @@ export interface FooterData {
 
 @Injectable()
 export class FooterService extends SupabaseBaseService {
-  private readonly logger = new Logger(FooterService.name);
+  protected readonly logger = new Logger(FooterService.name);
 
   constructor(private readonly cacheService: CacheService) {
     super();

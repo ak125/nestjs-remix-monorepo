@@ -1,7 +1,7 @@
 // 📁 backend/src/modules/catalog/controllers/gamme-unified.controller.ts
 // 🎯 Controller unifié pour les gammes - API simple et claire
 
-import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 
 @Controller('api/catalog/gammes')

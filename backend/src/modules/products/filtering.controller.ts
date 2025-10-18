@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ProductFilteringService } from './services/product-filtering.service';
 
@@ -78,8 +78,7 @@ export class FilteringController {
   async getAllFilters(
     @Param('pgId', ParseIntPipe) pgId: number,
     @Param('typeId', ParseIntPipe) typeId: number,
-    @Query() options: any = {},
   ) {
-    return this.filteringService.getAllFilters(pgId, typeId, options);
+    return this.filteringService.getAllFilters(pgId, typeId);
   }
 }

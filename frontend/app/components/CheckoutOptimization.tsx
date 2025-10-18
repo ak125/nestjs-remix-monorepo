@@ -80,7 +80,8 @@ export function CheckoutOptimization({
     }
 
     initializeCheckoutTest()
-  }, [initialized]) // Seulement 'initialized' comme dépendance
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized]) // Seulement 'initialized' comme dépendance - les autres sont des fonctions stables
 
   // Stabiliser la fonction de conversion
   const handleCheckoutAttempt = useCallback(async () => {

@@ -92,7 +92,7 @@ export function FeaturedModelsCarousel({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={goToPrevious}
             disabled={totalPages <= 1}
             aria-label="Précédent"
@@ -101,7 +101,7 @@ export function FeaturedModelsCarousel({
           </Button>
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={goToNext}
             disabled={totalPages <= 1}
             aria-label="Suivant"

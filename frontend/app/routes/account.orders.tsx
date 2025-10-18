@@ -26,7 +26,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const status = url.searchParams.get("status") || "all";
-    const year = url.searchParams.get("year") || undefined;
+    const yearParam = url.searchParams.get("year");
+    const year = yearParam ? parseInt(yearParam) : undefined;
 
     console.log("Fetching orders for user:", userId);
 

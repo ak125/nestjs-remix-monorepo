@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { SearchSimpleService } from '../services/search-simple.service';
+import { SearchEnhancedExistingService } from '../services/search-enhanced-existing.service';
 
 /**
  * 🎯 CONTRÔLEUR RECHERCHE ENHANCED - Tables Existantes
@@ -13,7 +13,9 @@ import { SearchSimpleService } from '../services/search-simple.service';
 export class SearchEnhancedExistingController {
   private readonly logger = new Logger(SearchEnhancedExistingController.name);
 
-  constructor(private readonly searchEnhancedService: SearchSimpleService) {}
+  constructor(
+    private readonly searchEnhancedService: SearchEnhancedExistingService,
+  ) {}
 
   /**
    * 🔍 RECHERCHE PRINCIPALE
@@ -23,7 +25,6 @@ export class SearchEnhancedExistingController {
   @Get('search')
   async search(
     @Query('query') query: string = '',
-    @Query('q') q: string = '', // Support alias 'q' pour compatibilité
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
     @Query('gammeId') gammeId?: string | string[],
@@ -94,8 +95,9 @@ export class SearchEnhancedExistingController {
           searchParams.vehicleContext.typeId = parseInt(vehicleTypeId, 10);
       }
 
-      // Appel au service de recherche SIMPLE
-      const result = await this.searchEnhancedService.search(searchParams);
+      // Appel au service de recherche
+      const result =
+        await this.searchEnhancedService.searchPieces(searchParams);
 
       this.logger.log(
         `✅ [SEARCH-EXISTING] ${result.data.items.length} résultats en ${result.data.executionTime}ms`,
@@ -175,9 +177,9 @@ export class SearchEnhancedExistingController {
       const result =
         await this.searchEnhancedService.searchPiecesByVehicle(searchParams);
 
-      if (result.success) {
+      if (result.success && 'data' in result) {
         this.logger.log(
-          `✅ [SEARCH-VEHICLE] ${result.data?.items?.length || 0} résultats`,
+          `✅ [SEARCH-VEHICLE] ${result.data.items?.length || 0} résultats`,
         );
       }
 

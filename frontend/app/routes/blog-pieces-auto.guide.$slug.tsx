@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   BookOpen,
   Calendar,
-  Clock,
   Eye,
   List,
   Sparkles

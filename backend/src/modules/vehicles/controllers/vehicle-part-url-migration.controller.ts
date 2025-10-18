@@ -30,20 +30,6 @@ import {
 } from '@nestjs/swagger';
 import { VehiclePartUrlMigrationService } from '../services/vehicle-part-url-migration.service';
 
-// Importation du service de redirection existant
-// Note: Adapter selon votre architecture exacte
-interface RedirectService {
-  createRedirect(redirect: {
-    old_path: string;
-    new_path: string;
-    redirect_type: number;
-    reason?: string;
-  }): Promise<any>;
-
-  findRedirect(url: string): Promise<any>;
-  createRedirectRule(rule: any): Promise<any>;
-}
-
 /**
  * DTO pour la création de redirections en lot
  */
@@ -285,15 +271,8 @@ export class VehiclePartUrlMigrationController {
   @ApiResponse({ status: 201, description: 'Redirections créées avec succès' })
   async migrateVehicleUrls(@Body() body: BulkRedirectRequest) {
     try {
-      const {
-        brand_slug,
-        brand_id,
-        model_slug,
-        model_id,
-        type_slug,
-        type_id,
-        force_update = false,
-      } = body;
+      const { brand_slug, brand_id, model_slug, model_id, type_slug, type_id } =
+        body;
 
       this.logger.log(
         `🚗 Migration véhicule: ${brand_slug} ${model_slug} ${type_slug}`,

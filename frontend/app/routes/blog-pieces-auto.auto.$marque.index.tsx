@@ -1,7 +1,7 @@
 // app/routes/blog-pieces-auto.auto.$marque.tsx
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useParams } from "@remix-run/react";
-import { ArrowLeft, ArrowRight, Calendar, Car, Fuel, Gauge, Wrench } from "lucide-react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 

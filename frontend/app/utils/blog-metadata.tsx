@@ -106,10 +106,10 @@ export function generateBlogMeta(
   // OpenGraph tags
   if (opts.ogImage) {
     metaTags.push(
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:image", content: opts.ogImage },
-      { property: "og:type", content: "website" }
+      { property: "og:title", content: title } as any,
+      { property: "og:description", content: description } as any,
+      { property: "og:image", content: opts.ogImage } as any,
+      { property: "og:type", content: "website" } as any
     );
   }
 

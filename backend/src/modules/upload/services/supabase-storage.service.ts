@@ -3,7 +3,7 @@
  * Interface avec Supabase Storage pour upload de fichiers
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { FileUploadResult } from '../dto/upload.dto';
@@ -42,9 +42,9 @@ export class SupabaseStorageService extends SupabaseBaseService {
       } = this.supabase.storage.from(this.bucketName).getPublicUrl(filePath);
 
       return {
+        id: data.path, // Utiliser le path comme id
         fileName,
         originalName: file.originalname,
-        filePath: data.path,
         url: publicUrl,
         mimeType: file.mimetype,
         size: file.size,

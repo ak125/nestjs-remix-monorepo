@@ -22,8 +22,8 @@ import {
   EscalationPrediction,
   WorkflowOptimization,
 } from '../services/ai-smart-response.service';
-import { ContactService, ContactTicket } from '../services/contact.service';
-import { ReviewService, ReviewData } from '../services/review.service';
+import { ContactService } from '../services/contact.service';
+import { ReviewService } from '../services/review.service';
 
 export interface AIAnalysisRequest {
   type: 'ticket' | 'review';
@@ -186,16 +186,11 @@ export class AISupportController {
           throw new Error(`Review ${request.id} not found`);
         }
 
-        let sentiment;
         if (request.includeAnalysis) {
-          sentiment =
-            await this.aiSentimentService.analyzeReviewSentiment(review);
+          await this.aiSentimentService.analyzeReviewSentiment(review);
         }
 
-        return this.aiSmartResponseService.generateReviewResponse(
-          review,
-          sentiment,
-        );
+        return this.aiSmartResponseService.generateReviewResponse(review);
       }
 
       throw new Error(`Type non supporté: ${request.type}`);
@@ -236,15 +231,11 @@ export class AISupportController {
       throw new Error(`Review ${reviewId} not found`);
     }
 
-    let sentiment;
     if (includeAnalysis === 'true') {
-      sentiment = await this.aiSentimentService.analyzeReviewSentiment(review);
+      await this.aiSentimentService.analyzeReviewSentiment(review);
     }
 
-    return this.aiSmartResponseService.generateReviewResponse(
-      review,
-      sentiment,
-    );
+    return this.aiSmartResponseService.generateReviewResponse(review);
   }
 
   // ==================== PRÉDICTION D'ESCALATION ====================

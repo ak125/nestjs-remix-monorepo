@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac } from 'crypto';
+import { createHmac } from 'crypto';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
 
 @Injectable()

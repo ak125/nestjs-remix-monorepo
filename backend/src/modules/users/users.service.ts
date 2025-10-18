@@ -22,17 +22,14 @@ import { RegisterDto } from '../../auth/dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import {
   UpdateProfileDto,
-  UpdateAddressDto,
   UserMessageDto,
   ResetPasswordDto,
-  ConfirmResetPasswordDto,
   SearchUsersDto,
   UserResponseDto,
   LoginResponseDto,
   PaginatedUsersResponseDto,
 } from './dto/users.dto';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { AuthService } from '../../auth/auth.service';
 import { MessagesService } from '../messages/messages.service';
@@ -345,10 +342,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Changer le mot de passe d'un utilisateur
    */
-  async changePassword(
-    id: string,
-    _changePasswordDto: ChangePasswordDto,
-  ): Promise<boolean> {
+  async changePassword(id: string): Promise<boolean> {
     console.log('🔒 UsersService.changePassword:', id);
 
     try {
@@ -591,10 +585,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Mettre à jour les adresses - TEMPORAIREMENT DÉSACTIVÉE
    */
-  async updateAddress(
-    userId: number,
-    _updateDto: UpdateAddressDto,
-  ): Promise<UserResponseDto> {
+  async updateAddress(userId: number): Promise<UserResponseDto> {
     console.log('🏠 UsersService.updateAddress - DÉSACTIVÉE:', userId);
 
     // TODO: Corriger les DTOs pour faire fonctionner cette méthode
@@ -701,9 +692,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Confirmer la réinitialisation de mot de passe
    */
-  async confirmPasswordReset(
-    _confirmDto: ConfirmResetPasswordDto,
-  ): Promise<void> {
+  async confirmPasswordReset(): Promise<void> {
     console.log('UsersService.confirmPasswordReset (Mock)');
     // TODO: Implémenter avec vraie DB
     throw new Error('Not implemented yet');
@@ -870,7 +859,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Créer un token de réinitialisation de mot de passe
    */
-  async createPasswordResetToken(_email: string): Promise<string> {
+  async createPasswordResetToken(): Promise<string> {
     // Générer un token simple
     const token =
       Math.random().toString(36).substring(2, 15) +
@@ -881,10 +870,7 @@ export class UsersService extends SupabaseBaseService {
   /**
    * Réinitialiser le mot de passe avec token
    */
-  async resetPasswordWithToken(
-    _token: string,
-    _newPassword: string,
-  ): Promise<any> {
+  async resetPasswordWithToken(): Promise<any> {
     // Pour l'instant, retourner un succès simulé
     return {
       success: true,

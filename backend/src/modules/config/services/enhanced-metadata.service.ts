@@ -131,7 +131,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
         updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await this.client
+      const { error } = await this.client
         .from('___meta_tags_ariane')
         .upsert(updateData)
         .select()
@@ -231,7 +231,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
   /**
    * Analytics SEO - Statistiques sur les métadonnées
    */
-  async getSeoAnalytics(limit: number = 1000): Promise<SeoAnalytics> {
+  async getSeoAnalytics(): Promise<SeoAnalytics> {
     try {
       // Compter le total de pages avec métadonnées
       const { count: totalWithMetadata, error: countError } = await this.client

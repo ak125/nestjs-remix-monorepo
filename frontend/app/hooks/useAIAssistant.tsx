@@ -41,18 +41,6 @@ export function useAIAssistant() {
   const [learningMode, setLearningMode] = useState(true)
   const [actionHistory, setActionHistory] = useState<string[]>([])
 
-  // Enregistrement des actions pour apprentissage
-  const recordAction = useCallback((action: string) => {
-    setActionHistory(prev => {
-      const updated = [...prev, action].slice(-20) // Garder les 20 dernières
-      
-      // Détecter les patterns après chaque action
-      detectPatterns(updated)
-      
-      return updated
-    })
-  }, [])
-
   // Détection automatique des patterns utilisateur
   const detectPatterns = useCallback((history: string[]) => {
     if (history.length < 3) return
@@ -95,9 +83,21 @@ export function useAIAssistant() {
         return acc
       }, [] as UserPattern[])
       
-      return deduped.slice(0, 10) // Garder top 10
+      return deduped.slice(-10) // Garder les 10 plus récents
     })
   }, [location.pathname])
+
+  // Enregistrement des actions pour apprentissage
+  const recordAction = useCallback((action: string) => {
+    setActionHistory(prev => {
+      const updated = [...prev, action].slice(-20) // Garder les 20 dernières
+      
+      // Détecter les patterns après chaque action
+      detectPatterns(updated)
+      
+      return updated
+    })
+  }, [detectPatterns])
 
   // Génération de suggestions IA basées sur les patterns
   const generateAISuggestions = useCallback(() => {

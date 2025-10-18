@@ -9,15 +9,12 @@ import {
   Users, 
   CheckCircle, 
   Clock,
-  MapPin,
-  Phone,
   Package,
   AlertTriangle,
-  Calendar,
   FileText,
   Settings
 } from 'lucide-react';
-import { getOptionalUser, requireAuth } from '../auth/unified.server';
+import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données des fournisseurs
 interface SupplierStats {
@@ -53,7 +50,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function AdminSuppliersLayout() {
-  const { user, supplierStats } = useLoaderData<typeof loader>();
+  const { supplierStats } = useLoaderData<typeof loader>();
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('fr-FR').format(num);

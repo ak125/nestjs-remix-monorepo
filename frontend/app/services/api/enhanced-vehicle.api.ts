@@ -5,11 +5,10 @@
  * - Backend retourne { data, page, limit, total } (sans "success") → mapping standardisé
  */
 
-import  {
+import {
   type VehicleBrand,
   type VehicleModel,
   type VehicleType,
-  type ApiResponse,
   type PaginationOptions
 } from '@monorepo/shared-types';
 
@@ -86,6 +85,7 @@ function mapModel(raw: any): VehicleModel {
     modele_name: String(raw.modele_name),
     modele_alias: String(raw.modele_alias ?? raw.modele_name?.toLowerCase().replace(/\s+/g, '-')),
     modele_ful_name: raw.modele_ful_name,
+    modele_display: Number(raw.modele_display ?? 1),
     year_from: raw.modele_year_from ? Number(raw.modele_year_from) : undefined,
     year_to: raw.modele_year_to ? Number(raw.modele_year_to) : undefined
   } as VehicleModel;

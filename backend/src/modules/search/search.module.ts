@@ -3,22 +3,16 @@ import { ConfigModule } from '@nestjs/config';
 
 // Controllers
 import { SearchController } from './controllers/search.controller';
-import { SearchEnhancedController } from './controllers/search-enhanced.controller';
 import { SearchEnhancedExistingController } from './controllers/search-enhanced-existing.controller';
 import { SearchDebugController } from './controllers/search-debug.controller';
-// IndexationController supprimé - 2390 lignes inutilisées, aucune utilisation frontend
 import { PiecesController } from './controllers/pieces.controller';
 
 // Core Services
-import { SearchService } from './services/search.service';
 import { MeilisearchService } from './services/meilisearch.service';
-import { ProductSheetService } from './services/product-sheet.service';
-import { VehicleSearchService } from './services/vehicle-search.service';
 import { SearchMonitoringService } from './services/search-monitoring.service';
 
 // Specialized Services
 import { SearchCacheService } from './services/search-cache.service';
-import { SearchAnalyticsService } from './services/search-analytics.service';
 import { DatabaseAnalysisService } from './services/database-analysis.service';
 import { VehicleNamingService } from './services/vehicle-naming.service';
 import { PiecesAnalysisService } from './services/pieces-analysis.service';
@@ -42,24 +36,18 @@ import { DatabaseModule } from '../../database/database.module';
 @Module({
   imports: [ConfigModule, CacheModule, DatabaseModule],
   controllers: [
-    SearchController,
-    SearchEnhancedController,
-    SearchEnhancedExistingController,
+    SearchController, // ✅ Réactivé - utilise SearchSimpleService
+    SearchEnhancedExistingController, // ✅ Fonctionnel - recherche avancée
     SearchDebugController,
-    // IndexationController supprimé - inutilisé
     PiecesController,
   ],
   providers: [
     // Core Services
-    SearchService,
     MeilisearchService,
-    ProductSheetService,
-    VehicleSearchService,
     SearchMonitoringService,
 
     // Specialized Services
     SearchCacheService,
-    SearchAnalyticsService,
     DatabaseAnalysisService,
     VehicleNamingService,
     PiecesAnalysisService,
@@ -71,10 +59,10 @@ import { DatabaseModule } from '../../database/database.module';
     SearchSimpleService,
   ],
   exports: [
-    SearchService,
     MeilisearchService,
-    SearchAnalyticsService,
+    SearchMonitoringService,
     SearchCacheService,
+    SearchEnhancedExistingService,
     SupabaseIndexationService,
   ],
 })

@@ -24,11 +24,9 @@ import { UsersFinalService } from './users-final.service';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
 import {
-  User,
   CreateUserDto,
   UpdateUserDto,
   UserFilters,
-  PaginatedUsers,
   CreateUserSchema,
   UpdateUserSchema,
   UserFiltersSchema,

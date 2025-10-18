@@ -110,7 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function CommercialStockIndex() {
   const { stats, items, totalItems, currentPage, limit, filters } = useLoaderData<LoaderData>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const formatPrice = (price: string) => {

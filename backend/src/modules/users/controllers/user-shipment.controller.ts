@@ -23,12 +23,12 @@ export class UserShipmentController {
         `[UserShipmentController] GET /api/users/${userId}/shipments`,
       );
 
-      const shipments = await this.userShipmentService.getUserShipments(userId);
+      const result = await this.userShipmentService.getUserShipments(userId);
 
       return {
-        success: true,
-        data: shipments,
-        count: shipments.length,
+        success: result.success,
+        data: result.shipments,
+        count: result.count,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {

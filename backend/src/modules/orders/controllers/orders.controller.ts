@@ -205,7 +205,7 @@ export class OrdersController {
 
       // TODO: Vérifier que l'utilisateur possède cette commande
 
-      return await this.ordersService.updateOrder(orderId, updateData);
+      return await this.ordersService.updateOrder(String(orderId), updateData);
     } catch (error) {
       this.logger.error(`Error updating order ${orderId}:`, error);
       throw error;
@@ -234,7 +234,7 @@ export class OrdersController {
 
       // TODO: Vérifier que l'utilisateur possède cette commande
 
-      await this.ordersService.cancelOrder(orderId);
+      await this.ordersService.cancelOrder(String(orderId));
     } catch (error) {
       this.logger.error(`Error cancelling order ${orderId}:`, error);
       throw error;
@@ -300,7 +300,7 @@ export class OrdersController {
   @ApiQuery({ name: 'status', required: false, example: '1' })
   @ApiQuery({ name: 'customerId', required: false })
   @ApiResponse({ status: 200, description: 'Liste complète des commandes' })
-  async getAllOrders(@Query() query: any, @Request() _req: any) {
+  async getAllOrders(@Query() query: any) {
     try {
       this.logger.log('Admin listing all orders with filters:', query);
 
@@ -334,7 +334,7 @@ export class OrdersController {
   async getOrderByIdAdmin(@Param('id', ParseIntPipe) orderId: number) {
     try {
       this.logger.log(`Admin getting order ${orderId}`);
-      const order = await this.ordersService.getOrderById(orderId);
+      const order = await this.ordersService.getOrderById(String(orderId));
 
       if (!order) {
         throw new NotFoundException('Commande non trouvée');
@@ -369,7 +369,7 @@ export class OrdersController {
       this.logger.log(
         `Admin updating order ${orderId} status to ${updateData.status}`,
       );
-      return await this.ordersService.updateOrder(orderId, {
+      return await this.ordersService.updateOrder(String(orderId), {
         status: updateData.status,
       });
     } catch (error) {
@@ -492,7 +492,7 @@ export class OrdersController {
       this.logger.warn(
         `LEGACY endpoint called: GET /api/orders/legacy/${orderId}/details`,
       );
-      return await this.ordersService.getOrderById(orderId);
+      return await this.ordersService.getOrderById(String(orderId));
     } catch (error) {
       this.logger.error(`Error in legacy detail for ${orderId}:`, error);
       throw error;
@@ -520,7 +520,7 @@ export class OrdersController {
       );
 
       const mockOrderData: CreateOrderData = {
-        customerId: customerId,
+        customerId: Number(customerId),
         orderLines: [
           {
             productId: 'TEST001',
@@ -592,7 +592,7 @@ export class OrdersController {
       );
 
       const mockOrderData: CreateOrderData = {
-        customerId: customerId,
+        customerId: Number(customerId),
         orderLines: [
           {
             productId: '3047339',

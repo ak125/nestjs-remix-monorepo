@@ -22,10 +22,7 @@ export class SearchSuggestionService {
   /**
    * Obtient des suggestions populaires
    */
-  async getPopularSuggestions(
-    indexName: string = 'vehicles',
-    limit: number = 10,
-  ) {
+  async getPopularSuggestions(limit: number = 10) {
     try {
       // Recherche les termes les plus fréquents (simulation)
       const results = await this.meilisearchService.searchVehicles('', {
@@ -50,7 +47,7 @@ export class SearchSuggestionService {
     try {
       // Ici on pourrait intégrer avec un service d'historique
       // Pour l'instant, on retourne des suggestions génériques
-      return await this.getPopularSuggestions('vehicles', limit);
+      return await this.getPopularSuggestions(limit);
     } catch (error) {
       this.logger.error('Error getting history-based suggestions:', error);
       throw error;

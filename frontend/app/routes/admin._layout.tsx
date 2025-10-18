@@ -33,9 +33,9 @@ export default function AdminLayout() {
             <span>
               Connecté en tant que: {user.firstName} {user.lastName} ({user.email})
             </span>
-            {stats?.seoStats && (
+            {stats && typeof stats === 'object' && 'seoStats' in stats && (stats as any).seoStats && (
               <div className="flex items-center gap-2 text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                🔍 SEO: {(stats.seoStats.completionRate || 95.2).toFixed(1)}% optimisé
+                🔍 SEO: {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}% optimisé
               </div>
             )}
           </div>

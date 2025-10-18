@@ -418,17 +418,12 @@ export class CartController {
       const applyPromoDto = validateApplyPromo(body);
       const sessionId = this.getSessionId(req);
       const userId = req.user?.id;
-      const userIdForCart = userId || sessionId;
 
-      this.logger.debug(
+      this.logger.log(
         `Application code promo ${applyPromoDto.promoCode} - session: ${sessionId}`,
       );
 
-      // 1. Récupérer le panier actuel pour calculer le subtotal
-      const cart =
-        await this.cartDataService.getCartWithMetadata(userIdForCart);
-
-      // 2. Utiliser CartService pour valider et appliquer le promo
+      // Utiliser CartService pour valider et appliquer le promo
       const result = await this.cartService.applyPromoCode(
         sessionId,
         applyPromoDto.promoCode,

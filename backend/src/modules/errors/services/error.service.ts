@@ -44,7 +44,7 @@ export class ErrorService {
       }
 
       // 2. Chercher des suggestions intelligentes
-      const suggestions = await this.findSuggestions(path, request);
+      const suggestions = await this.findSuggestions(path);
 
       // 3. Créer un contexte enrichi pour l'erreur
       const errorContext = {
@@ -148,10 +148,7 @@ export class ErrorService {
   /**
    * Trouve des suggestions intelligentes pour une URL 404
    */
-  private async findSuggestions(
-    path: string,
-    _request: Request,
-  ): Promise<string[]> {
+  private async findSuggestions(path: string): Promise<string[]> {
     try {
       const suggestions: string[] = [];
 
@@ -659,18 +656,8 @@ export class ErrorService {
    */
   async getSuggestionsForUrl(url: string): Promise<string[]> {
     try {
-      // Créer un objet Request minimal pour la méthode privée
-      const mockRequest = {
-        path: url,
-        originalUrl: url,
-        url: url,
-        headers: {},
-        query: {},
-        get: () => undefined,
-      } as any;
-
       // Appeler la méthode privée avec les bons paramètres
-      return await this.findSuggestions(url, mockRequest);
+      return await this.findSuggestions(url);
     } catch (error) {
       this.logger.error('Erreur dans getSuggestionsForUrl:', error);
       return [];

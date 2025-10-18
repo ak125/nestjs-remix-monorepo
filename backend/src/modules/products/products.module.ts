@@ -20,14 +20,12 @@ import { CacheModule } from '@nestjs/cache-manager';
 // Controllers - Consolidés Phase 3
 import { ProductsController } from './products.controller';
 import { FilteringController } from './filtering.controller';
-import { TechnicalDataController } from './technical-data.controller';
 import { CrossSellingController } from './cross-selling.controller';
 
 // Services - Consolidés Phase 2 (6 octobre 2025)
 import { ProductsService } from './products.service';
 import { ProductEnhancementService } from './services/product-enhancement.service';
 import { ProductFilteringService } from './services/product-filtering.service';
-import { TechnicalDataService } from './services/technical-data.service';
 import { PricingService } from './services/pricing.service';
 import { CrossSellingService } from './services/cross-selling.service';
 import { StockService } from './services/stock.service';
@@ -44,7 +42,6 @@ import { StockService } from './services/stock.service';
   controllers: [
     ProductsController, // ✅ API REST principale pour produits
     FilteringController, // ✅ API filtrage produits
-    TechnicalDataController, // ✅ API données techniques
     CrossSellingController, // ✅ API ventes croisées
   ],
   providers: [
@@ -52,7 +49,6 @@ import { StockService } from './services/stock.service';
     ProductsService, // ✅ CRUD produits
     ProductEnhancementService, // ✅ Enrichissement produits
     ProductFilteringService, // ✅ Filtrage avancé
-    TechnicalDataService, // ✅ Données techniques
     PricingService, // ✅ Calcul prix
     CrossSellingService, // ✅ Ventes croisées
     StockService, // ✅ Gestion stock
@@ -61,7 +57,6 @@ import { StockService } from './services/stock.service';
     ProductsService,
     ProductEnhancementService,
     ProductFilteringService,
-    TechnicalDataService,
     PricingService,
     CrossSellingService,
     StockService,
@@ -71,25 +66,22 @@ export class ProductsModule {
   private readonly logger = new Logger(ProductsModule.name);
 
   constructor() {
-    this.logger.log('🎯 Products Module CONSOLIDÉ - Phase 2 & 3 terminées');
-    this.logger.log('✅ Services actifs (7):');
+    this.logger.log('🎯 Products Module CONSOLIDÉ - Phase 2 & 3 + Cleanup');
+    this.logger.log('✅ Services actifs (6):');
     this.logger.log('   • ProductsService - CRUD principal');
     this.logger.log('   • ProductEnhancementService - Enrichissement');
     this.logger.log('   • ProductFilteringService - Filtrage');
-    this.logger.log('   • TechnicalDataService - Données techniques');
     this.logger.log('   • PricingService - Calcul prix');
     this.logger.log('   • CrossSellingService - Ventes croisées');
     this.logger.log('   • StockService - Gestion stock');
-    this.logger.log('✅ Contrôleurs actifs (4):');
+    this.logger.log('✅ Contrôleurs actifs (3):');
     this.logger.log('   • ProductsController - api/products');
     this.logger.log('   • FilteringController - api/products/filters');
-    this.logger.log(
-      '   • TechnicalDataController - api/products/technical-data',
-    );
     this.logger.log('   • CrossSellingController - api/cross-selling');
-    this.logger.log('📊 Consolidation Phase 2:');
-    this.logger.log('   • Services: 13 → 7 (-46%)');
-    this.logger.log('   • Lignes services: 8,190 → 4,137 (-49%)');
+    this.logger.log('📊 Consolidation Finale:');
+    this.logger.log('   • Services: 13 → 6 (-54%)');
+    this.logger.log('   • Controllers: 8 → 3 (-63%)');
+    this.logger.log('   • TechnicalDataService supprimé (non utilisé)');
     this.logger.log('   • Duplication: 49% → 0%');
     this.logger.log('📊 Consolidation Phase 3:');
     this.logger.log('   • Controllers: 8 → 4 (-50%)');

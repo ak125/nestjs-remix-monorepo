@@ -124,7 +124,7 @@ export function ProductsStatsCard({
   enhanced = false,
   userRole = 'commercial'
 }: ProductsStatsProps) {
-  const stats = [
+  const stats: StatItemProps[] = [
     {
       title: 'Produits Total',
       value: totalProducts,
@@ -144,7 +144,7 @@ export function ProductsStatsCard({
       title: 'Stock Faible',
       value: lowStockItems,
       icon: AlertTriangle,
-      variant: lowStockItems > 10 ? 'danger' : 'warning' as const,
+      variant: (lowStockItems > 10 ? 'danger' : 'warning') as 'danger' | 'warning',
       progress: enhanced ? (lowStockItems / totalProducts) * 100 : undefined
     }] : []),
     ...(categoriesCount !== undefined ? [{
@@ -170,7 +170,7 @@ export function ProductsStatsCard({
       title: 'Note Moyenne',
       value: Math.round(averageRating * 10) / 10,
       icon: Star,
-      variant: averageRating >= 4 ? 'success' : 'default' as const,
+      variant: (averageRating >= 4 ? 'success' : 'default') as 'success' | 'default',
       progress: enhanced ? (averageRating / 5) * 100 : undefined
     }] : [])
   ];

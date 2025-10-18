@@ -36,9 +36,8 @@ export class LayoutController {
   @Get('header')
   async getHeader(
     @Query('context') context: 'admin' | 'commercial' | 'public' = 'public',
-    @Query('user') userId?: string,
   ) {
-    return this.headerService.getHeader(context, userId);
+    return this.headerService.getHeader(context);
   }
 
   /**

@@ -41,12 +41,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1");
   const limit = parseInt(url.searchParams.get("limit") || "10");
-  const status = url.searchParams.get("status") || "all";
-  const search = url.searchParams.get("search") || "";
+  const statusParam = url.searchParams.get("status") || "all";
+  const status = (statusParam === "pending" || statusParam === "approved" || statusParam === "rejected") ? statusParam : "all";
+  const _search = url.searchParams.get("search") || "";
 
   try {
     const [reviewsData, stats] = await Promise.all([
-      getAllReviews({ page, limit, status, search }, request).catch(() => ({ 
+      getAllReviews({ page, limit, status }, request).catch(() => ({ 
         reviews: [], 
         pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } 
       })),
@@ -63,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json<LoaderData>({
       reviews: reviewsData.reviews || [],
       stats,
-      pagination: reviewsData.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
+      pagination: 'pagination' in reviewsData ? reviewsData.pagination : { page: reviewsData.page || 1, limit: reviewsData.limit || 10, total: reviewsData.total || 0, totalPages: Math.ceil((reviewsData.total || 0) / (reviewsData.limit || 10)) }
     });
   } catch (error) {
     console.error("Erreur lors du chargement des avis:", error);
@@ -88,7 +89,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const reviewId = formData.get("reviewId");
 
   if (intent === "updateStatus" && reviewId) {
-    const status = formData.get("status") as string;
+    const statusParam = formData.get("status") as string;
+    const status = (statusParam === "pending" || statusParam === "approved" || statusParam === "rejected") ? statusParam : "pending";
     try {
       await updateReviewStatus(Number(reviewId), status, request);
       return json({ success: true });

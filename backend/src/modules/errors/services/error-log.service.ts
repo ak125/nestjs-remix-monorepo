@@ -325,15 +325,7 @@ export class ErrorLogService extends SupabaseBaseService {
     endDate?: Date;
   }): Promise<{ data: ErrorLog[]; total: number }> {
     try {
-      const {
-        page = 1,
-        limit = 50,
-        severity: _severity,
-        resolved,
-        service: _service,
-        startDate,
-        endDate,
-      } = options;
+      const { page = 1, limit = 50, resolved, startDate, endDate } = options;
 
       let query = this.supabase
         .from('___xtr_msg')

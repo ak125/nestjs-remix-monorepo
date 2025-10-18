@@ -1,15 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import {
-  Order,
-  OrderLine,
-  OrderDbEntity,
-  OrderLineDbEntity,
-  OrderMapper,
-  OrderStatus,
-  OrderWithDetails,
-} from '../../types/order.types';
+import { Order, OrderMapper, OrderStatus } from '../../types/order.types';
 
 @Injectable()
 export class OrderDataService extends SupabaseBaseService {

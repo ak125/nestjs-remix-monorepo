@@ -13,17 +13,16 @@ import {
   UserFilters,
   PaginatedUsers,
   UserStats,
-  UserWithStats,
 } from './dto/user.dto';
 
-interface DashboardData {
+export interface DashboardData {
   user: User;
   stats: UserStats;
   recentOrders: any[];
   notifications: number;
 }
 
-interface GlobalStats {
+export interface GlobalStats {
   totalUsers: number;
   activeUsers: number;
   proUsers: number;
@@ -236,8 +235,8 @@ export class UsersFinalService {
       return cached;
     }
 
-    // Récupérer les commandes de l'utilisateur
-    const orders = await this.userDataService.search(userId, 1000); // Workaround temporaire
+    // Récupérer les commandes de l'utilisateur (actuellement non utilisées)
+    // const orders = await this.userDataService.search(userId, 1000);
 
     // Calculer les stats
     const stats: UserStats = {
@@ -414,15 +413,17 @@ export class UsersFinalService {
    * Invalider le cache d'un utilisateur spécifique
    */
   private invalidateUserCache(userId: string): void {
-    this.cacheService.delete(`user:${userId}`);
-    this.cacheService.delete(`user:stats:${userId}`);
-    this.cacheService.delete(`user:dashboard:${userId}`);
+    this.cacheService.del(`user:${userId}`);
+    this.cacheService.del(`user:stats:${userId}`);
+    this.cacheService.del(`user:dashboard:${userId}`);
   }
 
   /**
    * Invalider tous les caches utilisateurs (listes, stats globales)
    */
   private invalidateUserCaches(): void {
-    this.cacheService.deletePattern('users:*');
+    // TODO: Implémenter delPattern() dans CacheService
+    // this.cacheService.delPattern('users:*');
+    this.logger.warn('invalidateUserCaches: delPattern non implémenté');
   }
 }

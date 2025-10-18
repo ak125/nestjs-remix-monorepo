@@ -52,7 +52,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       analytics,
       config, 
       pagesWithoutSeo,
-      success: true 
+      success: true,
+      error: null
     });
   } catch (error) {
     console.error('[SEO Admin] Erreur:', error);
@@ -60,7 +61,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       analytics: null,
       config: null,
       pagesWithoutSeo: null,
-      error: 'Erreur de connexion au backend',
+      error: error instanceof Error ? error.message : 'Erreur de connexion au backend',
       success: false 
     });
   }
@@ -141,7 +142,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     console.error('[SEO Admin Action] Erreur:', error);
     return json({ 
       success: false, 
-      error: error.message || "Erreur inconnue"
+      error: error instanceof Error ? error.message : "Erreur inconnue"
     });
   }
 }
@@ -175,17 +176,17 @@ export default function SeoAdmin() {
       </div>
 
       {/* Messages de feedback */}
-      {actionData?.success && (
+      {actionData?.success && 'message' in actionData && (
         <Alert className="border-green-200 bg-green-50">
           <AlertDescription className="text-green-800">
             ✅ {actionData.message}
           </AlertDescription>
         </Alert>
       )}
-      {(actionData?.error || error) && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            ❌ {actionData?.error || error}
+      {((actionData && 'error' in actionData && actionData.error) || error) && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertDescription className="text-red-800">
+            ❌ {(actionData && 'error' in actionData && actionData.error) || error}
           </AlertDescription>
         </Alert>
       )}

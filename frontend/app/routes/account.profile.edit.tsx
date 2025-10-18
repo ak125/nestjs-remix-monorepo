@@ -1,7 +1,7 @@
 import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Form, useActionData, useNavigation } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";
-import { _requireUser } from "../auth/unified.server";
+import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -29,9 +29,9 @@ type ActionData = {
   };
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request, context }) => {
   // Authentification requise
-  const authUser = await requireAuth(request);
+  const authUser = await requireUser({ context });
   
   try {
     // TODO: Récupérer le profil complet depuis l'API
@@ -51,9 +51,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   }
 };
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction = async ({ request, context }) => {
   // Authentification requise
-  const authUser = await requireAuth(request);
+  const authUser = await requireUser({ context });
   
   const formData = await request.formData();
   const firstName = formData.get("firstName")?.toString() || "";

@@ -239,7 +239,6 @@ export default function FamilyGammeHierarchy({
                         console.log('🔍 Debug gamme:', { 
                           gamme, 
                           pgId: gamme.pg_id, 
-                          mcPgId: gamme.mc_pg_id,
                           name: gamme.pg_name,
                           alias: gamme.pg_alias
                         });
@@ -251,7 +250,7 @@ export default function FamilyGammeHierarchy({
                         
                         return (
                           <Link
-                            key={gamme.mc_id}
+                            key={gamme.pg_id}
                             to={categoryUrl}
                             className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors block"
                           >
@@ -260,7 +259,7 @@ export default function FamilyGammeHierarchy({
                                 {gamme.pg_name || `Gamme #${gamme.pg_id}`}
                               </span>
                               <span className="text-xs text-gray-500">
-                                Fab. {gamme.mc_mf_id}
+                                {gamme.mc_sort ? `Ordre ${gamme.mc_sort}` : ''}
                               </span>
                             </div>
                           </Link>

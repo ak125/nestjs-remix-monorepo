@@ -7,28 +7,10 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
 import { requireAdmin } from "../auth/unified.server";
 
-// Types pour la gestion des factures
-interface Invoice {
-  inv_id: string;
-  inv_number: string;
-  inv_ord_id?: string;
-  inv_spl_id?: string;
-  inv_date: string;
-  inv_due_date?: string;
-  inv_amount: number;
-  inv_tax_amount?: number;
-  inv_total_amount: number;
-  inv_currency?: string;
-  inv_status: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
-  inv_payment_terms?: string;
-  inv_notes?: string;
-  inv_is_credit?: boolean;
-  inv_created_at?: string;
-  inv_updated_at?: string;
-}
+// Types pour la gestion des factures (utilisé dans le loader/action)
+// interface Invoice { inv_id, inv_number, inv_status, inv_date, inv_amount, etc. }
 
 interface InvoiceStats {
   totalInvoices: number;
@@ -41,15 +23,7 @@ interface InvoiceStats {
   averageInvoiceAmount: number;
 }
 
-interface InvoicesData {
-  invoices: Invoice[];
-  stats: InvoiceStats;
-  pagination: {
-    page: number;
-    totalPages: number;
-    totalItems: number;
-  };
-}
+
 
 // Fonction loader pour récupérer les données des factures
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -134,6 +108,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats,
       pagination,
       user,
+      selectedStatus: status,
+      searchTerm: search,
     });
 
   } catch (error) {
@@ -158,15 +134,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         totalItems: 0,
       },
       user,
+      selectedStatus: '',
+      searchTerm: '',
     });
   }
 }
 
 export default function InvoicesIndex() {
-  const { invoices, stats, pagination, user } = useLoaderData<typeof loader>();
+  const { invoices, stats, pagination, selectedStatus, searchTerm } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
   const isLoading = navigation.state === "loading";
 
@@ -326,7 +302,7 @@ export default function InvoicesIndex() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {invoices.map((invoice) => (
+              {(invoices as any[]).filter(invoice => invoice !== null).map((invoice: any) => (
                 <tr key={invoice.inv_id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">

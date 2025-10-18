@@ -613,42 +613,6 @@ export class ManufacturersService extends SupabaseBaseService {
   }
 
   /**
-   * Récupérer les types de carburant disponibles
-   */
-  async getFuelTypes() {
-    try {
-      const cacheKey = 'fuel_types';
-      const cached = await this.cacheManager.get(cacheKey);
-      if (cached) {
-        return cached as any;
-      }
-
-      const { data, error } = await this.client
-        .from('auto_type')
-        .select('type_fuel')
-        .not('type_fuel', 'is', null)
-        .not('type_fuel', 'eq', '');
-
-      if (error) {
-        throw new Error(
-          `Erreur récupération types carburant: ${error.message}`,
-        );
-      }
-
-      const fuelTypes = [
-        ...new Set(data?.map((item) => item.type_fuel).filter(Boolean)),
-      ];
-      const sortedTypes = fuelTypes.sort();
-
-      await this.cacheManager.set(cacheKey, sortedTypes);
-      return sortedTypes;
-    } catch (error) {
-      this.logger.error('Erreur getFuelTypes:', error);
-      return [];
-    }
-  }
-
-  /**
    * Récupérer les types par catégorie de carburant
    */
   async getTypesByFuelType(fuelType: string, limit = 20) {

@@ -49,7 +49,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
       href: "/commercial/orders",
       icon: ShoppingCart,
       description: "Gestion des commandes",
-      badge: stats?.pendingOrders > 0 ? stats.pendingOrders.toString() : undefined
+      badge: stats?.pendingOrders && stats.pendingOrders > 0 ? stats.pendingOrders.toString() : undefined
     },
     {
       name: "Stock",

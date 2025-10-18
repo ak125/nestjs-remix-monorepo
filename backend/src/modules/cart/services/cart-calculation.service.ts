@@ -183,7 +183,6 @@ export class CartCalculationService extends SupabaseBaseService {
   async calculatePromoDiscount(
     promoCode: string,
     subtotalHT: number,
-    items: CartItem[],
   ): Promise<number> {
     try {
       // Récupérer les détails du code promo
@@ -261,7 +260,7 @@ export class CartCalculationService extends SupabaseBaseService {
             (categories[categoryName] || 0) + itemTotal;
           totalByCategory += itemTotal;
         }
-      } catch (error) {
+      } catch {
         this.logger.warn(
           `Erreur récupération catégorie produit ${item.product_id}`,
         );

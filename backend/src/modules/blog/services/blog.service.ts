@@ -114,10 +114,7 @@ export class BlogService {
   /**
    * 📝 Créer un nouvel article - VERSION AMÉLIORÉE
    */
-  async createArticle(
-    article: Partial<BlogArticle>,
-    authorId: string,
-  ): Promise<BlogArticle> {
+  async createArticle(article: Partial<BlogArticle>): Promise<BlogArticle> {
     try {
       // Générer un slug unique
       const slug = await this.generateUniqueSlug(article.title || '');
@@ -171,7 +168,7 @@ export class BlogService {
 
       // Si le titre change, régénérer le slug
       if (updates.title) {
-        updateData.slug = await this.generateUniqueSlug(updates.title, id);
+        updateData.slug = await this.generateUniqueSlug(updates.title);
       }
 
       // Recalculer le temps de lecture si le contenu change
@@ -1263,10 +1260,7 @@ export class BlogService {
   /**
    * 🔗 Générer un slug unique - VERSION AMÉLIORÉE
    */
-  private async generateUniqueSlug(
-    title: string,
-    _excludeId?: number,
-  ): Promise<string> {
+  private async generateUniqueSlug(title: string): Promise<string> {
     // Slugify simple: minuscules, espaces → tirets, remove accents
     const slug = BlogCacheService.decodeHtmlEntities(title)
       .toLowerCase()
@@ -1427,7 +1421,7 @@ export class BlogService {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -1435,9 +1429,7 @@ export class BlogService {
   /**
    * 🆕 Récupérer article depuis tables modernes (placeholder)
    */
-  private async getArticleFromModernTables(
-    slug: string,
-  ): Promise<BlogArticle | null> {
+  private async getArticleFromModernTables(): Promise<BlogArticle | null> {
     // Pour l'instant retourne null, à implémenter quand les tables modernes seront créées
     return null;
   }

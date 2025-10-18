@@ -3,7 +3,7 @@
 
 import { json, type LoaderFunctionArgs , type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import ProductCatalog, { type ProductCategory, type Product } from "../components/catalog/ProductCatalog";
+import { default as ProductCatalog, type ProductCategory, type Product } from "../components/catalog/ProductCatalog";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,8 +14,8 @@ export const meta: MetaFunction = () => {
 };
 
 interface LoaderData {
-  categories: PieceCategory[];
-  products: Piece[];
+  categories: ProductCategory[];
+  products: Product[];
   total: number;
   page: number;
   searchTerm: string;
@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     // Charger les catégories et produits en parallèle
-    const [categoriesResponse, productsResponse] = await Promise.allSettled([
+    await Promise.allSettled([
       fetch(`${baseUrl}/api/catalog/categories`, {
         headers: { 'internal-call': 'true' }
       }),

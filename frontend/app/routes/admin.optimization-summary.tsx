@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { useEffect, useState } from 'react'
-import { useAdvancedAnalytics } from '../hooks/useAdvancedAnalytics'
+import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from '../hooks/useAdvancedAnalyticsComplete'
 import { useAIAssistant } from '../hooks/useAIAssistantSimple'
 import { getMonitoringService } from '../services/monitoring'
 

@@ -76,7 +76,7 @@ export class LayoutService {
       // Charger tous les composants du layout en parallèle pour optimiser les performances
       const [header, footer, navigation, quickSearch, socialShare, metaTags] =
         await Promise.all([
-          this.headerService.getHeader(context, userId),
+          this.headerService.getHeader(context),
           this.footerService.getFooter(context),
           this.getInternalNavigation(context === 'public' ? 'user' : context),
           this.quickSearchService.getSearchData(context),
@@ -215,28 +215,18 @@ export class LayoutService {
       return cached;
     }
 
-    const _version = config.version || this.getDefaultVersion(config.type);
-
     // Construire les données du layout avec les services existants
-    const [
-      header,
-      footer,
-      navigation,
-      quickSearch,
-      socialShare,
-      metaTags,
-      _widgets,
-    ] = await Promise.all([
-      this.headerService.getHeader(config.theme, config.user?.id),
-      this.footerService.getFooter(config.theme),
-      this.getInternalNavigation(
-        config.theme === 'public' ? 'user' : config.theme,
-      ),
-      this.quickSearchService.getSearchData(config.theme),
-      this.getSocialShareConfig(config.theme),
-      this.getMetaTags(config.theme),
-      this.getWidgets(config.type, config.page),
-    ]);
+    const [header, footer, navigation, quickSearch, socialShare, metaTags] =
+      await Promise.all([
+        this.headerService.getHeader(config.theme),
+        this.footerService.getFooter(config.theme),
+        this.getInternalNavigation(
+          config.theme === 'public' ? 'user' : config.theme,
+        ),
+        this.quickSearchService.getSearchData(config.theme),
+        this.getSocialShareConfig(config.theme),
+        this.getMetaTags(config.theme),
+      ]);
 
     const layoutData: LayoutData = {
       header,
@@ -266,7 +256,7 @@ export class LayoutService {
   /**
    * Récupérer les widgets pour une page spécifique
    */
-  private async getWidgets(_type: string, _page?: string): Promise<any[]> {
+  private async getWidgets(): Promise<any[]> {
     // Pour l'instant retournons un tableau vide,
     // cette méthode peut être étendue avec des vraies données
     return [];

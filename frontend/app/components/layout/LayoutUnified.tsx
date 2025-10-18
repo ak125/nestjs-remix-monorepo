@@ -8,7 +8,7 @@
  * ✅ Configuration centralisée
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import  { type LayoutData, type LayoutConfig, type ModularSection } from '../../types/layout';
 import { FooterEnhanced } from './FooterEnhanced';
 // TODO: Créer les fichiers Header.tsx et ModularSections.tsx
@@ -40,12 +40,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Charger les données de layout
-  useEffect(() => {
-    loadLayoutData();
-  }, [config]);
-
-  const loadLayoutData = async () => {
+  const loadLayoutData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -88,7 +83,12 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [config]);
+
+  // Charger les données de layout
+  useEffect(() => {
+    loadLayoutData();
+  }, [loadLayoutData]);
 
   // Affichage pendant le chargement
   if (isLoading) {
@@ -140,13 +140,16 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
     className,
   ].filter(Boolean).join(' ');
 
+  // Filtrer le type de contexte pour les composants qui n'acceptent pas "core" ou "massdoc"
+  const validContext = (config.type === 'core' || config.type === 'massdoc') ? 'public' : config.type;
+
   return (
     <div className={layoutClasses}>
       {/* Header */}
       {config.showHeader !== false && layoutData.header?.show && (
         <Header
           config={layoutData.header}
-          context={config.type}
+          context={validContext}
           isEditable={isEditable}
         />
       )}
@@ -157,7 +160,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
         {layoutData.sections && layoutData.sections.length > 0 && (
           <SectionsContainer
             sections={layoutData.sections}
-            context={config.type}
+            context={validContext}
             isEditable={isEditable}
             onEditSection={onEditSection}
             onAddSection={onAddSection}
@@ -177,7 +180,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
       {config.showFooter !== false && layoutData.footer?.show && (
         <FooterEnhanced
           config={layoutData.footer}
-          context={config.type}
+          context={validContext}
           isEditable={isEditable}
         />
       )}
@@ -247,7 +250,7 @@ const PerformanceIndicator: React.FC<PerformanceIndicatorProps> = ({ performance
 /**
  * 🎨 Génère les styles CSS personnalisés pour le layout
  */
-function getLayoutStyles(config: LayoutConfig, layoutData: LayoutData): string {
+function getLayoutStyles(config: LayoutConfig, _layoutData: LayoutData): string {
   const styles: string[] = [];
 
   // Styles basés sur le type de layout

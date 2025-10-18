@@ -227,18 +227,19 @@ export class EnhancedVehicleService {
     cache: any;
   }> {
     try {
-      const [brands, models, types, enrichment] = await Promise.all([
+      const [brands, models, types] = await Promise.all([
         this.brandsService.getBrandStats(),
         this.modelsService.getModelStats(),
         this.typesService.getTypeStats(),
-        this.enrichmentService.getMappingStats(),
+        // TODO: Réactiver quand getMappingStats() sera implémenté
+        // this.enrichmentService.getMappingStats(),
       ]);
 
       return {
         brands,
         models,
         types,
-        enrichment,
+        enrichment: {}, // TODO: Implémenter getMappingStats() dans VehicleEnrichmentService
         cache: {
           configs: Object.fromEntries(
             Object.values([

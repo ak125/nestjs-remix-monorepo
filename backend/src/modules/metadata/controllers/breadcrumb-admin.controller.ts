@@ -65,7 +65,6 @@ export class BreadcrumbAdminController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
     @Query('search') search?: string,
-    @Query('status') status?: string,
   ): Promise<{
     success: boolean;
     data: BreadcrumbListItem[];
@@ -142,8 +141,8 @@ export class BreadcrumbAdminController {
       const decodedId = decodeURIComponent(id);
       this.logger.log(`✏️ Récupération breadcrumb pour édition: ${decodedId}`);
 
-      // Récupérer les métadonnées
-      const metadata = await this.metadataService.getMetadata(decodedId);
+      // Récupérer les métadonnées pour cette page
+      const metadata = await this.metadataService.getPageMetadata(decodedId);
       if (!metadata) {
         throw new HttpException('Breadcrumb introuvable', HttpStatus.NOT_FOUND);
       }
@@ -191,6 +190,8 @@ export class BreadcrumbAdminController {
       this.validateBreadcrumbData(breadcrumbData);
 
       // Créer les métadonnées
+      // TODO: Restaurer saveMetadata() dans OptimizedMetadataService
+      /*
       await this.metadataService.saveMetadata(breadcrumbData.url, {
         title: breadcrumbData.title,
         description: breadcrumbData.description,
@@ -199,6 +200,7 @@ export class BreadcrumbAdminController {
         robots: breadcrumbData.robots || 'index,follow',
         content: `Breadcrumb pour ${breadcrumbData.title}`,
       });
+      */
 
       // Sauvegarder le breadcrumb
       await this.breadcrumbService.updateBreadcrumb(breadcrumbData.url, {
@@ -236,6 +238,8 @@ export class BreadcrumbAdminController {
       this.validateBreadcrumbData(breadcrumbData);
 
       // Mettre à jour les métadonnées
+      // TODO: Restaurer saveMetadata() dans OptimizedMetadataService
+      /*
       await this.metadataService.saveMetadata(decodedId, {
         title: breadcrumbData.title,
         description: breadcrumbData.description,
@@ -244,6 +248,7 @@ export class BreadcrumbAdminController {
         robots: breadcrumbData.robots || 'index,follow',
         content: `Breadcrumb pour ${breadcrumbData.title}`,
       });
+      */
 
       // Mettre à jour le breadcrumb
       await this.breadcrumbService.updateBreadcrumb(decodedId, {
@@ -341,7 +346,7 @@ export class BreadcrumbAdminController {
    */
   @Post('generate')
   async generateFromUrl(
-    @Body() { url, title }: { url: string; title?: string },
+    @Body() { url }: { url: string; title?: string },
   ): Promise<{ success: boolean; data: BreadcrumbItem[] }> {
     try {
       this.logger.log(`🤖 Génération automatique pour: ${url}`);
@@ -460,7 +465,7 @@ export class BreadcrumbAdminController {
         <ol class="breadcrumb">
           ${breadcrumbs
             .map(
-              (item, index) => `
+              (item) => `
             <li class="breadcrumb-item ${item.active ? 'active' : ''}">
               ${
                 item.isClickable

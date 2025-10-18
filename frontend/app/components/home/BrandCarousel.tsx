@@ -113,32 +113,32 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                   .slice(slideIndex * itemsPerSlide, (slideIndex + 1) * itemsPerSlide)
                   .map((brand, brandIndex) => (
                     <Link
-                      key={brand.id || `brand-${brandIndex}`}
-                      to={`/catalogue?brand=${brand.id}`}
+                      key={brand.marque_id || `brand-${brandIndex}`}
+                      to={`/catalogue?brand=${brand.marque_id}`}
                       className="group"
                     >
                       <div className="bg-gray-50 rounded-xl p-4 text-center hover:bg-gradient-to-br hover:from-blue-50 hover:to-blue-100 hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 border-2 border-transparent hover:border-blue-200">
                         <div className="w-16 h-16 mx-auto mb-3 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                          {brand.logo ? (
+                          {brand.marque_logo ? (
                             <img 
-                              src={brand.logo} 
-                              alt={`Logo ${brand.name || 'marque'}`}
+                              src={brand.marque_logo} 
+                              alt={`Logo ${brand.marque_name || 'marque'}`}
                               className="w-12 h-12 object-contain"
                             />
                           ) : (
                             <div className="w-12 h-12 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                              {brand.name?.charAt(0) || '?'}
+                              {brand.marque_name?.charAt(0) || '?'}
                             </div>
                           )}
                         </div>
                         
                         <h4 className="font-bold text-gray-900 group-hover:text-blue-700 transition-colors text-sm mb-1">
-                          {brand.name || 'Marque inconnue'}
+                          {brand.marque_name || 'Marque inconnue'}
                         </h4>
                         
-                        {brand.country && (
+                        {brand.marque_country && (
                           <p className="text-xs text-gray-600 mb-2">
-                            {brand.country}
+                            {brand.marque_country}
                           </p>
                         )}
                         

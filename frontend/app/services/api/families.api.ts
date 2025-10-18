@@ -72,7 +72,7 @@ class FamiliesApiService {
   /**
    * 🏷️ Obtient le nom d'affichage pour une famille
    */
-  getFamilyDisplayName(familyId: string, categories: FamilyCategory[]): string {
+  getFamilyDisplayName(familyId: string, _categories: FamilyCategory[]): string {
     // Mapping des IDs vers des noms d'affichage basé sur le HTML fourni
     const familyNames: { [key: string]: string } = {
       '7': 'Système de filtration',

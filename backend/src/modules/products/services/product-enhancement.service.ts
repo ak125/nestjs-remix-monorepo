@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProductsService } from '../products.service';
-import { z } from 'zod';
 
 /**
  * 🎯 PRODUCTS ENHANCEMENT SERVICE V5 ULTIMATE SIMPLE - MÉTHODOLOGIE APPLIQUÉE
@@ -10,16 +9,14 @@ import { z } from 'zod';
  * Version simplifiée pour démonstration de la méthodologie V5 Ultimate
  */
 
-// 🚀 SCHÉMAS ZOD SIMPLIFIÉS
-const ProductValidationResultSchema = z.object({
-  is_valid: z.boolean(),
-  errors: z.array(z.string()),
-  warnings: z.array(z.string()),
-  score: z.number().min(0).max(100),
-  recommendations: z.array(z.string()),
-});
-
-type ProductValidationResult = z.infer<typeof ProductValidationResultSchema>;
+// 🚀 TYPES SIMPLIFIÉS (schémas Zod supprimés pour éviter avertissement ESLint)
+type ProductValidationResult = {
+  is_valid: boolean;
+  errors: string[];
+  warnings: string[];
+  score: number;
+  recommendations: string[];
+};
 
 @Injectable()
 export class ProductEnhancementService {
@@ -38,8 +35,6 @@ export class ProductEnhancementService {
   async validateProductAdvanced(
     productDto: any,
   ): Promise<ProductValidationResult> {
-    const startTime = Date.now();
-
     try {
       const cacheKey = `validation:${productDto.sku}`;
       if (this.enhancementCache.has(cacheKey)) {
@@ -78,7 +73,7 @@ export class ProductEnhancementService {
       setTimeout(() => this.enhancementCache.delete(cacheKey), 5 * 60 * 1000);
 
       return result;
-    } catch (error) {
+    } catch {
       return {
         is_valid: false,
         errors: ['Erreur validation'],

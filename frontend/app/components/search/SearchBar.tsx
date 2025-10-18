@@ -15,6 +15,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useEnhancedSearchWithDebounce, useEnhancedAutocomplete } from '../../hooks/useEnhancedSearch';
 import { cn } from '../../lib/utils';
+import { searchApi } from '../../services/api/search.api';
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -68,12 +69,12 @@ export function SearchBar({
     setQuery, 
     debouncedQuery, 
     loading: isSearching, 
-    results, 
-    error 
+    results: _results, 
+    error: _error 
   } = useEnhancedSearchWithDebounce(initialQuery, 300);
 
   // Hook d'autocomplete Enhanced
-  const { suggestions: autocompleteSuggestions } = useEnhancedAutocomplete(query);
+  const { suggestions: _autocompleteSuggestions } = useEnhancedAutocomplete(query);
 
   // Historique local (localStorage)
   const [searchHistory, setSearchHistory] = useState<string[]>([]);

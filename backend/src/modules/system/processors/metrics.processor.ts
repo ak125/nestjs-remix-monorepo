@@ -48,7 +48,7 @@ export class MetricsProcessor extends WorkerHost {
           break;
 
         case 'maintenance':
-          result = await this.performScheduledMaintenance(job.data.metadata);
+          result = await this.performScheduledMaintenance();
           break;
 
         default:
@@ -78,9 +78,7 @@ export class MetricsProcessor extends WorkerHost {
   /**
    * 🔧 Maintenance programmée via queue
    */
-  private async performScheduledMaintenance(
-    metadata?: Record<string, any>,
-  ): Promise<any> {
+  private async performScheduledMaintenance(): Promise<any> {
     this.logger.log('🔧 Performing scheduled maintenance tasks');
 
     const results = {

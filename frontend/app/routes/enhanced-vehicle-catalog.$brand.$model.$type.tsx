@@ -11,7 +11,7 @@ import {
 import { z } from "zod";
 
 // Composants vehicle
-import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+// LoadingSpinner not used in this route
 import { VehicleAnalytics } from "~/components/vehicle/VehicleAnalytics";
 import { VehicleGallery } from "~/components/vehicle/VehicleGallery";
 import { VehicleHeader } from "~/components/vehicle/VehicleHeader";
@@ -51,8 +51,8 @@ interface MockVehiclePart {
 // ========================================
 export async function loader({ params: _params }: LoaderFunctionArgs) {
   try {
-    // Validation des paramètres
-    const validatedParams = ParamsSchema.parse(params);
+    // Valider les params
+    const validatedParams = ParamsSchema.parse(_params);
     const { brand, model, type } = validatedParams;
 
     // Mock data pour le développement
@@ -124,7 +124,7 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
 // ========================================
 // 🎯 META FUNCTION
 // ========================================
-export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data || !data.vehicle) {
     return [
       { title: "Véhicule non trouvé" },

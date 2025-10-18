@@ -1,7 +1,7 @@
 // 🔧 Route pièces avec véhicule - Version V5 Améliorée 
 // Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
 
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState, useMemo } from 'react';
 

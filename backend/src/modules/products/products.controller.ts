@@ -211,23 +211,6 @@ export class ProductsController {
   }
 
   /**
-   * Récupérer des produits réels enrichis avec pagination
-   */
-  @Get('catalog-real')
-  async getRealCatalog(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-  ) {
-    const options = {
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? Math.min(parseInt(limit, 10), 50) : 12,
-      search: search || '',
-    };
-    return this.productsService.getRealCatalog(options);
-  }
-
-  /**
    * Récupérer toutes les pièces avec filtres
    */
   @Get('pieces')

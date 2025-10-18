@@ -17,8 +17,6 @@ import {
   ArrowLeft, 
   Search, 
   Filter, 
-  Grid, 
-  List, 
   SortAsc, 
   SortDesc,
   Package,
@@ -211,7 +209,7 @@ export default function AdminProductsGammeManagement() {
   const { user, gamme, products, pagination, filters, enhanced, error, stats } = data;
   const [searchParams] = useSearchParams();
 
-  const viewMode = searchParams.get("view") || "grid";
+  const _viewMode = searchParams.get("view") || "grid";
 
   if (error) {
     return (

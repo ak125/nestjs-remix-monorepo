@@ -420,7 +420,6 @@ export class AdviceService {
   async createAdvice(
     article: Partial<BlogArticle>,
     advice: BlogAdvice,
-    authorId?: string,
   ): Promise<{
     article: BlogArticle;
     advice: BlogAdvice;
@@ -436,13 +435,10 @@ export class AdviceService {
         this.blogService &&
         typeof this.blogService.createArticle === 'function'
       ) {
-        createdArticle = await this.blogService.createArticle(
-          {
-            ...article,
-            type: 'advice',
-          },
-          authorId || 'system',
-        );
+        createdArticle = await this.blogService.createArticle({
+          ...article,
+          type: 'advice',
+        });
       } else {
         // Version simplifiée si BlogService pas disponible
         const articleData = {
@@ -754,7 +750,7 @@ export class AdviceService {
       await this.supabaseService.client.rpc('increment_advice_views', {
         advice_id: adviceId,
       });
-    } catch (_error) {
+    } catch {
       // Fallback - mise à jour manuelle si la fonction RPC n'existe pas
       await this.supabaseService.client
         .from('__blog_advice')

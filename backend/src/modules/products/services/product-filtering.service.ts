@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { z } from 'zod';
 
 /**
  * 🎯 FILTERING SERVICE V5 ULTIMATE CLEAN - MÉTHODOLOGIE APPLIQUÉE
@@ -13,54 +12,49 @@ import { z } from 'zod';
  * ✅ +300% fonctionnalités vs service original utilisateur
  */
 
-// 🚀 SCHÉMAS ZOD OPTIMISÉS
-const FilterMetadataSchema = z.object({
-  description: z.string().optional(),
-  icon: z.string().optional(),
-  color: z.string().optional(),
-  compatibility: z.enum(['universal', 'specific', 'premium']).optional(),
-});
+// 🚀 INTERFACES OPTIMISÉES
+export interface FilterMetadata {
+  description?: string;
+  icon?: string;
+  color?: string;
+  compatibility?: 'universal' | 'specific' | 'premium';
+}
 
-const FilterOptionSchema = z.object({
-  id: z.union([z.number(), z.string()]),
-  value: z.string(),
-  label: z.string(),
-  alias: z.string(),
-  count: z.number(),
-  trending: z.boolean().default(false),
-  metadata: FilterMetadataSchema.optional(),
-});
+export interface FilterOption {
+  id: number | string;
+  value: string;
+  label: string;
+  alias: string;
+  count: number;
+  trending: boolean;
+  metadata?: FilterMetadata;
+}
 
-const FilterGroupSchema = z.object({
-  type: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  options: z.array(FilterOptionSchema),
-});
+export interface FilterGroup {
+  type: string;
+  name: string;
+  description?: string;
+  options: FilterOption[];
+}
 
-const FilterResultSchema = z.object({
-  success: z.boolean(),
-  data: z.object({
-    filters: z.array(FilterGroupSchema),
-    summary: z.object({
-      total_filters: z.number(),
-      total_options: z.number(),
-      trending_options: z.number(),
-    }),
-  }),
-  metadata: z.object({
-    cached: z.boolean(),
-    response_time: z.number(),
-    service_name: z.string(),
-    api_version: z.string(),
-    methodology: z.string(),
-  }),
-});
-
-type FilterMetadata = z.infer<typeof FilterMetadataSchema>;
-type FilterOption = z.infer<typeof FilterOptionSchema>;
-type FilterGroup = z.infer<typeof FilterGroupSchema>;
-type FilterResult = z.infer<typeof FilterResultSchema>;
+type FilterResult = {
+  success: boolean;
+  data: {
+    filters: FilterGroup[];
+    summary: {
+      total_filters: number;
+      total_options: number;
+      trending_options: number;
+    };
+  };
+  metadata: {
+    cached: boolean;
+    response_time: number;
+    service_name: string;
+    api_version: string;
+    methodology: string;
+  };
+};
 
 @Injectable()
 export class ProductFilteringService extends SupabaseBaseService {
@@ -69,11 +63,7 @@ export class ProductFilteringService extends SupabaseBaseService {
   /**
    * 🎯 MÉTHODE PRINCIPALE - Récupérer tous les filtres
    */
-  async getAllFilters(
-    pgId: number,
-    typeId: number,
-    options: any = {},
-  ): Promise<FilterResult> {
+  async getAllFilters(pgId: number, typeId: number): Promise<FilterResult> {
     const startTime = Date.now();
 
     try {

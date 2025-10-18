@@ -55,7 +55,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     const lower = query.toLowerCase();
     const words = lower.split(/\s+/);
 
-    for (const [cat, keywords] of Object.entries(this.CATEGORY_KEYWORDS)) {
+    for (const keywords of Object.values(this.CATEGORY_KEYWORDS)) {
       for (const kw of keywords) {
         if (words.includes(kw)) {
           const refPart = query
@@ -77,10 +77,7 @@ export class SearchSimpleService extends SupabaseBaseService {
   }
 
   /** Niveau de qualité: 1=OES, 2=Aftermarket, 4=Adaptable (3=ES à implémenter via consigne) */
-  private getQualityLevel(
-    marqueOes: string | null,
-    _priceConsigne: number | null,
-  ): number {
+  private getQualityLevel(marqueOes: string | null): number {
     if (marqueOes === 'O' || marqueOes === 'OES') return 1;
     if (marqueOes === 'A') return 2;
     return 4;
@@ -179,7 +176,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // FALLBACK: Si pieces_ref_search est vide, rechercher dans pieces_price.pri_ref (beaucoup plus rapide !)
     let pieceIds: number[] = [];
-    let prsKindMap = new Map<string, string>();
+    const prsKindMap = new Map<string, string>();
 
     if (searchRefs.length === 0) {
       this.logger.log(
@@ -519,7 +516,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Formatter + qualité + OEM
     let items = filtered.map((p) => {
       const m = marqueMap.get(p.piece_pm_id);
-      const qualityLevel = this.getQualityLevel(m?.oes ?? null, null);
+      const qualityLevel = this.getQualityLevel(m?.oes ?? null);
 
       const item: any = {
         id: String(p.piece_id),

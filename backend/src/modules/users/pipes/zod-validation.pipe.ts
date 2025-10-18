@@ -5,19 +5,14 @@
  * ✅ Compatible avec l'écosystème NestJS
  */
 
-import {
-  PipeTransform,
-  Injectable,
-  ArgumentMetadata,
-  BadRequestException,
-} from '@nestjs/common';
+import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 import { ZodSchema, ZodError } from 'zod';
 
 @Injectable()
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodSchema) {}
 
-  transform(value: any, _metadata: ArgumentMetadata) {
+  transform(value: any) {
     try {
       return this.schema.parse(value);
     } catch (error) {

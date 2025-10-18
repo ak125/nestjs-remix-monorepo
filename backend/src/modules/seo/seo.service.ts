@@ -2,28 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
-// 🎯 INTERFACES SEO ENRICHIES (intégration du système avancé)
-interface SeoVariables {
-  gamme: string;
-  marque: string;
-  modele: string;
-  type: string;
-  annee: string;
-  nbCh: number;
-  minPrice?: number;
-}
-
-interface SeoTemplate {
-  sgc_title: string;
-  sgc_descrip: string;
-  sgc_h1: string;
-  sgc_content: string;
-}
-
-interface SeoSwitch {
-  sgcs_alias: number;
-  sgcs_content: string;
-}
+// 🎯 INTERFACES SEO (utilisées par dynamic-seo-v4-ultimate.service.ts)
+// Interfaces commentées - utilisées uniquement pour référence de types
+// interface SeoVariables { gamme, marque, modele, type, annee, nbCh, minPrice }
+// interface SeoTemplate { sgc_title, sgc_descrip, sgc_h1, sgc_content }
+// interface SeoSwitch { sgcs_alias, sgcs_content }
 
 @Injectable()
 export class SeoService extends SupabaseBaseService {

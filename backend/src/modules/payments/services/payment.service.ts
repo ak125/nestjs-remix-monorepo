@@ -98,14 +98,7 @@ export class PaymentService {
   /**
    * Initialiser un paiement avancé (TODO: Implémenter les méthodes manquantes)
    */
-  async initializePayment(_paymentData: {
-    orderId: string;
-    userId: string;
-    amount: number;
-    currency: string;
-    returnUrl: string;
-    ipAddress: string;
-  }): Promise<{
+  async initializePayment(): Promise<{
     transactionId: string;
     formData: any;
     gatewayUrl: string;
@@ -235,12 +228,6 @@ export class PaymentService {
       const updatedPayment = await this.paymentDataService.updatePaymentStatus(
         payment.id,
         status,
-        {
-          providerTransactionId: callbackData.transactionId,
-          ...(status === PaymentStatus.FAILED && {
-            failureReason: `Provider status: ${callbackData.status}`,
-          }),
-        },
       );
 
       // Créer une transaction de log
@@ -398,11 +385,7 @@ export class PaymentService {
   /**
    * Traiter un remboursement (version simplifiée - TODO: Implémenter updatePayment)
    */
-  async processRefund(
-    paymentId: string,
-    amount?: number,
-    _reason?: string,
-  ): Promise<Payment> {
+  async processRefund(paymentId: string, amount?: number): Promise<Payment> {
     try {
       this.logger.log(`Processing refund for payment ${paymentId}`);
 

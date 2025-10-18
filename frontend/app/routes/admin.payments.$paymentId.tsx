@@ -52,7 +52,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       const amount = parseFloat(formData.get('amount') as string);
       const reason = formData.get('reason') as string;
       
-      await processRefund(paymentId, { amount, reason });
+      await processRefund(paymentId, amount, reason);
       
       return json({ 
         success: true, 

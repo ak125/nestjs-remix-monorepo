@@ -225,7 +225,7 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
     }
 
     try {
-      const { data, error } = await this.supabase
+      const { error } = await this.supabase
         .from('analytics_config')
         .update({
           ...updates,
@@ -332,7 +332,6 @@ export class EnhancedAnalyticsService extends SupabaseBaseService {
     options: ScriptConfig,
   ): string {
     const asyncAttr = options.async ? 'async' : '';
-    const deferAttr = options.defer ? 'defer' : '';
 
     return `
 <!-- Google Analytics ${options.version} -->

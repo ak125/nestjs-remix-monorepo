@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Query,
-  Body,
-  Logger,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Logger } from '@nestjs/common';
 import { OrderArchiveService } from '../services/order-archive.service';
 
 /**
@@ -24,10 +16,7 @@ export class OrderArchiveController {
    * Récupérer une commande archivée
    */
   @Get(':orderId')
-  async getArchivedOrder(
-    @Param('orderId') orderId: string,
-    @Query('customerId') _customerId?: string,
-  ) {
+  async getArchivedOrder(@Param('orderId') orderId: string) {
     try {
       const orderIdNum = parseInt(orderId);
 
@@ -145,10 +134,7 @@ export class OrderArchiveController {
    * Marquer une commande comme archivée
    */
   @Post(':orderId/archive')
-  async archiveOrder(
-    @Param('orderId') orderId: string,
-    @Body() _body: { reason?: string },
-  ) {
+  async archiveOrder(@Param('orderId') orderId: string) {
     try {
       const orderIdNum = parseInt(orderId);
 

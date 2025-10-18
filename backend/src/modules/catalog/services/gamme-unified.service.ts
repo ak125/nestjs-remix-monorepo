@@ -5,7 +5,6 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   Gamme,
-  GammeWithFamily,
   FamilyWithGammes,
   GammeHierarchyResponse,
 } from '../types/gamme.types';

@@ -53,10 +53,7 @@ export class HeaderService {
   /**
    * Obtient les données du header moderne
    */
-  async getHeader(
-    context: string = 'default',
-    _userId?: string,
-  ): Promise<HeaderData> {
+  async getHeader(context: string = 'default'): Promise<HeaderData> {
     return this.generateHeader(context);
   }
 
