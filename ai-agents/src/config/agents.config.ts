@@ -40,6 +40,14 @@ export const config: DriverConfig = {
         top: 5,            // Top 5 clusters
       },
     },
+    {
+      type: 'perf-observabilite',
+      enabled: true,
+      options: {
+        collectRealMetrics: false, // true = connexion Redis/APM, false = analyse statique
+        baselineComparison: true,   // Comparer avec baseline précédente
+      },
+    },
     // Autres agents à ajouter ici
   ],
 };

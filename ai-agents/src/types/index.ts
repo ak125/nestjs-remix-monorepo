@@ -5,21 +5,18 @@
 export type AgentStatus = 'idle' | 'running' | 'completed' | 'error';
 
 export type AgentType = 
-  | 'cartographe' 
+  | 'cartographe'
   | 'fichiers-massifs'
   | 'detecteur-doublons'
   | 'graphe-imports'
-  | 'hygiene-config'
-  | 'diff-dependances'
-  | 'routes-sante'
-  | 'ui-snapshot'
-  | 'css-hygiene'
+  | 'upgrade-nestjs'
+  | 'upgrade-remix'
+  | 'upgrade-react'
+  | 'upgrade-nodejs'
+  | 'refacto-css'
   | 'perf-observabilite'
   | 'data-sanity'
-  | 'meta-amelioration'
-  | 'optimizer' 
-  | 'security' 
-  | 'performance';
+  | 'meta-agent';
 
 /**
  * Interface de base pour tous les agents
