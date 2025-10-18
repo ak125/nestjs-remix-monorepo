@@ -44,6 +44,12 @@ export class AIDriver {
       return new GrapheImportsCyclesAgent(config.rootPath);
     });
 
+    // Agent 5: Upgrade NestJS (lazy loading)
+    this.agentFactories.set('upgrade-nestjs', async () => {
+      const { UpgradeNestJSAgent } = await import('../agents/upgrade-nestjs.agent');
+      return new UpgradeNestJSAgent(config.rootPath);
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
