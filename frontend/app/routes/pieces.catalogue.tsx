@@ -14,8 +14,8 @@ export const meta: MetaFunction = () => {
 };
 
 interface LoaderData {
-  categories: PieceCategory[];
-  products: Piece[];
+  categories: ProductCategory[];
+  products: Product[];
   total: number;
   page: number;
   searchTerm: string;

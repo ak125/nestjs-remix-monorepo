@@ -155,8 +155,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     // Pagination côté client
     const page = parseInt(params.page);
     const _limit = parseInt(params.limit);
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+    const startIndex = (page - 1) * _limit;
+    const endIndex = startIndex + _limit;
     const paginatedSuppliers = filteredSuppliers.slice(startIndex, endIndex);
     
     // Calculer les statistiques
@@ -174,7 +174,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     return json({
       suppliers: paginatedSuppliers,
       totalSuppliers: filteredSuppliers.length,
-      totalPages: Math.ceil(filteredSuppliers.length / limit),
+      totalPages: Math.ceil(filteredSuppliers.length / _limit),
       currentPage: page,
       statistics,
       params,

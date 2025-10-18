@@ -172,7 +172,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // Charger les switches SEO pour cette gamme (pg_id)
-    let seoSwitches = [];
+    let seoSwitches: any[] = [];
     if (article.pg_id) {
       try {
         const switchesResponse = await fetch(

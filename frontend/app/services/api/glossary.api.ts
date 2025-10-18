@@ -368,7 +368,7 @@ class GlossaryApiService {
       const totalPages = Math.ceil(filteredTerms.length / limit);
 
       // Statistiques
-      const categories = Array.from(new Set(DEMO_GLOSSARY.map(t => t.category).filter(Boolean)));
+      const categories = Array.from(new Set(DEMO_GLOSSARY.map(t => t.category).filter((c): c is string => typeof c === 'string')));
       const stats = {
         total: DEMO_GLOSSARY.length,
         totalViews: DEMO_GLOSSARY.reduce((sum, t) => sum + t.viewsCount, 0),
