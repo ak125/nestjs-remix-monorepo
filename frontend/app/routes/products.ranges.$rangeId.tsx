@@ -29,7 +29,7 @@ interface Product {
   piece_activ: boolean;
   piece_top: boolean;
   piece_description?: string;
-  piece_image?: string;
+  piece_image?: string | null;
   price?: number;
   price_pro?: number;
   stock?: number;
@@ -101,7 +101,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       headers: { 'internal-call': 'true' }
     });
     
-    let rangeInfo = null;
+    let rangeInfo: any = null;
     if (rangeResponse.ok) {
       const ranges = await rangeResponse.json();
       rangeInfo = ranges.find((r: any) => r.id === rangeId);
