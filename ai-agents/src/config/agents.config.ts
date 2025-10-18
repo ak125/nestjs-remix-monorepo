@@ -73,13 +73,23 @@ export const config: DriverConfig = {
       },
     },
     {
-      type: 'refacto-css',
-      enabled: true,
-      options: {
-        detectDuplications: true,
-        suggestComponents: true,
-      },
+    type: 'refacto-css',
+    enabled: true,
+    options: {
+      detectDuplications: true,
+      suggestComponents: true,
     },
+  },
+  {
+    type: 'data-sanity',
+    enabled: true,
+    options: {
+      checkPrisma: true,
+      checkSupabase: true,
+      checkRedis: true,
+      analyzeMigrations: true,
+    },
+  },
     {
       type: 'perf-observabilite',
       enabled: true,
