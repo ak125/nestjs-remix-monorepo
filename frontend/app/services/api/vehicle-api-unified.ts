@@ -6,8 +6,7 @@ import  {
   type VehicleBrand,
   type VehicleModel, 
   type VehicleType,
-  type ApiResponse,
-  type PaginationOptions
+  type ApiResponse
 } from '@monorepo/shared-types';
 
 const API_BASE_URL = '/api';

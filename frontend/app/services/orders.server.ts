@@ -16,10 +16,14 @@ export interface GetUserOrdersParams {
 /**
  * Récupère les commandes d'un utilisateur depuis l'API NestJS
  */
-export async function getUserOrders(
-  params: GetUserOrdersParams,
-): Promise<OrdersResponse> {
-  const { userId, page = 1, status = "all", year, request } = params;
+export async function getUserOrders(params: {
+  userId: string;
+  page?: number;
+  status?: string;
+  year?: number;
+  request: Request;
+}): Promise<{ orders: Order[]; total: number; page: number }> {
+  const { page = 1, status = "all", year, request } = params;
 
   try {
     const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
@@ -118,10 +122,12 @@ export interface GetOrderDetailParams {
 /**
  * Récupère le détail d'une commande spécifique
  */
-export async function getOrderDetail(
-  params: GetOrderDetailParams,
-): Promise<any> {
-  const { orderId, userId, request } = params;
+export async function getOrderDetails(params: {
+  orderId: string;
+  userId: string;
+  request: Request;
+}): Promise<Order | null> {
+  const { orderId, request } = params;
 
   try {
     const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
