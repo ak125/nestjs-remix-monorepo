@@ -220,3 +220,66 @@ export interface MassiveFilesReport {
   };
   recommendations: string[];
 }
+
+/**
+ * Cluster de duplication détecté par l'Agent 3
+ */
+export interface DuplicationCluster {
+  id: string;
+  occurrences: number;
+  linesPerOccurrence: number;
+  totalDuplicatedLines: number;
+  percentage: number; // % du code total dupliqué
+  files: DuplicatedFile[];
+  category: 'hooks' | 'utils' | 'services' | 'components' | 'styles' | 'other';
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  factorizationPlan?: FactorizationPlan;
+}
+
+/**
+ * Fichier contenant du code dupliqué
+ */
+export interface DuplicatedFile {
+  path: string;
+  workspace: string;
+  lineStart: number;
+  lineEnd: number;
+  fragment: string; // Extrait du code dupliqué
+}
+
+/**
+ * Plan de factorisation pour un cluster
+ */
+export interface FactorizationPlan {
+  clusterId: string;
+  targetLocation: string; // Où créer le code mutualisé
+  targetFileName: string;
+  refactoringSteps: string[];
+  estimatedImpact: {
+    linesReduced: number;
+    filesImpacted: number;
+    complexity: 'low' | 'medium' | 'high';
+  };
+}
+
+/**
+ * Rapport de l'Agent 3
+ */
+export interface DuplicationReport {
+  timestamp: Date;
+  totalFilesScanned: number;
+  totalLines: number;
+  duplicatedLines: number;
+  duplicationPercentage: number;
+  clustersCount: number;
+  top5Clusters: DuplicationCluster[];
+  byCategory: {
+    hooks: number;
+    utils: number;
+    services: number;
+    components: number;
+    styles: number;
+    other: number;
+  };
+  recommendations: string[];
+}
