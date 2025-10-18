@@ -64,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json<LoaderData>({
       reviews: reviewsData.reviews || [],
       stats,
-      pagination: reviewsData.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
+      pagination: 'pagination' in reviewsData ? reviewsData.pagination : { page: reviewsData.page || 1, limit: reviewsData.limit || 10, total: reviewsData.total || 0, totalPages: Math.ceil((reviewsData.total || 0) / (reviewsData.limit || 10)) }
     });
   } catch (error) {
     console.error("Erreur lors du chargement des avis:", error);
