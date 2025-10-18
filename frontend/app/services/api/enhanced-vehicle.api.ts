@@ -5,11 +5,10 @@
  * - Backend retourne { data, page, limit, total } (sans "success") → mapping standardisé
  */
 
-import  {
+import {
   type VehicleBrand,
   type VehicleModel,
   type VehicleType,
-  type ApiResponse,
   type PaginationOptions
 } from '@monorepo/shared-types';
 
