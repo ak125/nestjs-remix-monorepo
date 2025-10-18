@@ -308,7 +308,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
             )}
 
             <div className="flex gap-2">
-              <Button onClick={confirmAction} className="flex-1">
+              <Button onClick={() => confirmAction()} className="flex-1">
                 ✅ Confirmer
               </Button>
               <Button
