@@ -65,6 +65,14 @@ export const config: DriverConfig = {
       },
     },
     {
+      type: 'upgrade-react',
+      enabled: true,
+      options: {
+        targetVersion: '18.3.1',
+        analyzeOptimizations: true,
+      },
+    },
+    {
       type: 'perf-observabilite',
       enabled: true,
       options: {
