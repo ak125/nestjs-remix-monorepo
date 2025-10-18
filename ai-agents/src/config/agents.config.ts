@@ -1,0 +1,84 @@
+import { DriverConfig } from '../types';
+
+/**
+ * Configuration du driver IA et des agents
+ */
+export const config: DriverConfig = {
+  rootPath: '/workspaces/nestjs-remix-monorepo',
+  outputPath: '/workspaces/nestjs-remix-monorepo/ai-agents/reports',
+  parallel: false, // Exécution séquentielle par défaut
+  reportFormat: 'both',
+  agents: [
+    {
+      type: 'cartographe',
+      enabled: true,
+      options: {
+        includeNodeModules: false,
+        includeDist: false,
+        topFilesLimit: 50,
+        weightDriftThreshold: 5, // ±5%
+      },
+    },
+    // Autres agents à ajouter ici
+  ],
+};
+
+/**
+ * Extensions de fichiers à exclure du scan
+ */
+export const EXCLUDED_EXTENSIONS = [
+  '.map',
+  '.lock',
+  '.log',
+  '.tmp',
+  '.cache',
+];
+
+/**
+ * Dossiers à exclure du scan
+ */
+export const EXCLUDED_DIRECTORIES = [
+  'node_modules',
+  'dist',
+  'build',
+  '.git',
+  '.next',
+  '.turbo',
+  'coverage',
+  '.vscode',
+  '.idea',
+  'cache',
+  'dumps',
+];
+
+/**
+ * Mapping des extensions vers catégories
+ */
+export const FILE_CATEGORIES: Record<string, string> = {
+  '.ts': 'source',
+  '.tsx': 'source',
+  '.js': 'source',
+  '.jsx': 'source',
+  '.json': 'config',
+  '.yml': 'config',
+  '.yaml': 'config',
+  '.md': 'documentation',
+  '.test.ts': 'test',
+  '.spec.ts': 'test',
+  '.test.js': 'test',
+  '.spec.js': 'test',
+  '.css': 'style',
+  '.scss': 'style',
+  '.prisma': 'schema',
+  '.env': 'config',
+};
+
+/**
+ * Seuils KPI
+ */
+export const KPI_THRESHOLDS = {
+  maxFileSize: 500 * 1024, // 500KB
+  maxLines: 1000,
+  weightDriftMax: 5, // ±5%
+  coverageTarget: 100, // 100%
+};
