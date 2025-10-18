@@ -74,6 +74,12 @@ export class AIDriver {
       return new RefactoCSSAgent();
     });
 
+    // Agent 11: Data Sanity (lazy loading)
+    this.agentFactories.set('data-sanity', async () => {
+      const { DataSanityAgent } = await import('../agents/data-sanity.agent');
+      return new DataSanityAgent();
+    });
+
     // Agent 10: Perf & Observabilité (lazy loading)
     this.agentFactories.set('perf-observabilite', async () => {
       const { PerfObservabiliteAgent } = await import('../agents/perf-observabilite.agent');
