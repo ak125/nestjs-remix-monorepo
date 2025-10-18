@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Put,
-  Delete,
   Body,
   Param,
   Query,
@@ -36,26 +35,12 @@ export class ContactController {
   async getAllTickets(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @Query('status') status?: string,
-    @Query('category') category?: string,
-    @Query('assignedTo') assignedTo?: string,
-    @Query('priority') priority?: string,
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
+    // TODO: Implement filters: status, category, assignedTo, priority, startDate, endDate
   ) {
     const pageNum = parseInt(page || '1', 10);
     const limitNum = parseInt(limit || '10', 10);
 
-    const filters = {
-      status,
-      category,
-      assignedTo,
-      priority,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
-    };
-
-    const tickets = await this.contactService.getAllTickets(filters);
+    const tickets = await this.contactService.getAllTickets();
 
     // Pagination simple
     const total = tickets.length;
@@ -96,14 +81,9 @@ export class ContactController {
     const limitNum = parseInt(limit || '10', 10);
 
     // Pour l'instant, retournons juste la liste filtrée par les critères basiques
-    const filters = {
-      priority,
-      category,
-      startDate: dateFrom ? new Date(dateFrom) : undefined,
-      endDate: dateTo ? new Date(dateTo) : undefined,
-    };
+    // TODO: Implement filters { status, dateFrom, dateTo }
 
-    let tickets = await this.contactService.getAllTickets(filters);
+    let tickets = await this.contactService.getAllTickets();
 
     // Filtrage simple par mot-clé
     if (keyword) {

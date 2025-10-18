@@ -306,7 +306,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       // On récupère toutes les pièces trouvées pour les trier ensuite
       piecesQuery = piecesQuery;
 
-      const { data: pieces, error: piecesError, count } = await piecesQuery;
+      const { data: pieces, error: piecesError } = await piecesQuery;
 
       if (piecesError) {
         throw new Error(`Erreur requête pièces: ${piecesError.message}`);

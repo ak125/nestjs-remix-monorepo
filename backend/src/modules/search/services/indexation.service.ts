@@ -373,7 +373,7 @@ export class IndexationService {
       );
 
       // Indexer les produits réels dans Meilisearch
-      const result = await this.meilisearch.indexProducts(productsData.data);
+      await this.meilisearch.indexProducts(productsData.data);
 
       this.logger.log(
         `✅ ${productsData.data.length} produits réels indexés avec succès`,

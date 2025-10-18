@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { z } from 'zod';
 
 /**
  * 🎯 CROSS SELLING SERVICE V5 ULTIMATE - MÉTHODOLOGIE APPLIQUÉE
@@ -34,50 +33,47 @@ import { z } from 'zod';
  * - Support cross-selling par configuration ET famille
  */
 
-// 🚀 SCHÉMAS ZOD OPTIMISÉS - Inspirés des patterns existants
-const CrossGammeSchema = z.object({
-  pg_id: z.number(),
-  pg_name: z.string(),
-  pg_alias: z.string(),
-  pg_img: z.string().optional(),
-  products_count: z.number().optional(),
-  cross_level: z.number().default(1),
-  source: z.enum(['family', 'config', 'compatibility']),
-  metadata: z
-    .object({
-      family_id: z.number().optional(),
-      compatibility_score: z.number().optional(),
-      trending: z.boolean().default(false),
-      last_updated: z.string().optional(),
-    })
-    .optional(),
-});
+// 🚀 TYPES OPTIMISÉS - Inspirés des patterns existants
+export interface CrossGamme {
+  pg_id: number;
+  pg_name: string;
+  pg_alias: string;
+  pg_img?: string;
+  products_count?: number;
+  cross_level: number;
+  source: 'family' | 'config' | 'compatibility';
+  metadata?: {
+    family_id?: number;
+    compatibility_score?: number;
+    trending: boolean;
+    last_updated?: string;
+  };
+}
 
-const CrossSellingSeoSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  h1: z.string().optional(),
-  content: z.string().optional(),
-  keywords: z.string().optional(),
-  generation_meta: z.object({
-    switches_processed: z.number(),
-    variables_replaced: z.number(),
-    generation_time: z.number(),
-    template_source: z.string(),
-  }),
-});
+export interface CrossSellingSeo {
+  title: string;
+  description: string;
+  h1?: string;
+  content?: string;
+  keywords?: string;
+  generation_meta: {
+    switches_processed: number;
+    variables_replaced: number;
+    generation_time: number;
+    template_source: string;
+  };
+}
 
-// Type inféré du schéma CrossSellingResult (schéma supprimé pour éviter l'avertissement ESLint)
-// const CrossSellingResultSchema = z.object({ success, data, seo, performance, methodology })
+// Type pour le résultat CrossSelling
 type CrossSellingResult = {
   success: boolean;
   data: {
-    cross_gammes: z.infer<typeof CrossGammeSchema>[];
+    cross_gammes: CrossGamme[];
     total_found: number;
     sources_used: string[];
     recommendations?: string[];
   };
-  seo?: z.infer<typeof CrossSellingSeoSchema>;
+  seo?: CrossSellingSeo;
   performance: {
     response_time: number;
     cache_hit: boolean;
@@ -86,9 +82,6 @@ type CrossSellingResult = {
   };
   methodology: string;
 };
-
-type CrossGamme = z.infer<typeof CrossGammeSchema>;
-type CrossSellingSeo = z.infer<typeof CrossSellingSeoSchema>;
 
 @Injectable()
 export class CrossSellingService extends SupabaseBaseService {
@@ -138,9 +131,8 @@ export class CrossSellingService extends SupabaseBaseService {
         `🎯 [CrossSellingV5] Analyse multi-sources pour pgId=${pgId}, typeId=${typeId}, mfId=${mfId}`,
       );
 
-      // 🚀 VÉRIFICATION CACHE - Pattern optimisé
-      const cacheKey = this.cacheKeys.result(pgId, typeId, mfId);
-      const cachedResult = await this.getCachedResult(cacheKey);
+      // 🚀 VÉRIFICATION CACHE - Pattern optimisé (TODO: implement)
+      const cachedResult = await this.getCachedResult();
       if (cachedResult) {
         cachedResult.performance.cache_hit = true;
         return cachedResult;
@@ -205,7 +197,7 @@ export class CrossSellingService extends SupabaseBaseService {
           cross_gammes: uniqueGammes,
           total_found: allCrossGammes.length,
           sources_used: sourcesUsed,
-          recommendations: this.generateRecommendations(uniqueGammes, options),
+          recommendations: this.generateRecommendations(uniqueGammes),
         },
         seo: seoContent,
         performance: {
@@ -219,7 +211,7 @@ export class CrossSellingService extends SupabaseBaseService {
       };
 
       // 🎯 MISE EN CACHE INTELLIGENTE
-      await this.setCachedResult(cacheKey, result);
+      // await this.setCachedResult(cacheKey, result);
 
       this.logger.log(
         `✅ [CrossSellingV5] Trouvé ${uniqueGammes.length} gammes en ${Date.now() - startTime}ms`,
@@ -261,10 +253,9 @@ export class CrossSellingService extends SupabaseBaseService {
     mfId: number,
   ): Promise<CrossGamme[]> {
     try {
-      const cacheKey = this.cacheKeys.familyCross(pgId, mfId, typeId);
-
-      const cached = await this.getFromCache(cacheKey);
-      if (cached) return cached;
+      // TODO: Implement cache
+      // // const cached = await this.getFromCache();
+      // // if (cached) return cached;
 
       // 🎯 REQUÊTE OPTIMISÉE - Pattern VehicleFilteredCatalogService
       const { data, error } = await this.supabase
@@ -304,7 +295,7 @@ export class CrossSellingService extends SupabaseBaseService {
         'family',
       );
 
-      await this.setInCache(cacheKey, crossGammes, this.cacheTTL.familyCross);
+      // await this.setInCache(cacheKey, crossGammes, this.cacheTTL.familyCross);
       return crossGammes;
     } catch (error) {
       this.logger.error('❌ Erreur getSameFamilyCrossGammesOptimized:', error);
@@ -320,10 +311,10 @@ export class CrossSellingService extends SupabaseBaseService {
     typeId: number,
   ): Promise<CrossGamme[]> {
     try {
-      const cacheKey = this.cacheKeys.configCross(pgId, typeId);
+      // const cacheKey = this.cacheKeys.configCross(pgId, typeId);
 
-      const cached = await this.getFromCache(cacheKey);
-      if (cached) return cached;
+      // const cached = await this.getFromCache(cacheKey);
+      // if (cached) return cached;
 
       // 🚀 REQUÊTE BATCH OPTIMISÉE
       const { data, error } = (await this.supabase
@@ -378,7 +369,7 @@ export class CrossSellingService extends SupabaseBaseService {
         typeId,
       );
 
-      await this.setInCache(cacheKey, crossGammes, this.cacheTTL.configCross);
+      // await this.setInCache(cacheKey, crossGammes, this.cacheTTL.configCross);
       return crossGammes;
     } catch (error) {
       this.logger.error('❌ Erreur getCrossGammesByConfigOptimized:', error);
@@ -398,7 +389,7 @@ export class CrossSellingService extends SupabaseBaseService {
     const startTime = Date.now();
 
     try {
-      const cacheKey = this.cacheKeys.seoTemplate(pgId, typeId);
+      // const cacheKey = this.cacheKeys.seoTemplate(pgId, typeId);
 
       // 🎯 TEMPLATE SEO AVEC CACHE
       const { data: seoTemplate } = await this.supabase
@@ -414,7 +405,7 @@ export class CrossSellingService extends SupabaseBaseService {
       // 🔄 RÉCUPÉRATION SWITCHES PARALLÉLISÉE
       const [switches, familySwitches, externalSwitches] = await Promise.all([
         this.getGammeSwitches(crossGamme.pg_id),
-        this.getFamilySwitches(vehicleContext.mfId, crossGamme.pg_id),
+        this.getFamilySwitches(vehicleContext.mfId),
         this.getExternalSwitches(typeId),
       ]);
 
@@ -539,10 +530,10 @@ export class CrossSellingService extends SupabaseBaseService {
     typeId: number,
   ): Promise<boolean> {
     try {
-      const cacheKey = this.cacheKeys.articleCheck(pgId, typeId);
+      // const cacheKey = this.cacheKeys.articleCheck(pgId, typeId);
 
-      const cached = await this.getFromCache(cacheKey);
-      if (cached !== null) return cached;
+      // const cached = await this.getFromCache(cacheKey);
+      // if (cached !== null) return cached;
 
       // 🎯 REQUÊTE COUNT OPTIMISÉE
       const { count, error } = await this.supabase
@@ -553,7 +544,7 @@ export class CrossSellingService extends SupabaseBaseService {
         .limit(1);
 
       const hasArticles = !error && (count ?? 0) > 0;
-      await this.setInCache(cacheKey, hasArticles, this.cacheTTL.articleCheck);
+      // await this.setInCache(cacheKey, hasArticles, this.cacheTTL.articleCheck);
 
       return hasArticles;
     } catch (error) {
@@ -683,10 +674,7 @@ export class CrossSellingService extends SupabaseBaseService {
     };
   }
 
-  private generateRecommendations(
-    gammes: CrossGamme[],
-    options: any,
-  ): string[] {
+  private generateRecommendations(gammes: CrossGamme[]): string[] {
     const recs = [];
 
     if (gammes.length === 0) {
@@ -737,7 +725,7 @@ export class CrossSellingService extends SupabaseBaseService {
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
       return count || 0;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -818,10 +806,7 @@ export class CrossSellingService extends SupabaseBaseService {
     return data || [];
   }
 
-  private async getFamilySwitches(
-    mfId: number | undefined,
-    pgId: number,
-  ): Promise<any[]> {
+  private async getFamilySwitches(mfId: number | undefined): Promise<any[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
       .from('seo_family_gamme_car_switch')
@@ -862,38 +847,22 @@ export class CrossSellingService extends SupabaseBaseService {
     return matches ? matches.length : 0;
   }
 
-  // 🛠️ MÉTHODES CACHE UTILITAIRES
-  private async getFromCache(key: string): Promise<any> {
-    try {
-      // Implémentation cache (peut être améliorée avec Redis)
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  private async setInCache(
-    key: string,
-    value: any,
-    ttl: number,
-  ): Promise<void> {
-    try {
-      // Implémentation cache
-    } catch (error) {
-      // Ignore cache errors
-    }
-  }
-
-  private async getCachedResult(
-    key: string,
-  ): Promise<CrossSellingResult | null> {
+  // 🛠️ MÉTHODES CACHE UTILITAIRES (stubs pour implémentation future)
+  private async getFromCache(): Promise<any> {
+    // TODO: Implémentation cache (peut être améliorée avec Redis)
     return null;
   }
 
-  private async setCachedResult(
-    key: string,
-    result: CrossSellingResult,
-  ): Promise<void> {
-    // Placeholder
+  private async setInCache(): Promise<void> {
+    // TODO: Implémentation cache
+  }
+
+  private async getCachedResult(): Promise<CrossSellingResult | null> {
+    // TODO: Implémentation cache result
+    return null;
+  }
+
+  private async setCachedResult(): Promise<void> {
+    // TODO: Implémentation set cache result
   }
 }

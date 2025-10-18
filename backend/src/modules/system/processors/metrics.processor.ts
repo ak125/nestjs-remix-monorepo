@@ -48,7 +48,7 @@ export class MetricsProcessor extends WorkerHost {
           break;
 
         case 'maintenance':
-          result = await this.performScheduledMaintenance(job.data.metadata);
+          result = await this.performScheduledMaintenance();
           break;
 
         default:

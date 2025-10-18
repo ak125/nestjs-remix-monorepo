@@ -928,7 +928,7 @@ Le remboursement sera effectué sous 14 jours après réception du retour.
   /**
    * Méthode legacy pour récupérer une page légale (compatibilité)
    */
-  async getLegalPage(pageKey: string, _version?: string) {
+  async getLegalPage(pageKey: string) {
     const mappedType = this.pageMapping[pageKey];
     if (!mappedType) {
       throw new NotFoundException(`Type de page non reconnu: ${pageKey}`);

@@ -47,8 +47,7 @@ export class AISmartResponseService {
       const urgency = sentiment?.urgency || 'medium';
 
       const responseTemplate = this.getResponseTemplate(category, urgency);
-      const tone = this.determineTone(sentiment, urgency);
-      const response = this.personalizeResponse(responseTemplate, ticket, tone);
+      const response = this.personalizeResponse(responseTemplate, ticket);
 
       const confidence = this.calculateConfidence(
         category,
@@ -62,6 +61,7 @@ export class AISmartResponseService {
       );
       const suggestedActions = this.getSuggestedActions(category, urgency);
       const estimatedTime = this.estimateResolutionTime(category, urgency);
+      const tone = this.determineTone(sentiment, urgency);
 
       return {
         response,
@@ -80,10 +80,7 @@ export class AISmartResponseService {
   /**
    * Génère une réponse publique pour un avis
    */
-  async generateReviewResponse(
-    review: ReviewData,
-    sentiment?: SentimentAnalysis,
-  ): Promise<SmartResponse> {
+  async generateReviewResponse(review: ReviewData): Promise<SmartResponse> {
     try {
       const rating = review.rating;
       const isPositive = rating >= 4;
@@ -104,7 +101,6 @@ export class AISmartResponseService {
       }
 
       const response = this.personalizeReviewResponse(template, review);
-      const shouldPublish = this.shouldPublishResponse(rating, sentiment);
 
       return {
         response,
@@ -369,7 +365,6 @@ L'équipe {companyName}`;
   private personalizeResponse(
     template: string,
     ticket: ContactTicket | ContactFormData,
-    tone: string,
   ): string {
     let response = template;
 
