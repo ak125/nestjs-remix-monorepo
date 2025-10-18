@@ -55,6 +55,26 @@ cat docs/CONSOLIDATION-GUIDE.md
 
 👉 **Guide complet** : [docs/CONSOLIDATION-GUIDE.md](./docs/CONSOLIDATION-GUIDE.md)
 
+### 🤖 Système d'Agents IA
+
+**Nouveau !** Système d'audit et d'amélioration automatique du monorepo :
+
+```bash
+# Audit complet du monorepo
+cd ai-agents && npm run agent:driver
+
+# Agent Cartographe seul
+npm run agent:cartographe
+```
+
+**Fonctionnalités** :
+- ✅ Cartographie complète du monorepo
+- ✅ Heatmap des fichiers volumineux
+- ✅ KPIs et métriques détaillées
+- ✅ Rapports automatiques (JSON + Markdown)
+
+👉 **Documentation** : [ai-agents/README.md](./ai-agents/README.md) | [Guide de démarrage](./ai-agents/QUICKSTART.md)
+
 ---
 
 ## 🏗️ Architecture

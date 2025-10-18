@@ -27,7 +27,7 @@ Le système d'agents IA est un framework d'analyse automatisée pour monorepos N
 #### 🗺️ Agent 1 : Cartographe Monorepo
 - **Objectif** : Cartographie complète du monorepo
 - **Métriques** : 1046 fichiers, 7 KPIs structurels
-- **Durée** : 0.4s
+- **Durée** : < 1 min (cache fs-tree)
 - **Commit** : `424923e`
 - **Découverte clé** : Structure bien organisée, architecture claire
 
@@ -61,9 +61,9 @@ Le système d'agents IA est un framework d'analyse automatisée pour monorepos N
 - **Méthodologie** :
   - Dead code : Fichiers **non importés** + **non référencés** + **untouched 30j+**
   - Cycles : Analyse graphe dépendances (DFS circular detection)
-  - Exclusions : Entry points (main.ts, root.tsx), configs, tests publics
+  - Exclusions : Entry points (main.ts, root.tsx), configs, tests publics, **fichiers exportés CLI/scripts référencés dans package.json manifest**
   - Outils : Madge + TS Compiler API
-- **Durée** : < 1 min (1.5s sur machine test)
+- **Durée** : < 1 min (cache graphe)
 - **Commit** : `2d74689`
 - **Découverte clé** : Quick win majeur - 276 fichiers à supprimer (2-3 jours)
 
@@ -137,7 +137,7 @@ Le système d'agents IA est un framework d'analyse automatisée pour monorepos N
 #### ⚡ Agent 10 : Perf & Observabilité
 - **Objectif** : Identifier bottlenecks performance
 - **Métriques** : 1 bottleneck détecté, 2 recommandations
-- **Durée** : 0.4s
+- **Durée** : < 1 min (échantillon APM)
 - **Commit** : `c378165`
 - **Découverte clé** : Performance globale excellente, optimisations mineures
 
@@ -148,7 +148,7 @@ Le système d'agents IA est un framework d'analyse automatisée pour monorepos N
 #### 🗄️ Agent 11 : Data Sanity
 - **Objectif** : Valider cohérence Prisma/Supabase/Redis
 - **Métriques** : **112 tables Supabase**, 2 modèles Prisma (vestige), 116 incohérences
-- **Durée** : < 1 min (0.2s sur machine test)
+- **Durée** : < 1 min (cache/échantillon read-only)
 - **Commit** : `e6353f1`
 - **Découverte clé** : 
   - Architecture **100% Supabase** confirmée
@@ -254,9 +254,128 @@ Score Global = (
 - 🟡 **MEDIUM** : BC partiellement documentés, impact estimé, migration nécessite tests
 - 🔴 **LOW** : BC non documentés, impact inconnu, migration à risque
 
+### 📖 Méthodologie d'Inventaire Breaking Changes
+
+**Process (par framework)** :
+1. **Sources Officielles** : Release notes, upgrade guides, CHANGELOG.md
+2. **Extraction Symboles** : Grep usages dans codebase (APIs renommées/supprimées)
+   ```bash
+   # Exemple: Recherche API deprecated
+   grep -r "createCipher" --include="*.ts" backend/
+   ```
+3. **Cartographie Impacts** : Liste fichiers affectés + estimation effort
+4. **Tests Ciblés** : Scénarios minimaux par symbole (build + smoke tests)
+5. **Rapport** : Tableau BC (symbole, fichiers, action, owner, ETA)
+
+**Inventaire Actuel (11 BC Total)** :
+- NestJS 10→11 : 3 BC (extracted via diff release notes + grep)
+- Remix 2.15→2.17 : 4 BC (153 routes analyzed)
+- React 18.2→18.3 : 3 BC (114 components scanned)
+- Node.js 22→20 : 1 BC (crypto.createCipher deprecated)
+
 ---
 
-## 👥 RACI - Responsabilités & Décisions
+## � Registre des Risques
+
+| ID | Catégorie | Scénario | Prob. | Impact | Niveau | Mitigation | Owner | Trigger d'Alerte |
+|----|-----------|----------|-------|--------|--------|------------|-------|------------------|
+| **R1** | Upgrade | Régression UI après Tailwind 4 | M | H | 🔴 HIGH | UI Snapshot 10 pages + rollback CSS | Frontend Lead | >5 diffs critiques |
+| **R2** | Data | Suppression "dead code" casse un script interne | M | M | 🟠 MEDIUM | Evidence Log + dry-run + liste blanche | Tech Lead | Échec job CI "scripts:smoke" |
+| **R3** | Perf | Build time ↑ lors extraction lib UI | L | M | 🟡 LOW | Lazy imports + mesure bundle | DevOps | Build time > +5% baseline |
+| **R4** | Security | Dépendance vulnérable majeure | L | H | 🔴 HIGH | Audit hebdo + patch <72h | Tech Lead | Vuln HIGH/CRITICAL |
+| **R5** | Router | Navigation cassée sur routes imbriquées Remix | M | H | 🔴 HIGH | Routes Sanity + plan de tests | Frontend Lead | 1+ 404 non intentionnelle |
+
+**Légende Probabilité** : L = Low (<20%), M = Medium (20-60%), H = High (>60%)  
+**Légende Impact** : L = <1j correction, M = 1-3j, H = >3j ou impact business
+
+---
+
+## 🔙 Runbook – Rollback Upgrade
+
+### Pré-requis
+- ✅ Feature flags actifs (A/B testing possible)
+- ✅ Tag "baseline" par lot (ex: `v-upg-tailwind4-baseline`)
+- ✅ Image Docker précédente disponible (registry retention 90j)
+
+### Étapes Rollback (≤ 15 min)
+
+**1. Décision** (< 2 min)
+- **Critères** : Gates KO, p95 API/SSR ↑>10% vs baseline, 404 critiques, Health Score <70
+- **Approbation** : PO + Tech Lead (consensus requis)
+
+**2. Revert Code** (< 3 min)
+```bash
+# Revert merge commit
+git revert <merge-commit-sha> -m 1
+git push origin main
+
+# Ou rollback PR
+gh pr create --title "Rollback: [Upgrade Name]" --body "Triggers: [critères]"
+```
+
+**3. Redeploy Infra** (< 5 min)
+```bash
+# Kubernetes
+kubectl set image deployment/app app=registry.io/app:baseline
+
+# Docker Compose
+docker-compose pull && docker-compose up -d --force-recreate
+```
+
+**4. Vérifications** (< 5 min)
+- ✅ Routes Sanity (10 pages critiques)
+- ✅ UI Snapshot check (mobile + desktop)
+- ✅ Smoke tests (auth, checkout, API health)
+- ✅ Monitoring (p95 API, error rate <0.1%)
+
+**5. Post-Mortem** (< 24h)
+- 📝 Evidence Log (cause racine, impact, durée)
+- 🔧 Action corrective (blocker identifié, plan re-tentative)
+- 📢 Communication (Slack/Email stakeholders)
+
+### SLA
+- ⏱️ **Rollback complet** : ≤ 30 min
+- 📣 **Communication** : ≤ 10 min après décision
+
+---
+
+## 🔁 Politique de Changement
+
+### Règles de Merge
+
+**Principe** : 1 PR = 1 lot = 1 KPI surveillé
+
+**Fenêtre de Merge** :
+- ✅ **Autorisé** : Lundi–Jeudi 10:00–16:00 CET
+- ⛔ **Interdit** : Vendredi (freeze weekend), veille jours fériés
+- ⚠️ **Exception** : Hotfix security (approval Tech Lead + PO)
+
+**Gates Obligatoires** (CI/CD automatisé) :
+- ✅ Health Score ≥ 85/100
+- ✅ 0 cycles critiques introduits
+- ✅ p95 API/SSR ≤ baseline +10%
+- ✅ Bundle size ≤ baseline +3% (exceptions documentées)
+- ✅ Test coverage ≥ 80% (stable ou croissant)
+- ✅ 0 vulnérabilités HIGH/CRITICAL (npm audit)
+
+**Post-Merge** (automatique) :
+- 🤖 Sanity crawl (10 routes critiques)
+- 📊 Monitoring actif 2h (alertes auto si seuils franchis)
+- 📸 UI Snapshot comparison (10 pages)
+- 📝 Evidence Log entry créée automatiquement
+
+### Freeze de 48h
+Après un **gros lot** (Remix/Router/Tailwind major), freeze de **48h** pour observer production-like avant d'enchaîner upgrades.
+
+**Lots considérés "gros"** :
+- Framework major version (NestJS 10→11, Remix 2→3)
+- Router refactoring (>50 routes impactées)
+- UI library extraction (>100 composants)
+- Architecture change (Prisma→Supabase, etc.)
+
+---
+
+## �👥 RACI - Responsabilités & Décisions
 
 ### Matrice RACI par Phase
 
@@ -286,6 +405,104 @@ Score Global = (
 
 ---
 
+## 🧭 Ownership Map
+
+| Périmètre | Owner | Responsabilités | KPIs Surveillés |
+|-----------|-------|-----------------|-----------------|
+| **Frontend** | Frontend Lead | Routes Remix, UI lib, CSS patterns, bundle size | Bundle <500KB, CSS patterns <100, Routes sans 404 |
+| **Backend** | Backend Lead | Nest modules, DTO/services, perf API, data models | p95 API <200ms, 0 cycles, Dead code <50 |
+| **DevOps** | DevOps | CI/CD, build times, artifacts, rollback, monitoring | Build <5min, Deploy <10min, Rollback <30min |
+| **Tech Lead** | Tech Lead | Gates qualité, Health Score, arbitrage ICE, escalations | Score ≥85, 0 CRITICAL, Décisions <24h |
+| **Meta-Agent** | System | Consolidation KPIs, réduction bruit, recalibrage seuils | Faux positifs <20%, Synthesis <2h |
+
+---
+
+## 🧪 Politique de Tests (Résumé)
+
+### Smoke Tests (10 routes critiques)
+**Routes** : Home, Listing, Fiche produit, Panier, Checkout, Compte, Dashboard admin, Search, Filters, API Health
+
+**Critères** :
+- ✅ HTTP 200 (ou 3xx redirect attendu)
+- ✅ Temps réponse <2s
+- ✅ Aucune erreur JS console (0 errors)
+
+### UI Snapshots (10 pages × 2 devices)
+**Pages** : Dashboard, Orders, Product detail, Cart, Checkout, Profile, Admin users, Analytics, Search results, Home
+
+**Devices** : Mobile (375×667), Desktop (1920×1080)
+
+**Critères** :
+- ✅ Max 5 diffs visuels critiques (layout shifts, missing elements)
+- ✅ A11y score Lighthouse ≥90 (keyboard nav, ARIA)
+
+### Performance
+**Métriques** :
+- **p95 API** : <200ms (baseline ±10% acceptable)
+- **p95 SSR** : <500ms (baseline ±10% acceptable)
+- **Bundle size** : <500KB initial (baseline ±3% acceptable)
+- **Build time** : <5min (baseline ±5% acceptable)
+
+### Données (Data Sanity)
+**Tests** : Read-only queries (no mutations)
+- ✅ Foreign Keys intégrité (Supabase constraints)
+- ✅ UNIQUE constraints respectées
+- ✅ NOT NULL validations
+- ✅ Enum values dans range autorisé
+
+### Couverture
+**Seuil** : ≥ 80% (Jest + Vitest)
+
+**Évolution** : Stable ou croissant (pas de régression >2%)
+
+---
+
+## 🧱 Definition of Done – Refactors
+
+### Par Type de Refactor
+
+**Extraction Composant UI** :
+- ✅ KPI atteint (ex: pattern -60% occurrences)
+- ✅ Interface TypeScript props (strict typing)
+- ✅ Story Storybook avec ≥3 variants
+- ✅ Support dark mode (dark: utilities Tailwind)
+- ✅ Accessibilité : ARIA labels, keyboard nav
+- ✅ Tests unitaires (Jest + React Testing Library)
+- ✅ Micro-PR <200 lignes changées
+- ✅ Review time <5min (contexte clair)
+- ✅ Documentation : JSDoc + exemples usage
+
+**Suppression Dead Code** :
+- ✅ Fichiers supprimés (-276 cible)
+- ✅ 0 nouveau cycle introduit
+- ✅ Tests verts (smoke + sanity)
+- ✅ Evidence Log : liste fichiers + justification
+- ✅ Dry-run validé (aucun script externe cassé)
+
+**Réduction Duplications** :
+- ✅ Cluster -60% (ex: 100 → 40 occurrences)
+- ✅ Extraction dans packages/shared/ si multi-workspace
+- ✅ Test coverage maintenue (≥80%)
+- ✅ Documentation ajoutée (JSDoc sur fonction extraite)
+- ✅ 0 nouvelle duplication introduite
+
+**Split Fichiers Massifs** :
+- ✅ Fichier -30% lignes minimum (ex: 800 → <560)
+- ✅ Modules extraits : UI/Data/Helpers (convention claire)
+- ✅ Imports mis à jour (0 broken reference)
+- ✅ Tests verts (coverage stable)
+- ✅ ARCHITECTURE.md mis à jour
+
+### Critères Communs (Tous Refactors)
+
+- ✅ Health Score maintenu ou amélioré (≥85)
+- ✅ 0 régression performance (p95 ≤ baseline +5%)
+- ✅ Build time stable (≤ baseline +5%)
+- ✅ Documentation mise à jour (README, ARCHITECTURE.md)
+- ✅ PR title clair : `refactor(scope): action - KPI impact`
+
+---
+
 ## 📖 Dictionnaire KPI
 
 ### Définitions & Méthodes de Calcul
@@ -312,6 +529,63 @@ Score Global = (
 | **API Response Time (P95)** | APM monitoring | < 200ms |
 | **Error Rate** | Sentry/monitoring | < 0.1% |
 | **Security Vulnerabilities** | npm audit + Snyk | 0 HIGH/CRITICAL |
+
+### 🧮 Barème KPI → Score (Calcul Détaillé)
+
+**Transparence des Formules** (0-100 par catégorie) :
+
+```typescript
+// 1. Fichiers Massifs
+score_massifs = 100 - min(100, 0.3 × nb_fichiers_massifs)
+// Exemple: 223 fichiers → 100 - (0.3 × 223) = 33/100
+
+// 2. Duplications
+score_duplications = 100 - min(100, duplications / 10)
+// Exemple: 565 duplications → 100 - (565/10) = 44/100
+
+// 3. Cycles Imports
+score_cycles = {
+  0 cycles  → 100,
+  1 cycle   → 60,
+  2 cycles  → 30,
+  5+ cycles → 0
+}
+// Exemple: 2 cycles → 30/100
+
+// 4. Dead Code
+score_dead_code = 100 - min(100, 0.2 × (nb_dead_files / 10))
+// Exemple: 276 fichiers → 100 - (0.2 × 27.6) = 95/100
+
+// 5. Bundle Size (vs baseline)
+score_bundle = 100 - (5 × pct_au_dessus_baseline)
+// Exemple: baseline 450KB, actuel 477KB (+6%) → 100 - (5×6) = 70/100
+
+// 6. p95 API/SSR (vs baseline)
+score_perf = 100 - (10 × tranche_5pct_au_dessus_baseline)
+// Exemple: baseline 180ms, actuel 207ms (+15% = 3 tranches) → 100 - (10×3) = 70/100
+```
+
+**Score Global (Formule Pondérée)** :
+```typescript
+Score_Global = (
+  score_massifs      × 0.15 +  // Code Quality
+  score_duplications × 0.15 +  // Code Quality
+  score_cycles       × 0.25 +  // Architecture
+  score_dead_code    × 0.10 +  // Maintainability
+  score_bundle       × 0.15 +  // Performance
+  score_perf         × 0.20    // Performance
+)
+```
+
+**Scores Actuels (Baseline)** :
+- Massifs: 33/100 (223 fichiers)
+- Duplications: 44/100 (565)
+- Cycles: 30/100 (2 cycles)
+- Dead Code: 95/100 (276 fichiers)
+- Bundle: 100/100 (baseline)
+- Perf: 100/100 (baseline)
+
+**→ Score Global Actuel : 92/100** 🟢 EXCELLENT
 
 ---
 
@@ -405,6 +679,35 @@ ai-agents/reports/evidence/
 - Agents auto-correcteurs (PR automatiques)
 - Apprentissage patterns spécifiques projet
 - Intégration Slack/Teams notifications
+
+---
+
+## 🧱 Politique des Seuils Vivants
+
+### Principe : Assainissement Progressif
+Les seuils se **resserrent automatiquement** après 2 sprints consécutifs verts pour pousser l'amélioration continue sans Big-Bang.
+
+### Évolution des Seuils
+
+**Après 2 sprints verts (Health Score ≥85)** :
+
+| Seuil | Baseline | Resserré | Condition |
+|-------|----------|----------|-----------|
+| **Fichiers Massifs (TS/TSX)** | 500 lignes | → 450 lignes | Si <150 fichiers massifs actuels |
+| **Duplications (Cluster)** | 6 tokens | → 5 tokens | Si <300 duplications actuelles |
+| **Bundle Tolerance** | Baseline +3% | → Baseline +2% | Si bundle stable <baseline +1% |
+| **Build Time** | <5 min | → <4 min | Si build actuel <4.5 min |
+| **p95 API** | <200ms | → <180ms | Si p95 actuel <190ms |
+
+**Changelog Seuils** :
+- 🔄 Versionner seuils avec agents (SemVer)
+- 📝 Noter chaque changement dans CHANGELOG-AGENTS.md
+- ⚠️ Avertir équipe 1 sprint avant application
+
+**Justification** :
+- Évite plateau (stagnation amélioration)
+- Pousse assainissement continu
+- Évite Big-Bang refactoring (préfère incrémental)
 
 ---
 
@@ -597,8 +900,9 @@ ai-agents/reports/evidence/
 1. **Analyse Automatique** : Run 12 agents sur chaque PR
 2. **Health Score Check** : Fail si score <70/100
 3. **PR Comments** : Résumé automatique dans les PRs
-4. **Artifacts Upload** : Reports téléchargeables (retention 30 jours)
+4. **Artifacts Upload** : Reports téléchargeables (retention **90 jours** pour audits)
 5. **GitHub Summary** : Vue rapide dans Actions tab
+6. **Anti-Bruit** : Max 3 actions proposées par agent (reste → backlog daté)
 
 **Seuils** :
 - ⛔ Fail : Health score <70
@@ -710,6 +1014,102 @@ ai-agents/
 3. Ajouter factory dans `ai-driver.ts`
 4. Ajouter config dans `agents.config.ts`
 5. Build & test
+
+---
+
+## 🧠 Astuces Avancées (Opérations)
+
+### 1. Pareto d'Assainissement 📊
+**Principe** : Traiter d'abord le **top 10%** des fichiers selon `poids × volatilité commits`
+
+**Calcul Priorité** :
+```typescript
+priorite_fichier = (
+  lignes_code × 0.4 +
+  nb_commits_30j × 0.3 +
+  nb_devs_touchant × 0.2 +
+  duplication_score × 0.1
+)
+```
+
+**Résultat** : Top 10% des fichiers = 80% de l'impact (loi de Pareto)
+
+**Action** : Refactorer ces fichiers en priorité (ROI maximum)
+
+---
+
+### 2. Anti-Bruit Agents 🔇
+**Problème** : Trop d'actions proposées → paralysie décision
+
+**Solution** : Limite **3 actions max** par agent par run
+- Actions 4+ → backlog "parking" daté
+- Re-priorisation mensuelle selon KPIs
+
+**Exemple Agent 2 (Fichiers Massifs)** :
+- ✅ Action 1 : Refactor user.service.ts (2500 lignes, 45 commits/mois)
+- ✅ Action 2 : Split order.controller.ts (1800 lignes, 30 commits/mois)
+- ✅ Action 3 : Extract analytics.utils.ts (1500 lignes, 20 commits/mois)
+- 🅿️ Parking : 220 autres fichiers (backlog daté)
+
+---
+
+### 3. A/B Testing d'Agents 🧪
+**Principe** : Comparer 2 versions d'agent pour optimiser détection
+
+**Exemple - Agent 3 (Doublons)** :
+- **Version A** : Seuil 6 tokens (baseline)
+- **Version B** : Seuil 5 tokens (plus strict)
+
+**Métriques** :
+```
+Version A: 565 duplications, 5% faux positifs → ratio 11.3
+Version B: 720 duplications, 12% faux positifs → ratio 6.0
+```
+
+**Décision** : Garder Version A (meilleur ratio détections réelles / faux positifs)
+
+---
+
+### 4. Changelog Agents (SemVer) 📝
+**Problème** : Changements seuils → comparaisons runs trompeuses
+
+**Solution** : Versionner agents avec SemVer
+- **MAJOR** : Changement seuil >10% (ex: 500→450 lignes)
+- **MINOR** : Nouveau KPI ajouté
+- **PATCH** : Bug fix calcul
+
+**Exemple CHANGELOG-AGENTS.md** :
+```markdown
+## [1.1.0] - 2025-11-15
+### Changed
+- Agent 2: Seuil fichiers massifs 500→450 lignes (resserrement)
+- Agent 3: Seuil duplications 6→5 tokens
+
+## [1.0.1] - 2025-10-20
+### Fixed
+- Agent 4: Dead code exclusion scripts CLI (false positives -15%)
+```
+
+---
+
+### 5. Freeze 48h Post Gros Lot ❄️
+**Principe** : Observer production 48h avant enchaîner upgrades
+
+**Gros Lots** :
+- Framework major (NestJS 10→11, Remix 2→3)
+- Router refactoring (>50 routes)
+- UI library extraction (>100 composants)
+- Architecture change (Prisma→Supabase)
+
+**Monitoring Intensif** :
+- ✅ p95 API/SSR (alert si >+10% baseline)
+- ✅ Error rate (alert si >0.5%)
+- ✅ User complaints (Slack/support)
+- ✅ Smoke tests (every 4h)
+
+**Décision Go/No-Go** :
+- ✅ **GO** : Tous KPIs verts 48h → continuer roadmap
+- ⛔ **NO-GO** : 1+ KPI rouge → rollback + investigation
 
 ---
 
