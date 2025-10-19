@@ -1,0 +1,59 @@
+# Code Analysis & Detection
+vulture==2.11          # Dead code detection
+radon==6.0.1           # Code complexity metrics
+bandit==1.7.5          # Security vulnerability scanner
+pylint==3.0.2          # Code quality linter
+flake8==6.1.0          # Style guide enforcement
+
+# AST & Refactoring
+ast-grep-py==0.15.1    # Advanced AST pattern matching
+rope==1.11.0           # Python refactoring library
+autopep8==2.0.4        # Auto-formatting PEP 8
+black==23.12.1         # Opinionated formatter
+isort==5.13.2          # Import sorting
+
+# Duplication Detection
+pycodestyle==2.11.1    # Style checker
+pydocstyle==6.3.0      # Docstring checker
+
+# Testing & Coverage
+pytest==7.4.3          # Testing framework
+pytest-cov==4.1.0      # Coverage plugin
+mutmut==2.4.3          # Mutation testing
+hypothesis==6.92.1     # Property-based testing
+
+# Performance Analysis
+py-spy==0.3.14         # Sampling profiler
+memory-profiler==0.61.0 # Memory usage
+
+# Git Integration
+GitPython==3.1.40      # Git interface
+pygit2==1.13.3         # Git bindings
+
+# File System & Path
+pathspec==0.12.1       # Gitignore-style patterns
+watchdog==3.0.0        # File system events
+
+# Data & Config
+pyyaml==6.0.1          # YAML parsing
+toml==0.10.2           # TOML parsing
+python-dotenv==1.0.0   # .env files
+
+# CLI & Output
+click==8.1.7           # Command-line interface
+rich==13.7.0           # Beautiful terminal output
+colorama==0.4.6        # Cross-platform colored output
+tabulate==0.9.0        # Pretty tables
+
+# HTTP & APIs (for framework upgrade checks)
+requests==2.31.0       # HTTP library
+beautifulsoup4==4.12.2 # HTML parsing
+
+# TypeScript/JavaScript Analysis (for monorepo)
+esprima==4.0.1         # JavaScript parser
+slimit==0.8.1          # JavaScript minifier/parser
+
+# Utilities
+tqdm==4.66.1           # Progress bars
+humanize==4.9.0        # Human-readable numbers
+python-dateutil==2.8.2 # Date utilities
