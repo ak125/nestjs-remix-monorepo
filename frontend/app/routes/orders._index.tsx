@@ -66,76 +66,173 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   console.log(`🔒 [Action] User: ${user.email} | Level: ${user.level} | Role: ${userRole.label} | Intent: ${intent}`);
   
   try {
+    // Récupérer le cookie pour les appels API
+    const cookie = request.headers.get('Cookie') || '';
+    
     switch (intent) {
       case "markPaid":
         if (!permissions.canMarkPaid) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`💰 Mark order #${orderId} as paid`);
-        return json<ActionData>({ success: true, message: `Commande #${orderId} payée` });
+        const markPaidResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
+          method: 'POST',
+          headers: { 'Cookie': cookie },
+        });
+        if (!markPaidResponse.ok) {
+          const error = await markPaidResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors du paiement' }, { status: 500 });
+        }
+        console.log(`💰 Order #${orderId} marked as paid`);
+        return json<ActionData>({ success: true, message: `Commande #${orderId} marquée comme payée` });
       
       case "validate":
         if (!permissions.canValidate) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`✅ Validate order #${orderId}`);
+        const validateResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
+          method: 'POST',
+          headers: { 'Cookie': cookie },
+        });
+        if (!validateResponse.ok) {
+          const error = await validateResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de la validation' }, { status: 500 });
+        }
+        console.log(`✅ Order #${orderId} validated`);
         return json<ActionData>({ success: true, message: `Commande #${orderId} validée` });
       
       case "startProcessing":
         if (!permissions.canValidate) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`📦 Start processing order #${orderId}`);
-        return json<ActionData>({ success: true, message: `Commande #${orderId} en préparation` });
+        const processingResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: { 
+            'Cookie': cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ statusId: '3' }), // En préparation
+        });
+        if (!processingResponse.ok) {
+          const error = await processingResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors du passage en préparation' }, { status: 500 });
+        }
+        console.log(`📦 Order #${orderId} processing started`);
+        return json<ActionData>({ success: true, message: `Commande #${orderId} mise en préparation` });
       
       case "markReady":
         if (!permissions.canShip) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`✅ Mark order #${orderId} ready`);
-        return json<ActionData>({ success: true, message: `Commande #${orderId} prête` });
+        const readyResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: { 
+            'Cookie': cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ statusId: '4' }), // Prête
+        });
+        if (!readyResponse.ok) {
+          const error = await readyResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors du marquage prête' }, { status: 500 });
+        }
+        console.log(`✅ Order #${orderId} marked as ready`);
+        return json<ActionData>({ success: true, message: `Commande #${orderId} prête à expédier` });
       
       case "ship":
         if (!permissions.canShip) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`🚚 Ship order #${orderId}`);
+        const shipResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/ship`, {
+          method: 'POST',
+          headers: { 'Cookie': cookie },
+        });
+        if (!shipResponse.ok) {
+          const error = await shipResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de l\'expédition' }, { status: 500 });
+        }
+        console.log(`🚚 Order #${orderId} shipped`);
         return json<ActionData>({ success: true, message: `Commande #${orderId} expédiée` });
       
       case "deliver":
         if (!permissions.canDeliver) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`✅ Deliver order #${orderId}`);
+        const deliverResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
+          method: 'POST',
+          headers: { 'Cookie': cookie },
+        });
+        if (!deliverResponse.ok) {
+          const error = await deliverResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de la livraison' }, { status: 500 });
+        }
+        console.log(`✅ Order #${orderId} delivered`);
         return json<ActionData>({ success: true, message: `Commande #${orderId} livrée` });
       
       case "cancel":
         if (!permissions.canCancel) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`❌ Cancel order #${orderId}`);
+        const cancelResponse = await fetch(`http://localhost:3000/api/orders/${orderId}/cancel`, {
+          method: 'POST',
+          headers: { 'Cookie': cookie },
+        });
+        if (!cancelResponse.ok) {
+          const error = await cancelResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de l\'annulation' }, { status: 500 });
+        }
+        console.log(`❌ Order #${orderId} cancelled`);
         return json<ActionData>({ success: true, message: `Commande #${orderId} annulée` });
       
       case "delete":
         if (!permissions.canCancel) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`🗑️ Delete order #${orderId}`);
+        const deleteResponse = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
+          method: 'DELETE',
+          headers: { 'Cookie': cookie },
+        });
+        if (!deleteResponse.ok) {
+          const error = await deleteResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de la suppression' }, { status: 500 });
+        }
+        console.log(`🗑️ Order #${orderId} deleted`);
         return json<ActionData>({ success: true, message: `Commande #${orderId} supprimée` });
       
       case "updateOrder":
         if (!permissions.canValidate) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
-        console.log(`✏️ Update order #${orderId}`);
-        return json<ActionData>({ success: true, message: `Commande #${orderId} modifiée` });
+        const orderStatus = formData.get("orderStatus");
+        const isPaid = formData.get("isPaid") === 'on' ? '1' : '0';
+        const totalAmount = formData.get("totalAmount");
+        const orderInfo = formData.get("orderInfo");
+        
+        const updateResponse = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: { 
+            'Cookie': cookie,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            statusId: orderStatus,
+            isPaid,
+            totalTtc: totalAmount,
+            info: orderInfo,
+          }),
+        });
+        if (!updateResponse.ok) {
+          const error = await updateResponse.json();
+          return json<ActionData>({ error: error.message || 'Erreur lors de la modification' }, { status: 500 });
+        }
+        console.log(`✏️ Order #${orderId} updated`);
+        return json<ActionData>({ success: true, message: `Commande #${orderId} modifiée avec succès` });
       
       case "export":
         if (!permissions.canExport) {
           return json<ActionData>({ error: 'Permission refusée' }, { status: 403 });
         }
         console.log(`📄 Export CSV by ${user.email}`);
-        return json<ActionData>({ success: true, message: 'Export généré' });
+        return json<ActionData>({ success: true, message: 'Export CSV généré' });
       
       default:
         return json<ActionData>({ error: 'Action inconnue' }, { status: 400 });
