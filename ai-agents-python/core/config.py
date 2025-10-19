@@ -9,15 +9,45 @@ import yaml
 
 
 @dataclass
+class MassiveFilesThresholds:
+    tsx_component: int = 500
+    route_file: int = 400
+    backend_service: int = 600
+    typescript: int = 350
+    javascript: int = 350
+
+
+@dataclass
+class DuplicationThresholds:
+    min_tokens: int = 6
+    min_lines: int = 5
+    similarity_threshold: float = 0.95
+
+
+@dataclass
+class DeadCodeThresholds:
+    untouched_days: int = 30
+    min_confidence: float = 0.9
+
+
+@dataclass
 class ThresholdsConfig:
-    massive_files_tsx: int = 500
-    massive_files_route: int = 400
-    massive_files_service: int = 300
-    duplication_tokens: int = 6
-    dead_code_days: int = 30
-    css_pattern_occurrences: int = 50
-    p95_api_ms: int = 200
-    bundle_size_kb: int = 500
+    massive_files: MassiveFilesThresholds = field(default_factory=MassiveFilesThresholds)
+    duplication: DuplicationThresholds = field(default_factory=DuplicationThresholds)
+    dead_code: DeadCodeThresholds = field(default_factory=DeadCodeThresholds)
+    
+    # Legacy aliases pour compatibilité
+    @property
+    def massive_files_tsx(self) -> int:
+        return self.massive_files.tsx_component
+    
+    @property
+    def duplication_tokens(self) -> int:
+        return self.duplication.min_tokens
+    
+    @property
+    def dead_code_days(self) -> int:
+        return self.dead_code.untouched_days
 
 
 @dataclass
@@ -59,6 +89,18 @@ class ConfidenceConfig:
 
 
 @dataclass
+class DecisionThreshold:
+    max_risk: int
+    min_confidence: int
+
+
+@dataclass
+class DecisionConfig:
+    auto_commit_if: DecisionThreshold = field(default_factory=lambda: DecisionThreshold(max_risk=30, min_confidence=95))
+    review_if: DecisionThreshold = field(default_factory=lambda: DecisionThreshold(max_risk=60, min_confidence=90))
+
+
+@dataclass
 class Config:
     """Main configuration class"""
     
@@ -68,6 +110,7 @@ class Config:
     output: OutputConfig = field(default_factory=OutputConfig)
     risk: RiskConfig = field(default_factory=RiskConfig)
     confidence: ConfidenceConfig = field(default_factory=ConfidenceConfig)
+    decision: DecisionConfig = field(default_factory=DecisionConfig)
     
     mode: str = "local"
     exclude_dirs: List[str] = field(default_factory=lambda: [
@@ -95,17 +138,34 @@ class Config:
         
         if "thresholds" in data:
             th = data["thresholds"]
+            
+            # Massive files
             if "massive_files" in th:
                 mf = th["massive_files"]
-                config.thresholds.massive_files_tsx = mf.get("tsx_component", 500)
-                config.thresholds.massive_files_route = mf.get("route_file", 400)
-                config.thresholds.massive_files_service = mf.get("service_file", 300)
+                config.thresholds.massive_files = MassiveFilesThresholds(
+                    tsx_component=mf.get("tsx_component", 500),
+                    route_file=mf.get("route_file", 400),
+                    backend_service=mf.get("backend_service", 600),
+                    typescript=mf.get("typescript", 350),
+                    javascript=mf.get("javascript", 350)
+                )
+            
+            # Duplication
             if "duplication" in th:
-                config.thresholds.duplication_tokens = th["duplication"].get("min_tokens", 6)
+                dup = th["duplication"]
+                config.thresholds.duplication = DuplicationThresholds(
+                    min_tokens=dup.get("min_tokens", 6),
+                    min_lines=dup.get("min_lines", 5),
+                    similarity_threshold=dup.get("similarity_threshold", 0.95)
+                )
+            
+            # Dead code
             if "dead_code" in th:
-                config.thresholds.dead_code_days = th["dead_code"].get("untouched_days", 30)
-            if "css" in th:
-                config.thresholds.css_pattern_occurrences = th["css"].get("min_occurrences", 50)
+                dc = th["dead_code"]
+                config.thresholds.dead_code = DeadCodeThresholds(
+                    untouched_days=dc.get("untouched_days", 30),
+                    min_confidence=dc.get("min_confidence", 0.9)
+                )
         
         if "auto_fix" in data:
             af = data["auto_fix"]
@@ -134,6 +194,21 @@ class Config:
             c = data["confidence"]
             config.confidence.high_confidence_min = c.get("high_confidence_min", 95)
             config.confidence.medium_confidence_min = c.get("medium_confidence_min", 90)
+        
+        if "decision" in data:
+            d = data["decision"]
+            if "auto_commit_if" in d:
+                auto = d["auto_commit_if"]
+                config.decision.auto_commit_if = DecisionThreshold(
+                    max_risk=auto.get("max_risk", 30),
+                    min_confidence=auto.get("min_confidence", 95)
+                )
+            if "review_if" in d:
+                review = d["review_if"]
+                config.decision.review_if = DecisionThreshold(
+                    max_risk=review.get("max_risk", 60),
+                    min_confidence=review.get("min_confidence", 90)
+                )
         
         if "exclude" in data:
             ex = data["exclude"]

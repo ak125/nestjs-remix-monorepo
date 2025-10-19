@@ -24,12 +24,11 @@ class FixResult:
 class DeadCodeSurgeon:
     """Agent F1 - Supprime le dead code"""
     
-    def __init__(self, config: Config, monorepo_root: Path, dry_run: bool = False):
+    def __init__(self, config: Config, monorepo_root: Path):
         self.config = config
         self.root = monorepo_root
-        self.dry_run = dry_run
         
-    def fix(self, dead_code_results: List[DeadCodeResult]) -> List[FixResult]:
+    def fix(self, dead_code_results: List[DeadCodeResult], dry_run: bool = False) -> List[FixResult]:
         """Corrige (supprime) le dead code détecté"""
         results = []
         
@@ -52,13 +51,13 @@ class DeadCodeSurgeon:
                 ))
                 continue
             
-            # Supprimer le fichier
-            result = self._remove_file(dc.file_path)
+            # Supprimer
+            result = self._remove_file(dc.file_path, dry_run)
             results.append(result)
         
         return results
     
-    def _remove_file(self, relative_path: str) -> FixResult:
+    def _remove_file(self, relative_path: str, dry_run: bool) -> FixResult:
         """Supprime un fichier"""
         file_path = self.root / relative_path
         
@@ -74,7 +73,7 @@ class DeadCodeSurgeon:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = len(f.readlines())
             
-            if self.dry_run:
+            if dry_run:
                 return FixResult(
                     file_path=relative_path,
                     action="removed (dry-run)",
@@ -103,8 +102,8 @@ class DeadCodeSurgeon:
 # Interface simple
 def fix_dead_code(config: Config, root_path: str, dead_code: List[DeadCodeResult], dry_run: bool = False) -> List[FixResult]:
     """Fonction helper pour corriger le dead code"""
-    surgeon = DeadCodeSurgeon(config, Path(root_path), dry_run=dry_run)
-    return surgeon.fix(dead_code)
+    surgeon = DeadCodeSurgeon(config, Path(root_path))
+    return surgeon.fix(dead_code, dry_run=dry_run)
 
 
 if __name__ == "__main__":
