@@ -223,7 +223,7 @@ if __name__ == '__main__':
     while not (workspace / 'package.json').exists() and workspace != workspace.parent:
         workspace = workspace.parent
     
-    config = Config.load(workspace / 'ai-agents-python' / 'config.yaml')
+    config = Config.load(str(workspace / 'ai-agents-python' / 'config.yaml'))
     
     detector = MassiveFilesDetector(config, workspace)
     results = detector.analyze()

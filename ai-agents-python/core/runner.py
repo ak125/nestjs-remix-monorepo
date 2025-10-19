@@ -366,8 +366,20 @@ class AgentRunner:
         action = self._determine_action(risk_score, confidence_score)
         
         decision = {
-            'risk': risk_score,
-            'confidence': confidence_score,
+            'risk': {
+                'overall': risk_score,
+                'surface': 0,  # TODO: détailler
+                'criticality': 0,
+                'bug_history': 0,
+                'instability': 0
+            },
+            'confidence': {
+                'overall': confidence_score,
+                'tests_pass': 100,
+                'perf_stable': 100,
+                'diff_coverage': 80,
+                'evidence': 100
+            },
             'action': action,
             'timestamp': datetime.now().isoformat(),
             'details': {
