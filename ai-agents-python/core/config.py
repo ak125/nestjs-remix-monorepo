@@ -221,8 +221,12 @@ class Config:
         
         return config
     
-    def should_exclude(self, path: Path) -> bool:
+    def should_exclude(self, path) -> bool:
         """Check if path should be excluded"""
+        # Convertir en Path si string
+        if isinstance(path, str):
+            path = Path(path)
+        
         path_str = str(path)
         
         # Check directories

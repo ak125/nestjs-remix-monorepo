@@ -90,10 +90,10 @@ class AgentRunner:
         self.fix_agents = {
             # 'f0_orchestrator': lambda: self._load_agent('agents.fixproof.f0_orchestrator', 'OrchestratorAgent'),
             'f1_dead_code_surgeon': lambda: self._load_agent('agents.fixproof.f1_dead_code_surgeon', 'DeadCodeSurgeon'),
-            # 'f2_lint_format': lambda: self._load_agent('agents.fixproof.f2_lint_format', 'LintFormatAgent'),
+            'f2_lint_format': lambda: self._load_agent('agents.fixproof.f2_lint_format', 'LintFormatter'),
             # 'f3_duplication_extractor': lambda: self._load_agent('agents.fixproof.f3_duplication_extractor', 'DuplicationExtractorAgent'),
             # 'f4_massive_splitter': lambda: self._load_agent('agents.fixproof.f4_massive_splitter', 'MassiveSplitterAgent'),
-            # 'f15_risk_scorer': lambda: self._load_agent('agents.fixproof.f15_risk_scorer', 'RiskScorerAgent'),
+            'f15_risk_scorer': lambda: self._load_agent('agents.fixproof.f15_risk_scorer', 'RiskScorer'),
         }
         
         # Gates de validation (M1-M7)
