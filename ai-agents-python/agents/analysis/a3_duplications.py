@@ -48,7 +48,7 @@ class DuplicationDetector:
         
         # Cache des fichiers analysés
         self.file_tokens: Dict[str, List[str]] = {}
-        self.token_hashes: Dict[str, List[Tuple[int, int]]] = {}  # hash -> [(file_id, pos)]
+        self.token_hashes: Dict[str, List[Tuple[str, int]]] = {}  # hash -> [(file_id, pos)]
     
     def analyze(self) -> List[Dict[str, Any]]:
         """
@@ -295,7 +295,7 @@ if __name__ == '__main__':
     while not (workspace / 'package.json').exists() and workspace != workspace.parent:
         workspace = workspace.parent
     
-    config = Config.load(workspace / 'ai-agents-python' / 'config.yaml')
+    config = Config.load(str(workspace / 'ai-agents-python' / 'config.yaml'))
     
     detector = DuplicationDetector(config, workspace)
     results = detector.analyze()

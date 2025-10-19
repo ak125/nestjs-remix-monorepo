@@ -5,7 +5,7 @@ Détecte les fichiers non utilisés (non importés + non référencés + untouch
 
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import List, Set
+from typing import List, Set, Optional
 import os
 import re
 from dataclasses import dataclass
@@ -159,7 +159,7 @@ class DeadCodeDetector:
         
         return old_files
     
-    def _create_result(self, file_path: Path) -> DeadCodeResult:
+    def _create_result(self, file_path: Path) -> Optional[DeadCodeResult]:
         """Crée un résultat de détection"""
         try:
             mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
