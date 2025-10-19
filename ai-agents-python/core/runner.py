@@ -98,10 +98,10 @@ class AgentRunner:
         
         # Gates de validation (M1-M7)
         self.validation_gates = {
-            # 'm1_contracts': lambda: self._load_agent('tests.m1_contracts', 'ContractsGate'),
+            'm1_contracts': lambda: self._load_agent('tests.m1_contracts', 'ContractsGate'),
             # 'm5_budgets': lambda: self._load_agent('tests.m5_budgets', 'BudgetsGate'),
             # 'm6_graph': lambda: self._load_agent('tests.m6_graph', 'GraphGate'),
-            # 'm7_diff_coverage': lambda: self._load_agent('tests.m7_diff_coverage', 'DiffCoverageGate'),
+            'm7_diff_coverage': lambda: self._load_agent('tests.m7_diff_coverage', 'DiffCoverageGate'),
         }
     
     def _load_agent(self, module_path: str, class_name: str):
@@ -406,15 +406,44 @@ class AgentRunner:
         return risk
     
     def _calculate_confidence(self, validation: Dict[str, Any], fix_results: List[AgentResult]) -> int:
-        """Calcule le score de confiance (0-100)"""
-        # Base: 100 si validation OK, 0 sinon
-        if not validation.get('all_passed', False):
-            return 0
+        """
+        Calcule le score de confiance (0-100)
         
-        # Réduire si beaucoup de fixes
+        Formule:
+        - 40% validation gates passées
+        - 30% diff coverage
+        - 20% nombre de fixes (moins = mieux)
+        - 10% bonus si aucun fix
+        """
+        # Base: validation gates
+        gates = validation.get('gates', {})
+        if not gates:
+            # Aucun gate = confiance moyenne
+            gate_score = 50
+        else:
+            # Moyenne des scores de gates
+            gate_scores = [g.get('score', 0) for g in gates.values()]
+            gate_score = sum(gate_scores) / len(gate_scores) if gate_scores else 0
+        
+        # Diff coverage (gate M7)
+        coverage_score = gates.get('m7_diff_coverage', {}).get('score', 50)
+        
+        # Nombre de fixes (pénalité si beaucoup)
         total_fixes = sum(len(r.fixes_applied) for r in fix_results)
-        confidence = max(0, 100 - total_fixes * 5)
-        return confidence
+        fix_penalty = min(20, total_fixes)  # Max -20 points
+        
+        # Bonus si aucun fix
+        no_fix_bonus = 10 if total_fixes == 0 else 0
+        
+        # Calcul final
+        confidence = int(
+            gate_score * 0.4 +
+            coverage_score * 0.3 +
+            (20 - fix_penalty) +
+            no_fix_bonus
+        )
+        
+        return max(0, min(100, confidence))
     
     def _determine_action(self, risk: int, confidence: int) -> str:
         """Détermine l'action basée sur Risk/Confidence"""
@@ -447,15 +476,23 @@ class AgentRunner:
     
     def _get_relevant_findings(self, agent_key: str, analysis_results: List[AgentResult]) -> List[Dict[str, Any]]:
         """Trouve les findings pertinents pour un agent de correction"""
-        # Mapping fix agent -> analysis agent
+        # Mapping fix agent → analysis agent
         mapping = {
             'f1_dead_code_surgeon': 'a4_dead_code',
-            'f2_lint_format': 'a2_massive_files',  # Exemple
-            # etc.
+            'f2_lint_format': 'a2_massive_files',  # F2 formatte fichiers massifs
+            'f3_duplication_extractor': 'a3_duplications',
+            'f4_massive_splitter': 'a2_massive_files',
         }
         
         analysis_agent = mapping.get(agent_key)
         if not analysis_agent:
+            # Si pas de mapping, retourner tous les findings (utile pour F2 qui peut tout formater)
+            if agent_key == 'f2_lint_format':
+                # F2 peut formater n'importe quel fichier détecté
+                all_findings = []
+                for result in analysis_results:
+                    all_findings.extend(result.findings)
+                return all_findings
             return []
         
         for result in analysis_results:
