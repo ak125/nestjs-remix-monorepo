@@ -318,13 +318,23 @@ export class AuthController {
   async debugUsers() {
     try {
       // Créer un utilisateur de test simple
+      // ⚠️ En production, désactiver cet endpoint ou utiliser un guard
+      if (process.env.NODE_ENV === 'production') {
+        return {
+          success: false,
+          error: 'Debug endpoint disabled in production',
+        };
+      }
+
       return {
         success: true,
         message: 'Test users available',
         testCredentials: {
-          email: 'admin@fafa.fr',
-          password: 'Test123!',
-          note: 'Try this test user for authentication',
+          email: process.env.TEST_USER_EMAIL || 'admin@fafa.fr',
+          password:
+            process.env.TEST_USER_PASSWORD ||
+            '*** Set TEST_USER_PASSWORD in .env ***',
+          note: 'Try this test user for authentication (development only)',
         },
       };
     } catch (error: any) {
