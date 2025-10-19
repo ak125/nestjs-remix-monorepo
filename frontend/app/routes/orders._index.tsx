@@ -1,17 +1,24 @@
 /**
- * 🎯 INTERFACE UNIFIÉE DE GESTION DES COMMANDES - VERSION REFACTORISÉE
+ * 🎯 INTERFACE UNIFIÉE DE GESTION DES COMMANDES - VERSION REFACTORISÉE V2
  * Adaptive selon le niveau utilisateur (Commercial → Admin → Super Admin)
  * 
+ * ✅ FONCTIONNALITÉS COMPLÈTES:
+ * - Statut et traitement des commandes avec workflow visuel
+ * - Modale détails commande complète
+ * - Formulaire d'édition
+ * - Actions de workflow (valider, préparer, expédier, livrer, annuler)
+ * - Permissions granulaires
+ * 
  * ARCHITECTURE MODULAIRE:
- * - Types: types/orders.types.ts
- * - Utils: utils/orders.utils.ts
- * - Hooks: hooks/use-orders-filters.ts
- * - Services: services/orders/orders.service.ts
- * - UI Components: components/orders/*
+ * - Types: types/orders.types.ts (14 interfaces)
+ * - Utils: utils/orders.utils.ts (20+ fonctions)
+ * - Hooks: hooks/use-orders-filters.ts (filtrage custom)
+ * - Services: services/orders/orders.service.ts (API layer)
+ * - UI Components: components/orders/* (10 composants)
  */
 
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { requireUser } from '../auth/unified.server';
@@ -314,17 +321,23 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 // ========================================
 export default function OrdersRoute() {
   const data = useLoaderData<LoaderData>();
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const actionData = useActionData<ActionData>();
+  const fetcher = useFetcher();
   
-  // Hook personnalisé pour gérer les filtres et sélection
+  // États pour modales et sélection
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+  
+  // Hook personnalisé pour gérer les filtres
   const {
     filteredOrders,
     activeFilters,
     selectedOrders,
     setActiveFilters,
     toggleOrderSelection,
+    selectAllOrders,
+    clearSelection,
     resetAllFilters,
   } = useOrdersFilters(data.orders);
   
@@ -333,7 +346,7 @@ export default function OrdersRoute() {
     const order = data.orders.find(o => o.ord_id === orderId);
     if (order) {
       setSelectedOrder(order);
-      setIsDetailsOpen(true);
+      setIsDetailsModalOpen(true);
     }
   };
   
@@ -341,19 +354,27 @@ export default function OrdersRoute() {
     const order = data.orders.find(o => o.ord_id === orderId);
     if (order) {
       setSelectedOrder(order);
-      setIsEditOpen(true);
+      setIsEditFormOpen(true);
     }
   };
   
   const handleMarkPaid = (orderId: string) => {
-    toast.success(`Commande #${orderId} marquée comme payée`);
-    setTimeout(() => window.location.reload(), 1000);
+    fetcher.submit(
+      { intent: 'markPaid', orderId },
+      { method: 'post' }
+    );
+    toast.success('Paiement enregistré');
+    setTimeout(() => window.location.reload(), 1500);
   };
   
   const handleCancel = (orderId: string) => {
-    if (confirm('Annuler cette commande ?')) {
-      toast.success(`Commande #${orderId} annulée`);
-      setTimeout(() => window.location.reload(), 1000);
+    if (confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+      fetcher.submit(
+        { intent: 'cancel', orderId },
+        { method: 'post' }
+      );
+      toast.success('Commande annulée');
+      setTimeout(() => window.location.reload(), 1500);
     }
   };
   
@@ -361,6 +382,16 @@ export default function OrdersRoute() {
     const params = new URLSearchParams(window.location.search);
     params.set('page', page.toString());
     window.location.href = `?${params.toString()}`;
+  };
+  
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedOrder(null);
+  };
+  
+  const handleCloseEditForm = () => {
+    setIsEditFormOpen(false);
+    setSelectedOrder(null);
   };
   
   return (
@@ -375,19 +406,34 @@ export default function OrdersRoute() {
           totalOrders={data.stats.totalOrders}
         />
         
+        {/* Messages succès/erreur */}
+        {actionData?.success && (
+          <div className="mt-4 bg-green-50 border-l-4 border-green-500 p-4 rounded">
+            <p className="text-sm text-green-800">{actionData.message}</p>
+          </div>
+        )}
+        {actionData?.error && (
+          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <p className="text-sm text-red-800">{actionData.error}</p>
+          </div>
+        )}
+        
         {/* Statistiques */}
         <div className="mt-6">
           <OrdersStats stats={data.stats} />
         </div>
         
-        {/* Barre d'actions et filtres */}
-        <div className="mt-6 space-y-4">
+        {/* Filtres */}
+        <div className="mt-6">
           <OrdersFilters
             filters={activeFilters}
             onFilterChange={setActiveFilters}
             onReset={resetAllFilters}
           />
-          
+        </div>
+        
+        {/* Boutons d'export */}
+        <div className="mt-4">
           <OrderExportButtons
             filters={activeFilters}
             selectedOrders={selectedOrders}
@@ -396,7 +442,7 @@ export default function OrdersRoute() {
         </div>
         
         {/* Tableau des commandes */}
-        <div className="mt-6 bg-white rounded-lg shadow">
+        <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">
           <OrdersTable
             orders={filteredOrders}
             permissions={data.permissions}
@@ -405,39 +451,68 @@ export default function OrdersRoute() {
             onPageChange={handlePageChange}
           />
           
-          {/* Action buttons pour chaque commande */}
+          {/* Liste des commandes avec actions détaillées */}
           {data.permissions.canValidate && filteredOrders.length > 0 && (
-            <div className="p-4 border-t space-y-3">
+            <div className="border-t p-4 space-y-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Actions sur les commandes ({filteredOrders.length})
+                </h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => selectAllOrders()}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Tout sélectionner
+                  </button>
+                  {selectedOrders.length > 0 && (
+                    <button
+                      onClick={() => clearSelection()}
+                      className="text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Désélectionner ({selectedOrders.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+              
               {filteredOrders.map((order) => (
-                <div key={order.ord_id} className="flex items-center justify-between">
+                <div 
+                  key={order.ord_id} 
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
                   <div className="flex items-center gap-4">
                     <input
                       type="checkbox"
                       checked={selectedOrders.includes(order.ord_id)}
                       onChange={() => toggleOrderSelection(order.ord_id)}
-                      className="h-4 w-4 text-blue-600 rounded"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <span className="font-medium">#{order.ord_id}</span>
+                    <span className="font-medium text-gray-900">#{order.ord_id}</span>
                     <span className="text-sm text-gray-600">{order.customerName}</span>
+                    <span className="text-sm font-medium text-gray-900">{order.ord_total_ttc} €</span>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleViewOrder(order.ord_id)}
-                      className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium"
                     >
-                      Voir
+                      📋 Détails
                     </button>
                     <button
                       onClick={() => handleEditOrder(order.ord_id)}
-                      className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                      className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                     >
-                      Modifier
+                      ✏️ Modifier
                     </button>
                     <OrderActions
                       order={order}
                       permissions={data.permissions}
-                      onActionComplete={() => window.location.reload()}
+                      onActionComplete={() => {
+                        toast.success('Action effectuée');
+                        setTimeout(() => window.location.reload(), 1500);
+                      }}
                     />
                   </div>
                 </div>
@@ -446,38 +521,47 @@ export default function OrdersRoute() {
           )}
         </div>
         
-        {/* Workflow visuel (optionnel) */}
-        {selectedOrder && (
+        {/* Workflow visuel pour commande sélectionnée */}
+        {selectedOrder && isDetailsModalOpen && (
           <div className="mt-6 bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Workflow de commande</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              📊 Workflow de traitement - Commande #{selectedOrder.ord_id}
+            </h3>
             <OrderWorkflowButtons
               order={selectedOrder}
               permissions={data.permissions}
-              onStatusChange={() => window.location.reload()}
+              onStatusChange={() => {
+                toast.success('Statut mis à jour');
+                setTimeout(() => window.location.reload(), 1500);
+              }}
             />
           </div>
         )}
       </div>
       
-      {/* Modals */}
+      {/* Modale de détails */}
       <OrderDetailsModal
         order={selectedOrder}
         permissions={data.permissions}
-        isOpen={isDetailsOpen}
-        onClose={() => setIsDetailsOpen(false)}
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
         onMarkPaid={handleMarkPaid}
         onCancel={handleCancel}
       />
       
-      <OrderEditForm
-        order={selectedOrder!}
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        onSuccess={() => {
-          toast.success('Commande modifiée avec succès');
-          window.location.reload();
-        }}
-      />
+      {/* Formulaire d'édition */}
+      {selectedOrder && (
+        <OrderEditForm
+          order={selectedOrder}
+          isOpen={isEditFormOpen}
+          onClose={handleCloseEditForm}
+          onSuccess={() => {
+            toast.success('Commande modifiée avec succès');
+            handleCloseEditForm();
+            setTimeout(() => window.location.reload(), 1500);
+          }}
+        />
+      )}
     </div>
   );
 }
