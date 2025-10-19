@@ -1,0 +1,2206 @@
+{
+  "total_vulnerabilities": 243,
+  "severity_counts": {
+    "CRITICAL": 1,
+    "HIGH": 32,
+    "MEDIUM": 87,
+    "LOW": 123
+  },
+  "category_counts": {
+    "UNSAFE_DESERIALIZATION": 87,
+    "INSECURE_RANDOM": 123,
+    "HARDCODED_SECRET": 1,
+    "XSS": 29,
+    "EVAL": 3
+  },
+  "critical_files": 1,
+  "findings": [
+    {
+      "file": "backend/src/auth/auth.controller.ts",
+      "line": 326,
+      "severity": "CRITICAL",
+      "category": "HARDCODED_SECRET",
+      "description": "Secret ou credential hardcodé dans le code",
+      "code": "password: 'Test123!',",
+      "recommendation": "Utiliser des variables d'environnement ou un gestionnaire de secrets (ex: AWS Secrets Manager, HashiCorp Vault)"
+    },
+    {
+      "file": "ai-agents-python/agents/analysis/a1_security.py",
+      "line": 33,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "- Utilisation de eval(), dangerouslySetInnerHTML",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "ai-agents-python/agents/analysis/a1_security.py",
+      "line": 33,
+      "severity": "HIGH",
+      "category": "EVAL",
+      "description": "Utilisation de eval() ou Function() - risque d'injection de code",
+      "code": "- Utilisation de eval(), dangerouslySetInnerHTML",
+      "recommendation": "Éviter eval() et Function(). Utiliser des alternatives sécurisées"
+    },
+    {
+      "file": "ai-agents-python/agents/analysis/a1_security.py",
+      "line": 64,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "r'dangerouslySetInnerHTML',",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "ai-agents-python/agents/analysis/a1_security.py",
+      "line": 79,
+      "severity": "HIGH",
+      "category": "EVAL",
+      "description": "Utilisation de eval() ou Function() - risque d'injection de code",
+      "code": "'recommendation': 'Éviter eval() et Function(). Utiliser des alternatives sécurisées',",
+      "recommendation": "Éviter eval() et Function(). Utiliser des alternatives sécurisées"
+    },
+    {
+      "file": "ai-agents-python/agents/analysis/a1_security.py",
+      "line": 202,
+      "severity": "HIGH",
+      "category": "EVAL",
+      "description": "Utilisation de eval() ou Function() - risque d'injection de code",
+      "code": "'eval': 'Utilisation de eval() ou Function() - risque d\\'injection de code',",
+      "recommendation": "Éviter eval() et Function(). Utiliser des alternatives sécurisées"
+    },
+    {
+      "file": "frontend/app/components/layout/templates/ContentBlock.tsx",
+      "line": 69,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/components/pieces/ConseilsSection.tsx",
+      "line": 67,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/components/ui/SEOHelmet.tsx",
+      "line": 59,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/_index.tsx",
+      "line": 226,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/account.messages.$messageId.tsx",
+      "line": 129,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/admin.users.$id.tsx",
+      "line": 704,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<div dangerouslySetInnerHTML={{ __html: order.info.replace(/<br>/g, '<br/>') }} />",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.auto.$marque.$modele.tsx",
+      "line": 269,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: metadata.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.auto.$marque.$modele.tsx",
+      "line": 649,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: metadata.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.auto.$marque.index.tsx",
+      "line": 568,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: metadata.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "line": 397,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: conseil.find(c => c.title.toLowerCase().includes('rôle'))!.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "line": 411,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: article.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "line": 458,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: section.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "line": 525,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: conseilItem.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.guide.$slug.tsx",
+      "line": 236,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: guide.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.guide.$slug.tsx",
+      "line": 261,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: section.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog-pieces-auto.guide.$slug.tsx",
+      "line": 275,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: section.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog.advice._index.tsx",
+      "line": 779,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<style dangerouslySetInnerHTML={{",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog.article.$slug.tsx",
+      "line": 359,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: article.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/blog.article.$slug.tsx",
+      "line": 372,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: section.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/checkout.tsx",
+      "line": 184,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
+      "line": 515,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<h1 className=\"text-3xl font-bold mb-2\" dangerouslySetInnerHTML={{ __html: seo.h1 }} />",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
+      "line": 535,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<p dangerouslySetInnerHTML={{ __html: seo.content }} />",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
+      "line": 536,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<p dangerouslySetInnerHTML={{ __html: seo.content2 }} />",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
+      "line": 605,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "<p dangerouslySetInnerHTML={{ __html: part.addon_content }} />",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/orders.$id.tsx",
+      "line": 570,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: order.ord_info.replace(/<br>/g, '<br/>') }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 474,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: conseil.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$slug.tsx",
+      "line": 241,
+      "severity": "HIGH",
+      "category": "XSS",
+      "description": "Cross-Site Scripting (XSS) potentiel",
+      "code": "dangerouslySetInnerHTML={{ __html: data.content.content }}",
+      "recommendation": "Utiliser des méthodes sécurisées (textContent, createElement) ou sanitizer le HTML"
+    },
+    {
+      "file": "ai-agents/src/agents/detecteur-doublons.agent.ts",
+      "line": 287,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const result = JSON.parse(outputContent);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/meta-agent.agent.ts",
+      "line": 250,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const data = JSON.parse(content);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/meta-agent.agent.ts",
+      "line": 997,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const report = JSON.parse(fs.readFileSync('ai-agents/reports/meta-agent.md', 'utf8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/perf-observabilite.agent.ts",
+      "line": 589,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const previousMetrics = JSON.parse(fs.readFileSync(baselinePath, 'utf-8')) as PerformanceMetrics;",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/refacto-css.agent.ts",
+      "line": 388,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/refacto-css.agent.ts",
+      "line": 858,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-nestjs.agent.ts",
+      "line": 221,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-nestjs.agent.ts",
+      "line": 394,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-nodejs.agent.ts",
+      "line": 571,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(backendPkgPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-nodejs.agent.ts",
+      "line": 608,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-react.agent.ts",
+      "line": 303,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-react.agent.ts",
+      "line": 872,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-remix.agent.ts",
+      "line": 242,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/agents/upgrade-remix.agent.ts",
+      "line": 544,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/cli/generate-report.ts",
+      "line": 32,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const auditReport = JSON.parse(fs.readFileSync(auditReportPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/cli/generate-report.ts",
+      "line": 42,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const map = JSON.parse(fs.readFileSync(mapPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "ai-agents/src/cli/generate-report.ts",
+      "line": 51,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const heatmap = JSON.parse(fs.readFileSync(heatmapPath, 'utf-8'));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/cache/cache.service.ts",
+      "line": 99,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return value ? JSON.parse(value) : null;",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/database/services/redis-cache.service.ts",
+      "line": 41,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(cached);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/database/services/redis-cache.service.ts",
+      "line": 276,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return data ? JSON.parse(data) : null;",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "line": 448,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(configStr);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/cache/cache.service.ts",
+      "line": 35,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(cached);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/config/services/database-config.service.ts",
+      "line": 332,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(value);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/config/validators/config.validator.ts",
+      "line": 164,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "JSON.parse(value);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/config/validators/config.validator.ts",
+      "line": 183,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "arrayValue = JSON.parse(value);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error-log.service.ts",
+      "line": 250,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const stats = JSON.parse(item.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error-log.service.ts",
+      "line": 286,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const errorData = JSON.parse(item.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error.service.ts",
+      "line": 437,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "error.errorMetadata || JSON.parse(error.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error.service.ts",
+      "line": 450,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "error.errorMetadata || JSON.parse(error.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error.service.ts",
+      "line": 487,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "error.errorMetadata || JSON.parse(error.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error.service.ts",
+      "line": 499,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "error.errorMetadata || JSON.parse(error.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/redirect.service.ts",
+      "line": 137,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const metadata = JSON.parse(redirect.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/redirect.service.ts",
+      "line": 301,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const existingMetadata = JSON.parse(existing.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/redirect.service.ts",
+      "line": 389,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const parsed = JSON.parse(item.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/errors/services/redirect.service.ts",
+      "line": 524,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const metadata = JSON.parse(currentRule.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/metadata/controllers/breadcrumb-admin.controller.ts",
+      "line": 442,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const parsed = JSON.parse(breadcrumbData);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts",
+      "line": 320,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const parsed = JSON.parse(breadcrumbString);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/metadata/services/optimized-metadata.service.ts",
+      "line": 452,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const parsed = JSON.parse(keywords);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/payments/dto/payment-request.dto.ts",
+      "line": 290,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "orderInfo = order.ord_info ? JSON.parse(order.ord_info) : {};",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/payments/utils/validation.utils.ts",
+      "line": 75,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(metadata);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/promo/promo.service.ts",
+      "line": 93,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(cached);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/search/services/search-cache.service.ts",
+      "line": 239,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(data);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/ai-analysis.service.ts",
+      "line": 295,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(ticket.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/ai-analysis.service.ts",
+      "line": 514,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(ticket.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/ai-smart-response.service.ts",
+      "line": 541,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(ticket.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/ai-smart-response.service.ts",
+      "line": 754,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(ticket.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/ai-smart-response.service.ts",
+      "line": 854,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(ticket.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/contact.service.ts",
+      "line": 554,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const metadata = JSON.parse(metadataMatch[1]);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 174,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(msg.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 210,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(msg.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 289,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const currentContent = JSON.parse(document.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 337,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(document.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 472,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(msg.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 532,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(msg.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 573,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(message.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/legal.service.ts",
+      "line": 685,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(message.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/review.service.ts",
+      "line": 193,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(message.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/review.service.ts",
+      "line": 269,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(review.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/review.service.ts",
+      "line": 316,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(review.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/review.service.ts",
+      "line": 417,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(review.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/modules/support/services/review.service.ts",
+      "line": 587,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const content = JSON.parse(message.msg_content || '{}');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/components/layout/GlobalSearch.tsx",
+      "line": 90,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setSearchHistory(JSON.parse(saved));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/components/search/SearchBar.tsx",
+      "line": 108,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setSearchHistory(JSON.parse(stored).slice(0, 5));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/components/search/SearchBarEnhancedHomepage.tsx",
+      "line": 78,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setRecentSearches(JSON.parse(stored).slice(0, 3));",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useAIAssistant.tsx",
+      "line": 300,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setUserPatterns(JSON.parse(savedPatterns))",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useAIAssistant.tsx",
+      "line": 303,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setActionHistory(JSON.parse(savedHistory))",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts",
+      "line": 59,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const test = JSON.parse(stored)",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts",
+      "line": 160,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const test = JSON.parse(localStorage.getItem(key) || '{}')",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useCommandPalette.ts",
+      "line": 27,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "setRecentActions(JSON.parse(saved))",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useConfig.ts",
+      "line": 137,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "processedValue = JSON.parse(value);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/hooks/useMobileNavigation.ts",
+      "line": 204,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const parsed = JSON.parse(saved)",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/admin.config._index.tsx",
+      "line": 199,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "processedValue = JSON.parse(value);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/admin.seo.tsx",
+      "line": 119,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const selectedPages = JSON.parse(formData.get(\"selectedPages\") as string || \"[]\");",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/admin.users.$id.tsx",
+      "line": 700,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "{JSON.stringify(JSON.parse(order.info), null, 2)}",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/api.errors.suggestions.tsx",
+      "line": 8,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const errorData = JSON.parse(body.errorData);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/api.notifications.actions.tsx",
+      "line": 22,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "console.log(\"Marking as read:\", idsString ? JSON.parse(idsString) : [notificationId]);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/api.notifications.actions.tsx",
+      "line": 26,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "console.log(\"Marking as unread:\", idsString ? JSON.parse(idsString) : [notificationId]);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/api.notifications.actions.tsx",
+      "line": 30,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "console.log(\"Deleting:\", idsString ? JSON.parse(idsString) : [notificationId]);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/commercial.shipping.create._index.tsx",
+      "line": 212,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const dimensions = JSON.parse(formData.get('dimensions') as string);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/commercial.vehicles.advanced-search.tsx",
+      "line": 222,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const savedSearches = JSON.parse(localStorage.getItem('vehicleSearches') || '[]');",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/orders.$id.tsx",
+      "line": 531,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const paymentInfo = JSON.parse(order.ord_info);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/orders.new.tsx",
+      "line": 70,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const items = JSON.parse(formData.get(\"items\") as string);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/orders.new.tsx",
+      "line": 71,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const deliveryAddress = JSON.parse(formData.get(\"deliveryAddress\") as string);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/routes/search.tsx",
+      "line": 183,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const prefs = JSON.parse(saved);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/server/remix-api.server.ts",
+      "line": 377,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "const orderInfo = order.ord_info ? JSON.parse(order.ord_info) : {};",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/services/payment-admin.server.ts",
+      "line": 78,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(order.ord_info);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "frontend/app/utils/api.ts",
+      "line": 188,
+      "severity": "MEDIUM",
+      "category": "UNSAFE_DESERIALIZATION",
+      "description": "Désérialisation non sécurisée",
+      "code": "return JSON.parse(jsonString);",
+      "recommendation": "Utiliser safe_load pour YAML, valider les données JSON avant parsing"
+    },
+    {
+      "file": "backend/src/auth/cookie-serializer.ts",
+      "line": 44,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "if (Math.random() < 0.01) {",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/database/services/user.service.ts",
+      "line": 212,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "cst_id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/blog/services/glossary.service.ts",
+      "line": 269,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const shuffled = termsList.sort(() => 0.5 - Math.random());",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/cart/cart.controller.ts",
+      "line": 845,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/pieces-ultra-enhanced.service.ts",
+      "line": 159,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "prixUnitaire = Math.random() * 500 + 50; // Prix entre 50€ et 550€",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/pieces-ultra-enhanced.service.ts",
+      "line": 160,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "prixConsigne = Math.random() > 0.7 ? Math.random() * 100 + 20 : 0; // 30% chance de consigne",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error-log.service.ts",
+      "line": 475,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/errors/services/error-log.service.ts",
+      "line": 482,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/messages/repositories/message-data.service.ts",
+      "line": 143,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const msgId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 533,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.floor(Math.random() * 1000)",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/orders/services/tickets.service.ts",
+      "line": 81,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const ticketRef = `PREP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/orders/services/tickets.service.ts",
+      "line": 171,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const ticketRef = `AVOIR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/entities/payment.entity.ts",
+      "line": 84,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substring(2, 8).toUpperCase();",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/repositories/payment-data.service.ts",
+      "line": 91,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "`PAY_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/services/payment.service.ts",
+      "line": 369,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substring(2, 10);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/utils/validation.utils.ts",
+      "line": 180,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.floor(Math.random() * 1000000)",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/utils/validation.utils.ts",
+      "line": 199,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.floor(Math.random() * 1000000)",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/payments/utils/validation.utils.ts",
+      "line": 213,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.floor(Math.random() * 1000);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/products.service.ts",
+      "line": 195,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "stock_quantity: Math.floor(Math.random() * 100),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/products.service.ts",
+      "line": 196,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "piece_stock: Math.floor(Math.random() * 100),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/products.service.ts",
+      "line": 209,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "rating: 4.0 + Math.random(),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/products.service.ts",
+      "line": 210,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "reviewCount: Math.floor(Math.random() * 50),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/services/product-enhancement.service.ts",
+      "line": 98,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "recommended_min_stock: Math.floor(Math.random() * 10) + 5,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/services/product-enhancement.service.ts",
+      "line": 99,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "recommended_max_stock: Math.floor(Math.random() * 50) + 25,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/services/product-enhancement.service.ts",
+      "line": 100,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "reorder_point: Math.floor(Math.random() * 15) + 10,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/products/services/product-enhancement.service.ts",
+      "line": 101,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "confidence_score: Math.floor(Math.random() * 20) + 80,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/search/services/search-suggestion.service.ts",
+      "line": 35,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "count: Math.floor(Math.random() * 100), // Simulation de popularité",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/claim.service.ts",
+      "line": 475,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substr(2, 5);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/claim.service.ts",
+      "line": 481,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substr(2, 3);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/faq.service.ts",
+      "line": 462,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substr(2, 5);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/quote.service.ts",
+      "line": 388,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substr(2, 5);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/quote.service.ts",
+      "line": 394,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const random = Math.random().toString(36).substr(2, 5);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 276,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const satisfaction = 4.0 + Math.random() * 1.0;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 300,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "tickets: Math.floor(Math.random() * 20) + 5,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 301,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "reviews: Math.floor(Math.random() * 15) + 3,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 302,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "quotes: Math.floor(Math.random() * 10) + 2,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 303,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "claims: Math.floor(Math.random() * 8) + 1,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 313,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "ticketsGrowth: Math.round((Math.random() * 20 - 10) * 100) / 100, // -10% to +10%",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 314,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "satisfactionTrend: Math.round((Math.random() * 1 - 0.5) * 100) / 100, // -0.5 to +0.5",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 315,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "responseTimeTrend: Math.round((Math.random() * 30 - 15) * 100) / 100, // -15% to +15%",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 316,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "reviewsGrowth: Math.round((Math.random() * 25 - 12.5) * 100) / 100, // -12.5% to +12.5%",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 340,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "escalationRate: Math.round(Math.random() * 10), // percentage",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/support/services/support-analytics.service.ts",
+      "line": 341,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "reopenRate: Math.round(Math.random() * 5), // percentage",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/database-monitor.service.ts",
+      "line": 254,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/health-check.service.ts",
+      "line": 247,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const simulatedDiskUsage = Math.random() * 100;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/metrics.service.ts",
+      "line": 197,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "averageLoadTime: Math.random() * 200 + 100, // Simulé pour le moment",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/metrics.service.ts",
+      "line": 304,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return Math.random() * 100;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/metrics.service.ts",
+      "line": 309,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return Math.floor(Math.random() * 1000) + 100;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/metrics.service.ts",
+      "line": 314,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return Math.random() * 5;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/system.service.ts",
+      "line": 163,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "performance: Math.random() > 0.5 ? 'stable' : 'improving',",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/system/services/system.service.ts",
+      "line": 164,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "business: Math.random() > 0.3 ? 'growing' : 'stable',",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/upload/services/upload-analytics.service.ts",
+      "line": 142,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "id: `failed_${Date.now()}_${Math.random().toString(36).slice(2)}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
+      "line": 153,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "cst_id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/users/users.service.ts",
+      "line": 865,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "Math.random().toString(36).substring(2, 15) +",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/modules/users/users.service.ts",
+      "line": 866,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "Math.random().toString(36).substring(2, 15);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/notifications/notifications.gateway.ts",
+      "line": 235,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "demoMessages[Math.floor(Math.random() * demoMessages.length)];",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/notifications/notifications.service.ts",
+      "line": 196,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "message: `Commande #${Math.floor(Math.random() * 99999)} reçue et en cours de traitement`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/notifications/notifications.service.ts",
+      "line": 201,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "message: `Commande #${Math.floor(Math.random() * 99999)} livrée avec succès`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/notifications/notifications.service.ts",
+      "line": 206,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "message: `Le produit \"${['Filtre à huile', 'Plaquettes de frein', 'Bougies'][Math.floor(Math.random() * 3)]}\" a un stock faible`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "backend/src/notifications/notifications.service.ts",
+      "line": 216,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "demoNotifications[Math.floor(Math.random() * demoNotifications.length)];",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/CheckoutOptimization.tsx",
+      "line": 101,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const success = Math.random() > 0.3",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/blog/VehicleCarousel.tsx",
+      "line": 128,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const randomSwitch = seoSwitches[Math.floor(Math.random() * seoSwitches.length)];",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/blog/VehicleCarousel.tsx",
+      "line": 140,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const randomAction = actions[Math.floor(Math.random() * actions.length)];",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/blog/VehicleCarousel.tsx",
+      "line": 149,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const randomPurpose = purposes[Math.floor(Math.random() * purposes.length)];",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 69,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "current: 125430 + Math.random() * 1000,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 71,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "growth: 5.8 + Math.random() * 2,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 72,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "trend: Math.random() > 0.3 ? 'up' : 'down',",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 75,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "total: 5678 + Math.floor(Math.random() * 10),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 76,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "new: 234 + Math.floor(Math.random() * 20),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 78,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "churnRate: 2.3 + Math.random() * 0.5,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 81,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "total: 1234 + Math.floor(Math.random() * 50),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 82,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "pending: 45 + Math.floor(Math.random() * 10),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 85,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "averageValue: 98.50 + Math.random() * 20,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 88,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "conversionRate: 3.2 + Math.random() * 0.5,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 89,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "avgOrderValue: 98.50 + Math.random() * 20,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 90,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "customerLifetimeValue: 450 + Math.random() * 100,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 91,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "returnOnInvestment: 285 + Math.random() * 50,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 98,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "revenue: 3000 + Math.random() * 2000 + Math.sin(i / 7) * 1000,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 99,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "orders: 30 + Math.random() * 20 + Math.sin(i / 7) * 10,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/business/AnalyticsDashboard.tsx",
+      "line": 100,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "customers: 25 + Math.random() * 15 + Math.sin(i / 7) * 8,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/components/vehicle/VehicleAnalytics.tsx",
+      "line": 71,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/config/monitoring.ts",
+      "line": 251,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now()",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 120,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "resultsFound: Math.floor(Math.random() * 10) // Mock, remplacer par vraie logique",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 183,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "avgTimeToExecute: Math.random() * 1000 + 200 // Mock, calculer vraie moyenne",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 225,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "avgTaskCompletionTime: Math.random() * 2000 + 1000, // Mock",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 246,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "commandPaletteRenderTime: Math.random() * 50 + 10, // Mock, mesurer vraie valeur",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 247,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "searchResponseTime: Math.random() * 100 + 20,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalytics.ts",
+      "line": 250,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "bundleSize: Math.random() * 500 + 1000 // Mock, calculer vraie taille bundle",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts",
+      "line": 27,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const selectedVariant = variants[Math.floor(Math.random() * variants.length)]",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/admin.seo.tsx",
+      "line": 314,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "style={{ height: `${Math.random() * 80 + 20}%` }}",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/admin.seo.tsx",
+      "line": 315,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "title={`Jour ${i + 1}: ${(90 + Math.random() * 10).toFixed(1)}%`}",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/admin.users._index.tsx",
+      "line": 113,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "newUsersToday: Math.floor(Math.random() * 50), // Simulé",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/api.notifications.count.tsx",
+      "line": 9,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const unreadCount = Math.floor(Math.random() * 5) + 1; // Entre 1 et 5",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/commercial.shipping.create._index.tsx",
+      "line": 218,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 175,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "price: Math.floor(Math.random() * 200) + 20,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 177,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "availability: ['in-stock', 'low-stock', 'out-of-stock'][Math.floor(Math.random() * 3)] as any,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 178,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "brand: ['BOSCH', 'MANN', 'VALEO', 'FEBI', 'LEMFÖRDER'][Math.floor(Math.random() * 5)],",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 179,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "partNumber: `${Math.random().toString(36).substring(2, 8).toUpperCase()}`,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/pieces.$brand.$model.$type.$category.tsx",
+      "line": 181,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "subcategory: categoryInfo.subcategories[Math.floor(Math.random() * categoryInfo.subcategories.length)],",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 131,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const productsForRange = Array.from({ length: Math.floor(Math.random() * 200) + 50 }, (_, i) => {",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 138,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "piece_activ: Math.random() > 0.1, // 90% actifs",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 139,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "piece_top: Math.random() > 0.8, // 20% top",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 142,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "price: Math.floor(Math.random() * 500) + 10,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 144,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "price_pro: Math.floor(Math.random() * 400) + 8",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+      "line": 146,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "stock: Math.floor(Math.random() * 100),",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 114,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const productCount = Math.floor(Math.random() * 2000) + 50;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 129,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "average_margin: Math.floor(Math.random() * 35) + 10,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 130,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "monthly_sales: Math.floor(Math.random() * 1000) + 100,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 131,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "stock_status: (['high', 'medium', 'low'] as const)[Math.floor(Math.random() * 3)],",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 132,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "performance_score: Math.floor(Math.random() * 100) + 1,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.advanced.tsx",
+      "line": 133,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "last_updated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 104,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "product_count: Math.floor(Math.random() * 1000) + 100, // À récupérer de la vraie base",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 108,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "average_margin: Math.floor(Math.random() * 30) + 15,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 109,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "monthly_sales: Math.floor(Math.random() * 500) + 50,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 110,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "stock_status: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)]",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 125,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "product_count: Math.floor(Math.random() * 500) + 50,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 127,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "is_top: Math.random() > 0.7,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 129,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "average_margin: Math.floor(Math.random() * 30) + 15,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 130,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "monthly_sales: Math.floor(Math.random() * 100) + 10,",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/products.ranges.tsx",
+      "line": 131,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "stock_status: (['high', 'medium', 'low'] as const)[Math.floor(Math.random() * 3)]",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/routes/search.results.tsx",
+      "line": 80,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "searchTime: Math.random() * 100 + 50, // 50-150ms simulé",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "frontend/app/services/api/seo-switches.api.ts",
+      "line": 58,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "const randomIndex = Math.floor(Math.random() * switches.length);",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    },
+    {
+      "file": "packages/shared-types/src/api.types.ts",
+      "line": 429,
+      "severity": "LOW",
+      "category": "INSECURE_RANDOM",
+      "description": "Générateur de nombres aléatoires non-cryptographique",
+      "code": "return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;",
+      "recommendation": "Pour la sécurité, utiliser crypto.randomBytes() ou secrets module"
+    }
+  ]
+}

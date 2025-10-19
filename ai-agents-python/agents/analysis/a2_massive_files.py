@@ -244,3 +244,11 @@ if __name__ == '__main__':
         print(f"   Suggestions:")
         for suggestion in result['suggestions'][:2]:
             print(f"      - {suggestion}")
+    
+    # Sauvegarder les résultats JSON
+    import json
+    output_file = Path('a2_massive_files_results.json')
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n💾 Résultats sauvegardés: {output_file}")

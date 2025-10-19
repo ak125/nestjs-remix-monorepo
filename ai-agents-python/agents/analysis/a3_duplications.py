@@ -467,3 +467,11 @@ if __name__ == '__main__':
         print(f"   Occurrences: {result['occurrences']}")
         print(f"   Impact: {result['impact_score']}")
         print(f"   Fragment: {result['fragment'][:60]}...")
+    
+    # Sauvegarder les résultats JSON
+    import json
+    output_file = Path('a3_duplications_results.json')
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n💾 Résultats sauvegardés: {output_file}")

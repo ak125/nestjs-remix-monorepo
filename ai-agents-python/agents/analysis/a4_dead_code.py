@@ -10,7 +10,13 @@ import os
 import re
 from dataclasses import dataclass
 
-from core.config import Config
+try:
+    from core.config import Config
+except ImportError:
+    # Fallback pour exécution standalone
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from core.config import Config
 
 
 @dataclass
@@ -187,6 +193,9 @@ def detect_dead_code(config: Config, root_path: str) -> List[DeadCodeResult]:
 
 if __name__ == "__main__":
     # Test standalone
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    
     from core.config import Config
     
     config = Config.load()
@@ -197,3 +206,20 @@ if __name__ == "__main__":
     print(f"Found {len(results)} dead code files:")
     for result in results[:10]:  # Show first 10
         print(f"  - {result.file_path} (confidence: {result.confidence:.0%})")
+    
+    # Sauvegarder les résultats JSON
+    import json
+    output_file = Path('a4_dead_code_results.json')
+    results_json = [
+        {
+            'file_path': r.file_path,
+            'reason': r.reason,
+            'confidence': r.confidence,
+            'last_modified': r.last_modified.isoformat() if r.last_modified else None,
+        }
+        for r in results
+    ]
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(results_json, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n💾 Résultats sauvegardés: {output_file}")

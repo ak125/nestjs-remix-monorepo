@@ -72,12 +72,12 @@ class AgentRunner:
         
         # Agents d'analyse (A1-A12)
         self.analysis_agents = {
-            # 'a1_cartographe': lambda: self._load_agent('agents.analysis.a1_cartographe', 'CartographeAgent'),
+            'a1_security': lambda: self._load_agent('agents.analysis.a1_security', 'A1SecurityAgent'),
             'a2_massive_files': lambda: self._load_agent('agents.analysis.a2_massive_files', 'MassiveFilesDetector'),
             'a3_duplications': lambda: self._load_agent('agents.analysis.a3_duplications', 'DuplicationDetector'),
             'a4_dead_code': lambda: self._load_agent('agents.analysis.a4_dead_code', 'DeadCodeDetector'),
-            # 'a5_upgrade_nestjs': lambda: self._load_agent('agents.analysis.a5_upgrade_nestjs', 'UpgradeNestJSAgent'),
-            # 'a6_upgrade_remix': lambda: self._load_agent('agents.analysis.a6_upgrade_remix', 'UpgradeRemixAgent'),
+            'a5_complexity': lambda: self._load_agent('agents.analysis.a5_complexity', 'A5ComplexityAgent'),
+            'a6_dependencies': lambda: self._load_agent('agents.analysis.a6_dependencies', 'A6DependenciesAgent'),
             # 'a7_upgrade_react': lambda: self._load_agent('agents.analysis.a7_upgrade_react', 'UpgradeReactAgent'),
             # 'a8_upgrade_nodejs': lambda: self._load_agent('agents.analysis.a8_upgrade_nodejs', 'UpgradeNodeJSAgent'),
             # 'a9_css_patterns': lambda: self._load_agent('agents.analysis.a9_css_patterns', 'CSSPatternsAgent'),
@@ -88,7 +88,7 @@ class AgentRunner:
         
         # Agents de correction (F0-F15)
         self.fix_agents = {
-            # 'f0_orchestrator': lambda: self._load_agent('agents.fixproof.f0_orchestrator', 'OrchestratorAgent'),
+            'f0_autoimport': lambda: self._load_agent('agents.fixproof.f0_autoimport', 'F0AutoImportAgent'),
             'f1_dead_code_surgeon': lambda: self._load_agent('agents.fixproof.f1_dead_code_surgeon', 'DeadCodeSurgeon'),
             'f2_lint_format': lambda: self._load_agent('agents.fixproof.f2_lint_format', 'LintFormatter'),
             # 'f3_duplication_extractor': lambda: self._load_agent('agents.fixproof.f3_duplication_extractor', 'DuplicationExtractorAgent'),
