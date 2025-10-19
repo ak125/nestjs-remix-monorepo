@@ -30,21 +30,58 @@ export class EmailService {
   private resend: Resend;
   private readonly fromEmail: string;
   private readonly appUrl: string;
+  private readonly isConfigured: boolean; // Track si la vraie clé API est configurée
 
   constructor() {
-    const apiKey =
-      process.env.RESEND_API_KEY || 're_hVVVLJC8_CX8cYeKyF2YnYX7Dbxqduh7R';
-    this.resend = new Resend(apiKey);
+    const apiKey = process.env.RESEND_API_KEY;
+    this.isConfigured = !!apiKey;
+
+    if (!apiKey) {
+      this.logger.warn(
+        '⚠️ RESEND_API_KEY non configurée - Les emails ne seront PAS envoyés. ' +
+          'Veuillez ajouter RESEND_API_KEY dans votre fichier .env',
+      );
+    }
+
+    // Utiliser une clé au format valide en dev (format re_xxxx requis par Resend)
+    // Cette clé ne fonctionnera pas mais permet au service de démarrer
+    const finalApiKey =
+      apiKey ||
+      (process.env.NODE_ENV === 'development'
+        ? 're_dev_mode_no_real_emails_will_be_sent_123456'
+        : 're_missing_configure_in_production_123456');
+
+    this.resend = new Resend(finalApiKey);
     this.fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
     this.appUrl = process.env.APP_URL || 'http://localhost:5173';
 
-    this.logger.log('✅ Email service (Resend) initialized');
+    this.logger.log(
+      apiKey
+        ? '✅ Email service (Resend) initialized with API key'
+        : '⚠️ Email service initialized WITHOUT API key (emails disabled)',
+    );
+  }
+
+  /**
+   * Vérifier si le service email est configuré
+   * @private
+   */
+  private checkConfigured(methodName: string): boolean {
+    if (!this.isConfigured) {
+      this.logger.warn(
+        `⚠️ ${methodName}: Email non envoyé (RESEND_API_KEY manquante)`,
+      );
+      return false;
+    }
+    return true;
   }
 
   /**
    * 📧 Email confirmation commande (après paiement validé)
    */
   async sendOrderConfirmation(order: any, customer: any): Promise<void> {
+    if (!this.checkConfigured('sendOrderConfirmation')) return;
+
     try {
       const html = this.getOrderConfirmationTemplate(order, customer);
 
@@ -69,6 +106,8 @@ export class EmailService {
     customer: any,
     trackingNumber: string,
   ): Promise<void> {
+    if (!this.checkConfigured('sendShippingNotification')) return;
+
     try {
       const html = this.getShippingTemplate(order, customer, trackingNumber);
 
@@ -89,6 +128,8 @@ export class EmailService {
    * 💳 Email rappel de paiement
    */
   async sendPaymentReminder(order: any, customer: any): Promise<void> {
+    if (!this.checkConfigured('sendPaymentReminder')) return;
+
     try {
       const html = this.getPaymentReminderTemplate(order, customer);
 
@@ -113,6 +154,8 @@ export class EmailService {
     customer: any,
     reason: string,
   ): Promise<void> {
+    if (!this.checkConfigured('sendCancellationEmail')) return;
+
     try {
       const html = this.getCancellationTemplate(order, customer, reason);
 

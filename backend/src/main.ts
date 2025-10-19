@@ -52,12 +52,30 @@ async function bootstrap() {
       throw new Error('SESSION_SECRET requis en production');
     }
 
+    // ⚠️ SÉCURITÉ: Vérifier que SESSION_SECRET est configuré
+    const sessionSecret = process.env.SESSION_SECRET;
+    if (!sessionSecret || sessionSecret === '123') {
+      console.warn(
+        '⚠️⚠️⚠️ ALERTE SÉCURITÉ: SESSION_SECRET non configuré ou utilise la valeur par défaut! ⚠️⚠️⚠️',
+      );
+      console.warn(
+        '   Générez un secret sécurisé avec: openssl rand -base64 32',
+      );
+      console.warn('   Ajoutez-le dans votre fichier .env');
+
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          'SESSION_SECRET OBLIGATOIRE en production! Impossible de démarrer.',
+        );
+      }
+    }
+
     app.use(
       session({
         store: redisStore,
         resave: false,
         saveUninitialized: true, // ✅ Créer session même si vide (résout pb panier)
-        secret: process.env.SESSION_SECRET || '123',
+        secret: sessionSecret || 'INSECURE_DEV_SECRET_CHANGE_ME',
         name: 'connect.sid', // ✅ Nom explicite du cookie
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
