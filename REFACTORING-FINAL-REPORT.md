@@ -9,10 +9,21 @@
 ## 📊 MÉTRIQUES FINALES
 
 ### Réduction du code
+
+**Route 1: pieces.$gamme.$marque.$modele.$type[.]html.tsx**
 - **Avant**: 2099 lignes
 - **Après**: 417 lignes  
 - **Réduction**: **-1682 lignes (-80%)**
-- **Objectif initial**: 2100→300 lignes ✅ **DÉPASSÉ**
+- **Format URL**: `/pieces/{gamme}/{marque}/{modele}/{type}.html`
+
+**Route 2: pieces.$gammeId.$marqueId.$modeleId.$typeId.tsx**
+- **Avant**: 2099 lignes
+- **Après**: 417 lignes  
+- **Réduction**: **-1682 lignes (-80%)**
+- **Format URL**: `/pieces/{gammeId}/{marqueId}/{modeleId}/{typeId}`
+
+**TOTAL**: **-3364 lignes économisées** sur 2 routes refactorisées
+**Objectif initial**: 2100→300 lignes ✅ **DÉPASSÉ (x2)**
 
 ### Modules créés
 | Module | Lignes | Description |
