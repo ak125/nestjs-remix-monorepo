@@ -6,8 +6,9 @@ thresholds:
   massive_files:
     tsx_component: 500
     route_file: 400
-    service_file: 300
-    general: 500
+    backend_service: 600
+    typescript: 350
+    javascript: 350
   
   # Duplications
   duplication:
