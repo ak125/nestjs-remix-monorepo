@@ -99,14 +99,16 @@ class A10I18nAgent:
     # Patterns de fonction i18n à ignorer
     I18N_FUNCTIONS = ['t(', 'i18n.t(', 'translate(', '$t(', 'formatMessage(']
     
-    def __init__(self, root_dir: str):
+    def __init__(self, workspace_root: Path, config):
         """
         Initialise l'agent A10.
         
         Args:
             root_dir: Répertoire racine du projet
         """
-        self.root_dir = Path(root_dir)
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
         self.findings: List[I18nFinding] = []
         self.translation_keys: Set[str] = set()
     

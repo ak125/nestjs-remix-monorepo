@@ -36,9 +36,9 @@ class MassiveFilesDetector:
     - Autres TS/JS: 350 lignes
     """
     
-    def __init__(self, config, workspace_root: Path):
-        self.config = config
+    def __init__(self, workspace_root: Path, config):
         self.workspace_root = workspace_root
+        self.config = config
         self.thresholds = config.thresholds.massive_files
     
     def analyze(self) -> List[Dict[str, Any]]:

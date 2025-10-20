@@ -92,14 +92,16 @@ class A8AccessibilityAgent:
         '.spec.',
     ]
     
-    def __init__(self, root_dir: str):
+    def __init__(self, workspace_root: Path, config):
         """
         Initialise l'agent A8.
         
         Args:
             root_dir: Répertoire racine du projet
         """
-        self.root_dir = Path(root_dir)
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
         self.findings: List[AccessibilityFinding] = []
     
     def should_analyze(self, file_path: Path) -> bool:

@@ -51,14 +51,17 @@ class A6DependenciesAgent:
         'tslint': 'deprecated - use eslint with @typescript-eslint',
     }
     
-    def __init__(self, root_dir: str):
+    def __init__(self, workspace_root: Path, config):
         """
         Initialise l'agent A6.
         
         Args:
-            root_dir: Répertoire racine du projet
+            workspace_root: Répertoire racine du workspace
+            config: Configuration
         """
-        self.root_dir = Path(root_dir)
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
         self.findings: List[DependencyFinding] = []
     
     def find_package_json_files(self) -> List[Path]:

@@ -32,6 +32,13 @@ class A5ComplexityAgent:
     - Nombre de paramètres
     """
     
+    def __init__(self, workspace_root: Path, config):
+        """Initialise l'agent A5."""
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
+        self.findings: List[ComplexityFinding] = []
+    
     # Seuils de complexité
     THRESHOLDS = {
         'cyclomatic': {
@@ -92,16 +99,6 @@ class A5ComplexityAgent:
         '__pycache__',
         '.git',
     ]
-    
-    def __init__(self, root_dir: str):
-        """
-        Initialise l'agent A5.
-        
-        Args:
-            root_dir: Répertoire racine du projet
-        """
-        self.root_dir = Path(root_dir)
-        self.findings: List[ComplexityFinding] = []
     
     def should_analyze(self, file_path: Path) -> bool:
         """Vérifie si un fichier doit être analysé."""

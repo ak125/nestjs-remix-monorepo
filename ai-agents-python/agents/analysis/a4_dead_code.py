@@ -31,9 +31,10 @@ class DeadCodeResult:
 class DeadCodeDetector:
     """Agent A4 - Détecte le code mort"""
     
-    def __init__(self, config: Config, monorepo_root: Path):
+    def __init__(self, workspace_root: Path, config):
+        self.workspace_root = workspace_root
         self.config = config
-        self.root = monorepo_root
+        self.root = workspace_root
         self.threshold_days = config.thresholds.dead_code_days
         
     def analyze(self) -> List[DeadCodeResult]:
