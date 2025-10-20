@@ -246,11 +246,11 @@ export class CrossSellingService extends SupabaseBaseService {
 
   /**
    * 🚀 CROSS-SELLING MÊME FAMILLE OPTIMISÉ - Pattern gamme-rest
+   * Note: mfId removed (catalog filtering impossible without pg_mc_id column)
    */
   private async getSameFamilyCrossGammesOptimized(
     pgId: number,
     typeId: number,
-    mfId: number,
   ): Promise<CrossGamme[]> {
     try {
       // TODO: Implement cache
