@@ -262,25 +262,21 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   }
   
   // Mappings directs avec les IDs réels de la base de données
+  // ⚠️ Ces mappings sont pour les routes SANS ID dans l'URL
+  // Les routes avec ID (ex: courroie-d-accessoire-10) utilisent directement l'ID
   const knownGammeMap: Record<string, number> = {
     "freinage": 402,
-    "kit-de-distribution": 128, 
-    "filtres-a-huile": 75, 
-    "filtres-a-air": 76,
-    "filtres-a-carburant": 77, 
-    "filtres-habitacle": 78,
     "plaquettes-de-frein": 402,
     "plaquette-de-frein": 402,
     "disques-de-frein": 403,
     "disque-de-frein": 403,
+    "kit-de-distribution": 128,
+    "filtres-a-huile": 75,
+    "filtres-a-air": 76,
+    "filtres-a-carburant": 77,
+    "filtres-habitacle": 78,
     "amortisseurs": 85,
-    "amortisseur": 85,
-    "courroies": 90,
-    "courroie": 90,
-    "courroie-d-accessoire": 90,
-    "courroies-d-accessoires": 90,
-    "galet-tendeur-courroie": 91,
-    "galet-enrouleur-courroie": 92
+    "amortisseur": 85
   };
   
   const gammeId = knownGammeMap[gamme.alias];
