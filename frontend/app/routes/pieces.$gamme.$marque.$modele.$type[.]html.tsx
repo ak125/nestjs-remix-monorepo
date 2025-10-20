@@ -63,7 +63,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
-  // 2. Parse les IDs depuis les URLs
+  // 2. Parse les IDs depuis les URLs (extraction alias + ID)
   const gammeData = parseUrlParam(rawGamme);
   const marqueData = parseUrlParam(rawMarque);
   const modeleData = parseUrlParam(rawModele);
@@ -76,7 +76,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     typeData.alias
   );
   
-  const gammeId = await resolveGammeId(gammeData.alias);
+  // ✅ Passer le paramètre COMPLET (avec ID) à resolveGammeId pour qu'il puisse extraire l'ID
+  const gammeId = await resolveGammeId(rawGamme);
 
   // 4. Construction des données véhicule
   const vehicle: VehicleData = {
