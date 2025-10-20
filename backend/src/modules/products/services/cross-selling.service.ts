@@ -280,12 +280,25 @@ export class CrossSellingService extends SupabaseBaseService {
         .eq('rtp_type_id', typeId)
         .neq('pieces.piece_pg_id', pgId)
         .eq('pieces.pieces_gamme.catalog_gamme.mc_mf_prime', mfId)
-        .order('pieces.pieces_gamme.catalog_gamme.mc_sort')
+        // Note: .order() sur relations imbriquées non supporté par Supabase
         .limit(20);
 
       if (error) {
         this.logger.error('❌ Erreur cross-selling famille:', error);
         return [];
+      }
+
+      // Tri par mc_sort en JS (impossible via .order() sur relation imbriquée)
+      if (data) {
+        data.sort((a, b) => {
+          const sortA =
+            (a as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
+            999;
+          const sortB =
+            (b as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
+            999;
+          return sortA - sortB;
+        });
       }
 
       // 🔄 TRANSFORMATION ET VÉRIFICATION ARTICLES
@@ -316,53 +329,57 @@ export class CrossSellingService extends SupabaseBaseService {
       // const cached = await this.getFromCache(cacheKey);
       // if (cached) return cached;
 
-      // 🚀 REQUÊTE BATCH OPTIMISÉE
-      const { data, error } = (await this.supabase
+      // 🚀 REQUÊTE SANS JOIN (relation FK non définie dans Supabase)
+      const { data: crossData, error } = await this.supabase
         .from('pieces_gamme_cross')
-        .select(
-          `
-          pgc_pg_cross,
-          pgc_level,
-          pieces_gamme!pgc_pg_cross (
-            pg_id,
-            pg_name,
-            pg_alias,
-            pg_img
-          )
-        `,
-        )
+        .select('pgc_pg_cross, pgc_level')
         .eq('pgc_pg_id', pgId)
         .neq('pgc_pg_cross', pgId)
-        .order('pgc_level')
-        .order('pieces_gamme.pg_name')
-        .limit(15)) as {
-        data:
-          | {
-              pgc_pg_cross: any;
-              pgc_level: any;
-              pieces_gamme: {
-                pg_id: any;
-                pg_name: any;
-                pg_alias: any;
-                pg_img: any;
-              };
-            }[]
-          | null;
-        error: any;
-      };
+        .order('pgc_level', { ascending: true })
+        .limit(15);
 
-      if (error || !data) {
-        this.logger.error('❌ Erreur cross-selling config:', error);
+      if (error || !crossData || crossData.length === 0) {
+        if (error) {
+          this.logger.error('❌ Erreur cross-selling config:', error);
+        }
         return [];
       }
 
+      // Récupérer les détails des gammes en parallèle
+      const gammeIds = crossData.map((item) => item.pgc_pg_cross);
+      const { data: gammesData } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias, pg_img')
+        .in('pg_id', gammeIds);
+
+      if (!gammesData) return [];
+
+      // Mapper les données
+      const mappedData = crossData
+        .map((cross) => {
+          const gamme = gammesData.find((g) => g.pg_id === cross.pgc_pg_cross);
+          return {
+            pgc_pg_cross: cross.pgc_pg_cross,
+            pgc_level: cross.pgc_level,
+            pieces_gamme: gamme || null,
+          };
+        })
+        .filter((item) => item.pieces_gamme); // Supprimer les gammes introuvables
+
+      // Tri par pg_name
+      mappedData.sort((a, b) =>
+        (a.pieces_gamme?.pg_name || '').localeCompare(
+          b.pieces_gamme?.pg_name || '',
+        ),
+      );
+
       // ✅ VÉRIFICATION ARTICLES PARALLÉLISÉE
       const crossGammes = await this.processAndVerifyArticlesBatch(
-        data.map((item) => ({
-          pg_id: item.pieces_gamme.pg_id,
-          pg_name: item.pieces_gamme.pg_name,
-          pg_alias: item.pieces_gamme.pg_alias,
-          pg_img: item.pieces_gamme.pg_img,
+        mappedData.map((item) => ({
+          pg_id: item.pieces_gamme!.pg_id,
+          pg_name: item.pieces_gamme!.pg_name,
+          pg_alias: item.pieces_gamme!.pg_alias,
+          pg_img: item.pieces_gamme!.pg_img,
           cross_level: item.pgc_level || 1,
           source: 'config' as const,
         })),

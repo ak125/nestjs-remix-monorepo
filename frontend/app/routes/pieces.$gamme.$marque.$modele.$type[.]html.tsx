@@ -107,8 +107,26 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (response.ok) {
       const apiResponse = await response.json();
       // L'API retourne { data: { pieces: [...], count, minPrice, ... }, success, timestamp }
-      piecesData = Array.isArray(apiResponse.data?.pieces) ? apiResponse.data.pieces : [];
-      console.log(`📦 ${piecesData.length} pièces récupérées pour ${vehicle.marque} ${vehicle.modele}`);
+      const rawPieces = Array.isArray(apiResponse.data?.pieces) ? apiResponse.data.pieces : [];
+      
+      // 🔧 Mapper les champs FR → EN pour compatibilité avec les composants
+      piecesData = rawPieces.map((piece: any) => ({
+        id: piece.id,
+        name: piece.nom || piece.name || 'Pièce',
+        brand: piece.marque || piece.brand || 'Marque inconnue',
+        reference: piece.reference || '',
+        price: piece.prix_unitaire || piece.prix_ttc || piece.price || 0,
+        priceFormatted: (piece.prix_unitaire || piece.prix_ttc || piece.price || 0).toFixed(2),
+        image: piece.image || '',
+        stock: piece.dispo ? 'En stock' : 'Sur commande',
+        quality: piece.qualite || '',
+        description: piece.description || '',
+        url: piece.url || '',
+        marque_id: piece.marque_id,
+        marque_logo: piece.marque_logo
+      }));
+      
+      console.log(`📦 ${piecesData.length} pièces récupérées et mappées pour ${vehicle.marque} ${vehicle.modele}`);
     }
   } catch (error) {
     console.error('❌ Erreur récupération pièces:', error);
