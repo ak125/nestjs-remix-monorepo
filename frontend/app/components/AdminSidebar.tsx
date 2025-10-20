@@ -76,7 +76,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
     },
     {
       name: "Commandes",
-      href: "/orders",
+      href: "/admin/orders",
       icon: ShoppingCart,
       description: "Gestion des commandes",
       badge: stats ? { count: stats.totalOrders, color: "bg-green-500" } : { count: 0, color: "bg-gray-400" },
