@@ -52,9 +52,9 @@ class DuplicationDetector:
     - max_results: 1000 (éviter explosion mémoire)
     """
     
-    def __init__(self, config, workspace_root: Path):
-        self.config = config
+    def __init__(self, workspace_root: Path, config):
         self.workspace_root = workspace_root
+        self.config = config
         # Seuils plus stricts pour réduire faux positifs
         self.min_tokens = max(8, config.thresholds.duplication.min_tokens)
         self.min_lines = max(5, config.thresholds.duplication.min_lines)

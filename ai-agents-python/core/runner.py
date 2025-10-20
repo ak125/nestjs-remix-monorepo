@@ -78,12 +78,12 @@ class AgentRunner:
             'a4_dead_code': lambda: self._load_agent('agents.analysis.a4_dead_code', 'DeadCodeDetector'),
             'a5_complexity': lambda: self._load_agent('agents.analysis.a5_complexity', 'A5ComplexityAgent'),
             'a6_dependencies': lambda: self._load_agent('agents.analysis.a6_dependencies', 'A6DependenciesAgent'),
-            # 'a7_upgrade_react': lambda: self._load_agent('agents.analysis.a7_upgrade_react', 'UpgradeReactAgent'),
-            # 'a8_upgrade_nodejs': lambda: self._load_agent('agents.analysis.a8_upgrade_nodejs', 'UpgradeNodeJSAgent'),
-            # 'a9_css_patterns': lambda: self._load_agent('agents.analysis.a9_css_patterns', 'CSSPatternsAgent'),
-            # 'a10_performance': lambda: self._load_agent('agents.analysis.a10_performance', 'PerformanceAgent'),
-            # 'a11_data_sanity': lambda: self._load_agent('agents.analysis.a11_data_sanity', 'DataSanityAgent'),
-            # 'a12_meta': lambda: self._load_agent('agents.analysis.a12_meta', 'MetaAgent'),
+            'a7_performance': lambda: self._load_agent('agents.analysis.a7_performance', 'A7PerformanceAgent'),
+            'a8_accessibility': lambda: self._load_agent('agents.analysis.a8_accessibility', 'A8AccessibilityAgent'),
+            'a9_seo': lambda: self._load_agent('agents.analysis.a9_seo', 'A9SEOAgent'),
+            'a10_i18n': lambda: self._load_agent('agents.analysis.a10_i18n', 'A10I18nAgent'),
+            'a11_tests': lambda: self._load_agent('agents.analysis.a11_tests', 'A11TestsAgent'),
+            'a12_documentation': lambda: self._load_agent('agents.analysis.a12_documentation', 'A12DocumentationAgent'),
         }
         
         # Agents de correction (F0-F15)
@@ -109,8 +109,8 @@ class AgentRunner:
         try:
             module = importlib.import_module(module_path)
             agent_class = getattr(module, class_name)
-            # Ordre: config, workspace_root (comme défini dans les agents)
-            return agent_class(self.config, self.workspace_root)
+            # Ordre: workspace_root, config (comme défini dans les agents)
+            return agent_class(self.workspace_root, self.config)
         except Exception as e:
             print(f"⚠️  Impossible de charger {module_path}.{class_name}: {e}")
             return None
