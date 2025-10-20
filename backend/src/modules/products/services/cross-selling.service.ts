@@ -257,49 +257,75 @@ export class CrossSellingService extends SupabaseBaseService {
       // // const cached = await this.getFromCache();
       // // if (cached) return cached;
 
-      // 🎯 REQUÊTE OPTIMISÉE - Pattern VehicleFilteredCatalogService
-      const { data, error } = await this.supabase
+      // 🎯 STRATÉGIE 2-REQUÊTES (FK non définie dans Supabase)
+      // Étape 1: Récupérer les IDs de pièces depuis pieces_relation_type
+      const { data: relationData, error: relError } = await this.supabase
         .from('pieces_relation_type')
+        .select('rtp_piece_id')
+        .eq('rtp_type_id', typeId)
+        .limit(100); // Plus large pour filtrer ensuite
+
+      if (relError || !relationData || relationData.length === 0) {
+        if (relError) {
+          this.logger.error(
+            '❌ Erreur cross-selling famille (step 1):',
+            relError,
+          );
+        }
+        return [];
+      }
+
+      const pieceIds = relationData.map((r) => r.rtp_piece_id);
+
+      // Étape 2: Récupérer les détails des pièces avec leurs gammes
+      const { data: piecesData, error: piecesError } = await this.supabase
+        .from('pieces')
         .select(
           `
-          pieces!inner (
-            piece_pg_id,
-            pieces_gamme!inner (
-              pg_id,
-              pg_name,
-              pg_alias,
-              pg_img,
-              catalog_gamme!inner (
-                mc_mf_prime,
-                mc_sort
-              )
+          piece_id,
+          piece_pg_id,
+          pieces_gamme!inner (
+            pg_id,
+            pg_name,
+            pg_alias,
+            pg_img,
+            catalog_gamme!inner (
+              mc_mf_prime,
+              mc_sort
             )
           )
         `,
         )
-        .eq('rtp_type_id', typeId)
-        .neq('pieces.piece_pg_id', pgId)
-        .eq('pieces.pieces_gamme.catalog_gamme.mc_mf_prime', mfId)
-        // Note: .order() sur relations imbriquées non supporté par Supabase
+        .in('piece_id', pieceIds)
+        .neq('piece_pg_id', pgId)
+        .eq('pieces_gamme.catalog_gamme.mc_mf_prime', mfId)
         .limit(20);
 
-      if (error) {
-        this.logger.error('❌ Erreur cross-selling famille:', error);
+      if (piecesError || !piecesData) {
+        if (piecesError) {
+          this.logger.error(
+            '❌ Erreur cross-selling famille (step 2):',
+            piecesError,
+          );
+        }
         return [];
       }
 
-      // Tri par mc_sort en JS (impossible via .order() sur relation imbriquée)
-      if (data) {
-        data.sort((a, b) => {
-          const sortA =
-            (a as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
-            999;
-          const sortB =
-            (b as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
-            999;
-          return sortA - sortB;
-        });
-      }
+      // Mapper au format attendu (simuler structure originale)
+      const data = piecesData.map((piece) => ({
+        pieces: piece,
+      }));
+
+      // Tri par mc_sort en JS
+      data.sort((a, b) => {
+        const sortA =
+          (a as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
+          999;
+        const sortB =
+          (b as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
+          999;
+        return sortA - sortB;
+      });
 
       // 🔄 TRANSFORMATION ET VÉRIFICATION ARTICLES
       const crossGammes = await this.processAndVerifyArticles(
