@@ -35,6 +35,13 @@ class A1SecurityAgent:
     - Mauvaises pratiques crypto
     """
     
+    def __init__(self, workspace_root: Path, config):
+        """Initialise l'agent A1."""
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
+        self.findings: List[SecurityFinding] = []
+    
     # Patterns de détection
     PATTERNS = {
         'hardcoded_secret': {
@@ -131,16 +138,6 @@ class A1SecurityAgent:
         'spec',
         'mock',
     ]
-    
-    def __init__(self, root_dir: str):
-        """
-        Initialise l'agent A1.
-        
-        Args:
-            root_dir: Répertoire racine du projet
-        """
-        self.root_dir = Path(root_dir)
-        self.findings: List[SecurityFinding] = []
     
     def should_analyze(self, file_path: Path) -> bool:
         """Vérifie si un fichier doit être analysé."""

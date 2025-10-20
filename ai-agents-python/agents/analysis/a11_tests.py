@@ -82,14 +82,16 @@ class A11TestsAgent:
         'types.ts',  # Types uniquement
     ]
     
-    def __init__(self, root_dir: str):
+    def __init__(self, workspace_root: Path, config):
         """
         Initialise l'agent A11.
         
         Args:
             root_dir: Répertoire racine du projet
         """
-        self.root_dir = Path(root_dir)
+        self.workspace_root = workspace_root
+        self.config = config
+        self.root_dir = workspace_root
         self.findings: List[TestCoverageFinding] = []
         self.test_files: Set[str] = set()
         self.code_files: Set[Path] = set()
