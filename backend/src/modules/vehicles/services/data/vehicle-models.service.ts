@@ -172,7 +172,7 @@ export class VehicleModelsService extends SupabaseBaseService {
             `,
             )
             .eq('auto_marque.marque_id', marqueId);
-            // .eq('modele_display', 1); // 🔧 TEMPORAIREMENT DÉSACTIVÉ - tous les modèles ont display=0
+          // .eq('modele_display', 1); // 🔧 TEMPORAIREMENT DÉSACTIVÉ - tous les modèles ont display=0
 
           // 📅 Filtrage par année si spécifiée
           if (year) {
