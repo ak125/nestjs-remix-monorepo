@@ -277,31 +277,14 @@ export class CrossSellingService extends SupabaseBaseService {
 
       const pieceIds = relationData.map((r) => r.rtp_piece_id);
 
-      // Étape 2: Récupérer les détails des pièces avec leurs gammes
+      // Étape 2: Récupérer piece_pg_id depuis pieces (sans join)
       const { data: piecesData, error: piecesError } = await this.supabase
         .from('pieces')
-        .select(
-          `
-          piece_id,
-          piece_pg_id,
-          pieces_gamme!inner (
-            pg_id,
-            pg_name,
-            pg_alias,
-            pg_img,
-            catalog_gamme!inner (
-              mc_mf_prime,
-              mc_sort
-            )
-          )
-        `,
-        )
+        .select('piece_id, piece_pg_id')
         .in('piece_id', pieceIds)
-        .neq('piece_pg_id', pgId)
-        .eq('pieces_gamme.catalog_gamme.mc_mf_prime', mfId)
-        .limit(20);
+        .neq('piece_pg_id', pgId);
 
-      if (piecesError || !piecesData) {
+      if (piecesError || !piecesData || piecesData.length === 0) {
         if (piecesError) {
           this.logger.error(
             '❌ Erreur cross-selling famille (step 2):',
@@ -311,9 +294,42 @@ export class CrossSellingService extends SupabaseBaseService {
         return [];
       }
 
-      // Mapper au format attendu (simuler structure originale)
-      const data = piecesData.map((piece) => ({
-        pieces: piece,
+      // Étape 3: Récupérer détails gammes + catalog
+      const gammeIds = [...new Set(piecesData.map((p) => p.piece_pg_id))];
+      const { data: gammesData, error: gammesError } = await this.supabase
+        .from('pieces_gamme')
+        .select(
+          `
+          pg_id,
+          pg_name,
+          pg_alias,
+          pg_img,
+          catalog_gamme!inner (
+            mc_mf_prime,
+            mc_sort
+          )
+        `,
+        )
+        .in('pg_id', gammeIds)
+        .eq('catalog_gamme.mc_mf_prime', mfId)
+        .limit(20);
+
+      if (gammesError || !gammesData || gammesData.length === 0) {
+        if (gammesError) {
+          this.logger.error(
+            '❌ Erreur cross-selling famille (step 3):',
+            gammesError,
+          );
+        }
+        return [];
+      }
+
+      // Mapper au format attendu
+      const data = gammesData.map((gamme) => ({
+        pieces: {
+          piece_pg_id: gamme.pg_id,
+          pieces_gamme: [gamme],
+        },
       }));
 
       // Tri par mc_sort en JS
