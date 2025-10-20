@@ -106,8 +106,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     
     if (response.ok) {
       const apiResponse = await response.json();
-      // L'API retourne { data: [...], success, timestamp, version }
-      piecesData = Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      // L'API retourne { data: { pieces: [...], count, minPrice, ... }, success, timestamp }
+      piecesData = Array.isArray(apiResponse.data?.pieces) ? apiResponse.data.pieces : [];
       console.log(`📦 ${piecesData.length} pièces récupérées pour ${vehicle.marque} ${vehicle.modele}`);
     }
   } catch (error) {
