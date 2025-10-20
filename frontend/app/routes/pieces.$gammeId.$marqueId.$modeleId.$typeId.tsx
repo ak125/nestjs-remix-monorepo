@@ -21,6 +21,7 @@ import { PiecesHeader } from '../components/pieces/PiecesHeader';
 import { PiecesListView } from '../components/pieces/PiecesListView';
 import { PiecesSEOSection } from '../components/pieces/PiecesSEOSection';
 import { PiecesStatistics } from '../components/pieces/PiecesStatistics';
+import VehicleSelectorV2 from '../components/vehicle/VehicleSelectorV2';
 
 // Hook custom
 import { usePiecesFilters } from '../hooks/use-pieces-filters';
@@ -242,6 +243,30 @@ export default function PiecesVehicleRoute() {
 
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
+        <div className="mb-6 sticky top-4 z-10">
+          <VehicleSelectorV2
+            mode="compact"
+            context="pieces"
+            variant="card"
+            redirectOnSelect={false}
+            onVehicleSelect={(vehicle) => {
+              console.log('🔄 Véhicule sélectionné:', vehicle);
+              // Construire URL avec format alias-id
+              const brandSlug = `${vehicle.brand.marque_alias || vehicle.brand.marque_name.toLowerCase()}-${vehicle.brand.marque_id}`;
+              const modelSlug = `${vehicle.model.modele_alias || vehicle.model.modele_name.toLowerCase()}-${vehicle.model.modele_id}`;
+              const typeSlug = `${vehicle.type.type_alias || vehicle.type.type_name.toLowerCase()}-${vehicle.type.type_id}`;
+              const url = `/pieces/${data.gamme.alias}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+              window.location.href = url;
+            }}
+            currentVehicle={{
+              brand: { id: data.vehicle.marqueId, name: data.vehicle.marque },
+              model: { id: data.vehicle.modeleId, name: data.vehicle.modele },
+              type: { id: data.vehicle.typeId, name: data.vehicle.type }
+            }}
+          />
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Sidebar filtres */}
