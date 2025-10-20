@@ -144,7 +144,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
       if (options.includeFamily !== false) {
         crossPromises.push(
-          this.getSameFamilyCrossGammesOptimized(pgId, typeId, mfId),
+          this.getSameFamilyCrossGammesOptimized(pgId, typeId),
         );
         sourcesUsed.push('family');
       }
