@@ -18,11 +18,10 @@
  */
 
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import { useActionData, useFetcher, useLoaderData } from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { requireUser } from '../auth/unified.server';
-import { OrderActions } from '../components/orders/OrderActions';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
 import { OrderEditForm } from '../components/orders/OrderEditForm';
 import { OrderExportButtons } from '../components/orders/OrderExportButtons';
@@ -419,7 +418,6 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 export default function OrdersRoute() {
   const data = useLoaderData<LoaderData>();
   const actionData = useActionData<ActionData>();
-  const fetcher = useFetcher();
   
   // États pour modales et sélection
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -430,15 +428,22 @@ export default function OrdersRoute() {
   const {
     filteredOrders,
     activeFilters,
-    selectedOrders,
     setActiveFilters,
-    toggleOrderSelection,
-    selectAllOrders,
-    clearSelection,
     resetAllFilters,
   } = useOrdersFilters(data.orders);
   
-  // Handlers
+  // États supplémentaires pour les modals d'action
+  const [isLoading, setIsLoading] = useState(false);
+  const [shipModalOpen, setShipModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
+  const [actionOrderId, setActionOrderId] = useState<string | null>(null);
+  
+  // ========================================
+  // 🎯 HANDLERS AVEC TOASTS ET CONFIRMATIONS
+  // ========================================
+  
   const handleViewOrder = (orderId: string) => {
     const order = data.orders.find(o => o.ord_id === orderId);
     if (order) {
@@ -455,23 +460,230 @@ export default function OrdersRoute() {
     }
   };
   
-  const handleMarkPaid = (orderId: string) => {
-    fetcher.submit(
-      { intent: 'markPaid', orderId },
-      { method: 'post' }
-    );
-    toast.success('Paiement enregistré');
-    setTimeout(() => window.location.reload(), 1500);
+  const handleMarkPaid = async (orderId: string) => {
+    if (!confirm('Marquer cette commande comme payée ?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Enregistrement du paiement...', { id: 'markPaid' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        toast.success('💰 Paiement enregistré avec succès !', { id: 'markPaid' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Enregistrement échoué'}`, { id: 'markPaid' });
+      }
+    } catch (error) {
+      console.error('Erreur paiement:', error);
+      toast.error('❌ Erreur réseau lors de l\'enregistrement', { id: 'markPaid' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleValidateOrder = async (orderId: string) => {
+    if (!confirm('Valider cette commande et envoyer un email de confirmation au client ?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Validation en cours...', { id: 'validate' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        toast.success('✅ Commande validée et client notifié par email !', { id: 'validate' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Validation échouée'}`, { id: 'validate' });
+      }
+    } catch (error) {
+      console.error('Erreur validation:', error);
+      toast.error('❌ Erreur réseau lors de la validation', { id: 'validate' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleShipOrder = async () => {
+    if (!actionOrderId || !trackingNumber.trim()) {
+      toast.error('❌ Numéro de suivi requis');
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Expédition en cours...', { id: 'ship' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/ship`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
+      });
+      
+      if (response.ok) {
+        toast.success('📦 Commande expédiée et client notifié par email !', { id: 'ship' });
+        setShipModalOpen(false);
+        setTrackingNumber('');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Expédition échouée'}`, { id: 'ship' });
+      }
+    } catch (error) {
+      console.error('Erreur expédition:', error);
+      toast.error('❌ Erreur réseau lors de l\'expédition', { id: 'ship' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleCancelOrder = async () => {
+    if (!actionOrderId || !cancelReason.trim()) {
+      toast.error('❌ Raison d\'annulation requise');
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Annulation en cours...', { id: 'cancel' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ reason: cancelReason.trim() }),
+      });
+      
+      if (response.ok) {
+        toast.success('❌ Commande annulée et client notifié par email', { id: 'cancel' });
+        setCancelModalOpen(false);
+        setCancelReason('');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Annulation échouée'}`, { id: 'cancel' });
+      }
+    } catch (error) {
+      console.error('Erreur annulation:', error);
+      toast.error('❌ Erreur réseau lors de l\'annulation', { id: 'cancel' });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleCancel = (orderId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
-      fetcher.submit(
-        { intent: 'cancel', orderId },
-        { method: 'post' }
-      );
-      toast.success('Commande annulée');
-      setTimeout(() => window.location.reload(), 1500);
+    setActionOrderId(orderId);
+    setCancelModalOpen(true);
+  };
+  
+  const handleShip = (orderId: string) => {
+    setActionOrderId(orderId);
+    setShipModalOpen(true);
+  };
+  
+  const handleStartProcessing = async (orderId: string) => {
+    if (!confirm('Démarrer la préparation de cette commande ?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Mise à jour en cours...', { id: 'startProcessing' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ statusId: '3' }), // En préparation
+      });
+      
+      if (response.ok) {
+        toast.success('🔧 Commande en préparation !', { id: 'startProcessing' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'startProcessing' });
+      }
+    } catch (error) {
+      console.error('Erreur startProcessing:', error);
+      toast.error('❌ Erreur réseau', { id: 'startProcessing' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleMarkReady = async (orderId: string) => {
+    if (!confirm('Marquer cette commande comme prête à expédier ?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Mise à jour en cours...', { id: 'markReady' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ statusId: '4' }), // Prête
+      });
+      
+      if (response.ok) {
+        toast.success('📦 Commande prête à expédier !', { id: 'markReady' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'markReady' });
+      }
+    } catch (error) {
+      console.error('Erreur markReady:', error);
+      toast.error('❌ Erreur réseau', { id: 'markReady' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleDeliver = async (orderId: string) => {
+    if (!confirm('Marquer cette commande comme livrée ?')) {
+      return;
+    }
+    
+    setIsLoading(true);
+    toast.loading('Mise à jour en cours...', { id: 'deliver' });
+    
+    try {
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        toast.success('✅ Commande livrée et client notifié !', { id: 'deliver' });
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        const error = await response.json();
+        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'deliver' });
+      }
+    } catch (error) {
+      console.error('Erreur deliver:', error);
+      toast.error('❌ Erreur réseau', { id: 'deliver' });
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -533,7 +745,7 @@ export default function OrdersRoute() {
         <div className="mt-4">
           <OrderExportButtons
             filters={activeFilters}
-            selectedOrders={selectedOrders}
+            selectedOrders={[]}
             allOrders={data.orders}
           />
         </div>
@@ -546,76 +758,16 @@ export default function OrdersRoute() {
             currentPage={data.currentPage}
             totalPages={data.totalPages}
             onPageChange={handlePageChange}
+            onViewOrder={handleViewOrder}
+            onEditOrder={handleEditOrder}
+            onMarkPaid={handleMarkPaid}
+            onValidate={handleValidateOrder}
+            onStartProcessing={handleStartProcessing}
+            onMarkReady={handleMarkReady}
+            onShip={handleShip}
+            onDeliver={handleDeliver}
+            onCancel={handleCancel}
           />
-          
-          {/* Liste des commandes avec actions détaillées */}
-          {data.permissions.canValidate && filteredOrders.length > 0 && (
-            <div className="border-t p-4 space-y-3">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700">
-                  Actions sur les commandes ({filteredOrders.length})
-                </h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => selectAllOrders()}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    Tout sélectionner
-                  </button>
-                  {selectedOrders.length > 0 && (
-                    <button
-                      onClick={() => clearSelection()}
-                      className="text-sm text-gray-600 hover:text-gray-800"
-                    >
-                      Désélectionner ({selectedOrders.length})
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {filteredOrders.map((order) => (
-                <div 
-                  key={order.ord_id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.includes(order.ord_id)}
-                      onChange={() => toggleOrderSelection(order.ord_id)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <span className="font-medium text-gray-900">#{order.ord_id}</span>
-                    <span className="text-sm text-gray-600">{order.customerName}</span>
-                    <span className="text-sm font-medium text-gray-900">{order.ord_total_ttc} €</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleViewOrder(order.ord_id)}
-                      className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium"
-                    >
-                      📋 Détails
-                    </button>
-                    <button
-                      onClick={() => handleEditOrder(order.ord_id)}
-                      className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                    >
-                      ✏️ Modifier
-                    </button>
-                    <OrderActions
-                      order={order}
-                      permissions={data.permissions}
-                      onActionComplete={() => {
-                        toast.success('Action effectuée');
-                        setTimeout(() => window.location.reload(), 1500);
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
         
         {/* Workflow visuel pour commande sélectionnée */}
@@ -658,6 +810,98 @@ export default function OrdersRoute() {
             setTimeout(() => window.location.reload(), 1500);
           }}
         />
+      )}
+      
+      {/* Modal Expédition avec numéro de suivi */}
+      {shipModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              📦 Expédier la commande #{actionOrderId}
+            </h3>
+            <div className="mb-4">
+              <label htmlFor="trackingNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                Numéro de suivi *
+              </label>
+              <input
+                type="text"
+                id="trackingNumber"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                placeholder="Ex: 1Z999AA10123456784"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Le client recevra un email avec ce numéro de suivi.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleShipOrder}
+                disabled={!trackingNumber.trim() || isLoading}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? 'Expédition...' : 'Confirmer l\'expédition'}
+              </button>
+              <button
+                onClick={() => {
+                  setShipModalOpen(false);
+                  setTrackingNumber('');
+                }}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal Annulation avec raison */}
+      {cancelModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              ❌ Annuler la commande #{actionOrderId}
+            </h3>
+            <div className="mb-4">
+              <label htmlFor="cancelReason" className="block text-sm font-medium text-gray-700 mb-2">
+                Raison de l'annulation *
+              </label>
+              <textarea
+                id="cancelReason"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                rows={4}
+                placeholder="Ex: Rupture de stock, demande client, erreur de commande..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Le client recevra un email avec cette raison.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelOrder}
+                disabled={!cancelReason.trim() || isLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? 'Annulation...' : 'Confirmer l\'annulation'}
+              </button>
+              <button
+                onClick={() => {
+                  setCancelModalOpen(false);
+                  setCancelReason('');
+                }}
+                disabled={isLoading}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

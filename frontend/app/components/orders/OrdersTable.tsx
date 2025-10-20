@@ -7,9 +7,25 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { type OrdersTableProps } from '../../types/orders.types';
-import { formatDate, formatOrderId, formatPrice, getPaymentBadgeColor, getPaymentLabel, getStatusBadgeColor } from '../../utils/orders.utils';
+import { formatDate, formatOrderId, formatPrice, getPaymentBadgeColor, getPaymentLabel, getStatusBadgeColor, getStatusLabel } from '../../utils/orders.utils';
+import { OrderActions } from './OrderActions';
 
-export function OrdersTable({ orders, permissions, currentPage, totalPages, onPageChange }: OrdersTableProps) {
+export function OrdersTable({ 
+  orders, 
+  permissions, 
+  currentPage, 
+  totalPages, 
+  onPageChange, 
+  onViewOrder,
+  onEditOrder,
+  onMarkPaid,
+  onValidate,
+  onStartProcessing,
+  onMarkReady,
+  onShip,
+  onDeliver,
+  onCancel,
+}: OrdersTableProps) {
   if (orders.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-12 text-center mx-6 my-6">
@@ -82,7 +98,7 @@ export function OrdersTable({ orders, permissions, currentPage, totalPages, onPa
                   {/* Statut */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadgeColor(order.ord_ords_id)}`}>
-                      {order.statusDetails?.ords_named || 'N/A'}
+                      {getStatusLabel(order.ord_ords_id)}
                     </span>
                   </td>
 
@@ -95,13 +111,32 @@ export function OrdersTable({ orders, permissions, currentPage, totalPages, onPa
 
                   {/* Actions */}
                   {permissions.canValidate && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        className="text-blue-600 hover:text-blue-900"
-                        onClick={() => console.log('Voir', order.ord_id)}
-                      >
-                        Voir
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium"
+                          onClick={() => onViewOrder?.(order.ord_id)}
+                        >
+                          Voir
+                        </button>
+                        <button
+                          className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 font-medium"
+                          onClick={() => onEditOrder?.(order.ord_id)}
+                        >
+                          Modifier
+                        </button>
+                        <OrderActions
+                          order={order}
+                          permissions={permissions}
+                          onMarkPaid={onMarkPaid}
+                          onValidate={onValidate}
+                          onStartProcessing={onStartProcessing}
+                          onMarkReady={onMarkReady}
+                          onShip={onShip}
+                          onDeliver={onDeliver}
+                          onCancel={onCancel}
+                        />
+                      </div>
                     </td>
                   )}
                 </tr>
