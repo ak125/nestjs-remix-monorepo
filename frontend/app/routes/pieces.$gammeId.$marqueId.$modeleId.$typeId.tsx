@@ -76,7 +76,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     typeData.alias
   );
   
-  const gammeId = await resolveGammeId(gammeData.alias);
+  // ✅ Pour cette route avec IDs dans l'URL, utiliser directement l'ID parsé
+  const gammeId = gammeData.id > 0 ? gammeData.id : await resolveGammeId(gammeData.alias);
 
   // 4. Construction des données véhicule
   const vehicle: VehicleData = {
