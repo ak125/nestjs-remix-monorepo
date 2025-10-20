@@ -68,28 +68,28 @@ export function usePiecesFilters(pieces: PieceData[]) {
       result = result.filter(piece => piece.stock === "En stock");
     }
 
-    // Tri
+    // Tri avec protection contre les valeurs undefined
     switch (sortBy) {
       case "name":
-        result.sort((a, b) => a.name.localeCompare(b.name));
+        result.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         break;
       case "price-asc":
-        result.sort((a, b) => a.price - b.price);
+        result.sort((a, b) => (a.price || 0) - (b.price || 0));
         break;
       case "price-desc":
-        result.sort((a, b) => b.price - a.price);
+        result.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
       case "brand":
-        result.sort((a, b) => a.brand.localeCompare(b.brand));
+        result.sort((a, b) => (a.brand || '').localeCompare(b.brand || ''));
         break;
     }
 
     return result;
   }, [pieces, activeFilters, sortBy]);
 
-  // Marques uniques
+  // Marques uniques avec protection contre undefined
   const uniqueBrands = useMemo(() => {
-    const brands = new Set(pieces.map(p => p.brand));
+    const brands = new Set(pieces.map(p => p.brand || 'Inconnu').filter(Boolean));
     return Array.from(brands).sort();
   }, [pieces]);
 

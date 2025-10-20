@@ -194,8 +194,13 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       { label: vehicleInfo.model.name, path: `/pieces/${brand}/${model}` },
       { label: categoryInfo.name, path: `/pieces/${brand}/${model}/${type}/${category}` },
     ],
-  });  } catch (error) {
-    console.error('Erreur loader pièces:', error);
+  });
+  } catch (error) {
+    console.error('❌ Erreur loader pièces.$brand.$model.$type.$category:', {
+      url: `pieces/${brand}/${model}/${type}/${category}`,
+      params: { brand, model, type, category },
+      error
+    });
     throw new Response("Erreur de chargement", { status: 500 });
   }
 };
