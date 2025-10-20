@@ -134,7 +134,7 @@ export default function VehicleSelectorV2({
       try {
         const modelsData = await enhancedVehicleApi.getModels(selectedBrand.marque_id, { 
           year, 
-          page: 1, 
+          page: 0, // 🔧 Backend uses zero-indexed pages
           limit: 100 
         });
         setModels(modelsData);
