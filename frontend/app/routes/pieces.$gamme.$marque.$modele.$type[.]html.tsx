@@ -105,15 +105,18 @@ export async function loader({ params }: LoaderFunctionArgs) {
     );
     
     if (response.ok) {
-      const data = await response.json();
-      piecesData = data.pieces || data.data || [];
+      const apiResponse = await response.json();
+      // L'API retourne { data: [...], success, timestamp, version }
+      piecesData = Array.isArray(apiResponse.data) ? apiResponse.data : [];
+      console.log(`📦 ${piecesData.length} pièces récupérées pour ${vehicle.marque} ${vehicle.modele}`);
     }
   } catch (error) {
     console.error('❌ Erreur récupération pièces:', error);
+    piecesData = []; // Fallback sur tableau vide en cas d'erreur
   }
 
   // 6. Calcul des stats prix
-  const prices = piecesData.map(p => p.price || 0).filter(p => p > 0);
+  const prices = Array.isArray(piecesData) ? piecesData.map(p => p.price || 0).filter(p => p > 0) : [];
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
