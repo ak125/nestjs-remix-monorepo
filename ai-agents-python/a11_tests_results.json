@@ -1,7 +1,7 @@
 {
   "agent_name": "a11_tests",
   "status": "success",
-  "duration_ms": 2408,
+  "duration_ms": 2540,
   "findings": [
     {
       "total_code_files": 903,
@@ -114,7 +114,7 @@
           "lines_of_code": 578
         },
         {
-          "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
+          "file": "backend/src/services/email.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (567 LOC)",
@@ -122,7 +122,7 @@
           "lines_of_code": 567
         },
         {
-          "file": "backend/src/services/email.service.ts",
+          "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (567 LOC)",
@@ -154,18 +154,18 @@
           "lines_of_code": 509
         },
         {
-          "file": "backend/src/modules/blog/controllers/blog.controller.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Route API sans tests (505 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 505
-        },
-        {
           "file": "backend/src/modules/upload/services/image-processing.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (505 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 505
+        },
+        {
+          "file": "backend/src/modules/blog/controllers/blog.controller.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Route API sans tests (505 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 505
         },
@@ -194,18 +194,18 @@
           "lines_of_code": 469
         },
         {
-          "file": "backend/src/modules/orders/services/order-actions.service.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (467 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 467
-        },
-        {
           "file": "backend/src/modules/blog/controllers/content.controller.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Route API sans tests (467 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 467
+        },
+        {
+          "file": "backend/src/modules/orders/services/order-actions.service.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (467 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 467
         },
@@ -378,14 +378,6 @@
           "lines_of_code": 395
         },
         {
-          "file": "frontend/app/services/api/catalog-families.api.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (394 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 394
-        },
-        {
           "file": "backend/src/modules/vehicles/controllers/vehicle-part-url-migration.controller.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
@@ -395,6 +387,14 @@
         },
         {
           "file": "frontend/app/services/api/quote.api.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (394 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 394
+        },
+        {
+          "file": "frontend/app/services/api/catalog-families.api.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (394 LOC)",
@@ -434,7 +434,7 @@
           "lines_of_code": 378
         },
         {
-          "file": "backend/src/modules/layout/services/header-real-data.service.ts",
+          "file": "backend/src/modules/blog/services/guide.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (373 LOC)",
@@ -442,7 +442,7 @@
           "lines_of_code": 373
         },
         {
-          "file": "backend/src/modules/blog/services/guide.service.ts",
+          "file": "backend/src/modules/layout/services/header-real-data.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (373 LOC)",
@@ -538,6 +538,14 @@
           "lines_of_code": 351
         },
         {
+          "file": "backend/src/modules/support/services/support-analytics.service.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (350 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 350
+        },
+        {
           "file": "backend/src/modules/payments/repositories/payment-data.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
@@ -547,14 +555,6 @@
         },
         {
           "file": "backend/src/modules/vehicles/services/vehicle-part-url-migration.service.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (350 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 350
-        },
-        {
-          "file": "backend/src/modules/support/services/support-analytics.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (350 LOC)",
@@ -594,7 +594,7 @@
           "lines_of_code": 340
         },
         {
-          "file": "backend/src/modules/layout/services/social-share.service.ts",
+          "file": "frontend/app/services/api/enhanced-product.api.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (339 LOC)",
@@ -602,7 +602,7 @@
           "lines_of_code": 339
         },
         {
-          "file": "frontend/app/services/api/enhanced-product.api.ts",
+          "file": "backend/src/modules/layout/services/social-share.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (339 LOC)",
@@ -778,7 +778,7 @@
           "lines_of_code": 293
         },
         {
-          "file": "backend/src/database/services/order.service.ts",
+          "file": "backend/src/modules/catalog/services/pieces-php-logic-complete.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (292 LOC)",
@@ -786,7 +786,7 @@
           "lines_of_code": 292
         },
         {
-          "file": "backend/src/modules/catalog/services/pieces-php-logic-complete.service.ts",
+          "file": "backend/src/database/services/order.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (292 LOC)",
@@ -890,14 +890,6 @@
           "lines_of_code": 269
         },
         {
-          "file": "frontend/app/services/api/constructeur.api.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (269 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 269
-        },
-        {
           "file": "frontend/app/services/api/contact.api.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
@@ -907,6 +899,14 @@
         },
         {
           "file": "backend/src/modules/config/services/enhanced-config.service.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (269 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 269
+        },
+        {
+          "file": "frontend/app/services/api/constructeur.api.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (269 LOC)",
@@ -986,7 +986,7 @@
           "lines_of_code": 249
         },
         {
-          "file": "backend/src/modules/orders/repositories/order.repository.ts",
+          "file": "backend/src/database/services/staff-data.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (246 LOC)",
@@ -994,7 +994,7 @@
           "lines_of_code": 246
         },
         {
-          "file": "backend/src/database/services/staff-data.service.ts",
+          "file": "backend/src/modules/orders/repositories/order.repository.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (246 LOC)",
@@ -1042,7 +1042,7 @@
           "lines_of_code": 231
         },
         {
-          "file": "backend/src/modules/orders/services/order-status.service.ts",
+          "file": "backend/src/modules/layout/services/responsive.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (230 LOC)",
@@ -1050,7 +1050,7 @@
           "lines_of_code": 230
         },
         {
-          "file": "backend/src/modules/layout/services/responsive.service.ts",
+          "file": "backend/src/modules/orders/services/order-status.service.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Service critique sans tests (230 LOC)",
@@ -1138,18 +1138,18 @@
           "lines_of_code": 211
         },
         {
-          "file": "frontend/app/services/admin.server.ts",
-          "severity": "CRITICAL",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (209 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 209
-        },
-        {
           "file": "backend/src/modules/orders/controllers/order-archive.controller.ts",
           "severity": "CRITICAL",
           "category": "NO_TEST",
           "description": "Route API sans tests (209 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 209
+        },
+        {
+          "file": "frontend/app/services/admin.server.ts",
+          "severity": "CRITICAL",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (209 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 209
         },
@@ -1330,7 +1330,7 @@
           "lines_of_code": 369
         },
         {
-          "file": "frontend/app/components/vehicle/CategoryGrid.tsx",
+          "file": "frontend/app/components/homepage/sections-part3.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (366 LOC)",
@@ -1338,7 +1338,7 @@
           "lines_of_code": 366
         },
         {
-          "file": "frontend/app/components/homepage/sections-part3.tsx",
+          "file": "frontend/app/components/vehicle/CategoryGrid.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (366 LOC)",
@@ -1402,7 +1402,7 @@
           "lines_of_code": 301
         },
         {
-          "file": "frontend/app/components/admin/OrderLineActions.tsx",
+          "file": "frontend/app/components/navbar/NavbarMobile.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (291 LOC)",
@@ -1410,7 +1410,7 @@
           "lines_of_code": 291
         },
         {
-          "file": "frontend/app/components/navbar/NavbarMobile.tsx",
+          "file": "frontend/app/components/admin/OrderLineActions.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (291 LOC)",
@@ -1538,7 +1538,7 @@
           "lines_of_code": 242
         },
         {
-          "file": "frontend/app/components/admin/OrdersOverview.tsx",
+          "file": "frontend/app/components/admin/OrdersManagement.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (239 LOC)",
@@ -1546,7 +1546,7 @@
           "lines_of_code": 239
         },
         {
-          "file": "frontend/app/components/admin/OrdersManagement.tsx",
+          "file": "frontend/app/components/admin/OrdersOverview.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (239 LOC)",
@@ -1578,18 +1578,18 @@
           "lines_of_code": 226
         },
         {
-          "file": "frontend/app/utils/pieces-route.utils.ts",
-          "severity": "HIGH",
-          "category": "NO_TEST",
-          "description": "Utilitaire sans tests (223 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 223
-        },
-        {
           "file": "frontend/app/components/orders/OrderDetailsModal.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (223 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 223
+        },
+        {
+          "file": "frontend/app/utils/pieces-route.utils.ts",
+          "severity": "HIGH",
+          "category": "NO_TEST",
+          "description": "Utilitaire sans tests (223 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 223
         },
@@ -1642,7 +1642,7 @@
           "lines_of_code": 206
         },
         {
-          "file": "frontend/app/components/pieces/PiecesStatistics.tsx",
+          "file": "frontend/app/components/OptimizedImage.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (204 LOC)",
@@ -1650,7 +1650,7 @@
           "lines_of_code": 204
         },
         {
-          "file": "frontend/app/components/OptimizedImage.tsx",
+          "file": "frontend/app/components/pieces/PiecesStatistics.tsx",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Composant sans tests (204 LOC)",
@@ -1722,7 +1722,7 @@
           "lines_of_code": 178
         },
         {
-          "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
+          "file": "backend/src/modules/staff/services/staff-data.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (177 LOC)",
@@ -1730,7 +1730,7 @@
           "lines_of_code": 177
         },
         {
-          "file": "backend/src/modules/staff/services/staff-data.service.ts",
+          "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (177 LOC)",
@@ -1794,7 +1794,7 @@
           "lines_of_code": 168
         },
         {
-          "file": "backend/src/modules/config/controllers/enhanced-config.controller.ts",
+          "file": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (162 LOC)",
@@ -1802,7 +1802,7 @@
           "lines_of_code": 162
         },
         {
-          "file": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts",
+          "file": "backend/src/modules/config/controllers/enhanced-config.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (162 LOC)",
@@ -1850,7 +1850,7 @@
           "lines_of_code": 150
         },
         {
-          "file": "frontend/app/services/orders/orders.service.ts",
+          "file": "backend/src/modules/config/services/simple-config.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (149 LOC)",
@@ -1858,7 +1858,7 @@
           "lines_of_code": 149
         },
         {
-          "file": "backend/src/modules/config/services/simple-config.service.ts",
+          "file": "frontend/app/services/orders/orders.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (149 LOC)",
@@ -2026,7 +2026,7 @@
           "lines_of_code": 118
         },
         {
-          "file": "backend/src/modules/support/controllers/quote.controller.ts",
+          "file": "backend/src/modules/support/controllers/faq.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (118 LOC)",
@@ -2034,7 +2034,7 @@
           "lines_of_code": 118
         },
         {
-          "file": "backend/src/modules/support/controllers/faq.controller.ts",
+          "file": "backend/src/modules/support/controllers/quote.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (118 LOC)",
@@ -2130,14 +2130,6 @@
           "lines_of_code": 92
         },
         {
-          "file": "frontend/app/services/api/pieces-php-exact.api.ts",
-          "severity": "HIGH",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (90 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 90
-        },
-        {
           "file": "frontend/app/services/api/real-pieces.api.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
@@ -2146,7 +2138,15 @@
           "lines_of_code": 90
         },
         {
-          "file": "backend/src/modules/layout/controllers/section.controller.ts",
+          "file": "frontend/app/services/api/pieces-php-exact.api.ts",
+          "severity": "HIGH",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (90 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 90
+        },
+        {
+          "file": "backend/src/modules/config/controllers/simple-database-config.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (86 LOC)",
@@ -2154,7 +2154,7 @@
           "lines_of_code": 86
         },
         {
-          "file": "backend/src/modules/config/controllers/simple-database-config.controller.ts",
+          "file": "backend/src/modules/layout/controllers/section.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (86 LOC)",
@@ -2170,18 +2170,18 @@
           "lines_of_code": 84
         },
         {
-          "file": "frontend/app/services/api.ts",
-          "severity": "HIGH",
-          "category": "NO_TEST",
-          "description": "Service critique sans tests (82 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 82
-        },
-        {
           "file": "backend/src/controllers/orders-clean.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Route API sans tests (82 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 82
+        },
+        {
+          "file": "frontend/app/services/api.ts",
+          "severity": "HIGH",
+          "category": "NO_TEST",
+          "description": "Service critique sans tests (82 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 82
         },
@@ -2194,18 +2194,18 @@
           "lines_of_code": 82
         },
         {
-          "file": "backend/src/modules/admin/controllers/admin-root.controller.ts",
-          "severity": "HIGH",
-          "category": "NO_TEST",
-          "description": "Route API sans tests (80 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 80
-        },
-        {
           "file": "backend/src/database/services/order-data.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (80 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 80
+        },
+        {
+          "file": "backend/src/modules/admin/controllers/admin-root.controller.ts",
+          "severity": "HIGH",
+          "category": "NO_TEST",
+          "description": "Route API sans tests (80 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 80
         },
@@ -2226,7 +2226,7 @@
           "lines_of_code": 74
         },
         {
-          "file": "backend/src/modules/vehicles/services/meta-tags-ariane.service.ts",
+          "file": "backend/src/database/services/supabase-base.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (71 LOC)",
@@ -2234,7 +2234,7 @@
           "lines_of_code": 71
         },
         {
-          "file": "backend/src/database/services/supabase-base.service.ts",
+          "file": "backend/src/modules/vehicles/services/meta-tags-ariane.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (71 LOC)",
@@ -2282,14 +2282,6 @@
           "lines_of_code": 62
         },
         {
-          "file": "backend/src/modules/catalog/controllers/enhanced-vehicle-catalog.controller.ts",
-          "severity": "HIGH",
-          "category": "NO_TEST",
-          "description": "Route API sans tests (59 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 59
-        },
-        {
           "file": "backend/src/modules/users/controllers/user-shipment.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
@@ -2298,12 +2290,12 @@
           "lines_of_code": 59
         },
         {
-          "file": "backend/src/modules/support/controllers/support-analytics.controller.ts",
+          "file": "backend/src/modules/catalog/controllers/enhanced-vehicle-catalog.controller.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
-          "description": "Route API sans tests (49 LOC)",
+          "description": "Route API sans tests (59 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 49
+          "lines_of_code": 59
         },
         {
           "file": "backend/src/modules/catalog/controllers/gamme-unified.controller.ts",
@@ -2314,7 +2306,15 @@
           "lines_of_code": 49
         },
         {
-          "file": "frontend/app/services/api/seo-switches.api.ts",
+          "file": "backend/src/modules/support/controllers/support-analytics.controller.ts",
+          "severity": "HIGH",
+          "category": "NO_TEST",
+          "description": "Route API sans tests (49 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 49
+        },
+        {
+          "file": "backend/src/modules/search/services/search-suggestion.service.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (38 LOC)",
@@ -2322,7 +2322,7 @@
           "lines_of_code": 38
         },
         {
-          "file": "backend/src/modules/search/services/search-suggestion.service.ts",
+          "file": "frontend/app/services/api/seo-switches.api.ts",
           "severity": "HIGH",
           "category": "NO_TEST",
           "description": "Service critique sans tests (38 LOC)",
@@ -2378,18 +2378,18 @@
           "lines_of_code": 200
         },
         {
-          "file": "frontend/app/utils/seo.server.ts",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Utilitaire sans tests (199 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 199
-        },
-        {
           "file": "frontend/app/components/CommercialSidebar.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (199 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 199
+        },
+        {
+          "file": "frontend/app/utils/seo.server.ts",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Utilitaire sans tests (199 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 199
         },
@@ -2506,18 +2506,18 @@
           "lines_of_code": 174
         },
         {
-          "file": "frontend/app/components/SystemMonitoring.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (171 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 171
-        },
-        {
           "file": "frontend/app/hooks/useMobileNavigation.ts",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Hook React sans tests (171 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 171
+        },
+        {
+          "file": "frontend/app/components/SystemMonitoring.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (171 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 171
         },
@@ -2642,7 +2642,7 @@
           "lines_of_code": 156
         },
         {
-          "file": "frontend/app/components/manufacturers/FeaturedModelsCarousel.tsx",
+          "file": "frontend/app/components/blog/BlogNavigation.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (154 LOC)",
@@ -2650,7 +2650,7 @@
           "lines_of_code": 154
         },
         {
-          "file": "frontend/app/components/blog/BlogNavigation.tsx",
+          "file": "frontend/app/components/manufacturers/FeaturedModelsCarousel.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (154 LOC)",
@@ -2682,14 +2682,6 @@
           "lines_of_code": 149
         },
         {
-          "file": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Hook React sans tests (148 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 148
-        },
-        {
           "file": "frontend/app/components/products/Pagination.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -2698,20 +2690,12 @@
           "lines_of_code": 148
         },
         {
-          "file": "frontend/app/utils/image-optimizer.ts",
+          "file": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts",
           "severity": "MEDIUM",
           "category": "NO_TEST",
-          "description": "Utilitaire sans tests (145 LOC)",
+          "description": "Hook React sans tests (148 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 145
-        },
-        {
-          "file": "frontend/app/components/admin/StockAlerts.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (145 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 145
+          "lines_of_code": 148
         },
         {
           "file": "frontend/app/components/pieces/PiecesCrossSelling.tsx",
@@ -2730,6 +2714,22 @@
           "lines_of_code": 145
         },
         {
+          "file": "frontend/app/utils/image-optimizer.ts",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Utilitaire sans tests (145 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 145
+        },
+        {
+          "file": "frontend/app/components/admin/StockAlerts.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (145 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 145
+        },
+        {
           "file": "frontend/app/components/constructeurs/VehicleCard.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -2738,7 +2738,7 @@
           "lines_of_code": 144
         },
         {
-          "file": "frontend/app/components/dashboard/QuickActions.tsx",
+          "file": "frontend/app/components/profile/UserStats.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (142 LOC)",
@@ -2746,7 +2746,7 @@
           "lines_of_code": 142
         },
         {
-          "file": "frontend/app/components/profile/UserStats.tsx",
+          "file": "frontend/app/components/dashboard/QuickActions.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (142 LOC)",
@@ -2762,7 +2762,7 @@
           "lines_of_code": 140
         },
         {
-          "file": "frontend/app/components/cart/CartItem.tsx",
+          "file": "frontend/app/components/home/EquipementiersCarousel.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (138 LOC)",
@@ -2770,7 +2770,7 @@
           "lines_of_code": 138
         },
         {
-          "file": "frontend/app/components/home/EquipementiersCarousel.tsx",
+          "file": "frontend/app/components/cart/CartItem.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (138 LOC)",
@@ -2818,14 +2818,6 @@
           "lines_of_code": 134
         },
         {
-          "file": "frontend/app/components/vehicles/YearSelector.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (131 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 131
-        },
-        {
           "file": "frontend/app/components/search/SearchPagination.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -2838,6 +2830,14 @@
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Hook React sans tests (131 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 131
+        },
+        {
+          "file": "frontend/app/components/vehicles/YearSelector.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (131 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 131
         },
@@ -2922,6 +2922,14 @@
           "lines_of_code": 122
         },
         {
+          "file": "frontend/app/components/ui/PerformanceMetrics.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (119 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 119
+        },
+        {
           "file": "frontend/app/components/blog/CompactBlogHeader.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -2934,14 +2942,6 @@
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Hook React sans tests (119 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 119
-        },
-        {
-          "file": "frontend/app/components/ui/PerformanceMetrics.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (119 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 119
         },
@@ -2978,7 +2978,7 @@
           "lines_of_code": 113
         },
         {
-          "file": "frontend/app/components/navbar/TopBar.tsx",
+          "file": "frontend/app/components/dashboard/ActivityTimeline.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (113 LOC)",
@@ -2986,7 +2986,7 @@
           "lines_of_code": 113
         },
         {
-          "file": "frontend/app/components/dashboard/ActivityTimeline.tsx",
+          "file": "frontend/app/components/navbar/TopBar.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (113 LOC)",
@@ -3010,14 +3010,6 @@
           "lines_of_code": 110
         },
         {
-          "file": "frontend/app/components/ui/dialog.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (109 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 109
-        },
-        {
           "file": "frontend/app/components/manufacturers/ManufacturerCard.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -3026,7 +3018,15 @@
           "lines_of_code": 109
         },
         {
-          "file": "frontend/app/components/orders/OrderRow.tsx",
+          "file": "frontend/app/components/ui/dialog.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (109 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 109
+        },
+        {
+          "file": "frontend/app/components/vehicle/VehicleGallery.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (106 LOC)",
@@ -3042,7 +3042,7 @@
           "lines_of_code": 106
         },
         {
-          "file": "frontend/app/components/vehicle/VehicleGallery.tsx",
+          "file": "frontend/app/components/pieces/PiecesSEOSection.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (106 LOC)",
@@ -3050,7 +3050,7 @@
           "lines_of_code": 106
         },
         {
-          "file": "frontend/app/components/pieces/PiecesSEOSection.tsx",
+          "file": "frontend/app/components/orders/OrderRow.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (106 LOC)",
@@ -3066,7 +3066,7 @@
           "lines_of_code": 105
         },
         {
-          "file": "frontend/app/components/homepage-v3/hero-section.tsx",
+          "file": "frontend/app/components/ui/pagination.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (104 LOC)",
@@ -3074,7 +3074,7 @@
           "lines_of_code": 104
         },
         {
-          "file": "frontend/app/components/ui/pagination.tsx",
+          "file": "frontend/app/components/homepage-v3/hero-section.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (104 LOC)",
@@ -3098,7 +3098,7 @@
           "lines_of_code": 101
         },
         {
-          "file": "frontend/app/components/pieces/PiecesFAQSection.tsx",
+          "file": "frontend/app/components/manufacturers/BrandLogosCarousel.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (101 LOC)",
@@ -3106,7 +3106,7 @@
           "lines_of_code": 101
         },
         {
-          "file": "frontend/app/components/manufacturers/BrandLogosCarousel.tsx",
+          "file": "frontend/app/components/pieces/PiecesFAQSection.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (101 LOC)",
@@ -3122,7 +3122,7 @@
           "lines_of_code": 99
         },
         {
-          "file": "frontend/app/components/cart/AddToCartForm.tsx",
+          "file": "frontend/app/components/ui/tabs.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (98 LOC)",
@@ -3138,7 +3138,7 @@
           "lines_of_code": 98
         },
         {
-          "file": "frontend/app/components/ui/tabs.tsx",
+          "file": "frontend/app/components/cart/AddToCartForm.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (98 LOC)",
@@ -3226,7 +3226,7 @@
           "lines_of_code": 86
         },
         {
-          "file": "frontend/app/components/vehicle/VehicleDetailSkeleton.tsx",
+          "file": "frontend/app/components/vehicle/VehicleHeader.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (85 LOC)",
@@ -3234,7 +3234,7 @@
           "lines_of_code": 85
         },
         {
-          "file": "frontend/app/components/vehicle/VehicleHeader.tsx",
+          "file": "frontend/app/components/vehicle/VehicleDetailSkeleton.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (85 LOC)",
@@ -3250,18 +3250,18 @@
           "lines_of_code": 82
         },
         {
-          "file": "frontend/app/hooks/usePagination.ts",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Hook React sans tests (81 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 81
-        },
-        {
           "file": "frontend/app/components/pieces/PiecesBuyingGuide.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (81 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 81
+        },
+        {
+          "file": "frontend/app/hooks/usePagination.ts",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Hook React sans tests (81 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 81
         },
@@ -3274,14 +3274,6 @@
           "lines_of_code": 80
         },
         {
-          "file": "frontend/app/components/layout/templates/ContentBlock.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (79 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 79
-        },
-        {
           "file": "frontend/app/components/layout/HeaderV8.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -3290,7 +3282,15 @@
           "lines_of_code": 79
         },
         {
-          "file": "frontend/app/components/layout/templates/HeroExtended.tsx",
+          "file": "frontend/app/components/layout/templates/ContentBlock.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (79 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 79
+        },
+        {
+          "file": "frontend/app/components/pieces/PerformanceIndicator.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (78 LOC)",
@@ -3298,7 +3298,7 @@
           "lines_of_code": 78
         },
         {
-          "file": "frontend/app/components/pieces/PerformanceIndicator.tsx",
+          "file": "frontend/app/components/layout/templates/HeroExtended.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (78 LOC)",
@@ -3362,6 +3362,14 @@
           "lines_of_code": 71
         },
         {
+          "file": "frontend/app/components/homepage-v3/why-choose-us.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (69 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 69
+        },
+        {
           "file": "frontend/app/components/pieces/InformationsSection.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -3371,14 +3379,6 @@
         },
         {
           "file": "frontend/app/components/pieces/CatalogueSection.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (69 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 69
-        },
-        {
-          "file": "frontend/app/components/homepage-v3/why-choose-us.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (69 LOC)",
@@ -3410,7 +3410,7 @@
           "lines_of_code": 67
         },
         {
-          "file": "frontend/app/hooks/useServerPagination.ts",
+          "file": "frontend/app/hooks/useAIAssistantSimple.ts",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Hook React sans tests (62 LOC)",
@@ -3418,7 +3418,7 @@
           "lines_of_code": 62
         },
         {
-          "file": "frontend/app/hooks/useAIAssistantSimple.ts",
+          "file": "frontend/app/hooks/useServerPagination.ts",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Hook React sans tests (62 LOC)",
@@ -3506,14 +3506,6 @@
           "lines_of_code": 44
         },
         {
-          "file": "frontend/app/components/cart/CartSummary.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (44 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 44
-        },
-        {
           "file": "frontend/app/components/layout/templates/FeaturesGrid.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
@@ -3522,7 +3514,15 @@
           "lines_of_code": 44
         },
         {
-          "file": "frontend/app/components/ui/BrandLogo.tsx",
+          "file": "frontend/app/components/cart/CartSummary.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (44 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 44
+        },
+        {
+          "file": "frontend/app/components/ui/RadioGroup.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (43 LOC)",
@@ -3530,7 +3530,7 @@
           "lines_of_code": 43
         },
         {
-          "file": "frontend/app/components/ui/RadioGroup.tsx",
+          "file": "frontend/app/components/ui/BrandLogo.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (43 LOC)",
@@ -3642,7 +3642,7 @@
           "lines_of_code": 33
         },
         {
-          "file": "frontend/app/components/homepage-v3/testimonials.tsx",
+          "file": "frontend/app/components/homepage-v3/faq-section.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (32 LOC)",
@@ -3650,7 +3650,7 @@
           "lines_of_code": 32
         },
         {
-          "file": "frontend/app/components/homepage-v3/faq-section.tsx",
+          "file": "frontend/app/components/homepage-v3/testimonials.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (32 LOC)",
@@ -3698,18 +3698,18 @@
           "lines_of_code": 28
         },
         {
-          "file": "frontend/app/components/homepage-v3/popup-signup.tsx",
-          "severity": "MEDIUM",
-          "category": "NO_TEST",
-          "description": "Composant sans tests (27 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 27
-        },
-        {
           "file": "backend/src/common/utils/error.utils.ts",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Utilitaire sans tests (27 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 27
+        },
+        {
+          "file": "frontend/app/components/homepage-v3/popup-signup.tsx",
+          "severity": "MEDIUM",
+          "category": "NO_TEST",
+          "description": "Composant sans tests (27 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 27
         },
@@ -3810,7 +3810,7 @@
           "lines_of_code": 18
         },
         {
-          "file": "frontend/app/components/homepage-v3/newsletter.tsx",
+          "file": "frontend/app/components/ui/spinner.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (18 LOC)",
@@ -3818,7 +3818,7 @@
           "lines_of_code": 18
         },
         {
-          "file": "frontend/app/components/ui/spinner.tsx",
+          "file": "frontend/app/components/homepage-v3/newsletter.tsx",
           "severity": "MEDIUM",
           "category": "NO_TEST",
           "description": "Composant sans tests (18 LOC)",
@@ -4066,7 +4066,7 @@
           "lines_of_code": 599
         },
         {
-          "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
+          "file": "frontend/app/routes/admin.messages.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (593 LOC)",
@@ -4074,7 +4074,7 @@
           "lines_of_code": 593
         },
         {
-          "file": "frontend/app/routes/admin.messages.tsx",
+          "file": "frontend/app/routes/products.ranges.$rangeId.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (593 LOC)",
@@ -4138,7 +4138,7 @@
           "lines_of_code": 541
         },
         {
-          "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
+          "file": "backend/src/modules/suppliers/suppliers.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (539 LOC)",
@@ -4146,7 +4146,7 @@
           "lines_of_code": 539
         },
         {
-          "file": "backend/src/modules/suppliers/suppliers.controller.ts",
+          "file": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (539 LOC)",
@@ -4266,7 +4266,7 @@
           "lines_of_code": 448
         },
         {
-          "file": "backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts",
+          "file": "frontend/app/routes/products.catalog.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (448 LOC)",
@@ -4274,7 +4274,7 @@
           "lines_of_code": 448
         },
         {
-          "file": "frontend/app/routes/products.catalog.tsx",
+          "file": "backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (448 LOC)",
@@ -4346,7 +4346,7 @@
           "lines_of_code": 409
         },
         {
-          "file": "frontend/app/routes/admin.staff.tsx",
+          "file": "ai-agents/src/agents/chasseur-fichiers-massifs.agent.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (404 LOC)",
@@ -4354,7 +4354,7 @@
           "lines_of_code": 404
         },
         {
-          "file": "ai-agents/src/agents/chasseur-fichiers-massifs.agent.ts",
+          "file": "frontend/app/routes/admin.staff.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (404 LOC)",
@@ -4442,7 +4442,7 @@
           "lines_of_code": 358
         },
         {
-          "file": "frontend/app/routes/reviews.analytics.tsx",
+          "file": "frontend/app/routes/_public+/register.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (356 LOC)",
@@ -4450,7 +4450,7 @@
           "lines_of_code": 356
         },
         {
-          "file": "frontend/app/routes/_public+/register.tsx",
+          "file": "frontend/app/routes/reviews.analytics.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (356 LOC)",
@@ -4474,14 +4474,6 @@
           "lines_of_code": 345
         },
         {
-          "file": "frontend/app/routes/pieces.$gammeId.$marqueId.$modeleId.$typeId.tsx",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (343 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 343
-        },
-        {
           "file": "frontend/app/routes/_archived/pieces.$gammeId.$marqueId.$modeleId.$typeId.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -4490,7 +4482,7 @@
           "lines_of_code": 343
         },
         {
-          "file": "frontend/app/routes/account_.orders.$orderId.tsx",
+          "file": "frontend/app/routes/pieces.$gammeId.$marqueId.$modeleId.$typeId.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (343 LOC)",
@@ -4499,6 +4491,14 @@
         },
         {
           "file": "frontend/app/routes/_archived/pieces.$gammeId.$marqueId.$modeleId.$typeId.DEPRECATED.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (343 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 343
+        },
+        {
+          "file": "frontend/app/routes/account_.orders.$orderId.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (343 LOC)",
@@ -4530,7 +4530,7 @@
           "lines_of_code": 325
         },
         {
-          "file": "backend/src/modules/errors/filters/global-error.filter.ts",
+          "file": "frontend/app/routes/account.settings.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (324 LOC)",
@@ -4538,7 +4538,7 @@
           "lines_of_code": 324
         },
         {
-          "file": "frontend/app/routes/account.settings.tsx",
+          "file": "backend/src/modules/errors/filters/global-error.filter.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (324 LOC)",
@@ -4706,7 +4706,7 @@
           "lines_of_code": 275
         },
         {
-          "file": "backend/src/modules/users/users-final.service.ts",
+          "file": "frontend/app/routes/account.dashboard.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (271 LOC)",
@@ -4714,7 +4714,7 @@
           "lines_of_code": 271
         },
         {
-          "file": "frontend/app/routes/account.dashboard.tsx",
+          "file": "backend/src/modules/users/users-final.service.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (271 LOC)",
@@ -4762,7 +4762,7 @@
           "lines_of_code": 253
         },
         {
-          "file": "frontend/app/routes/search.cnit.tsx",
+          "file": "frontend/app/config/monitoring.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (250 LOC)",
@@ -4778,7 +4778,7 @@
           "lines_of_code": 250
         },
         {
-          "file": "frontend/app/config/monitoring.ts",
+          "file": "frontend/app/routes/search.cnit.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (250 LOC)",
@@ -5122,7 +5122,7 @@
           "lines_of_code": 172
         },
         {
-          "file": "backend/src/remix/remix-api.service.ts",
+          "file": "backend/src/modules/seo/sitemap.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (171 LOC)",
@@ -5130,7 +5130,7 @@
           "lines_of_code": 171
         },
         {
-          "file": "backend/src/modules/seo/sitemap.controller.ts",
+          "file": "backend/src/remix/remix-api.service.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (171 LOC)",
@@ -5314,7 +5314,7 @@
           "lines_of_code": 121
         },
         {
-          "file": "backend/src/auth/profile.controller.ts",
+          "file": "backend/src/modules/users/dto/addresses.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (120 LOC)",
@@ -5322,7 +5322,7 @@
           "lines_of_code": 120
         },
         {
-          "file": "backend/src/modules/users/dto/addresses.dto.ts",
+          "file": "backend/src/auth/profile.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (120 LOC)",
@@ -5346,14 +5346,6 @@
           "lines_of_code": 118
         },
         {
-          "file": "frontend/app/types/payment.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (117 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 117
-        },
-        {
           "file": "backend/src/pieces/pieces-real.service.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -5362,7 +5354,15 @@
           "lines_of_code": 117
         },
         {
-          "file": "frontend/app/routes/404.tsx",
+          "file": "frontend/app/types/payment.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (117 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 117
+        },
+        {
+          "file": "frontend/app/routes/vehicle-detail.$brand.$model.$type.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (116 LOC)",
@@ -5370,7 +5370,7 @@
           "lines_of_code": 116
         },
         {
-          "file": "frontend/app/routes/vehicle-detail.$brand.$model.$type.tsx",
+          "file": "frontend/app/routes/404.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (116 LOC)",
@@ -5386,7 +5386,7 @@
           "lines_of_code": 115
         },
         {
-          "file": "backend/src/modules/system/processors/metrics.processor.ts",
+          "file": "backend/src/modules/invoices/invoices.service.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (114 LOC)",
@@ -5394,7 +5394,7 @@
           "lines_of_code": 114
         },
         {
-          "file": "backend/src/modules/invoices/invoices.service.ts",
+          "file": "backend/src/modules/system/processors/metrics.processor.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (114 LOC)",
@@ -5410,15 +5410,7 @@
           "lines_of_code": 114
         },
         {
-          "file": "frontend/app/routes/commercial.vehicles.demo.tsx",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (111 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 111
-        },
-        {
-          "file": "frontend/app/entry.server.tsx",
+          "file": "ai-agents/src/fixproof/test-matrix/m5-budgets.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (111 LOC)",
@@ -5434,7 +5426,15 @@
           "lines_of_code": 111
         },
         {
-          "file": "ai-agents/src/fixproof/test-matrix/m5-budgets.ts",
+          "file": "frontend/app/routes/commercial.vehicles.demo.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (111 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 111
+        },
+        {
+          "file": "frontend/app/entry.server.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (111 LOC)",
@@ -5506,7 +5506,7 @@
           "lines_of_code": 103
         },
         {
-          "file": "frontend/app/routes/api.search.global.tsx",
+          "file": "backend/src/modules/products/dto/update-product.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (102 LOC)",
@@ -5514,7 +5514,7 @@
           "lines_of_code": 102
         },
         {
-          "file": "backend/src/modules/products/dto/update-product.dto.ts",
+          "file": "frontend/app/routes/api.search.global.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (102 LOC)",
@@ -5642,6 +5642,14 @@
           "lines_of_code": 83
         },
         {
+          "file": "frontend/app/routes/admin.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (79 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 79
+        },
+        {
           "file": "backend/src/modules/errors/entities/error-log.entity.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -5658,15 +5666,7 @@
           "lines_of_code": 79
         },
         {
-          "file": "frontend/app/routes/admin.tsx",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (79 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 79
-        },
-        {
-          "file": "backend/src/modules/users/dto/password-reset.dto.ts",
+          "file": "backend/src/modules/payments/entities/payment.entity.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (78 LOC)",
@@ -5682,7 +5682,7 @@
           "lines_of_code": 78
         },
         {
-          "file": "backend/src/modules/payments/entities/payment.entity.ts",
+          "file": "backend/src/modules/users/dto/password-reset.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (78 LOC)",
@@ -5690,7 +5690,7 @@
           "lines_of_code": 78
         },
         {
-          "file": "backend/src/common/pipes/zod-query-validation.pipe.ts",
+          "file": "backend/src/pieces/pieces-real.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (77 LOC)",
@@ -5698,7 +5698,7 @@
           "lines_of_code": 77
         },
         {
-          "file": "backend/src/pieces/pieces-real.controller.ts",
+          "file": "backend/src/common/pipes/zod-query-validation.pipe.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (77 LOC)",
@@ -5770,7 +5770,7 @@
           "lines_of_code": 70
         },
         {
-          "file": "backend/src/modules/upload/upload.module.ts",
+          "file": "backend/src/modules/products/products.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (69 LOC)",
@@ -5778,7 +5778,7 @@
           "lines_of_code": 69
         },
         {
-          "file": "backend/src/modules/products/products.module.ts",
+          "file": "backend/src/modules/upload/upload.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (69 LOC)",
@@ -5794,7 +5794,7 @@
           "lines_of_code": 68
         },
         {
-          "file": "backend/src/modules/support/support.module.ts",
+          "file": "backend/src/modules/blog-metadata/blog-metadata.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (68 LOC)",
@@ -5802,7 +5802,7 @@
           "lines_of_code": 68
         },
         {
-          "file": "backend/src/modules/blog-metadata/blog-metadata.controller.ts",
+          "file": "backend/src/modules/support/support.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (68 LOC)",
@@ -5850,14 +5850,6 @@
           "lines_of_code": 63
         },
         {
-          "file": "frontend/app/routes/admin.debug.tsx",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (62 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 62
-        },
-        {
           "file": "frontend/app/lib/schemas/validation.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -5866,7 +5858,15 @@
           "lines_of_code": 62
         },
         {
-          "file": "frontend/playwright.config.ts",
+          "file": "frontend/app/routes/admin.debug.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (62 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 62
+        },
+        {
+          "file": "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (60 LOC)",
@@ -5882,7 +5882,7 @@
           "lines_of_code": 60
         },
         {
-          "file": "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts",
+          "file": "frontend/playwright.config.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (60 LOC)",
@@ -5954,7 +5954,7 @@
           "lines_of_code": 53
         },
         {
-          "file": "frontend/app/routes/sitemap-constructeurs[.]xml.tsx",
+          "file": "backend/src/modules/search/search.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (51 LOC)",
@@ -5962,7 +5962,7 @@
           "lines_of_code": 51
         },
         {
-          "file": "backend/src/modules/search/search.module.ts",
+          "file": "frontend/app/routes/sitemap-constructeurs[.]xml.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (51 LOC)",
@@ -5978,7 +5978,7 @@
           "lines_of_code": 51
         },
         {
-          "file": "backend/src/modules/users/dto/user-address.dto.ts",
+          "file": "backend/src/modules/users/dto/user-profile.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (50 LOC)",
@@ -5986,7 +5986,7 @@
           "lines_of_code": 50
         },
         {
-          "file": "backend/src/modules/users/dto/user-profile.dto.ts",
+          "file": "backend/src/modules/users/dto/user-address.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (50 LOC)",
@@ -6000,14 +6000,6 @@
           "description": "Fichier sans tests (49 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 49
-        },
-        {
-          "file": "backend/src/modules/admin/guards/admin-auth.guard.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (47 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 47
         },
         {
           "file": "frontend/app/routes/sitemap[.]xml.tsx",
@@ -6026,7 +6018,15 @@
           "lines_of_code": 47
         },
         {
-          "file": "backend/src/auth/dto/register.dto.ts",
+          "file": "backend/src/modules/admin/guards/admin-auth.guard.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (47 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 47
+        },
+        {
+          "file": "backend/src/modules/blog/blog.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (46 LOC)",
@@ -6034,7 +6034,7 @@
           "lines_of_code": 46
         },
         {
-          "file": "backend/src/modules/blog/blog.module.ts",
+          "file": "backend/src/auth/dto/register.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (46 LOC)",
@@ -6098,6 +6098,14 @@
           "lines_of_code": 43
         },
         {
+          "file": "frontend/app/routes/admin._layout.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (42 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 42
+        },
+        {
           "file": "backend/src/modules/users/dto/users.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6106,12 +6114,12 @@
           "lines_of_code": 42
         },
         {
-          "file": "frontend/app/routes/admin._layout.tsx",
+          "file": "backend/src/database/database.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (42 LOC)",
+          "description": "Fichier sans tests (41 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 42
+          "lines_of_code": 41
         },
         {
           "file": "frontend/app/types/cart.ts",
@@ -6122,12 +6130,12 @@
           "lines_of_code": 41
         },
         {
-          "file": "backend/src/database/database.module.ts",
+          "file": "frontend/app/routes/api.notifications.actions.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (41 LOC)",
+          "description": "Fichier sans tests (40 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 41
+          "lines_of_code": 40
         },
         {
           "file": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts",
@@ -6139,14 +6147,6 @@
         },
         {
           "file": "ai-agents/src/cli/audit.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (40 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 40
-        },
-        {
-          "file": "frontend/app/routes/api.notifications.actions.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (40 LOC)",
@@ -6170,14 +6170,6 @@
           "lines_of_code": 39
         },
         {
-          "file": "backend/src/modules/invoices/invoices.controller.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (37 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 37
-        },
-        {
           "file": "frontend/app/routes/commercial.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6186,7 +6178,7 @@
           "lines_of_code": 37
         },
         {
-          "file": "frontend/vite.config.ts",
+          "file": "backend/src/modules/invoices/invoices.controller.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (37 LOC)",
@@ -6202,7 +6194,15 @@
           "lines_of_code": 37
         },
         {
-          "file": "frontend/app/routes/robots[.]txt.tsx",
+          "file": "frontend/vite.config.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (37 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 37
+        },
+        {
+          "file": "frontend/app/routes/sitemap-blog[.]xml.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (36 LOC)",
@@ -6218,7 +6218,7 @@
           "lines_of_code": 36
         },
         {
-          "file": "frontend/app/routes/sitemap-blog[.]xml.tsx",
+          "file": "frontend/app/routes/robots[.]txt.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (36 LOC)",
@@ -6258,14 +6258,6 @@
           "lines_of_code": 33
         },
         {
-          "file": "backend/src/auth/exception.filter.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (32 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 32
-        },
-        {
           "file": "backend/src/modules/metadata/metadata.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6282,15 +6274,15 @@
           "lines_of_code": 32
         },
         {
-          "file": "backend/src/modules/admin/admin.module.ts",
+          "file": "backend/src/auth/exception.filter.ts",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (31 LOC)",
+          "description": "Fichier sans tests (32 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 31
+          "lines_of_code": 32
         },
         {
-          "file": "frontend/app/routes/api.redirects.check.tsx",
+          "file": "backend/src/modules/admin/admin.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (31 LOC)",
@@ -6306,7 +6298,15 @@
           "lines_of_code": 31
         },
         {
-          "file": "backend/src/modules/messages/messages.module.ts",
+          "file": "frontend/app/routes/api.redirects.check.tsx",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (31 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 31
+        },
+        {
+          "file": "frontend/app/routes/logout.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (30 LOC)",
@@ -6314,7 +6314,7 @@
           "lines_of_code": 30
         },
         {
-          "file": "frontend/app/routes/logout.tsx",
+          "file": "backend/src/modules/messages/messages.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (30 LOC)",
@@ -6330,7 +6330,7 @@
           "lines_of_code": 29
         },
         {
-          "file": "backend/src/auth/dto/module-access.dto.ts",
+          "file": "backend/src/modules/orders/dto/orders-enhanced.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (29 LOC)",
@@ -6346,20 +6346,12 @@
           "lines_of_code": 29
         },
         {
-          "file": "backend/src/modules/orders/dto/orders-enhanced.dto.ts",
+          "file": "backend/src/auth/dto/module-access.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (29 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
           "lines_of_code": 29
-        },
-        {
-          "file": "frontend/app/routes/gone.tsx",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (28 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 28
         },
         {
           "file": "frontend/app/routes/precondition-failed.tsx",
@@ -6370,12 +6362,12 @@
           "lines_of_code": 28
         },
         {
-          "file": "backend/src/modules/health/health.module.ts",
+          "file": "frontend/app/routes/gone.tsx",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (27 LOC)",
+          "description": "Fichier sans tests (28 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 27
+          "lines_of_code": 28
         },
         {
           "file": "packages/eslint-config/base.js",
@@ -6394,7 +6386,7 @@
           "lines_of_code": 27
         },
         {
-          "file": "backend/src/auth/guards/optional-auth.guard.ts",
+          "file": "backend/src/modules/health/health.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (27 LOC)",
@@ -6402,12 +6394,12 @@
           "lines_of_code": 27
         },
         {
-          "file": "backend/src/modules/system/system.module.ts",
+          "file": "backend/src/auth/guards/optional-auth.guard.ts",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (26 LOC)",
+          "description": "Fichier sans tests (27 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 26
+          "lines_of_code": 27
         },
         {
           "file": "backend/src/modules/payments/dto/payment-response.dto.ts",
@@ -6418,7 +6410,15 @@
           "lines_of_code": 26
         },
         {
-          "file": "backend/.eslintrc.js",
+          "file": "backend/src/modules/system/system.module.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (26 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 26
+        },
+        {
+          "file": "backend/src/modules/messages/pipes/zod-validation.pipe.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (25 LOC)",
@@ -6426,7 +6426,7 @@
           "lines_of_code": 25
         },
         {
-          "file": "backend/src/modules/messages/pipes/zod-validation.pipe.ts",
+          "file": "backend/.eslintrc.js",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (25 LOC)",
@@ -6442,15 +6442,7 @@
           "lines_of_code": 24
         },
         {
-          "file": "backend/src/modules/system/simple.service.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (23 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 23
-        },
-        {
-          "file": "backend/src/modules/orders/orders.module.ts",
+          "file": "frontend/app/server/session.server.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (23 LOC)",
@@ -6474,14 +6466,6 @@
           "lines_of_code": 23
         },
         {
-          "file": "frontend/app/server/session.server.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (23 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 23
-        },
-        {
           "file": "backend/src/common/interceptors/method-not-allowed.interceptor.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6490,7 +6474,23 @@
           "lines_of_code": 23
         },
         {
-          "file": "backend/src/modules/users/pipes/zod-validation.pipe.ts",
+          "file": "backend/src/modules/system/simple.service.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (23 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 23
+        },
+        {
+          "file": "backend/src/modules/orders/orders.module.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (23 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 23
+        },
+        {
+          "file": "backend/src/modules/errors/errors.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (22 LOC)",
@@ -6498,7 +6498,7 @@
           "lines_of_code": 22
         },
         {
-          "file": "backend/src/modules/errors/errors.module.ts",
+          "file": "backend/src/modules/users/pipes/zod-validation.pipe.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (22 LOC)",
@@ -6530,6 +6530,14 @@
           "lines_of_code": 21
         },
         {
+          "file": "backend/src/modules/users/dto/change-password.dto.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (21 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 21
+        },
+        {
           "file": "backend/src/modules/commercial/commercial.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6538,7 +6546,7 @@
           "lines_of_code": 21
         },
         {
-          "file": "backend/src/auth/authenticated.guard.ts",
+          "file": "frontend/app/server/auth.server.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (21 LOC)",
@@ -6554,15 +6562,7 @@
           "lines_of_code": 21
         },
         {
-          "file": "backend/src/modules/users/dto/change-password.dto.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (21 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 21
-        },
-        {
-          "file": "frontend/app/server/auth.server.ts",
+          "file": "backend/src/auth/authenticated.guard.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (21 LOC)",
@@ -6586,7 +6586,7 @@
           "lines_of_code": 20
         },
         {
-          "file": "backend/src/modules/dashboard/dashboard.module.ts",
+          "file": "backend/src/modules/payments/dto/create-payment.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (19 LOC)",
@@ -6594,7 +6594,7 @@
           "lines_of_code": 19
         },
         {
-          "file": "backend/src/modules/payments/dto/create-payment.dto.ts",
+          "file": "backend/src/modules/dashboard/dashboard.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (19 LOC)",
@@ -6618,14 +6618,6 @@
           "lines_of_code": 18
         },
         {
-          "file": "backend/src/modules/users/dto/passwords.dto.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (17 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 17
-        },
-        {
           "file": "backend/src/modules/cart/dto/apply-promo.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6634,15 +6626,15 @@
           "lines_of_code": 17
         },
         {
-          "file": "backend/src/modules/manufacturers/manufacturers.module.ts",
+          "file": "backend/src/modules/users/dto/passwords.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (16 LOC)",
+          "description": "Fichier sans tests (17 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 16
+          "lines_of_code": 17
         },
         {
-          "file": "backend/src/modules/invoices/invoices.module.ts",
+          "file": "backend/src/config/swagger.config.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (16 LOC)",
@@ -6658,7 +6650,15 @@
           "lines_of_code": 16
         },
         {
-          "file": "backend/src/config/swagger.config.ts",
+          "file": "backend/src/modules/manufacturers/manufacturers.module.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (16 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 16
+        },
+        {
+          "file": "backend/src/modules/invoices/invoices.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (16 LOC)",
@@ -6682,7 +6682,7 @@
           "lines_of_code": 14
         },
         {
-          "file": "backend/jest.config.js",
+          "file": "backend/src/modules/staff/staff.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (12 LOC)",
@@ -6690,7 +6690,7 @@
           "lines_of_code": 12
         },
         {
-          "file": "backend/src/modules/staff/staff.module.ts",
+          "file": "backend/jest.config.js",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (12 LOC)",
@@ -6706,23 +6706,7 @@
           "lines_of_code": 12
         },
         {
-          "file": "backend/src/modules/users/dto/login.dto.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (11 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 11
-        },
-        {
-          "file": "backend/src/modules/system/system.module.simple.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (11 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 11
-        },
-        {
-          "file": "backend/src/main.server.ts",
+          "file": "backend/src/api/api.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (11 LOC)",
@@ -6738,14 +6722,6 @@
           "lines_of_code": 11
         },
         {
-          "file": "backend/src/api/api.module.ts",
-          "severity": "LOW",
-          "category": "NO_TEST",
-          "description": "Fichier sans tests (11 LOC)",
-          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 11
-        },
-        {
           "file": "backend/src/modules/payments/dto/payment-filters.dto.ts",
           "severity": "LOW",
           "category": "NO_TEST",
@@ -6754,12 +6730,28 @@
           "lines_of_code": 11
         },
         {
-          "file": "backend/src/notifications/notifications.module.ts",
+          "file": "backend/src/modules/system/system.module.simple.ts",
           "severity": "LOW",
           "category": "NO_TEST",
-          "description": "Fichier sans tests (10 LOC)",
+          "description": "Fichier sans tests (11 LOC)",
           "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
-          "lines_of_code": 10
+          "lines_of_code": 11
+        },
+        {
+          "file": "backend/src/modules/users/dto/login.dto.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (11 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 11
+        },
+        {
+          "file": "backend/src/main.server.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (11 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 11
         },
         {
           "file": "frontend/app/server/remix-integration.server.ts",
@@ -6771,6 +6763,14 @@
         },
         {
           "file": "backend/src/modules/gamme-rest/gamme-rest.module.ts",
+          "severity": "LOW",
+          "category": "NO_TEST",
+          "description": "Fichier sans tests (10 LOC)",
+          "recommendation": "Cr\u00e9er un fichier de test avec au moins les cas critiques",
+          "lines_of_code": 10
+        },
+        {
+          "file": "backend/src/notifications/notifications.module.ts",
           "severity": "LOW",
           "category": "NO_TEST",
           "description": "Fichier sans tests (10 LOC)",

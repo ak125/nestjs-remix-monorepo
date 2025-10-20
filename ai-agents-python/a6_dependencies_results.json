@@ -1,7 +1,7 @@
 {
   "agent_name": "a6_dependencies",
   "status": "success",
-  "duration_ms": 31023,
+  "duration_ms": 31082,
   "findings": [
     {
       "total_issues": 221,
@@ -961,11 +961,11 @@
         },
         {
           "package": "@typescript-eslint/eslint-plugin",
-          "current": "6.21.0",
+          "current": "7.18.0",
           "latest": "8.46.1",
           "severity": "MEDIUM",
           "category": "OUTDATED",
-          "description": "Version obsol\u00e8te: 6.21.0 \u2192 8.46.1",
+          "description": "Version obsol\u00e8te: 7.18.0 \u2192 8.46.1",
           "recommendation": "Mettre \u00e0 jour vers 8.46.1",
           "cves": []
         },

@@ -1,7 +1,7 @@
 {
   "agent_name": "a12_documentation",
   "status": "success",
-  "duration_ms": 1338,
+  "duration_ms": 1299,
   "findings": [
     {
       "total_issues": 1004,

@@ -1,7 +1,7 @@
 {
   "agent_name": "a7_performance",
   "status": "success",
-  "duration_ms": 3387,
+  "duration_ms": 3303,
   "findings": [
     {
       "total_issues": 2103,
