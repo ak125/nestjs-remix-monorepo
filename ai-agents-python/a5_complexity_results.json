@@ -1,18 +1,18 @@
 {
   "agent_name": "a5_complexity",
   "status": "success",
-  "duration_ms": 5586,
+  "duration_ms": 5685,
   "findings": [
     {
-      "total_complex_functions": 2058,
+      "total_complex_functions": 2059,
       "severity_counts": {
         "CRITICAL": 446,
         "HIGH": 256,
         "MEDIUM": 485,
-        "LOW": 871
+        "LOW": 872
       },
       "average_cyclomatic": 14.75,
-      "average_cognitive": 30.55,
+      "average_cognitive": 30.54,
       "max_cyclomatic": 138,
       "max_cognitive": 1037,
       "findings": [
@@ -10697,6 +10697,15 @@
           "cyclomatic": 10,
           "cognitive": 15,
           "severity": "MEDIUM",
+          "recommendation": "Simplifier la logique conditionnelle"
+        },
+        {
+          "file": "ai-agents-python/generate_report_final.py",
+          "function": "extract_findings",
+          "line": 27,
+          "cyclomatic": 9,
+          "cognitive": 15,
+          "severity": "LOW",
           "recommendation": "Simplifier la logique conditionnelle"
         },
         {

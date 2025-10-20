@@ -1,7 +1,7 @@
 {
   "agent_name": "a10_i18n",
   "status": "success",
-  "duration_ms": 2035,
+  "duration_ms": 1985,
   "findings": [
     {
       "total_issues": 1055,
