@@ -250,12 +250,16 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
 
 /**
  * Récupère l'ID de gamme avec parsing URL intelligent
- * ⚠️ IMPORTANT: L'ID dans l'URL gamme n'est PAS l'ID réel de la gamme !
- * C'est juste un suffixe pour l'URL. Toujours utiliser le mapping.
  */
 export async function resolveGammeId(gammeParam: string): Promise<number> {
-  // Parse le paramètre pour extraire l'alias (ignorer l'ID URL)
+  // Parse le paramètre pour extraire l'ID s'il existe
   const gamme = parseUrlParam(gammeParam);
+  
+  // Si on a un ID dans l'URL, l'utiliser
+  if (gamme.id > 0) {
+    console.log(`✅ [GAMME-ID] ID trouvé dans l'URL pour ${gamme.alias}: ${gamme.id}`);
+    return gamme.id;
+  }
   
   // Mappings directs avec les IDs réels de la base de données
   const knownGammeMap: Record<string, number> = {
