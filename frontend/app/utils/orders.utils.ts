@@ -142,6 +142,22 @@ export function getStatusBadgeColor(statusId: string): string {
 }
 
 /**
+ * Retourne le label du statut de commande
+ */
+export function getStatusLabel(statusId: string): string {
+  switch (statusId) {
+    case '1': return 'En attente';
+    case '2': return 'Validée';
+    case '3': return 'En préparation';
+    case '4': return 'Prête';
+    case '5': return 'Expédiée';
+    case '6': return 'Livrée';
+    case '7': return 'Annulée';
+    default: return 'Inconnu';
+  }
+}
+
+/**
  * Retourne la couleur de badge pour le statut de paiement
  */
 export function getPaymentBadgeColor(isPaid: string): string {

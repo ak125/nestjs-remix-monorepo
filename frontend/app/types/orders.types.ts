@@ -126,6 +126,15 @@ export interface OrdersTableProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onViewOrder?: (orderId: string) => void;
+  onEditOrder?: (orderId: string) => void;
+  onMarkPaid?: (orderId: string) => void;
+  onValidate?: (orderId: string) => void;
+  onStartProcessing?: (orderId: string) => void;
+  onMarkReady?: (orderId: string) => void;
+  onShip?: (orderId: string) => void;
+  onDeliver?: (orderId: string) => void;
+  onCancel?: (orderId: string) => void;
 }
 
 export interface OrderRowProps {
