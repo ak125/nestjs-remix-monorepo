@@ -270,9 +270,17 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     "filtres-a-carburant": 77, 
     "filtres-habitacle": 78,
     "plaquettes-de-frein": 402,
+    "plaquette-de-frein": 402,
     "disques-de-frein": 403,
+    "disque-de-frein": 403,
     "amortisseurs": 85,
-    "courroies": 90
+    "amortisseur": 85,
+    "courroies": 90,
+    "courroie": 90,
+    "courroie-d-accessoire": 90,
+    "courroies-d-accessoires": 90,
+    "galet-tendeur-courroie": 91,
+    "galet-enrouleur-courroie": 92
   };
   
   const gammeId = knownGammeMap[gamme.alias];
