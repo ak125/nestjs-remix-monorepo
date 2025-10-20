@@ -25,7 +25,23 @@ def main():
     # Analyze
     print("\n🔍 ANALYSE...")
     analysis_results = runner.run_analysis_agents()
-    print(f"✅ {len(analysis_results)} agent(s), {sum(len(r.findings) for r in analysis_results)} finding(s)")
+    total_findings = sum(len(r.findings) for r in analysis_results)
+    print(f"✅ {len(analysis_results)} agent(s), {total_findings} finding(s)")
+    
+    # Sauvegarder les résultats en JSON
+    results_dir = Path(__file__).parent
+    for result in analysis_results:
+        output_file = results_dir / f"{result.agent_name}_results.json"
+        import json
+        with open(output_file, 'w') as f:
+            json.dump({
+                'agent_name': result.agent_name,
+                'status': result.status,
+                'duration_ms': result.duration_ms,
+                'findings': result.findings,
+                'errors': result.errors,
+                'warnings': result.warnings
+            }, f, indent=2)
     
     # Fix
     print("\n🔧 CORRECTIONS...")
@@ -44,6 +60,15 @@ def main():
     print(f"   Confidence: {decision['confidence']['overall']:.0f}/100")
     print(f"   Action: {decision['action']}")
     print(f"   Durée: {time.time()-start:.1f}s")
+    
+    # Générer rapport actionnable
+    if total_findings > 0:
+        print("\n📄 RAPPORT...")
+        import subprocess
+        try:
+            subprocess.run([sys.executable, str(results_dir / "generate_report_final.py")], check=False)
+        except:
+            pass
     
     return 0 if decision['action'] == "AUTO_COMMIT" else 1
 
