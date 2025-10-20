@@ -1,4 +1,3 @@
-import { useFetcher } from '@remix-run/react';
 import {
   CheckCircle,
   CreditCard,
@@ -8,39 +7,35 @@ import {
   Truck,
   XCircle,
 } from 'lucide-react';
-import { type ActionData, type Order } from '../../types/orders.types';
+import { type Order } from '../../types/orders.types';
 import { type UserPermissions } from '../../utils/permissions';
 
 interface OrderActionsProps {
   order: Order;
   permissions: UserPermissions;
-  onActionComplete?: () => void;
+  onMarkPaid?: (orderId: string) => void;
+  onValidate?: (orderId: string) => void;
+  onStartProcessing?: (orderId: string) => void;
+  onMarkReady?: (orderId: string) => void;
+  onShip?: (orderId: string) => void;
+  onDeliver?: (orderId: string) => void;
+  onCancel?: (orderId: string) => void;
+  onDelete?: (orderId: string) => void;
 }
 
 export function OrderActions({
   order,
   permissions,
-  onActionComplete,
+  onMarkPaid,
+  onValidate,
+  onStartProcessing,
+  onMarkReady,
+  onShip,
+  onDeliver,
+  onCancel,
+  onDelete,
 }: OrderActionsProps) {
-  const fetcher = useFetcher<ActionData>();
-
-  const handleAction = (intent: string) => {
-    if (!confirm(`Êtes-vous sûr de vouloir effectuer cette action ?`)) {
-      return;
-    }
-
-    fetcher.submit(
-      { intent, orderId: order.ord_id },
-      { method: 'post' }
-    );
-  };
-
-  // Notifier le parent quand l'action est terminée
-  if (fetcher.state === 'idle' && fetcher.data?.success && onActionComplete) {
-    onActionComplete();
-  }
-
-  const isProcessing = fetcher.state !== 'idle';
+  const isProcessing = false; // Géré par les handlers parent
   const canMarkPaid = !order.ord_is_pay && permissions.canMarkPaid;
   const canValidate = order.ord_ords_id === '1' && permissions.canValidate;
   const canStartProcessing = order.ord_ords_id === '2' && permissions.canValidate;
@@ -52,9 +47,9 @@ export function OrderActions({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Marquer comme payé */}
-      {canMarkPaid && (
+      {canMarkPaid && onMarkPaid && (
         <button
-          onClick={() => handleAction('markPaid')}
+          onClick={() => onMarkPaid(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -64,9 +59,9 @@ export function OrderActions({
       )}
 
       {/* Valider */}
-      {canValidate && (
+      {canValidate && onValidate && (
         <button
-          onClick={() => handleAction('validate')}
+          onClick={() => onValidate(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -76,9 +71,9 @@ export function OrderActions({
       )}
 
       {/* Démarrer préparation */}
-      {canStartProcessing && (
+      {canStartProcessing && onStartProcessing && (
         <button
-          onClick={() => handleAction('startProcessing')}
+          onClick={() => onStartProcessing(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -88,9 +83,9 @@ export function OrderActions({
       )}
 
       {/* Marquer prête */}
-      {canMarkReady && (
+      {canMarkReady && onMarkReady && (
         <button
-          onClick={() => handleAction('markReady')}
+          onClick={() => onMarkReady(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -100,9 +95,9 @@ export function OrderActions({
       )}
 
       {/* Expédier */}
-      {canShip && (
+      {canShip && onShip && (
         <button
-          onClick={() => handleAction('ship')}
+          onClick={() => onShip(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -112,9 +107,9 @@ export function OrderActions({
       )}
 
       {/* Livrer */}
-      {canDeliver && (
+      {canDeliver && onDeliver && (
         <button
-          onClick={() => handleAction('deliver')}
+          onClick={() => onDeliver(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -124,9 +119,9 @@ export function OrderActions({
       )}
 
       {/* Annuler */}
-      {canCancel && (
+      {canCancel && onCancel && (
         <button
-          onClick={() => handleAction('cancel')}
+          onClick={() => onCancel(order.ord_id)}
           disabled={isProcessing}
           className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -136,7 +131,7 @@ export function OrderActions({
       )}
 
       {/* Supprimer (admin seulement) */}
-      {permissions.canCancel && order.ord_ords_id === '7' && (
+      {permissions.canCancel && order.ord_ords_id === '7' && onDelete && (
         <button
           onClick={() => {
             if (
@@ -144,7 +139,7 @@ export function OrderActions({
                 'Êtes-vous sûr de vouloir supprimer définitivement cette commande ? Cette action est irréversible.',
               )
             ) {
-              handleAction('delete');
+              onDelete(order.ord_id);
             }
           }}
           disabled={isProcessing}
