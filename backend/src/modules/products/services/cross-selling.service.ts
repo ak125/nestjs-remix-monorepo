@@ -327,25 +327,6 @@ export class CrossSellingService extends SupabaseBaseService {
           },
         };
       });
-              {
-                ...gamme,
-                catalog_gamme: catalog ? [catalog] : [],
-              },
-            ],
-          },
-        };
-      });
-
-      // Tri par mc_sort en JS
-      data.sort((a, b) => {
-        const sortA =
-          (a as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
-          999;
-        const sortB =
-          (b as any).pieces?.pieces_gamme?.[0]?.catalog_gamme?.[0]?.mc_sort ||
-          999;
-        return sortA - sortB;
-      });
 
       // 🔄 TRANSFORMATION ET VÉRIFICATION ARTICLES
       const crossGammes = await this.processAndVerifyArticles(
