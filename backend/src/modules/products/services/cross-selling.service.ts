@@ -294,11 +294,11 @@ export class CrossSellingService extends SupabaseBaseService {
         return [];
       }
 
-      // Étape 3: Récupérer détails gammes (SANS catalog join)
+      // Étape 3: Récupérer détails gammes (SANS catalog join, SANS pg_mc_id)
       const gammeIds = [...new Set(piecesData.map((p) => p.piece_pg_id))];
       const { data: gammesData, error: gammesError } = await this.supabase
         .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_img, pg_mc_id')
+        .select('pg_id, pg_name, pg_alias, pg_img')
         .in('pg_id', gammeIds);
 
       if (gammesError || !gammesData || gammesData.length === 0) {
@@ -311,38 +311,22 @@ export class CrossSellingService extends SupabaseBaseService {
         return [];
       }
 
-      // Étape 4: Récupérer catalog_gamme pour filtrage mfId
-      const catalogIds = [
-        ...new Set(gammesData.map((g) => g.pg_mc_id).filter(Boolean)),
-      ];
-      const { data: catalogData } = await this.supabase
-        .from('catalog_gamme')
-        .select('mc_id, mc_mf_prime, mc_sort')
-        .in('mc_id', catalogIds)
-        .eq('mc_mf_prime', mfId);
-
-      if (!catalogData || catalogData.length === 0) {
-        return []; // Aucune gamme compatible avec mfId
-      }
-
-      // Filtrer gammes qui ont catalog compatible
-      const validCatalogIds = new Set(catalogData.map((c) => c.mc_id));
-      const filteredGammes = gammesData.filter((g) =>
-        validCatalogIds.has(g.pg_mc_id),
-      );
-
-      if (filteredGammes.length === 0) {
-        return [];
-      }
-
-      // Mapper au format attendu avec catalog_gamme reconstitué
-      const catalogMap = new Map(catalogData.map((c) => [c.mc_id, c]));
-      const data = filteredGammes.map((gamme) => {
-        const catalog = catalogMap.get(gamme.pg_mc_id);
+      // ✅ Mapper directement au format attendu (SANS catalog_gamme car pg_mc_id n'existe pas)
+      const data = gammesData.map((gamme) => {
         return {
           pieces: {
             piece_pg_id: gamme.pg_id,
             pieces_gamme: [
+              {
+                pg_id: gamme.pg_id,
+                pg_name: gamme.pg_name,
+                pg_alias: gamme.pg_alias,
+                pg_img: gamme.pg_img,
+              },
+            ],
+          },
+        };
+      });
               {
                 ...gamme,
                 catalog_gamme: catalog ? [catalog] : [],
