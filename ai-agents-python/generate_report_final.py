@@ -105,11 +105,31 @@ for agent_name, count in sorted_agents:
         report += "*Détails non disponibles*\n\n"
         continue
     
-    # Afficher top 5
+    # Afficher top 5 - DÉDUPLIQUÉ par fichier
     report += "**Top 5 exemples** :\n\n"
-    for i, f in enumerate(findings[:5], 1):
-        # Extraire les infos selon le type d'agent
+    
+    # Regrouper par fichier pour éviter répétitions
+    by_file = {}
+    for f in findings:
         file = f.get('file_path', f.get('file', 'N/A'))
+        if file not in by_file:
+            by_file[file] = []
+        by_file[file].append(f)
+    
+    # Trier par nombre de problèmes par fichier, puis par sévérité
+    severity_order = {'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3, 'INFO': 4}
+    sorted_files = sorted(
+        by_file.items(),
+        key=lambda x: (
+            -len(x[1]),  # Plus de problèmes d'abord
+            severity_order.get(x[1][0].get('severity', 'INFO').upper(), 5)  # Puis par sévérité
+        )
+    )
+    
+    # Afficher top 5 fichiers
+    for i, (file, file_findings) in enumerate(sorted_files[:5], 1):
+        # Premier finding pour les détails
+        f = file_findings[0]
         
         # Description contextuelle
         if 'lines' in f:  # Massive files
@@ -122,12 +142,17 @@ for agent_name, count in sorted_agents:
             desc = f"{f.get('category', 'N/A')}"
             if 'description' in f:
                 desc += f" - {f.get('description')[:80]}"
+            # Si plusieurs problèmes, indiquer le count
+            if len(file_findings) > 1:
+                desc += f" ({len(file_findings)} problèmes dans ce fichier)"
         elif 'fragment' in f:  # Duplications
             occurrences = f.get('occurrences', '?')
             lines = f.get('lines_duplicated', '?')
             desc = f"**{occurrences} occurrences** ({lines} lignes dupliquées)"
         else:
             desc = f.get('description', f.get('message', f.get('type', 'N/A')))
+            if len(file_findings) > 1:
+                desc += f" (+ {len(file_findings)-1} autres problèmes)"
         
         # Tronquer fichier si trop long
         if len(str(file)) > 65:

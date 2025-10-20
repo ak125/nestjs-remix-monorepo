@@ -1,7 +1,7 @@
 {
   "agent_name": "a9_seo",
   "status": "success",
-  "duration_ms": 959,
+  "duration_ms": 838,
   "findings": [
     {
       "total_issues": 319,

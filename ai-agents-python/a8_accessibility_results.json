@@ -1,7 +1,7 @@
 {
   "agent_name": "a8_accessibility",
   "status": "success",
-  "duration_ms": 936,
+  "duration_ms": 978,
   "findings": [
     {
       "total_issues": 1455,
