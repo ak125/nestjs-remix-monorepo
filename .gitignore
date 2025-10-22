@@ -83,3 +83,8 @@ ai-agents-python/__pycache__/
 ai-agents-python/**/__pycache__/
 ai-agents-python/*.pyc
 ai-agents-python/**/*.pyc
+
+# Caddy
+caddy-pieces-redirects.conf
+logs/caddy/
+*.caddy.log

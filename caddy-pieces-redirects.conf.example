@@ -1,0 +1,12 @@
+# 🔄 Exemple de fichier de redirections généré automatiquement
+# Ce fichier est généré par le script generate-caddy-config.sh
+# NE PAS ÉDITER MANUELLEMENT - sera écrasé à chaque génération
+
+# Format des redirections :
+# redir /ancien-chemin /nouveau-chemin 301
+
+# Exemple de redirections pour pièces auto
+redir /pieces/filtre-a-huile-7/audi-22/a7-sportback-22059/3-0-tfsi-quattro-34940.html /pieces/audi-22/a7-sportback-22059/type-34940/filtres 301
+redir /pieces/plaquettes-de-frein-5/renault-19/clio-iv-19052/1-5-dci-33844.html /pieces/renault-19/clio-iv-19052/type-33844/freinage 301
+
+# Plus de redirections seront ajoutées automatiquement...
