@@ -76,7 +76,7 @@ jobs:
 
   deploy:
     name: 🚀 Deploy
-    runs-on: [self-hosted, linux, x64, instance-20251021-141243]
+    runs-on: [self-hosted, Linux, X64]
     needs: [build, lint, typecheck]
     # needs: [build]
     # only build/deploy main branch on pushes
