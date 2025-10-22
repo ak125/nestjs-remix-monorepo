@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+// import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'; // TEMPORAIREMENT DÉSACTIVÉ
+// import { APP_GUARD } from '@nestjs/core'; // TEMPORAIREMENT DÉSACTIVÉ
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { ScheduleModule } from '@nestjs/schedule'; // Temporairement désactivé
@@ -55,12 +55,12 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
       envFilePath: '.env',
       expandVariables: true,
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60,
-        limit: 100,
-      },
-    ]),
+    // ThrottlerModule.forRoot([
+    //   {
+    //     ttl: 60,
+    //     limit: 100,
+    //   },
+    // ]), // TEMPORAIREMENT DÉSACTIVÉ
 
     // Event Emitter global
     EventEmitterModule.forRoot(),
@@ -116,10 +116,10 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     AnalyticsController, // 📊 Analytics avancées
   ], // Plus besoin du controller temporaire
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // }, // TEMPORAIREMENT DÉSACTIVÉ
   ],
 })
 export class AppModule {}
