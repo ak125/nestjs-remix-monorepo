@@ -1,0 +1,52 @@
+{
+  "name": "@fafa/theme-automecanik",
+  "version": "1.0.0",
+  "description": "Thème Automecanik (vitrine) - Consomme @fafa/design-tokens",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx",
+    "test": "vitest",
+    "clean": "rm -rf dist .turbo"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@fafa/design-tokens": "*"
+  },
+  "devDependencies": {
+    "@fafa/typescript-config": "*",
+    "@types/react": "^18.2.20",
+    "eslint": "^8.57.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "keywords": [
+    "theme",
+    "automecanik",
+    "design-system"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
