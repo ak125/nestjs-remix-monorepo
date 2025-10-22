@@ -1,5 +1,7 @@
 services:
   monorepo_prod:
+    env_file:
+      - .env
     environment:
       - REDIS_URL=redis://redis_prod:6379
       - NODE_ENV
