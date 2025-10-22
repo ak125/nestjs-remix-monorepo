@@ -1,0 +1,37 @@
+# Source files (only ship dist/)
+src/
+scripts/
+.storybook/
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+tsup.config.ts
+vitest.config.ts
+.eslintrc.js
+postcss.config.cjs
+tailwind.config.cjs
+
+# Documentation (keep README.md)
+CONTRIBUTING.md
+QUICKSTART.md
+IMPLEMENTATION-SUMMARY.md
+CI-CD-INTEGRATION.md
+
+# Tests
+**/*.test.tsx
+**/*.test.ts
+**/*.spec.tsx
+**/*.spec.ts
+**/*.stories.tsx
+
+# Dev files
+.turbo
+.cache
+*.log
+coverage
+storybook-static
+
+# IDE
+.vscode
+.idea
