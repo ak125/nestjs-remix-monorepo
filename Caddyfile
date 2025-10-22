@@ -5,7 +5,7 @@
 # ===== CONFIGURATION GLOBALE =====
 {
     # Email pour certificats Let's Encrypt (remplacez par le vôtre)
-    email admin@your-domain.com
+    email admin@automecanik.fr
     
     # Options de performance
     admin off
@@ -24,8 +24,8 @@
 }
 
 # ===== SITE PRINCIPAL =====
-# Remplacez "your-domain.com" par votre nom de domaine
-your-domain.com {
+# Configuration pour automecanik.fr
+automecanik.fr {
     
     # ===== REDIRECTIONS 301 PIÈCES AUTO =====
     # Ces règles seront générées automatiquement via le script
@@ -134,7 +134,7 @@ your-domain.com {
     
     # ===== LOGGING SPÉCIFIQUE AU DOMAINE =====
     log {
-        output file /var/log/caddy/your-domain.log {
+        output file /var/log/caddy/automecanik.log {
             roll_size 50mb
             roll_keep 5
         }
@@ -147,8 +147,8 @@ your-domain.com {
 }
 
 # ===== REDIRECTION WWW VERS APEX =====
-www.your-domain.com {
-    redir https://your-domain.com{uri} permanent
+www.automecanik.fr {
+    redir https://automecanik.fr{uri} permanent
 }
 
 # ===== CONFIGURATION LOCALE (DÉVELOPPEMENT) =====
