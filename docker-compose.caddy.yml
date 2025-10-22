@@ -1,0 +1,62 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: nestjs-remix-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    volumes:
+      # Configuration
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      
+      # Données persistantes (certificats SSL)
+      - caddy_data:/data
+      - caddy_config:/config
+      
+      # Logs
+      - ./logs/caddy:/var/log/caddy
+      
+      # Configuration générée pour redirections (optionnel)
+      - ./caddy-pieces-redirects.conf:/etc/caddy/redirects.conf:ro
+    
+    environment:
+      - CADDY_ADMIN=off
+    
+    networks:
+      - default
+    
+    depends_on:
+      - monorepo_prod
+    
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Service de génération automatique des règles de redirection (optionnel)
+  caddy-config-generator:
+    image: curlimages/curl:latest
+    container_name: caddy-config-generator
+    profiles: ["tools"]
+    command: >
+      sh -c "
+      echo '🔄 Génération de la configuration Caddy...';
+      curl -s http://monorepo_prod:3000/api/vehicles/migration/generate-caddy-rules > /output/caddy-pieces-redirects.conf;
+      echo '✅ Configuration générée!';
+      "
+    volumes:
+      - ./:/output
+    networks:
+      - default
+    depends_on:
+      - monorepo_prod
+
+volumes:
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
