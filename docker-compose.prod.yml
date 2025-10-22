@@ -4,6 +4,8 @@ services:
       - REDIS_URL=redis://redis_prod:6379
       - NODE_ENV
       - DATABASE_URL
+      - SUPABASE_SERVICE_ROLE_KEY
+      - SUPABASE_URL
 
 
     container_name: nestjs-remix-monorepo-prod
