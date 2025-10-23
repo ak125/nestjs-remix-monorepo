@@ -420,8 +420,8 @@ export default function BlogPiecesAutoMarqueModele() {
                       
                       const getInactiveColors = () => {
                         if (isDiesel) return 'bg-orange-50 text-orange-700 border-orange-300 hover:bg-orange-100';
-                        if (isEssence) return 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100';
-                        if (isElectrique) return 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100';
+                        if (isEssence) return 'bg-green-50 text-green-700 border-green-300 hover:bg-success/20';
+                        if (isElectrique) return 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-info/20';
                         if (isHybride) return 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100';
                         return 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100';
                       };
@@ -496,9 +496,9 @@ export default function BlogPiecesAutoMarqueModele() {
                     if (fuelLower.includes('diesel')) {
                       return 'bg-orange-100 text-orange-800 border-orange-300';
                     } else if (fuelLower.includes('essence')) {
-                      return 'bg-green-100 text-green-800 border-green-300';
+                      return 'bg-success/20 text-success border-green-300';
                     } else if (fuelLower.includes('électrique')) {
-                      return 'bg-blue-100 text-blue-800 border-blue-300';
+                      return 'bg-info/20 text-info border-blue-300';
                     } else if (fuelLower.includes('hybride')) {
                       return 'bg-purple-100 text-purple-800 border-purple-300';
                     }

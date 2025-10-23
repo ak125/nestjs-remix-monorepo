@@ -171,7 +171,7 @@ export function SearchResultsEnhanced({
                 {getQualityBadge(item._qualityLevel)}
                 
                 {item.oemRef && (
-                  <Badge variant="outline" className="border-green-600 text-green-700 bg-green-50">
+                  <Badge variant="outline" className="border-green-600 text-success bg-success/10">
                     <Zap className="h-3 w-3 mr-1" />
                     OEM: {item.oemRef}
                   </Badge>
@@ -305,7 +305,7 @@ export function SearchResultsEnhanced({
                         {getQualityBadge(item._qualityLevel)}
                         
                         {item.oemRef && (
-                          <Badge variant="outline" className="border-green-600 text-green-700 bg-green-50">
+                          <Badge variant="outline" className="border-green-600 text-success bg-success/10">
                             <Zap className="h-3 w-3 mr-1" />
                             OEM: {item.oemRef}
                           </Badge>

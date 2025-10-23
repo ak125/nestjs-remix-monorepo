@@ -328,7 +328,7 @@ export default function ProductsByRange() {
         </div>
 
         {enhanced && (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          <Badge variant="secondary" className="bg-info/20 text-info">
             ⚡ Mode Avancé
           </Badge>
         )}
@@ -496,12 +496,12 @@ export default function ProductsByRange() {
                         </CardTitle>
                         <div className="flex items-center gap-1 mb-2">
                           {product.piece_activ ? (
-                            <Badge className="bg-green-100 text-green-800 text-xs">✅</Badge>
+                            <Badge className="bg-success/20 text-success text-xs">✅</Badge>
                           ) : (
                             <Badge variant="secondary" className="text-xs">❌</Badge>
                           )}
                           {product.piece_top && (
-                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">⭐</Badge>
+                            <Badge className="bg-warning/20 text-warning text-xs">⭐</Badge>
                           )}
                         </div>
                         <p className="text-xs text-gray-500 mb-2">
@@ -574,12 +574,12 @@ export default function ProductsByRange() {
                             </h3>
                             <div className="flex items-center gap-2">
                               {product.piece_activ ? (
-                                <Badge className="bg-green-100 text-green-800">✅</Badge>
+                                <Badge className="bg-success/20 text-success">✅</Badge>
                               ) : (
                                 <Badge variant="secondary">❌</Badge>
                               )}
                               {product.piece_top && (
-                                <Badge className="bg-yellow-100 text-yellow-800">⭐</Badge>
+                                <Badge className="bg-warning/20 text-warning">⭐</Badge>
                               )}
                             </div>
                           </div>

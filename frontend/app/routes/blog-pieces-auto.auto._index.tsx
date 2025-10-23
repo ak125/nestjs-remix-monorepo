@@ -398,7 +398,7 @@ export default function BlogPiecesAutoIndex() {
                   Nos gammes automobiles populaires
                 </p>
               </div>
-              <Badge className="bg-green-100 text-green-800 px-3 py-1.5">
+              <Badge className="bg-success/20 text-success px-3 py-1.5">
                 <TrendingUp className="w-4 h-4 mr-1.5" />
                 Top 12
               </Badge>
@@ -481,7 +481,7 @@ export default function BlogPiecesAutoIndex() {
                             <span className="text-sm font-medium text-gray-600">
                               Voir les pièces
                             </span>
-                            <div className="p-1 bg-green-50 rounded-md group-hover:bg-green-100 transition-colors">
+                            <div className="p-1 bg-green-50 rounded-md group-hover:bg-success/20 transition-colors">
                               <ArrowRight className="w-4 h-4 text-green-600 group-hover:translate-x-0.5 transition-transform" />
                             </div>
                           </div>
@@ -524,7 +524,7 @@ export default function BlogPiecesAutoIndex() {
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
-              <Badge className="mb-4 bg-blue-100 text-blue-800 px-4 py-2">
+              <Badge className="mb-4 bg-info/20 text-info px-4 py-2">
                 <Factory className="w-4 h-4 mr-2" />
                 Catalogue Complet
               </Badge>

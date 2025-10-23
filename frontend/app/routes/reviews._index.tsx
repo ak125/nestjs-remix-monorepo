@@ -345,7 +345,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "approved"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-md hover:bg-green-200"
+                  className="px-3 py-1 bg-success/20 text-success text-sm rounded-md hover:bg-green-200"
                 >
                   Approuver
                 </button>
@@ -354,7 +354,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "rejected"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded-md hover:bg-red-200"
+                  className="px-3 py-1 bg-destructive/20 text-destructive text-sm rounded-md hover:bg-red-200"
                 >
                   Rejeter
                 </button>

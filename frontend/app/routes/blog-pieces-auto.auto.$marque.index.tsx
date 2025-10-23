@@ -491,7 +491,7 @@ export default function BlogPiecesAutoMarque() {
                                         isDiesel 
                                           ? 'bg-orange-100 text-orange-800 border-orange-300'
                                           : isEssence
-                                          ? 'bg-green-100 text-green-800 border-green-300'
+                                          ? 'bg-success/20 text-success border-green-300'
                                           : 'bg-gray-100 text-gray-800 border-gray-300'
                                       }`}
                                     >

@@ -132,7 +132,7 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                   {/* Dispo badge */}
                   <div>
                     {hasStock ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         En stock
                       </span>

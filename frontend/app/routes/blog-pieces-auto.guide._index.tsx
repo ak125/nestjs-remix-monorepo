@@ -375,7 +375,7 @@ export default function BlogGuidesIndex() {
                     <div className="flex-1">
                       <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-1">Tous les guides d'achat</h2>
                       <div className="flex items-center gap-3">
-                        <Badge className="bg-green-100 text-green-800 border-green-300">{totalGuides} guide{totalGuides > 1 ? "s" : ""}</Badge>
+                        <Badge className="bg-success/20 text-success border-green-300">{totalGuides} guide{totalGuides > 1 ? "s" : ""}</Badge>
                       </div>
                     </div>
                   </div>
