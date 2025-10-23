@@ -2,6 +2,7 @@
  * Dashboard Admin - Page d'administration
  */
 
+import { Alert, Badge } from "@fafa/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
@@ -311,15 +312,6 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-600 bg-green-100 border-green-200';
-      case 'warning': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-      case 'critical': return 'text-red-600 bg-red-100 border-red-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
-    }
-  };
-
   return (
     <div className="space-y-8">
       {/* Header principal avec indicateur de santé */}
@@ -327,10 +319,18 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             🎯 Tableau de Bord Administration
-            <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(realTimeStats.systemHealth?.status || 'unknown')}`}>
-              <Activity className="h-4 w-4" />
+            <Badge 
+              variant={
+                realTimeStats.systemHealth?.status === 'healthy' ? 'success' :
+                realTimeStats.systemHealth?.status === 'warning' ? 'warning' :
+                realTimeStats.systemHealth?.status === 'critical' ? 'error' :
+                'default'
+              }
+              size="sm"
+              icon={<Activity className="h-4 w-4" />}
+            >
               SYSTÈME {realTimeStats.systemHealth?.status?.toUpperCase() || 'UNKNOWN'}
-            </span>
+            </Badge>
           </h1>
           <p className="text-gray-600 mt-2">
             Interface d'administration complète • Données en temps réel • Analytics avancées
@@ -347,31 +347,28 @@ export default function AdminDashboard() {
 
       {/* Alerte en cas d'erreur critique */}
       {criticalError && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-800">
-              <AlertTriangle className="h-4 w-4" />
-              <p className="text-sm font-medium">{criticalError}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert 
+          intent="error" 
+          variant="solid" 
+          icon={<AlertTriangle className="h-4 w-4" />}
+          title="Erreur critique du système"
+        >
+          {criticalError}
+        </Alert>
       )}
 
       {/* Alertes API non critiques */}
       {hasErrors && apiErrors && !criticalError && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-2 text-yellow-800">
-              <AlertTriangle className="h-4 w-4 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Certaines APIs ne sont pas disponibles</p>
-                <p className="text-xs text-yellow-700 mt-1">
-                  APIs affectées: {apiErrors.join(', ')} • Les données par défaut sont affichées
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert 
+          intent="warning" 
+          variant="solid"
+          icon={<AlertTriangle className="h-4 w-4" />}
+          title="Certaines APIs ne sont pas disponibles"
+        >
+          <p className="text-xs">
+            APIs affectées: {apiErrors.join(', ')} • Les données par défaut sont affichées
+          </p>
+        </Alert>
       )}
 
       {/* Métriques principales */}
@@ -566,9 +563,9 @@ export default function AdminDashboard() {
                     <h3 className="text-lg font-semibold text-purple-900">Insights IA</h3>
                     <p className="text-sm text-purple-600">Recommandations intelligentes</p>
                   </div>
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium ml-auto">
+                  <Badge variant="subtle" size="sm" className="ml-auto">
                     SMART ANALYTICS
-                  </span>
+                  </Badge>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="bg-white p-4 rounded-lg border border-purple-100">
@@ -577,7 +574,7 @@ export default function AdminDashboard() {
                         <h4 className="font-medium text-purple-900">Opportunité de conversion</h4>
                         <p className="text-sm text-purple-700 mt-1">Optimiser les pages produits pourrait augmenter la conversion de 5%</p>
                       </div>
-                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">HIGH</span>
+                      <Badge variant="error" size="sm">HIGH</Badge>
                     </div>
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-purple-100">
@@ -586,7 +583,7 @@ export default function AdminDashboard() {
                         <h4 className="font-medium text-purple-900">Tendance de trafic</h4>
                         <p className="text-sm text-purple-700 mt-1">Augmentation du trafic mobile de 12% cette semaine</p>
                       </div>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">MEDIUM</span>
+                      <Badge variant="warning" size="sm">MEDIUM</Badge>
                     </div>
                   </div>
                 </div>
@@ -790,9 +787,9 @@ export default function AdminDashboard() {
                         <div className="flex-1">
                           <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-900">{supplier.name}</span>
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <Badge variant="success" size="sm">
                               {supplier.reliability}% fiable
-                            </span>
+                            </Badge>
                           </div>
                           <div className="text-xs text-gray-600 mt-1">
                             {formatNumber(supplier.orders)} commandes ce mois
@@ -949,9 +946,9 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Niveau de menace</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.threatLevel || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Attaques bloquées</span>
@@ -976,9 +973,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">SSL</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.sslStatus || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -991,9 +988,9 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Status</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.backupStatus || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="text-sm text-gray-600">
                       Dernière sauvegarde: Aujourd'hui
@@ -1021,9 +1018,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Optimisation BDD</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
+                      <Badge variant="success" size="sm">
                         NON NÉCESSAIRE
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -1182,9 +1179,9 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2">
           <Search className="h-5 w-5 text-green-600" />
           <h2 className="text-xl font-semibold">Module SEO Enterprise</h2>
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+          <Badge variant="success" size="sm">
             ACTIF
-          </span>
+          </Badge>
         </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
