@@ -18,18 +18,43 @@ npm install @fafa/design-tokens
 
 ## 📖 Usage
 
-### Import CSS Variables
+### 1. Import CSS Utilities (Recommandé) ✨
+
+```css
+/* frontend/app/global.css */
+@import '@fafa/design-tokens/utilities';
+```
+
+```typescript
+// Utilisation avec classes sémantiques
+<div className="bg-brand-600 text-white p-space-4 rounded-lg shadow-md">
+  Bouton
+</div>
+
+// Au lieu de :
+<div className="bg-[var(--color-primary-600)] text-white padding-[1rem]">
+```
+
+**Classes disponibles** :
+- **Couleurs** : `.bg-brand-{50-950}`, `.text-brand-{50-950}`, `.border-brand-{50-950}`
+- **Accent** : `.bg-khmer-curry`, `.text-persian-indigo`, `.bg-vert`
+- **Sémantiques** : `.bg-success`, `.text-error`, `.border-warning`
+- **Spacing** : `.p-space-4`, `.m-space-8`, `.gap-space-6`
+- **Border Radius** : `.rounded-sm`, `.rounded-lg`, `.rounded-full`
+- **Shadows** : `.shadow-sm`, `.shadow-lg`, `.shadow-xl`
+
+### 2. Import CSS Variables
 
 ```css
 @import '@fafa/design-tokens/css';
 
 .my-component {
-  color: var(--colors-primary-600);
+  color: var(--color-primary-600);
   padding: var(--spacing-4);
 }
 ```
 
-### Import TypeScript Types
+### 3. Import TypeScript Types
 
 ```typescript
 import { designTokens } from '@fafa/design-tokens';
@@ -37,7 +62,7 @@ import { designTokens } from '@fafa/design-tokens';
 const primaryColor = designTokens.colors.primary[600];
 ```
 
-### Extend Tailwind Config
+### 4. Extend Tailwind Config
 
 ```javascript
 // tailwind.config.js

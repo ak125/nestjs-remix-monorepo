@@ -1,8 +1,5 @@
-// Re-export design tokens JSON
-export { default as designTokens } from './tokens/design-tokens.json';
-
-// Re-export generated TypeScript types (après build)
+// Re-export generated TypeScript types and tokens
 export * from './tokens/generated';
 
 // Type pour accès aux tokens
-export type DesignTokens = typeof import('./tokens/design-tokens.json');
+export type { DesignTokens } from './tokens/generated';

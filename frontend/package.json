@@ -11,9 +11,16 @@
     "old-dev": "remix vite:dev",
     "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test:a11y": "playwright test tests/a11y --project=chromium",
+    "test:visual": "playwright test tests/visual --project=chromium",
+    "test:visual:update": "playwright test tests/visual --project=chromium --update-snapshots",
+    "test:contrast": "tsx scripts/test-contrast.ts",
+    "test:contrast:aaa": "tsx scripts/test-contrast.ts --level AAA",
+    "test:qa": "npm run test:contrast && npm run test:a11y && npm run test:visual"
   },
   "dependencies": {
+    "@fafa/design-tokens": "^1.0.0",
     "@monorepo/shared-types": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
@@ -38,6 +45,7 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@fafa/eslint-config": "*",
     "@fafa/typescript-config": "*",
     "@playwright/test": "^1.56.0",
@@ -50,6 +58,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
     "autoprefixer": "^10.4.20",
+    "axe-core": "^4.11.0",
     "eslint": "^8.38.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -59,6 +68,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15",
+    "tsx": "^4.20.6",
     "typescript": "^5.1.6",
     "vite": "^5.1.0",
     "vite-tsconfig-paths": "^4.2.1"

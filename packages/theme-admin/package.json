@@ -13,9 +13,10 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
-    }
+    },
+    "./css": "./src/styles/theme-admin.css"
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "src/styles", "README.md"],
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",

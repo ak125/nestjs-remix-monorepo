@@ -7,5 +7,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ['react', '@fafa/design-tokens'],
+  external: ['react', 'react-dom', '@fafa/design-tokens', '@radix-ui/react-dialog', '@radix-ui/react-slot'],
 });
