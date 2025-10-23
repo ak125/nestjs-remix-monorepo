@@ -1,4 +1,5 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
 import { useEffect, useRef, useState } from "react";
 import { requireAuth } from "../auth/unified.server";
@@ -370,7 +371,7 @@ export default function PaymentPage() {
               
                                 {/* Affichage des erreurs */}
                   {actionData?.error && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+<Alert className="rounded-xl p-4 mb-4" variant="error">
                       <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -380,7 +381,7 @@ export default function PaymentPage() {
                           <p className="text-sm text-red-700 mt-1">{actionData.error}</p>
                         </div>
                       </div>
-                    </div>
+                    </Alert>
                   )}
 
                   <Form ref={formRef} method="post" className="space-y-6">

@@ -1,4 +1,5 @@
 import { json, type LoaderFunction } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData } from "@remix-run/react";
 import { 
   User, 
@@ -176,12 +177,12 @@ export default function UnifiedAccountDashboard() {
       <div className="space-y-6">
         {/* Debug info */}
         {mode.debug && sessionInfo && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+<Alert className="rounded-lg p-4 text-sm" variant="warning">
             <strong>Debug Mode:</strong> Session info disponible
             <pre className="mt-2 text-xs overflow-auto">
               {JSON.stringify({ mode, sessionInfo }, null, 2)}
             </pre>
-          </div>
+          </Alert>
         )}
 
         {/* Header */}

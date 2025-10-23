@@ -1,5 +1,6 @@
 // 🤖 Composant IA Prédictions V5.2 - Architecture Modulaire
 import React from 'react';
+import { Alert } from '~/components/ui/alert';
 
 interface RiskAnalysis {
   component: string;
@@ -245,8 +246,8 @@ const AIFooter: React.FC<{
           <div className="w-12 h-12 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-white text-lg animate-bounce">🤖</span>
           </div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
-        </div>
+<Alert className="absolute -top-1 -right-1 w-4 h-4  rounded-full border-2 border-white animate-pulse" variant="success"  />
+        </Alert>
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">

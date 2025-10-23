@@ -83,12 +83,12 @@ export default function PaymentReturnPage() {
             </div>
 
             {result.email && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+<Alert className="rounded-lg p-4 mb-6" variant="info">
                 <p className="text-sm text-blue-800">
                   Un email de confirmation vous a été envoyé à l'adresse <strong>{result.email}</strong>.
                   Vous pouvez suivre votre commande dans votre espace client.
                 </p>
-              </div>
+              </Alert>
             )}
 
             <div className="space-y-3">
@@ -139,7 +139,7 @@ export default function PaymentReturnPage() {
               </div>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+<Alert className="rounded-lg p-4 mb-6" variant="warning">
               <h3 className="font-medium text-yellow-800 mb-2">Que faire ?</h3>
               <ul className="text-sm text-yellow-700 space-y-1 text-left">
                 <li>• Vérifiez que votre carte est valide et non expirée</li>
@@ -147,7 +147,7 @@ export default function PaymentReturnPage() {
                 <li>• Contactez votre banque si le problème persiste</li>
                 <li>• Essayez une autre méthode de paiement</li>
               </ul>
-            </div>
+            </Alert>
 
             <div className="space-y-3">
               <Link 
@@ -214,7 +214,7 @@ export default function PaymentReturnPage() {
               Votre paiement est en cours de traitement.
             </p>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+<Alert className="rounded-lg p-4 mb-6" variant="info">
               <div className="space-y-2 text-sm text-blue-800">
                 <p>Transaction : <span className="font-mono">{result.transactionId}</span></p>
                 <p>
@@ -225,7 +225,7 @@ export default function PaymentReturnPage() {
                   Vous recevrez un email dès que le paiement sera confirmé.
                 </p>
               </div>
-            </div>
+            </Alert>
 
             <div className="space-y-3">
               <Link 

@@ -3,6 +3,7 @@
  * Affichage complet et modération d'un avis spécifique
  */
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { 
@@ -180,19 +181,19 @@ export default function ReviewDetailPage() {
 
       {/* Messages d'état */}
       {actionData?.success && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+<Alert className="mb-6    rounded-md p-4" variant="success">
           <div className="text-green-800 text-sm">
             Action effectuée avec succès
           </div>
-        </div>
+        </Alert>
       )}
 
       {actionData?.error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+<Alert className="mb-6    rounded-md p-4" variant="error">
           <div className="text-red-800 text-sm">
             {actionData.error}
           </div>
-        </div>
+        </Alert>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

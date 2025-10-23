@@ -4,6 +4,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link } from "@remix-run/react";
 import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
@@ -235,12 +236,12 @@ export default function AdminStaff() {
 
       {/* Erreur */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Stats */}

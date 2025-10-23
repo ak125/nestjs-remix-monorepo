@@ -704,18 +704,18 @@ export default function SeoAdmin() {
                 <div className="mt-4 space-y-3">
                   <div className="text-sm font-semibold text-blue-800">💡 Conseils d'Optimisation:</div>
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+<Alert className="flex items-center gap-2 p-2  rounded" variant="success">
                       <span className="text-green-600">✅</span>
                       <span>Incluez le mot-clé principal au début du titre</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border border-blue-200">
+                    </Alert>
+<Alert className="flex items-center gap-2 p-2  rounded" variant="info">
                       <span className="text-blue-600">💡</span>
                       <span>Rédigez une description qui incite au clic</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-purple-50 rounded border border-purple-200">
+                    </Alert>
+<Alert className="flex items-center gap-2 p-2  rounded" variant="default">
                       <span className="text-purple-600">🎯</span>
                       <span>Utilisez des émojis avec parcimonie pour attirer l'œil</span>
-                    </div>
+                    </Alert>
                   </div>
                 </div>
               </CardContent>

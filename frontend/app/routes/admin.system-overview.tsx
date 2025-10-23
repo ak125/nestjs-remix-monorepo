@@ -337,41 +337,41 @@ export default function SystemOverview() {
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+<Alert className="p-4 rounded-lg" variant="success">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-green-900">Module Access</span>
               <Alert intent="success">OPTIMAL</Alert>
             </div>
             <p className="text-sm text-green-700">POST /auth/module-access</p>
             <p className="text-xs text-green-600 mt-1">Réponse: 12ms moyenne</p>
-          </div>
+          </Alert>
           
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+<Alert className="p-4 rounded-lg" variant="info">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-blue-900">Bulk Check</span>
               <Alert intent="info">EFFICIENT</Alert>
             </div>
             <p className="text-sm text-blue-700">POST /auth/bulk-module-access</p>
             <p className="text-xs text-blue-600 mt-1">90% moins de requêtes</p>
-          </div>
+          </Alert>
           
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+<Alert className="p-4 rounded-lg" variant="default">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-purple-900">User Permissions</span>
               <Badge className="px-2 py-1 rounded text-xs" variant="purple">CACHED</Badge>
             </div>
             <p className="text-sm text-purple-700">GET /auth/user-permissions/:id</p>
             <p className="text-xs text-purple-600 mt-1">Cache hit: 94.7%</p>
-          </div>
+          </Alert>
           
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+<Alert className="p-4 rounded-lg" variant="warning">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-orange-900">Access Log</span>
               <Badge className="px-2 py-1 rounded text-xs" variant="orange">AUTO</Badge>
             </div>
             <p className="text-sm text-orange-700">POST /auth/log-access</p>
             <p className="text-xs text-orange-600 mt-1">Logging transparent</p>
-          </div>
+          </Alert>
         </div>
       </div>
 

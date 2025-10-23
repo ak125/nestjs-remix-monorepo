@@ -1,4 +1,5 @@
 import { useFetcher } from "@remix-run/react";
+import { Alert } from '~/components/ui/alert';
 import { useEffect, useState } from "react";
 
 interface YearData {
@@ -130,12 +131,12 @@ export function YearSelector({
           ))}
           
           {selectedYear && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+<Alert className="mt-4 p-3  rounded-lg" variant="info">
               <div className="text-sm">
                 <strong className="text-blue-800">Année sélectionnée :</strong>{' '}
                 <span className="text-blue-700">{selectedYear}</span>
               </div>
-            </div>
+            </Alert>
           )}
         </div>
       )}

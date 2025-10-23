@@ -4,6 +4,7 @@
  * Intégration complète avec backend NestJS + Supabase
  */
 import { Link, useLocation } from '@remix-run/react';
+import { Alert } from '~/components/ui/alert';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { type MenuItem, type NavigationResponse, type UserPreferences } from '../../types/navigation';
@@ -255,7 +256,7 @@ export function DynamicMenu({
   if (error) {
     return (
       <div className={`p-4 ${className}`}>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
           <div className="flex items-center">
             <span className="text-red-500 mr-2">⚠️</span>
             <p className="text-red-800 font-medium">Erreur de chargement</p>
@@ -267,7 +268,7 @@ export function DynamicMenu({
           >
             Réessayer
           </button>
-        </div>
+        </Alert>
       </div>
     );
   }

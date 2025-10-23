@@ -7,6 +7,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link } from "@remix-run/react";
 import { Plus, Edit, Trash, Eye, Users, Crown, Shield, Settings } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
@@ -137,11 +138,11 @@ export default function StaffIndex() {
 
       {/* Erreur */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <span className="font-medium">Erreur : {error}</span>
           </div>
-        </div>
+        </Alert>
       )}
       
       {/* Statistiques */}
@@ -297,7 +298,7 @@ export default function StaffIndex() {
       </div>
       
       {/* Message informatif */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+<Alert className="mt-6 p-4    rounded-lg" variant="info">
         <div className="flex items-center gap-2 text-blue-700">
           <Users className="h-5 w-5" />
           <span className="font-medium">Interface Staff Moderne</span>
@@ -305,7 +306,7 @@ export default function StaffIndex() {
             - Utilise remixService.getStaff() et remixService.getStaffStatistics()
           </span>
         </div>
-      </div>
+      </Alert>
     </div>
   );
 }

@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Alert } from '~/components/ui/alert';
 import { type CompatibilityInfo } from '../../types/pieces-route.types';
 
 interface PiecesCompatibilityInfoProps {
@@ -85,7 +86,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
 
         {/* Notes importantes */}
         {compatibility.notes.length > 0 && (
-          <div className="bg-yellow-50 rounded-lg p-5 border-l-4 border-yellow-400">
+<Alert className="rounded-lg p-5" variant="warning">
             <div className="flex items-start gap-3">
               <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -104,7 +105,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                 </ul>
               </div>
             </div>
-          </div>
+          </Alert>
         )}
 
         {/* CTA Vérification */}

@@ -4,6 +4,7 @@
  */
 
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
 import { getCart } from "../services/cart.server";
 
@@ -412,7 +413,7 @@ export default function CheckoutPage() {
                 </Link>
               </Form>
 
-              <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+<Alert className="mt-6 p-4  rounded-xl" variant="info">
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -421,7 +422,7 @@ export default function CheckoutPage() {
                     En confirmant votre commande, vous serez redirigé vers la page de paiement sécurisé. Aucun paiement ne sera effectué à cette étape.
                   </p>
                 </div>
-              </div>
+              </Alert>
             </div>
           </div>
         </div>
