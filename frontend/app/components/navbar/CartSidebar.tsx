@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 /**
  * 🛒 CartSidebar Component - PHASE 1 POC
  * 
@@ -139,9 +140,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="text-lg">🔢</span>
                 Nombre de pièces
               </span>
-              <span className="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                {summary.total_items}
-              </span>
+              <Badge variant="info">{summary.total_items}</Badge>
             </div>
 
             {/* Subtotal produits */}

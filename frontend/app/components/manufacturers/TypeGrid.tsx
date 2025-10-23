@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 /**
  * 🚗 TYPE GRID COMPONENT
  * 
@@ -267,9 +268,7 @@ export function TypeGrid({
                 {type.fuel_type && (
                   <div className="flex items-center">
                     {getFuelIcon(type.fuel_type)}
-                    <span className="ml-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
-                      {type.fuel_type}
-                    </span>
+                    <Badge variant="info">{type.fuel_type}</Badge>
                   </div>
                 )}
               </div>

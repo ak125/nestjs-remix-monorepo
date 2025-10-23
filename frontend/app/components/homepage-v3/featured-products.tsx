@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 import { Star, ShoppingCart, Eye, AlertCircle } from "lucide-react";
 
 interface Product {
@@ -109,9 +110,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                       </span>
                     )}
                     {product.promo > 0 && (
-                      <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-semibold">
-                        -{product.promo}%
-                      </span>
+                      <Badge variant="error">-{product.promo}%</Badge>
                     )}
                   </div>
                 </div>

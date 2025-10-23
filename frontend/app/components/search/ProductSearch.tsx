@@ -5,6 +5,7 @@
 import { useNavigate } from '@remix-run/react';
 import { Search, Package, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { Badge } from '@fafa/ui';
 import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
 
 interface ProductSearchProps {
@@ -160,9 +161,7 @@ export function ProductSearch({
                           <p className="font-medium text-gray-900 truncate">{result.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             {result.marque_name && (
-                              <span className="text-xs text-blue-600 font-medium px-2 py-0.5 bg-blue-50 rounded">
-                                {result.marque_name}
-                              </span>
+                              <Badge variant="info">{result.marque_name}</Badge>
                             )}
                             {result.reference && (
                               <span className="text-xs text-gray-500">
