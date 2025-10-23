@@ -56,7 +56,7 @@ export function YearSelector({ typeId, onSelect, className }: YearSelectorProps)
                     className={`
                       px-3 py-1 text-sm rounded border
                       ${selectedYear === yearData.year 
-                        ? 'bg-blue-600 text-white border-blue-600' 
+                        ? 'bg-primary text-primary-foreground border-blue-600' 
                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}
                     `}
                   >

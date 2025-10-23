@@ -93,7 +93,7 @@ export function SearchPagination({
                   onClick={() => handlePageClick(page)}
                   className={`px-3 py-2 text-sm rounded-md transition-colors ${
                     page === current
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                   }`}
                 >

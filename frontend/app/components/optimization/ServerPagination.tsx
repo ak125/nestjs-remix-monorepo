@@ -99,7 +99,7 @@ export function ServerPagination({
                 variant={page === currentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className={page === currentPage ? "bg-blue-600 text-white" : ""}
+                className={page === currentPage ? "bg-primary text-primary-foreground" : ""}
               >
                 {page}
               </Button>

@@ -510,7 +510,7 @@ export default function ReviewsPage() {
                       to={`?page=${pageNum}&limit=${pagination.limit}`}
                       className={`px-3 py-2 text-sm rounded-md ${
                         pageNum === pagination.page
-                          ? "bg-blue-600 text-white"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >

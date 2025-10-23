@@ -72,7 +72,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                   key={index}
                   className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200 flex items-center gap-3"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {index + 1}
                   </div>
                   <span className="text-sm font-medium text-gray-900">
