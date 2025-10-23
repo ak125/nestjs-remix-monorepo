@@ -1,5 +1,6 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowRight, Car, Factory, Search, Sparkles, TrendingUp } from "lucide-react";
 import * as React from "react";
@@ -557,7 +558,7 @@ export default function BlogPiecesAutoIndex() {
                     </p>
 
                     <div className="space-y-4">
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="success">
                         <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -567,9 +568,9 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Marque</p>
                           <p className="text-sm text-gray-600">Accédez facilement aux pièces par constructeur</p>
                         </div>
-                      </div>
+                      </Alert>
 
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="info">
                         <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -579,9 +580,9 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Modèle</p>
                           <p className="text-sm text-gray-600">Trouvez les pièces pour votre modèle exact</p>
                         </div>
-                      </div>
+                      </Alert>
 
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-50 border border-purple-200">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="default">
                         <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -591,7 +592,7 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Motorisation & Année</p>
                           <p className="text-sm text-gray-600">Pièces spécifiques à votre configuration</p>
                         </div>
-                      </div>
+                      </Alert>
                     </div>
                   </div>
 

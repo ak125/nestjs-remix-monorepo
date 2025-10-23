@@ -4,6 +4,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { 
@@ -292,12 +293,12 @@ export default function AdminMessages() {
 
       {/* Erreur */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Stats */}

@@ -32,6 +32,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form } from '@remix-run/react';
@@ -210,7 +211,7 @@ export default function AdminProducts() {
 
       {/* Actions en lot */}
       {selectedProducts.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-800">
               {selectedProducts.length} produit(s) sélectionné(s)
@@ -223,7 +224,7 @@ export default function AdminProducts() {
               <Button className="text-sm  px-3 py-1 rounded" variant="red">\n  Supprimer\n</Button>
             </div>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Tableau des produits */}

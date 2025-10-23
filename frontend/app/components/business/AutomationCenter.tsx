@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -668,7 +669,7 @@ export function AutomationCenter() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">💡 Insights automation</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
                   <div className="flex items-center">
                     <span className="text-blue-600 mr-3 text-xl">⚡</span>
                     <div>
@@ -678,9 +679,9 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
                 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
                   <div className="flex items-center">
                     <span className="text-green-600 mr-3 text-xl">💰</span>
                     <div>
@@ -690,9 +691,9 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
                 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="warning">
                   <div className="flex items-center">
                     <span className="text-yellow-600 mr-3 text-xl">🎯</span>
                     <div>
@@ -702,7 +703,7 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
               </div>
             </div>
           </div>

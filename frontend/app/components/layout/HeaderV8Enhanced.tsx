@@ -10,6 +10,7 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
+import { Alert } from '~/components/ui/alert';
 import { 
   Search, 
   User, 
@@ -379,11 +380,11 @@ export function HeaderV8Enhanced({
 
       {/* 📊 Loading state */}
       {loading && (
-        <div className="header__loading bg-blue-50 border-b">
+<Alert className="header__loading  border-b" variant="info">
           <div className="container mx-auto px-4 py-2 text-center">
             <span className="text-sm text-blue-600">Chargement du header...</span>
           </div>
-        </div>
+        </Alert>
       )}
     </header>
   );
