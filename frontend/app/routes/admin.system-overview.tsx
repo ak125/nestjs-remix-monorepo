@@ -296,7 +296,7 @@ export default function SystemOverview() {
           </h2>
           
           <div className="space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg">
+            <div className="bg-success/5 p-4 rounded-lg">
               <h3 className="font-medium text-green-900 mb-2">✅ Réussites</h3>
               <ul className="text-sm text-green-700 space-y-1">
                 <li>• Système NestJS existant identifié comme optimal</li>
@@ -306,7 +306,7 @@ export default function SystemOverview() {
               </ul>
             </div>
             
-            <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="bg-primary/5 p-4 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">🚀 Optimisations</h3>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Service Remix adaptatif créé</li>

@@ -30,7 +30,7 @@ export function OrderRow({
   return (
     <tr
       className={`hover:bg-gray-50 transition-colors ${
-        isSelected ? 'bg-blue-50' : ''
+        isSelected ? 'bg-primary/5' : ''
       }`}
     >
       {/* Checkbox */}

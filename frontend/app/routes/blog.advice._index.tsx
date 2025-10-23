@@ -221,10 +221,10 @@ const Badge: React.FC<{
   size?: 'sm' | 'md';
 }> = ({ children, variant = 'default', size = 'sm' }) => {
   const variants = {
-    default: 'bg-blue-50 text-blue-700 border-blue-200',
+    default: 'bg-primary/5 text-blue-700 border-blue-200',
     secondary: 'bg-gray-50 text-gray-700 border-gray-200',
-    success: 'bg-green-50 text-green-700 border-green-200',
-    warning: 'bg-yellow-50 text-yellow-700 border-yellow-200'
+    success: 'bg-success/5 text-green-700 border-green-200',
+    warning: 'bg-warning/5 text-yellow-700 border-yellow-200'
   };
   
   const sizes = {
@@ -258,7 +258,7 @@ const Button: React.FC<{
   `;
   
   const variants = {
-    default: 'bg-primary text-primary-foreground hover:bg-blue-700 active:bg-blue-800 shadow-sm',
+    default: 'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-blue-800 shadow-sm',
     outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100',
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
   };

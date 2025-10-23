@@ -86,7 +86,7 @@ function MessageCard({ message }: { message: Message }) {
   
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${
-      isUnread ? 'bg-blue-50 border-blue-200' : 'bg-white'
+      isUnread ? 'bg-primary/5 border-blue-200' : 'bg-white'
     }`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">

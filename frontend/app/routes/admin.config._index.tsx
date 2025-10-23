@@ -58,14 +58,14 @@ const CATEGORIES: ConfigCategory[] = [
     label: 'Base de données', 
     icon: Database,
     description: 'Configuration des connexions et pools',
-    color: 'bg-blue-500' 
+    color: 'bg-primary' 
   },
   { 
     key: 'email', 
     label: 'Email & Notifications', 
     icon: Mail,
     description: 'Services d\'envoi et templates',
-    color: 'bg-green-500' 
+    color: 'bg-success' 
   },
   { 
     key: 'analytics', 
@@ -79,14 +79,14 @@ const CATEGORIES: ConfigCategory[] = [
     label: 'Sécurité', 
     icon: Shield,
     description: 'JWT, cryptage, permissions',
-    color: 'bg-red-500' 
+    color: 'bg-destructive' 
   },
   { 
     key: 'performance', 
     label: 'Performance & Cache', 
     icon: Zap,
     description: 'Redis, optimisations, CDN',
-    color: 'bg-yellow-500' 
+    color: 'bg-warning' 
   },
 ];
 

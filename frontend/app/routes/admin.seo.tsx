@@ -213,7 +213,7 @@ export default function SeoAdmin() {
                   <div className="text-xs text-green-600">↗️ Active</div>
                 </div>
                 <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
-                  <div className="bg-blue-500 h-1 rounded-full" style={{ width: '100%' }}></div>
+                  <div className="bg-primary h-1 rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -233,7 +233,7 @@ export default function SeoAdmin() {
                   <div className="text-xs text-green-600">📈 +2.1%</div>
                 </div>
                 <div className="w-full bg-green-200 rounded-full h-1 mt-2">
-                  <div className="bg-green-500 h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
+                  <div className="bg-success h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -447,7 +447,7 @@ export default function SeoAdmin() {
                         <span className="font-bold">650K+</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '91%' }}></div>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -457,7 +457,7 @@ export default function SeoAdmin() {
                         <span className="font-bold">117</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                        <div className="bg-success h-2 rounded-full" style={{ width: '100%' }}></div>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -487,7 +487,7 @@ export default function SeoAdmin() {
                         <span className="font-bold text-teal-700">+2,847 pages</span>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-info rounded-full"></div>
                           <span className="text-sm">Amélioration du taux</span>

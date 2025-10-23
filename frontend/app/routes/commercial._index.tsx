@@ -183,7 +183,7 @@ export default function CommercialDashboard() {
       value: orders.todayCount.toString(),
       icon: ShoppingCart,
       color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      bgColor: "bg-primary/15",
       link: "/commercial/orders"
     },
     {
@@ -199,7 +199,7 @@ export default function CommercialDashboard() {
       value: orders.preparingCount.toString(),
       icon: Truck,
       color: "text-green-600",
-      bgColor: "bg-green-100",
+      bgColor: "bg-success/15",
       link: "/commercial/shipping"
     },
     {
@@ -224,13 +224,13 @@ export default function CommercialDashboard() {
           </div>
           <div className="flex space-x-3">
             <Link to="/commercial/shipping">
-              <Button className="bg-green-600 hover:bg-green-700">
+              <Button className="bg-success hover:bg-success/90">
                 <Truck className="mr-2 h-4 w-4" />
                 Expéditions
               </Button>
             </Link>
             <Link to="/commercial/orders/new">
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button className="bg-blue-600 hover:bg-primary/90">
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Nouvelle commande
               </Button>

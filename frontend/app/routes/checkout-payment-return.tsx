@@ -53,7 +53,7 @@ export default function PaymentReturnPage() {
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
         {result.status === 'SUCCESS' && (
           <div className="p-8 text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-success/15 mb-6">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
             
@@ -94,7 +94,7 @@ export default function PaymentReturnPage() {
             <div className="space-y-3">
               <Link 
                 to={`/account/orders/${result.orderId}`} 
-                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Voir ma commande
               </Link>
@@ -122,7 +122,7 @@ export default function PaymentReturnPage() {
               Votre paiement n'a pas pu être traité.
             </p>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="bg-destructive/5 border border-red-200 rounded-lg p-4 mb-6">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Raison :</span>
@@ -152,7 +152,7 @@ export default function PaymentReturnPage() {
             <div className="space-y-3">
               <Link 
                 to={`/checkout-payment?orderId=${result.orderId}`} 
-                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Réessayer le paiement
               </Link>
@@ -186,7 +186,7 @@ export default function PaymentReturnPage() {
             <div className="space-y-3">
               <Link 
                 to={`/checkout-payment?orderId=${result.orderId}`} 
-                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Reprendre le paiement
               </Link>
@@ -202,7 +202,7 @@ export default function PaymentReturnPage() {
 
         {result.status === 'PENDING' && (
           <div className="p-8 text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary/15 mb-6">
               <Clock className="h-8 w-8 text-blue-600" />
             </div>
             
@@ -230,7 +230,7 @@ export default function PaymentReturnPage() {
             <div className="space-y-3">
               <Link 
                 to={`/account/orders/${result.orderId}`} 
-                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Suivre ma commande
               </Link>

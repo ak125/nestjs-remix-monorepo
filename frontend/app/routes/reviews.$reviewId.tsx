@@ -332,7 +332,7 @@ export default function ReviewDetailPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-red-50 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-destructive/5 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Supprimer définitivement

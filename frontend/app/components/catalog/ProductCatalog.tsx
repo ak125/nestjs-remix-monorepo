@@ -153,7 +153,7 @@ export function ProductCatalog({
 
           {/* Statistiques rapides */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="bg-primary/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Package className="h-8 w-8 text-blue-600 mr-3" />
                 <div>
@@ -163,7 +163,7 @@ export function ProductCatalog({
               </div>
             </div>
             
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-success/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Filter className="h-8 w-8 text-green-600 mr-3" />
                 <div>
@@ -173,7 +173,7 @@ export function ProductCatalog({
               </div>
             </div>
             
-            <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="bg-warning/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Star className="h-8 w-8 text-yellow-600 mr-3" />
                 <div>
@@ -363,7 +363,7 @@ export function ProductCatalog({
                       key={product.piece_id}
                       onClick={() => onProductClick?.(product)}
                       className={`py-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        product.piece_top ? 'bg-yellow-50' : ''
+                        product.piece_top ? 'bg-warning/5' : ''
                       }`}
                     >
                       <div className="flex items-center space-x-4">

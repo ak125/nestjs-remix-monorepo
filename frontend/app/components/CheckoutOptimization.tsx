@@ -151,7 +151,7 @@ export function CheckoutOptimization({
     switch (variant) {
       case 'urgency':
         return (
-          <div className={`${baseClasses} bg-red-50 border-2 border-red-200`}>
+          <div className={`${baseClasses} bg-destructive/5 border-2 border-red-200`}>
             <div className="text-center mb-4">
               <div className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold mb-3">
                 ⚡ OFFRE LIMITÉE
@@ -182,7 +182,7 @@ export function CheckoutOptimization({
       
       case 'simplified':
         return (
-          <div className={`${baseClasses} bg-green-50 border border-green-200`}>
+          <div className={`${baseClasses} bg-success/5 border border-green-200`}>
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-green-900 mb-2">
                 🎯 Checkout Simplifié
@@ -209,7 +209,7 @@ export function CheckoutOptimization({
       
       case 'social_proof':
         return (
-          <div className={`${baseClasses} bg-blue-50 border border-blue-200`}>
+          <div className={`${baseClasses} bg-primary/5 border border-blue-200`}>
             <div className="text-center mb-4">
               <h3 className="text-xl font-bold text-blue-900">
                 🌟 Rejoignez 59,137 utilisateurs satisfaits

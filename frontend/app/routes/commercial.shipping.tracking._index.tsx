@@ -473,7 +473,7 @@ export default function ShippingTracking() {
             
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {realTimeUpdates.map((update, index) => (
-                <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm animate-fade-in">
+                <div key={index} className="p-3 bg-primary/5 border border-blue-200 rounded-lg text-sm animate-fade-in">
                   {update}
                 </div>
               ))}

@@ -32,7 +32,7 @@ const ActivityIcon = ({ type, status }: { type: Activity['type']; status?: Activ
   return (
     <div className={cn(
       "flex h-8 w-8 items-center justify-center rounded-full",
-      status === 'success' && "bg-green-100 text-green-600",
+      status === 'success' && "bg-success/15 text-green-600",
       status === 'pending' && "bg-yellow-100 text-yellow-600",
       status === 'error' && "bg-red-100 text-red-600",
       !status && "bg-gray-100 text-gray-600"

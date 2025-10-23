@@ -141,7 +141,7 @@ export default function TypeSelectorDemo() {
               />
 
               {selectedModel && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <div className="mt-4 p-3 bg-primary/5 rounded-lg">
                   <h4 className="font-semibold text-blue-900 mb-2">
                     Modèle sélectionné :
                   </h4>

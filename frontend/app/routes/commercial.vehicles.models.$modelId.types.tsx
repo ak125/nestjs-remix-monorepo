@@ -260,7 +260,7 @@ export default function CommercialVehiclesModelTypes() {
                     className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-blue-50 rounded-lg">
+                      <div className="p-2 bg-primary/5 rounded-lg">
                         <Zap className="h-6 w-6 text-blue-600" />
                       </div>
                       <span className="text-xs text-gray-500">#{type.type_id}</span>
@@ -299,7 +299,7 @@ export default function CommercialVehiclesModelTypes() {
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         type.type_year_to 
                           ? 'bg-gray-100 text-gray-700' 
-                          : 'bg-green-100 text-green-700'
+                          : 'bg-success/15 text-green-700'
                       }`}>
                         {type.type_year_to ? 'Ancien' : 'Actuel'}
                       </span>

@@ -63,7 +63,7 @@ export function WhyChooseUs() {
             <button className="bg-sky-500 hover:bg-sky-600 text-white p-3 rounded-full transition">
               <Twitter className="h-5 w-5" />
             </button>
-            <button className="bg-blue-700 hover:bg-blue-800 text-white p-3 rounded-full transition">
+            <button className="bg-primary/90 hover:bg-blue-800 text-white p-3 rounded-full transition">
               <Linkedin className="h-5 w-5" />
             </button>
           </div>

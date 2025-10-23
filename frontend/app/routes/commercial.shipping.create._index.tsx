@@ -518,7 +518,7 @@ export default function CreateShipment() {
 
               {/* Récapitulatif et validation */}
               {selectedService && (
-                <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-8 p-4 bg-primary/5 border border-blue-200 rounded-lg">
                   <h3 className="font-semibold text-blue-900 mb-2">Récapitulatif</h3>
                   <div className="space-y-1 text-sm text-blue-800">
                     <div>Transporteur: {selectedCarrier?.name}</div>
@@ -544,7 +544,7 @@ export default function CreateShipment() {
                     disabled={!selectedService || isSubmitting}
                     className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
                       selectedService && !isSubmitting
-                        ? 'bg-primary text-primary-foreground hover:bg-blue-700'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >

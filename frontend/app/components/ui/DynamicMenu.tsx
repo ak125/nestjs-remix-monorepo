@@ -94,7 +94,7 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
             w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm
             transition-colors duration-200
             ${item.isActive 
-              ? 'bg-blue-100 text-blue-700 font-medium' 
+              ? 'bg-primary/15 text-blue-700 font-medium' 
               : 'text-gray-700 hover:bg-gray-100'
             }
             ${hasChildren ? 'cursor-pointer' : item.url ? 'cursor-pointer' : 'cursor-default'}
@@ -155,7 +155,7 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
 
   if (error) {
     return (
-      <div className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}>
+      <div className={`p-4 bg-destructive/5 border border-red-200 rounded-lg ${className}`}>
         <p className="text-red-800 text-sm font-medium">
           Erreur de chargement
         </p>

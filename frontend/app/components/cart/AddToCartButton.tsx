@@ -148,18 +148,18 @@ export function AddToCartButton({
 
   const getButtonColor = () => {
     if (isSuccess) {
-      return "bg-green-600 hover:bg-green-700 text-white";
+      return "bg-success hover:bg-success/90 text-white";
     }
 
     if (errorMessage) {
-      return "bg-red-600 hover:bg-red-700 text-white";
+      return "bg-destructive hover:bg-destructive/90 text-white";
     }
 
     if (piece.stock === "En stock") {
       return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
 
-    return "bg-yellow-600 hover:bg-yellow-700 text-white";
+    return "bg-warning hover:bg-warning/90 text-white";
   };
 
   return (
