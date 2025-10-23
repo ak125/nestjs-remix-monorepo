@@ -57,7 +57,7 @@ export const AIPredictionsPanel: React.FC<AIPredictionsPanelProps> = ({
             Analyse Prédictive IA - {vehicle.marque} {vehicle.modele}
           </h2>
           <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-violet-200">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
             <span className="text-sm font-medium text-gray-700">IA Active</span>
           </div>
         </div>
@@ -182,7 +182,7 @@ const CostOptimizationCard: React.FC<{
       <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 bg-success rounded-full flex items-center justify-center">
               <span className="text-white text-xs">💸</span>
             </div>
             <span className="text-lg font-bold text-green-800">Économies potentielles</span>
@@ -209,7 +209,7 @@ const CostOptimizationCard: React.FC<{
           </div>
           <h4 className="text-lg font-bold text-blue-800">Maintenance Prédictive</h4>
           <div className="ml-auto bg-muted rounded-full px-2 py-1">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
+            <div className="w-2 h-2 bg-info rounded-full animate-ping" />
           </div>
         </div>
         <div className="space-y-2">

@@ -298,7 +298,7 @@ export default function ShippingTracking() {
               Suivi des Expéditions
               {isConnected && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  <div className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse"></div>
                   Temps réel
                 </span>
               )}
@@ -426,7 +426,7 @@ export default function ShippingTracking() {
                           className={`h-2 rounded-full transition-all duration-500 ${
                             shipment.status === 'delivered' ? 'bg-green-500' : 
                             shipment.status === 'out_for_delivery' ? 'bg-orange-500' : 
-                            shipment.status === 'in_transit' ? 'bg-blue-500' : 'bg-yellow-500'
+                            shipment.status === 'in_transit' ? 'bg-info' : 'bg-warning'
                           }`}
                           style={{ 
                             width: shipment.status === 'delivered' ? '100%' : 
@@ -441,7 +441,7 @@ export default function ShippingTracking() {
                     <div className="space-y-2">
                       {shipment.events.slice(0, 2).map((event) => (
                         <div key={event.id} className="flex items-center gap-3 text-sm">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-info rounded-full"></div>
                           <div className="text-gray-600">
                             {new Date(event.timestamp).toLocaleDateString('fr-FR', {
                               day: '2-digit',

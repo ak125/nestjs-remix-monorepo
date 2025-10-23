@@ -387,7 +387,7 @@ export function NewsletterSection() {
           </form>
 
           {isSubscribed && (
-            <div className="bg-green-500 text-white px-6 py-3 rounded-full inline-block animate-bounce">
+            <div className="bg-success text-success-foreground px-6 py-3 rounded-full inline-block animate-bounce">
               ✓ Inscription réussie ! Vérifiez votre email
             </div>
           )}
