@@ -89,25 +89,20 @@ export interface BadgeProps
   onRemove?: () => void;
 }
 
-const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  (
-    {
-      className,
-      variant,
-      size,
-      icon,
-      onRemove,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <span
-        ref={ref}
-        className={cn(badgeVariants({ variant, size }), className)}
-        {...props}
-      >
+function Badge({
+  className,
+  variant,
+  size,
+  icon,
+  onRemove,
+  children,
+  ...props
+}: BadgeProps) {
+  return (
+    <span
+      className={cn(badgeVariants({ variant, size }), className)}
+      {...props}
+    >
         {icon && (
           <span className="flex-shrink-0">
             {icon}
@@ -137,15 +132,14 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        )}
-      </span>
-    );
-  }
-);
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      )}
+    </span>
+  );
+}
 
 Badge.displayName = 'Badge';
 
