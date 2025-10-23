@@ -1,5 +1,6 @@
 import { Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
+import { Badge } from '@fafa/ui';
 
 interface User {
   id: string;
@@ -138,9 +139,7 @@ export function UserList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {user.isPro ? (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                      PRO
-                    </span>
+                    <Badge variant="default">PRO</Badge>
                   ) : (
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                       Standard
@@ -149,13 +148,9 @@ export function UserList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {user.isActive !== false ? (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Actif
-                    </span>
+                    <Badge variant="success">Actif</Badge>
                   ) : (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                      Inactif
-                    </span>
+                    <Badge variant="error">Inactif</Badge>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

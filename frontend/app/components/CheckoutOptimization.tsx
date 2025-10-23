@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { Badge } from '@fafa/ui';
 import { useAdvancedAnalyticsComplete } from '../hooks/useAdvancedAnalyticsComplete'
 import { useAIAssistant } from '../hooks/useAIAssistantSimple'
 
@@ -223,9 +224,7 @@ export function CheckoutOptimization({
                 🌟 Rejoignez 59,137 utilisateurs satisfaits
               </h3>
               <div className="flex justify-center items-center mt-2 text-sm text-blue-700">
-                <span className="bg-blue-100 px-2 py-1 rounded">
-                  📊 Taux de satisfaction: 95%
-                </span>
+                <Badge variant="info">📊 Taux de satisfaction: 95%</Badge>
               </div>
             </div>
             
@@ -302,9 +301,7 @@ export function CheckoutOptimization({
           
           {testActive && (
             <div className="mt-4">
-              <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                ✅ Test Actif - Variante: {variant.toUpperCase()}
-              </span>
+              <Badge variant="success">✅ Test Actif - Variante: {variant.toUpperCase()}</Badge>
             </div>
           )}
         </div>

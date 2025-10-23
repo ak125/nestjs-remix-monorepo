@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Badge } from '@fafa/ui';
 import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesComparisonViewProps {
@@ -171,9 +172,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
 
     case 'brand':
       return (
-        <span className="inline-block text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded">
-          {piece.brand}
-        </span>
+        <Badge variant="info">{piece.brand}</Badge>
       );
 
     case 'name':

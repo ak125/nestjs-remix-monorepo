@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Badge } from '@fafa/ui';
 import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesListViewProps {
@@ -106,13 +107,9 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                   <div className="flex-1">
                     {/* Marque + badges */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded">
-                        {piece.brand}
-                      </span>
+                      <Badge variant="info">{piece.brand}</Badge>
                       {piece.quality === 'OES' && (
-                        <span className="text-xs font-medium text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
-                          🏆 OES
-                        </span>
+                        <Badge variant="warning">🏆 OES</Badge>
                       )}
                       {piece.quality && piece.quality !== 'OES' && (
                         <span className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
@@ -140,9 +137,7 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                         En stock
                       </span>
                     ) : (
-                      <span className="text-xs font-medium text-red-700 bg-red-50 px-2 py-1 rounded-full">
-                        Rupture
-                      </span>
+                      <Badge variant="error">Rupture</Badge>
                     )}
                   </div>
                 </div>

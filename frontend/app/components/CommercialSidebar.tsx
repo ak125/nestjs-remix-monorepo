@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import * as React from "react"
+import { Badge } from '@fafa/ui';
 import { Button } from "./ui/button"
 
 // Fonction utilitaire pour combiner les classes CSS
@@ -193,9 +194,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                     </div>
                   </div>
                   {item.badge && (
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                      {item.badge}
-                    </span>
+                    <Badge variant="error">{item.badge}</Badge>
                   )}
                 </Link>
               )

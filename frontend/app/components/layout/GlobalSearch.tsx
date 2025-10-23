@@ -25,6 +25,7 @@ import {
   Command
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Badge } from '@fafa/ui';
 
 interface GlobalSearchProps {
   isOpen: boolean;
@@ -388,9 +389,7 @@ export function GlobalSearch({
                             
                             <div className="flex items-center space-x-2 ml-2">
                               {result.metadata?.badge && (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                  {result.metadata.badge}
-                                </span>
+                                <Badge variant="success">{result.metadata.badge}</Badge>
                               )}
                               {result.metadata?.price && (
                                 <span className="font-medium text-gray-900">{result.metadata.price}</span>

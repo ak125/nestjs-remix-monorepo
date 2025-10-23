@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@fafa/ui';
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE
@@ -326,9 +327,7 @@ export function ProductCatalog({
                               : product.piece_name}
                           </h3>
                           {product.piece_top && (
-                            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
-                              TOP
-                            </span>
+                            <Badge variant="warning">TOP</Badge>
                           )}
                         </div>
                         
@@ -393,9 +392,7 @@ export function ProductCatalog({
                               {product.piece_name}
                             </h3>
                             {product.piece_top && (
-                              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
-                                TOP
-                              </span>
+                              <Badge variant="warning">TOP</Badge>
                             )}
                           </div>
                           

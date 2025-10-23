@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { Badge } from '@fafa/ui';
 
 export interface FilterFacet {
   field: string;
@@ -99,9 +100,7 @@ export function SearchFilters({
         <h3 className="font-semibold text-gray-900">
           Filtres
           {activeFilterCount > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-              {activeFilterCount}
-            </span>
+            <Badge variant="info">{activeFilterCount}</Badge>
           )}
         </h3>
         {activeFilterCount > 0 && (

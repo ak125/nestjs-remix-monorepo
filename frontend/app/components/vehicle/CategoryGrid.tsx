@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { Badge } from '@fafa/ui';
 import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================
@@ -203,9 +204,7 @@ function CategoryCard({
             {category.name}
           </h3>
           {category.featured && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Populaire
-            </span>
+            <Badge variant="info">Populaire</Badge>
           )}
         </div>
 
