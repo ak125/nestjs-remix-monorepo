@@ -194,7 +194,7 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
                     </div>
                     <button
                       onClick={(e) => handleAddToCart(product.piece_id, e)}
-                      className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                      className="p-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded transition-colors"
                       title="Ajouter au panier"
                     >
                       <ShoppingCart className="w-4 h-4" />

@@ -216,7 +216,7 @@ export function Error404({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Link
                 to="/"
-                className="flex items-center justify-center px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="flex items-center justify-center px-6 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -256,7 +256,7 @@ export function Error404({
 
               <Link
                 to="/support/contact"
-                className="flex items-center justify-center px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                className="flex items-center justify-center px-6 py-4 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors font-medium"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -276,7 +276,7 @@ export function Error404({
 
               <Link
                 to="/search"
-                className="flex items-center justify-center px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                className="flex items-center justify-center px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
               >
                 <svg
                   className="w-5 h-5 mr-2"

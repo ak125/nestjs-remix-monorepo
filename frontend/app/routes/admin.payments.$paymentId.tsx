@@ -94,7 +94,7 @@ export default function AdminPaymentDetail() {
           </p>
           <button
             onClick={() => navigate('/admin/payments/dashboard')}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux paiements

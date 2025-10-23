@@ -351,7 +351,7 @@ export function CatalogGrid({
                     
                     <Link
                       to={getItemUrl(item)}
-                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
                     >
                       Voir les produits
                     </Link>

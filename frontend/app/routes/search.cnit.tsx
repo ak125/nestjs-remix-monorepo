@@ -194,7 +194,7 @@ export default function SearchCnitPage() {
                 <div className="flex gap-3">
                   <Link
                     to={`/vehicles/catalog/${vehicle.auto_type?.type_id}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
                   >
                     Voir les pièces compatibles
                     <ArrowRight className="h-4 w-4" />

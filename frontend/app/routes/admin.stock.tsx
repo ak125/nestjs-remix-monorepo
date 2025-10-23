@@ -249,7 +249,7 @@ export default function AdminStock() {
         <div className="flex space-x-3">
           <button
             onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
           >
             🔄 Actualiser
           </button>
@@ -258,7 +258,7 @@ export default function AdminStock() {
               const url = `${process.env.API_URL || 'http://localhost:3000'}/api/admin/stock/health`;
               window.open(url, '_blank');
             }}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            className="bg-success hover:bg-success/90 text-success-foreground px-4 py-2 rounded-lg transition-colors"
           >
             📊 Rapport Complet
           </button>
