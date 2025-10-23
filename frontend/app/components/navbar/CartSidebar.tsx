@@ -272,7 +272,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
                 onQuantityChange(item.quantity - 1);
               }}
               disabled={item.quantity <= 1}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
+              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
               aria-label="Diminuer la quantité"
             >
               −
@@ -309,7 +309,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       {/* Bouton supprimer */}
       <button
         onClick={onRemove}
-        className="h-6 w-6 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center flex-shrink-0"
+        className="h-6 w-6 rounded text-gray-400 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center flex-shrink-0"
         aria-label="Supprimer l'article"
       >
         <X className="h-4 w-4" />

@@ -187,7 +187,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
 
       {/* Déconnexion */}
       <div className="p-4 border-t border-gray-200 mt-auto">
-        <Button variant="outline" size="sm" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" asChild>
+        <Button variant="outline" size="sm" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
           <Link to="/logout">
             <LogOut className="w-4 h-4 mr-2" />
             Se déconnecter

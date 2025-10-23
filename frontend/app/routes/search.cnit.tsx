@@ -150,7 +150,7 @@ export default function SearchCnitPage() {
                 Rechercher
               </Button>
             </div>
-            <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 text-sm text-primary bg-primary/10 p-3 rounded-lg">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
                 Le code CNIT se trouve sur la carte grise du véhicule dans la case K.
