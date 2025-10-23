@@ -112,10 +112,10 @@ function getSentimentColor(sentiment: string): string {
 
 function getUrgencyColor(urgency: string): string {
   switch (urgency) {
-    case 'critical': return 'text-red-800 bg-red-100';
+    case 'critical': return 'text-destructive bg-destructive/20';
     case 'high': return 'text-orange-800 bg-orange-100';
-    case 'medium': return 'text-yellow-800 bg-yellow-100';
-    case 'low': return 'text-green-800 bg-green-100';
+    case 'medium': return 'text-warning bg-warning/20';
+    case 'low': return 'text-success bg-success/20';
     default: return 'text-gray-800 bg-gray-100';
   }
 }

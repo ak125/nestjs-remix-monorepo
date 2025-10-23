@@ -19,7 +19,7 @@ const navigationItems: NavigationItem[] = [
     icon: BookOpen,
     description: "Guides et conseils par type de pièce",
     color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-primary/10",
     borderColor: "border-blue-200",
   },
   {
