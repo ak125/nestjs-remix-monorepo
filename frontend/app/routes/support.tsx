@@ -67,9 +67,9 @@ export default function SupportDashboard() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return "bg-red-100 text-red-800";
-      case "high": return "bg-orange-100 text-orange-800";
-      case "normal": return "bg-blue-100 text-blue-800";
+      case "urgent": return 'error';
+      case "high": return 'orange';
+      case "normal": return 'info';
       case "low": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }

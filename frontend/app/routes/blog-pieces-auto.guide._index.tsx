@@ -65,7 +65,7 @@ const CATEGORY_COLORS: Record<
     border: "border-red-300", 
     text: "text-red-800", 
     gradient: "from-red-500 to-red-700", 
-    badge: "bg-red-100 text-red-800 border-red-300" 
+    badge: 'error', 
   },
   "Filtres": { 
     bg: "bg-yellow-50", 
@@ -79,14 +79,14 @@ const CATEGORY_COLORS: Record<
     border: "border-purple-300", 
     text: "text-purple-800", 
     gradient: "from-purple-500 to-purple-700", 
-    badge: "bg-purple-100 text-purple-800 border-purple-300" 
+    badge: 'purple', 
   },
   "Batteries": { 
     bg: "bg-orange-50", 
     border: "border-orange-300", 
     text: "text-orange-800", 
     gradient: "from-orange-500 to-orange-700", 
-    badge: "bg-orange-100 text-orange-800 border-orange-300" 
+    badge: 'orange', 
   },
   "Pneus": { 
     bg: "bg-slate-50", 

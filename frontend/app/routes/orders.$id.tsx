@@ -149,25 +149,25 @@ const getStatusColor = (statusDetails: any) => {
   
   switch (statusDetails.ords_named?.toLowerCase()) {
     case 'en attente':
-    case 'pending': return "bg-yellow-100 text-yellow-800";
+    case 'pending': return 'warning';
     case 'confirmée':
-    case 'confirmed': return "bg-blue-100 text-blue-800";
+    case 'confirmed': return 'info';
     case 'en cours':
-    case 'processing': return "bg-purple-100 text-purple-800";
+    case 'processing': return 'purple';
     case 'expédiée':
-    case 'shipped': return "bg-green-100 text-green-800";
+    case 'shipped': return 'success';
     case 'livrée':
-    case 'delivered': return "bg-green-100 text-green-800";
+    case 'delivered': return 'success';
     case 'annulée':
-    case 'cancelled': return "bg-red-100 text-red-800";
+    case 'cancelled': return 'error';
     default: return "bg-gray-100 text-gray-800";
   }
 };
 
 const getPaymentStatusColor = (isPaid: string) => {
   switch (isPaid) {
-    case "1": return "bg-green-100 text-green-800";
-    case "0": return "bg-yellow-100 text-yellow-800";
+    case "1": return 'success';
+    case "0": return 'warning';
     default: return "bg-gray-100 text-gray-800";
   }
 };
