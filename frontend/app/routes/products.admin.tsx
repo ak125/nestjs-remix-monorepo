@@ -511,7 +511,7 @@ export default function ProductsAdmin() {
                         </td>
                         <td className="px-6 py-4 text-center">
                           {product.is_active ? (
-                            <Badge className="bg-green-100 text-green-800">
+                            <Badge className="bg-success/20 text-success">
                               ✓ Actif
                             </Badge>
                           ) : (

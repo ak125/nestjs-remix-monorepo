@@ -427,7 +427,7 @@ export default function BlogIndex() {
                     
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                        <Badge variant="secondary" className="bg-info/20 text-info hover:bg-blue-200">
                           {getTypeLabel(article.type)}
                         </Badge>
                         {article.difficulty && (
@@ -583,7 +583,7 @@ export default function BlogIndex() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge className="bg-blue-100 text-blue-800 text-sm">
+                    <Badge className="bg-info/20 text-info text-sm">
                       35+ marques
                     </Badge>
                     <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-2 transition-transform" />
@@ -623,7 +623,7 @@ export default function BlogIndex() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge className="bg-green-100 text-green-800 text-sm">
+                    <Badge className="bg-success/20 text-success text-sm">
                       120+ guides
                     </Badge>
                     <ArrowRight className="w-5 h-5 text-green-600 group-hover:translate-x-2 transition-transform" />
@@ -720,7 +720,7 @@ export default function BlogIndex() {
                       
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          <Badge variant="secondary" className="bg-info/20 text-info">
                             {getTypeLabel(article.type)}
                           </Badge>
                           <div className="flex items-center text-sm text-gray-500">

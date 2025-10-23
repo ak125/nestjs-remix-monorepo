@@ -405,7 +405,7 @@ export default function BlogConseilsIndex() {
 
                                   <div className="flex items-center gap-2 text-primary font-bold text-sm group-hover:gap-3 transition-all">
                                     <span>Lire l'article</span>
-                                    <div className="p-1 bg-blue-50 rounded-md group-hover:bg-blue-100 transition-colors">
+                                    <div className="p-1 bg-blue-50 rounded-md group-hover:bg-info/20 transition-colors">
                                       <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                                     </div>
                                   </div>

@@ -70,7 +70,7 @@ export default function LoginPage() {
         {/* Success message */}
         {searchParams.get("register") === "success" && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Badge className="w-full justify-center py-2 bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
+            <Badge className="w-full justify-center py-2 bg-success/20 text-success hover:bg-success/20 border-green-200">
               ✓ Compte créé avec succès !
             </Badge>
           </div>

@@ -655,7 +655,7 @@ export default function UserDetails() {
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${
                           order.isPaid
-                            ? 'bg-green-100 text-green-800 border border-green-200'
+                            ? 'bg-success/20 text-success border border-green-200'
                             : 'bg-orange-100 text-orange-800 border border-orange-200'
                         }`}
                       >
@@ -744,7 +744,7 @@ export default function UserDetails() {
         <div className="flex gap-3 flex-wrap">
           <a
             href={`mailto:${user.email}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-info bg-info/10 border border-blue-200 rounded-lg hover:bg-info/20 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow"
           >
             <Mail className="w-4 h-4" />
             Envoyer un email
@@ -765,7 +765,7 @@ export default function UserDetails() {
           {user.phone && (
             <a
               href={`tel:${user.phone}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-success bg-success/10 border border-green-200 rounded-lg hover:bg-success/20 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
             >
               <Phone className="w-4 h-4" />
               Appeler
