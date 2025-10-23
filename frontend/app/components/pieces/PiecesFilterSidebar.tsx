@@ -248,7 +248,7 @@ export function PiecesFilterSidebar({
                   onChange={() => setActiveFilters({...activeFilters, availability: "stock"})}
                 />
                 <span className="text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="w-2 h-2 bg-success rounded-full"></span>
                   En stock uniquement
                 </span>
               </label>
