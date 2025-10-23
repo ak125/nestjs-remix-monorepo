@@ -80,13 +80,13 @@ export function VehicleCard({ vehicle, className = "", showDetails = true }: Veh
         {/* Codes d'identification */}
         <div className="grid grid-cols-2 gap-3">
           {vehicle.tnc_code && (
-            <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="bg-muted p-3 rounded-lg">
               <div className="text-xs font-medium text-blue-600 uppercase">Code Mine</div>
               <div className="text-sm font-mono text-blue-800">{vehicle.tnc_code}</div>
             </div>
           )}
           {vehicle.tnc_cnit && (
-            <div className="bg-green-50 p-3 rounded-lg">
+            <div className="bg-success/10 p-3 rounded-lg">
               <div className="text-xs font-medium text-green-600 uppercase">CNIT</div>
               <div className="text-sm font-mono text-green-800">{vehicle.tnc_cnit}</div>
             </div>

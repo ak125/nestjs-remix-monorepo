@@ -556,7 +556,7 @@ export default function AdminDashboard() {
               {/* Insights IA */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-purple-100 p-2 rounded-lg">
+                  <div className="bg-muted p-2 rounded-lg">
                     <Brain className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
@@ -616,7 +616,7 @@ export default function AdminDashboard() {
               <div className="grid gap-6 md:grid-cols-3">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-100 p-2 rounded-lg">
+                    <div className="bg-muted p-2 rounded-lg">
                       <Database className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
@@ -642,7 +642,7 @@ export default function AdminDashboard() {
 
                 <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-green-100 p-2 rounded-lg">
+                    <div className="bg-success/10 p-2 rounded-lg">
                       <ShoppingCart className="h-6 w-6 text-green-600" />
                     </div>
                     <div>

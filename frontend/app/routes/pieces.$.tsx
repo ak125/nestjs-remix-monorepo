@@ -187,7 +187,7 @@ export default function LegacyPartUrlMigrationPage() {
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             {/* Icône et titre */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
                 <ArrowRight className="w-8 h-8 text-green-600" />
               </div>
             </div>
@@ -283,7 +283,7 @@ export default function LegacyPartUrlMigrationPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           {/* Icône d'erreur */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>

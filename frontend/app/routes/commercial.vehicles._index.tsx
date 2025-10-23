@@ -161,7 +161,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Search className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
@@ -181,7 +181,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-lg">
+                <div className="bg-success/10 p-3 rounded-lg">
                   <Settings className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
@@ -201,7 +201,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-purple-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Car className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
@@ -221,7 +221,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-orange-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Database className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>

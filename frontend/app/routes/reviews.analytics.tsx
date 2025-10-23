@@ -160,7 +160,7 @@ export default function ReviewAnalyticsPage() {
               <p className="text-sm font-medium text-gray-500">Total des Avis</p>
               <p className="text-2xl font-bold text-gray-900">{(stats as any).total || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
               <BarChart3 className="w-6 h-6 text-blue-600" />
             </div>
           </div>
@@ -183,7 +183,7 @@ export default function ReviewAnalyticsPage() {
                 {renderStars(Math.round((stats as any).averageRating || 0))}
               </div>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
               <Star className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function ReviewAnalyticsPage() {
               <p className="text-sm font-medium text-gray-500">En Attente</p>
               <p className="text-2xl font-bold text-gray-900">{(stats as any).pending || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
               <Calendar className="w-6 h-6 text-orange-600" />
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function ReviewAnalyticsPage() {
                 {(stats as any).total > 0 ? Math.round(((stats as any).approved / (stats as any).total) * 100) : 0}%
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-green-600" />
             </div>
           </div>

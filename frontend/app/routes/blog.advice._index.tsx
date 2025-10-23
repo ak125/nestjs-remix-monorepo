@@ -429,7 +429,7 @@ export default function AdviceIndex() {
           <Card className="max-w-2xl mx-auto text-center">
             <CardContent className="py-12">
               <div className="mb-4">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-red-600 text-2xl">⚠</span>
                 </div>
                 <CardTitle level="h2" className="text-xl text-red-800 mb-2">

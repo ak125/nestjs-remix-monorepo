@@ -69,19 +69,19 @@ export function RecentActivity({
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded-lg">
+        <div className="bg-muted p-3 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
           <div className="text-xs text-blue-600 uppercase tracking-wide">Total</div>
         </div>
-        <div className="bg-green-50 p-3 rounded-lg">
+        <div className="bg-success/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-green-600">{stats.today}</div>
           <div className="text-xs text-green-600 uppercase tracking-wide">Aujourd'hui</div>
         </div>
-        <div className="bg-yellow-50 p-3 rounded-lg">
+        <div className="bg-warning/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-yellow-600">{stats.warnings}</div>
           <div className="text-xs text-yellow-600 uppercase tracking-wide">Alertes</div>
         </div>
-        <div className="bg-red-50 p-3 rounded-lg">
+        <div className="bg-destructive/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
           <div className="text-xs text-red-600 uppercase tracking-wide">Erreurs</div>
         </div>

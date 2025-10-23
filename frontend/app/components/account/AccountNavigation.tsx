@@ -105,7 +105,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
       {/* En-tête utilisateur */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-full">
+          <div className="p-2 bg-muted rounded-full">
             <User className="w-6 h-6 text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">

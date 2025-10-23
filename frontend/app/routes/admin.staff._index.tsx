@@ -225,7 +225,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Total Staff</p>
               <p className="text-2xl font-bold text-gray-900">{data.stats.total}</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <span className="text-blue-600 text-xl">👥</span>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Staff Actif</p>
               <p className="text-2xl font-bold text-green-600">{data.stats.active}</p>
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
+            <div className="p-3 bg-success/10 rounded-full">
               <span className="text-green-600 text-xl">✅</span>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Staff Inactif</p>
               <p className="text-2xl font-bold text-red-600">{data.stats.inactive}</p>
             </div>
-            <div className="p-3 bg-red-100 rounded-full">
+            <div className="p-3 bg-destructive/10 rounded-full">
               <span className="text-red-600 text-xl">⏸️</span>
             </div>
           </div>
@@ -261,7 +261,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Super Admins</p>
               <p className="text-2xl font-bold text-purple-600">{data.stats.byLevel['9'] || 0}</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <span className="text-purple-600 text-xl">👑</span>
             </div>
           </div>

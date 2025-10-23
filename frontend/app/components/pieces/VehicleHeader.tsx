@@ -109,7 +109,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
             {/* Statistiques rapides */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
                   <span className="text-blue-600 text-sm">🔧</span>
                 </div>
                 <div>
@@ -121,7 +121,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
                   <span className="text-green-600 text-sm">✅</span>
                 </div>
                 <div>
@@ -131,7 +131,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
                   <span className="text-purple-600 text-sm">🚚</span>
                 </div>
                 <div>

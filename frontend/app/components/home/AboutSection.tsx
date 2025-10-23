@@ -93,7 +93,7 @@ export function AboutSection({
             
             {/* Engagement 1 */}
             <div className="text-center group">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4 group-hover:bg-blue-200 transition-colors">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4 group-hover:bg-blue-200 transition-colors">
                 <Shield className="h-8 w-8 text-blue-600" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Qualité garantie</h4>
@@ -104,7 +104,7 @@ export function AboutSection({
 
             {/* Engagement 2 */}
             <div className="text-center group">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 group-hover:bg-green-200 transition-colors">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-success/10 rounded-full mb-4 group-hover:bg-green-200 transition-colors">
                 <Wrench className="h-8 w-8 text-green-600" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Expertise technique</h4>
@@ -115,7 +115,7 @@ export function AboutSection({
 
             {/* Engagement 3 */}
             <div className="text-center group">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4 group-hover:bg-orange-200 transition-colors">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4 group-hover:bg-orange-200 transition-colors">
                 <Users className="h-8 w-8 text-orange-600" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Service client</h4>
@@ -126,7 +126,7 @@ export function AboutSection({
 
             {/* Engagement 4 */}
             <div className="text-center group">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4 group-hover:bg-purple-200 transition-colors">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4 group-hover:bg-purple-200 transition-colors">
                 <Award className="h-8 w-8 text-purple-600" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Prix compétitifs</h4>
