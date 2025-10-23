@@ -456,7 +456,7 @@ export default function ReviewsPage() {
                               <button
                                 onClick={() => handleStatusUpdate(review.id, "approved")}
                                 disabled={navigation.state !== "idle"}
-                                className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                                className="inline-flex items-center px-2 py-1 text-xs bg-success/80 text-success-foreground hover:bg-success rounded  disabled:opacity-50"
                               >
                                 <Check className="w-3 h-3 mr-1" />
                                 Approuver

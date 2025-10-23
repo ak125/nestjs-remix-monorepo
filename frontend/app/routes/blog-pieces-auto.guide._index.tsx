@@ -441,7 +441,7 @@ export default function BlogGuidesIndex() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50 p-0 h-auto font-semibold border-none"
+                                  className="text-green-600 hover:text-green-700 hover:bg-success/20 p-0 h-auto font-semibold border-none"
                                 >
                                   Lire le guide →
                                 </Button>
@@ -481,7 +481,7 @@ export default function BlogGuidesIndex() {
           <div className="flex items-center justify-center gap-4">
             <Button
               size="lg"
-              className="bg-white text-green-600 hover:bg-green-50 font-semibold px-8"
+              className="bg-white text-green-600 hover:bg-success/20 font-semibold px-8"
             >
               Demander conseil
             </Button>

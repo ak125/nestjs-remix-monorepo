@@ -51,7 +51,7 @@ export function OrderActions({
         <button
           onClick={() => onMarkPaid(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-success/80 text-success-foreground hover:bg-success rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CreditCard className="w-4 h-4" />
           Marquer payé
@@ -63,7 +63,7 @@ export function OrderActions({
         <button
           onClick={() => onValidate(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-info/80 text-info-foreground hover:bg-info rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CheckCircle className="w-4 h-4" />
           Valider
@@ -75,7 +75,7 @@ export function OrderActions({
         <button
           onClick={() => onStartProcessing(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <PlayCircle className="w-4 h-4" />
           Préparer
@@ -111,7 +111,7 @@ export function OrderActions({
         <button
           onClick={() => onDeliver(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-success/80 text-success-foreground hover:bg-success rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <CheckCircle className="w-4 h-4" />
           Livrer

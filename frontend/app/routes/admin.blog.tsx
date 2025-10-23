@@ -320,7 +320,7 @@ export default function AdminBlogSimplePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
               to="/blog/advice"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-info/20 transition-colors group"
             >
               <DocumentTextIcon className="w-8 h-8 text-blue-600 mr-4" />
               <div>
@@ -331,7 +331,7 @@ export default function AdminBlogSimplePage() {
 
             <Link
               to="/blog/constructeurs"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-success/20 transition-colors group"
             >
               <UserGroupIcon className="w-8 h-8 text-green-600 mr-4" />
               <div>

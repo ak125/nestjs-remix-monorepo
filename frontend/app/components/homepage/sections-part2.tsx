@@ -75,7 +75,7 @@ function FeatureCard({ icon, title, description, color }: any) {
 
 function SocialShareButton({ icon, label }: any) {
   return (
-    <button className="px-4 py-2 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg flex items-center gap-2 transition-all">
+    <button className="px-4 py-2 bg-white hover:bg-info/20 border border-gray-200 hover:border-blue-300 rounded-lg flex items-center gap-2 transition-all">
       {icon}
       <span className="text-sm font-medium">{label}</span>
     </button>
@@ -270,7 +270,7 @@ function ProductComparison() {
 
 function ComparisonRow({ label, values }: { label: string; values: string[] }) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-blue-50 transition-colors">
+    <tr className="border-b border-gray-200 hover:bg-info/20 transition-colors">
       <td className="py-4 px-4 font-medium text-gray-700">{label}</td>
       {values.map((value, idx) => (
         <td key={idx} className="py-4 px-4 text-center text-gray-900">{value}</td>

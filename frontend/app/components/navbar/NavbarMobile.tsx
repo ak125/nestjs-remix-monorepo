@@ -159,7 +159,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                   closeMenu();
                   onSearchClick?.();
                 }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-blue-50 transition-colors text-gray-700 border border-gray-200"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-info/20 transition-colors text-gray-700 border border-gray-200"
               >
                 <Search className="h-5 w-5 text-blue-600" />
                 <span className="font-medium">Recherche rapide</span>
@@ -336,7 +336,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
               <Link
                 to="/register"
                 onClick={closeMenu}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-info/20 transition-colors font-medium"
               >
                 <UserPlus className="h-4 w-4" />
                 Inscription

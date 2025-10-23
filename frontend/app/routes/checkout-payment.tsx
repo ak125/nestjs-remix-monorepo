@@ -396,7 +396,7 @@ export default function PaymentPage() {
                           .map((method) => (
                           <label 
                             key={method.id} 
-                            className="relative flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-blue-50/50 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all"
+                            className="relative flex items-center p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-blue-300 hover:bg-info/20/50 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all"
                           >
                             <input
                               type="radio"

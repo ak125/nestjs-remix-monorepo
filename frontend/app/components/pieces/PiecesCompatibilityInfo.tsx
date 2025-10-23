@@ -119,7 +119,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                 Notre équipe vérifie gratuitement la compatibilité avec votre véhicule
               </p>
             </div>
-            <button className="flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-lg">
+            <button className="flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
               Vérifier
             </button>
           </div>

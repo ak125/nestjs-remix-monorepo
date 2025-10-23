@@ -316,7 +316,7 @@ export default function GuideDetailPage() {
               Nos experts vous conseillent gratuitement pour trouver les meilleures pièces adaptées à votre véhicule
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-green-50">
+              <Button size="lg" className="bg-white text-green-600 hover:bg-success/20">
                 Contacter un expert
               </Button>
               <Link to="/blog-pieces-auto/guide">

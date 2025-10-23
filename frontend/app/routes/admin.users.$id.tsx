@@ -643,7 +643,7 @@ export default function UserDetails() {
             {recentOrders.map((order) => (
               <div
                 key={order.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200"
+                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-info/20/30 transition-all duration-200"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   {/* Gauche: ID et Date */}

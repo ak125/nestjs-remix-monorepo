@@ -592,7 +592,7 @@ export default function AdminConfigIndexPage() {
                                 
                                 <button
                                   onClick={() => setEditingKey(config.key)}
-                                  className="ml-3 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                                  className="ml-3 px-3 py-1 text-sm bg-info/80 text-info-foreground hover:bg-info rounded  transition-colors"
                                 >
                                   Modifier
                                 </button>

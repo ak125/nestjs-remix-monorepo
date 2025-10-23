@@ -301,7 +301,7 @@ export default function CreateShipment() {
                   <Link
                     key={orderItem.id}
                     to={`/commercial/shipping/create?orderId=${orderItem.id}`}
-                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-info/20 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>

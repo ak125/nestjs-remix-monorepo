@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
         {/* Info Badge */}
         <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-          <Badge className="w-full justify-center py-3 bg-blue-50 text-blue-700 hover:bg-blue-50 border border-blue-200">
+          <Badge className="w-full justify-center py-3 bg-blue-50 text-blue-700 hover:bg-info/20 border border-blue-200">
             <span className="flex items-center gap-2 text-sm">
               <span>ℹ️</span>
               <span>Après inscription, vous serez automatiquement connecté</span>

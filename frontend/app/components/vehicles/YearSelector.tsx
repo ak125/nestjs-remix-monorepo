@@ -113,7 +113,7 @@ export function YearSelector({
                       ${selectedYear === yearData.year 
                         ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
                         : yearData.available
-                          ? 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300'
+                          ? 'bg-white text-gray-700 border-gray-300 hover:bg-info/20 hover:border-blue-300'
                           : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}
                       ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                     `}

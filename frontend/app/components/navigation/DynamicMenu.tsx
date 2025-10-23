@@ -264,7 +264,7 @@ export function DynamicMenu({
           <p className="text-red-600 text-sm mt-1">{error}</p>
           <button
             onClick={loadMenu}
-            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-sm transition-colors"
+            className="mt-2 px-3 py-1 bg-destructive/90 hover:bg-destructive text-destructive-foreground rounded text-sm transition-colors"
           >
             Réessayer
           </button>
