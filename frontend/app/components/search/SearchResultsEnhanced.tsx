@@ -178,13 +178,13 @@ export function SearchResultsEnhanced({
                 )}
                 
                 {item.isNew && (
-                  <Badge className="bg-green-500 hover:bg-green-600">
+                  <Badge className="bg-success hover:bg-success">
                     Nouveau
                   </Badge>
                 )}
                 
                 {item.onSale && (
-                  <Badge className="bg-red-500 hover:bg-red-600">
+                  <Badge className="bg-destructive hover:bg-destructive">
                     Promo
                   </Badge>
                 )}
@@ -224,7 +224,7 @@ export function SearchResultsEnhanced({
               <div className="mb-3">
                 {isInStock ? (
                   <div className="flex items-center text-green-600 text-sm font-medium">
-                    <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <div className="h-2 w-2 bg-success rounded-full mr-2 animate-pulse"></div>
                     En stock
                   </div>
                 ) : (
@@ -312,11 +312,11 @@ export function SearchResultsEnhanced({
                         )}
                         
                         {item.isNew && (
-                          <Badge className="bg-green-500">Nouveau</Badge>
+                          <Badge className="bg-success">Nouveau</Badge>
                         )}
                         
                         {item.onSale && (
-                          <Badge className="bg-red-500">Promo</Badge>
+                          <Badge className="bg-destructive">Promo</Badge>
                         )}
                       </div>
 
@@ -340,7 +340,7 @@ export function SearchResultsEnhanced({
                       {/* Statut stock */}
                       {isInStock ? (
                         <div className="flex items-center text-green-600 text-sm font-medium">
-                          <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                          <div className="h-2 w-2 bg-success rounded-full mr-2 animate-pulse"></div>
                           En stock • Livraison rapide
                         </div>
                       ) : (
@@ -401,7 +401,7 @@ export function SearchResultsEnhanced({
           </div>
 
           {isCached && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-300">
+            <Badge variant="secondary" className="bg-primary/15 text-blue-700 border-blue-300">
               <Zap className="h-3 w-3 mr-1" />
               Résultats en cache
             </Badge>

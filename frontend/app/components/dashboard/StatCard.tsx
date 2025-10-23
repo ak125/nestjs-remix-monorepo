@@ -67,9 +67,9 @@ export function StatCard({
             <Progress 
               value={progress} 
               className={cn("h-2", {
-                "[&>div]:bg-green-500": progress >= 70,
-                "[&>div]:bg-yellow-500": progress >= 40 && progress < 70,
-                "[&>div]:bg-red-500": progress < 40
+                "[&>div]:bg-success": progress >= 70,
+                "[&>div]:bg-warning": progress >= 40 && progress < 70,
+                "[&>div]:bg-destructive": progress < 40
               })}
             />
             <div className="mt-1 text-xs text-gray-500">

@@ -293,8 +293,8 @@ export default function UserDetails() {
             <button
               className={`px-4 py-2 text-sm rounded-md text-white transition-colors ${
                 user.isActive
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-green-600 hover:bg-green-700'
+                  ? 'bg-destructive hover:bg-destructive/90'
+                  : 'bg-success hover:bg-success/90'
               }`}
             >
               {user.isActive ? '🚫 Désactiver' : '✅ Activer'}

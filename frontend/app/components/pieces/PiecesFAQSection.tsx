@@ -62,7 +62,7 @@ export function PiecesFAQSection({ items }: PiecesFAQSectionProps) {
                 className="w-full px-6 py-4 flex items-start justify-between gap-4 text-left"
               >
                 <div className="flex-1 flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="flex-shrink-0 w-8 h-8 bg-success/15 text-green-700 rounded-full flex items-center justify-center text-sm font-bold">
                     {index + 1}
                   </div>
                   <div className="flex-1 pt-0.5">

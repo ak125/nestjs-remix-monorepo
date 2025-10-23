@@ -53,7 +53,7 @@ export default function Marques() {
       </div>
       
       {/* Section recherche par marque */}
-      <div className="bg-blue-50 rounded-lg p-8">
+      <div className="bg-primary/5 rounded-lg p-8">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Rechercher par marque</h2>
           <p className="text-gray-600 mb-6">

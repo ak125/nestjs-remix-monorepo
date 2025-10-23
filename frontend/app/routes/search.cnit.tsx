@@ -143,7 +143,7 @@ export default function SearchCnitPage() {
               />
               <Button
                 type="submit"
-                className="px-8 bg-green-600 hover:bg-green-700"
+                className="px-8 bg-success hover:bg-success/90"
                 disabled={!cnitCode.trim()}
               >
                 <Search className="h-4 w-4 mr-2" />
@@ -248,7 +248,7 @@ export default function SearchCnitPage() {
 
       {/* Informations sur le CNIT */}
       {!searchTerm && (
-        <Card className="bg-green-50">
+        <Card className="bg-success/5">
           <CardHeader>
             <CardTitle className="text-lg">Qu'est-ce qu'un code CNIT ?</CardTitle>
           </CardHeader>

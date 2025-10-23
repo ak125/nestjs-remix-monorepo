@@ -246,7 +246,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       <div className="flex-1 min-w-0">
         {/* Marque avec badge */}
         {item.product_brand && (
-          <p className="text-xs text-gray-600 font-semibold uppercase bg-blue-50 inline-block px-2 py-0.5 rounded-full mb-1">
+          <p className="text-xs text-gray-600 font-semibold uppercase bg-primary/5 inline-block px-2 py-0.5 rounded-full mb-1">
             {item.product_brand}
           </p>
         )}

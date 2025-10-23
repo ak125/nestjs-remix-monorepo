@@ -345,7 +345,7 @@ export default function AdminStaff() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}{member.lastName?.[0]}
                           </span>
@@ -414,7 +414,7 @@ export default function AdminStaff() {
 
       {/* Information sur la table des messages */}
       {messagesEnabled && (
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-8 p-6 bg-primary/5 rounded-lg border border-blue-200">
           <div className="flex items-start gap-3">
             <MessageSquare className="h-6 w-6 text-blue-600 mt-1" />
             <div>
@@ -422,7 +422,7 @@ export default function AdminStaff() {
                 Système de Messagerie Intégré
               </h3>
               <p className="text-blue-800 mb-4">
-                La table <code className="bg-blue-100 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
+                La table <code className="bg-primary/15 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>

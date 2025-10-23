@@ -55,8 +55,8 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
                     <div 
                       key={index}
                       className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        badge === 'NOUVEAU' ? 'bg-green-500 text-white' :
-                        badge === 'PROMO' ? 'bg-red-500 text-white' :
+                        badge === 'NOUVEAU' ? 'bg-success text-white' :
+                        badge === 'PROMO' ? 'bg-destructive text-white' :
                         'bg-orange-500 text-white'
                       }`}
                     >
@@ -67,7 +67,7 @@ export function FeaturedProducts({ products }: FeaturedProductsProps) {
 
                 {/* Stock Warning */}
                 {product.stock < 20 && (
-                  <div className="absolute bottom-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 animate-pulse">
+                  <div className="absolute bottom-4 left-4 bg-destructive text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 animate-pulse">
                     <AlertCircle className="h-3 w-3" />
                     <span>Plus que {product.stock} en stock!</span>
                   </div>

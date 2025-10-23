@@ -110,7 +110,7 @@ export function NoResults({
         </div>
 
         {/* Contact support */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+        <div className="mt-8 p-4 bg-primary/5 rounded-lg">
           <p className="text-sm text-blue-800">
             <strong>Besoin d'aide ?</strong> Notre équipe peut vous aider à trouver la pièce qu'il vous faut.
           </p>

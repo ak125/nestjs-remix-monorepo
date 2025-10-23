@@ -136,7 +136,7 @@ export const PerformanceMetrics = memo(function PerformanceMetrics({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div 
-              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${Math.min(100, (filteredItems / totalItems) * 100)}%` }}
             />
           </div>

@@ -194,7 +194,7 @@ export default function SupportPage() {
 
       {/* Navigation rapide */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-blue-50 rounded-lg p-6 mb-8">
+        <div className="bg-primary/5 rounded-lg p-6 mb-8">
           <h2 className="text-lg font-semibold text-blue-900 mb-4">
             🚀 Accès Rapide
           </h2>

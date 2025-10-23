@@ -139,7 +139,7 @@ export default function SearchResults() {
 
         {/* Suggestions */}
         {suggestions && suggestions.length > 0 && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-primary/5 rounded-lg">
             <h3 className="text-sm font-medium text-blue-900 mb-2">
               Suggestions de recherche :
             </h3>

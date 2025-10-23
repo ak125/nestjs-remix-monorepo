@@ -179,7 +179,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           <form method='POST' action='/auth/logout' className="hidden md:block">
             <button 
               type='submit' 
-              className="hover:text-blue-200 transition-colors text-sm px-3 py-1.5 rounded hover:bg-blue-700"
+              className="hover:text-blue-200 transition-colors text-sm px-3 py-1.5 rounded hover:bg-primary/90"
             >
               Déconnexion
             </button>

@@ -318,7 +318,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       {/* Années de production */}
-                      <div className="flex items-start gap-2 bg-blue-50 rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-start gap-2 bg-primary/5 rounded-lg p-3 border border-blue-200">
                         <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-xs text-blue-600 font-semibold mb-0.5">Années de production</div>
@@ -412,16 +412,16 @@ export default function BlogPiecesAutoMarqueModele() {
                       
                       const getActiveColors = () => {
                         if (isDiesel) return 'bg-orange-500 text-white border-orange-600 shadow-md shadow-orange-200';
-                        if (isEssence) return 'bg-green-500 text-white border-green-600 shadow-md shadow-green-200';
-                        if (isElectrique) return 'bg-blue-500 text-white border-blue-600 shadow-md shadow-blue-200';
+                        if (isEssence) return 'bg-success text-white border-green-600 shadow-md shadow-green-200';
+                        if (isElectrique) return 'bg-primary text-white border-blue-600 shadow-md shadow-blue-200';
                         if (isHybride) return 'bg-purple-500 text-white border-purple-600 shadow-md shadow-purple-200';
                         return 'bg-gray-600 text-white border-gray-700 shadow-md';
                       };
                       
                       const getInactiveColors = () => {
                         if (isDiesel) return 'bg-orange-50 text-orange-700 border-orange-300 hover:bg-orange-100';
-                        if (isEssence) return 'bg-green-50 text-green-700 border-green-300 hover:bg-success/20';
-                        if (isElectrique) return 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-info/20';
+                        if (isEssence) return 'bg-success/5 text-green-700 border-green-300 hover:bg-success/20';
+                        if (isElectrique) return 'bg-primary/5 text-blue-700 border-blue-300 hover:bg-info/20';
                         if (isHybride) return 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100';
                         return 'bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100';
                       };

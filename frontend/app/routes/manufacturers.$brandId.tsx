@@ -137,13 +137,13 @@ export default function ManufacturerPage() {
               <Card key={model.modele_id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
+                    <div className="p-2 bg-primary/5 rounded-lg">
                       <Car className="h-5 w-5 text-blue-600" />
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       model.modele_year_to 
                         ? 'bg-gray-100 text-gray-700' 
-                        : 'bg-green-100 text-green-700'
+                        : 'bg-success/15 text-green-700'
                     }`}>
                       {model.modele_year_to ? 'Ancien' : 'Actuel'}
                     </span>

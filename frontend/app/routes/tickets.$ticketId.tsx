@@ -164,8 +164,8 @@ export default function TicketDetailPage() {
                   disabled={isSubmitting}
                   className={`px-4 py-2 text-sm font-medium rounded-md ${
                     isOpen
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-green-600 text-white hover:bg-green-700"
+                      ? "bg-destructive text-white hover:bg-destructive/90"
+                      : "bg-success text-white hover:bg-success/90"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isSubmitting 

@@ -496,7 +496,7 @@ export function AutomationCenter() {
                     </div>
 
                     {/* Impact */}
-                    <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                    <div className="mt-4 p-3 bg-success/5 rounded-lg">
                       <div className="flex items-center">
                         <span className="text-green-600 mr-2">📈</span>
                         <span className="text-sm text-green-800">

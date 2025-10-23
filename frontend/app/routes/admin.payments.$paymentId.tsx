@@ -315,7 +315,7 @@ export default function AdminPaymentDetail() {
                       <div className="relative pb-8">
                         <div className="relative flex space-x-3">
                           <div>
-                            <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                            <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center ring-8 ring-white">
                               <DollarSign className="h-4 w-4 text-white" />
                             </span>
                           </div>
@@ -338,7 +338,7 @@ export default function AdminPaymentDetail() {
                         <div className="relative">
                           <div className="relative flex space-x-3">
                             <div>
-                              <span className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                              <span className="h-8 w-8 rounded-full bg-success flex items-center justify-center ring-8 ring-white">
                                 <CheckCircle className="h-4 w-4 text-white" />
                               </span>
                             </div>

@@ -92,7 +92,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
       {/* 🍔 Burger Button - Visible uniquement sur mobile */}
       <button
         onClick={toggleMenu}
-        className="md:hidden flex flex-col gap-1.5 p-2 hover:bg-blue-700 rounded transition-colors"
+        className="md:hidden flex flex-col gap-1.5 p-2 hover:bg-primary/90 rounded transition-colors"
         aria-label="Menu"
         aria-expanded={isOpen}
       >
@@ -128,7 +128,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
           </div>
           <button
             onClick={closeMenu}
-            className="p-1 hover:bg-blue-700 rounded transition-colors"
+            className="p-1 hover:bg-primary/90 rounded transition-colors"
             aria-label="Fermer le menu"
           >
             <X className="h-5 w-5" />
@@ -257,7 +257,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                   <Link
                     to="/admin"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-destructive/5 transition-colors text-red-600"
                   >
                     <LayoutDashboard className="h-5 w-5" />
                     <span className="font-medium">Dashboard Admin</span>
@@ -267,7 +267,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                   <Link
                     to="/admin/users"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-destructive/5 transition-colors text-red-600"
                   >
                     <Settings className="h-5 w-5" />
                     <span className="font-medium">Utilisateurs</span>
@@ -277,7 +277,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                   <Link
                     to="/admin/orders"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-destructive/5 transition-colors text-red-600"
                   >
                     <Package className="h-5 w-5" />
                     <span className="font-medium">Commandes</span>
@@ -291,7 +291,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                       <Link
                         to="/admin/staff"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-destructive/5 transition-colors text-red-600"
                       >
                         <Settings className="h-5 w-5" />
                         <span className="font-medium">Staff</span>
@@ -301,7 +301,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                       <Link
                         to="/admin/suppliers"
                         onClick={closeMenu}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-50 transition-colors text-red-600"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-destructive/5 transition-colors text-red-600"
                       >
                         <ShoppingBag className="h-5 w-5" />
                         <span className="font-medium">Fournisseurs</span>

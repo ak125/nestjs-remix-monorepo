@@ -268,7 +268,7 @@ export default function PaymentPage() {
               </div>
 
               {/* Sécurité */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-success/5 border border-green-200 rounded-lg p-4">
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -293,7 +293,7 @@ export default function PaymentPage() {
               
               {/* Affichage des erreurs */}
               {actionData?.error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="bg-destructive/5 border border-red-200 rounded-md p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">

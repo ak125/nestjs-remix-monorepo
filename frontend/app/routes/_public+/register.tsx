@@ -91,9 +91,9 @@ export default function RegisterPage() {
   };
 
   const getStrengthColor = (strength: number) => {
-    if (strength < 40) return "bg-red-500";
-    if (strength < 70) return "bg-yellow-500";
-    return "bg-green-500";
+    if (strength < 40) return "bg-destructive";
+    if (strength < 70) return "bg-warning";
+    return "bg-success";
   };
 
   const getStrengthLabel = (strength: number) => {
@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
         {/* Info Badge */}
         <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-          <Badge className="w-full justify-center py-3 bg-blue-50 text-blue-700 hover:bg-info/20 border border-blue-200">
+          <Badge className="w-full justify-center py-3 bg-primary/5 text-blue-700 hover:bg-info/20 border border-blue-200">
             <span className="flex items-center gap-2 text-sm">
               <span>ℹ️</span>
               <span>Après inscription, vous serez automatiquement connecté</span>

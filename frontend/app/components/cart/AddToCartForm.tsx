@@ -82,7 +82,7 @@ export function AddToCartForm({
           className={`w-full font-bold py-2 px-4 rounded transition-colors ${
             isSubmitting
               ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-              : 'bg-blue-500 hover:bg-blue-700 text-white'
+              : 'bg-primary hover:bg-primary/90 text-white'
           }`}
         >
           {isSubmitting ? (

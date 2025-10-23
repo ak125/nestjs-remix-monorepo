@@ -157,7 +157,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
             />
             
             {/* 💡 Conseils */}
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-6 p-4 bg-success/5 border border-green-200 rounded-lg">
               <div className="flex items-center text-green-800 text-sm">
                 <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
                 <span className="font-medium">Conseil :</span>

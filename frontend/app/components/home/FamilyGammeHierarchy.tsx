@@ -25,8 +25,8 @@ const getFamilyIcon = (family: FamilyWithGammes): string => {
 
 const getFamilyColor = (family: FamilyWithGammes): string => {
   const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500',
-    'bg-yellow-500', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
+    'bg-primary', 'bg-success', 'bg-destructive', 'bg-purple-500',
+    'bg-warning', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
   ];
   const index = parseInt(family.mf_id) % colors.length;
   return colors[index];

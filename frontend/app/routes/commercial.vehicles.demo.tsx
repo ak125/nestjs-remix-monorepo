@@ -59,7 +59,7 @@ export default function VehicleSelectorsDemo() {
               className="w-full"
             />
             {selectedType && (
-              <div className="mt-3 p-3 bg-green-50 rounded">
+              <div className="mt-3 p-3 bg-success/5 rounded">
                 <strong>Sélectionné:</strong> {selectedType.type_name}
                 <br />
                 <span className="text-sm text-gray-600">
@@ -88,7 +88,7 @@ export default function VehicleSelectorsDemo() {
 
         {/* Summary */}
         {(selectedModel || selectedType || selectedYear) && (
-          <div className="bg-blue-50 p-6 rounded-lg">
+          <div className="bg-primary/5 p-6 rounded-lg">
             <h3 className="text-lg font-semibold mb-4">📋 Résumé de la Sélection</h3>
             <div className="space-y-2">
               {selectedModel && (

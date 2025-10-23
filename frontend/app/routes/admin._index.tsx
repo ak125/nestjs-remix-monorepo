@@ -590,7 +590,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Alertes système */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+              <div className="bg-warning/5 border border-yellow-200 rounded-xl p-6">
                 <div className="flex items-start gap-3">
                   <Bell className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div className="flex-1">
@@ -760,7 +760,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className="bg-green-600 h-2 rounded-full" 
+                              className="bg-success h-2 rounded-full" 
                               style={{ width: `${category.percentage}%` }}
                             ></div>
                           </div>
@@ -889,7 +889,7 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold text-green-900">{realTimeStats.systemHealth?.memoryUsage || 0}%</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div 
-                      className="bg-green-600 h-2 rounded-full" 
+                      className="bg-success h-2 rounded-full" 
                       style={{ width: `${realTimeStats.systemHealth?.memoryUsage || 0}%` }}
                     ></div>
                   </div>
@@ -1109,7 +1109,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/analytics" className="block p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all group">
+          <Link to="/admin/analytics" className="block p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-warning/5 transition-all group">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-6 w-6 text-yellow-500 group-hover:text-yellow-600" />
               <div>
@@ -1119,7 +1119,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/system" className="block p-4 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all group">
+          <Link to="/admin/system" className="block p-4 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-destructive/5 transition-all group">
             <div className="flex items-center gap-3">
               <Monitor className="h-6 w-6 text-red-500 group-hover:text-red-600" />
               <div>
@@ -1162,7 +1162,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/checkout-ab-test" className="block p-3 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all bg-gradient-to-r from-red-50 to-orange-50">
+          <Link to="/admin/checkout-ab-test" className="block p-3 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-destructive/5 transition-all bg-gradient-to-r from-red-50 to-orange-50">
             <div className="flex items-center gap-3">
               <RefreshCw className="h-5 w-5 text-red-500" />
               <div>

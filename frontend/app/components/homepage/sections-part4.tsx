@@ -195,7 +195,7 @@ export function ContactSection() {
             </form>
 
             {/* Option chat en direct */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="mt-6 p-4 bg-primary/5 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <MessageCircle className="w-6 h-6 text-blue-600" />
@@ -432,7 +432,7 @@ export function LiveChatButton() {
         className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 z-50 flex items-center justify-center"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-white animate-pulse"></span>
       </button>
 
       {isOpen && (

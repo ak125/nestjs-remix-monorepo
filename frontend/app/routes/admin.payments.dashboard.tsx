@@ -222,7 +222,7 @@ export default function AdminPaymentsDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Bannière informative */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
+        <div className="bg-primary/5 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
           <div className="flex">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-5 w-5 text-blue-400" />

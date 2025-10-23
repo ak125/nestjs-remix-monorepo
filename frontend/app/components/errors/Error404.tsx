@@ -109,7 +109,7 @@ export function Error404({
                   404
                 </span>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-blue-500 rounded-full p-6 shadow-lg">
+                  <div className="bg-primary rounded-full p-6 shadow-lg">
                     <svg
                       className="w-16 h-16 md:w-20 md:h-20 text-white"
                       fill="none"

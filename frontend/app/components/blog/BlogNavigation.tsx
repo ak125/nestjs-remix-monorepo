@@ -41,7 +41,7 @@ const navigationItems: NavigationItem[] = [
     icon: ShoppingCart,
     description: "Conseils pour bien choisir",
     color: "text-green-600",
-    bgColor: "bg-green-50",
+    bgColor: "bg-success/5",
     borderColor: "border-green-200",
     count: 120,
   },

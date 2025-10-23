@@ -194,7 +194,7 @@ export default function GuideDetailPage() {
             {/* Content */}
             <div className="p-8 md:p-12">
               {/* Badge */}
-              <Badge className="mb-4 bg-green-600 text-white border-0">
+              <Badge className="mb-4 bg-success text-white border-0">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Guide d'Achat
               </Badge>
@@ -248,7 +248,7 @@ export default function GuideDetailPage() {
                         <Card key={`section-${index}`} className="border-2 border-green-100 hover:border-green-300 transition-colors">
                           <CardContent className="p-6">
                             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                              <span className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-bold">
+                              <span className="w-8 h-8 rounded-full bg-success text-white flex items-center justify-center text-sm font-bold">
                                 {guide.sections.filter(s => s.level === 2).indexOf(section) + 1}
                               </span>
                               {section.title}

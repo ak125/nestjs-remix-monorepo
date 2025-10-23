@@ -225,7 +225,7 @@ export default function AdminSystem() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-in-out"
+                className="bg-primary h-3 rounded-full transition-all duration-500 ease-in-out"
                 style={{
                   width: `${Math.min(100, (metrics.data.memory.used / metrics.data.memory.total) * 100)}%`
                 }}

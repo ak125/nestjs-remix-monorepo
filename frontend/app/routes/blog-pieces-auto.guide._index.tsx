@@ -61,14 +61,14 @@ const CATEGORY_COLORS: Record<
   { bg: string; border: string; text: string; gradient: string; badge: string }
 > = {
   "Freinage": { 
-    bg: "bg-red-50", 
+    bg: "bg-destructive/5", 
     border: "border-red-300", 
     text: "text-red-800", 
     gradient: "from-red-500 to-red-700", 
     badge: 'error', 
   },
   "Filtres": { 
-    bg: "bg-yellow-50", 
+    bg: "bg-warning/5", 
     border: "border-yellow-300", 
     text: "text-yellow-900", 
     gradient: "from-yellow-500 to-yellow-700", 
@@ -103,7 +103,7 @@ const CATEGORY_COLORS: Record<
     badge: "bg-gray-100 text-gray-800 border-gray-400" 
   },
   "Éclairage": { 
-    bg: "bg-yellow-50", 
+    bg: "bg-warning/5", 
     border: "border-yellow-400", 
     text: "text-yellow-900", 
     gradient: "from-yellow-400 to-yellow-600", 
@@ -403,7 +403,7 @@ export default function BlogGuidesIndex() {
                                   <BookOpen className="w-16 h-16 text-white" />
                                 </div>
                               )}
-                              <Badge className="absolute top-2 left-2 bg-green-600 text-white border-0 shadow-lg">
+                              <Badge className="absolute top-2 left-2 bg-success text-white border-0 shadow-lg">
                                 <Sparkles className="w-3 h-3 mr-1" />
                                 Guide d'Achat
                               </Badge>
