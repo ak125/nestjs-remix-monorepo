@@ -121,19 +121,19 @@ export default function ReviewDetailPage() {
     switch (status) {
       case "approved":
         return {
-          className: "bg-green-100 text-green-800 border-green-200",
+          className: 'success',
           label: "Approuvé",
           icon: <Check className="w-4 h-4" />
         };
       case "rejected":
         return {
-          className: "bg-red-100 text-red-800 border-red-200",
+          className: 'error',
           label: "Rejeté",
           icon: <X className="w-4 h-4" />
         };
       case "pending":
         return {
-          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          className: 'warning',
           label: "En attente",
           icon: <Flag className="w-4 h-4" />
         };

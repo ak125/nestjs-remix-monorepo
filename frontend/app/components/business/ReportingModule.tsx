@@ -254,10 +254,10 @@ export function ReportingModule() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      financial: 'bg-green-100 text-green-800',
-      sales: 'bg-blue-100 text-blue-800',
-      marketing: 'bg-purple-100 text-purple-800',
-      operations: 'bg-yellow-100 text-yellow-800',
+      financial: 'success',
+      sales: 'info',
+      marketing: 'purple',
+      operations: 'warning',
       custom: 'bg-indigo-100 text-indigo-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -265,12 +265,12 @@ export function ReportingModule() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
-      paused: 'bg-yellow-100 text-yellow-800',
+      active: 'success',
+      paused: 'warning',
       draft: 'bg-gray-100 text-gray-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      processing: 'bg-blue-100 text-blue-800'
+      completed: 'success',
+      failed: 'error',
+      processing: 'info',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
