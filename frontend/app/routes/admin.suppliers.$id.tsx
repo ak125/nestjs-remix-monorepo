@@ -6,6 +6,7 @@
  */
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import { requireUser } from "../auth/unified.server";
@@ -308,13 +309,8 @@ export default function SupplierDetail() {
                 </Link>
               </div>
               
-              <button
-                onClick={handleDelete}
-                disabled={fetcher.state !== 'idle'}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-              >
-                Supprimer
-              </button>
+              <Button className="px-4 py-2  rounded-lg font-medium  disabled:opacity-50" variant="red" onClick={handleDelete}
+                disabled={fetcher.state !== 'idle'}>\n  Supprimer\n</Button>
             </div>
           </div>
         </div>

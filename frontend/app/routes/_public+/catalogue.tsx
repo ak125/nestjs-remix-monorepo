@@ -1,4 +1,5 @@
 import { type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,49 +18,37 @@ export default function Catalogue() {
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Moteur</h2>
           <p className="text-gray-600 mb-4">Pièces moteur, filtres, huiles, courroies...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Freinage</h2>
           <p className="text-gray-600 mb-4">Plaquettes, disques, liquides de frein...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Suspension</h2>
           <p className="text-gray-600 mb-4">Amortisseurs, ressorts, silentblocs...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Électrique</h2>
           <p className="text-gray-600 mb-4">Batteries, alternateurs, démarreurs...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Carrosserie</h2>
           <p className="text-gray-600 mb-4">Optiques, pare-chocs, rétroviseurs...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Accessoires</h2>
           <p className="text-gray-600 mb-4">Outils, produits d'entretien, accessoires...</p>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            Voir les produits
-          </button>
+          <Button className="px-4 py-2 rounded" variant="blue">\n  Voir les produits\n</Button>
         </div>
       </div>
       
@@ -87,9 +76,7 @@ export default function Catalogue() {
               className="flex-1 p-3 border border-gray-300 rounded-lg"
             />
           </div>
-          <button className="w-full md:w-auto bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            Rechercher les pièces
-          </button>
+          <Button className="w-full md:w-auto  px-8 py-3 rounded-lg" variant="blue">\n  Rechercher les pièces\n</Button>
         </div>
       </div>
     </div>

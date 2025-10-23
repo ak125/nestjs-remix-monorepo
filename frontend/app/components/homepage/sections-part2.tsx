@@ -1,5 +1,6 @@
 // PARTIE 2/3 - Composants restants pour homepage.v3.tsx
 import { Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { Trophy, Rocket, BookOpen, Facebook, Twitter, Linkedin, ArrowRight, Star, ShoppingCart, TrendingUp, Award, DollarSign, Youtube } from 'lucide-react';
 import { useState } from 'react';
 
@@ -253,9 +254,7 @@ function ProductComparison() {
 
           {/* Filtres avancés */}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Filtrer par marque
-            </button>
+            <Button className="px-4 py-2  rounded-lg" variant="blue">\n  Filtrer par marque\n</Button>
             <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-500 transition-colors">
               Filtrer par prix
             </button>

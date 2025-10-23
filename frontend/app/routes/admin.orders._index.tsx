@@ -18,6 +18,7 @@
  */
 
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { Alert } from '@fafa/ui';
@@ -833,13 +834,8 @@ export default function OrdersRoute() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={handleShipOrder}
-                disabled={!trackingNumber.trim() || isLoading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {isLoading ? 'Expédition...' : 'Confirmer l\'expédition'}
-              </button>
+              <Button className="flex-1 px-4 py-2  rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium" variant="blue" onClick={handleShipOrder}
+                disabled={!trackingNumber.trim() || isLoading}>\n  {isLoading ? 'Expédition...' : 'Confirmer l\'expédition'}\n</Button>
               <button
                 onClick={() => {
                   setShipModalOpen(false);
@@ -879,13 +875,8 @@ export default function OrdersRoute() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={handleCancelOrder}
-                disabled={!cancelReason.trim() || isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {isLoading ? 'Annulation...' : 'Confirmer l\'annulation'}
-              </button>
+              <Button className="flex-1 px-4 py-2  rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium" variant="red" onClick={handleCancelOrder}
+                disabled={!cancelReason.trim() || isLoading}>\n  {isLoading ? 'Annulation...' : 'Confirmer l\'annulation'}\n</Button>
               <button
                 onClick={() => {
                   setCancelModalOpen(false);

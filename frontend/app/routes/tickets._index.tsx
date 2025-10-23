@@ -3,6 +3,7 @@
  * Remix Route Component pour la gestion des tickets de support
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import { getAllTickets, searchTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
@@ -179,12 +180,7 @@ export default function TicketsPage() {
               placeholder="Rechercher dans les tickets..."
               className="flex-1 lg:w-80 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Rechercher
-            </button>
+            <Button className="px-4 py-2  rounded-md" variant="blue" type="submit">\n  Rechercher\n</Button>
           </form>
 
           {/* Filtres par statut */}

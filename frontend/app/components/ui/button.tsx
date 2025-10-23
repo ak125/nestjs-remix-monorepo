@@ -17,11 +17,21 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         oauth: "bg-transparent border-2 border-darkIron text-darkIron hover:textaf3a-bleuClair/80",
+        // Design system standardized variants
+        blue: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500",
+        green: "bg-green-600 text-white hover:bg-green-700 active:bg-green-800 focus:ring-green-500",
+        red: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500",
+        yellow: "bg-yellow-500 text-white hover:bg-yellow-600 active:bg-yellow-700 focus:ring-yellow-500",
+        purple: "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 focus:ring-purple-500",
+        orange: "bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 focus:ring-orange-500",
+        ghost: "bg-transparent hover:bg-gray-100 text-gray-700 active:bg-gray-200",
+        link: "bg-transparent text-blue-600 hover:text-blue-700 hover:underline active:text-blue-800 p-0 h-auto",
       },
       size: {
         default: "py-2 px-4",
         sm: "py-1 px-2 text-xs",
         lg: "py-3 px-6 text-lg",
+        icon: "h-10 w-10 p-0",
       },
     },
     defaultVariants: {
