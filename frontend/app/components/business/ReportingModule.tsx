@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 📊 Types pour le reporting avancé
@@ -318,12 +319,8 @@ export function ReportingModule() {
               <p className="text-gray-600 mt-1">Générateur de rapports et analytics avancés</p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                ➕ Nouveau rapport
-              </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                🚀 Générer maintenant
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="green">\n  ➕ Nouveau rapport\n</Button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  🚀 Générer maintenant\n</Button>
             </div>
           </div>
 
@@ -609,9 +606,7 @@ export function ReportingModule() {
                   <p className="text-sm text-gray-600 mt-1">Automatisation et diffusion</p>
                 </div>
               </div>
-              <button className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
-                🚀 Commencer à construire
-              </button>
+              <Button className="mt-8  px-6 py-3 rounded-md" variant="blue">\n  🚀 Commencer à construire\n</Button>
             </div>
           </div>
         )}
@@ -753,9 +748,7 @@ export function ReportingModule() {
                         Impact estimé: +25% de précision des prévisions.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                          Implémenter
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="blue">\n  Implémenter\n</Button>
                       </div>
                     </div>
                   </div>
@@ -772,9 +765,7 @@ export function ReportingModule() {
                         Économie de temps estimée: 8h/mois.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                          Créer le template
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="green">\n  Créer le template\n</Button>
                       </div>
                     </div>
                   </div>
@@ -791,9 +782,7 @@ export function ReportingModule() {
                         Recommandation: Optimiser les requêtes de données pour réduire le temps de traitement.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">
-                          Diagnostiquer
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="yellow">\n  Diagnostiquer\n</Button>
                       </div>
                     </div>
                   </div>

@@ -1,6 +1,7 @@
 // 🔧 Composant Grid des Pièces - Architecture Modulaire
 // ✅ Images WebP optimisées automatiquement
 import React, { useMemo } from 'react';
+import { Button } from '~/components/ui/button';
 
 interface Piece {
   pie_id: number;
@@ -321,12 +322,7 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
         </div>
 
         {/* Bouton d'action */}
-        <button 
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!piece.disponibilite}
-        >
-          {piece.disponibilite ? '🛒 Ajouter' : '❌ Indisponible'}
-        </button>
+        <Button className="px-4 py-2 rounded-lg text-sm font-medium  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" disabled={!piece.disponibilite}>\n  {piece.disponibilite ? '🛒 Ajouter' : '❌ Indisponible'}\n</Button>
       </div>
     </div>
   </div>

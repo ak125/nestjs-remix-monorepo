@@ -1,4 +1,5 @@
 import { Form, useNavigate } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { useState } from "react";
 import { Badge } from '@fafa/ui';
 
@@ -66,12 +67,7 @@ export function UserList({
           placeholder="Rechercher par email, nom..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Rechercher
-        </button>
+        <Button className="px-6 py-2  rounded-lg" variant="blue" type="submit">\n  Rechercher\n</Button>
       </Form>
       
       {/* Tableau des utilisateurs */}

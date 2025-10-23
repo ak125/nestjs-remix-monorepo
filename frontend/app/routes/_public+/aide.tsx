@@ -1,4 +1,5 @@
 import { type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Link } from "@remix-run/react";
 import { Phone, Mail, MapPin, Clock, MessageCircle, FileText, HelpCircle } from "lucide-react";
 
@@ -187,9 +188,7 @@ export default function Aide() {
           Notre équipe d'experts est à votre disposition pour vous aider
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            Contactez-nous
-          </button>
+          <Button className="px-8 py-3 rounded-lg" variant="blue">\n  Contactez-nous\n</Button>
           <Link 
             to="/profile" 
             className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors"

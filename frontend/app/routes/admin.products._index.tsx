@@ -32,6 +32,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';
@@ -200,12 +201,7 @@ export default function AdminProducts() {
               className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            🔍 Rechercher
-          </button>
+          <Button className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" variant="blue" type="submit">\n  🔍 Rechercher\n</Button>
           {searchQuery && (
             <Link
               to="/admin/products"
@@ -225,15 +221,11 @@ export default function AdminProducts() {
               {selectedProducts.length} produit(s) sélectionné(s)
             </span>
             <div className="flex space-x-2">
-              <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                Activer
-              </button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="blue">\n  Activer\n</Button>
               <button className="text-sm bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                 Désactiver
               </button>
-              <button className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                Supprimer
-              </button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="red">\n  Supprimer\n</Button>
             </div>
           </div>
         </div>

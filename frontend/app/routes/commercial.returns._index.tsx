@@ -9,6 +9,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Form, Link, useNavigation } from '@remix-run/react';
 import { 
   RotateCcw, Package, FileText, CheckCircle,
@@ -478,12 +479,7 @@ export default function ReturnsManagement() {
                   {selectedReturns.map(id => (
                     <input key={id} type="hidden" name="returnIds" value={id} />
                   ))}
-                  <button
-                    type="submit"
-                    className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                  >
-                    Approuver ({selectedReturns.length})
-                  </button>
+                  <Button className="px-3 py-1  text-sm rounded" variant="green" type="submit">\n  Approuver ({selectedReturns.length})\n</Button>
                 </Form>
               </div>
             )}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 📊 Types pour les métriques business
@@ -228,9 +229,7 @@ export function AnalyticsDashboard() {
                 <option value="90d">90 derniers jours</option>
                 <option value="1y">1 année</option>
               </select>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                📊 Exporter
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  📊 Exporter\n</Button>
             </div>
           </div>
         </div>

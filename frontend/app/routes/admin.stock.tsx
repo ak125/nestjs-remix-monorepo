@@ -1,5 +1,6 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
 import { useState, useEffect } from 'react';
 
@@ -374,12 +375,7 @@ export default function AdminStock() {
           </div>
 
           <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              🔍 Filtrer
-            </button>
+            <Button className="w-full  px-4 py-2 rounded-lg" variant="blue" type="submit">\n  🔍 Filtrer\n</Button>
           </div>
         </Form>
       </div>
@@ -566,13 +562,8 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-                </button>
+                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="blue" type="submit"
+                  disabled={isSubmitting}>\n  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}\n</Button>
               </div>
             </Form>
           </div>
@@ -645,13 +636,8 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Ajustement...' : 'Ajuster'}
-                </button>
+                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="green" type="submit"
+                  disabled={isSubmitting}>\n  {isSubmitting ? 'Ajustement...' : 'Ajuster'}\n</Button>
               </div>
             </Form>
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 🤖 Types pour l'automation business
@@ -349,12 +350,8 @@ export function AutomationCenter() {
               <p className="text-gray-600 mt-1">Centre de contrôle des processus automatisés</p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                ➕ Nouvelle règle
-              </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                📊 Rapport complet
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="green">\n  ➕ Nouvelle règle\n</Button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  📊 Rapport complet\n</Button>
             </div>
           </div>
 
@@ -617,9 +614,7 @@ export function AutomationCenter() {
                   <p className="text-sm text-gray-600 mt-1">Tâches à exécuter automatiquement</p>
                 </div>
               </div>
-              <button className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
-                🚀 Commencer à construire
-              </button>
+              <Button className="mt-8  px-6 py-3 rounded-md" variant="blue">\n  🚀 Commencer à construire\n</Button>
             </div>
           </div>
         )}

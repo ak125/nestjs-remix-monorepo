@@ -1,4 +1,5 @@
 import { type LoaderFunctionArgs, type ActionFunctionArgs, json } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useNavigate, Form, useNavigation } from "@remix-run/react";
 import { 
   ArrowLeft,
@@ -490,13 +491,8 @@ export default function AdminPaymentDetail() {
                   >
                     Annuler
                   </button>
-                  <button
-                    type="submit"
-                    disabled={navigation.state === 'submitting'}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {navigation.state === 'submitting' ? 'Traitement...' : 'Rembourser'}
-                  </button>
+                  <Button className="flex-1 px-4 py-2  rounded-md disabled:opacity-50" variant="red" type="submit"
+                    disabled={navigation.state === 'submitting'}>\n  {navigation.state === 'submitting' ? 'Traitement...' : 'Rembourser'}\n</Button>
                 </div>
               </Form>
             </div>

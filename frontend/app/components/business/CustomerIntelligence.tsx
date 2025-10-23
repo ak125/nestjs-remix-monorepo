@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 🧠 Types pour l'intelligence client
@@ -296,9 +297,7 @@ export function CustomerIntelligence() {
               <p className="text-gray-600 mt-1">Analyse comportementale et segmentation client</p>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                📊 Générer rapport
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  📊 Générer rapport\n</Button>
             </div>
           </div>
 
@@ -591,12 +590,8 @@ export function CustomerIntelligence() {
                           Dernière activité: {new Date(prediction.lastActivity).toLocaleDateString('fr-FR')}
                         </span>
                         <div className="space-x-2">
-                          <button className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
-                            Contacter
-                          </button>
-                          <button className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">
-                            Offre spéciale
-                          </button>
+                          <Button className="px-3 py-1 rounded text-xs" variant="blue">\n  Contacter\n</Button>
+                          <Button className="px-3 py-1 rounded text-xs" variant="green">\n  Offre spéciale\n</Button>
                         </div>
                       </div>
                     </div>

@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Button } from '~/components/ui/button';
 import { type GuideContent } from '../../types/pieces-route.types';
 
 interface PiecesBuyingGuideProps {
@@ -89,9 +90,7 @@ export function PiecesBuyingGuide({ guide }: PiecesBuyingGuideProps) {
             Besoin d'aide pour choisir la bonne pièce ?
           </p>
           <div className="flex gap-3 justify-center">
-            <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
-              Contacter un expert
-            </button>
+            <Button className="px-6 py-2 rounded-lg font-medium  shadow-sm" variant="purple">\n  Contacter un expert\n</Button>
             <button className="bg-white hover:bg-gray-50 text-purple-600 px-6 py-2 rounded-lg font-medium transition-colors border border-purple-300">
               Voir les avis clients
             </button>
