@@ -214,7 +214,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
                 <BookOpen className="h-5 w-5 text-blue-600" />
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Blog</span>
-                  <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+                  <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
                     Nouveau
                   </span>
                 </div>

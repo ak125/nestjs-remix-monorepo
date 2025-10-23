@@ -279,8 +279,7 @@ export default function CommercialReports() {
                   <div className="flex items-center">
                     <div className={`w-3 h-3 rounded-full mr-3 ${
                       order.status === 'completed' || order.isPaid 
-                        ? 'bg-green-500' 
-                        : 'bg-orange-500'
+                        ? 'bg-success' : 'bg-orange-600'
                     }`}></div>
                     <div>
                       <div className="font-medium">Commande #{order.orderNumber}</div>

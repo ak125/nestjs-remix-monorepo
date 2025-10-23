@@ -370,7 +370,7 @@ export default function ContactPage() {
             {/* Statut du support */}
 <Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
                 <span className="text-sm font-medium text-green-800">Support disponible</span>
               </div>
               <p className="text-xs text-green-600 mt-1">

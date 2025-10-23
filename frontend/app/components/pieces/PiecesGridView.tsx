@@ -95,17 +95,17 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
               {/* Badges overlay */}
               <div className="absolute top-2 right-2 flex flex-col gap-1">
                 {hasStock ? (
-                  <span className="bg-green-500 text-white text-xs font-medium px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <span className="bg-success text-success-foreground text-xs font-medium px-2 py-1 rounded-full shadow-md flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                     En stock
                   </span>
                 ) : (
-                  <span className="bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
+                  <span className="bg-destructive text-destructive-foreground text-xs font-medium px-2 py-1 rounded-full shadow-md">
                     Rupture
                   </span>
                 )}
                 {piece.quality === 'OES' && (
-                  <span className="bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded-full shadow-md">
+                  <span className="bg-warning text-warning-foreground text-xs font-medium px-2 py-1 rounded-full shadow-md">
                     🏆 OES
                   </span>
                 )}

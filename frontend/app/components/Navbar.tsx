@@ -108,7 +108,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           >
             <BookOpen className="w-4 h-4" />
             Blog
-            <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+            <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
               Nouveau
             </span>
           </Link>
