@@ -8,6 +8,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Form, useNavigation, Link } from '@remix-run/react';
 import { 
   Package, Truck, Calculator, FileText,
@@ -561,13 +562,10 @@ export default function CreateShipment() {
                   </button>
 
                   {selectedService && (
-                    <button
-                      type="button"
-                      className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-                    >
+                    <Button className="px-4 py-3  rounded-lg flex items-center gap-2" variant="green" type="button">
                       <Printer className="w-4 h-4" />
                       Étiquette
-                    </button>
+                    </Button>
                   )}
                 </div>
               </Form>

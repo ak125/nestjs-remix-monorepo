@@ -19,6 +19,7 @@
  */
 
 import { Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { 
   X, 
   Home, 
@@ -317,13 +318,10 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
         <div className="p-4 border-t bg-gray-50">
           {user ? (
             <form method="POST" action="/auth/logout">
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-              >
+              <Button className="w-full flex items-center justify-center gap-2 px-4 py-2.5  rounded-lg" variant="red" type="submit">
                 <LogOut className="h-4 w-4" />
                 Se déconnecter
-              </button>
+              </Button>
             </form>
           ) : (
             <div className="space-y-2">

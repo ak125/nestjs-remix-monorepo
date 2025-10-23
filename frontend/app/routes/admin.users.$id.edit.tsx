@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, Link } from '@remix-run/react';
 import { ArrowLeft, User, Save, Mail, Phone, MapPin } from 'lucide-react';
 
@@ -294,13 +295,10 @@ export default function EditUser() {
 
         {/* Actions */}
         <div className="flex gap-4">
-          <button 
-            type="submit" 
-            className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-          >
+          <Button className="flex-1  px-4 py-2 rounded-md flex items-center justify-center gap-2" variant="blue" type="submit">
             <Save className="w-4 h-4" />
             Sauvegarder les modifications
-          </button>
+          </Button>
           <Link to={`/admin/users/${user.id}`}>
             <button 
               type="button"

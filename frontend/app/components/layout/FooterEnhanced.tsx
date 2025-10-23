@@ -9,6 +9,7 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { 
   Mail, 
   Phone, 
@@ -365,17 +366,14 @@ export function FooterEnhanced({
                     className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
                     disabled={newsletterStatus === 'loading'}
                   />
-                  <button
-                    type="submit"
-                    disabled={newsletterStatus === 'loading' || !newsletterEmail}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 px-4 py-2 rounded-r-lg transition-colors"
-                  >
+                  <Button className="disabled: px-4 py-2 rounded-r-lg" variant="blue" type="submit"
+                    disabled={newsletterStatus === 'loading' || !newsletterEmail}>
                     {newsletterStatus === 'loading' ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <ArrowRight className="w-5 h-5" />
                     )}
-                  </button>
+                  </Button>
                 </div>
                 
                 {newsletterStatus === 'success' && (

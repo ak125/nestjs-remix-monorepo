@@ -1,5 +1,6 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
 
@@ -228,12 +229,7 @@ export default function AIDemoPage() {
                 Démonstration des capacités IA de notre module support
               </p>
             </div>
-            <Link
-              to="/support"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              ← Retour Support
-            </Link>
+            <Button className="px-4 py-2 rounded-lg" variant="blue" asChild><Link to="/support">← Retour Support</Link></Button>
           </div>
         </div>
 

@@ -3,6 +3,7 @@
  * Affichage complet et modération d'un avis spécifique
  */
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { 
   Star, 
@@ -284,42 +285,33 @@ export default function ReviewDetailPage() {
               {review.status !== "approved" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="approve" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="green" type="submit"
+                    disabled={isSubmitting}>
                     <Check className="w-4 h-4 mr-2" />
                     Approuver
-                  </button>
+                  </Button>
                 </Form>
               )}
 
               {review.status !== "rejected" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="reject" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="red" type="submit"
+                    disabled={isSubmitting}>
                     <X className="w-4 h-4 mr-2" />
                     Rejeter
-                  </button>
+                  </Button>
                 </Form>
               )}
 
               {review.status !== "pending" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="pending" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-yellow-600 text-white font-medium rounded-md hover:bg-yellow-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="yellow" type="submit"
+                    disabled={isSubmitting}>
                     <Flag className="w-4 h-4 mr-2" />
                     Remettre en attente
-                  </button>
+                  </Button>
                 </Form>
               )}
             </div>
@@ -395,12 +387,7 @@ export default function ReviewDetailPage() {
                 Retour à la liste
               </Link>
               
-              <Link
-                to="/reviews/create"
-                className="block w-full text-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-              >
-                Nouvel avis
-              </Link>
+              <Button className="block w-full text-center px-4 py-2   rounded-md" variant="blue" asChild><Link to="/reviews/create">Nouvel avis</Link></Button>
             </div>
           </div>
         </div>

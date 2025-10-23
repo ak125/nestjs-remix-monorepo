@@ -4,6 +4,7 @@
 
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
   Truck, Package, Clock,
@@ -511,13 +512,10 @@ export default function CommercialShippingIndex() {
           </div>
 
           <div className="flex justify-between items-center">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-            >
+            <Button className="px-6 py-2 rounded-lg flex items-center gap-2" variant="blue" type="submit">
               <Filter className="w-4 h-4" />
               Appliquer les filtres
-            </button>
+            </Button>
             
             {(filters.search || filters.status || filters.zone || filters.trackingStatus) && (
               <Link
