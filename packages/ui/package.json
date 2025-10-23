@@ -5,23 +5,20 @@
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "style": "./dist/styles.css",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./components/*": {
-      "types": "./dist/components/*.d.ts",
-      "import": "./dist/components/*.mjs",
-      "require": "./dist/components/*.cjs"
-    },
-    "./styles": "./dist/styles.css"
+    }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
@@ -36,13 +33,15 @@
   },
   "dependencies": {
     "@fafa/design-tokens": "*",
-    "@fafa/theme-automecanik": "*",
     "@fafa/theme-admin": "*",
+    "@fafa/theme-automecanik": "*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.4",
+    "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "lucide-react": "^0.462.0",
     "tailwind-merge": "^3.3.1"
   },
@@ -55,7 +54,13 @@
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"
   },
-  "keywords": ["ui", "components", "react", "shadcn", "design-system"],
+  "keywords": [
+    "ui",
+    "components",
+    "react",
+    "shadcn",
+    "design-system"
+  ],
   "engines": {
     "node": ">=20.0.0"
   }

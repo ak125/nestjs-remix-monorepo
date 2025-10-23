@@ -63,9 +63,19 @@ function generateCSS(tokens) {
       if (typeof shades === 'object') {
         Object.entries(shades).forEach(([shade, value]) => {
           css += `  --color-${category}-${shade}: ${value};\n`;
+          // Auto-generate contrast color for accessibility (WCAG AA)
+          if (value && value.startsWith('#')) {
+            const contrastColor = getContrastColor(value);
+            css += `  --color-${category}-${shade}-contrast: ${contrastColor};\n`;
+          }
         });
       } else {
         css += `  --color-${category}: ${shades};\n`;
+        // Auto-generate contrast for single color values
+        if (shades && shades.startsWith('#')) {
+          const contrastColor = getContrastColor(shades);
+          css += `  --color-${category}-contrast: ${contrastColor};\n`;
+        }
       }
     });
   }
@@ -114,6 +124,22 @@ function generateCSS(tokens) {
     });
   }
 
+  // Z-Index
+  if (tokens.zIndex) {
+    css += '\n  /* Z-Index */\n';
+    Object.entries(tokens.zIndex).forEach(([key, value]) => {
+      css += `  --z-${key}: ${value};\n`;
+    });
+  }
+
+  // Transitions
+  if (tokens.transitions) {
+    css += '\n  /* Transitions */\n';
+    Object.entries(tokens.transitions).forEach(([key, value]) => {
+      css += `  --transition-${key}: ${value};\n`;
+    });
+  }
+
   css += '}\n';
   return css;
 }
@@ -139,7 +165,194 @@ export type TypographyToken = keyof typeof designTokens.typography;
   return ts;
 }
 
-// 🎯 Génération Tailwind Config
+// 🎨 Calcul Luminance WCAG
+function calculateLuminance(hex) {
+  // Conversion HEX → RGB
+  const rgb = parseInt(hex.slice(1), 16);
+  const r = ((rgb >> 16) & 0xff) / 255;
+  const g = ((rgb >> 8) & 0xff) / 255;
+  const b = (rgb & 0xff) / 255;
+  
+  // Linearize RGB (sRGB → Linear RGB)
+  const [rs, gs, bs] = [r, g, b].map(c => 
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+  );
+  
+  // Calculate relative luminance (WCAG formula)
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+}
+
+// 🎨 Calcul Contrast Auto (WCAG AA)
+function getContrastColor(hex) {
+  const luminance = calculateLuminance(hex);
+  // WCAG AA requires 4.5:1 contrast ratio for normal text
+  // Threshold ~0.179 ensures sufficient contrast
+  return luminance > 0.179 ? '#000000' : '#ffffff';
+}
+
+// 🎨 Génération CSS Utilities Sémantiques
+function generateUtilities(tokens) {
+  let css = `/**
+ * 🎨 CSS Utilities Sémantiques - Auto-généré
+ * ⚠️  NE PAS MODIFIER MANUELLEMENT
+ * Source: src/tokens/design-tokens.json
+ * 
+ * Usage: @import '@fafa/design-tokens/utilities';
+ */
+
+`;
+
+  // === COLORS ===
+  if (tokens.colors) {
+    css += '/* === COLORS === */\n\n';
+
+    // Primary (brand colors)
+    if (tokens.colors.primary) {
+      css += '/* Brand Colors (Primary) */\n';
+      Object.entries(tokens.colors.primary).forEach(([shade, value]) => {
+        css += `.bg-brand-${shade} { background-color: var(--color-primary-${shade}); }\n`;
+        css += `.text-brand-${shade} { color: var(--color-primary-${shade}); }\n`;
+        css += `.border-brand-${shade} { border-color: var(--color-primary-${shade}); }\n`;
+        // Contrast auto utilities
+        if (value && value.startsWith('#')) {
+          css += `.text-brand-${shade}-contrast { color: var(--color-primary-${shade}-contrast); }\n`;
+        }
+      });
+      css += '\n';
+    }
+
+    // Secondary
+    if (tokens.colors.secondary) {
+      css += '/* Secondary Colors */\n';
+      Object.entries(tokens.colors.secondary).forEach(([shade, value]) => {
+        css += `.bg-secondary-${shade} { background-color: var(--color-secondary-${shade}); }\n`;
+        css += `.text-secondary-${shade} { color: var(--color-secondary-${shade}); }\n`;
+        css += `.border-secondary-${shade} { border-color: var(--color-secondary-${shade}); }\n`;
+        if (value && value.startsWith('#')) {
+          css += `.text-secondary-${shade}-contrast { color: var(--color-secondary-${shade}-contrast); }\n`;
+        }
+      });
+      css += '\n';
+    }
+
+    // Accent colors (custom)
+    if (tokens.colors.accent) {
+      css += '/* Accent Colors (Custom) */\n';
+      Object.entries(tokens.colors.accent).forEach(([name, value]) => {
+        const kebabName = name.replace(/([A-Z])/g, '-$1').toLowerCase();
+        css += `.bg-${kebabName} { background-color: var(--color-accent-${name}); }\n`;
+        css += `.text-${kebabName} { color: var(--color-accent-${name}); }\n`;
+        css += `.border-${kebabName} { border-color: var(--color-accent-${name}); }\n`;
+        if (value && value.startsWith('#')) {
+          css += `.text-${kebabName}-contrast { color: var(--color-accent-${name}-contrast); }\n`;
+        }
+      });
+      css += '\n';
+    }
+
+    // Semantic colors
+    if (tokens.colors.semantic) {
+      css += '/* Semantic Colors */\n';
+      Object.entries(tokens.colors.semantic).forEach(([name, value]) => {
+        css += `.bg-${name} { background-color: var(--color-semantic-${name}); }\n`;
+        css += `.text-${name} { color: var(--color-semantic-${name}); }\n`;
+        css += `.border-${name} { border-color: var(--color-semantic-${name}); }\n`;
+        if (value && value.startsWith('#')) {
+          css += `.text-${name}-contrast { color: var(--color-semantic-${name}-contrast); }\n`;
+        }
+      });
+      css += '\n';
+    }
+
+    // Neutral colors
+    if (tokens.colors.neutral) {
+      css += '/* Neutral Colors */\n';
+      Object.entries(tokens.colors.neutral).forEach(([name, value]) => {
+        const kebabName = name.replace(/([A-Z])/g, '-$1').toLowerCase();
+        css += `.bg-${kebabName} { background-color: var(--color-neutral-${name}); }\n`;
+        css += `.text-${kebabName} { color: var(--color-neutral-${name}); }\n`;
+        css += `.border-${kebabName} { border-color: var(--color-neutral-${name}); }\n`;
+      });
+      css += '\n';
+    }
+  }
+
+  // === SPACING ===
+  if (tokens.spacing) {
+    css += '/* === SPACING === */\n\n';
+    Object.keys(tokens.spacing).forEach(key => {
+      css += `.p-space-${key} { padding: var(--spacing-${key}); }\n`;
+      css += `.px-space-${key} { padding-left: var(--spacing-${key}); padding-right: var(--spacing-${key}); }\n`;
+      css += `.py-space-${key} { padding-top: var(--spacing-${key}); padding-bottom: var(--spacing-${key}); }\n`;
+      css += `.m-space-${key} { margin: var(--spacing-${key}); }\n`;
+      css += `.mx-space-${key} { margin-left: var(--spacing-${key}); margin-right: var(--spacing-${key}); }\n`;
+      css += `.my-space-${key} { margin-top: var(--spacing-${key}); margin-bottom: var(--spacing-${key}); }\n`;
+      css += `.gap-space-${key} { gap: var(--spacing-${key}); }\n`;
+      css += '\n';
+    });
+  }
+
+  // === BORDER RADIUS ===
+  if (tokens.borderRadius) {
+    css += '/* === BORDER RADIUS === */\n\n';
+    Object.keys(tokens.borderRadius).forEach(key => {
+      css += `.rounded-${key} { border-radius: var(--radius-${key}); }\n`;
+    });
+    css += '\n';
+  }
+
+  // === SHADOWS ===
+  if (tokens.shadows) {
+    css += '/* === SHADOWS === */\n\n';
+    Object.keys(tokens.shadows).forEach(key => {
+      css += `.shadow-${key} { box-shadow: var(--shadow-${key}); }\n`;
+    });
+    css += '\n';
+  }
+
+  // === TYPOGRAPHY ===
+  if (tokens.typography) {
+    css += '/* === TYPOGRAPHY === */\n\n';
+    
+    if (tokens.typography.fontSize) {
+      css += '/* Font Sizes */\n';
+      Object.keys(tokens.typography.fontSize).forEach(key => {
+        css += `.text-${key} { font-size: var(--font-size-${key}); }\n`;
+      });
+      css += '\n';
+    }
+
+    if (tokens.typography.fontFamily) {
+      css += '/* Font Families */\n';
+      Object.keys(tokens.typography.fontFamily).forEach(key => {
+        css += `.font-${key} { font-family: var(--font-${key}); }\n`;
+      });
+      css += '\n';
+    }
+  }
+
+  // === Z-INDEX ===
+  if (tokens.zIndex) {
+    css += '/* === Z-INDEX === */\n\n';
+    Object.keys(tokens.zIndex).forEach(key => {
+      css += `.z-${key} { z-index: var(--z-${key}); }\n`;
+    });
+    css += '\n';
+  }
+
+  // === TRANSITIONS ===
+  if (tokens.transitions) {
+    css += '/* === TRANSITIONS === */\n\n';
+    Object.keys(tokens.transitions).forEach(key => {
+      css += `.transition-${key} { transition-duration: var(--transition-${key}); }\n`;
+    });
+    css += '\n';
+  }
+
+  return css;
+}
+
+// �🎯 Génération Tailwind Config
 function generateTailwindTokens(tokens) {
   const config = {
     colors: {},
@@ -207,10 +420,15 @@ const distDir = join(__dirname, '../dist');
 
 // ✍️ Écriture des fichiers
 try {
-  // CSS
+  // CSS Variables
   const cssOutput = generateCSS(tokens);
   writeFileSync(join(stylesDir, 'tokens.css'), cssOutput);
   console.log('✅ Generated: src/styles/tokens.css');
+
+  // CSS Utilities Sémantiques
+  const utilitiesOutput = generateUtilities(tokens);
+  writeFileSync(join(stylesDir, 'utilities.css'), utilitiesOutput);
+  console.log('✅ Generated: src/styles/utilities.css');
 
   // TypeScript
   const tsOutput = generateTS(tokens);
@@ -229,6 +447,8 @@ try {
     typography: Object.keys(tokens.typography || {}).length,
     shadows: Object.keys(tokens.shadows || {}).length,
     borderRadius: Object.keys(tokens.borderRadius || {}).length,
+    zIndex: Object.keys(tokens.zIndex || {}).length,
+    transitions: Object.keys(tokens.transitions || {}).length,
   };
   
   const totalTokens = Object.values(stats).reduce((sum, count) => sum + count, 0);
@@ -239,6 +459,8 @@ try {
   console.log(`   Typography: ${stats.typography}`);
   console.log(`   Shadows: ${stats.shadows}`);
   console.log(`   Border Radius: ${stats.borderRadius}`);
+  console.log(`   Z-Index: ${stats.zIndex}`);
+  console.log(`   Transitions: ${stats.transitions}`);
   console.log(`   ─────────────────`);
   console.log(`   Total: ${totalTokens} tokens`);
   
