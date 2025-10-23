@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
-import { Alert } from "@fafa/ui";
+import { Alert, Badge } from "@fafa/ui";
 
 export const meta: MetaFunction = () => {
   return [
@@ -263,7 +263,12 @@ export default function AdminSystem() {
             <div className="text-sm text-gray-600 space-y-1">
               <div>Mémoire heap: <span className="font-mono bg-gray-100 px-1 rounded">{metrics?.data?.memory ? formatMemory(metrics.data.memory.used) : 'N/A'}</span></div>
               <div>Mémoire totale: <span className="font-mono bg-gray-100 px-1 rounded">{metrics?.data?.memory ? formatMemory(metrics.data.memory.total) : 'N/A'}</span></div>
-              <div>Status: <span className={`font-mono px-1 rounded ${health?.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{health?.status || 'N/A'}</span></div>
+              <div className="flex items-center gap-2">
+                Status: 
+                <Badge variant={health?.success ? 'success' : 'error'} size="sm">
+                  {health?.status || 'N/A'}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>

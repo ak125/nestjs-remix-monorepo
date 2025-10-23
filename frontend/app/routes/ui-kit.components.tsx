@@ -11,11 +11,12 @@ import {
   ProductCard,
   Combobox,
   Alert,
+  Badge,
   type ComboboxItem
 } from '@fafa/ui';
 import { type MetaFunction } from '@remix-run/node';
 import { useState } from 'react';
-import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { CheckCircle, AlertCircle, AlertTriangle, Info, X, Check, Zap, Star } from 'lucide-react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -428,6 +429,173 @@ export default function UIKitComponents() {
                 <li>Mot de passe trop court (min. 8 caractères)</li>
               </ul>
             </Alert>
+          </div>
+        </div>
+      </section>
+
+      {/* Badge Showcase */}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Badge</h2>
+          <p className="text-[var(--text-secondary)]">
+            Labels compacts pour status, catégories, tags
+          </p>
+          <p className="text-sm text-[var(--text-tertiary)] mt-2">
+            💡 Utilise les tokens CSS sémantiques • 16 variants, 3 sizes
+          </p>
+        </div>
+
+        {/* Solid variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Solid variants</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="default">Default</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="success">Success</Badge>
+            <Badge variant="warning">Warning</Badge>
+            <Badge variant="error">Error</Badge>
+            <Badge variant="info">Info</Badge>
+          </div>
+        </div>
+
+        {/* Outline variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Outline variants</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline">Default Outline</Badge>
+            <Badge variant="outline-success">Success Outline</Badge>
+            <Badge variant="outline-warning">Warning Outline</Badge>
+            <Badge variant="outline-error">Error Outline</Badge>
+            <Badge variant="outline-info">Info Outline</Badge>
+          </div>
+        </div>
+
+        {/* Subtle variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Subtle variants</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="subtle">Default Subtle</Badge>
+            <Badge variant="subtle-success">Success Subtle</Badge>
+            <Badge variant="subtle-warning">Warning Subtle</Badge>
+            <Badge variant="subtle-error">Error Subtle</Badge>
+            <Badge variant="subtle-info">Info Subtle</Badge>
+          </div>
+        </div>
+
+        {/* Size variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Size variants</h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge size="sm">Small</Badge>
+            <Badge size="md">Medium (default)</Badge>
+            <Badge size="lg">Large</Badge>
+          </div>
+        </div>
+
+        {/* With icons */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">With icons</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="success" icon={<Check className="h-3 w-3" />}>
+              Vérifié
+            </Badge>
+            <Badge variant="warning" icon={<Zap className="h-3 w-3" />}>
+              Rapide
+            </Badge>
+            <Badge variant="info" icon={<Star className="h-3 w-3" />}>
+              Premium
+            </Badge>
+            <Badge variant="error" icon={<X className="h-3 w-3" />}>
+              Indisponible
+            </Badge>
+          </div>
+        </div>
+
+        {/* Dismissible badges */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Dismissible (avec onRemove)</h3>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="default" onRemove={() => console.log('Badge removed')}>
+              Cliquer sur X
+            </Badge>
+            <Badge variant="subtle-info" onRemove={() => console.log('Filtre supprimé')}>
+              Filtre actif
+            </Badge>
+            <Badge variant="outline-success" icon={<Check className="h-3 w-3" />} onRemove={() => {}}>
+              Tag avec icon
+            </Badge>
+          </div>
+        </div>
+
+        {/* Real-world examples */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Exemples réels</h3>
+          
+          <div className="space-y-3">
+            {/* Status badges */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">Status système</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="success" icon={<Check className="h-3 w-3" />}>Opérationnel</Badge>
+                <Badge variant="warning" icon={<AlertTriangle className="h-3 w-3" />}>Maintenance</Badge>
+                <Badge variant="error" icon={<X className="h-3 w-3" />}>Hors ligne</Badge>
+                <Badge variant="info">En attente</Badge>
+              </div>
+            </div>
+
+            {/* Product status */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">Status produit</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="success">En stock</Badge>
+                <Badge variant="warning">Stock limité</Badge>
+                <Badge variant="error">Rupture</Badge>
+                <Badge variant="subtle-info">Sur commande</Badge>
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">Catégories</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">Freinage</Badge>
+                <Badge variant="outline">Filtres</Badge>
+                <Badge variant="outline">Amortisseurs</Badge>
+                <Badge variant="outline">Batteries</Badge>
+                <Badge variant="outline">Pneus</Badge>
+              </div>
+            </div>
+
+            {/* Tags with remove */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">Filtres actifs (removable)</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="subtle" onRemove={() => {}}>Marque: Bosch</Badge>
+                <Badge variant="subtle" onRemove={() => {}}>Prix: 50-100€</Badge>
+                <Badge variant="subtle" onRemove={() => {}}>En stock</Badge>
+              </div>
+            </div>
+
+            {/* Product card with badges */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-[var(--text-secondary)]">Sur une carte produit</h4>
+              <div className="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                <div className="flex items-start justify-between mb-2">
+                  <h5 className="font-semibold">Kit freinage avant Brembo</h5>
+                  <Badge variant="success" size="sm">Nouveau</Badge>
+                </div>
+                <p className="text-sm text-[var(--text-secondary)] mb-3">
+                  Disques + plaquettes compatibles Renault Clio 4
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="success" size="sm">En stock</Badge>
+                  <Badge variant="outline" size="sm">Freinage</Badge>
+                  <Badge variant="subtle-info" size="sm" icon={<Star className="h-3 w-3" />}>
+                    Top ventes
+                  </Badge>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
