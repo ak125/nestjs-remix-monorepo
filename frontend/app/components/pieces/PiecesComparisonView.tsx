@@ -201,9 +201,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
       if (!piece.quality) return <span className="text-gray-400">-</span>;
       return (
         <span className={`inline-block text-xs font-medium px-2 py-1 rounded ${
-          piece.quality === 'OES' 
-            ? 'bg-yellow-100 text-yellow-800' 
-            : 'bg-gray-100 text-gray-700'
+          piece.quality === 'OES' ? 'warning' : 'bg-gray-100 text-gray-700'
         }`}>
           {piece.quality === 'OES' ? '🏆 OES' : piece.quality}
         </span>
@@ -214,8 +212,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
       return (
         <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
           hasStock 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-red-100 text-red-800'
+            ? 'success' : 'error'
         }`}>
           {hasStock ? (
             <>

@@ -124,8 +124,7 @@ export default function AdminProductDetail() {
               <span
                 className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
                   product.piece_activ
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'success' : 'error'
                 }`}
               >
                 {product.piece_activ ? '✅ Produit Actif' : '❌ Produit Inactif'}

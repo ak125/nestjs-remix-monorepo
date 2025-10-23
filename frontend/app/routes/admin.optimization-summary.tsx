@@ -304,7 +304,7 @@ export default function OptimizationSummaryPage() {
                           {suggestion.category}
                         </Badge>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          suggestion.priority === 'high' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                          suggestion.priority === 'high' ? 'error' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {suggestion.priority}
                         </span>

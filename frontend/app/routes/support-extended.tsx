@@ -350,9 +350,7 @@ export default function ExtendedSupportDashboard() {
                       </div>
                       <div className="ml-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          ticket.msg_open === "1" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-gray-100 text-gray-800"
+                          ticket.msg_open === '1' ? 'success' : "bg-gray-100 text-gray-800"
                         }`}>
                           {ticket.msg_open === "1" ? "Ouvert" : "Fermé"}
                         </span>

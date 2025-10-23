@@ -132,9 +132,7 @@ export default function TicketsPage() {
   };
 
   const getStatusColor = (isOpen: string) => {
-    return isOpen === "1" 
-      ? "bg-green-100 text-green-800" 
-      : "bg-gray-100 text-gray-800";
+    return isOpen === '1' ? 'success' : "bg-gray-100 text-gray-800";
   };
 
   return (

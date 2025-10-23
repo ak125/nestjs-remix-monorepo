@@ -322,7 +322,7 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
 
             {fetcher.data && typeof fetcher.data === 'object' && (
               <div
-                className={`mt-4 p-2 rounded ${'success' in fetcher.data && fetcher.data.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                className={`mt-4 p-2 rounded ${'success' in fetcher.data && fetcher.data.success ? 'success' : 'error'}`}
               >
                 {'message' in fetcher.data ? String((fetcher.data as any).message) : 'error' in fetcher.data ? String((fetcher.data as any).error) : ''}
               </div>
