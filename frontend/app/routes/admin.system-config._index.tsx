@@ -10,6 +10,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import { 
   Settings, 
@@ -685,14 +686,11 @@ function ModulePanel({
               <input type="hidden" name="action" value={`validate-${module}`} />
               <input type="hidden" name="environment" value={environment} />
               <input type="hidden" name="module" value={module} />
-              <button
-                type="submit"
-                disabled={fetcher.state === 'submitting'}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-              >
+              <Button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm  rounded-md  focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" variant="blue" type="submit"
+                disabled={fetcher.state === 'submitting'}>
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Valider
-              </button>
+              </Button>
             </fetcher.Form>
 
             <button

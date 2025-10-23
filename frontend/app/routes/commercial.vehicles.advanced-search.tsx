@@ -1,5 +1,6 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
@@ -663,10 +664,10 @@ export default function AdvancedVehicleSearch() {
                   )}
                   
                   <div className="mt-4 flex gap-2">
-                    <button className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <Button className="flex-1  py-2 px-3 rounded-lg text-sm   flex items-center justify-center gap-2" variant="blue">
                       <ShoppingCart className="h-4 w-4" />
                       Ajouter au panier
-                    </button>
+                    </Button>
                     <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
                       <Eye className="h-4 w-4" />
                       Détails

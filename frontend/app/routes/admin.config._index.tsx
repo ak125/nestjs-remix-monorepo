@@ -4,6 +4,7 @@
 
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
   Settings, 
@@ -321,13 +322,10 @@ export default function AdminConfigIndexPage() {
                 {/* Actions rapides */}
                 <Form method="post" className="inline">
                   <input type="hidden" name="_action" value="backup" />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-                  >
+                  <Button className="px-4 py-2  rounded-md flex items-center" variant="blue" type="submit">
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder
-                  </button>
+                  </Button>
                 </Form>
               </div>
             </div>
@@ -544,13 +542,10 @@ export default function AdminConfigIndexPage() {
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 )}
-                                <button
-                                  type="submit"
-                                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
-                                >
+                                <Button className="px-4 py-2  rounded-md flex items-center" variant="green" type="submit">
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Valider
-                                </button>
+                                </Button>
                                 <button
                                   type="button"
                                   onClick={() => setEditingKey(null)}

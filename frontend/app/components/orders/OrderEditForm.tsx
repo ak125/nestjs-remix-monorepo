@@ -1,4 +1,5 @@
 import { Form, useFetcher } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { Save, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { Alert } from '@fafa/ui';
@@ -176,14 +177,10 @@ export function OrderEditForm({
             >
               Annuler
             </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
-            >
+            <Button className="flex items-center gap-2 px-4 py-2  rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit" disabled={isSubmitting}>
               <Save className="w-4 h-4" />
               {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-            </button>
+            </Button>
           </div>
         </Form>
       </div>

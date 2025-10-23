@@ -12,6 +12,7 @@ import {
   Link
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
+import { Button } from '~/components/ui/button';
 import { getSession } from "../server/session.server";
 
 // Interface de contact temporaire pour éviter les erreurs d'import
@@ -253,12 +254,7 @@ export default function ContactPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link 
-                to="/" 
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Retour à l'accueil
-              </Link>
+              <Button className="px-6 py-3   rounded-md" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
               {isAuthenticated && (
                 <Link 
                   to="/account/messages" 
@@ -742,11 +738,8 @@ export default function ContactPage() {
                     <p className="text-sm text-gray-500">
                       * Champs obligatoires
                     </p>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="relative px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
+                    <Button className="relative px-8 py-3   rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
+                      disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
                           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -758,7 +751,7 @@ export default function ContactPage() {
                       ) : (
                         "Envoyer le message"
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </Form>

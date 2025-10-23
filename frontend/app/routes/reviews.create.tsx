@@ -3,6 +3,7 @@
  * Formulaire pour soumettre un nouvel avis client
  */
 import { json, redirect, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { Star, ArrowLeft, Send } from "lucide-react";
 import { useState } from "react";
@@ -292,11 +293,8 @@ export default function CreateReviewPage() {
               Annuler
             </Link>
             
-            <button
-              type="submit"
-              disabled={isSubmitting || rating === 0}
-              className="inline-flex items-center px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button className="inline-flex items-center px-6 py-2   rounded-md disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
+              disabled={isSubmitting || rating === 0}>
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -308,7 +306,7 @@ export default function CreateReviewPage() {
                   Publier l'avis
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </Form>
       </div>

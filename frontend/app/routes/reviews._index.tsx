@@ -4,6 +4,7 @@
  */
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
 import { 
   Star, 
@@ -317,13 +318,10 @@ export default function ReviewsPage() {
                   <option value="50">50 par page</option>
                 </select>
                 
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-                >
+                <Button className="inline-flex items-center px-4 py-2   rounded-md" variant="blue" type="submit">
                   <Filter className="w-4 h-4 mr-2" />
                   Filtrer
-                </button>
+                </Button>
               </div>
             </div>
           </Form>

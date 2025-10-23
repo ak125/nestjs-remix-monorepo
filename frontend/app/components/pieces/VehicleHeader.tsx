@@ -1,5 +1,6 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
 import React from 'react';
+import { Button } from '~/components/ui/button';
 import { Badge } from '@fafa/ui';
 
 interface VehicleData {
@@ -144,10 +145,10 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
           {/* Actions */}
           <div className="flex-shrink-0 ml-6">
             <div className="flex flex-col gap-3">
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <Button className="px-6 py-3 rounded-lg   flex items-center gap-2" variant="blue">
                 <span>📋</span>
                 Devis rapide
-              </button>
+              </Button>
               <button className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center gap-2">
                 <span>❤️</span>
                 Favoris

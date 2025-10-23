@@ -5,6 +5,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 
 // Interface pour les données support
 interface SupportData {
@@ -168,12 +169,7 @@ export default function SupportPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Erreur</h1>
           <p className="text-gray-600 mb-6">{data.error}</p>
-          <Link
-            to="/"
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retour à l'accueil
-          </Link>
+          <Button className="px-6 py-2 rounded-lg" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
         </div>
       </div>
     );
@@ -203,30 +199,10 @@ export default function SupportPage() {
             🚀 Accès Rapide
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Link
-              to="/support/ai"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-center hover:bg-blue-700 transition-colors"
-            >
-              🤖 Assistant IA
-            </Link>
-            <Link
-              to="/support/contact"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg text-center hover:bg-green-700 transition-colors"
-            >
-              📞 Contact Direct
-            </Link>
-            <Link
-              to="/docs/faq"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg text-center hover:bg-purple-700 transition-colors"
-            >
-              ❓ FAQ
-            </Link>
-            <Link
-              to="/status"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg text-center hover:bg-orange-700 transition-colors"
-            >
-              📊 Statut Services
-            </Link>
+            <Button className="px-4 py-2 rounded-lg text-center" variant="blue" asChild><Link to="/support/ai">🤖 Assistant IA</Link></Button>
+            <Button className="px-4 py-2 rounded-lg text-center" variant="green" asChild><Link to="/support/contact">📞 Contact Direct</Link></Button>
+            <Button className="px-4 py-2 rounded-lg text-center" variant="purple" asChild><Link to="/docs/faq">❓ FAQ</Link></Button>
+            <Button className="px-4 py-2 rounded-lg text-center" variant="orange" asChild><Link to="/status">📊 Statut Services</Link></Button>
           </div>
         </div>
 

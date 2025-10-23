@@ -11,6 +11,7 @@
 
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
 import { getCart } from "../services/cart.server";
@@ -520,12 +521,7 @@ export default function CartPage() {
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
             <p className="text-gray-600 mb-6">{error || "Une erreur est survenue"}</p>
-            <Link
-              to="/"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Retour à l'accueil
-            </Link>
+            <Button className="inline-block  px-6 py-3 rounded-lg" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
           </div>
         </div>
       </div>
@@ -607,12 +603,7 @@ export default function CartPage() {
           <div className="lg:col-span-1">
             <CartSummary summary={cart.summary} isUpdating={navigation.state === 'loading'}>                  
               <div className="space-y-3">
-                <Link
-                  to="/checkout"
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
-                >
-                  Finaliser ma commande →
-                </Link>
+                <Button className="w-full  py-3 px-4 rounded-lg   text-center block" variant="blue" asChild><Link to="/checkout">Finaliser ma commande →</Link></Button>
                 
                 {/*
                   CONSOLIDATION NOTES:

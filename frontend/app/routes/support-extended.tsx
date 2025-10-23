@@ -3,6 +3,7 @@
  * Dashboard principal avec tous les services de support
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Link, useLoaderData } from "@remix-run/react";
 import { 
   MessageSquare, 
@@ -123,18 +124,8 @@ export default function ExtendedSupportDashboard() {
             <p className="text-gray-600 mt-1">Centre de contrôle pour tous les services de support client</p>
           </div>
           <div className="flex gap-3">
-            <Link
-              to="/contact"
-              className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-            >
-              Nouveau ticket
-            </Link>
-            <Link
-              to="/reviews/create"
-              className="px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700"
-            >
-              Nouvel avis
-            </Link>
+            <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
+            <Button className="px-4 py-2   rounded-md" variant="green" asChild><Link to="/reviews/create">Nouvel avis</Link></Button>
           </div>
         </div>
       </div>
@@ -330,12 +321,7 @@ export default function ExtendedSupportDashboard() {
             {recentTickets.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">Aucune activité récente</p>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                >
-                  Créer le premier ticket
-                </Link>
+                <Button className="px-4 py-2  text-sm  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
               </div>
             ) : (
               <div className="space-y-4">

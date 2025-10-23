@@ -3,6 +3,7 @@
  * Page principale pour la gestion du support client
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Link, useLoaderData } from "@remix-run/react";
 import { getAllTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
 
@@ -88,12 +89,7 @@ export default function SupportDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard Support</h1>
             <p className="text-gray-600 mt-1">Vue d'ensemble de l'activité support client</p>
           </div>
-          <Link
-            to="/contact"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-          >
-            Nouveau ticket
-          </Link>
+          <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
         </div>
       </div>
 
@@ -240,12 +236,7 @@ export default function SupportDashboard() {
             {recentTickets.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">Aucun ticket trouvé</p>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                >
-                  Créer le premier ticket
-                </Link>
+                <Button className="px-4 py-2  text-sm  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
               </div>
             ) : (
               <div className="space-y-4">

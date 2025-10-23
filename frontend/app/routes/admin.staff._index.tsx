@@ -198,12 +198,7 @@ export default function AdminStaff() {
           </div>
           
           <div className="flex gap-3">
-            <Link
-              to="/admin/staff/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Nouveau Staff
-            </Link>
+            <Button className="px-4 py-2 rounded-lg" variant="blue" asChild><Link to="/admin/staff/new">Nouveau Staff</Link></Button>
           </div>
         </div>
       </div>

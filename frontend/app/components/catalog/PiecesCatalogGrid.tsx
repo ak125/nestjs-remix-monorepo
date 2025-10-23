@@ -2,6 +2,7 @@
 // 🎨 Catalogue de pièces avec le design de FamilyGammeHierarchy
 
 import { Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { Badge } from '@fafa/ui';
@@ -491,12 +492,7 @@ export default function PiecesCatalogGrid({
             >
               Tout replier
             </button>
-            <Link
-              to="/pieces/catalogue"
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
-            >
-              Voir tout le catalogue
-            </Link>
+            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/pieces/catalogue">Voir tout le catalogue</Link></Button>
           </div>
         </div>
       </div>

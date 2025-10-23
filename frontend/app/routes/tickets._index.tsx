@@ -143,12 +143,7 @@ export default function TicketsPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Gestion des Tickets</h1>
-          <Link
-            to="/contact"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-          >
-            Nouveau ticket
-          </Link>
+          <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
         </div>
 
         {/* Statistiques */}
@@ -211,12 +206,7 @@ export default function TicketsPage() {
         {tickets.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">Aucun ticket trouvé.</p>
-            <Link
-              to="/contact"
-              className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Créer le premier ticket
-            </Link>
+            <Button className="inline-block mt-4 px-4 py-2  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
           </div>
         ) : (
           <>

@@ -3,6 +3,7 @@
  * Tableaux de bord et statistiques avancées
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData } from "@remix-run/react";
 import { 
   TrendingUp, 
@@ -143,10 +144,10 @@ export default function ReviewAnalyticsPage() {
               <Filter className="w-4 h-4 mr-2" />
               Filtres
             </button>
-            <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">
+            <Button className="inline-flex items-center px-4 py-2   rounded-md" variant="blue">
               <Download className="w-4 h-4 mr-2" />
               Export
-            </button>
+            </Button>
           </div>
         </div>
       </div>
