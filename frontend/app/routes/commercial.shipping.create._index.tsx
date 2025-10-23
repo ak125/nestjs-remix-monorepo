@@ -473,7 +473,7 @@ export default function CreateShipment() {
                           key={service.id}
                           className={`block p-3 border rounded-lg cursor-pointer transition-colors ${
                             selectedService?.id === service.id
-                              ? 'border-blue-500 bg-blue-50'
+                              ? 'border-blue-500 bg-blue-50/70'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >

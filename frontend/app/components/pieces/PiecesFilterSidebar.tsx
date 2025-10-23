@@ -84,7 +84,7 @@ export function PiecesFilterSidebar({
                     <label 
                       key={brand} 
                       className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                        isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                        isSelected ? 'bg-blue-50/50 border border-blue-200' : ''
                       }`}
                     >
                       <div className="flex items-center">

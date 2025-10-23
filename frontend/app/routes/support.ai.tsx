@@ -337,7 +337,7 @@ export default function AIDemoPage() {
                       key={ticket.msg_id}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                         selectedTicket === ticket.msg_id
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-blue-500 bg-blue-50/70'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => handleAnalyzeTicket(ticket.msg_id)}

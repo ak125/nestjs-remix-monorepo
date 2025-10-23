@@ -117,9 +117,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-50 border-green-200";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
+    if (score >= 80) return 'border-l-4 border-green-500 bg-green-50';
+    if (score >= 60) return 'border-l-4 border-yellow-500 bg-yellow-50';
+    return 'border-l-4 border-red-500 bg-red-50';
   };
 
   const getScoreIcon = (score: number) => {
