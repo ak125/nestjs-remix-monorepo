@@ -424,8 +424,8 @@ export default function ShippingTracking() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full transition-all duration-500 ${
-                            shipment.status === 'delivered' ? 'bg-green-500' : 
-                            shipment.status === 'out_for_delivery' ? 'bg-orange-500' : 
+                            shipment.status === 'delivered' ? 'bg-success' : 
+                            shipment.status === 'out_for_delivery' ? 'bg-orange-600' : 
                             shipment.status === 'in_transit' ? 'bg-info' : 'bg-warning'
                           }`}
                           style={{ 

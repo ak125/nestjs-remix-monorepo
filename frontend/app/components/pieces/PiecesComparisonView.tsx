@@ -216,7 +216,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
         }`}>
           {hasStock ? (
             <>
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span>
               En stock
             </>
           ) : (
