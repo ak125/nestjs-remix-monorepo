@@ -1,14 +1,10 @@
 /**
- * 🚛 SUIVI DES EXPÉDITIONS EN TEMPS RÉEL
- * 
- * Interface de suivi avancée avec WebSockets pour les mises à jour instantanées
- * ✅ Tracking automatique multi-transporteurs
- * ✅ Notifications en temps réel
- * ✅ Géolocalisation des colis
+ * � Suivi des expéditions - Interface commerciale
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
+import { Badge } from "@fafa/ui/badge";
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
 import { 
   Clock, CheckCircle, Truck,
   Package, Bell, RefreshCw, Eye,
@@ -177,15 +173,16 @@ const mockShipments: ShipmentTracking[] = [
   }
 ];
 
-function getStatusColor(status: string): string {
+// Helper function to get Badge variant from status
+function getStatusVariant(status: string): "success" | "error" | "warning" | "info" | "default" | "purple" | "orange" {
   switch (status) {
-    case 'preparing': return 'bg-yellow-100 text-yellow-800';
-    case 'shipped': return 'bg-blue-100 text-blue-800';
-    case 'in_transit': return 'bg-indigo-100 text-indigo-800';
-    case 'out_for_delivery': return 'bg-orange-100 text-orange-800';
-    case 'delivered': return 'bg-green-100 text-green-800';
-    case 'exception': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'preparing': return 'warning';
+    case 'shipped': return 'info';
+    case 'in_transit': return 'purple';
+    case 'out_for_delivery': return 'orange';
+    case 'delivered': return 'success';
+    case 'exception': return 'error';
+    default: return 'default';
   }
 }
 
@@ -401,9 +398,9 @@ export default function ShippingTracking() {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(shipment.status)}`}>
+                        <Badge variant={getStatusVariant(shipment.status)} size="sm">
                           {getStatusLabel(shipment.status)}
-                        </span>
+                        </Badge>
                         <Link
                           to={`/commercial/shipping/${shipment.id}`}
                           className="p-2 hover:bg-gray-200 rounded-lg transition-colors"

@@ -1,7 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    'components/alert': 'src/components/alert.tsx',
+    'components/badge': 'src/components/badge.tsx',
+  },
   format: ['cjs', 'esm'],
   dts: true,
   splitting: false,
