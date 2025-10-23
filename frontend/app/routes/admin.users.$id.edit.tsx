@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, Link } from '@remix-run/react';
 import { ArrowLeft, User, Save, Mail, Phone, MapPin } from 'lucide-react';
@@ -87,20 +88,20 @@ export default function EditUser() {
 
       {/* Messages */}
       {actionData?.success && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+<Alert className="p-4    rounded-lg" variant="success">
           <div className="flex items-center gap-2 text-green-800">
             <User className="w-5 h-5" />
             <strong>Utilisateur mis à jour avec succès !</strong>
           </div>
-        </div>
+        </Alert>
       )}
 
       {actionData?.error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="p-4    rounded-lg" variant="error">
           <div className="text-red-800">
             <strong>{actionData.error}</strong>
           </div>
-        </div>
+        </Alert>
       )}
 
       <Form method="post" className="space-y-6">

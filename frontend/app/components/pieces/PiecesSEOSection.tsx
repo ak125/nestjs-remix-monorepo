@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Alert } from '~/components/ui/alert';
 import { type SEOEnrichedContent } from '../../types/pieces-route.types';
 
 interface PiecesSEOSectionProps {
@@ -54,7 +55,7 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
 
         {/* Spécifications techniques */}
         {content.technicalSpecs.length > 0 && (
-          <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+<Alert className="rounded-lg p-6" variant="info">
             <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -71,12 +72,12 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
                 </li>
               ))}
             </ul>
-          </div>
+          </Alert>
         )}
 
         {/* Notes de compatibilité */}
         {content.compatibilityNotes && (
-          <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+<Alert className="rounded-lg p-6" variant="warning">
             <h3 className="text-lg font-semibold text-yellow-900 mb-3 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -86,12 +87,12 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
             <p className="text-sm text-yellow-800 leading-relaxed">
               {content.compatibilityNotes}
             </p>
-          </div>
+          </Alert>
         )}
 
         {/* Conseils d'installation */}
         {content.installationTips.length > 0 && (
-          <div className="bg-green-50 rounded-lg p-6 border border-green-200">
+<Alert className="rounded-lg p-6" variant="success">
             <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center gap-2">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -106,7 +107,7 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
                 </li>
               ))}
             </ul>
-          </div>
+          </Alert>
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useFetcher } from '@remix-run/react';
+import { Alert } from '~/components/ui/alert';
 import {
   Check,
   CheckCircle,
@@ -122,10 +123,10 @@ export function OrderWorkflowButtons({
   // Si commande annulée
   if (order.ord_ords_id === '7') {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="flex items-center gap-2 px-4 py-3    rounded-lg" variant="error">
         <XCircle className="w-5 h-5 text-red-600" />
         <span className="font-medium text-red-700">Commande annulée</span>
-      </div>
+      </Alert>
     );
   }
 

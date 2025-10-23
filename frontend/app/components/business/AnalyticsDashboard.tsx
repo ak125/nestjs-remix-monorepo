@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -347,30 +348,30 @@ export function AnalyticsDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">🚨 Insights & Alertes</h3>
             <div className="space-y-3">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+<Alert className="rounded-lg p-3" variant="success">
                 <div className="flex items-center">
                   <span className="text-green-600 mr-2">✅</span>
                   <span className="text-sm text-green-800">Les ventes sont en hausse de 12% cette semaine</span>
                 </div>
-              </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              </Alert>
+<Alert className="rounded-lg p-3" variant="warning">
                 <div className="flex items-center">
                   <span className="text-yellow-600 mr-2">⚠️</span>
                   <span className="text-sm text-yellow-800">Stock faible sur 3 produits populaires</span>
                 </div>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              </Alert>
+<Alert className="rounded-lg p-3" variant="info">
                 <div className="flex items-center">
                   <span className="text-blue-600 mr-2">💡</span>
                   <span className="text-sm text-blue-800">Opportunité: Clients VIP sous-sollicités</span>
                 </div>
-              </div>
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+              </Alert>
+<Alert className="rounded-lg p-3" variant="default">
                 <div className="flex items-center">
                   <span className="text-purple-600 mr-2">🔮</span>
                   <span className="text-sm text-purple-800">Prédiction: +8% de ventes le mois prochain</span>
                 </div>
-              </div>
+              </Alert>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
  * Formulaire pour soumettre un nouvel avis client
  */
 import { json, redirect, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { Star, ArrowLeft, Send } from "lucide-react";
@@ -140,11 +141,11 @@ export default function CreateReviewPage() {
         <Form method="post" className="space-y-6">
           {/* Erreur générale */}
           {actionData?.errors?.general && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+<Alert className="rounded-md p-4" variant="error">
               <div className="text-red-800 text-sm">
                 {actionData.errors.general}
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Informations client */}
@@ -272,7 +273,7 @@ export default function CreateReviewPage() {
           </div>
 
           {/* Recommandations d'évaluation */}
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+<Alert className="rounded-md p-4" variant="info">
             <h3 className="text-sm font-medium text-blue-900 mb-2">
               Conseils pour un avis utile
             </h3>
@@ -282,7 +283,7 @@ export default function CreateReviewPage() {
               <li>• Soyez objectif et constructif dans vos commentaires</li>
               <li>• Évitez les propos offensants ou inappropriés</li>
             </ul>
-          </div>
+          </Alert>
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">

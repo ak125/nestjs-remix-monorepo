@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
@@ -205,7 +206,7 @@ export default function AdminStaff() {
 
       {/* Indicateur de mode fallback */}
       {data.fallbackMode && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+<Alert className="rounded-lg p-4 mb-6" variant="warning">
           <div className="flex items-center gap-2">
             <span className="text-yellow-600">⚠️</span>
             <span className="text-yellow-800 font-medium">Mode Développement</span>
@@ -213,7 +214,7 @@ export default function AdminStaff() {
               - Données de test affichées
             </span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Statistiques du staff */}

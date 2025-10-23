@@ -12,6 +12,7 @@ import {
   Link
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { getSession } from "../server/session.server";
 
@@ -337,7 +338,7 @@ export default function ContactPage() {
             </div>
 
             {/* Actions rapides */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
               <h4 className="font-medium text-blue-900 mb-3 flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -364,10 +365,10 @@ export default function ContactPage() {
                   ↩️ Politique de retour →
                 </Link>
               </div>
-            </div>
+            </Alert>
 
             {/* Statut du support */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                 <span className="text-sm font-medium text-green-800">Support disponible</span>
@@ -375,7 +376,7 @@ export default function ContactPage() {
               <p className="text-xs text-green-600 mt-1">
                 Temps de réponse moyen : 2-4h
               </p>
-            </div>
+            </Alert>
           </div>
 
           {/* Formulaire principal */}
@@ -384,14 +385,14 @@ export default function ContactPage() {
               <Form ref={formRef} method="post" className="space-y-6">
                 {/* Erreur générale */}
                 {actionData?.error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+<Alert className="text-red-700 px-4 py-3 rounded-md" variant="error">
                     <div className="flex">
                       <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>{actionData.error}</span>
                     </div>
-                  </div>
+                  </Alert>
                 )}
 
                 {/* Informations personnelles */}

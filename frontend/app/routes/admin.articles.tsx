@@ -5,6 +5,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link, Form, useFetcher, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 
@@ -261,12 +262,12 @@ export default function AdminArticlesPage() {
 
         {/* Message d'erreur */}
         {isError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+<Alert className="rounded-lg p-4 mb-8" variant="error">
             <div className="text-red-800">
               <h3 className="font-medium">Erreur de chargement</h3>
               <p className="text-sm mt-1">{errorMessage}</p>
             </div>
-          </div>
+          </Alert>
         )}
 
         {/* Liste des articles */}

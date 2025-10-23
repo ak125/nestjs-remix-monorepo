@@ -227,13 +227,13 @@ function CartSummary({ summary, children, isUpdating }: {
         )}
         
         {summary.discount_amount > 0 && (
-          <div className="flex justify-between p-3 bg-green-50 rounded-lg shadow-sm border-2 border-green-300">
+<Alert className="flex justify-between p-3  rounded-lg shadow-sm border-2" variant="success">
             <span className="text-green-700 font-medium flex items-center">
               <span className="mr-2">🎁</span>
               Remise
             </span>
             <span className="font-bold text-green-700">-{summary.discount_amount.toFixed(2)}€</span>
-          </div>
+          </Alert>
         )}
         
         {/* Total avec style imposant */}
@@ -425,7 +425,7 @@ function CartItem({ item, onUpdate, onRemove }: {
               <span>Supprimer</span>
             </button>
           ) : (
-            <div className="flex flex-col space-y-2 bg-red-50 p-3 rounded-xl border-2 border-red-200">
+<Alert className="flex flex-col space-y-2  p-3 rounded-xl border-2" variant="error">
               <p className="text-sm font-semibold text-red-800 mb-1">⚠️ Confirmer la suppression ?</p>
               <div className="flex items-center space-x-2">
                 <button
@@ -443,7 +443,7 @@ function CartItem({ item, onUpdate, onRemove }: {
                   {isRemoving ? '⏳ Suppression...' : '✓ Confirmer'}
                 </button>
               </div>
-            </div>
+            </Alert>
           )}
         </div>
       </div>

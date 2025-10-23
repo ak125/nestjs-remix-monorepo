@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { Alert } from '~/components/ui/alert';
 import { useEffect, useState } from "react";
 
 interface Error410Props {
@@ -127,7 +128,7 @@ export function Error410({
 
           {/* Redirection suggérée */}
           {redirectTo && (
-            <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+<Alert className="mb-8 p-6    rounded-lg" variant="success">
               <div className="flex items-center">
                 <svg className="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -150,7 +151,7 @@ export function Error410({
                   </Link>
                 </div>
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Grid d'actions principales */}

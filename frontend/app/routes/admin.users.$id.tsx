@@ -561,7 +561,7 @@ export default function UserDetails() {
             </h3>
           </div>
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-blue-600" />
                 <label className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
@@ -571,9 +571,9 @@ export default function UserDetails() {
               <p className="text-sm text-blue-900 font-medium">
                 {formatDate(stats.firstOrderDate)}
               </p>
-            </div>
+            </Alert>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-green-600" />
                 <label className="text-xs font-semibold text-green-800 uppercase tracking-wide">
@@ -583,9 +583,9 @@ export default function UserDetails() {
               <p className="text-sm text-green-900 font-medium">
                 {formatDate(stats.lastOrderDate)}
               </p>
-            </div>
+            </Alert>
 
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="default">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="w-4 h-4 text-purple-600" />
                 <label className="text-xs font-semibold text-purple-800 uppercase tracking-wide">
@@ -601,23 +601,23 @@ export default function UserDetails() {
                   </span>
                 )}
               </p>
-            </div>
+            </Alert>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+<Alert className="rounded-lg p-3 text-center" variant="success">
                 <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-green-700">
                   {stats.completedOrders}
                 </div>
                 <div className="text-xs text-green-600">Payées</div>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+              </Alert>
+<Alert className="rounded-lg p-3 text-center" variant="warning">
                 <XCircle className="w-5 h-5 text-orange-600 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-orange-700">
                   {stats.pendingOrders}
                 </div>
                 <div className="text-xs text-orange-600">En attente</div>
-              </div>
+              </Alert>
             </div>
           </div>
         </div>

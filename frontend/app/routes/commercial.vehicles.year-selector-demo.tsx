@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { requireUser } from "../auth/unified.server";
@@ -142,7 +143,7 @@ export default function YearSelectorDemo() {
 
                 {/* Résultat final */}
                 {selectedYear1 && selectedType1 && selectedModel1 && (
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+<Alert className="p-4  rounded-lg" variant="success">
                     <h4 className="font-semibold text-green-800 mb-3">
                       🎯 Véhicule sélectionné :
                     </h4>
@@ -154,7 +155,7 @@ export default function YearSelectorDemo() {
                       <p><strong>Puissance :</strong> {selectedType1.type_power_ps}cv</p>
                       <p><strong>Année :</strong> {selectedYear1}</p>
                     </div>
-                  </div>
+                  </Alert>
                 )}
               </CardContent>
             </Card>
@@ -202,7 +203,7 @@ export default function YearSelectorDemo() {
 
                 {/* Résultat final */}
                 {selectedYear2 && selectedType2 && selectedModel2 && (
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+<Alert className="p-4  rounded-lg" variant="info">
                     <h4 className="font-semibold text-blue-800 mb-3">
                       🎯 Véhicule sélectionné :
                     </h4>
@@ -214,7 +215,7 @@ export default function YearSelectorDemo() {
                       <p><strong>Puissance :</strong> {selectedType2.type_power_ps}cv</p>
                       <p><strong>Année :</strong> {selectedYear2}</p>
                     </div>
-                  </div>
+                  </Alert>
                 )}
               </CardContent>
             </Card>

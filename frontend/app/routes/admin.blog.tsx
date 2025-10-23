@@ -228,7 +228,7 @@ export default function AdminBlogSimplePage() {
 
           {/* Message d'erreur si nécessaire */}
           {isError && (
-            <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="mt-6    rounded-lg p-4" variant="warning">
               <div className="flex">
                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-3 mt-0.5" />
                 <div>
@@ -238,7 +238,7 @@ export default function AdminBlogSimplePage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Informations de debug */}

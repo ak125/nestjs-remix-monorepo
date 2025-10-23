@@ -12,6 +12,7 @@
  */
 
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link } from "@remix-run/react";
 import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
 
@@ -230,14 +231,14 @@ export default function LegacyPartUrlMigrationPage() {
 
             {/* Redirection automatique */}
             {redirect_in_seconds > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+<Alert className="rounded-xl p-4 mb-6" variant="warning">
                 <div className="flex items-center justify-center text-yellow-800">
                   <Clock className="w-5 h-5 mr-2" />
                   <span className="font-medium">
                     Redirection automatique dans {redirect_in_seconds} secondes...
                   </span>
                 </div>
-              </div>
+              </Alert>
             )}
 
             {/* Redirection manuelle */}

@@ -215,7 +215,7 @@ export default function AdminStock() {
     return (
       <div className="p-6">
               {!success && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
           <h2 className="text-lg font-semibold text-red-800">
             Erreur de chargement
           </h2>
@@ -228,7 +228,7 @@ export default function AdminStock() {
               <li>Les routes /api/admin/stock/* sont disponibles</li>
             </ul>
           </div>
-        </div>
+        </Alert>
       )}
       </div>
     );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -608,7 +609,7 @@ export function CustomerIntelligence() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">🤖 Insights IA automatiques</h3>
                 <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
                     <div className="flex items-start">
                       <span className="text-blue-600 mr-3 text-xl">🎯</span>
                       <div>
@@ -618,9 +619,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
                     <div className="flex items-start">
                       <span className="text-green-600 mr-3 text-xl">📈</span>
                       <div>
@@ -630,9 +631,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="warning">
                     <div className="flex items-start">
                       <span className="text-yellow-600 mr-3 text-xl">⚠️</span>
                       <div>
@@ -642,14 +643,14 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                 </div>
               </div>
               
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">🔮 Prédictions IA</h3>
                 <div className="space-y-4">
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="default">
                     <div className="flex items-start">
                       <span className="text-purple-600 mr-3 text-xl">📊</span>
                       <div>
@@ -659,9 +660,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
                     <div className="flex items-start">
                       <span className="text-red-600 mr-3 text-xl">🚨</span>
                       <div>
@@ -671,7 +672,7 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
                   <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                     <div className="flex items-start">

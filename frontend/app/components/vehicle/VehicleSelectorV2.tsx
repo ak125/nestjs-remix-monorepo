@@ -3,6 +3,7 @@
 
 import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
 import { Form, useNavigate } from '@remix-run/react';
+import { Alert } from '~/components/ui/alert';
 import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
@@ -502,7 +503,7 @@ export default function VehicleSelectorV2({
 
         {/* Résultat sélection */}
         {selectedType && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+<Alert className="mt-6 p-4    rounded-xl" variant="success">
             <h4 className="text-green-800 font-medium mb-2">✅ Véhicule sélectionné</h4>
             <div className="text-sm text-green-700">
               <p>• Marque : {selectedBrand?.marque_name}</p>
@@ -510,7 +511,7 @@ export default function VehicleSelectorV2({
               <p>• Modèle : {selectedModel?.modele_name}</p>
               <p>• Motorisation : {selectedType.type_name}</p>
             </div>
-          </div>
+          </Alert>
         )}
       </div>
     </div>
