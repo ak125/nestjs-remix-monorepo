@@ -339,8 +339,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {notification && (
         <div className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
           notification.type === 'success' 
-            ? 'bg-green-50/95 border-green-500 text-green-900' 
-            : 'bg-red-50/95 border-red-500 text-red-900'
+            ? 'bg-success/10 border-green-500 text-success' 
+            : 'bg-destructive/10 border-red-500 text-red-900'
         } animate-in slide-in-from-right duration-300`}>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${

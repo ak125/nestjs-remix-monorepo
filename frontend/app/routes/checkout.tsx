@@ -234,7 +234,7 @@ export default function CheckoutPage() {
 
         {/* Affichage erreur si action a échoué */}
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
+          <div className="mb-6 rounded-xl border border-destructive bg-destructive/10 p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

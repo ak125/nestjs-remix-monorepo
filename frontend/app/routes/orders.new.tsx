@@ -217,7 +217,7 @@ export default function NewOrder() {
       </div>
 
       {actionData?.error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive bg-destructive/10">
           <CardContent className="p-4">
             <p className="text-red-600">{actionData.error}</p>
           </CardContent>

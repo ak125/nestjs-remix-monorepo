@@ -68,7 +68,7 @@ export default function ResetPassword() {
         </CardHeader>
         <CardContent>
           {(error || actionData?.error) && (
-            <Alert className="mb-4 border-red-200 bg-red-50">
+            <Alert className="mb-4 border-destructive bg-destructive/10">
               <AlertDescription className="text-red-800">
                 {error === "invalid_token" && "Token invalide ou expiré"}
                 {error === "token_used" && "Ce token a déjà été utilisé"}

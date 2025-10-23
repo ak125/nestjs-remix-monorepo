@@ -160,7 +160,7 @@ export default function CreateReviewPage() {
                 name="customer_name"
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.errors?.customer_name
-                    ? "border-red-300 bg-red-50"
+                    ? "border-destructive bg-destructive/10"
                     : "border-gray-300"
                 }`}
                 placeholder="Votre nom complet"
@@ -182,7 +182,7 @@ export default function CreateReviewPage() {
                 name="customer_email"
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.errors?.customer_email
-                    ? "border-red-300 bg-red-50"
+                    ? "border-destructive bg-destructive/10"
                     : "border-gray-300"
                 }`}
                 placeholder="votre@email.com"
@@ -206,7 +206,7 @@ export default function CreateReviewPage() {
               name="product_name"
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 actionData?.errors?.product_name
-                  ? "border-red-300 bg-red-50"
+                  ? "border-destructive bg-destructive/10"
                   : "border-gray-300"
               }`}
               placeholder="Nom du produit ou service"
@@ -257,7 +257,7 @@ export default function CreateReviewPage() {
               rows={6}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 actionData?.errors?.comment
-                  ? "border-red-300 bg-red-50"
+                  ? "border-destructive bg-destructive/10"
                   : "border-gray-300"
               }`}
               placeholder="Décrivez votre expérience avec ce produit ou service. Qu'avez-vous aimé ? Qu'est-ce qui pourrait être amélioré ?"

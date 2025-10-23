@@ -275,7 +275,7 @@ export default function AdminMessages() {
 
       {/* Indicateur de source */}
       <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-        fallbackMode ? 'border-yellow-400 bg-yellow-50' : 'border-green-400 bg-green-50'
+        fallbackMode ? 'border-warning bg-warning/10' : 'border-success bg-success/10'
       }`}>
         <div className="flex items-center gap-2">
           {fallbackMode ? (

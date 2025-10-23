@@ -737,7 +737,7 @@ export function ReportingModule() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">🤖 Recommandations IA</h3>
               <div className="space-y-4">
-                <div className="border-l-4 border-blue-500 bg-blue-50 p-4">
+                <div className="border-l-4 border-primary bg-primary/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-blue-900">
@@ -754,7 +754,7 @@ export function ReportingModule() {
                   </div>
                 </div>
 
-                <div className="border-l-4 border-green-500 bg-green-50 p-4">
+                <div className="border-l-4 border-success bg-success/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-green-900">
@@ -771,7 +771,7 @@ export function ReportingModule() {
                   </div>
                 </div>
 
-                <div className="border-l-4 border-yellow-500 bg-yellow-50 p-4">
+                <div className="border-l-4 border-warning bg-warning/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-yellow-900">

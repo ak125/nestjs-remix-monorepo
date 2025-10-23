@@ -266,7 +266,7 @@ export function ProductCatalog({
                     onClick={() => handleCategoryClick(category.id)}
                     className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                       isSelected 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        ? 'border-primary bg-primary/10 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                     }`}
                   >
@@ -302,7 +302,7 @@ export function ProductCatalog({
                       onClick={() => onProductClick?.(product)}
                       className={`border rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer ${
                         product.piece_top 
-                          ? 'border-yellow-300 bg-yellow-50' 
+                          ? 'border-warning bg-warning/10' 
                           : 'border-gray-200 hover:border-blue-300'
                       }`}
                     >
