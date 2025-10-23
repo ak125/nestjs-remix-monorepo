@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 // 🏭 BrandHero - Section héro moderne pour page constructeur
 // Design moderne avec informations marque et VehicleSelector intégré
 
@@ -78,9 +79,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
                 </h1>
                 <p className="text-lg text-gray-600">
                   {brand.marque_country && (
-                    <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mr-2">
-                      {brand.marque_country}
-                    </span>
+                    <Badge variant="info">{brand.marque_country}</Badge>
                   )}
                   Constructeur automobile
                 </p>

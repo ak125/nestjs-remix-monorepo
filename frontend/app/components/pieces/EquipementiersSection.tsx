@@ -1,4 +1,5 @@
 import React from 'react';
+import { Badge } from '@fafa/ui';
 
 interface EquipementierItem {
   pm_id: number;
@@ -54,9 +55,7 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     {equipementier.pm_name}
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      Équipementier
-                    </span>
+                    <Badge variant="warning">Équipementier</Badge>
                   </h3>
                   
                   <p className="text-sm text-gray-600 leading-relaxed">

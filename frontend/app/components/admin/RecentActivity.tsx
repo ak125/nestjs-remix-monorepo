@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 /**
  * 🔄 Composant RecentActivity - Activité récente
  * Compatible avec l'architecture Remix existante
@@ -136,14 +137,10 @@ export function RecentActivity({
                           {activity.title}
                         </p>
                         {activity.severity === 'ERROR' && (
-                          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
-                            Erreur
-                          </span>
+                          <Badge variant="error">Erreur</Badge>
                         )}
                         {activity.severity === 'WARNING' && (
-                          <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
-                            Alerte
-                          </span>
+                          <Badge variant="warning">Alerte</Badge>
                         )}
                       </div>
                       

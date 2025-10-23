@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import React from 'react';
+import { Badge } from '@fafa/ui';
 
 interface MotorisationItem {
   title: string;
@@ -64,12 +65,8 @@ export default function MotorisationsSection({ motorisations }: MotorisationsSec
                   
                   <div className="space-y-1 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {motorisation.type_name}
-                      </span>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        {motorisation.puissance}
-                      </span>
+                      <Badge variant="info">{motorisation.type_name}</Badge>
+                      <Badge variant="success">{motorisation.puissance}</Badge>
                     </div>
                     <p className="text-sm text-gray-600">{motorisation.periode}</p>
                   </div>

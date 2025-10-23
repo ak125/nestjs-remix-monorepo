@@ -1,5 +1,6 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
 import React from 'react';
+import { Badge } from '@fafa/ui';
 
 interface VehicleData {
   marque: string;
@@ -159,15 +160,11 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-gray-500">Catégories :</span>
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-              {gamme.alias}
-            </span>
+            <Badge variant="info">{gamme.alias}</Badge>
             <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
               Type {vehicle.typeId}
             </span>
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-              Pièces d'origine
-            </span>
+            <Badge variant="success">Pièces d'origine</Badge>
           </div>
         </div>
       </div>

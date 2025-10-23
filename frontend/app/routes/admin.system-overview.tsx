@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 // app/routes/admin.system-overview.tsx
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
@@ -346,7 +347,7 @@ export default function SystemOverview() {
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-green-900">Module Access</span>
-              <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">OPTIMAL</div>
+              <Alert intent="success">OPTIMAL</Alert>
             </div>
             <p className="text-sm text-green-700">POST /auth/module-access</p>
             <p className="text-xs text-green-600 mt-1">Réponse: 12ms moyenne</p>
@@ -355,7 +356,7 @@ export default function SystemOverview() {
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-blue-900">Bulk Check</span>
-              <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">EFFICIENT</div>
+              <Alert intent="info">EFFICIENT</Alert>
             </div>
             <p className="text-sm text-blue-700">POST /auth/bulk-module-access</p>
             <p className="text-xs text-blue-600 mt-1">90% moins de requêtes</p>

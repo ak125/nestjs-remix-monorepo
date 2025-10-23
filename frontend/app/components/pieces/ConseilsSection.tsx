@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Badge } from '@fafa/ui';
 
 interface ConseilItem {
   id: number;
@@ -56,9 +57,7 @@ export default function ConseilsSection({ conseils }: ConseilsSectionProps) {
               >
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-600 text-sm font-medium">
-                      {conseil.id}
-                    </span>
+                    <Badge variant="success">{conseil.id}</Badge>
                     {conseil.title}
                   </h3>
                   
