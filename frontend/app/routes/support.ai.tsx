@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
@@ -247,13 +248,12 @@ export default function AIDemoPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span>Statut général</span>
-                  <span className={`px-2 py-1 rounded text-sm font-medium ${
-                    aiHealth.status === 'operational' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <Badge 
+                    variant={aiHealth.status === 'operational' ? 'success' : 'error'} 
+                    size="sm"
+                  >
                     {aiHealth.status === 'operational' ? '✅ Opérationnel' : '❌ Problème'}
-                  </span>
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>Sentiment: {aiHealth.services.sentiment === 'ok' ? '✅' : '❌'}</div>
