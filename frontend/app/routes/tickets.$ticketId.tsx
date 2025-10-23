@@ -2,7 +2,7 @@
  * Page de détail d'un ticket - Consultation et gestion
  * Remix Route Component pour voir et modifier un ticket spécifique
  */
-import { Badge } from "@fafa/ui";
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
@@ -124,15 +124,11 @@ export default function TicketDetailPage() {
 
       {/* Messages de retour */}
       {actionData?.success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-700">Ticket mis à jour avec succès !</p>
-        </div>
+        <Alert intent="success"><p>Ticket mis à jour avec succès !</p></Alert>
       )}
 
       {actionData?.error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{actionData.error}</p>
-        </div>
+        <Alert intent="error"><p>{actionData.error}</p></Alert>
       )}
 
       {/* Header du ticket */}

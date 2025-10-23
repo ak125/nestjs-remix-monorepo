@@ -121,9 +121,7 @@ export default function SystemOverview() {
               <Shield className="h-8 w-8 text-green-600" />
               <h2 className="text-lg font-semibold text-gray-900">Authentification</h2>
             </div>
-            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-              {systemData.auth.status.toUpperCase()}
-            </div>
+            <Alert intent="success">{systemData.auth.status.toUpperCase()}</Alert>
           </div>
           
           <div className="space-y-3">
@@ -153,9 +151,7 @@ export default function SystemOverview() {
               <Users className="h-8 w-8 text-blue-600" />
               <h2 className="text-lg font-semibold text-gray-900">Permissions</h2>
             </div>
-            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-              OPTIMISÉ
-            </div>
+            <Alert intent="info">OPTIMISÉ</Alert>
           </div>
           
           <div className="space-y-3">

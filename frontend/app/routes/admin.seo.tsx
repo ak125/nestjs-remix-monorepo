@@ -1,5 +1,5 @@
 // app/routes/admin.seo.tsx
-import { Alert, Badge } from "@fafa/ui";
+import {  Alert, Badge, Alert } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";
@@ -209,9 +209,7 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-blue-700">{analytics.totalPages?.toLocaleString()}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                    Sitemap: 714K+
-                  </div>
+                  <Alert intent="info">Sitemap: 714K+</Alert>
                   <div className="text-xs text-green-600">↗️ Active</div>
                 </div>
                 <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
@@ -403,9 +401,7 @@ export default function SeoAdmin() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      🌐
-                    </div>
+                    <Alert intent="info">🌐</Alert>
                     <div>
                       <div className="text-sm font-medium text-blue-700">Pages Indexées</div>
                       <div className="text-2xl font-bold text-blue-900">{analytics?.totalPages?.toLocaleString() || '714,336'}</div>
@@ -415,9 +411,7 @@ export default function SeoAdmin() {
                 
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      ✅
-                    </div>
+                    <Alert intent="success">✅</Alert>
                     <div>
                       <div className="text-sm font-medium text-green-700">Métadonnées Optimisées</div>
                       <div className="text-2xl font-bold text-green-900">{analytics?.pagesWithSeo?.toLocaleString() || '680,000'}</div>
@@ -587,9 +581,7 @@ export default function SeoAdmin() {
                           🌐
                         </span>
                       </div>
-                      <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                        💡 Tip: Utilisez des URLs descriptives pour un meilleur référencement
-                      </div>
+                      <Alert intent="info">💡 Tip: Utilisez des URLs descriptives pour un meilleur référencement</Alert>
                     </div>
                     
                     <div className="space-y-2">
@@ -649,9 +641,7 @@ export default function SeoAdmin() {
                         placeholder="plaquettes freinage, freins avant, pièces auto, plaquettes voiture, frein automobile"
                         maxLength={160}
                       />
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        ✨ Suggestion: Utilisez des mots-clés longue traîne pour un meilleur ciblage
-                      </div>
+                      <Alert intent="success">✨ Suggestion: Utilisez des mots-clés longue traîne pour un meilleur ciblage</Alert>
                     </div>
 
                     <div className="pt-4 border-t">

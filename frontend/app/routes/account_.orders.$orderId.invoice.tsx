@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '@fafa/ui';
 import { requireAuth } from "../auth/unified.server";
 
 // Types
@@ -399,11 +400,7 @@ export default function OrderInvoice() {
         
         {/* Message si déjà payé */}
         {invoice.isPaid && (
-          <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-center">
-            <p className="text-green-800 font-semibold">
-              ✓ Cette commande a été payée le {invoice.datePay ? new Date(invoice.datePay).toLocaleDateString('fr-FR') : 'N/A'}
-            </p>
-          </div>
+          <Alert intent="success"><p>✓ Cette commande a été payée le {invoice.datePay ? new Date(invoice.datePay).toLocaleDateString('fr-FR') : 'N/A'}</p></Alert>
         )}
         
         {/* Pied de page */}

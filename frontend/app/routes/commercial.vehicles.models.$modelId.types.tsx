@@ -5,7 +5,7 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
-import { Badge } from "@fafa/ui";
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
@@ -249,9 +249,7 @@ export default function CommercialVehiclesModelTypes() {
           </CardHeader>
           {error ? (
             <CardContent>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
+              <Alert intent="error"><p>{error}</p></Alert>
             </CardContent>
           ) : types.length > 0 ? (
             <CardContent>

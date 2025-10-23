@@ -20,6 +20,7 @@
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
+import { Alert } from '@fafa/ui';
 import toast, { Toaster } from 'react-hot-toast';
 import { requireUser } from '../auth/unified.server';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
@@ -717,14 +718,10 @@ export default function OrdersRoute() {
         
         {/* Messages succès/erreur */}
         {actionData?.success && (
-          <div className="mt-4 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-            <p className="text-sm text-green-800">{actionData.message}</p>
-          </div>
+          <Alert intent="success"><p>{actionData.message}</p></Alert>
         )}
         {actionData?.error && (
-          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <p className="text-sm text-red-800">{actionData.error}</p>
-          </div>
+          <Alert intent="error"><p>{actionData.error}</p></Alert>
         )}
         
         {/* Statistiques */}
