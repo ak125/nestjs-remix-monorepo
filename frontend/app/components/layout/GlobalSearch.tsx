@@ -318,7 +318,7 @@ export function GlobalSearch({
                     performSearch(item.query, item.category || selectedCategory);
                   }}
                   className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                    selectedIndex === index ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    selectedIndex === index ? 'bg-blue-50/50' : 'hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -374,7 +374,7 @@ export function GlobalSearch({
                             key={result.id}
                             onClick={() => handleSelectResult(result)}
                             className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                              selectedIndex === globalIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
+                              selectedIndex === globalIndex ? 'bg-blue-50/50' : 'hover:bg-muted'
                             }`}
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
