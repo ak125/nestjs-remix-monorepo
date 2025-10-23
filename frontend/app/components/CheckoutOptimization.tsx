@@ -153,7 +153,7 @@ export function CheckoutOptimization({
         return (
           <div className={`${baseClasses} bg-red-50 border-2 border-red-200`}>
             <div className="text-center mb-4">
-              <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-3">
+              <div className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold mb-3">
                 ⚡ OFFRE LIMITÉE
               </div>
               <h3 className="text-xl font-bold text-red-900">

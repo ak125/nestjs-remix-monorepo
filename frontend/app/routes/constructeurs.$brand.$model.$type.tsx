@@ -607,7 +607,7 @@ export default function VehicleDetailPage() {
                   
                   <a 
                     href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                    className="mt-4 block bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-700 transition-colors"
+                    className="mt-4 block bg-primary hover:bg-primary/90 text-primary-foreground text-center py-2 rounded transition-colors"
                   >
                     Voir les pièces
                   </a>

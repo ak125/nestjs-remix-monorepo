@@ -69,7 +69,7 @@ export const HeroExtended: React.FC<HeroExtendedProps> = ({
               <div className="hero-actions">
                 <a
                   href={action.href}
-                  className="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg"
+                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg text-lg font-semibold transition-colors shadow-lg"
                 >
                   {action.text}
                 </a>

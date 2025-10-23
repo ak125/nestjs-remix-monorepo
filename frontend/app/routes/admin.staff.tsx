@@ -199,7 +199,7 @@ export default function AdminStaff() {
             {messagesEnabled && (
               <Link 
                 to="/admin/messages" 
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg"
               >
                 <MessageSquare className="h-4 w-4" />
                 Messages
@@ -207,7 +207,7 @@ export default function AdminStaff() {
             )}
             <Link 
               to="/admin/users" 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Users className="h-4 w-4" />
               Voir tous les utilisateurs
@@ -447,7 +447,7 @@ export default function AdminStaff() {
               <div className="mt-4">
                 <Link 
                   to="/admin/messages" 
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Accéder à la messagerie

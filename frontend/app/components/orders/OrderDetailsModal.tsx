@@ -214,7 +214,7 @@ export function OrderDetailsModal({
           {!order.ord_is_pay && permissions.canMarkPaid && onMarkPaid && (
             <button
               onClick={() => onMarkPaid(order.ord_id)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
             >
               <CreditCard className="w-4 h-4" />
               Marquer comme payé
@@ -223,7 +223,7 @@ export function OrderDetailsModal({
           {order.ord_ords_id !== '7' && permissions.canCancel && onCancel && (
             <button
               onClick={() => onCancel(order.ord_id)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg transition-colors"
             >
               Annuler la commande
             </button>
