@@ -9,6 +9,7 @@ export * from './input';
 export * from './dialog';
 export * from './combobox';
 export * from './alert';
+export * from './badge';
 
 /**
  * 🎨 Patterns métier
