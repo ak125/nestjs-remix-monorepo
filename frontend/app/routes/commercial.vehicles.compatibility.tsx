@@ -251,9 +251,7 @@ export default function VehiclesCompatibility() {
 
       {/* Messages d'erreur */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          <strong>Erreur :</strong> {error}
-        </div>
+        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
       )}
 
       {/* Résultats - Pièce vers véhicules */}
