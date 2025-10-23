@@ -179,11 +179,11 @@ export default function SystemBreadcrumb({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'border-l-4 border-green-500 bg-green-50';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'border-l-4 border-yellow-500 bg-yellow-50';
       case 'error':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'border-l-4 border-red-500 bg-red-50';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -241,8 +241,7 @@ export default function SystemBreadcrumb({
                           }}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                             item.isActive
-                              ? 'text-blue-700 bg-blue-50'
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                              ? 'text-blue-700 bg-blue-50/80' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                           }`}
                         >
                           {ItemIcon && <ItemIcon className="h-4 w-4" />}
