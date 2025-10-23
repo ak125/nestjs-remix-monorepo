@@ -1,7 +1,6 @@
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-
 import { useLoaderData, Link } from '@remix-run/react';
-
 import { ArrowLeft, Mail, Phone, User, MapPin, ShoppingBag, Award, Calendar, TrendingUp, Building2, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 
@@ -182,20 +181,17 @@ export function ErrorBoundary() {
         </Link>
       </div>
 
-      <div className="border rounded-lg p-8 bg-red-50 border-red-200">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <User className="w-6 h-6 text-red-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-red-900">Utilisateur non trouvé</h1>
-            <p className="text-red-700 mt-1">
-              L'ID utilisateur spécifié n'existe pas dans la base de données.
-            </p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <Alert 
+          intent="error" 
+          variant="solid"
+          icon={<User className="w-6 h-6" />}
+          title="Utilisateur non trouvé"
+        >
+          L'ID utilisateur spécifié n'existe pas dans la base de données.
+        </Alert>
 
-        <div className="bg-white border border-red-200 rounded p-4 mt-4">
+        <div className="bg-white border border-gray-200 rounded p-4">
           <h3 className="font-semibold mb-2">Suggestions :</h3>
           <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
             <li>Vérifiez que l'ID utilisateur est correct</li>
@@ -268,20 +264,16 @@ export default function UserDetails() {
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <p className="text-gray-600">{user.email}</p>
-                <span
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    user.isActive
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
+                <Badge 
+                  variant={user.isActive ? 'success' : 'default'}
+                  size="sm"
                 >
                   {user.isActive ? '🟢 Actif' : '⚪ Inactif'}
-                </span>
+                </Badge>
                 {user.isPro && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
-                    <Award className="w-3 h-3" />
+                  <Badge variant="info" size="sm" icon={<Award className="w-3 h-3" />}>
                     Pro
-                  </span>
+                  </Badge>
                 )}
                 {user.isCompany && (
                   <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 flex items-center gap-1">
