@@ -226,13 +226,13 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Utilisateurs Actifs</span>
-                <Badge variant="default" className="bg-green-100 text-green-800">
+                <Badge variant="default" className="bg-success/20 text-success">
                   {reportData.users.active}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span>Professionnels</span>
-                <Badge variant="default" className="bg-blue-100 text-blue-800">
+                <Badge variant="default" className="bg-info/20 text-info">
                   {reportData.users.professional}
                 </Badge>
               </div>
@@ -262,13 +262,13 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Commandes Payées</span>
-                <Badge variant="default" className="bg-green-100 text-green-800">
+                <Badge variant="default" className="bg-success/20 text-success">
                   {reportData.orders.completed}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span>En Attente</span>
-                <Badge variant="default" className="bg-yellow-100 text-yellow-800">
+                <Badge variant="default" className="bg-warning/20 text-warning">
                   {reportData.orders.pending}
                 </Badge>
               </div>

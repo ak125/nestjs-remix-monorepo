@@ -199,7 +199,7 @@ export function TypeGrid({
             <CardContent className="p-6">
               {/* Header avec icône et ID */}
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-info/20 transition-colors">
                   <Zap className="h-6 w-6 text-blue-600" />
                 </div>
                 <span className="text-xs text-gray-500">#{type.id}</span>

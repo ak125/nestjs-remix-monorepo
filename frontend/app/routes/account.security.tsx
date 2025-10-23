@@ -266,7 +266,7 @@ export default function AccountSecurity() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Statut</span>
                 {security.twoFactor.enabled ? (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-success/20 text-success">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Activée
                   </Badge>
@@ -313,7 +313,7 @@ export default function AccountSecurity() {
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-gray-900">{device.device}</p>
                     {device.current && (
-                      <Badge variant="default" className="bg-green-100 text-green-800">
+                      <Badge variant="default" className="bg-success/20 text-success">
                         Session actuelle
                       </Badge>
                     )}

@@ -125,7 +125,7 @@ export default function ComposeMessage() {
             {orderId && (
 <Alert className="p-4  rounded-lg" variant="info">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-800">
+                  <Badge className="bg-info/20 text-info">
                     Commande
                   </Badge>
                   <span className="text-sm font-medium">

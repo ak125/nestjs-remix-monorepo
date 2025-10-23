@@ -226,7 +226,7 @@ function BlogCard({ article }: any) {
 
 function ShareButton({ icon }: any) {
   return (
-    <button className="p-2 bg-gray-100 hover:bg-blue-100 rounded-lg text-gray-600 hover:text-blue-600 transition-all">
+    <button className="p-2 bg-gray-100 hover:bg-info/20 rounded-lg text-gray-600 hover:text-blue-600 transition-all">
       {icon}
     </button>
   );

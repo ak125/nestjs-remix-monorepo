@@ -222,7 +222,7 @@ const CostOptimizationCard: React.FC<{
             <span className="text-xs font-medium text-blue-600">Composants critiques :</span>
             <div className="flex flex-wrap gap-1 mt-1">
               {maintenance.criticalComponents.map((comp, i) => (
-                <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                <span key={i} className="px-2 py-1 bg-info/20 text-info text-xs rounded">
                   {comp}
                 </span>
               ))}

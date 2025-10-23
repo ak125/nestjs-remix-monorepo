@@ -387,7 +387,7 @@ export default function BlogArticle() {
                         <Badge 
                           key={index} 
                           variant="secondary"
-                          className="bg-blue-100 text-blue-800 hover:bg-blue-200"
+                          className="bg-info/20 text-info hover:bg-blue-200"
                         >
                           {keyword}
                         </Badge>

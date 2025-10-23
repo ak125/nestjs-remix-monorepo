@@ -297,7 +297,7 @@ export default function ShippingTracking() {
               <Navigation className="w-8 h-8 text-blue-600" />
               Suivi des Expéditions
               {isConnected && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-success/20 text-success">
                   <div className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse"></div>
                   Temps réel
                 </span>

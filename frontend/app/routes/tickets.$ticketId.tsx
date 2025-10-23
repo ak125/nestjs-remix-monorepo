@@ -92,9 +92,9 @@ export default function TicketDetailPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return "bg-red-100 text-red-800 border-red-200";
+      case "urgent": return "bg-destructive/20 text-destructive border-red-200";
       case "high": return "bg-orange-100 text-orange-800 border-orange-200";
-      case "normal": return "bg-blue-100 text-blue-800 border-blue-200";
+      case "normal": return "bg-info/20 text-info border-blue-200";
       case "low": return "bg-gray-100 text-gray-800 border-gray-200";
       default: return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -149,7 +149,7 @@ export default function TicketDetailPage() {
               {/* Statut */}
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 isOpen 
-                  ? "bg-green-100 text-green-800" 
+                  ? "bg-success/20 text-success" 
                   : "bg-gray-100 text-gray-800"
               }`}>
                 {isOpen ? "Ouvert" : "Fermé"}
