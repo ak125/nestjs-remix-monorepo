@@ -215,8 +215,8 @@ export default function AdminMessages() {
   };
 
   const getStatusColor = (message: Message) => {
-    if (message.msg_close === '1') return 'bg-red-100 text-red-800 border-red-200';
-    if (message.msg_open === '1') return 'bg-green-100 text-green-800 border-green-200';
+    if (message.msg_close === '1') return 'error';
+    if (message.msg_open === '1') return 'success';
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 

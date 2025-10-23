@@ -3,6 +3,7 @@ import { Alert } from '@fafa/ui';
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Badge } from '~/components/ui/badge';
 import { Outlet, useLoaderData, NavLink } from '@remix-run/react';
 import { 
   CreditCard, 
@@ -113,9 +114,7 @@ export default function AdminPaymentsLayout() {
               <Clock className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">En Attente</h2>
             </div>
-            <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium">
-              PENDING
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">PENDING</Badge>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">

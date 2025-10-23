@@ -165,14 +165,14 @@ export default function AdminStaff() {
   const { staff, total, error, fallbackMode, messagesEnabled } = useLoaderData<StaffData>();
 
   const getRoleColor = (level: number) => {
-    if (level >= 9) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (level >= 8) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (level >= 7) return 'bg-green-100 text-green-800 border-green-200';
+    if (level >= 9) return 'warning';
+    if (level >= 8) return 'info';
+    if (level >= 7) return 'success';
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
+    return isActive ? 'success' : 'error';
   };
 
   return (
