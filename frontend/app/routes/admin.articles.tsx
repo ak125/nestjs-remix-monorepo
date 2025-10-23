@@ -191,7 +191,7 @@ export default function AdminArticlesPage() {
   const [selectedType, setSelectedType] = useState<string>('');
 
   const getTypeColor = (type: string) => {
-    return type === 'guide' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800';
+    return type === 'guide' ? 'purple' : 'info';
   };
 
   const formatDate = (dateString: string) => {

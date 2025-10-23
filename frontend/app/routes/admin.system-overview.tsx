@@ -4,6 +4,7 @@ import { Alert } from '@fafa/ui';
 // Applique "vérifier existant et utiliser le meilleur"
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Badge } from '~/components/ui/badge';
 import { useLoaderData } from '@remix-run/react';
 import { 
   Shield, 
@@ -181,9 +182,7 @@ export default function SystemOverview() {
               <Activity className="h-8 w-8 text-purple-600" />
               <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
             </div>
-            <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
-              EXCELLENT
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="purple">EXCELLENT</Badge>
           </div>
           
           <div className="space-y-3">
@@ -213,9 +212,7 @@ export default function SystemOverview() {
               <Settings className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">Routes</h2>
             </div>
-            <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium">
-              {systemData.routes.coverage}% COVERAGE
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">{systemData.routes.coverage}% COVERAGE</Badge>
           </div>
           
           <div className="space-y-3">
@@ -361,7 +358,7 @@ export default function SystemOverview() {
           <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-purple-900">User Permissions</span>
-              <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">CACHED</div>
+              <Badge className="px-2 py-1 rounded text-xs" variant="purple">CACHED</Badge>
             </div>
             <p className="text-sm text-purple-700">GET /auth/user-permissions/:id</p>
             <p className="text-xs text-purple-600 mt-1">Cache hit: 94.7%</p>
@@ -370,7 +367,7 @@ export default function SystemOverview() {
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-orange-900">Access Log</span>
-              <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">AUTO</div>
+              <Badge className="px-2 py-1 rounded text-xs" variant="orange">AUTO</Badge>
             </div>
             <p className="text-sm text-orange-700">POST /auth/log-access</p>
             <p className="text-xs text-orange-600 mt-1">Logging transparent</p>
