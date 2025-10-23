@@ -253,7 +253,7 @@ export default function FamilyGammeHierarchy({
                           <Link
                             key={gamme.pg_id}
                             to={categoryUrl}
-                            className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors block"
+                            className="bg-white rounded p-2 text-sm hover:bg-info/20 transition-colors block"
                           >
                             <div className="flex justify-between items-center">
                               <span className="font-medium text-gray-700">

@@ -141,7 +141,7 @@ export function ProductSearch({
                       <button
                         type="button"
                         onClick={() => handleResultClick(result)}
-                        className="w-full p-4 hover:bg-blue-50 transition-colors flex items-center gap-4 text-left"
+                        className="w-full p-4 hover:bg-info/20 transition-colors flex items-center gap-4 text-left"
                       >
                         {/* Image */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">

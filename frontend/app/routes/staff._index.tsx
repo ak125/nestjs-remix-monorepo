@@ -276,7 +276,7 @@ export default function StaffIndex() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
                       <Link to={`/staff/${member.id}`}>
-                        <Button variant="outline" size="sm" className="hover:bg-blue-50">
+                        <Button variant="outline" size="sm" className="hover:bg-info/20">
                           <Eye className="h-4 w-4 text-blue-600" />
                         </Button>
                       </Link>

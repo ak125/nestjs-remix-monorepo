@@ -148,7 +148,7 @@ export default function SearchResults() {
                 <a
                   key={index}
                   href={`/search/results?q=${encodeURIComponent(suggestion)}&version=${version}`}
-                  className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm rounded-full transition-colors"
+                  className="px-3 py-1 bg-info/90 hover:bg-info text-info-foreground text-sm rounded-full transition-colors"
                 >
                   {suggestion}
                 </a>

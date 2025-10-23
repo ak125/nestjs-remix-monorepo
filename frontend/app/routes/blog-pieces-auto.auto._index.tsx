@@ -412,14 +412,14 @@ export default function BlogPiecesAutoIndex() {
                   <>
                     <button
                       onClick={prevModels}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-info/20 hover:border-blue-300 transition-all"
                       aria-label="Modèles précédents"
                     >
                       <ArrowRight className="w-6 h-6 rotate-180 text-gray-700" />
                     </button>
                     <button
                       onClick={nextModels}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-info/20 hover:border-blue-300 transition-all"
                       aria-label="Modèles suivants"
                     >
                       <ArrowRight className="w-6 h-6 text-gray-700" />

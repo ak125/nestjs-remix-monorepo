@@ -231,7 +231,7 @@ export default function SearchCnitPage() {
             <div className="flex gap-3 pt-4 border-t">
               <Link
                 to="/search/mine"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-info/80 text-info-foreground hover:bg-info rounded-lg  transition-colors"
               >
                 Recherche par code mine
               </Link>

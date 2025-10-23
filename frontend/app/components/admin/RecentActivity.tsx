@@ -90,7 +90,7 @@ export function RecentActivity({
       {/* Filtres rapides */}
       {showFilters && (
         <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-200">
-          <button className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+          <button className="px-3 py-1 bg-info/90 text-info-foreground hover:bg-info rounded-full text-xs font-medium">
             Tout
           </button>
           <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
