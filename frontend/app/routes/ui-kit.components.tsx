@@ -10,10 +10,12 @@ import {
   DialogTrigger,
   ProductCard,
   Combobox,
+  Alert,
   type ComboboxItem
 } from '@fafa/ui';
 import { type MetaFunction } from '@remix-run/node';
 import { useState } from 'react';
+import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 export const meta: MetaFunction = () => {
   return [
@@ -281,6 +283,151 @@ export default function UIKitComponents() {
           <h3 className="text-lg font-semibold text-[var(--text-primary)]">Disabled state</h3>
           <div className="max-w-md">
             <Input placeholder="Disabled input" disabled />
+          </div>
+        </div>
+      </section>
+
+      {/* Alert Showcase */}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Alert</h2>
+          <p className="text-[var(--text-secondary)]">
+            Notifications et messages avec variants sémantiques
+          </p>
+          <p className="text-sm text-[var(--text-tertiary)] mt-2">
+            💡 Utilise les tokens CSS sémantiques • 4 intents, 3 variants, 3 sizes
+          </p>
+        </div>
+
+        {/* Intent variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Intent variants</h3>
+          <div className="space-y-3">
+            <Alert intent="success" icon={<CheckCircle className="h-5 w-5" />}>
+              Opération réussie ! Votre compte a été créé avec succès.
+            </Alert>
+            
+            <Alert intent="warning" icon={<AlertTriangle className="h-5 w-5" />}>
+              Attention : Cette action nécessite une validation par email.
+            </Alert>
+            
+            <Alert intent="error" icon={<AlertCircle className="h-5 w-5" />}>
+              Erreur : Impossible de se connecter au serveur. Réessayez plus tard.
+            </Alert>
+            
+            <Alert intent="info" icon={<Info className="h-5 w-5" />}>
+              Info : Une nouvelle version de l'application est disponible.
+            </Alert>
+          </div>
+        </div>
+
+        {/* Variant styles */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Variant styles</h3>
+          <div className="space-y-3">
+            <Alert intent="success" variant="default" icon={<CheckCircle className="h-5 w-5" />}>
+              <strong>Default variant</strong> - Fond subtil + bordure colorée
+            </Alert>
+            
+            <Alert intent="success" variant="solid" icon={<CheckCircle className="h-5 w-5" />}>
+              <strong>Solid variant</strong> - Fond plein avec texte blanc
+            </Alert>
+            
+            <Alert intent="success" variant="outline" icon={<CheckCircle className="h-5 w-5" />}>
+              <strong>Outline variant</strong> - Fond transparent + bordure
+            </Alert>
+          </div>
+        </div>
+
+        {/* With title */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">With title</h3>
+          <div className="space-y-3">
+            <Alert 
+              intent="error" 
+              variant="solid"
+              icon={<AlertCircle className="h-5 w-5" />}
+              title="Erreur de connexion"
+            >
+              Impossible de charger les données système. Vérifiez votre connexion réseau.
+            </Alert>
+            
+            <Alert 
+              intent="info"
+              icon={<Info className="h-5 w-5" />}
+              title="Mise à jour disponible"
+            >
+              La version 2.0 apporte de nouvelles fonctionnalités et corrections de bugs.
+            </Alert>
+          </div>
+        </div>
+
+        {/* Size variants */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Size variants</h3>
+          <div className="space-y-3">
+            <Alert size="sm" intent="info" icon={<Info className="h-4 w-4" />}>
+              Small alert - Texte compact
+            </Alert>
+            
+            <Alert size="md" intent="info" icon={<Info className="h-5 w-5" />}>
+              Medium alert (default) - Taille standard
+            </Alert>
+            
+            <Alert size="lg" intent="info" icon={<Info className="h-6 w-6" />}>
+              Large alert - Plus d'espace et de visibilité
+            </Alert>
+          </div>
+        </div>
+
+        {/* With close button */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">With close button</h3>
+          <div className="space-y-3">
+            <Alert 
+              intent="success"
+              icon={<CheckCircle className="h-5 w-5" />}
+              onClose={() => console.log('Alert fermée')}
+            >
+              Alert dismissible - Cliquez sur le X pour fermer
+            </Alert>
+            
+            <Alert 
+              intent="warning"
+              variant="solid"
+              icon={<AlertTriangle className="h-5 w-5" />}
+              title="Avertissement important"
+              onClose={() => console.log('Avertissement fermé')}
+            >
+              Votre session expire dans 5 minutes. Sauvegardez votre travail.
+            </Alert>
+          </div>
+        </div>
+
+        {/* Real-world examples */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Exemples réels</h3>
+          <div className="space-y-3">
+            <Alert 
+              intent="success" 
+              variant="solid"
+              icon={<CheckCircle className="h-5 w-5" />}
+              title="Système opérationnel"
+            >
+              Tous les services fonctionnent normalement. Uptime: 99.9%
+            </Alert>
+            
+            <Alert 
+              intent="error"
+              icon={<AlertCircle className="h-5 w-5" />}
+              title="Erreur de validation"
+            >
+              Veuillez corriger les erreurs suivantes :
+              <ul className="mt-2 ml-4 list-disc text-sm">
+                <li>Email invalide</li>
+                <li>Mot de passe trop court (min. 8 caractères)</li>
+              </ul>
+            </Alert>
           </div>
         </div>
       </section>
