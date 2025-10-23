@@ -4,6 +4,7 @@
  * @route /admin/blog-simple
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
@@ -178,22 +179,18 @@ export default function AdminBlogSimplePage() {
               
               {/* Indicateur de statut */}
               <div className="mt-4 flex items-center space-x-4">
-                <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  apiStatus === 'success' 
-                    ? 'bg-green-100 text-green-800' 
-                    : apiStatus === 'timeout'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full mr-2 ${
-                    apiStatus === 'success' 
-                      ? 'bg-green-500' 
-                      : apiStatus === 'timeout'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}></div>
-                  API {apiStatus === 'success' ? 'Connectée' : apiStatus === 'timeout' ? 'Timeout' : 'Erreur'}
-                </div>
+                <Badge 
+                  variant={
+                    apiStatus === 'success' ? 'success' :
+                    apiStatus === 'timeout' ? 'warning' :
+                    'error'
+                  }
+                  size="sm"
+                >
+                  {apiStatus === 'success' ? '✅ API Opérationnelle' :
+                   apiStatus === 'timeout' ? '⏱️ API Lente' :
+                   '❌ API Indisponible'}
+                </Badge>
                 
                 <button
                   onClick={() => setShowDebug(!showDebug)}
