@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import  { type MetaFunction, type LoaderFunctionArgs , json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { 
@@ -254,9 +255,9 @@ export default function HomepageV3() {
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-full transition relative">
                 <ShoppingCart className={`h-5 w-5 ${scrolled ? 'text-gray-700' : 'text-white'}`} />
-                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <Badge variant="orange">
                   0
-                </span>
+                </Badge>
               </button>
               <button className="p-2 hover:bg-gray-100 rounded-full transition">
                 <User className={`h-5 w-5 ${scrolled ? 'text-gray-700' : 'text-white'}`} />

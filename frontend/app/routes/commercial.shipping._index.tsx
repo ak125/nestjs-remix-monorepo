@@ -1,8 +1,8 @@
 /**
- * � Gestion des expéditions - Interface principale
+ * 📦 Gestion des expéditions - Interface principale
  */
 
-import { Badge } from "@fafa/ui/badge";
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
@@ -636,14 +636,14 @@ export default function CommercialShippingIndex() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <Badge variant="info">
                       {order.deliveryZone === 'france' && '🇫🇷 France'}
                       {order.deliveryZone === 'corsica' && '🏝️ Corse'}
                       {order.deliveryZone === 'domTom' && '🌴 DOM-TOM'}
                       {order.deliveryZone === 'europe' && '🇪🇺 Europe'}
                       {order.deliveryZone === 'international' && '🌍 International'}
                       {order.deliveryZone === 'unknown' && '❓ Inconnue'}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {order.shippingFee.toFixed(2)}€

@@ -10,6 +10,7 @@
  * - Interface adaptative
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
@@ -198,9 +199,9 @@ export default function SearchPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-gray-900">Recherche</h1>
             {performance.totalItems !== undefined && (
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+              <Badge variant="info">
                 {performance.totalItems.toLocaleString()} résultats
-              </span>
+              </Badge>
             )}
           </div>
           

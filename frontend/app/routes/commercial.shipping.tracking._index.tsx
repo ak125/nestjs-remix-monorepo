@@ -1,8 +1,8 @@
 /**
- * � Suivi des expéditions - Interface commerciale
+ * 📦 Suivi des expéditions - Interface commerciale
  */
 
-import { Badge } from "@fafa/ui/badge";
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
