@@ -9,6 +9,7 @@
  * - Compatible avec l'authentification NestJS/Remix
  */
 
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
@@ -168,10 +169,10 @@ function CartSummary({ summary, children, isUpdating }: {
         <span className="mr-2">📋</span>
         Résumé de la commande
         {isUpdating && (
-          <span className="ml-auto flex items-center text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-            <div className="animate-spin w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+          <Badge variant="info" size="sm" className="ml-auto">
+            <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-2 inline-block"></div>
             Mise à jour...
-          </span>
+          </Badge>
         )}
       </h2>
       
@@ -182,9 +183,9 @@ function CartSummary({ summary, children, isUpdating }: {
             <span className="mr-2">🔢</span>
             Nombre de pièces
           </span>
-          <span className="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+          <Badge variant="info" size="lg">
             {summary.total_items}
-          </span>
+          </Badge>
         </div>
 
         {/* Sous-total */}
@@ -546,12 +547,9 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Notification de succès après vidage */}
         {cleared && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-            <div className="flex items-center">
-              <span className="text-lg mr-2">✅</span>
-              <span>Panier vidé avec succès !</span>
-            </div>
-          </div>
+          <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>}>
+            Panier vidé avec succès !
+          </Alert>
         )}
         {/* En-tête */}
         <div className="flex justify-between items-center mb-8">
@@ -586,18 +584,13 @@ export default function CartPage() {
           {/* Liste des articles */}
           <div className="lg:col-span-2 space-y-4">
             {notification && (
-              <div className={`p-4 rounded-lg border ${
-                notification.type === 'success' 
-                  ? 'bg-green-100 border-green-400 text-green-700'
-                  : 'bg-red-100 border-red-400 text-red-700'
-              }`}>
-                <div className="flex items-center">
-                  <span className="text-lg mr-2">
-                    {notification.type === 'success' ? '✅' : '❌'}
-                  </span>
-                  <span>{notification.message}</span>
-                </div>
-              </div>
+              <Alert 
+                intent={notification.type === 'success' ? 'success' : 'error'} 
+                variant="solid"
+                icon={<span className="text-lg">{notification.type === 'success' ? '✅' : '❌'}</span>}
+              >
+                {notification.message}
+              </Alert>
             )}
             
             {cart.items.map((item) => (

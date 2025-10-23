@@ -1,10 +1,10 @@
 // app/routes/admin.seo.tsx
+import { Alert, Badge } from "@fafa/ui";
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { requireUser } from "../auth/unified.server";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -177,17 +177,21 @@ export default function SeoAdmin() {
 
       {/* Messages de feedback */}
       {actionData?.success && 'message' in actionData && (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">
-            ✅ {actionData.message}
-          </AlertDescription>
+        <Alert 
+          intent="success"
+          variant="solid"
+          icon={<CheckCircle className="h-4 w-4" />}
+        >
+          {actionData.message}
         </Alert>
       )}
       {((actionData && 'error' in actionData && actionData.error) || error) && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-800">
-            ❌ {(actionData && 'error' in actionData && actionData.error) || error}
-          </AlertDescription>
+        <Alert 
+          intent="error"
+          variant="solid"
+          icon={<XCircle className="h-4 w-4" />}
+        >
+          {(actionData && 'error' in actionData && actionData.error) || error}
         </Alert>
       )}
 
@@ -225,9 +229,9 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-green-700">{analytics.pagesWithSeo?.toLocaleString()}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                  <Badge variant="success" size="sm">
                     Métadonnées OK
-                  </div>
+                  </Badge>
                   <div className="text-xs text-green-600">📈 +2.1%</div>
                 </div>
                 <div className="w-full bg-green-200 rounded-full h-1 mt-2">
@@ -265,14 +269,17 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-purple-700">{analytics.completionRate}%</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    analytics.completionRate >= 95 ? 'text-green-600 bg-green-100' :
-                    analytics.completionRate >= 80 ? 'text-yellow-600 bg-yellow-100' :
-                    'text-red-600 bg-red-100'
-                  }`}>
+                  <Badge 
+                    variant={
+                      analytics.completionRate >= 95 ? 'success' :
+                      analytics.completionRate >= 80 ? 'warning' :
+                      'error'
+                    }
+                    size="sm"
+                  >
                     {analytics.completionRate >= 95 ? '🚀 Excellent' :
                      analytics.completionRate >= 80 ? '⚡ Bon' : '🔧 À améliorer'}
-                  </div>
+                  </Badge>
                 </div>
                 <div className="w-full bg-purple-200 rounded-full h-1 mt-2">
                   <div className="bg-gradient-to-r from-purple-500 to-violet-500 h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
