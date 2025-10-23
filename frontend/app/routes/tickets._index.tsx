@@ -152,14 +152,10 @@ export default function TicketsPage() {
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-600">Total tickets</p>
-            <p className="text-2xl font-bold text-blue-900">{stats.total_tickets}</p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <p className="text-sm text-green-600">Ouverts</p>
-            <p className="text-2xl font-bold text-green-900">{stats.open_tickets}</p>
-          </div>
+          <Alert intent="info"><p className="text-sm text-blue-600">Total tickets</p>
+            <p className="text-2xl font-bold text-blue-900">{stats.total_tickets}</p></Alert>
+          <Alert intent="success"><p className="text-sm text-green-600">Ouverts</p>
+            <p className="text-2xl font-bold text-green-900">{stats.open_tickets}</p></Alert>
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Fermés</p>
             <p className="text-2xl font-bold text-gray-900">{stats.closed_tickets}</p>

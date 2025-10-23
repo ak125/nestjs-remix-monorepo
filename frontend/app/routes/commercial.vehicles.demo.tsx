@@ -43,9 +43,7 @@ export default function VehicleSelectorsDemo() {
             className="w-full"
           />
           {selectedModel && (
-            <div className="mt-3 p-3 bg-green-50 rounded">
-              <strong>Sélectionné:</strong> {selectedModel.modele_ful_name || selectedModel.modele_name}
-            </div>
+            <Alert intent="success"><strong>Sélectionné:</strong> {selectedModel.modele_ful_name || selectedModel.modele_name}</Alert>
           )}
         </div>
 
@@ -83,9 +81,7 @@ export default function VehicleSelectorsDemo() {
               className="w-full"
             />
             {selectedYear && (
-              <div className="mt-3 p-3 bg-green-50 rounded">
-                <strong>Sélectionné:</strong> {selectedYear}
-              </div>
+              <Alert intent="success"><strong>Sélectionné:</strong> {selectedYear}</Alert>
             )}
           </div>
         )}

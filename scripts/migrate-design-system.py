@@ -75,8 +75,16 @@ class DesignSystemMigrator:
             color = match.group(2)
             text = match.group(3).strip()
             
-            # Autoriser {variable} simple
-            if text.count('{') > 1 or text.count('<') > 0:
+            # Skip indicators/dots (très petits éléments visuels)
+            if 'w-1' in classes or 'w-2' in classes or 'h-1' in classes or 'h-2' in classes:
+                return match.group(0)
+            
+            # Skip absolute positioned badges (notifications)
+            if 'absolute' in classes:
+                return match.group(0)
+            
+            # Autoriser {variable} simple mais pas trop de JSX
+            if text.count('{') > 2 or text.count('<') > 0:
                 return match.group(0)
             
             variant = COLOR_TO_VARIANT.get(color, 'default')
