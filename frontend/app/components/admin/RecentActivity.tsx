@@ -241,16 +241,16 @@ function getActivityIconStyles(type: string, severity: string): string {
   let baseStyles = '';
   switch (severity) {
     case 'ERROR':
-      baseStyles = 'bg-red-500 text-white';
+      baseStyles = 'bg-destructive text-destructive-foreground';
       break;
     case 'WARNING':
-      baseStyles = 'bg-yellow-500 text-white';
+      baseStyles = 'bg-warning text-warning-foreground';
       break;
     case 'SUCCESS':
-      baseStyles = 'bg-green-500 text-white';
+      baseStyles = 'bg-success text-success-foreground';
       break;
     default:
-      baseStyles = 'bg-blue-500 text-white';
+      baseStyles = 'bg-primary text-primary-foreground';
   }
 
   // Styles spécifiques selon le type

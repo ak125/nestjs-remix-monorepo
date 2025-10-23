@@ -114,10 +114,10 @@ const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
   }[level] || 'from-gray-50 to-gray-100 border-gray-500');
 
   const getBadgeStyles = (level: string) => ({
-    'critical': 'bg-red-500 text-white border-red-600 shadow-red-300/50',
-    'high': 'bg-orange-500 text-white border-orange-600 shadow-orange-300/50',
-    'medium': 'bg-yellow-500 text-white border-yellow-600 shadow-yellow-300/50',
-    'low': 'bg-green-500 text-white border-green-600 shadow-green-300/50'
+    'critical': 'bg-destructive text-white border-red-600 shadow-red-300/50',
+    'high': 'bg-orange-600 text-white border-orange-600 shadow-orange-300/50',
+    'medium': 'bg-warning text-white border-yellow-600 shadow-yellow-300/50',
+    'low': 'bg-success text-white border-green-600 shadow-green-300/50'
   }[level] || 'bg-gray-500 text-white border-gray-600');
 
   const getDotColor = (level: string) => ({

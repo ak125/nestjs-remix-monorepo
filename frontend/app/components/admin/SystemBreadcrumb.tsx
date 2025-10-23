@@ -331,8 +331,8 @@ export default function SystemBreadcrumb({
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className={`w-2 h-2 rounded-full ${
-                  environment === 'production' ? 'bg-green-500' :
-                  environment === 'staging' ? 'bg-yellow-500' : 'bg-gray-500'
+                  environment === 'production' ? 'bg-success' :
+                  environment === 'staging' ? 'bg-warning' : 'bg-gray-500'
                 }`} />
                 <span className="capitalize">
                   {ENVIRONMENTS.find(env => env.value === environment)?.label || environment}
