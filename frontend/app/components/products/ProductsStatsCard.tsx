@@ -100,7 +100,7 @@ function StatItem({
                     'h-1.5 rounded-full transition-all duration-300',
                     variant === 'success' ? 'bg-green-500' :
                     variant === 'warning' ? 'bg-yellow-500' :
-                    variant === 'danger' ? 'bg-red-500' : 'bg-blue-500'
+                    variant === 'danger' ? 'bg-destructive' : 'bg-info'
                   )}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />

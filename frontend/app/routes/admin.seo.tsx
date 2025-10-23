@@ -489,7 +489,7 @@ export default function SeoAdmin() {
                       
                       <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-info rounded-full"></div>
                           <span className="text-sm">Amélioration du taux</span>
                         </div>
                         <span className="font-bold text-blue-700">+1.2% ce mois</span>
@@ -497,7 +497,7 @@ export default function SeoAdmin() {
                       
                       <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
                           <span className="text-sm">Pages critiques résolues</span>
                         </div>
                         <span className="font-bold text-purple-700">1,234</span>
@@ -518,15 +518,15 @@ export default function SeoAdmin() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-destructive rounded-full"></div>
                         <span>🔥 Priorité haute: Optimiser {analytics?.pagesWithoutSeo?.toLocaleString() || '34K'} pages produits</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
                         <span>⚡ Améliorer les descriptions trop courtes (12K pages)</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-info rounded-full"></div>
                         <span>📈 Ajouter des mots-clés longue traîne</span>
                       </div>
                     </div>
