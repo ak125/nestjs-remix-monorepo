@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { requireAdmin } from "../auth/unified.server";
 
@@ -238,13 +239,8 @@ export default function InvoicesIndex() {
                 <option value="cancelled">Annulée</option>
               </select>
             </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? "Recherche..." : "Rechercher"}
-            </button>
+            <Button className="px-4 py-2  rounded-md disabled:opacity-50" variant="blue" type="submit"
+              disabled={isLoading}>\n  {isLoading ? "Recherche..." : "Rechercher"}\n</Button>
           </Form>
         </div>
       </div>

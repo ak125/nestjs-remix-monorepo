@@ -1,5 +1,6 @@
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from '@remix-run/react';
 import { ArrowLeft, Mail, Phone, User, MapPin, ShoppingBag, Award, Calendar, TrendingUp, Building2, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
@@ -202,9 +203,7 @@ export function ErrorBoundary() {
 
         <div className="mt-6">
           <Link to="/admin/users">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Voir tous les utilisateurs
-            </button>
+            <Button className="px-4 py-2  rounded-md" variant="blue">\n  Voir tous les utilisateurs\n</Button>
           </Link>
         </div>
       </div>

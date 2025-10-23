@@ -4,6 +4,7 @@
 
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Button } from '~/components/ui/button';
 import { useLoaderData, useNavigation } from '@remix-run/react';
 import { SearchBar } from '../components/search/SearchBar';
 
@@ -230,9 +231,7 @@ export default function SearchResults() {
                             <span className="text-2xl font-bold text-green-600">
                               {result.price.toFixed(2)}€
                             </span>
-                            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                              Ajouter au panier
-                            </button>
+                            <Button className="px-4 py-2  rounded-lg" variant="blue">\n  Ajouter au panier\n</Button>
                           </div>
                         )}
                       </div>

@@ -1,5 +1,6 @@
 // PARTIE 4/4 - Composants finaux : Team, Contact, Footer, LiveChat, Popup
 import { Link } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { MapPin, Mail, Phone, MessageCircle, Clock, Facebook, Twitter, Linkedin, Instagram, Youtube, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -352,9 +353,7 @@ export function Footer() {
                 placeholder="Votre email"
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none text-sm"
               />
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
-                OK
-              </button>
+              <Button className="px-4 py-2 rounded-lg font-semibold" variant="blue">\n  OK\n</Button>
             </div>
 
             {/* Moyens de paiement */}
@@ -458,9 +457,7 @@ export function LiveChatButton() {
                 placeholder="Votre message..."
                 className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
               />
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors">
-                Envoyer
-              </button>
+              <Button className="px-4 py-2  rounded-xl font-semibold" variant="blue">\n  Envoyer\n</Button>
             </div>
           </div>
         </div>

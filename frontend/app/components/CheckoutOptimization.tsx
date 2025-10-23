@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { Button } from '~/components/ui/button';
 import { Badge } from '@fafa/ui';
 import { useAdvancedAnalyticsComplete } from '../hooks/useAdvancedAnalyticsComplete'
 import { useAIAssistant } from '../hooks/useAIAssistantSimple'
@@ -170,13 +171,8 @@ export function CheckoutOptimization({
               </div>
             </div>
             
-            <button
-              onClick={handleCheckoutAttempt}
-              disabled={conversionInProgress}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition-colors"
-            >
-              {conversionInProgress ? '⏳ Finalisation...' : '🚀 COMMANDER MAINTENANT'}
-            </button>
+            <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="red" onClick={handleCheckoutAttempt}
+              disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Finalisation...' : '🚀 COMMANDER MAINTENANT'}\n</Button>
             
             <p className="text-xs text-red-600 text-center mt-3">
               ✅ Paiement sécurisé • ✅ Livraison garantie
@@ -201,13 +197,8 @@ export function CheckoutOptimization({
                 </div>
               </div>
               
-              <button
-                onClick={handleCheckoutAttempt}
-                disabled={conversionInProgress}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg"
-              >
-                {conversionInProgress ? '⏳ Traitement...' : '✅ Valider & Payer'}
-              </button>
+              <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="green" onClick={handleCheckoutAttempt}
+                disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Traitement...' : '✅ Valider & Payer'}\n</Button>
             </div>
             
             <div className="text-center mt-4 text-sm text-green-600">
@@ -241,13 +232,8 @@ export function CheckoutOptimization({
               </div>
             </div>
             
-            <button
-              onClick={handleCheckoutAttempt}
-              disabled={conversionInProgress}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg"
-            >
-              {conversionInProgress ? '⏳ Finalisation...' : '🤝 Rejoindre la Communauté'}
-            </button>
+            <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="blue" onClick={handleCheckoutAttempt}
+              disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Finalisation...' : '🤝 Rejoindre la Communauté'}\n</Button>
             
             <div className="text-center mt-3 text-xs text-blue-600">
               🔒 Paiement sécurisé • 🚚 Livraison rapide • ⭐ Support 24/7

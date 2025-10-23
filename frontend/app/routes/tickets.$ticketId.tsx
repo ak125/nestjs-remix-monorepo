@@ -4,6 +4,7 @@
  */
 import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
 
@@ -306,9 +307,7 @@ export default function TicketDetailPage() {
               <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 Imprimer
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                Répondre
-              </button>
+              <Button className="px-4 py-2 text-sm font-medium  rounded-md" variant="blue">\n  Répondre\n</Button>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { Button } from '~/components/ui/button';
 import { z } from 'zod';
 import { useNotifications } from '~/components/notifications/NotificationContainer';
 import { useCrud } from '~/hooks/useApi';
@@ -137,13 +138,8 @@ export const ModernOrdersComponent: React.FC = () => {
         </div>
 
         <div className="flex space-x-2">
-          <button
-            type="submit"
-            disabled={ordersApi.isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {ordersApi.isLoading ? 'Recherche...' : 'Rechercher'}
-          </button>
+          <Button className="px-4 py-2  rounded-md disabled:opacity-50" variant="blue" type="submit"
+            disabled={ordersApi.isLoading}>\n  {ordersApi.isLoading ? 'Recherche...' : 'Rechercher'}\n</Button>
           
           <button
             type="button"

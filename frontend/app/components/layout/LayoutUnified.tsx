@@ -9,6 +9,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { Button } from '~/components/ui/button';
 import  { type LayoutData, type LayoutConfig, type ModularSection } from '../../types/layout';
 import { FooterEnhanced } from './FooterEnhanced';
 // TODO: Créer les fichiers Header.tsx et ModularSections.tsx
@@ -115,12 +116,7 @@ export const LayoutUnified: React.FC<LayoutUnifiedProps> = ({
               Erreur de chargement
             </h1>
             <p className="text-gray-600 mb-4">{error}</p>
-            <button
-              onClick={loadLayoutData}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-            >
-              Réessayer
-            </button>
+            <Button className="px-4 py-2 rounded" variant="blue" onClick={loadLayoutData}>\n  Réessayer\n</Button>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
 import { Alert } from '@fafa/ui';
@@ -387,12 +388,7 @@ export default function OrderInvoice() {
                   }
                 }}
               >
-                <button 
-                  type="submit"
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
-                >
-                  Payer maintenant
-                </button>
+                <Button className="font-bold py-3 px-8 rounded-lg text-lg" variant="green" type="submit">\n  Payer maintenant\n</Button>
               </form>
             </div>
           </div>

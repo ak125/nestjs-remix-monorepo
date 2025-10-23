@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
@@ -319,13 +320,8 @@ export default function AdminStaff() {
             </div>
             
             <div className="flex items-end">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Recherche...' : 'Filtrer'}
-              </button>
+              <Button className="w-full  px-4 py-2 rounded-md  disabled:opacity-50" variant="blue" type="submit"
+                disabled={isLoading}>\n  {isLoading ? 'Recherche...' : 'Filtrer'}\n</Button>
             </div>
           </div>
         </Form>
