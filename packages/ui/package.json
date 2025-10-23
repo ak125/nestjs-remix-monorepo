@@ -13,6 +13,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./alert": {
+      "types": "./dist/components/alert.d.ts",
+      "import": "./dist/components/alert.js",
+      "require": "./dist/components/alert.cjs"
+    },
+    "./badge": {
+      "types": "./dist/components/badge.d.ts",
+      "import": "./dist/components/badge.js",
+      "require": "./dist/components/badge.cjs"
     }
   },
   "files": [

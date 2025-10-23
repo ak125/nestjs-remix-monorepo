@@ -1,14 +1,10 @@
 /**
- * 🚚 GESTION EXPÉDITIONS COMMERCIALES
- * 
- * Interface commerciale pour la gestion des expéditions et livraisons
- * ✅ Réutilise l'infrastructure ShippingService existante
- * ✅ APIs ShippingController déjà disponibles
- * ✅ Données réelles des commandes avec informations de livraison
+ * � Gestion des expéditions - Interface principale
  */
 
+import { Badge } from "@fafa/ui/badge";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams, Form, Link } from '@remix-run/react';
+import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
   Truck, Package, Clock,
   CheckCircle, Search, Filter, Download, Eye,
@@ -135,13 +131,14 @@ function getShippingStatusLabel(status: 'pending' | 'shipped' | 'delivered' | 'r
 }
 
 // Fonction pour obtenir la couleur du statut
-function getShippingStatusColor(status: 'pending' | 'shipped' | 'delivered' | 'returned'): string {
+// Helper function to get Badge variant from shipping status
+function getShippingStatusVariant(status: 'pending' | 'shipped' | 'delivered' | 'returned'): "warning" | "info" | "success" | "error" | "default" {
   switch (status) {
-    case 'pending': return 'bg-yellow-100 text-yellow-800';
-    case 'shipped': return 'bg-blue-100 text-blue-800';
-    case 'delivered': return 'bg-green-100 text-green-800';
-    case 'returned': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'pending': return 'warning';
+    case 'shipped': return 'info';
+    case 'delivered': return 'success';
+    case 'returned': return 'error';
+    default: return 'default';
   }
 }
 
@@ -652,9 +649,9 @@ export default function CommercialShippingIndex() {
                     {order.shippingFee.toFixed(2)}€
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getShippingStatusColor(order.shippingStatus)}`}>
+                    <Badge variant={getShippingStatusVariant(order.shippingStatus)} size="sm">
                       {getShippingStatusLabel(order.shippingStatus)}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {order.trackingNumber ? (

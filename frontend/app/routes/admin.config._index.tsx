@@ -2,6 +2,8 @@
  * 🔧 Configuration Admin - Version Simplifiée Compatible
  */
 
+import { Alert } from "@fafa/ui/alert";
+import { Badge } from "@fafa/ui/badge";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
@@ -334,37 +336,25 @@ export default function AdminConfigIndexPage() {
 
           {/* Messages de statut */}
           {error && (
-            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-                <p className="text-red-800">{error}</p>
-              </div>
-            </div>
+            <Alert intent="error" variant="solid" icon={<AlertCircle />}>
+              {error}
+            </Alert>
           )}
 
           {hasSuccess && (
-            <div className="px-6 py-3 bg-green-50 border-b border-green-200">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                <div>
-                  <p className="text-green-800">{successMessage}</p>
-                  {backupId && (
-                    <p className="text-sm text-green-600 mt-1">
-                      ID de sauvegarde : <code className="bg-green-100 px-2 py-1 rounded">{backupId}</code>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+            <Alert intent="success" variant="solid" icon={<CheckCircle />} title={successMessage}>
+              {backupId && (
+                <p className="text-sm mt-1">
+                  ID de sauvegarde : <Badge variant="success" size="sm">{backupId}</Badge>
+                </p>
+              )}
+            </Alert>
           )}
 
           {hasError && (
-            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-                <p className="text-red-800">{errorMessage}</p>
-              </div>
-            </div>
+            <Alert intent="error" variant="solid" icon={<AlertCircle />}>
+              {errorMessage}
+            </Alert>
           )}
         </div>
 
@@ -478,31 +468,34 @@ export default function AdminConfigIndexPage() {
                             
                             {/* Badges */}
                             <div className="flex gap-2">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                config.type === 'boolean' ? 'bg-green-100 text-green-700' :
-                                config.type === 'number' ? 'bg-blue-100 text-blue-700' :
-                                config.type === 'json' ? 'bg-purple-100 text-purple-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
+                              <Badge 
+                                variant={
+                                  config.type === 'boolean' ? 'success' :
+                                  config.type === 'number' ? 'info' :
+                                  config.type === 'json' ? 'purple' :
+                                  'default'
+                                }
+                                size="sm"
+                              >
                                 {config.type}
-                              </span>
+                              </Badge>
                               
                               {config.isSensitive && (
-                                <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                                <Badge variant="error" size="sm">
                                   Sensible
-                                </span>
+                                </Badge>
                               )}
                               
                               {config.requiresRestart && (
-                                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                                <Badge variant="warning" size="sm">
                                   Redémarrage requis
-                                </span>
+                                </Badge>
                               )}
                               
                               {config.isRequired && (
-                                <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
+                                <Badge variant="orange" size="sm">
                                   Requis
-                                </span>
+                                </Badge>
                               )}
                             </div>
                           </div>
