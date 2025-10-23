@@ -41,7 +41,7 @@ export default function Aide() {
       
       {/* Contact rapide */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-blue-50 rounded-lg p-6 text-center">
+        <div className="bg-primary/5 rounded-lg p-6 text-center">
           <Phone className="w-12 h-12 text-blue-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Téléphone</h3>
           <p className="text-gray-600 mb-3">Lun-Ven : 8h-18h<br />Sam : 8h-12h</p>
@@ -50,7 +50,7 @@ export default function Aide() {
           </a>
         </div>
         
-        <div className="bg-green-50 rounded-lg p-6 text-center">
+        <div className="bg-success/5 rounded-lg p-6 text-center">
           <Mail className="w-12 h-12 text-green-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Email</h3>
           <p className="text-gray-600 mb-3">Réponse sous 24h<br />7j/7</p>

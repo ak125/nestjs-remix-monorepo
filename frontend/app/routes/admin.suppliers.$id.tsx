@@ -288,8 +288,8 @@ export default function SupplierDetail() {
                   disabled={fetcher.state !== 'idle'}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     supplier.status === 'active'
-                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
+                      ? 'bg-warning hover:bg-warning/90 text-white'
+                      : 'bg-success hover:bg-success/90 text-white'
                   } disabled:opacity-50`}
                 >
                   {fetcher.state !== 'idle' ? 'Chargement...' : 

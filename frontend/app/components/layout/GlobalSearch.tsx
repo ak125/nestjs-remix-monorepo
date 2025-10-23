@@ -279,7 +279,7 @@ export function GlobalSearch({
                 }}
                 className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                   selectedCategory === key
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-primary/15 text-blue-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >

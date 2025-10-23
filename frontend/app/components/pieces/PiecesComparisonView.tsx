@@ -126,7 +126,7 @@ export function PiecesComparisonView({ pieces, selectedPieces, onRemovePiece }: 
 
       {/* Légende prix */}
       {comparedPieces.length > 1 && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-900">
               <strong>Prix minimum:</strong> {Math.min(...comparedPieces.map(p => p.price)).toFixed(2)}€

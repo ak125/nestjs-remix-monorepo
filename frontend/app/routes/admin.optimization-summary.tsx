@@ -206,12 +206,12 @@ export default function OptimizationSummaryPage() {
             </h3>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg">
                 <span className="font-medium">Tracking d'Événements</span>
                 <span className="text-green-600 font-bold">✅ Fonctionnel</span>
               </div>
               
-              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-success/5 rounded-lg">
                 <span className="font-medium">A/B Testing</span>
                 <span className="text-green-600 font-bold">✅ Fonctionnel</span>
               </div>
@@ -250,14 +250,14 @@ export default function OptimizationSummaryPage() {
             </h3>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg">
                 <span className="font-medium">Monitoring Temps Réel</span>
                 <span className="text-green-600 font-bold">
                   ✅ {testResults.monitoring?.service_active ? 'Actif' : 'En attente'}
                 </span>
               </div>
               
-              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-success/5 rounded-lg">
                 <span className="font-medium">Détection d'Erreurs</span>
                 <span className="text-green-600 font-bold">✅ Configuré</span>
               </div>
@@ -293,7 +293,7 @@ export default function OptimizationSummaryPage() {
             </h3>
             <div className="grid gap-4">
               {aiAssistant.suggestions.map((suggestion) => (
-                <div key={suggestion.id} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div key={suggestion.id} className="border border-blue-200 rounded-lg p-4 bg-primary/5">
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{suggestion.icon}</div>
                     <div className="flex-grow">

@@ -202,7 +202,7 @@ export default function LegacyPartUrlMigrationPage() {
 
             {/* Informations de migration */}
             {migration.metadata && (
-              <div className="bg-blue-50 rounded-xl p-6 mb-6 text-left">
+              <div className="bg-primary/5 rounded-xl p-6 mb-6 text-left">
                 <h3 className="font-semibold text-blue-900 mb-3">Informations de redirection</h3>
                 <div className="space-y-2 text-sm">
                   <div>
@@ -297,7 +297,7 @@ export default function LegacyPartUrlMigrationPage() {
           </p>
 
           {/* Informations d'erreur */}
-          <div className="bg-red-50 rounded-xl p-6 mb-6 text-left">
+          <div className="bg-destructive/5 rounded-xl p-6 mb-6 text-left">
             <h3 className="font-semibold text-red-900 mb-3">Détails de l'erreur</h3>
             <div className="space-y-2 text-sm">
               <div>

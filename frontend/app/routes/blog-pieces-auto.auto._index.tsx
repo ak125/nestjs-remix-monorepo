@@ -481,7 +481,7 @@ export default function BlogPiecesAutoIndex() {
                             <span className="text-sm font-medium text-gray-600">
                               Voir les pièces
                             </span>
-                            <div className="p-1 bg-green-50 rounded-md group-hover:bg-success/20 transition-colors">
+                            <div className="p-1 bg-success/5 rounded-md group-hover:bg-success/20 transition-colors">
                               <ArrowRight className="w-4 h-4 text-green-600 group-hover:translate-x-0.5 transition-transform" />
                             </div>
                           </div>
@@ -500,7 +500,7 @@ export default function BlogPiecesAutoIndex() {
                         onClick={() => setCurrentModelIndex(index * modelsPerPage)}
                         className={`w-2 h-2 rounded-full transition-all ${
                           Math.floor(currentModelIndex / modelsPerPage) === index
-                            ? "bg-green-600 w-8"
+                            ? "bg-success w-8"
                             : "bg-gray-300 hover:bg-gray-400"
                         }`}
                         aria-label={`Page ${index + 1}`}
@@ -559,7 +559,7 @@ export default function BlogPiecesAutoIndex() {
 
                     <div className="space-y-4">
 <Alert className="flex items-start gap-3 p-4 rounded-xl" variant="success">
-                        <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>

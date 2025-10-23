@@ -569,7 +569,7 @@ export default function CartPage() {
                 alert(result.error || 'Erreur lors du vidage du panier');
               }
             }}
-            className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-red-50 transition-colors"
+            className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-destructive/5 transition-colors"
             title="Supprimer tous les articles du panier"
           >
             Vider le panier
@@ -640,7 +640,7 @@ export default function CartPage() {
             </CartSummary>
 
             {/* Informations complémentaires */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <div className="mt-6 p-4 bg-primary/5 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">
                 🚚 Livraison gratuite
               </h3>
@@ -649,7 +649,7 @@ export default function CartPage() {
               </p>
             </div>
 
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <div className="mt-4 p-4 bg-success/5 rounded-lg">
               <h3 className="font-medium text-green-900 mb-2">
                 🔒 Paiement sécurisé
               </h3>

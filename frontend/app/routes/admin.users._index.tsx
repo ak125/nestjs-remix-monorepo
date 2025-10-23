@@ -344,7 +344,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         } animate-in slide-in-from-right duration-300`}>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${
-              notification.type === 'success' ? 'bg-green-100' : 'bg-red-100'
+              notification.type === 'success' ? 'bg-success/15' : 'bg-red-100'
             }`}>
               {notification.type === 'success' ? (
                 <UserCheck className="w-5 h-5" />
@@ -725,7 +725,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className={`border-b hover:bg-muted/50 ${selectedUsers.includes(user.id) ? 'bg-blue-50' : ''}`}>
+                  <tr key={user.id} className={`border-b hover:bg-muted/50 ${selectedUsers.includes(user.id) ? 'bg-primary/5' : ''}`}>
                     <td className="p-3 w-12">
                       <input
                         type="checkbox"

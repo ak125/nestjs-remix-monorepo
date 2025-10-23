@@ -432,7 +432,7 @@ export function SearchBar({
                 onClick={() => handleSuggestionClick(suggestion)}
                 className={cn(
                   'w-full flex items-center px-4 py-3 text-left hover:bg-gray-50 transition-colors',
-                  selectedIndex === index && 'bg-blue-50',
+                  selectedIndex === index && 'bg-primary/5',
                   'border-b border-gray-100 last:border-b-0'
                 )}
               >

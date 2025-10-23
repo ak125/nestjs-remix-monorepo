@@ -241,7 +241,7 @@ export default function StaffIndex() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}{member.lastName?.[0]}
                           </span>
@@ -281,11 +281,11 @@ export default function StaffIndex() {
                         </Button>
                       </Link>
                       <Link to={`/staff/${member.id}/edit`}>
-                        <Button variant="outline" size="sm" className="hover:bg-yellow-50">
+                        <Button variant="outline" size="sm" className="hover:bg-warning/5">
                           <Edit className="h-4 w-4 text-yellow-600" />
                         </Button>
                       </Link>
-                      <Button variant="outline" size="sm" className="hover:bg-red-50">
+                      <Button variant="outline" size="sm" className="hover:bg-destructive/5">
                         <Trash className="h-4 w-4 text-red-600" />
                       </Button>
                     </div>

@@ -128,14 +128,14 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
           {stats && (
             <div className="border-b border-gray-200 p-4">
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-blue-50 p-2 rounded">
+                <div className="bg-primary/5 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <ShoppingCart className="h-3 w-3 text-blue-600" />
                     <span className="text-blue-900 font-medium">Commandes</span>
                   </div>
                   <div className="text-blue-700 font-bold">{stats.totalOrders?.toLocaleString()}</div>
                 </div>
-                <div className="bg-green-50 p-2 rounded">
+                <div className="bg-success/5 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <TrendingUp className="h-3 w-3 text-green-600" />
                     <span className="text-green-900 font-medium">CA</span>
@@ -174,7 +174,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                   className={cn(
                     "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-blue-100 text-blue-900"
+                      ? "bg-primary/15 text-blue-900"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >

@@ -257,11 +257,11 @@ function getActivityIconStyles(type: string, severity: string): string {
   switch (type) {
     case 'ORDER_CREATED':
     case 'ORDER_UPDATED':
-      return severity === 'INFO' ? 'bg-blue-500 text-white' : baseStyles;
+      return severity === 'INFO' ? 'bg-primary text-white' : baseStyles;
     case 'STOCK_ALERT':
       return severity === 'INFO' ? 'bg-orange-500 text-white' : baseStyles;
     case 'USER_REGISTERED':
-      return severity === 'INFO' ? 'bg-green-500 text-white' : baseStyles;
+      return severity === 'INFO' ? 'bg-success text-white' : baseStyles;
     case 'PAYMENT_RECEIVED':
       return severity === 'INFO' ? 'bg-emerald-500 text-white' : baseStyles;
     case 'PRODUCT_UPDATED':

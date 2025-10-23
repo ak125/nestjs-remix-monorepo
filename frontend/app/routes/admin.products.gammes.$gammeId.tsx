@@ -259,7 +259,7 @@ export default function AdminProductsGammeManagement() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="bg-red-50">
+          <Badge variant="outline" className="bg-destructive/5">
             Admin Level {user.level}
           </Badge>
           {enhanced && (

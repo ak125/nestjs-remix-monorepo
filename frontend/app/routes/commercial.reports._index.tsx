@@ -204,7 +204,7 @@ export default function CommercialReports() {
               <div className="flex items-center">
                 <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
                   <div 
-                    className="bg-green-600 h-2 rounded-full" 
+                    className="bg-success h-2 rounded-full" 
                     style={{width: `${data.statistics.conversionRate}%`}}
                   ></div>
                 </div>
@@ -306,7 +306,7 @@ export default function CommercialReports() {
 
       {/* Actions Rapides */}
       <div className="mt-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-primary/5 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-800 mb-4">Actions Rapides</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link 

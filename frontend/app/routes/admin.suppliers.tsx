@@ -204,7 +204,7 @@ export default function AdminSuppliersLayout() {
             </div>
             <p className="text-gray-600 text-sm">Délai moyen</p>
             
-            <div className="mt-4 bg-blue-50 rounded-lg p-4">
+            <div className="mt-4 bg-primary/5 rounded-lg p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Objectif</span>
                 <span className="font-medium text-blue-600">≤ 3 jours</span>
@@ -227,14 +227,14 @@ export default function AdminSuppliersLayout() {
           </h2>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-success/5 rounded-lg">
               <span className="font-medium text-green-900">Actifs</span>
               <span className="text-2xl font-bold text-green-600">
                 {formatNumber(supplierStats.activeSuppliers)}
               </span>
             </div>
             
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-destructive/5 rounded-lg">
               <span className="font-medium text-red-900">Expirent bientôt</span>
               <span className="text-2xl font-bold text-red-600">
                 {formatNumber(supplierStats.contractsExpiring)}

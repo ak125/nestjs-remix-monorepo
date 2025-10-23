@@ -235,7 +235,7 @@ export default function CommercialVehiclesBrandModels() {
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         model.modele_year_to 
                           ? 'bg-gray-100 text-gray-700' 
-                          : 'bg-green-100 text-green-700'
+                          : 'bg-success/15 text-green-700'
                       }`}>
                         {model.modele_year_to ? 'Ancien' : 'Actuel'}
                       </span>

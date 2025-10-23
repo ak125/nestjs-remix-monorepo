@@ -157,7 +157,7 @@ export default function MessagesList() {
                     key={message.MSG_ID}
                     className={`flex items-center justify-between p-4 rounded-lg border transition-colors hover:bg-gray-50 ${
                       message.MSG_OPEN === 0
-                        ? "bg-blue-50 border-blue-200"
+                        ? "bg-primary/5 border-blue-200"
                         : "bg-white border-gray-200"
                     }`}
                   >
@@ -172,7 +172,7 @@ export default function MessagesList() {
                           {message.MSG_ORD_ID ? `#${message.MSG_ORD_ID}/A` : "Message général"}
                         </span>
                         {message.MSG_OPEN === 0 && (
-                          <Badge className="bg-blue-500 text-xs">Nouveau</Badge>
+                          <Badge className="bg-primary text-xs">Nouveau</Badge>
                         )}
                       </div>
                       <p className="font-medium truncate">{message.MSG_SUBJECT}</p>

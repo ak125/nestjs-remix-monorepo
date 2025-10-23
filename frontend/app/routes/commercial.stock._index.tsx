@@ -307,7 +307,7 @@ export default function CommercialStockIndex() {
                   return (
                     <tr 
                       key={item.pri_piece_id} 
-                      className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}
+                      className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-primary/5' : ''}`}
                     >
                       <td className="p-4">
                         <input

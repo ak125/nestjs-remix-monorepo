@@ -371,7 +371,7 @@ export default function AdminStaff() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                             <span className="text-blue-600 font-bold text-sm">
                               {staff.cnfa_fname.charAt(0).toUpperCase()}
                               {staff.cnfa_name.charAt(0).toUpperCase()}
@@ -495,7 +495,7 @@ export default function AdminStaff() {
                             to={`?page=${page}`}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               page === data.pagination.page
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                ? 'z-10 bg-primary/5 border-blue-500 text-blue-600'
                                 : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                             }`}
                           >

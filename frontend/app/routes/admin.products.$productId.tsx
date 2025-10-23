@@ -100,7 +100,7 @@ export default function AdminProductDetail() {
           <div className="flex space-x-3">
             <Link
               to={`/admin/products/${product.piece_id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90"
             >
               ✏️ Modifier
             </Link>

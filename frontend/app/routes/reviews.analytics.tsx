@@ -290,7 +290,7 @@ export default function ReviewAnalyticsPage() {
               </div>
               <div className="bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min((trends.thisWeek / Math.max(trends.thisWeek, trends.lastWeek, 1)) * 100, 100)}%` }}
                 />
               </div>
@@ -316,7 +316,7 @@ export default function ReviewAnalyticsPage() {
               </div>
               <div className="bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-success h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min((trends.thisMonth / Math.max(trends.thisMonth, trends.lastMonth, 1)) * 100, 100)}%` }}
                 />
               </div>
@@ -336,7 +336,7 @@ export default function ReviewAnalyticsPage() {
             </div>
           </div>
           
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mt-6 p-4 bg-primary/5 rounded-lg">
             <div className="flex items-center">
               <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
               <span className="text-sm font-medium text-blue-900">Croissance</span>
@@ -356,7 +356,7 @@ export default function ReviewAnalyticsPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Insights et Recommandations</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="p-4 bg-primary/5 rounded-lg">
             <h3 className="font-medium text-blue-900 mb-2">Performance Globale</h3>
             <p className="text-sm text-blue-800">
               {(stats as any).averageRating >= 4 
@@ -368,7 +368,7 @@ export default function ReviewAnalyticsPage() {
             </p>
           </div>
           
-          <div className="p-4 bg-yellow-50 rounded-lg">
+          <div className="p-4 bg-warning/5 rounded-lg">
             <h3 className="font-medium text-yellow-900 mb-2">Modération</h3>
             <p className="text-sm text-yellow-800">
               {(stats as any).pending > 5
@@ -380,7 +380,7 @@ export default function ReviewAnalyticsPage() {
             </p>
           </div>
           
-          <div className="p-4 bg-green-50 rounded-lg">
+          <div className="p-4 bg-success/5 rounded-lg">
             <h3 className="font-medium text-green-900 mb-2">Tendance</h3>
             <p className="text-sm text-green-800">
               {trends.thisMonth > trends.lastMonth

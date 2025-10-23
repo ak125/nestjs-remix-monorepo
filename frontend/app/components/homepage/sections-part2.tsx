@@ -123,8 +123,8 @@ function FeaturedProducts({ products: _products }: any) {
 
 function ProductCard({ name, price, oldPrice, rating, reviews, image, badge, badgeColor }: any) {
   const badgeColors: Record<string, string> = {
-    green: 'bg-green-500',
-    red: 'bg-red-500',
+    green: 'bg-success',
+    red: 'bg-destructive',
     orange: 'bg-orange-500',
   };
 
@@ -319,7 +319,7 @@ function TestimonialsSection({ testimonials: _testimonials }: any) {
     <section className="py-20 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full filter blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">

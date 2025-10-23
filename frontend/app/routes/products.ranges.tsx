@@ -274,8 +274,8 @@ export default function ProductsRanges() {
                 <p className="text-sm font-medium text-gray-600">Actives</p>
                 <p className="text-2xl font-bold text-green-600">{stats.active}</p>
               </div>
-              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                <div className="h-3 w-3 rounded-full bg-green-500" />
+              <div className="h-8 w-8 rounded-full bg-success/15 flex items-center justify-center">
+                <div className="h-3 w-3 rounded-full bg-success" />
               </div>
             </div>
           </CardContent>
@@ -418,7 +418,7 @@ export default function ProductsRanges() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div 
-                        className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                        className="bg-primary h-1.5 rounded-full transition-all duration-300"
                         style={{ width: `${range.sales_performance}%` }}
                       />
                     </div>
@@ -464,7 +464,7 @@ export default function ProductsRanges() {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-green-500 h-2 rounded-full"
+                      className="bg-success h-2 rounded-full"
                       style={{ width: `${(stats.active / stats.total) * 100}%` }}
                     />
                   </div>
@@ -475,7 +475,7 @@ export default function ProductsRanges() {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-yellow-500 h-2 rounded-full"
+                      className="bg-warning h-2 rounded-full"
                       style={{ width: `${(stats.top / stats.total) * 100}%` }}
                     />
                   </div>

@@ -121,10 +121,10 @@ const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
   }[level] || 'bg-gray-500 text-white border-gray-600');
 
   const getDotColor = (level: string) => ({
-    'critical': 'bg-red-500',
+    'critical': 'bg-destructive',
     'high': 'bg-orange-500', 
-    'medium': 'bg-yellow-500',
-    'low': 'bg-green-500'
+    'medium': 'bg-warning',
+    'low': 'bg-success'
   }[level] || 'bg-gray-500');
 
   return (

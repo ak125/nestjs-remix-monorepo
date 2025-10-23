@@ -251,7 +251,7 @@ export default function VehiclesIndex() {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-success rounded-full"></div>
               <span className="text-sm text-green-600 font-medium">
                 Opérationnel
               </span>
