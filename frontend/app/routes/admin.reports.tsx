@@ -179,7 +179,7 @@ export default function AdminReports() {
 
       {/* Message d'erreur si nécessaire */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive bg-destructive/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="h-5 w-5" />

@@ -60,11 +60,11 @@ function StatItem({
   const getVariantStyles = () => {
     switch (variant) {
       case 'success':
-        return 'border-green-200 bg-green-50 text-green-900';
+        return 'border-success bg-success/10 text-green-900';
       case 'warning':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-900';
+        return 'border-warning bg-warning/10 text-yellow-900';
       case 'danger':
-        return 'border-red-200 bg-red-50 text-red-900';
+        return 'border-destructive bg-destructive/10 text-red-900';
       default:
         return 'border-gray-200 bg-white text-gray-900';
     }

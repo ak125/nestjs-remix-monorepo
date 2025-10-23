@@ -117,9 +117,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'border-l-4 border-green-500 bg-green-50';
-    if (score >= 60) return 'border-l-4 border-yellow-500 bg-yellow-50';
-    return 'border-l-4 border-red-500 bg-red-50';
+    if (score >= 80) return 'border-l-4 border-success bg-success/10';
+    if (score >= 60) return 'border-l-4 border-warning bg-warning/10';
+    return 'border-l-4 border-destructive bg-destructive/10';
   };
 
   const getScoreIcon = (score: number) => {
@@ -148,9 +148,9 @@ function SecurityScoreCard({ score }: { score: number }) {
 
 function RecommendationCard({ recommendation }: { recommendation: SecurityData['recommendations'][0] }) {
   const priorityColors = {
-    high: "border-red-200 bg-red-50",
-    medium: "border-yellow-200 bg-yellow-50", 
-    low: "border-blue-200 bg-blue-50"
+    high: "border-destructive bg-destructive/10",
+    medium: "border-warning bg-warning/10", 
+    low: "border-primary bg-primary/10"
   };
 
   const priorityBadges = {

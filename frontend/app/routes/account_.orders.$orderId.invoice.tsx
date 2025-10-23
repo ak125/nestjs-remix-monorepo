@@ -339,7 +339,7 @@ export default function OrderInvoice() {
               </div>
             </div>
             
-            <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+            <div className="border border-primary bg-primary/10 rounded-lg p-4">
               <p className="text-sm">
                 En cliquant sur le bouton « Payer maintenant », vous acceptez de vous conformer aux{' '}
                 <a 

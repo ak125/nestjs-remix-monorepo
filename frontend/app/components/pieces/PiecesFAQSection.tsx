@@ -55,7 +55,7 @@ export function PiecesFAQSection({ items }: PiecesFAQSectionProps) {
           return (
             <div 
               key={item.id}
-              className={`transition-colors ${isOpen ? 'bg-green-50/50' : 'hover:bg-muted'}`}
+              className={`transition-colors ${isOpen ? 'bg-success/10' : 'hover:bg-muted'}`}
             >
               <button
                 onClick={() => toggleItem(item.id)}

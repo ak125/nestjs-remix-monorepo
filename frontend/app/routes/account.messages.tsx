@@ -166,7 +166,7 @@ function SidebarItem({
       to={href}
       className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
         active 
-          ? 'bg-blue-50 text-blue-700' 
+          ? 'bg-primary/10 text-primary' 
           : 'text-gray-700 hover:bg-gray-100'
       }`}
     >
@@ -296,7 +296,7 @@ export default function AccountMessages() {
         {/* Messages urgents */}
         {urgentMessages.length > 0 && (
           <div className="p-4">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive bg-destructive/10">
               <CardHeader>
                 <CardTitle className="text-red-800 flex items-center gap-2">
                   <Bell className="w-5 h-5" />

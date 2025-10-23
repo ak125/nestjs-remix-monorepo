@@ -30,9 +30,9 @@ export function StatCard({
 }: StatCardProps) {
   const variants = {
     default: "border-gray-200 bg-white",
-    success: "border-green-200 bg-green-50",
-    warning: "border-yellow-200 bg-yellow-50", 
-    danger: "border-red-200 bg-red-50"
+    success: "border-success bg-success/10",
+    warning: "border-warning bg-warning/10", 
+    danger: "border-destructive bg-destructive/10"
   };
 
   const iconVariants = {

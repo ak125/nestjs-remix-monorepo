@@ -126,7 +126,7 @@ export default function RegisterPage() {
         {/* Error Messages */}
         {error && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive bg-destructive/10">
               <CardContent className="pt-6">
                 <p className="text-sm text-red-800 flex items-center gap-2">
                   <span className="text-lg">❌</span>
