@@ -45,7 +45,7 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
     <Card className={`${className} border-green-200 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-green-800">
-          <div className="p-1 bg-green-100 rounded-lg">
+          <div className="p-1 bg-success/10 rounded-lg">
             <Search className="h-5 w-5" />
           </div>
           Module SEO Enterprise

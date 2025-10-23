@@ -205,7 +205,7 @@ export default function ReviewDetailPage() {
               {/* En-tête de l'avis */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>

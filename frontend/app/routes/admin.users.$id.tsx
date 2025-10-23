@@ -309,7 +309,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-blue-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <ShoppingBag className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</span>
@@ -323,7 +323,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-green-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-green-100 rounded-lg">
+              <div className="p-2.5 bg-success/10 rounded-lg">
                 <CreditCard className="w-6 h-6 text-green-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Dépensé</span>
@@ -339,7 +339,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-purple-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Panier moyen</span>
@@ -355,7 +355,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-orange-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-orange-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <CheckCircle className="w-6 h-6 text-orange-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Taux</span>
@@ -373,7 +373,7 @@ export default function UserDetails() {
         {/* Informations personnelles */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">

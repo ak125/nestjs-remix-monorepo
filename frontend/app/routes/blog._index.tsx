@@ -529,7 +529,7 @@ export default function BlogIndex() {
             {/* Montage et Entretien */}
             <Link to="/blog-pieces-auto/conseils" className="group">
               <Card className="h-full border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-muted rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Wrench className="w-8 h-8" />
@@ -569,7 +569,7 @@ export default function BlogIndex() {
             {/* Constructeurs */}
             <Link to="/blog-pieces-auto/auto" className="group">
               <Card className="h-full border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-muted rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Car className="w-8 h-8" />
@@ -609,7 +609,7 @@ export default function BlogIndex() {
             {/* Guide d'Achat */}
             <Link to="/blog-pieces-auto/guide" className="group">
               <Card className="h-full border-2 border-green-200 hover:border-green-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-success/10 rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <ShoppingCart className="w-8 h-8" />

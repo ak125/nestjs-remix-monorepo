@@ -212,7 +212,7 @@ function EcommerceFuture() {
 function InfoCard({ icon, title, description }: any) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100">
-      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
+      <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-blue-600 mb-4">
         {icon}
       </div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>

@@ -419,7 +419,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Total utilisateurs</span>
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
             </div>
@@ -436,7 +436,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Utilisateurs actifs</span>
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <UserCheck className="h-4 w-4 text-green-600" />
               </div>
             </div>
@@ -453,7 +453,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Utilisateurs Pro</span>
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Award className="h-4 w-4 text-purple-600" />
               </div>
             </div>
@@ -517,7 +517,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Filter className="w-5 h-5 text-blue-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900">Recherche et filtres</h2>
@@ -642,7 +642,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
+                <div className="p-2 bg-muted rounded-lg">
                   <Users className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>

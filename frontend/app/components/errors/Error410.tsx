@@ -94,7 +94,7 @@ export function Error410({
             </p>
             
             {url && (
-              <div className="mt-4 p-4 bg-orange-100 rounded-lg">
+              <div className="mt-4 p-4 bg-muted rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">URL demandée :</p>
                 <p className="font-mono text-sm text-gray-800 break-all">{url}</p>
               </div>

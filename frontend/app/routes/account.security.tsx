@@ -220,7 +220,7 @@ export default function AccountSecurity() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Key className="w-5 h-5 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Mot de passe</h3>
@@ -256,7 +256,7 @@ export default function AccountSecurity() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Smartphone className="w-5 h-5 text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Authentification 2FA</h3>
@@ -300,7 +300,7 @@ export default function AccountSecurity() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Clock className="w-5 h-5 text-purple-600" />
             </div>
             <h3 className="font-semibold text-gray-900">Sessions actives ({security.sessions.active})</h3>

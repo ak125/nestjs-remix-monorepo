@@ -103,7 +103,7 @@ export default function VehicleSelectorsDemo() {
             </div>
             
             {selectedModel && selectedType && selectedYear && (
-              <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded">
+              <div className="mt-4 p-4 bg-success/10 border border-green-300 rounded">
                 <p className="text-green-800 font-medium">
                   ✅ Sélection complète ! Vous pouvez maintenant rechercher des pièces compatibles.
                 </p>

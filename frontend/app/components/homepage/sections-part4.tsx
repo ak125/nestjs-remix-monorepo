@@ -280,7 +280,7 @@ function ContactInfoCard({ icon, title, content, subtitle }: any) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
           {icon}
         </div>
         <div>

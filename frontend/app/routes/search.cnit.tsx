@@ -267,7 +267,7 @@ export default function SearchCnitPage() {
                 <code className="bg-white px-3 py-2 rounded border">GHI123JKL456</code>
               </div>
             </div>
-            <div className="bg-green-100 p-4 rounded-lg">
+            <div className="bg-success/10 p-4 rounded-lg">
               <h4 className="font-medium text-green-900 mb-2">Différence avec le code mine :</h4>
               <ul className="text-sm text-green-700 space-y-1">
                 <li>• <strong>Code mine (J.1)</strong> : Identifiant constructeur (plus technique)</li>
