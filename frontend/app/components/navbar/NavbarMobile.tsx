@@ -121,7 +121,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white">
+        <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
           <div className="flex items-center gap-2">
             <Home className="h-5 w-5" />
             <h2 className="font-semibold">Menu</h2>

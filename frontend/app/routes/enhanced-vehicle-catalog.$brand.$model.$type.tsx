@@ -206,7 +206,7 @@ export function ErrorBoundary() {
           </p>
           <a
             href="/"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-blue-700"
           >
             Retourner à l'accueil
           </a>
@@ -226,7 +226,7 @@ export function ErrorBoundary() {
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-blue-700"
         >
           Recharger la page
         </button>

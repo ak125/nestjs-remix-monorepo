@@ -206,7 +206,7 @@ export function ContactSection() {
                 </div>
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors"
                 >
                   Démarrer
                 </button>
@@ -469,7 +469,7 @@ export function LiveChatButton() {
 function ChatMessage({ isBot, message, time }: any) {
   return (
     <div className={`flex ${isBot ? 'justify-start' : 'justify-end'}`}>
-      <div className={`max-w-[80%] ${isBot ? 'bg-gray-100' : 'bg-blue-600 text-white'} rounded-xl p-3`}>
+      <div className={`max-w-[80%] ${isBot ? 'bg-gray-100' : 'bg-primary text-primary-foreground'} rounded-xl p-3`}>
         <p className="text-sm">{message}</p>
         <p className={`text-xs mt-1 ${isBot ? 'text-gray-500' : 'text-blue-100'}`}>{time}</p>
       </div>

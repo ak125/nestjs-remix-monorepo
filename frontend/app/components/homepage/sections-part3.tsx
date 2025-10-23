@@ -309,7 +309,7 @@ export function FAQSection() {
             <p className="text-gray-600 mb-4">Vous ne trouvez pas votre réponse ?</p>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold shadow-lg transition-all"
             >
               <MessageCircle className="w-5 h-5" />
               Contactez notre support

@@ -457,7 +457,7 @@ export default function IndexV3() {
             Nos experts sont là pour vous accompagner dans votre recherche
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Link to="/contact">
                 <Phone className="mr-2 h-5 w-5" />
                 01 48 49 78 69
