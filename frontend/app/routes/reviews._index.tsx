@@ -2,6 +2,7 @@
  * Page Gestion des Avis Clients
  * Interface complète pour la modération et gestion des avis
  */
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
 import { 
@@ -129,29 +130,21 @@ export default function ReviewsPage() {
     ));
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusVariant = (status: string): "success" | "error" | "warning" | "default" => {
     switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "approved": return "success";
+      case "rejected": return "error";
+      case "pending": return "warning";
+      default: return "default";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "approved":
-        return "Approuvé";
-      case "rejected":
-        return "Rejeté";
-      case "pending":
-        return "En attente";
-      default:
-        return "Inconnu";
+      case "approved": return "Approuvé";
+      case "rejected": return "Rejeté";
+      case "pending": return "En attente";
+      default: return "Inconnu";
     }
   };
 
@@ -423,9 +416,9 @@ export default function ReviewsPage() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(review.status)}`}>
+                          <Badge variant={getStatusVariant(review.status)} size="sm">
                             {getStatusText(review.status)}
-                          </span>
+                          </Badge>
                           
                           <div className="relative">
                             <button
