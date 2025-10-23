@@ -328,7 +328,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
               <Link
                 to="/login"
                 onClick={closeMenu}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium"
               >
                 <LogIn className="h-4 w-4" />
                 Connexion

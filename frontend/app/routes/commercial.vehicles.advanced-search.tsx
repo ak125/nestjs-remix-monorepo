@@ -693,7 +693,7 @@ export default function AdvancedVehicleSearch() {
             </p>
             <button
               onClick={() => handleSearch()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg"
             >
               Relancer la recherche
             </button>

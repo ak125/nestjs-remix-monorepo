@@ -155,7 +155,7 @@ export const ModernOrdersComponent: React.FC = () => {
           <button
             type="button"
             onClick={() => showSuccess('Exemple de notification de succès')}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-md"
           >
             Test Notification
           </button>

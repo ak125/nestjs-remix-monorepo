@@ -319,21 +319,21 @@ export default function CommercialShippingIndex() {
           <div className="flex gap-3">
             <Link
               to="/commercial/shipping/create"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+              className="bg-success hover:bg-success/90 text-success-foreground px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <Package className="w-4 h-4" />
               Créer expédition
             </Link>
             <Link
               to="/commercial/shipping/tracking"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <Eye className="w-4 h-4" />
               Suivi temps réel
             </Link>
             <Link
               to="/commercial/returns"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
               Retours

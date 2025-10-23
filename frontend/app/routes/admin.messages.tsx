@@ -264,7 +264,7 @@ export default function AdminMessages() {
             </button>
             <Link 
               to="/admin/messages/new" 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Send className="h-4 w-4" />
               Nouveau Message

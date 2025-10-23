@@ -50,7 +50,7 @@ export function PiecesBuyingGuide({ guide }: PiecesBuyingGuideProps) {
             <div className="space-y-3">
               {guide.tips.map((tip, index) => (
                 <div key={index} className="flex items-start gap-3 bg-white rounded-lg p-3 shadow-sm">
-                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  <div className="flex-shrink-0 w-6 h-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">
                     {index + 1}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed flex-1">

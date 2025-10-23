@@ -194,7 +194,7 @@ function BlogCard({ article }: any) {
           alt={article.title}
           className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
         />
-        <div className="absolute top-4 left-4 px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-semibold">
+        <div className="absolute top-4 left-4 px-3 py-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-xs font-semibold">
           {article.category}
         </div>
       </div>

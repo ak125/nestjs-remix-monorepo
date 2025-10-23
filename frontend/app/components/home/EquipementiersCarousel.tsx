@@ -113,7 +113,7 @@ export function EquipementiersCarousel({
             <div className="text-center mt-8">
               <Link 
                 to="/equipementiers"
-                className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                className="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
               >
                 <span>Voir tous nos partenaires</span>
                 <ChevronRight className="ml-2 h-4 w-4" />
