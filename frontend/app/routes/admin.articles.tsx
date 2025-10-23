@@ -218,7 +218,7 @@ export default function AdminArticlesPage() {
             <div className="flex items-center space-x-4">
               <Link
                 to="/admin/articles/new"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
               >
                 <PlusIcon className="w-5 h-5" />
                 <span>Nouvel Article</span>

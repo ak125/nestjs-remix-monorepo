@@ -117,7 +117,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
           {/* Header */}
           <div className="flex h-16 items-center border-b border-gray-200 px-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">C</span>
               </div>
               <span className="text-lg font-semibold text-gray-900">Commercial</span>

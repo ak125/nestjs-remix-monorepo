@@ -48,7 +48,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
   
   return (
     <nav 
-      className={`px-3 py-2 bg-blue-600 text-white flex justify-between items-center sticky top-0 z-50 transition-shadow duration-300 ${
+      className={`px-3 py-2 bg-primary text-primary-foreground flex justify-between items-center sticky top-0 z-50 transition-shadow duration-300 ${
         isScrolled ? 'shadow-lg' : ''
       }`} 
       aria-label="Navigation principale"

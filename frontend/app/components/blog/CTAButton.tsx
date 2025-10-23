@@ -37,7 +37,7 @@ export default function CTAButton({ anchor, link, className = "" }: CTAButtonPro
                 </p>
               </div>
             </div>
-            <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center group-hover:bg-blue-700 transition-colors shadow-lg">
+            <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center group-hover:bg-primary/90 transition-colors shadow-lg">
               <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

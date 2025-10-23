@@ -498,7 +498,7 @@ function AdvancedSearchBar() {
               onClick={() => setSearchType('reference')}
               className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                 searchType === 'reference' 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+                  ? 'bg-primary text-primary-foreground shadow-lg' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -509,7 +509,7 @@ function AdvancedSearchBar() {
               onClick={() => setSearchType('vehicle')}
               className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                 searchType === 'vehicle' 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+                  ? 'bg-primary text-primary-foreground shadow-lg' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
@@ -520,7 +520,7 @@ function AdvancedSearchBar() {
               onClick={() => setSearchType('category')}
               className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                 searchType === 'category' 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+                  ? 'bg-primary text-primary-foreground shadow-lg' 
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >

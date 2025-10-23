@@ -300,7 +300,7 @@ export default function SearchPage() {
                         onClick={() => setViewMode('grid')}
                         className={`px-3 py-2 text-sm ${
                           viewMode === 'grid' 
-                            ? 'bg-blue-600 text-white' 
+                            ? 'bg-primary text-primary-foreground' 
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                         } rounded-l-md border border-gray-300`}
                         title="Vue en grille"
@@ -311,7 +311,7 @@ export default function SearchPage() {
                         onClick={() => setViewMode('list')}
                         className={`px-3 py-2 text-sm ${
                           viewMode === 'list' 
-                            ? 'bg-blue-600 text-white' 
+                            ? 'bg-primary text-primary-foreground' 
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                         } rounded-r-md border-l-0 border border-gray-300`}
                         title="Vue en liste"

@@ -258,7 +258,7 @@ const Button: React.FC<{
   `;
   
   const variants = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-sm',
+    default: 'bg-primary text-primary-foreground hover:bg-blue-700 active:bg-blue-800 shadow-sm',
     outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100',
     ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
   };

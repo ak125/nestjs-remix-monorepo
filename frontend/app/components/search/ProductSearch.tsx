@@ -80,8 +80,8 @@ export function ProductSearch({
     ? 'w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32'
     : 'w-full px-4 py-2 text-base text-gray-900 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-24';
   const buttonClass = isHero
-    ? 'absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2'
-    : 'absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm';
+    ? 'absolute right-2 top-2 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2'
+    : 'absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-blue-700 transition-colors text-sm';
   const defaultPlaceholder = isHero 
     ? 'Rechercher par référence, marque, modèle...'
     : 'Rechercher une pièce...';

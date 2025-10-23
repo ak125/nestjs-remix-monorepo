@@ -156,7 +156,7 @@ export function AddToCartButton({
     }
 
     if (piece.stock === "En stock") {
-      return "bg-blue-600 hover:bg-blue-700 text-white";
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
 
     return "bg-yellow-600 hover:bg-yellow-700 text-white";

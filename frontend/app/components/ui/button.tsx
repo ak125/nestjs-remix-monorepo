@@ -18,7 +18,7 @@ const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         oauth: "bg-transparent border-2 border-darkIron text-darkIron hover:textaf3a-bleuClair/80",
         // Design system standardized variants
-        blue: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500",
+        blue: "bg-primary text-primary-foreground hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500",
         green: "bg-green-600 text-white hover:bg-green-700 active:bg-green-800 focus:ring-green-500",
         red: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus:ring-red-500",
         yellow: "bg-yellow-500 text-white hover:bg-yellow-600 active:bg-yellow-700 focus:ring-yellow-500",
