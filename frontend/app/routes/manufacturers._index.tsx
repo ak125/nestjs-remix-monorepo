@@ -146,7 +146,7 @@ export default function ManufacturersIndex() {
       {/* Header */}
       <div className="text-center mb-12">
         <div className="flex justify-center mb-4">
-          <div className="p-3 bg-blue-100 rounded-full">
+          <div className="p-3 bg-muted rounded-full">
             <Car className="h-8 w-8 text-blue-600" />
           </div>
         </div>

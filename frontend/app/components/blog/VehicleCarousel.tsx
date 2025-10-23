@@ -70,7 +70,7 @@ const VehicleCarousel: React.FC<VehicleCarouselProps> = ({
     <section className="my-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg">
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-3 bg-blue-100 dark:bg-blue-900/30 px-6 py-3 rounded-full mb-4">
+        <div className="inline-flex items-center gap-3 bg-muted dark:bg-blue-900/30 px-6 py-3 rounded-full mb-4">
           <Car className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {dynamicTitle}
@@ -218,7 +218,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
             {/* Puissance */}
             <div className="flex items-center gap-2 text-sm">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <div className="p-2 bg-muted dark:bg-blue-900/30 rounded-lg">
                 <Gauge className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -229,7 +229,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
 
             {/* Carburant */}
             <div className="flex items-center gap-2 text-sm">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <div className="p-2 bg-success/10 dark:bg-green-900/30 rounded-lg">
                 <Fuel className="w-4 h-4 text-green-600 dark:text-green-400" />
               </div>
               <div>

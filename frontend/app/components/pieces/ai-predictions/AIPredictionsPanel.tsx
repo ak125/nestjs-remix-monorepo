@@ -208,7 +208,7 @@ const CostOptimizationCard: React.FC<{
             <span className="text-white text-sm">🔧</span>
           </div>
           <h4 className="text-lg font-bold text-blue-800">Maintenance Prédictive</h4>
-          <div className="ml-auto bg-blue-100 rounded-full px-2 py-1">
+          <div className="ml-auto bg-muted rounded-full px-2 py-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" />
           </div>
         </div>

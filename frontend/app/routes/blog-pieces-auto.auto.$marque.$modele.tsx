@@ -676,7 +676,7 @@ export default function BlogPiecesAutoMarqueModele() {
 
               <Card className="border-2 border-purple-100 hover:border-purple-300 transition-colors">
                 <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                     <Wrench className="w-8 h-8 text-purple-600" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">Motorisations</h3>
@@ -688,7 +688,7 @@ export default function BlogPiecesAutoMarqueModele() {
 
               <Card className="border-2 border-blue-100 hover:border-blue-300 transition-colors">
                 <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>

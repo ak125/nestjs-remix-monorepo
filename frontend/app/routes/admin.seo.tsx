@@ -421,7 +421,7 @@ export default function SeoAdmin() {
                 
                 <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
+                    <div className="p-2 bg-muted rounded-lg">
                       ⚠️
                     </div>
                     <div>
@@ -677,7 +677,7 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="bg-white p-4 rounded-lg border-2 border-blue-200 space-y-3">
                   <div className="flex items-center gap-2 text-xs text-green-600">
-                    <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 bg-success/10 rounded-full flex items-center justify-center">
                       🌐
                     </div>
                     automecanik.com{selectedUrl || '/votre-page'}

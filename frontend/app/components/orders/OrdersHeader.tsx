@@ -15,7 +15,7 @@ export function OrdersHeader({ permissions, userRole, totalOrders }: OrdersHeade
       <div className="flex items-center justify-between">
         {/* Titre & Badge */}
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-lg">
+          <div className="p-3 bg-muted rounded-lg">
             <Package className="w-6 h-6 text-blue-600" />
           </div>
           <div>

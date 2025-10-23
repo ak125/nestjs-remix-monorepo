@@ -76,7 +76,7 @@ export function OrderDetailsModal({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Package className="w-6 h-6 text-blue-600" />
             </div>
             <div>
