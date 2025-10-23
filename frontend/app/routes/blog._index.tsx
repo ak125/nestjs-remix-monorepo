@@ -427,7 +427,7 @@ export default function BlogIndex() {
                     
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="secondary" className="bg-info/20 text-info hover:bg-blue-200">
+                        <Badge variant="secondary" className="bg-info/20 text-info hover:bg-primary/30">
                           {getTypeLabel(article.type)}
                         </Badge>
                         {article.difficulty && (

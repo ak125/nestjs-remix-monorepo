@@ -18,9 +18,9 @@ const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         oauth: "bg-transparent border-2 border-darkIron text-darkIron hover:textaf3a-bleuClair/80",
         // Design system standardized variants
-        blue: "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-blue-800 focus:ring-blue-500",
-        green: "bg-success text-white hover:bg-success/90 active:bg-green-800 focus:ring-green-500",
-        red: "bg-destructive text-white hover:bg-destructive/90 active:bg-red-800 focus:ring-red-500",
+        blue: "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/95 focus:ring-blue-500",
+        green: "bg-success text-white hover:bg-success/90 active:bg-success/95 focus:ring-green-500",
+        red: "bg-destructive text-white hover:bg-destructive/90 active:bg-destructive/95 focus:ring-red-500",
         yellow: "bg-warning text-white hover:bg-warning active:bg-warning/90 focus:ring-yellow-500",
         purple: "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 focus:ring-purple-500",
         orange: "bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800 focus:ring-orange-500",

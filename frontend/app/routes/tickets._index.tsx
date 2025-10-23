@@ -189,7 +189,7 @@ export default function TicketsPage() {
                 className={`px-3 py-1 text-sm rounded-md ${
                   currentStatus === filter.value
                     ? "bg-primary text-primary-foreground"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    : "bg-gray-200 text-gray-700 hover:bg-muted/50"
                 }`}
               >
                 {filter.label}

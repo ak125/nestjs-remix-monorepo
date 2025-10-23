@@ -501,7 +501,7 @@ export default function BlogPiecesAutoIndex() {
                         className={`w-2 h-2 rounded-full transition-all ${
                           Math.floor(currentModelIndex / modelsPerPage) === index
                             ? "bg-success w-8"
-                            : "bg-gray-300 hover:bg-gray-400"
+                            : "bg-muted/50 hover:bg-gray-400"
                         }`}
                         aria-label={`Page ${index + 1}`}
                       />
@@ -599,7 +599,7 @@ export default function BlogPiecesAutoIndex() {
                   {/* Right Column */}
                   <div className="flex flex-col justify-center">
                     <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 border-2 border-blue-200 shadow-inner">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full blur-3xl" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30/30 rounded-full blur-3xl" />
                       <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-3xl" />
                       
                       <div className="relative">
@@ -615,7 +615,7 @@ export default function BlogPiecesAutoIndex() {
 
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">Navigation par marque</span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -627,7 +627,7 @@ export default function BlogPiecesAutoIndex() {
                             <span className="text-gray-700 font-medium">Filtrage par motorisation</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">Recherche par année</span>
                           </div>
                         </div>
@@ -651,7 +651,7 @@ export default function BlogPiecesAutoIndex() {
       {/* CTA */}
       <section className="relative py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/60/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
         <div className="container mx-auto px-4 relative z-10">
@@ -684,15 +684,15 @@ export default function BlogPiecesAutoIndex() {
 
             <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-blue-100">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Pièces OEM garanties</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Livraison rapide 24-48h</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Support technique gratuit</span>
               </div>
             </div>

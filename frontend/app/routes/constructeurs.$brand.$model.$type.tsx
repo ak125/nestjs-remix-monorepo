@@ -542,7 +542,7 @@ export default function VehicleDetailPage() {
           <div className="mb-12">
             <div className="flex items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Catalogue {seo.h1}</h2>
-              <div className="flex-1 h-px bg-gray-300 ml-4"></div>
+              <div className="flex-1 h-px bg-muted/50 ml-4"></div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -582,7 +582,7 @@ export default function VehicleDetailPage() {
               <h2 className="text-2xl font-bold text-gray-900">
                 CATALOGUE PIÈCES AUTO {vehicle.marque_name} LES PLUS vendus
               </h2>
-              <div className="flex-1 h-px bg-gray-300 ml-4"></div>
+              <div className="flex-1 h-px bg-muted/50 ml-4"></div>
             </div>
             
             {/* Carousel de pièces populaires (comme en PHP avec MultiCarousel) */}

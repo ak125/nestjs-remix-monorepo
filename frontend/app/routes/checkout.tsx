@@ -194,7 +194,7 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-destructive/15 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{error || "Erreur lors du chargement"}</p>
           </div>
           <Link to="/cart" className="mt-4 inline-block text-blue-600 hover:underline">

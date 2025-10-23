@@ -431,7 +431,7 @@ function CartItem({ item, onUpdate, onRemove }: {
                 <button
                   onClick={() => setShowConfirmDelete(false)}
                   disabled={isRemoving}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
+                  className="flex-1 bg-gray-200 hover:bg-muted/50 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
                 >
                   Annuler
                 </button>

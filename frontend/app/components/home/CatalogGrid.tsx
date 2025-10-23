@@ -242,7 +242,7 @@ export function CatalogGrid({
                     </h4>
                     
                     {getItemCount(item) > 0 && (
-                      <div className="bg-yellow-100 text-yellow-700 text-xs py-1 px-2 rounded-full inline-block">
+                      <div className="bg-warning/15 text-yellow-700 text-xs py-1 px-2 rounded-full inline-block">
                         {getItemCount(item).toLocaleString()}
                       </div>
                     )}

@@ -385,7 +385,7 @@ export default function AdminDashboard() {
                 {realTimeStats.activeUsers || 0} actifs maintenant
               </p>
             </div>
-            <div className="bg-blue-200 p-3 rounded-full">
+            <div className="bg-primary/30 p-3 rounded-full">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
           </div>
@@ -421,7 +421,7 @@ export default function AdminDashboard() {
                 {realTimeStats.completedOrders || 0} complétées ({realTimeStats.conversionRate || 0}%)
               </p>
             </div>
-            <div className="bg-green-200 p-3 rounded-full">
+            <div className="bg-success/30 p-3 rounded-full">
               <ShoppingCart className="h-8 w-8 text-green-600" />
             </div>
           </div>
@@ -478,7 +478,7 @@ export default function AdminDashboard() {
                 Commandes à traiter
               </p>
             </div>
-            <div className="bg-yellow-200 p-3 rounded-full">
+            <div className="bg-warning/30 p-3 rounded-full">
               <RefreshCw className="h-8 w-8 text-yellow-600" />
             </div>
           </div>
@@ -875,7 +875,7 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold text-blue-900">{realTimeStats.systemHealth?.cpuUsage || 0}%</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full" 
+                      className="bg-primary h-2 rounded-full" 
                       style={{ width: `${realTimeStats.systemHealth?.cpuUsage || 0}%` }}
                     ></div>
                   </div>
