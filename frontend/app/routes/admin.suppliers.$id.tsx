@@ -6,6 +6,7 @@
  */
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import { requireUser } from "../auth/unified.server";
 
@@ -185,13 +186,7 @@ export default function SupplierDetail() {
           </div>
           
           <div className="flex items-center space-x-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              supplier.status === 'active' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {supplier.status === 'active' ? 'Actif' : 'Inactif'}
-            </span>
+            <Badge className="px-3 py-1 rounded-full text-sm font-medium " variant={supplier.status === 'active' ? 'success' : 'error'}>\n  {supplier.status === 'active' ? 'Actif' : 'Inactif'}\n</Badge>
           </div>
         </div>
 
@@ -412,13 +407,7 @@ export default function SupplierDetail() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          link.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {link.isActive ? 'Actif' : 'Inactif'}
-                        </span>
+                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={link.isActive ? 'success' : 'error'}>\n  {link.isActive ? 'Actif' : 'Inactif'}\n</Badge>
                       </td>
                     </tr>
                   ))}

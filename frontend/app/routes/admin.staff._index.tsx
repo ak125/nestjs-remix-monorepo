@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 import { requireAdmin } from "../auth/unified.server";
@@ -410,13 +411,7 @@ export default function AdminStaff() {
                       {staff.cnfa_tel}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        staff.cnfa_activ === '1' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {staff.cnfa_activ === '1' ? 'Actif' : 'Inactif'}
-                      </span>
+                      <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={staff.cnfa_activ === '1' ? 'success' : 'error'}>\n  {staff.cnfa_activ === '1' ? 'Actif' : 'Inactif'}\n</Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
