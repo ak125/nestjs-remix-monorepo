@@ -31,7 +31,7 @@ const navigationItems: NavigationItem[] = [
     icon: Car,
     description: "Histoire et modèles des marques",
     color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-primary/10",
     borderColor: "border-blue-200",
     count: 35,
   },
