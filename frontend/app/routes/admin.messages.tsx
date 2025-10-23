@@ -4,6 +4,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { 
   MessageSquare, 
@@ -388,13 +389,10 @@ export default function AdminMessages() {
               </select>
             </div>
             <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-              >
+              <Button className="w-full px-4 py-2  rounded-md flex items-center justify-center gap-2" variant="blue" type="submit">
                 <Search className="h-4 w-4" />
                 Filtrer
-              </button>
+              </Button>
             </div>
           </Form>
         </div>

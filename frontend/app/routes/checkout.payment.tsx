@@ -1,4 +1,5 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Form, useLoaderData, useNavigation, useActionData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { requireAuth } from "../auth/unified.server";
@@ -380,11 +381,8 @@ export default function PaymentPage() {
                   </label>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isProcessing}
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
+                <Button className="w-full  py-3 px-4 rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
+                  disabled={isProcessing}>
                   {isProcessing ? (
                     <span className="flex items-center justify-center">
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -396,7 +394,7 @@ export default function PaymentPage() {
                   ) : (
                     "Procéder au paiement"
                   )}
-                </button>
+                </Button>
               </Form>
             </div>
           </div>

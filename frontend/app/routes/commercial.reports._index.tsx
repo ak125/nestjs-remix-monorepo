@@ -6,6 +6,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
   BarChart3, TrendingUp, TrendingDown, Download,
@@ -111,10 +112,10 @@ export default function CommercialReports() {
               ← Retour Dashboard
             </button>
           </Link>
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+          <Button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm" variant="blue">
             <Download className="mr-2 h-4 w-4" />
             Exporter Rapport
-          </button>
+          </Button>
         </div>
       </div>
 

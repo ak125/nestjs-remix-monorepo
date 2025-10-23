@@ -135,12 +135,7 @@ export default function SupplierDetail() {
             <p className="text-gray-600 mb-6">
               {error || "Le fournisseur demandé n'existe pas ou n'est plus accessible."}
             </p>
-            <Link
-              to="/admin/suppliers"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              ← Retour à la liste des fournisseurs
-            </Link>
+            <Button className="px-4 py-2  rounded-lg" variant="blue" asChild><Link to="/admin/suppliers">← Retour à la liste des fournisseurs</Link></Button>
           </div>
         </div>
       </div>

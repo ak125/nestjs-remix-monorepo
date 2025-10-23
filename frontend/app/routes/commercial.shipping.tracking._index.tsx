@@ -4,6 +4,7 @@
 
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
   Clock, CheckCircle, Truck,
@@ -315,10 +316,10 @@ export default function ShippingTracking() {
               <Package className="w-4 h-4" />
               Créer expédition
             </Link>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+            <Button className="px-4 py-2 rounded-lg flex items-center gap-2" variant="green">
               <RefreshCw className="w-4 h-4" />
               Actualiser
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -249,24 +249,9 @@ export default function InvoicesIndex() {
       <div className="bg-white rounded-lg shadow mb-6">
         <div className="p-6">
           <div className="flex gap-4">
-            <Link
-              to="/admin/invoices/new"
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              ➕ Nouvelle Facture
-            </Link>
-            <Link
-              to="/admin/invoices/stats"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              📊 Statistiques Détaillées
-            </Link>
-            <Link
-              to="/admin/invoices/export"
-              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-            >
-              📥 Exporter
-            </Link>
+            <Button className="px-4 py-2  rounded-md" variant="green" asChild><Link to="/admin/invoices/new">➕ Nouvelle Facture</Link></Button>
+            <Button className="px-4 py-2  rounded-md" variant="blue" asChild><Link to="/admin/invoices/stats">📊 Statistiques Détaillées</Link></Button>
+            <Button className="px-4 py-2  rounded-md" variant="purple" asChild><Link to="/admin/invoices/export">📥 Exporter</Link></Button>
           </div>
         </div>
       </div>
@@ -407,12 +392,7 @@ export default function InvoicesIndex() {
       {invoices.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Aucune facture trouvée</p>
-          <Link
-            to="/admin/invoices/new"
-            className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Créer la première facture
-          </Link>
+          <Button className="mt-4   px-4 py-2  rounded-md" variant="blue" asChild><Link to="/admin/invoices/new">Créer la première facture</Link></Button>
         </div>
       )}
     </div>

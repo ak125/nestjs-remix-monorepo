@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Badge } from '@fafa/ui';
 
@@ -345,10 +346,10 @@ export function ProductCatalog({
                         <div className="flex items-center justify-between">
                           <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Disponible' : 'Indisponible'}\n</Badge>
                           
-                          <button className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors">
+                          <Button className="px-3 py-1 rounded-md text-xs" variant="blue">
                             <Eye className="h-3 w-3 inline mr-1" />
                             Voir
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -407,10 +408,10 @@ export function ProductCatalog({
                         <div className="flex items-center space-x-4">
                           <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Disponible' : 'Indisponible'}\n</Badge>
                           
-                          <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                          <Button className="px-4 py-2 rounded-md text-sm" variant="blue">
                             <Eye className="h-4 w-4 inline mr-2" />
                             Voir détails
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>

@@ -337,10 +337,10 @@ export default function ReturnsManagement() {
           </div>
           
           <div className="flex gap-3">
-            <button className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2">
+            <Button className="px-4 py-2 rounded-lg flex items-center gap-2" variant="orange">
               <Download className="w-4 h-4" />
               Export retours
-            </button>
+            </Button>
             <Link
               to="/commercial/returns/create"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
@@ -453,13 +453,10 @@ export default function ReturnsManagement() {
             </div>
 
             <div>
-              <button
-                type="submit"
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-              >
+              <Button className="w-full  px-4 py-2 rounded-lg flex items-center justify-center gap-2" variant="blue" type="submit">
                 <Filter className="w-4 h-4" />
                 Filtrer
-              </button>
+              </Button>
             </div>
           </div>
         </Form>

@@ -2,6 +2,7 @@
 // 🏗️ Composant d'affichage de la hiérarchie Familles → Gammes (sous-catégories)
 
 import { Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { useState, useEffect } from 'react';
 import { type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
 
@@ -314,12 +315,7 @@ export default function FamilyGammeHierarchy({
             >
               Tout replier
             </button>
-            <Link
-              to="/catalog"
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
-            >
-              Voir tout le catalogue
-            </Link>
+            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/catalog">Voir tout le catalogue</Link></Button>
           </div>
         </div>
       </div>

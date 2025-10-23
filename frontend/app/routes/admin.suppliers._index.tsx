@@ -7,6 +7,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
@@ -242,12 +243,7 @@ export default function SuppliersIndex() {
           >
             📤 Importer
           </Link>
-          <Link
-            to="/admin/suppliers/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm bg-blue-600 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            ➕ Nouveau Fournisseur
-          </Link>
+          <Button className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Nouveau Fournisseur</Link></Button>
         </div>
       </div>
       
@@ -349,12 +345,7 @@ export default function SuppliersIndex() {
                   }
                 </p>
                 <div className="mt-6">
-                  <Link
-                    to="/admin/suppliers/new"
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    ➕ Ajouter le premier fournisseur
-                  </Link>
+                  <Button className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Ajouter le premier fournisseur</Link></Button>
                 </div>
               </div>
             </div>
