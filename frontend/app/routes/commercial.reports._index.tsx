@@ -293,8 +293,7 @@ export default function CommercialReports() {
                     <div className="font-semibold">{formatCurrency(order.totalAmount)}</div>
                     <div className={`text-xs px-2 py-1 rounded-full ${
                       order.status === 'completed' || order.isPaid
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-orange-100 text-orange-800'
+                        ? 'success' : 'orange'
                     }`}>
                       {order.status === 'completed' || order.isPaid ? 'Payée' : 'En attente'}
                     </div>

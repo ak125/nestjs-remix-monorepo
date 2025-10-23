@@ -285,8 +285,7 @@ const PieceCard: React.FC<{ piece: Piece }> = ({ piece }) => (
       {/* Badge disponibilité */}
       <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
         piece.disponibilite 
-          ? 'bg-green-100 text-green-800' 
-          : 'bg-red-100 text-red-800'
+          ? 'success' : 'error'
       }`}>
         {piece.disponibilite ? '✅ Dispo' : '❌ Rupture'}
       </div>
