@@ -456,10 +456,10 @@ export default function ProductsAdmin() {
                   {products.map((product) => {
                     // Badge stock coloré
                     const stockBadge = product.stockStatus === 'out_of_stock' 
-                      ? { color: 'bg-red-100 text-red-800', label: 'Rupture' }
+                      ? { color: 'error', label: 'Rupture' }
                       : product.stockStatus === 'low_stock'
-                      ? { color: 'bg-orange-100 text-orange-800', label: 'Stock Faible' }
-                      : { color: 'bg-green-100 text-green-800', label: 'Disponible' };
+                      ? { color: 'orange', label: 'Stock Faible' }
+                      : { color: 'success', label: 'Disponible' };
 
                     return (
                       <tr key={product.id} className="hover:bg-gray-50">

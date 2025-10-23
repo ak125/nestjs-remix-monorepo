@@ -207,15 +207,15 @@ function getOrderBorderColor(status: string): string {
 function getStatusBadgeStyles(status: string): string {
   switch (status) {
     case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'warning';
     case 'PROCESSING':
-      return 'bg-blue-100 text-blue-800';
+      return 'info';
     case 'SHIPPED':
-      return 'bg-purple-100 text-purple-800';
+      return 'purple';
     case 'DELIVERED':
-      return 'bg-green-100 text-green-800';
+      return 'success';
     case 'CANCELLED':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -227,9 +227,9 @@ function getStatusBadgeStyles(status: string): string {
 function getPriorityBadgeStyles(priority: string): string {
   switch (priority) {
     case 'URGENT':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     case 'HIGH':
-      return 'bg-orange-100 text-orange-800';
+      return 'orange';
     default:
       return 'bg-gray-100 text-gray-800';
   }

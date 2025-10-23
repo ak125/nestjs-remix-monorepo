@@ -160,16 +160,16 @@ export function OrderLineActions({ orderId, line, onSuccess }: OrderLineActionsP
 
   const getStatusColor = (statusId: number): string => {
     const colors: Record<number, string> = {
-      1: 'bg-yellow-100 text-yellow-800',
-      2: 'bg-red-100 text-red-800',
-      3: 'bg-orange-100 text-orange-800',
-      4: 'bg-orange-100 text-orange-800',
-      5: 'bg-green-100 text-green-800',
-      6: 'bg-blue-100 text-blue-800',
-      91: 'bg-purple-100 text-purple-800',
-      92: 'bg-green-100 text-green-800',
-      93: 'bg-red-100 text-red-800',
-      94: 'bg-blue-100 text-blue-800',
+      1: 'warning',
+      2: 'error',
+      3: 'orange',
+      4: 'orange',
+      5: 'success',
+      6: 'info',
+      91: 'purple',
+      92: 'success',
+      93: 'error',
+      94: 'info',
     };
     return colors[statusId] || 'bg-gray-100 text-gray-800';
   };

@@ -279,10 +279,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const getLevelBadge = (level: number) => {
     const colors = {
       1: 'bg-gray-100 text-gray-800',
-      2: 'bg-blue-100 text-blue-800',
-      3: 'bg-green-100 text-green-800',
-      4: 'bg-purple-100 text-purple-800',
-      5: 'bg-yellow-100 text-yellow-800',
+      2: 'info',
+      3: 'success',
+      4: 'purple',
+      5: 'warning',
     };
     return colors[level as keyof typeof colors] || colors[1];
   };
