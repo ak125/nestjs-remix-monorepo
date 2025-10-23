@@ -87,28 +87,23 @@ export interface AlertProps
   onClose?: () => void;
 }
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
-  (
-    {
-      className,
-      intent,
-      variant,
-      size,
-      title,
-      icon,
-      onClose,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    return (
-      <div
-        ref={ref}
-        role="alert"
-        className={cn(alertVariants({ intent, variant, size }), className)}
-        {...props}
-      >
+function Alert({
+  className,
+  intent,
+  variant,
+  size,
+  title,
+  icon,
+  onClose,
+  children,
+  ...props
+}: AlertProps) {
+  return (
+    <div
+      role="alert"
+      className={cn(alertVariants({ intent, variant, size }), className)}
+      {...props}
+    >
         <div className="flex items-start gap-3">
           {/* Icon */}
           {icon && (
@@ -147,17 +142,16 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
-        </div>
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
       </div>
-    );
-  }
-);
+    </div>
+  );
+}
 
 Alert.displayName = 'Alert';
 
