@@ -1,6 +1,7 @@
 import { Form, useFetcher } from '@remix-run/react';
 import { Save, X } from 'lucide-react';
 import { useEffect } from 'react';
+import { Alert } from '@fafa/ui';
 import { type ActionData, type Order } from '../../types/orders.types';
 
 interface OrderEditFormProps {
@@ -162,9 +163,7 @@ export function OrderEditForm({
 
           {/* Error message */}
           {fetcher.data?.error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800">{fetcher.data.error}</p>
-            </div>
+            <Alert intent="error"><p>{fetcher.data.error}</p></Alert>
           )}
 
           {/* Actions */}

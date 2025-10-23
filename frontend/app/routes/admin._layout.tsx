@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 import { type LoaderFunctionArgs, redirect, json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import { getOptionalUser } from "../auth/unified.server";
@@ -34,9 +35,7 @@ export default function AdminLayout() {
               Connecté en tant que: {user.firstName} {user.lastName} ({user.email})
             </span>
             {stats && typeof stats === 'object' && 'seoStats' in stats && (stats as any).seoStats && (
-              <div className="flex items-center gap-2 text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                🔍 SEO: {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}% optimisé
-              </div>
+              <Alert intent="success">🔍 SEO: {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}% optimisé</Alert>
             )}
           </div>
           <Outlet />

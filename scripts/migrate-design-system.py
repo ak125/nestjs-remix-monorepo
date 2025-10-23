@@ -119,28 +119,32 @@ class DesignSystemMigrator:
         <div className="bg-red-50 border ...">Contenu simple</div>
         
         Conditions strictes:
-        - div sur UNE ligne uniquement
-        - Contenu simple (max 100 chars)
+        - div sur UNE ligne uniquement OU contenu très simple
         - Pas de nested complex JSX
+        - Pattern: alert informatif simple
         """
         count = 0
         
-        # Pattern: div simple sur une ligne avec bg-color-50
-        pattern = r'<div\s+className=["\']((?:[^"\']*\s)?bg-(red|green|yellow|blue)-(?:50|100)(?:\s[^"\']*)?)["\']\s*>([^<\n]{1,150})</div>'
+        # Pattern 1: div simple sur une ligne avec bg-color-50
+        pattern1 = r'<div\s+className=["\']((?:[^"\']*\s)?bg-(red|green|yellow|blue)-(?:50|100)(?:\s[^"\']*)?)["\']\s*>([^<]{1,200})</div>'
         
-        def replacer(match):
+        def replacer1(match):
             nonlocal count
             classes = match.group(1)
             color = match.group(2)
             content_text = match.group(3).strip()
             
             # Sécurité: ne pas toucher si trop complexe
-            if content_text.count('{') > 2 or '<' in content_text:
+            if content_text.count('{') > 3 or '<' in content_text:
                 return match.group(0)
             
-            # Ne pas toucher si c'est un composant parent complexe
-            if 'flex' in classes and 'gap' in classes:
-                return match.group(0)  # Probablement une structure, pas un alert
+            # Skip si c'est clairement une structure (flex + gap + justify)
+            if all(x in classes for x in ['flex', 'gap', 'justify']):
+                return match.group(0)
+            
+            # Skip si width/height définis (probablement du layout)
+            if 'w-' in classes or 'h-' in classes:
+                return match.group(0)
             
             intent = COLOR_TO_VARIANT.get(color, 'info')
             count += 1
@@ -151,7 +155,33 @@ class DesignSystemMigrator:
             
             return f'<Alert intent="{intent}">{content_text}</Alert>'
         
-        new_content = re.sub(pattern, replacer, content)
+        # Pattern 2: div avec p/text simple à l'intérieur (sur 2-3 lignes max)
+        # <div className="bg-red-50 p-4">
+        #   <p>Message</p>
+        # </div>
+        pattern2 = r'<div\s+className=["\']((?:[^"\']*\s)?bg-(red|green|yellow|blue)-50[^"\']*)["\']\s*>\s*<p[^>]*>([^<]+)</p>\s*</div>'
+        
+        def replacer2(match):
+            nonlocal count
+            classes = match.group(1)
+            color = match.group(2)
+            text = match.group(3).strip()
+            
+            # Ne pas toucher si trop long ou complexe
+            if len(text) > 300 or text.count('{') > 2:
+                return match.group(0)
+            
+            intent = COLOR_TO_VARIANT.get(color, 'info')
+            count += 1
+            
+            if self.verbose:
+                preview = text[:40] + '...' if len(text) > 40 else text
+                self.log(f"    Alert (with p): {preview} → {intent}", Colors.GREEN)
+            
+            return f'<Alert intent="{intent}"><p>{text}</p></Alert>'
+        
+        new_content = re.sub(pattern1, replacer1, content)
+        new_content = re.sub(pattern2, replacer2, new_content)
         return new_content, count
     
     def add_imports(self, content: str, needs_badge: bool, needs_alert: bool) -> str:

@@ -4,6 +4,7 @@
 import { Link } from '@remix-run/react';
 import { ChevronLeft, ChevronRight, Car, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Alert } from '@fafa/ui';
 import  { type VehicleBrand } from '../../services/api/enhanced-vehicle.api';
 
 interface BrandCarouselProps {
@@ -143,9 +144,7 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                         )}
                         
                         {brand.products_count && (
-                          <div className="bg-blue-100 text-blue-800 text-xs py-1 px-2 rounded-full inline-block mb-2">
-                            {brand.products_count.toLocaleString()} pièces
-                          </div>
+                          <Alert intent="info">{brand.products_count.toLocaleString()} pièces</Alert>
                         )}
                         
                         {brand.is_featured && (

@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
@@ -179,12 +180,8 @@ export default function PaymentReturnPage() {
               Vous avez annulé le paiement.
             </p>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-yellow-800">
-                Votre commande #{result.orderNumber || result.orderId} est toujours en attente de paiement.
-                Elle sera automatiquement annulée dans 24 heures si elle n'est pas payée.
-              </p>
-            </div>
+            <Alert intent="warning"><p>Votre commande #{result.orderNumber || result.orderId} est toujours en attente de paiement.
+                Elle sera automatiquement annulée dans 24 heures si elle n'est pas payée.</p></Alert>
 
             <div className="space-y-3">
               <Link 
