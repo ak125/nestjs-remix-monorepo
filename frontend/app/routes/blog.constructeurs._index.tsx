@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
@@ -542,9 +543,9 @@ const ArticleCarousel: React.FC<{ constructeurs: ConstructeurArticle[] }> = ({ c
           </div>
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <Badge variant="info">
                 {constructeur.brand || 'Constructeur'}
-              </span>
+              </Badge>
               <span className="flex items-center text-sm text-gray-500">
                 <TrendingIcon />
                 <span className="ml-1">{constructeur.viewsCount.toLocaleString()}</span>

@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 
@@ -130,9 +131,9 @@ export default function AdminProductDetail() {
                 {product.piece_activ ? '✅ Produit Actif' : '❌ Produit Inactif'}
               </span>
               {product.piece_top && (
-                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                <Badge variant="warning">
                   ⭐ Produit TOP
-                </span>
+                </Badge>
               )}
             </div>
           </div>

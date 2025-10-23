@@ -2,6 +2,7 @@
  * Page de détail d'un ticket - Consultation et gestion
  * Remix Route Component pour voir et modifier un ticket spécifique
  */
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
@@ -221,9 +222,9 @@ export default function TicketDetailPage() {
               {ticket.category && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Catégorie</h3>
-                  <span className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                  <Badge variant="info">
                     {getCategoryLabel(ticket.category)}
-                  </span>
+                  </Badge>
                 </div>
               )}
 

@@ -332,9 +332,9 @@ function CartItem({ item, onUpdate, onRemove }: {
             {item.product_brand && item.product_brand !== 'MARQUE INCONNUE' && item.product_brand !== 'Non spécifiée' && (
               <div className="flex items-center">
                 <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
-                <span className="text-gray-900 bg-blue-50 px-2 py-1 rounded font-medium">
+                <Badge variant="info">
                   {item.product_brand}
-                </span>
+                </Badge>
               </div>
             )}
             {(item.product_brand === 'MARQUE INCONNUE' || item.product_brand === 'Non spécifiée') && (

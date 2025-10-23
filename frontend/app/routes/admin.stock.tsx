@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
 import { useState, useEffect } from 'react';
@@ -436,13 +437,13 @@ export default function AdminStock() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {item.pri_dispo === '1' ? (
-                      <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                      <Badge variant="success">
                         ✓ Disponible
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                      <Badge variant="error">
                         ✗ Indisponible
-                      </span>
+                      </Badge>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

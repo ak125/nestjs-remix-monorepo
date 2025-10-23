@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
@@ -636,7 +637,7 @@ export default function AdvancedVehicleSearch() {
                     {product.category && (
                       <p className="flex items-center gap-2">
                         <span className="font-medium">Catégorie:</span> 
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{product.category}</span>
+                        <Badge variant="info">{product.category}</Badge>
                       </p>
                     )}
                     {product.rating && (
