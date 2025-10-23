@@ -2,6 +2,7 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useNavigation } from '@remix-run/react';
 import { SearchBar } from '../components/search/SearchBar';
@@ -218,9 +219,9 @@ export default function SearchResults() {
                           <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
                             {result.category}
                           </span>
-                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                          <Badge variant="success">
                             Score: {result.relevanceScore}%
-                          </span>
+                          </Badge>
                         </div>
                         <p className="text-gray-600 mb-3">{result.description}</p>
                         

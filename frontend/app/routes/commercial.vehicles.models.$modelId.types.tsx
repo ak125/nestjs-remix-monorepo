@@ -5,6 +5,7 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
@@ -304,9 +305,9 @@ export default function CommercialVehiclesModelTypes() {
                       }`}>
                         {type.type_year_to ? 'Ancien' : 'Actuel'}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+                      <Badge variant="info">
                         {type.type_fuel}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 ))}

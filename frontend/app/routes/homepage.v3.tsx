@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { 
@@ -326,9 +327,9 @@ function Navbar({ isScrolled }: any) {
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
               <ShoppingCart className="w-5 h-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <Badge variant="error">
                 0
-              </span>
+              </Badge>
             </button>
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
               <Users className="w-5 h-5 text-gray-600" />

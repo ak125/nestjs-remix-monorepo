@@ -2,8 +2,7 @@
  * 🔧 Configuration Admin - Version Simplifiée Compatible
  */
 
-import { Alert } from "@fafa/ui/alert";
-import { Badge } from "@fafa/ui/badge";
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
