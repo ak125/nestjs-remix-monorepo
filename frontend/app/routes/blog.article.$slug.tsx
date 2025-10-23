@@ -19,6 +19,7 @@ import {
   Tag
 } from 'lucide-react';
 import { useState } from "react";
+import { Alert } from '@fafa/ui';
 
 // UI Components
 import { Badge } from "~/components/ui/badge";
@@ -334,9 +335,7 @@ export default function BlogArticle() {
               {/* Contenu HTML de l'article */}
               <div className="p-8">
                 {article.excerpt && (
-                  <div className="text-xl text-gray-700 font-medium mb-8 p-6 bg-blue-50 rounded-xl border-l-4 border-blue-600">
-                    {article.excerpt}
-                  </div>
+                  <Alert intent="info">{article.excerpt}</Alert>
                 )}
 
                 {/* 🎯 AFFICHAGE DU CONTENU HTML */}

@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 /**
  * Route : /blog-pieces-auto/guide/:slug
  * Affiche le détail d'un guide d'achat
@@ -223,11 +224,7 @@ export default function GuideDetailPage() {
 
               {/* Excerpt */}
               {guide.excerpt && (
-                <div className="bg-green-50 border-l-4 border-green-600 p-6 mb-8 rounded-r-lg">
-                  <p className="text-lg text-gray-700 leading-relaxed">
-                    {guide.excerpt}
-                  </p>
-                </div>
+                <Alert intent="success"><p>{guide.excerpt}</p></Alert>
               )}
 
               {/* Main Content */}

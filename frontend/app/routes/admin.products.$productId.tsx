@@ -1,4 +1,4 @@
-import { Badge } from "@fafa/ui";
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 
@@ -270,9 +270,7 @@ export default function AdminProductDetail() {
               </div>
               {product.piece_qte_stock && product.piece_qte_stock_mini && 
                product.piece_qte_stock <= product.piece_qte_stock_mini && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                  ⚠️ Stock faible !
-                </div>
+                <Alert intent="error">⚠️ Stock faible !</Alert>
               )}
             </div>
           </div>

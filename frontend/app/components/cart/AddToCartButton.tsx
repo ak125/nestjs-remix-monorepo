@@ -1,5 +1,6 @@
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '@fafa/ui';
 
 interface PieceData {
   id: number;
@@ -209,9 +210,7 @@ export function AddToCartButton({
 
       {/* Message d'erreur */}
       {errorMessage && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
-          {errorMessage}
-        </div>
+        <Alert intent="error">{errorMessage}</Alert>
       )}
 
       {/* Informations supplémentaires */}

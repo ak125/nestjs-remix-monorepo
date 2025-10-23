@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 // app/routes/admin.suppliers.tsx
 // Interface de gestion des fournisseurs optimisée appliquant "vérifier existant et utiliser le meilleur"
 
@@ -128,9 +129,7 @@ export default function AdminSuppliersLayout() {
               <Package className="h-8 w-8 text-green-600" />
               <h2 className="text-lg font-semibold text-gray-900">Produits</h2>
             </div>
-            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-              CATALOGUE
-            </div>
+            <Alert intent="success">CATALOGUE</Alert>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
