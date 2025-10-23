@@ -63,7 +63,81 @@ automecanik.fr {
         }
     }
     
+    # ===== CACHE INTELLIGENT POUR PAGES PUBLIQUES =====
+    # Cache uniquement pour les visiteurs anonymes (sans cookie de session)
+    # Les utilisateurs connectés passent directement au backend
+    
+    @public_cached {
+        # Seulement les requêtes GET/HEAD
+        method GET HEAD
+        
+        # Exclure les routes API
+        not path /api/*
+        not path /admin/*
+        not path /auth/*
+        not path /cart/*
+        not path /checkout/*
+        not path /account/*
+        
+        # Exclure si cookie de session présent
+        not header_regexp Cookie (?i)(connect\.sid|session)
+    }
+    
+    # Pages publiques cachées avec TTL adapté
+    handle @public_cached {
+        # Page d'accueil : cache court (60s)
+        @homepage path /
+        header @homepage Cache-Control "public, max-age=60, stale-while-revalidate=120"
+        
+        # Pages produits et pièces : cache moyen (5min)
+        @products path_regexp ^/(products|pieces|catalog|vehicule)/
+        header @products Cache-Control "public, max-age=300, stale-while-revalidate=600"
+        
+        # Pages blog et guides : cache long (30min)
+        @content path_regexp ^/(blog|guides|articles|conseils)/
+        header @content Cache-Control "public, max-age=1800, stale-while-revalidate=3600"
+        
+        # Pages de recherche : cache très court (30s)
+        @search path /search
+        header @search Cache-Control "public, max-age=30, stale-while-revalidate=60"
+        
+        # Autres pages publiques : cache par défaut (2min)
+        header Cache-Control "public, max-age=120, stale-while-revalidate=240"
+        
+        # Headers de variance pour cache correct
+        header Vary "Accept-Encoding, Cookie"
+        
+        reverse_proxy monorepo_prod:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+    
     # ===== TOUTES LES AUTRES ROUTES (API + FRONTEND) =====
+    # Routes privées et authentifiées - JAMAIS de cache
+    @private {
+        path /api/* /admin/* /auth/* /cart/* /checkout/* /account/*
+    }
+    
+    handle @private {
+        header Cache-Control "private, no-cache, no-store, must-revalidate"
+        header Pragma "no-cache"
+        header Expires "0"
+        
+        reverse_proxy monorepo_prod:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+        }
+    }
+    
+    # Fallback pour toutes les autres routes
+    # Fallback pour toutes les autres routes
     # Le monorepo gère tout : NestJS backend + Remix frontend
     reverse_proxy monorepo_prod:3000 {
         # En-têtes de proxy

@@ -1,0 +1,84 @@
+/**
+ * 🎨 Thème Vitrine (Automecanik) - CSS Variables
+ * 
+ * Ce fichier définit les variables CSS spécifiques au thème vitrine.
+ * Utilise l'attribut [data-theme="vitrine"] pour activer ce thème.
+ */
+
+[data-theme="vitrine"] {
+  /* === BRAND COLORS === */
+  --color-brand-50: var(--color-accent-bleuClair);
+  --color-brand-100: var(--color-accent-lightTurquoise);
+  --color-brand-200: var(--color-accent-extraLightTurquoise);
+  --color-brand-300: var(--color-accent-bleu);
+  --color-brand-400: var(--color-accent-bleu);
+  --color-brand-500: var(--color-accent-bleu);
+  --color-brand-600: var(--color-accent-bleu);
+  --color-brand-700: var(--color-accent-persianIndigo);
+  --color-brand-800: var(--color-accent-persianIndigo);
+  --color-brand-900: var(--color-accent-persianIndigo);
+  --color-brand-950: var(--color-accent-persianIndigo);
+
+  /* === PRIMARY (Orange Automecanik) === */
+  --color-primary-50: #fff5f0;
+  --color-primary-100: #ffe8dc;
+  --color-primary-200: #ffd0b9;
+  --color-primary-300: #ffb090;
+  --color-primary-400: #ff8a5f;
+  --color-primary-500: #ff6b35;
+  --color-primary-600: #ff6b35;
+  --color-primary-700: #e04d1a;
+  --color-primary-800: #b33d15;
+  --color-primary-900: #8a2f10;
+  --color-primary-950: #4d1a09;
+
+  /* === ACCENT (CTA Rouge) === */
+  --color-accent-50: #fef2f2;
+  --color-accent-100: #fee2e2;
+  --color-accent-200: #fecaca;
+  --color-accent-300: #fca5a5;
+  --color-accent-400: #f87171;
+  --color-accent-500: var(--color-accent-khmerCurry);
+  --color-accent-600: var(--color-accent-khmerCurry);
+  --color-accent-700: #c42626;
+  --color-accent-800: #991b1b;
+  --color-accent-900: #7f1d1d;
+  --color-accent-950: #450a0a;
+
+  /* === SUCCESS (Vert) === */
+  --color-success: var(--color-accent-vert);
+  --color-success-light: #d1fae5;
+  --color-success-dark: #059669;
+
+  /* === SEMANTIC === */
+  --color-warning: #f59e0b;
+  --color-error: var(--color-accent-khmerCurry);
+  --color-info: var(--color-accent-bleu);
+
+  /* === BACKGROUNDS === */
+  --bg-primary: var(--color-neutral-white);
+  --bg-secondary: var(--color-accent-extraLightTurquoise);
+  --bg-tertiary: var(--color-neutral-iron);
+  
+  /* === TEXT === */
+  --text-primary: var(--color-accent-persianIndigo);
+  --text-secondary: var(--color-neutral-darkIron);
+  --text-inverse: var(--color-neutral-white);
+
+  /* === BORDERS === */
+  --border-primary: var(--color-neutral-iron);
+  --border-accent: var(--color-accent-vert);
+}
+
+/* Dark mode pour vitrine */
+[data-theme="vitrine"][data-mode="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  
+  --text-primary: var(--color-neutral-white);
+  --text-secondary: var(--color-neutral-iron);
+  --text-inverse: var(--color-accent-persianIndigo);
+  
+  --border-primary: #475569;
+}

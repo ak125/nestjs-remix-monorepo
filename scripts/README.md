@@ -47,6 +47,7 @@ Menu interactif avec toutes les options disponibles.
 | `test-catalog-conseils.sh` | Test du catalogue conseils |
 | `test-meilisearch.sh` | Test de Meilisearch |
 | `test-products-improvements.sh` | Test des améliorations produits |
+| `test-performance.sh` | Test de performance du serveur en production |
 
 ### ⚙️ Configuration
 

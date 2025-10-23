@@ -4,7 +4,7 @@
  */
 
 import type { Theme } from './types';
-import { designTokens } from '../tokens/generated';
+import { designTokens } from '@fafa/design-tokens';
 
 export const adminThemeLight: Theme = {
   brand: 'admin',
