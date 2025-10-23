@@ -510,8 +510,8 @@ function FeatureCard({ icon, title, description, color }: {
   color: string;
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'text-blue-600 bg-blue-50 group-hover:bg-info/20',
-    green: 'text-green-600 bg-green-50 group-hover:bg-success/20',
+    blue: 'text-primary bg-primary/10 group-hover:bg-info/20',
+    green: 'text-success bg-success/10 group-hover:bg-success/20',
     orange: 'text-orange-600 bg-orange-50 group-hover:bg-orange-100',
     purple: 'text-purple-600 bg-purple-50 group-hover:bg-purple-100',
     indigo: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100',

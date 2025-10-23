@@ -492,11 +492,11 @@ function OverviewPanel({ overview, environment }: {
               
               // Déterminons l'icône et la couleur selon le status
               const statusConfig = status === 'healthy' 
-                ? { icon: CheckCircle, color: 'text-green-600 bg-green-50 border-green-200' }
+                ? { icon: CheckCircle, color: 'text-success bg-success/10 border-green-200' }
                 : status === 'warning'
-                ? { icon: AlertCircle, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' }
+                ? { icon: AlertCircle, color: 'text-warning bg-warning/10 border-yellow-200' }
                 : status === 'error'
-                ? { icon: XCircle, color: 'text-red-600 bg-red-50 border-red-200' }
+                ? { icon: XCircle, color: 'text-destructive bg-destructive/10 border-red-200' }
                 : { icon: AlertCircle, color: 'text-gray-600 bg-gray-50 border-gray-200' };
               
               return (
@@ -567,11 +567,11 @@ function OverviewPanel({ overview, environment }: {
               <dd className="mt-1">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   overview.health.overall === 'healthy' 
-                    ? 'text-green-600 bg-green-50 border-green-200'
+                    ? 'text-success bg-success/10 border-green-200'
                     : overview.health.overall === 'warning'
-                    ? 'text-yellow-600 bg-yellow-50 border-yellow-200'
+                    ? 'text-warning bg-warning/10 border-yellow-200'
                     : overview.health.overall === 'error'
-                    ? 'text-red-600 bg-red-50 border-red-200'
+                    ? 'text-destructive bg-destructive/10 border-red-200'
                     : 'text-gray-600 bg-gray-50 border-gray-200'
                 }`}>
                   {overview.health.overall}

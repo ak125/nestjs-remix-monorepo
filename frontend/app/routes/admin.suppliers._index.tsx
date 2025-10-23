@@ -387,10 +387,10 @@ function StatCard({
   color?: "blue" | "green" | "yellow" | "red" | "gray"; 
 }) {
   const colorClasses = {
-    blue: "text-blue-600 bg-blue-50",
-    green: "text-green-600 bg-green-50",
-    yellow: "text-yellow-600 bg-yellow-50",
-    red: "text-red-600 bg-red-50",
+    blue: "text-primary bg-primary/10",
+    green: "text-success bg-success/10",
+    yellow: "text-warning bg-warning/10",
+    red: "text-destructive bg-destructive/10",
     gray: "text-gray-600 bg-gray-50",
   };
 
@@ -561,7 +561,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               ✏️ Modifier
             </Link>
             <button 
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-destructive bg-white hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               🗑️ Supprimer
             </button>

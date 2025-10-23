@@ -378,7 +378,7 @@ export function NotificationCenter({
                                     }}
                                     className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                                       action.variant === 'danger'
-                                        ? 'border-red-300 text-red-700 hover:bg-red-50'
+                                        ? 'border-red-300 text-destructive hover:bg-destructive/10'
                                         : action.variant === 'primary'
                                         ? 'border-blue-300 text-blue-700 hover:bg-info/20'
                                         : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -424,7 +424,7 @@ export function NotificationCenter({
                                     deleteNotifications([notification.id]);
                                     setShowActions(null);
                                   }}
-                                  className="flex items-center w-full px-3 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+                                  className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Supprimer
