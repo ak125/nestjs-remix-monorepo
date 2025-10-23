@@ -110,11 +110,11 @@ export function StockAlerts({ alerts }: StockAlertsProps) {
 function getAlertStyles(level: string): string {
   switch (level) {
     case 'CRITICAL':
-      return 'border-red-500 bg-red-50/70';
+      return 'border-red-500 bg-destructive/10';
     case 'WARNING':
-      return 'border-yellow-500 bg-yellow-50/70';
+      return 'border-yellow-500 bg-warning/10';
     default:
-      return 'border-blue-500 bg-blue-50/70';
+      return 'border-blue-500 bg-primary/10';
   }
 }
 

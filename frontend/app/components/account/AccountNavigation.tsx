@@ -128,7 +128,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
               isActive(item.href)
-                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                ? 'bg-primary/10 text-primary border border-blue-200'
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             )}
           >

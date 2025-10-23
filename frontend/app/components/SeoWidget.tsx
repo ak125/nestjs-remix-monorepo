@@ -24,9 +24,9 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 95) return 'border-l-4 border-green-500 bg-green-50';
-    if (rate >= 80) return 'border-l-4 border-yellow-500 bg-yellow-50';
-    return 'border-l-4 border-red-500 bg-red-50';
+    if (rate >= 95) return 'border-l-4 border-success bg-success/10';
+    if (rate >= 80) return 'border-l-4 border-warning bg-warning/10';
+    return 'border-l-4 border-destructive bg-destructive/10';
   };
 
   const getStatusIcon = (rate: number) => {

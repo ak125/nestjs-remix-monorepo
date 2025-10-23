@@ -387,7 +387,7 @@ export default function AdminConfigIndexPage() {
                       onClick={() => setSelectedCategory(category.key)}
                       className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
                         selectedCategory === category.key
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                          ? 'bg-primary/10 text-primary border border-blue-200 shadow-sm'
                           : 'hover:bg-gray-50 text-gray-700 border border-transparent'
                       }`}
                     >

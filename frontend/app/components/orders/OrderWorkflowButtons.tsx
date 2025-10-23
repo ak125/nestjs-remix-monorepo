@@ -154,7 +154,7 @@ export function OrderWorkflowButtons({
                   isCurrent
                     ? `${step.bgColor} ${step.textColor} ring-2 ring-offset-2 ring-current font-semibold`
                     : isPast
-                      ? 'bg-green-50 text-green-600'
+                      ? 'bg-success/10 text-success'
                       : isClickable
                         ? `${step.bgColor} ${step.textColor} hover:ring-2 hover:ring-offset-1 hover:ring-current cursor-pointer`
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'

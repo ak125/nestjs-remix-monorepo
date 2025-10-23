@@ -179,11 +179,11 @@ export default function SystemBreadcrumb({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
-        return 'border-l-4 border-green-500 bg-green-50';
+        return 'border-l-4 border-success bg-success/10';
       case 'warning':
-        return 'border-l-4 border-yellow-500 bg-yellow-50';
+        return 'border-l-4 border-warning bg-warning/10';
       case 'error':
-        return 'border-l-4 border-red-500 bg-red-50';
+        return 'border-l-4 border-destructive bg-destructive/10';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -241,7 +241,7 @@ export default function SystemBreadcrumb({
                           }}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                             item.isActive
-                              ? 'text-blue-700 bg-blue-50/80' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                              ? 'text-blue-700 bg-primary/10' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                           }`}
                         >
                           {ItemIcon && <ItemIcon className="h-4 w-4" />}
@@ -352,7 +352,7 @@ export default function SystemBreadcrumb({
                           setIsEnvironmentDropdownOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
-                          environment === env.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          environment === env.value ? 'bg-primary/10 text-primary' : 'text-gray-700'
                         }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-${env.color}-500`} />

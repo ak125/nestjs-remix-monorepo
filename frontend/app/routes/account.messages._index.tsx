@@ -85,7 +85,7 @@ export default function MessagesList() {
 
         {/* Alertes */}
         {error === "access_denied" && (
-          <Alert className="mb-6 border-red-200 bg-red-50">
+          <Alert className="mb-6 border-destructive bg-destructive/10">
             <AlertDescription className="text-red-800">
               Vous n'avez pas accès à ce message.
             </AlertDescription>
@@ -93,7 +93,7 @@ export default function MessagesList() {
         )}
 
         {error === "not_found" && (
-          <Alert className="mb-6 border-red-200 bg-red-50">
+          <Alert className="mb-6 border-destructive bg-destructive/10">
             <AlertDescription className="text-red-800">
               Message introuvable.
             </AlertDescription>

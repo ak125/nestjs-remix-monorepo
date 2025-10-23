@@ -189,7 +189,7 @@ export default function AccountProfileEdit() {
                 required
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.firstName 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="Votre prénom"
@@ -212,7 +212,7 @@ export default function AccountProfileEdit() {
                 required
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.lastName 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="Votre nom"
@@ -234,7 +234,7 @@ export default function AccountProfileEdit() {
                 defaultValue={user.phone}
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.phone 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="+33 6 12 34 56 78"

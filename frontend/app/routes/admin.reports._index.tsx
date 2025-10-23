@@ -156,7 +156,7 @@ export default function AdminReports() {
 
       {/* Alerte en cas d'erreur */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive bg-destructive/10">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-red-800">
               <AlertTriangle className="h-4 w-4" />

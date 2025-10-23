@@ -95,7 +95,7 @@ export default function AccountSettings() {
 
       {/* Messages */}
       {actionData?.success && (
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-success bg-success/10">
           <AlertDescription className="text-green-800">
             {actionData.message}
           </AlertDescription>
@@ -103,7 +103,7 @@ export default function AccountSettings() {
       )}
 
       {actionData?.error && (
-        <Alert className="border-red-200 bg-red-50">
+        <Alert className="border-destructive bg-destructive/10">
           <AlertDescription className="text-red-800">
             {actionData.error}
           </AlertDescription>

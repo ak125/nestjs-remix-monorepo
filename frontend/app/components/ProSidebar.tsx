@@ -87,7 +87,7 @@ export default function ProSidebar({ isCollapsed = false }: ProSidebarProps) {
               to={item.href}
               className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
                 isActive
-                  ? 'bg-green-50 text-green-700 border-l-4 border-green-600'
+                  ? 'bg-success/10 text-success border-l-4 border-green-600'
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
