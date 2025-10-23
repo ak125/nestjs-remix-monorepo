@@ -344,7 +344,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         } animate-in slide-in-from-right duration-300`}>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${
-              notification.type === 'success' ? 'bg-success/15' : 'bg-red-100'
+              notification.type === 'success' ? 'bg-success/15' : 'bg-destructive/15'
             }`}>
               {notification.type === 'success' ? (
                 <UserCheck className="w-5 h-5" />

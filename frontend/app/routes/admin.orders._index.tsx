@@ -842,7 +842,7 @@ export default function OrdersRoute() {
                   setTrackingNumber('');
                 }}
                 disabled={isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-muted/50 disabled:opacity-50 font-medium"
               >
                 Annuler
               </button>
@@ -883,7 +883,7 @@ export default function OrdersRoute() {
                   setCancelReason('');
                 }}
                 disabled={isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-muted/50 disabled:opacity-50 font-medium"
               >
                 Fermer
               </button>

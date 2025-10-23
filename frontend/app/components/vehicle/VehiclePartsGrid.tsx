@@ -216,7 +216,7 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
                   <span className="text-lg font-bold text-gray-900">
                     {part.price.toFixed(2)} {part.currency}
                   </span>
-                  <Button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed" variant="blue" type="button"
+                  <Button className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-muted/50 disabled:cursor-not-allowed" variant="blue" type="button"
                     disabled={part.availability === 'out-of-stock'}>\n  {part.availability === 'out-of-stock' ? 'Indisponible' : 'Ajouter'}\n</Button>
                 </div>
               </div>

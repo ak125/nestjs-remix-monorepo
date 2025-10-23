@@ -125,7 +125,7 @@ export function DynamicMenu({
           className={`
             menu-item flex items-center justify-between p-3 rounded-lg
             hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
-            ${isActive ? 'bg-primary/10 dark:bg-blue-900/20 text-primary border-l-4 border-blue-500' : ''}
+            ${isActive ? 'bg-primary/10 dark:bg-primary/98/20 text-primary border-l-4 border-blue-500' : ''}
           `}
         >
           <div className="flex items-center flex-1">

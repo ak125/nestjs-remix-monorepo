@@ -110,7 +110,7 @@ export default function PaymentReturnPage() {
 
         {result.status === 'REFUSED' && (
           <div className="p-8 text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-destructive/15 mb-6">
               <XCircle className="h-8 w-8 text-red-600" />
             </div>
             
@@ -168,7 +168,7 @@ export default function PaymentReturnPage() {
 
         {result.status === 'CANCELLED' && (
           <div className="p-8 text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-6">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-warning/15 mb-6">
               <AlertTriangle className="h-8 w-8 text-yellow-600" />
             </div>
             

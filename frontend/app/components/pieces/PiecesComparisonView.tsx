@@ -70,7 +70,7 @@ export function PiecesComparisonView({ pieces, selectedPieces, onRemovePiece }: 
                   >
                     <button
                       onClick={() => onRemovePiece(piece.id)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center transition-colors"
+                      className="absolute top-2 right-2 w-6 h-6 bg-destructive/15 hover:bg-destructive/30 text-red-600 rounded-full flex items-center justify-center transition-colors"
                       title="Retirer de la comparaison"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

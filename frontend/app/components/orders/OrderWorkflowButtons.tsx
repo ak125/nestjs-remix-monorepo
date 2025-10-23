@@ -59,7 +59,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     id: '4',
     name: 'Prête',
     icon: Package,
-    bgColor: 'bg-yellow-100',
+    bgColor: 'bg-warning/15',
     textColor: 'text-yellow-700',
     action: 'markReady',
     permission: 'canShip',
@@ -172,7 +172,7 @@ export function OrderWorkflowButtons({
 
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div
-                  className={`w-8 h-0.5 ${isPast ? 'bg-green-400' : 'bg-gray-300'}`}
+                  className={`w-8 h-0.5 ${isPast ? 'bg-success/60' : 'bg-muted/50'}`}
                 />
               )}
             </div>

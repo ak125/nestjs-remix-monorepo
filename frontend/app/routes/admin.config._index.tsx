@@ -549,7 +549,7 @@ export default function AdminConfigIndexPage() {
                                 <button
                                   type="button"
                                   onClick={() => setEditingKey(null)}
-                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-muted/50"
                                 >
                                   Annuler
                                 </button>

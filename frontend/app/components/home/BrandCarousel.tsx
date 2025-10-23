@@ -196,8 +196,8 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
               onClick={() => goToSlide(index)}
               className={`w-3 h-3 rounded-full transition-all ${
                 index === currentIndex 
-                  ? 'bg-blue-600 w-8' 
-                  : 'bg-gray-300 hover:bg-gray-400'
+                  ? 'bg-primary w-8' 
+                  : 'bg-muted/50 hover:bg-gray-400'
               }`}
               aria-label={`Aller au slide ${index + 1}`}
             />

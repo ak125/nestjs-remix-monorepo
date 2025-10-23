@@ -114,7 +114,7 @@ function LazyImage({
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-8 h-8 bg-gray-300 rounded"></div>
+            <div className="w-8 h-8 bg-muted/50 rounded"></div>
           </div>
         </div>
       )}

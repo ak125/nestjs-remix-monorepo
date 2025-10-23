@@ -157,7 +157,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/dashboard",
       icon: Store,
       description: "Interface commerciale",
-      badge: { count: 'PRO', color: "bg-blue-600" },
+      badge: { count: 'PRO', color: "bg-primary" },
       notification: false
     },
     {
@@ -413,7 +413,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
               {/* Zone de notifications récentes */}
             <Card className="p-3 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-600/30">
               <div className="flex items-center gap-2 text-yellow-300">
-                <div className="h-2 w-2 bg-yellow-400 rounded-full animate-pulse" />
+                <div className="h-2 w-2 bg-warning/60 rounded-full animate-pulse" />
                 <p className="text-xs font-medium">
                   {stats ? `${stats.totalOrders} commandes totales` : '0 commandes totales'}
                 </p>
@@ -436,7 +436,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
                     admin@automobile.com
                   </p>
                 </div>
-                <div className="h-2.5 w-2.5 bg-green-400 rounded-full shadow-sm animate-pulse" title="En ligne" />
+                <div className="h-2.5 w-2.5 bg-success/60 rounded-full shadow-sm animate-pulse" title="En ligne" />
               </div>
               
               <form method="POST" action="/auth/logout" className="w-full">

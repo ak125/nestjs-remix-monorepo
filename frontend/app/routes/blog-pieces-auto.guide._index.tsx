@@ -72,7 +72,7 @@ const CATEGORY_COLORS: Record<
     border: "border-yellow-300", 
     text: "text-yellow-900", 
     gradient: "from-yellow-500 to-yellow-700", 
-    badge: "bg-yellow-100 text-yellow-900 border-yellow-300" 
+    badge: "bg-warning/15 text-yellow-900 border-yellow-300" 
   },
   "Amortisseurs": { 
     bg: "bg-purple-50", 
@@ -107,7 +107,7 @@ const CATEGORY_COLORS: Record<
     border: "border-yellow-400", 
     text: "text-yellow-900", 
     gradient: "from-yellow-400 to-yellow-600", 
-    badge: "bg-yellow-100 text-yellow-900 border-yellow-400" 
+    badge: "bg-warning/15 text-yellow-900 border-yellow-400" 
   },
   "Accessoires": { 
     bg: "bg-pink-50", 

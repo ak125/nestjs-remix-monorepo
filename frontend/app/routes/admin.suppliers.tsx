@@ -211,7 +211,7 @@ export default function AdminSuppliersLayout() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full" 
+                  className="bg-primary h-2 rounded-full" 
                   style={{ width: `${Math.min((3 / supplierStats.averageDeliveryTime) * 100, 100)}%` }}
                 ></div>
               </div>
