@@ -7,6 +7,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
 import { requireAdmin } from "../auth/unified.server";
@@ -434,13 +435,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-lg font-semibold text-gray-900">{supplier.name}</h3>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                supplier.isActive 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {supplier.isActive ? "Actif" : "Inactif"}
-              </span>
+              <Badge className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium " variant={supplier.isActive ? 'success' : 'error'}>\n  {supplier.isActive ? "Actif" : "Inactif"}\n</Badge>
               {supplier.code && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                   {supplier.code}

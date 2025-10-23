@@ -32,6 +32,7 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';
 
@@ -323,13 +324,7 @@ export default function AdminProducts() {
                         {product.piece_sku}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          product.piece_activ 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.piece_activ ? 'Actif' : 'Inactif'}
-                        </span>
+                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Actif' : 'Inactif'}\n</Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <Link

@@ -2,6 +2,7 @@
 // 🎨 Catalogue de pièces avec le design de FamilyGammeHierarchy
 
 import { Link } from '@remix-run/react';
+import { Badge } from '~/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { Badge } from '@fafa/ui';
 
@@ -432,17 +433,11 @@ export default function PiecesCatalogGrid({
                             </div>
                             
                             <div className="mt-1">
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                piece.stock_status === 'in_stock' 
+                              <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={piece.stock_status === 'in_stock' 
                                   ? 'bg-green-100 text-green-800' 
-                                  : piece.stock_status === 'low_stock'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {piece.stock_status === 'in_stock' && 'En stock'}
+                                  : piece.stock_status === 'low_stock' ? 'warning' : 'error'}>\n  {piece.stock_status === 'in_stock' && 'En stock'}
                                 {piece.stock_status === 'low_stock' && 'Stock faible'}
-                                {piece.stock_status === 'out_of_stock' && 'Rupture'}
-                              </span>
+                                {piece.stock_status === 'out_of_stock' && 'Rupture'}\n</Badge>
                             </div>
                           </Link>
                         );
