@@ -285,7 +285,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
                 console.log('➕ Bouton + cliqué, quantité actuelle:', item.quantity);
                 onQuantityChange(item.quantity + 1);
               }}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-green-50 font-bold hover:scale-110 transition-transform shadow-sm"
+              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-success/20 font-bold hover:scale-110 transition-transform shadow-sm"
               aria-label="Augmenter la quantité"
             >
               +

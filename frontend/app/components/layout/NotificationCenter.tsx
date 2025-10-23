@@ -380,7 +380,7 @@ export function NotificationCenter({
                                       action.variant === 'danger'
                                         ? 'border-red-300 text-red-700 hover:bg-red-50'
                                         : action.variant === 'primary'
-                                        ? 'border-blue-300 text-blue-700 hover:bg-blue-50'
+                                        ? 'border-blue-300 text-blue-700 hover:bg-info/20'
                                         : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                     }`}
                                   >

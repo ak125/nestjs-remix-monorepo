@@ -472,7 +472,7 @@ export default function BlogIndex() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="p-2 hover:bg-blue-50"
+                            className="p-2 hover:bg-info/20"
                             onClick={() => {
                               fetcher.submit(
                                 { actionType: 'bookmark', articleId: article.id },
@@ -485,7 +485,7 @@ export default function BlogIndex() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="p-2 hover:bg-blue-50"
+                            className="p-2 hover:bg-info/20"
                             onClick={() => {
                               if (navigator.share) {
                                 navigator.share({

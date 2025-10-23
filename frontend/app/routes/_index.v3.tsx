@@ -401,7 +401,7 @@ export default function IndexV3() {
                 Explorer le catalogue
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">
+            <Button asChild size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-info/20 px-8 py-6 text-lg">
               <Link to="#newsletter">
                 Recevoir les offres exclusives
               </Link>

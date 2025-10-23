@@ -191,7 +191,7 @@ export default function Aide() {
           <Button className="px-8 py-3 rounded-lg" variant="blue">\n  Contactez-nous\n</Button>
           <Link 
             to="/profile" 
-            className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-blue-50 transition-colors"
+            className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg hover:bg-info/20 transition-colors"
           >
             Mon compte
           </Link>

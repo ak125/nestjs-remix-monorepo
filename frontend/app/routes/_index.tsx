@@ -544,7 +544,7 @@ export default function IndexOptimized() {
               <Button 
                 type="submit"
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+                className="bg-white text-blue-600 hover:bg-info/20 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 px-8"
               >
                 S'abonner
               </Button>
@@ -588,7 +588,7 @@ export default function IndexOptimized() {
             Nos experts sont là pour vous accompagner dans votre recherche
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-white text-blue-900 hover:bg-blue-50">
+            <Button asChild size="lg" className="bg-white text-blue-900 hover:bg-info/20">
               <Link to="/contact">
                 <Phone className="mr-2 h-5 w-5" />
                 Nous contacter

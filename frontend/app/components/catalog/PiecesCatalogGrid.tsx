@@ -411,7 +411,7 @@ export default function PiecesCatalogGrid({
                           <Link
                             key={piece.piece_id}
                             to={pieceUrl}
-                            className="bg-white rounded p-3 text-sm hover:bg-blue-50 transition-colors block border border-gray-200"
+                            className="bg-white rounded p-3 text-sm hover:bg-info/20 transition-colors block border border-gray-200"
                           >
                             <div className="flex justify-between items-start mb-2">
                               <span className="font-medium text-gray-700 text-xs line-clamp-2 flex-1 mr-2">

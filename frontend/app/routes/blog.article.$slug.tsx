@@ -429,7 +429,7 @@ export default function BlogArticle() {
                         to={`/blog/article/${related.slug}`}
                         className="block group"
                       >
-                        <div className="p-4 rounded-lg border hover:border-blue-600 hover:bg-blue-50 transition-all">
+                        <div className="p-4 rounded-lg border hover:border-blue-600 hover:bg-info/20 transition-all">
                           <Badge variant="secondary" className="mb-2 text-xs">
                             {getTypeLabel(related.type)}
                           </Badge>

@@ -1056,7 +1056,7 @@ export default function AdminDashboard() {
         </h2>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Link to="/admin/products" className="block p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all group">
+          <Link to="/admin/products" className="block p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all group">
             <div className="flex items-center gap-3">
               <Package className="h-6 w-6 text-blue-500 group-hover:text-blue-600" />
               <div>
@@ -1066,7 +1066,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/users" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all group">
+          <Link to="/admin/users" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all group">
             <div className="flex items-center gap-3">
               <Users className="h-6 w-6 text-green-500 group-hover:text-green-600" />
               <div>
@@ -1099,7 +1099,7 @@ export default function AdminDashboard() {
         
         {/* Ligne 2 : Fonctionnalités avancées */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Link to="/admin/seo" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all group">
+          <Link to="/admin/seo" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all group">
             <div className="flex items-center gap-3">
               <Search className="h-6 w-6 text-green-500 group-hover:text-green-600" />
               <div>
@@ -1142,7 +1142,7 @@ export default function AdminDashboard() {
         
         {/* Accès rapides avancés de l'ancienne version */}
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mt-6">
-          <Link to="/admin/analytics-test-simple" className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all bg-gradient-to-r from-blue-50 to-purple-50">
+          <Link to="/admin/analytics-test-simple" className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-blue-500" />
               <div>
@@ -1152,7 +1152,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/optimization-summary" className="block p-3 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all bg-gradient-to-r from-green-50 to-blue-50">
+          <Link to="/admin/optimization-summary" className="block p-3 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all bg-gradient-to-r from-green-50 to-blue-50">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
