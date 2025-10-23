@@ -230,7 +230,7 @@ export default function CommercialDashboard() {
               </Button>
             </Link>
             <Link to="/commercial/orders/new">
-              <Button className="bg-blue-600 hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90">
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Nouvelle commande
               </Button>
@@ -335,7 +335,7 @@ export default function CommercialDashboard() {
                     className="flex items-center justify-between p-3 hover:bg-orange-50 rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                      <div className="w-2 h-2 rounded-full bg-destructive/60"></div>
                       <div>
                         <div className="font-medium text-gray-900">{item.name}</div>
                         <div className="text-sm text-gray-500">

@@ -487,7 +487,7 @@ export default function AdminPaymentDetail() {
                   <button
                     type="button"
                     onClick={() => setShowRefundModal(false)}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="flex-1 px-4 py-2 bg-muted/50 text-gray-700 rounded-md hover:bg-gray-400"
                   >
                     Annuler
                   </button>

@@ -96,7 +96,7 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div 
-              className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
               style={{ 
                 width: `${((sections.findIndex(s => s.anchor === activeSection) + 1) / sections.length) * 100}%` 
               }}

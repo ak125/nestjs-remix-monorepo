@@ -87,7 +87,7 @@ export function OrderActions({
         <button
           onClick={() => onMarkReady(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-warning/15 text-yellow-700 rounded-lg hover:bg-warning/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Package className="w-4 h-4" />
           Prête
@@ -123,7 +123,7 @@ export function OrderActions({
         <button
           onClick={() => onCancel(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-destructive/15 text-red-700 rounded-lg hover:bg-destructive/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <XCircle className="w-4 h-4" />
           Annuler
@@ -143,7 +143,7 @@ export function OrderActions({
             }
           }}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-destructive/15 text-red-700 rounded-lg hover:bg-destructive/30 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Trash2 className="w-4 h-4" />
           Supprimer

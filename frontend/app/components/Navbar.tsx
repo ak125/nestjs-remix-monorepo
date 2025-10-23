@@ -68,7 +68,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           
           {/* 🆕 PHASE 7: Badge rôle admin */}
           {isAdmin && (
-            <Badge variant="secondary" className="bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1">
+            <Badge variant="secondary" className="bg-primary/95 text-blue-100 border border-blue-400 flex items-center gap-1">
               <Shield className="w-3 h-3" />
               {isSuperAdmin ? "Super Admin" : "Admin"}
             </Badge>

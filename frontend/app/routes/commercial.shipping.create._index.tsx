@@ -545,7 +545,7 @@ export default function CreateShipment() {
                     className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
                       selectedService && !isSubmitting
                         ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-muted/50 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     {isSubmitting ? (

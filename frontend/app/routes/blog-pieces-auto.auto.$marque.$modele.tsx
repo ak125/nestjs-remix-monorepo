@@ -443,7 +443,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     })}
                   </div>
 
-                  <div className="w-px h-8 bg-gray-300"></div>
+                  <div className="w-px h-8 bg-muted/50"></div>
 
                   {/* Filtre Puissance - Design amélioré */}
                   <div className="flex flex-wrap gap-1.5">

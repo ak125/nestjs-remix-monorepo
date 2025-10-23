@@ -162,7 +162,7 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
         <p className="text-red-600 text-xs mt-1">{error}</p>
         <button
           onClick={loadMenu}
-          className="mt-2 px-3 py-1 bg-destructive/20 text-destructive rounded text-xs hover:bg-red-200 transition-colors"
+          className="mt-2 px-3 py-1 bg-destructive/20 text-destructive rounded text-xs hover:bg-destructive/30 transition-colors"
         >
           Réessayer
         </button>

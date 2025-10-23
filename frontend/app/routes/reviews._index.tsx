@@ -345,7 +345,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "approved"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-success/20 text-success text-sm rounded-md hover:bg-green-200"
+                  className="px-3 py-1 bg-success/20 text-success text-sm rounded-md hover:bg-success/30"
                 >
                   Approuver
                 </button>
@@ -354,7 +354,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "rejected"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-destructive/20 text-destructive text-sm rounded-md hover:bg-red-200"
+                  className="px-3 py-1 bg-destructive/20 text-destructive text-sm rounded-md hover:bg-destructive/30"
                 >
                   Rejeter
                 </button>
@@ -465,7 +465,7 @@ export default function ReviewsPage() {
                               <button
                                 onClick={() => handleStatusUpdate(review.id, "rejected")}
                                 disabled={navigation.state !== "idle"}
-                                className="inline-flex items-center px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                                className="inline-flex items-center px-2 py-1 text-xs bg-destructive/15 text-red-700 rounded hover:bg-destructive/30 disabled:opacity-50"
                               >
                                 <X className="w-3 h-3 mr-1" />
                                 Rejeter

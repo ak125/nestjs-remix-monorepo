@@ -199,7 +199,7 @@ export default function PaymentPage() {
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           
           {/* Header */}
-          <div className="bg-blue-600 px-6 py-4">
+          <div className="bg-primary px-6 py-4">
             <h1 className="text-2xl font-bold text-white">
               Paiement de votre commande
             </h1>

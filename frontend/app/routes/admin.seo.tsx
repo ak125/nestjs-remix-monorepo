@@ -212,7 +212,7 @@ export default function SeoAdmin() {
                   <Alert intent="info">Sitemap: 714K+</Alert>
                   <div className="text-xs text-green-600">↗️ Active</div>
                 </div>
-                <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
+                <div className="w-full bg-primary/30 rounded-full h-1 mt-2">
                   <div className="bg-primary h-1 rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </CardContent>
@@ -232,7 +232,7 @@ export default function SeoAdmin() {
                   </Badge>
                   <div className="text-xs text-green-600">📈 +2.1%</div>
                 </div>
-                <div className="w-full bg-green-200 rounded-full h-1 mt-2">
+                <div className="w-full bg-success/30 rounded-full h-1 mt-2">
                   <div className="bg-success h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
                 </div>
               </CardContent>

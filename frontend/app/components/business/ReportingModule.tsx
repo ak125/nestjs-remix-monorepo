@@ -822,7 +822,7 @@ export function ReportingModule() {
                     <span className="font-semibold">847 GB / 1 TB</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '84.7%' }}></div>
+                    <div className="bg-primary h-2 rounded-full" style={{ width: '84.7%' }}></div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">CPU moyen</span>

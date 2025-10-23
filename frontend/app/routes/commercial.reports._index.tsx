@@ -194,7 +194,7 @@ export default function CommercialReports() {
               <span className="text-sm text-gray-600">Commandes Totales</span>
               <div className="flex items-center">
                 <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                  <div className="bg-primary h-2 rounded-full" style={{width: '100%'}}></div>
                 </div>
                 <span className="text-sm font-semibold">{data.statistics.totalOrders}</span>
               </div>
