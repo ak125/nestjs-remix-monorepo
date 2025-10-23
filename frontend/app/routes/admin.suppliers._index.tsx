@@ -519,8 +519,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
                         key={index}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           link.type === 'brand' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
+                            ? 'info' : 'success'
                         }`}
                         title={link.productInfo ? `${link.productInfo.designation} - ${link.productInfo.brand} (Ref: ${link.productInfo.reference})` : ''}
                       >

@@ -184,8 +184,8 @@ export function AnalyticsDashboard() {
           </div>
           {trend && (
             <div className={`text-xs px-2 py-1 rounded-full ${
-              trend === 'up' ? 'bg-green-100 text-green-800' :
-              trend === 'down' ? 'bg-red-100 text-red-800' :
+              trend === 'up' ? 'success' :
+              trend === 'down' ? 'error' :
               'bg-gray-100 text-gray-800'
             }`}>
               {trend === 'up' ? '📈 En hausse' : trend === 'down' ? '📉 En baisse' : '➡️ Stable'}
