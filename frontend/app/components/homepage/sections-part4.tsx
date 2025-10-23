@@ -404,7 +404,7 @@ function SocialIcon({ icon, href }: { icon: React.ReactNode; href: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+      className="w-10 h-10 bg-gray-800 hover:bg-primary rounded-lg flex items-center justify-center transition-colors"
     >
       {icon}
     </a>

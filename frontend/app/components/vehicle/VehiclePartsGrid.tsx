@@ -48,11 +48,11 @@ export function VehiclePartsGrid({ vehicle, parts = [], loading = false }: Vehic
   const getAvailabilityColor = (availability: string) => {
     switch (availability) {
       case 'in-stock':
-        return 'text-green-600 bg-green-100';
+        return 'text-success bg-success/20';
       case 'low-stock':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-warning bg-warning/20';
       case 'out-of-stock':
-        return 'text-red-600 bg-red-100';
+        return 'text-destructive bg-destructive/20';
       default:
         return 'text-gray-600 bg-gray-100';
     }
