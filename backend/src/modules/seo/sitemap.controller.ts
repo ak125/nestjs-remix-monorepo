@@ -18,9 +18,9 @@ export class SitemapController {
   constructor(private readonly sitemapService: SitemapService) {}
 
   /**
-   * GET /sitemap - Index des sitemaps
+   * GET /api/sitemap ou /api/sitemap/index.xml - Index des sitemaps
    */
-  @Get()
+  @Get(['', 'index.xml'])
   @Header('Content-Type', 'application/xml')
   async getSitemapIndex(@Res() res: Response) {
     try {
@@ -109,6 +109,78 @@ export class SitemapController {
   }
 
   /**
+   * GET /sitemap/modeles.xml - Sitemap des modèles de véhicules partie 1
+   */
+  @Get('modeles.xml')
+  @Header('Content-Type', 'application/xml')
+  async getModelesSitemap(@Res() res: Response) {
+    try {
+      const xmlContent = await this.sitemapService.generateModelesSitemap();
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap modèles:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap modèles',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /sitemap/modeles-2.xml - Sitemap des modèles de véhicules partie 2
+   */
+  @Get('modeles-2.xml')
+  @Header('Content-Type', 'application/xml')
+  async getModeles2Sitemap(@Res() res: Response) {
+    try {
+      const xmlContent = await this.sitemapService.generateModeles2Sitemap();
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap modèles-2:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap modèles partie 2',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /sitemap/types-1.xml - Sitemap des types partie 1
+   */
+  @Get('types-1.xml')
+  @Header('Content-Type', 'application/xml')
+  async getTypes1Sitemap(@Res() res: Response) {
+    try {
+      const xmlContent = await this.sitemapService.generateTypes1Sitemap();
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap types-1:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap types partie 1',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /sitemap/types-2.xml - Sitemap des types partie 2
+   */
+  @Get('types-2.xml')
+  @Header('Content-Type', 'application/xml')
+  async getTypes2Sitemap(@Res() res: Response) {
+    try {
+      const xmlContent = await this.sitemapService.generateTypes2Sitemap();
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap types-2:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap types partie 2',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * GET /sitemap/constructeur/:marque.xml - Sitemap par constructeur
    */
   @Get('constructeur/:marque.xml')
@@ -118,8 +190,15 @@ export class SitemapController {
     @Res() res: Response,
   ) {
     try {
+      const marqueId = parseInt(marque, 10);
+      if (isNaN(marqueId)) {
+        throw new HttpException(
+          `ID de marque invalide: ${marque}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const xmlContent =
-        await this.sitemapService.generateConstructeurSitemap(marque);
+        await this.sitemapService.generateConstructeurSitemap(marqueId);
       res.send(xmlContent);
     } catch (error) {
       this.logger.error(
@@ -154,24 +233,21 @@ export class SitemapController {
   /**
    * GET /sitemap/stats - Statistiques des sitemaps (pour debug)
    */
+    @Get('debug/types')
+  @Header('Content-Type', 'application/json')
+  async debugTypes() {
+    return this.sitemapService.debugTypesMatching();
+  }
+
+  @Get('debug/gammes')
+  @Header('Content-Type', 'application/json')
+  async debugGammes() {
+    return this.sitemapService.debugGammes();
+  }
+
   @Get('stats')
   async getSitemapStats() {
-    try {
-      // Récupération des stats depuis les tables existantes
-      const stats = await this.sitemapService.getSitemapStats();
-
-      return {
-        success: true,
-        stats,
-        lastGenerated: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Erreur récupération stats sitemap:', error);
-      throw new HttpException(
-        'Erreur lors de la récupération des statistiques',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+    return this.sitemapService.getSitemapStats();
   }
 
   /**
