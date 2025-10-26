@@ -11,9 +11,9 @@ echo "🧪 Génération de $NUM_LOGS logs test dans $LOG_FILE"
 # Créer le dossier si nécessaire
 mkdir -p "$(dirname "$LOG_FILE")"
 
-# Paires cohérentes marque/gamme pour auto parts
-# Format: "brand|gamme1,gamme2,gamme3"
-VEHICLE_PAIRS=(
+# Paires cohérentes marque/modèle pour auto parts
+# Format: "marque|modele1,modele2,modele3"
+MARQUES_MODELES=(
     "renault|clio,megane,captur,scenic,twingo,kadjar"
     "peugeot|208,308,3008,5008,2008,partner"
     "citroen|c3,c4,c5,berlingo,spacetourer,c3-aircross"
@@ -27,7 +27,8 @@ VEHICLE_PAIRS=(
     "nissan|micra,qashqai,juke,x-trail,leaf,navara"
     "honda|civic,jazz,cr-v,hr-v,e,accord"
 )
-CATEGORIES=("freins" "embrayage" "distribution" "suspensions" "echappement" "filtres" "amortisseurs" "plaquettes")
+PIECES_CATEGORIES=("freins" "embrayage" "distribution" "suspensions" "echappement" "filtres" "amortisseurs" "plaquettes")
+MOTORISATIONS=("1-5-dci" "2-0-hdi" "1-6-hdi" "2-0-tdi" "1-5-bluehdi" "1-2-tce" "1-0-tsi" "2-0-tfsi" "1-5-tdci" "2-0-cdti")
 COUNTRIES=("FR" "BE" "CH" "LU" "CA" "MC")
 BOTS=("" "" "" "" "" "googlebot" "bingbot" "yandexbot" "baiduspider" "duckduckbot")
 USER_AGENTS=(
@@ -49,14 +50,15 @@ REFERERS=(
 
 # Fonction pour générer un log JSON
 generate_log() {
-    # Choisir une paire brand/gamme cohérente
-    local pair=${VEHICLE_PAIRS[$RANDOM % ${#VEHICLE_PAIRS[@]}]}
-    local brand=$(echo "$pair" | cut -d'|' -f1)
-    local gammes=$(echo "$pair" | cut -d'|' -f2)
-    IFS=',' read -ra gamme_array <<< "$gammes"
-    local gamme=${gamme_array[$RANDOM % ${#gamme_array[@]}]}
+    # Choisir une paire marque/modèle cohérente
+    local pair=${MARQUES_MODELES[$RANDOM % ${#MARQUES_MODELES[@]}]}
+    local marque=$(echo "$pair" | cut -d'|' -f1)
+    local modeles=$(echo "$pair" | cut -d'|' -f2)
+    IFS=',' read -ra modele_array <<< "$modeles"
+    local modele=${modele_array[$RANDOM % ${#modele_array[@]}]}
     
-    local category=${CATEGORIES[$RANDOM % ${#CATEGORIES[@]}]}
+    local pieces_category=${PIECES_CATEGORIES[$RANDOM % ${#PIECES_CATEGORIES[@]}]}
+    local motorisation=${MOTORISATIONS[$RANDOM % ${#MOTORISATIONS[@]}]}
     local country=${COUNTRIES[$RANDOM % ${#COUNTRIES[@]}]}
     local bot=${BOTS[$RANDOM % ${#BOTS[@]}]}
     local ua=${USER_AGENTS[$RANDOM % ${#USER_AGENTS[@]}]}
@@ -71,8 +73,8 @@ generate_log() {
     local uri=""
     
     if [ $path_type -lt 6 ]; then
-        # 60% - URLs de pièces auto
-        uri="/pieces/$brand/$gamme/$category"
+        # 60% - URLs de pièces auto (structure: /pieces/{category}/{marque}/{modele}/{type})
+        uri="/pieces/$pieces_category/$marque/$modele/$motorisation"
     elif [ $path_type -lt 8 ]; then
         # 20% - Autres pages
         local pages=("/" "/catalog" "/search" "/contact" "/about")
