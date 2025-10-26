@@ -11,9 +11,22 @@ echo "🧪 Génération de $NUM_LOGS logs test dans $LOG_FILE"
 # Créer le dossier si nécessaire
 mkdir -p "$(dirname "$LOG_FILE")"
 
-# Marques et gammes pour auto parts
-BRANDS=("renault" "peugeot" "citroen" "volkswagen" "bmw" "mercedes" "audi" "ford" "opel" "toyota" "nissan" "honda")
-GAMMES=("clio" "208" "c3" "golf" "serie-3" "classe-a" "a3" "fiesta" "corsa" "yaris" "qashqai" "civic")
+# Paires cohérentes marque/gamme pour auto parts
+# Format: "brand|gamme1,gamme2,gamme3"
+VEHICLE_PAIRS=(
+    "renault|clio,megane,captur,scenic,twingo,kadjar"
+    "peugeot|208,308,3008,5008,2008,partner"
+    "citroen|c3,c4,c5,berlingo,spacetourer,c3-aircross"
+    "volkswagen|golf,polo,tiguan,passat,t-roc,up"
+    "bmw|serie-1,serie-3,serie-5,x1,x3,x5"
+    "mercedes|classe-a,classe-c,classe-e,gla,glc,gle"
+    "audi|a3,a4,a6,q3,q5,q7"
+    "ford|fiesta,focus,puma,kuga,mustang,ranger"
+    "opel|corsa,astra,crossland,grandland,mokka,combo"
+    "toyota|yaris,corolla,rav4,c-hr,aygo,highlander"
+    "nissan|micra,qashqai,juke,x-trail,leaf,navara"
+    "honda|civic,jazz,cr-v,hr-v,e,accord"
+)
 CATEGORIES=("freins" "embrayage" "distribution" "suspensions" "echappement" "filtres" "amortisseurs" "plaquettes")
 COUNTRIES=("FR" "BE" "CH" "LU" "CA" "MC")
 BOTS=("" "" "" "" "" "googlebot" "bingbot" "yandexbot" "baiduspider" "duckduckbot")
@@ -36,8 +49,13 @@ REFERERS=(
 
 # Fonction pour générer un log JSON
 generate_log() {
-    local brand=${BRANDS[$RANDOM % ${#BRANDS[@]}]}
-    local gamme=${GAMMES[$RANDOM % ${#GAMMES[@]}]}
+    # Choisir une paire brand/gamme cohérente
+    local pair=${VEHICLE_PAIRS[$RANDOM % ${#VEHICLE_PAIRS[@]}]}
+    local brand=$(echo "$pair" | cut -d'|' -f1)
+    local gammes=$(echo "$pair" | cut -d'|' -f2)
+    IFS=',' read -ra gamme_array <<< "$gammes"
+    local gamme=${gamme_array[$RANDOM % ${#gamme_array[@]}]}
+    
     local category=${CATEGORIES[$RANDOM % ${#CATEGORIES[@]}]}
     local country=${COUNTRIES[$RANDOM % ${#COUNTRIES[@]}]}
     local bot=${BOTS[$RANDOM % ${#BOTS[@]}]}
