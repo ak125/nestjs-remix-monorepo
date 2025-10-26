@@ -48,81 +48,93 @@ source = "client_ip"
 database = "/usr/share/GeoIP/GeoLite2-City.mmdb"
 target = "geoip"
 
-# 3. Enrichissement User-Agent (détection bot)
+# 3. Enrichissement User-Agent + Extraction marque/gamme
 [transforms.enrich_user_agent]
 type = "remap"
 inputs = ["enrich_geoip"]
 source = '''
   # Détection bot
   .is_bot = false
-  .bot_name = null
+  .bot = null
   
   user_agent_lower = downcase(.user_agent)
   
   if contains(user_agent_lower, "googlebot") {
     .is_bot = true
-    .bot_name = "Googlebot"
+    .bot = "googlebot"
   } else if contains(user_agent_lower, "bingbot") {
     .is_bot = true
-    .bot_name = "Bingbot"
+    .bot = "bingbot"
   } else if contains(user_agent_lower, "slurp") {
     .is_bot = true
-    .bot_name = "Yahoo"
+    .bot = "yahoo"
   } else if contains(user_agent_lower, "duckduckbot") {
     .is_bot = true
-    .bot_name = "DuckDuckBot"
+    .bot = "duckduckbot"
   } else if contains(user_agent_lower, "baiduspider") {
     .is_bot = true
-    .bot_name = "Baidu"
+    .bot = "baidu"
   } else if contains(user_agent_lower, "yandexbot") {
     .is_bot = true
-    .bot_name = "Yandex"
+    .bot = "yandex"
   } else if contains(user_agent_lower, "facebot") {
     .is_bot = true
-    .bot_name = "Facebook"
+    .bot = "facebook"
   } else if contains(user_agent_lower, "semrushbot") {
     .is_bot = true
-    .bot_name = "SEMrush"
+    .bot = "semrush"
   } else if contains(user_agent_lower, "ahrefsbot") {
     .is_bot = true
-    .bot_name = "Ahrefs"
+    .bot = "ahrefs"
   } else if contains(user_agent_lower, "mj12bot") {
     .is_bot = true
-    .bot_name = "Majestic"
+    .bot = "majestic"
   } else if contains(user_agent_lower, "dotbot") {
     .is_bot = true
-    .bot_name = "Moz"
+    .bot = "moz"
   } else if match(user_agent_lower, r'bot|crawler|spider') {
     .is_bot = true
-    .bot_name = "Unknown Bot"
+    .bot = "other"
   }
   
-  # Détection SEO relevance
-  .is_sitemap = contains(.uri, "sitemap")
-  .is_robots = .uri == "/robots.txt"
+  # Extraction marque depuis URL (pour pièces auto)
+  # Ex: /pieces/renault/clio/freins → brand=renault
+  .brand = null
+  .gamme = null
   
-  # Catégorisation type de page
-  .page_type = "other"
   if contains(.uri, "/pieces/") || contains(.uri, "/produits/") {
-    .page_type = "product"
-  } else if contains(.uri, "/blog/") || contains(.uri, "/conseils/") {
-    .page_type = "blog"
-  } else if .is_sitemap {
-    .page_type = "sitemap"
-  } else if .is_robots {
-    .page_type = "robots"
-  } else if .status >= 400 {
-    .page_type = "error"
+    # Pattern: /pieces/{brand}/{gamme}/{category}
+    parts = split(.uri, "/")
+    if length(parts) >= 3 {
+      .brand = parts[2]
+    }
+    if length(parts) >= 4 {
+      .gamme = parts[3]
+    }
   }
   
-  # Device type (simple detection)
-  if contains(user_agent_lower, "mobile") || contains(user_agent_lower, "android") || contains(user_agent_lower, "iphone") {
-    .device_type = "mobile"
-  } else if contains(user_agent_lower, "tablet") || contains(user_agent_lower, "ipad") {
-    .device_type = "tablet"
-  } else {
-    .device_type = "desktop"
+  # Extraction jour (facette temporelle)
+  .day = format_timestamp!(.timestamp, format: "%Y-%m-%d")
+  
+  # Path nettoyé (sans query string)
+  .path = split(.uri, "?")[0]
+  
+  # Route générique (pour agrégation)
+  # Ex: /pieces/renault/clio/123 → /pieces/:brand/:gamme/:id
+  .route = .path
+  if contains(.path, "/pieces/") && length(parts) >= 5 {
+    .route = "/pieces/:brand/:gamme/:category"
+  } else if contains(.path, "/blog/") {
+    .route = "/blog/:slug"
+  } else if contains(.path, "/produits/") {
+    .route = "/produits/:slug"
   }
+  
+  # Latency en ms (pour tri performance)
+  .latency_ms = to_int(.duration_ms) || 0
+  
+  # Timestamp Unix (pour tri/filtres)
+  .ts = to_unix_timestamp(.timestamp)
 '''
 
 # 4. Ajouter labels pour Loki
@@ -138,13 +150,22 @@ source = '''
     "status": to_string(.status),
     "method": .method,
     "is_bot": to_string(.is_bot),
-    "page_type": .page_type,
-    "device_type": .device_type
+    "day": .day
   }
   
-  # Garder bot_name si présent
-  if exists(.bot_name) {
-    .loki_labels.bot_name = .bot_name
+  # Ajouter bot si présent
+  if exists(.bot) {
+    .loki_labels.bot = .bot
+  }
+  
+  # Ajouter brand si présent
+  if exists(.brand) {
+    .loki_labels.brand = .brand
+  }
+  
+  # Ajouter gamme si présent
+  if exists(.gamme) {
+    .loki_labels.gamme = .gamme
   }
   
   # GeoIP country
@@ -169,33 +190,54 @@ condition = '''
   .status >= 500
 '''
 
-# 6. Préparer format Meilisearch
+# 6. Préparer format Meilisearch (structure optimisée facettes)
 [transforms.format_meilisearch]
 type = "remap"
 inputs = ["filter_seo_logs"]
 source = '''
-  # Structure optimisée pour Meilisearch
+  # Structure Meilisearch avec facettes exactes
   .id = .request_id
-  .timestamp_unix = to_unix_timestamp(.timestamp)
-  .url = .uri
-  .response_size = .bytes_written
   
-  # Simplifier structure (flat)
-  if exists(.geoip.country_name) {
-    .country = .geoip.country_name
-    .country_code = .geoip.country_code
-  }
+  # FACETS (filterableAttributes)
+  .status = .status
+  .method = .method
+  .day = .day
+  .country = .geoip.country_code || null
+  .brand = .brand
+  .gamme = .gamme
+  .bot = .bot
   
+  # SEARCHABLE (searchableAttributes)
+  .path = .path
+  .route = .route
+  .referer = .referer
+  .ua = .user_agent
+  
+  # SORTABLE (sortableAttributes)
+  .ts = .ts
+  .latency_ms = .latency_ms
+  
+  # Champs additionnels (non indexés, affichage uniquement)
+  .client_ip = .client_ip
+  .bytes_written = .bytes_written
+  .host = .host
+  
+  # GeoIP détaillé (optionnel)
   if exists(.geoip.city_name) {
     .city = .geoip.city_name
   }
   
-  # Nettoyer champs non nécessaires pour Meilisearch
+  # Nettoyer champs inutiles
   del(.loki_labels)
   del(.geoip)
   del(.message)
   del(.request)
-  del(.ts)
+  del(.timestamp)
+  del(.user_agent)
+  del(.uri)
+  del(.is_bot)
+  del(.duration_ms)
+  del(.request_id)
 '''
 
 # ==============================================================================

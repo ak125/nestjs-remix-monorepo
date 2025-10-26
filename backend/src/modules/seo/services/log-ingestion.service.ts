@@ -78,20 +78,21 @@ export class LogIngestionService {
    */
   async onModuleInit(): Promise<void> {
     try {
-      const index = this.meilisearch.index('seo_logs');
+      const index = this.meilisearch.index('access_logs');
 
       // Configuration de l'index
       await index.updateSettings({
-        searchableAttributes: ['url', 'referer', 'user_agent', 'bot_name'],
+        searchableAttributes: ['path', 'route', 'referer', 'ua'],
         filterableAttributes: [
           'status',
-          'is_bot',
-          'is_sitemap',
-          'is_robots',
-          'timestamp',
-          'bot_name',
+          'method',
+          'day',
+          'country',
+          'brand',
+          'gamme',
+          'bot',
         ],
-        sortableAttributes: ['timestamp', 'duration_ms', 'response_size'],
+        sortableAttributes: ['ts', 'latency_ms'],
         rankingRules: [
           'words',
           'typo',
@@ -100,9 +101,12 @@ export class LogIngestionService {
           'sort',
           'exactness',
         ],
+        faceting: {
+          maxValuesPerFacet: 100,
+        },
       });
 
-      this.logger.log('✅ Meilisearch index "seo_logs" configuré');
+      this.logger.log('✅ Meilisearch index "access_logs" configuré');
     } catch (error) {
       this.logger.error('❌ Erreur init Meilisearch:', error);
     }
@@ -286,7 +290,7 @@ export class LogIngestionService {
         return 0;
       }
 
-      const index = this.meilisearch.index('seo_logs');
+      const index = this.meilisearch.index('access_logs');
       await index.addDocuments(seoLogs, { primaryKey: 'id' });
 
       this.logger.debug(`✅ ${seoLogs.length} logs SEO indexés`);
@@ -400,16 +404,19 @@ export class LogIngestionService {
   async searchSeoLogs(query: {
     q?: string;
     status?: number;
-    is_bot?: boolean;
-    bot_name?: string;
-    is_sitemap?: boolean;
+    method?: string;
+    day?: string;
+    country?: string;
+    brand?: string;
+    gamme?: string;
+    bot?: string;
     from?: number; // timestamp
     to?: number; // timestamp
     limit?: number;
     offset?: number;
   }) {
     try {
-      const index = this.meilisearch.index('seo_logs');
+      const index = this.meilisearch.index('access_logs');
 
       // Construire filtres
       const filters: string[] = [];
@@ -418,36 +425,50 @@ export class LogIngestionService {
         filters.push(`status = ${query.status}`);
       }
 
-      if (query.is_bot !== undefined) {
-        filters.push(`is_bot = ${query.is_bot}`);
+      if (query.method) {
+        filters.push(`method = "${query.method}"`);
       }
 
-      if (query.bot_name) {
-        filters.push(`bot_name = "${query.bot_name}"`);
+      if (query.day) {
+        filters.push(`day = "${query.day}"`);
       }
 
-      if (query.is_sitemap !== undefined) {
-        filters.push(`is_sitemap = ${query.is_sitemap}`);
+      if (query.country) {
+        filters.push(`country = "${query.country}"`);
+      }
+
+      if (query.brand) {
+        filters.push(`brand = "${query.brand}"`);
+      }
+
+      if (query.gamme) {
+        filters.push(`gamme = "${query.gamme}"`);
+      }
+
+      if (query.bot) {
+        filters.push(`bot = "${query.bot}"`);
       }
 
       if (query.from) {
-        filters.push(`timestamp >= ${query.from}`);
+        filters.push(`ts >= ${query.from}`);
       }
 
       if (query.to) {
-        filters.push(`timestamp <= ${query.to}`);
+        filters.push(`ts <= ${query.to}`);
       }
 
       const results = await index.search(query.q || '', {
         filter: filters.length > 0 ? filters : undefined,
         limit: query.limit || 100,
         offset: query.offset || 0,
-        sort: ['timestamp:desc'],
+        sort: ['ts:desc'],
+        facets: ['status', 'method', 'country', 'brand', 'gamme', 'bot'],
       });
 
       return {
         hits: results.hits,
         total: results.estimatedTotalHits,
+        facets: results.facetDistribution,
         processingTime: results.processingTimeMs,
         query: query.q,
       };
@@ -461,6 +482,7 @@ export class LogIngestionService {
    * Analytics : Top URLs crawlées
    */
   async getTopCrawledUrls(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _limit = 20,
   ): Promise<Array<{ url: string; count: number }>> {
     // TODO: Implémenter avec aggregation Meilisearch ou query directe
@@ -473,6 +495,7 @@ export class LogIngestionService {
    * Analytics : Top bots
    */
   async getTopBots(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _limit = 10,
   ): Promise<Array<{ bot_name: string; count: number }>> {
     this.logger.debug('📡 [TODO] Top bots');
@@ -484,12 +507,12 @@ export class LogIngestionService {
    */
   async getRecentErrors(limit = 50) {
     try {
-      const index = this.meilisearch.index('seo_logs');
+      const index = this.meilisearch.index('access_logs');
 
       const results = await index.search('', {
         filter: 'status >= 400',
         limit,
-        sort: ['timestamp:desc'],
+        sort: ['ts:desc'],
       });
 
       return {
