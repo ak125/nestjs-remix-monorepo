@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  ParseIntPipe,
-  ParseBoolPipe,
-} from '@nestjs/common';
+import { Controller, Get, Query, ParseIntPipe } from '@nestjs/common';
 import { LogIngestionService } from '../services/log-ingestion.service';
 
 @Controller('seo-logs')
@@ -13,16 +7,18 @@ export class SeoLogsController {
 
   /**
    * GET /seo-logs/search
-   * Rechercher dans les logs SEO
+   * Rechercher dans les logs SEO avec facettes e-commerce
    */
   @Get('search')
   async searchLogs(
     @Query('q') q?: string,
     @Query('status', new ParseIntPipe({ optional: true })) status?: number,
-    @Query('is_bot', new ParseBoolPipe({ optional: true })) is_bot?: boolean,
-    @Query('bot_name') bot_name?: string,
-    @Query('is_sitemap', new ParseBoolPipe({ optional: true }))
-    is_sitemap?: boolean,
+    @Query('method') method?: string,
+    @Query('day') day?: string,
+    @Query('country') country?: string,
+    @Query('brand') brand?: string,
+    @Query('gamme') gamme?: string,
+    @Query('bot') bot?: string,
     @Query('from', new ParseIntPipe({ optional: true })) from?: number,
     @Query('to', new ParseIntPipe({ optional: true })) to?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -31,9 +27,12 @@ export class SeoLogsController {
     const results = await this.logIngestionService.searchSeoLogs({
       q,
       status,
-      is_bot,
-      bot_name,
-      is_sitemap,
+      method,
+      day,
+      country,
+      brand,
+      gamme,
+      bot,
       from,
       to,
       limit,
