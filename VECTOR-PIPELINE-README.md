@@ -1,551 +1,363 @@
-# 🚀 Vector Log Pipeline - Guide Complet
+# 📊 Vector SEO Analytics Pipeline
 
-## 📊 Architecture
+Pipeline d'analyse des logs Caddy pour le SEO e-commerce avec extraction automatique des facettes métier (marques auto, gammes, bots).
+
+## 🎯 Objectifs
+
+- **Analyser le trafic SEO** : Détecter les crawlers (Google, Bing, etc.)
+- **Extraire les facettes métier** : Marques auto, gammes de véhicules, catégories de pièces
+- **Mesurer les performances** : Latence, erreurs HTTP, pages lentes
+- **Indexer dans Meilisearch** : Requêtes facettées ultra-rapides pour dashboards
+
+## 🏗️ Architecture
 
 ```
-Caddy → Vector → [ Loki + Meilisearch + Prometheus ]
-                        ↓
-                    Grafana (visualisation)
+┌─────────────────────────────────────────────────────────────────┐
+│                       CADDY WEB SERVER                          │
+│  - Génère logs JSON (access.json)                              │
+│  - Format: Caddy v2 JSON structured logs                       │
+└─────────────────────────────────────────────────────────────────┘
+                              ⬇️
+┌─────────────────────────────────────────────────────────────────┐
+│                      VECTOR (v0.39.0)                           │
+│                                                                 │
+│  📥 SOURCE (file)                                               │
+│    - /var/log/caddy/access.json                                │
+│    - ./logs/caddy-access.json (test)                           │
+│                                                                 │
+│  🔄 TRANSFORM 1: parse_json                                     │
+│    - Parse Caddy JSON                                           │
+│    - Extrait: status, method, uri, client_ip, user_agent...    │
+│    - Calcule: latency_ms = duration * 1000                     │
+│                                                                 │
+│  🔄 TRANSFORM 2: enrich                                         │
+│    - Bot detection (googlebot, bingbot, other)                 │
+│    - Brand extraction depuis /pieces/{brand}/{gamme}/          │
+│    - Gamme extraction (clio, 208, golf, etc.)                  │
+│    - Day formatting (YYYY-MM-DD)                               │
+│                                                                 │
+│  🔄 TRANSFORM 3: format_meilisearch                             │
+│    - ID unique (base64)                                         │
+│    - Format JSON final avec toutes les facettes                │
+│                                                                 │
+│  📤 SINK 1: Meilisearch (HTTP POST)                             │
+│    - Endpoint: http://meilisearch:7700/indexes/access_logs/docs│
+│    - Batch: 50 events / 10 secondes                            │
+│                                                                 │
+│  📤 SINK 2: Console (debug)                                     │
+│    - Affiche JSON transformé dans stdout                       │
+└─────────────────────────────────────────────────────────────────┘
+                              ⬇️
+┌─────────────────────────────────────────────────────────────────┐
+│                    MEILISEARCH (v1.8.3)                         │
+│  - Index: access_logs                                           │
+│  - Facettes: brand, gamme, bot, day, status, method            │
+│  - Recherche full-text sur: path, route, referer, ua           │
+│  - Tri par: ts, latency_ms                                     │
+└─────────────────────────────────────────────────────────────────┘
+                              ⬇️
+┌─────────────────────────────────────────────────────────────────┐
+│              NESTJS BACKEND - Analytics API                     │
+│  - GET /seo-logs/analytics/traffic?period=today                │
+│  - GET /seo-logs/analytics/slow-paths?threshold=800            │
+│  - GET /seo-logs/analytics/bot-hits?bot=googlebot              │
+│  - GET /seo-logs/analytics/brands-stats                        │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Services Déployés
+## 🚀 Démarrage rapide
 
-| Service | Port | Status | Description |
-|---------|------|--------|-------------|
-| **Vector** | 8686, 9598 | ✅ Running | Transformation et routage des logs |
-| **Loki** | 3100 | ✅ Healthy | Stockage time-series (30 jours) |
-| **Meilisearch** | 7700 | ✅ Available | Moteur de recherche pour analytics |
-| **Grafana** | 3001 | ✅ Running | Dashboards (admin/admin) |
-| **Prometheus** | 9090 | ✅ Healthy | Collecte de métriques |
-
----
-
-## 🎯 Fonctionnalités E-commerce
-
-### Facettes Disponibles (7)
-
-1. **brand** - Marques auto (Renault, Peugeot, BMW, etc.)
-2. **gamme** - Modèles (Clio, 208, Serie-3, etc.)
-3. **day** - Date au format YYYY-MM-DD
-4. **country** - Code pays (FR, BE, CH, etc.)
-5. **bot** - Nom du bot (googlebot, bingbot, etc.)
-6. **status** - Code HTTP (200, 404, 500, etc.)
-7. **method** - HTTP method (GET, POST, etc.)
-
-### Champs Searchable (4)
-
-- **path** - URL complète du chemin
-- **route** - Pattern générique (/pieces/:brand/:gamme/:category)
-- **referer** - Page d'origine
-- **ua** - User-Agent complet
-
-### Champs Sortable (2)
-
-- **ts** - Timestamp Unix (tri chronologique)
-- **latency_ms** - Latence en millisecondes (performance)
-
----
-
-## 🔧 Déploiement
-
-### 1. Démarrer le pipeline
+### 1. Prérequis
 
 ```bash
-# Avec le fichier .env.vector
-docker-compose -f docker-compose.vector.yml --env-file .env.vector up -d
-
-# Vérifier l'état
-docker ps | grep -E "vector|loki|meilisearch|grafana|prometheus"
+# Fichier .env.vector avec la clé Meilisearch
+echo "MEILISEARCH_API_KEY=jTjdbszr1gEmMqZXintYlGFjwSNaceDZuK-tYU-NjZM" > .env.vector
 ```
 
-### 2. Initialiser Meilisearch
-
-L'index `access_logs` est déjà créé avec les settings optimisés :
+### 2. Lancer la stack complète
 
 ```bash
-# Vérifier l'index
-curl -s "http://localhost:7700/indexes/access_logs/settings" \
-  -H "Authorization: Bearer <MEILISEARCH_API_KEY>"
+docker-compose -f docker-compose.vector.yml up -d
 ```
 
-### 3. Configurer Caddy (logs JSON)
+Services démarrés :
+- **Vector** : localhost:8686 (API monitoring)
+- **Meilisearch** : localhost:7700
+- **Loki** : localhost:3100
+- **Prometheus** : localhost:9090
+- **Grafana** : localhost:3001
 
-Ajouter dans votre `Caddyfile` :
-
-```caddyfile
-log {
-    output file /var/log/caddy/access.json {
-        roll_size 100mb
-        roll_keep 5
-    }
-    format json
-}
-```
-
-Puis recharger Caddy :
+### 3. Générer des logs de test
 
 ```bash
-docker-compose restart caddy
-# ou
-systemctl reload caddy
+# Générer 100 logs réalistes avec paires brand/gamme cohérentes
+./scripts/generate-test-logs.sh ./logs/caddy-access.json 100
 ```
 
----
+Exemples de logs générés :
+- `renault` → clio, megane, captur, scenic, twingo, kadjar
+- `peugeot` → 208, 308, 3008, 5008, 2008, partner
+- `bmw` → serie-1, serie-3, serie-5, x1, x3, x5
+- `mercedes` → classe-a, classe-c, classe-e, gla, glc, gle
 
-## 📊 Analytics API
-
-### Endpoints Disponibles
-
-#### 1. Traffic Analytics
+### 4. Vérifier que Vector traite les logs
 
 ```bash
-# Aujourd'hui
-GET http://localhost:3000/seo-logs/analytics/traffic?period=today
+# Voir les logs Vector en temps réel
+docker logs -f vector-seo-pipeline
 
-# Hier
-GET http://localhost:3000/seo-logs/analytics/traffic?period=yesterday
-
-# 7 derniers jours
-GET http://localhost:3000/seo-logs/analytics/traffic?period=7days
-
-# 30 derniers jours
-GET http://localhost:3000/seo-logs/analytics/traffic?period=30days
+# Vérifier que Vector a démarré
+docker logs vector-seo-pipeline | grep "Vector has started"
 ```
 
-**Réponse :**
+### 5. Interroger Meilisearch
+
+```bash
+# Source la clé API
+source .env.vector
+
+# Stats de l'index
+curl -s "http://localhost:7700/indexes/access_logs/stats" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" | jq
+
+# Rechercher par marque
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filter": "brand = renault", "limit": 5}' | jq '.hits[] | {brand, gamme, path}'
+
+# Rechercher les bots Google
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filter": "bot = googlebot", "limit": 10}' | jq '.hits[] | {bot, path, day}'
+
+# Pages lentes (>500ms)
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"filter": "latency_ms > 500", "sort": ["latency_ms:desc"], "limit": 5}' | jq '.hits[] | {path, latency_ms, status}'
+```
+
+## 📋 Schéma Meilisearch
+
+### Index: `access_logs`
+
+#### Champs indexés
+
 ```json
 {
-  "period": "today",
-  "totalHits": 15234,
-  "topBrands": [
-    {"value": "renault", "count": 3245},
-    {"value": "peugeot", "count": 2891},
-    {"value": "citroen", "count": 1823}
-  ],
-  "topGammes": [
-    {"value": "clio", "count": 1245},
-    {"value": "208", "count": 1123},
-    {"value": "c3", "count": 892}
-  ],
-  "topCombos": [
-    {"brand": "renault", "gamme": "clio", "count": 1245},
-    {"brand": "peugeot", "gamme": "208", "count": 1123}
-  ],
-  "topCountries": [
-    {"value": "FR", "count": 12500},
-    {"value": "BE", "count": 1800},
-    {"value": "CH", "count": 934}
-  ],
-  "botStats": {
-    "totalBots": 2345,
-    "totalHumans": 12889,
-    "ratio": 0.18
-  },
-  "statusDistribution": [
-    {"value": "200", "count": 14234},
-    {"value": "404", "count": 823},
-    {"value": "500", "count": 177}
-  ]
+  "id": "base64_unique_id",
+  "ts": 1729970000,
+  "day": "2025-10-26",
+  "status": 200,
+  "method": "GET",
+  "path": "/pieces/renault/clio/freins",
+  "route": "/pieces/renault/clio/freins",
+  "host": "automecanik.fr",
+  "client_ip": "185.24.15.123",
+  "latency_ms": 234,
+  "bytes_written": 15432,
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+  "referer": "https://www.google.com/search?q=pieces+auto",
+  "bot": "googlebot",
+  "brand": "renault",
+  "gamme": "clio",
+  "country": null,
+  "city": null
 }
 ```
 
-#### 2. Slow Paths (Performance)
+#### Configuration Meilisearch
 
 ```bash
-# Chemins > 800ms aujourd'hui
-GET http://localhost:3000/seo-logs/analytics/slow-paths?threshold=800
+# Champs filtrables (facettes)
+filterableAttributes: [
+  "status", "method", "day", "country", "brand", "gamme", "bot"
+]
 
-# Chemins > 500ms hier
-GET http://localhost:3000/seo-logs/analytics/slow-paths?threshold=500&day=2025-10-25
+# Champs cherchables
+searchableAttributes: [
+  "path", "route", "referer", "ua"
+]
 
-# Top 20 plus lents
-GET http://localhost:3000/seo-logs/analytics/slow-paths?threshold=800&limit=20
+# Champs triables
+sortableAttributes: [
+  "ts", "latency_ms"
+]
+
+# Nombre max de valeurs par facette
+maxValuesPerFacet: 100
 ```
 
-**Réponse :**
-```json
-{
-  "threshold": 800,
-  "totalSlow": 234,
-  "stats": {
-    "avg": 1234,
-    "p50": 950,
-    "p95": 1850,
-    "p99": 2340,
-    "max": 3456
-  },
-  "topSlow": [
-    {
-      "route": "/pieces/:brand/:gamme/:category",
-      "count": 45,
-      "avgLatency": 1523,
-      "p95": 2100,
-      "maxLatency": 3456,
-      "examples": ["/pieces/renault/clio/freins"]
-    }
-  ]
-}
-```
+## 🔍 Exemples de requêtes analytiques
 
-#### 3. Bot Hits
+### Trafic par marque
 
 ```bash
-# Tous les bots
-GET http://localhost:3000/seo-logs/analytics/bot-hits
-
-# Googlebot uniquement
-GET http://localhost:3000/seo-logs/analytics/bot-hits?bot=googlebot
-
-# 50 premiers résultats, offset 100
-GET http://localhost:3000/seo-logs/analytics/bot-hits?limit=50&offset=100
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facets": ["brand"],
+    "limit": 0
+  }' | jq '.facetDistribution.brand'
 ```
 
-**Réponse :**
-```json
-{
-  "total": 2345,
-  "offset": 0,
-  "limit": 100,
-  "bots": [
-    {"value": "googlebot", "count": 1234},
-    {"value": "bingbot", "count": 567},
-    {"value": "yandexbot", "count": 234}
-  ],
-  "hits": [
-    {
-      "ts": 1729972800,
-      "path": "/pieces/renault/clio/freins",
-      "bot": "googlebot",
-      "status": 200,
-      "latency_ms": 123,
-      "country": "US"
-    }
-  ]
-}
-```
-
----
-
-## 🛠️ CLI Scripts
-
-### 1. Queries Pré-configurées
+### Top 10 gammes consultées
 
 ```bash
-cd /workspaces/nestjs-remix-monorepo
-chmod +x meilisearch-queries.sh
-./meilisearch-queries.sh
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facets": ["gamme"],
+    "limit": 0
+  }' | jq '.facetDistribution.gamme | to_entries | sort_by(.value) | reverse | .[0:10]'
 ```
 
-**10 queries disponibles :**
-1. Requêtes par statut (200, 404, 500)
-2. Top 10 chemins les plus visités
-3. Erreurs 404 du jour
-4. Trafic par pays
-5. Hits de bots (Google, Bing, Yandex)
-6. Top 15 marques auto
-7. Top 15 gammes par marque
-8. Performance > 500ms
-9. Trafic par jour (7 derniers)
-10. Combinaisons brand+gamme populaires
-
-### 2. Dashboard Trafic Complet
+### Ratio bots vs humains
 
 ```bash
-chmod +x query-traffic-analytics.sh
-
-# Aujourd'hui
-./query-traffic-analytics.sh today
-
-# Hier
-./query-traffic-analytics.sh yesterday
-
-# 7 jours
-./query-traffic-analytics.sh 7days
-
-# 30 jours
-./query-traffic-analytics.sh 30days
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "facets": ["bot"],
+    "limit": 0
+  }' | jq '.facetDistribution.bot'
 ```
 
-**Affichage :**
-```
-===========================================
-ANALYTICS DASHBOARD - TODAY
-===========================================
-
-📊 TOTAL: 15,234 hits
-
-🏆 TOP 15 BRANDS
-┌─────────┬────────┐
-│ Brand   │ Count  │
-├─────────┼────────┤
-│ renault │ 3,245  │
-│ peugeot │ 2,891  │
-│ citroen │ 1,823  │
-└─────────┴────────┘
-
-🚗 TOP 15 GAMMES
-┌────────┬────────┐
-│ Gamme  │ Count  │
-├────────┼────────┤
-│ clio   │ 1,245  │
-│ 208    │ 1,123  │
-│ c3     │  892   │
-└────────┴────────┘
-
-🌍 TOP 10 COUNTRIES
-┌─────────┬────────┐
-│ Country │ Count  │
-├─────────┼────────┤
-│ FR      │ 12,500 │
-│ BE      │  1,800 │
-│ CH      │    934 │
-└─────────┴────────┘
-
-🤖 BOTS vs HUMANS
-Bots:    2,345 (18%)
-Humans: 12,889 (82%)
-```
-
-### 3. Analyse Performance
+### Erreurs 404 par jour
 
 ```bash
-chmod +x query-slow-paths.sh
-
-# Chemins > 800ms
-./query-slow-paths.sh 800
-
-# Chemins > 500ms hier
-./query-slow-paths.sh 500 2025-10-25
+curl -s -X POST "http://localhost:7700/indexes/access_logs/search" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filter": "status = 404",
+    "facets": ["day"],
+    "limit": 0
+  }' | jq '.facetDistribution.day'
 ```
 
-### 4. Listing Bots
+## 🛠️ Maintenance
+
+### Redémarrer Vector
 
 ```bash
-chmod +x query-bot-hits.sh
-
-# 100 premiers hits
-./query-bot-hits.sh 100 0
-
-# Googlebot uniquement
-./query-bot-hits.sh 100 0 googlebot
+docker restart vector-seo-pipeline
 ```
 
----
+### Voir les logs d'erreur
 
-## 📈 Grafana Dashboards
-
-### Accès
-
-```
-URL: http://localhost:3001
-User: admin
-Password: admin
+```bash
+docker logs vector-seo-pipeline 2>&1 | grep -i error
 ```
 
-### Datasources Provisionnés
+### Tester la config Vector
 
-1. **Loki** (par défaut)
-   - URL: http://loki:3100
-   - Retention: 30 jours
-   - Indexed labels: bot, brand, gamme, day, country
-
-2. **Prometheus**
-   - URL: http://prometheus:9090
-   - Métriques Vector, Loki, Meilisearch
-
-### Queries Loki Utiles
-
-```logql
-# Tous les logs du jour
-{job="caddy_access"} | json
-
-# Erreurs 404 sur Renault Clio
-{job="caddy_access", brand="renault", gamme="clio", status="404"} | json
-
-# Bots Google aujourd'hui
-{job="caddy_access", bot="googlebot", day="2025-10-26"} | json
-
-# Trafic FR avec latence > 1s
-{job="caddy_access", country="FR"} | json | latency_ms > 1000
-
-# Agrégation: hits par heure
-sum by (brand) (count_over_time({job="caddy_access"}[1h]))
+```bash
+docker exec vector-seo-pipeline vector validate /etc/vector/vector.toml
 ```
 
----
+### Vider l'index Meilisearch
 
-## 🔍 Troubleshooting
+```bash
+curl -X DELETE "http://localhost:7700/indexes/access_logs/documents" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY"
+```
 
-### Services ne démarrent pas
+### Monitoring Vector
+
+```bash
+# Health check
+curl http://localhost:8686/health
+
+# Métriques Prometheus
+curl http://localhost:8686/metrics
+```
+
+## 📊 Dashboards Grafana
+
+TODO: Créer dashboards Grafana pour :
+- Trafic SEO en temps réel
+- Top 10 marques/gammes
+- Latence P50/P95/P99
+- Ratio bots/humains
+- Erreurs 4xx/5xx
+
+## 🐛 Troubleshooting
+
+### Vector ne démarre pas
 
 ```bash
 # Vérifier les logs
-docker logs vector-seo-pipeline --tail 50
-docker logs loki-logs --tail 50
-docker logs meilisearch-seo --tail 50
-docker logs grafana-dashboards --tail 50
+docker logs vector-seo-pipeline
 
-# Vérifier la santé
-docker ps | grep -E "vector|loki|meilisearch|grafana|prometheus"
-
-# Redémarrer un service
-docker-compose -f docker-compose.vector.yml --env-file .env.vector restart <service>
+# Vérifier la config VRL
+docker exec vector-seo-pipeline vector validate /etc/vector/vector.toml
 ```
 
-### Meilisearch: "Master key too short"
+### Meilisearch ne reçoit pas de données
 
 ```bash
-# Générer une clé 32-byte sécurisée
-openssl rand -base64 32
+# 1. Vérifier que Vector traite les logs
+docker logs vector-seo-pipeline | tail -20
 
-# Mettre à jour .env.vector
-MEILISEARCH_API_KEY=<nouvelle_clé>
+# 2. Vérifier la clé API
+docker inspect meilisearch-seo | grep MEILI_MASTER_KEY
 
-# Redémarrer
-docker-compose -f docker-compose.vector.yml --env-file .env.vector restart meilisearch
-```
-
-### Loki: "split_queries_by_interval error"
-
-```bash
-# Vérifier loki-config.yaml
-# Le flag doit être dans limits_config, pas query_range
-
-# Correct:
-limits_config:
-  split_queries_by_interval: 1h
-
-# Incorrect:
-query_range:
-  split_queries_by_interval: 1h  # ❌
-```
-
-### Grafana: "Unknown escape character"
-
-```bash
-# Vérifier grafana/provisioning/datasources/*.yml
-# Utiliser ${var} au lieu de $${var} dans les fichiers YAML
-
-# Correct:
-url: '${__value.raw}'
-
-# Incorrect:
-url: '$${__value.raw}'  # ❌
-```
-
-### Vector: unhealthy
-
-```bash
-# Normal si pas de logs Caddy encore
-# Vérifier l'API Vector
-curl http://localhost:8686/health
-
-# Vérifier les métriques
-curl http://localhost:9598/metrics
-
-# Injecter un log test
-echo '{"request":{"method":"GET","uri":"/pieces/renault/clio/freins","host":"automecanik.com"},"duration":0.123,"status":200}' >> /var/log/caddy/access.json
-```
-
-### Pas de données dans Meilisearch
-
-```bash
-# Vérifier que Vector envoie des logs
-docker logs vector-seo-pipeline | grep meilisearch
-
-# Vérifier l'index
-curl -s "http://localhost:7700/indexes/access_logs/stats" \
-  -H "Authorization: Bearer <MEILISEARCH_API_KEY>"
-
-# Rechercher des documents
-curl -s "http://localhost:7700/indexes/access_logs/search" \
-  -H "Authorization: Bearer <MEILISEARCH_API_KEY>" \
+# 3. Tester manuellement
+curl -X POST "http://localhost:7700/indexes/access_logs/documents" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"q": "", "limit": 10}'
+  -d '[{"id": "test123", "path": "/test", "ts": 1234567890}]'
+
+# 4. Vérifier les stats
+curl "http://localhost:7700/indexes/access_logs/stats" \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY"
 ```
 
----
+### Erreurs VRL dans Vector
 
-## 🎯 Next Steps
+Erreurs courantes et solutions :
 
-### 1. Télécharger GeoIP Database
+1. **`can't abort infallible function`**
+   - Enlever `!` des fonctions infaillibles : `to_int()` au lieu de `to_int!()`
 
-```bash
-# S'inscrire sur MaxMind
-https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
+2. **`fallible argument`**
+   - Ajouter `!` aux fonctions fallibles : `to_string!()`, `parse_json!()`
 
-# Télécharger GeoLite2-City.mmdb
-# Placer dans: ./geoip/GeoLite2-City.mmdb
+3. **`type mismatch`**
+   - Ajouter assertions de type : `string!(.path)`, `to_float!(.duration)`
 
-# Redémarrer Vector
-docker-compose -f docker-compose.vector.yml --env-file .env.vector restart vector
-```
+## 📚 Ressources
 
-### 2. Créer des Dashboards Grafana
+- [Vector Documentation](https://vector.dev/docs/)
+- [VRL Reference](https://vrl.dev/)
+- [Meilisearch API](https://www.meilisearch.com/docs)
+- [Caddy JSON Logs](https://caddyserver.com/docs/logging)
 
-- Dashboard "SEO Traffic Overview"
-  - Panel: Hits par heure (time series)
-  - Panel: Top 10 brands (bar chart)
-  - Panel: Bots vs Humans (pie chart)
-  - Panel: Geographic distribution (worldmap)
+## 🎯 TODO
 
-- Dashboard "Performance Monitoring"
-  - Panel: Latence p50/p95/p99 (graph)
-  - Panel: Slow paths (table)
-  - Panel: Error rate (time series)
+- [ ] Réactiver Loki sink avec labels corrects
+- [ ] Réactiver Prometheus metrics exporter
+- [ ] Créer dashboards Grafana
+- [ ] Ajouter GeoIP pour extraction country/city
+- [ ] Intégrer avec NestJS Analytics API
+- [ ] Tests de charge (10k+ logs/minute)
+- [ ] Rotation automatique des logs Caddy
 
-### 3. Alertes Prometheus
+## 📝 Changelog
 
-```yaml
-# Exemple: Taux d'erreur 404 > 5%
-- alert: HighErrorRate
-  expr: rate(http_requests_total{status="404"}[5m]) > 0.05
-  for: 10m
-  annotations:
-    summary: "Taux d'erreur 404 élevé"
-```
+### 2025-10-26 - v1.0.0 🎉
 
-### 4. Intégrer au Frontend
-
-```typescript
-// frontend/app/routes/admin/analytics.tsx
-export async function loader() {
-  const analytics = await fetch('/seo-logs/analytics/traffic?period=today');
-  return json({ analytics });
-}
-```
-
----
-
-## 📚 Documentation
-
-- **Vector**: https://vector.dev/docs/
-- **Loki**: https://grafana.com/docs/loki/latest/
-- **Meilisearch**: https://www.meilisearch.com/docs
-- **Grafana**: https://grafana.com/docs/grafana/latest/
-- **Prometheus**: https://prometheus.io/docs/
-
----
-
-## ✅ Checklist Déploiement Production
-
-- [ ] Générer clés sécurisées (32+ bytes)
-- [ ] Configurer HTTPS pour Grafana (reverse proxy)
-- [ ] Limiter accès Meilisearch API (firewall)
-- [ ] Configurer retention Loki (actuellement 30j)
-- [ ] Télécharger GeoIP database
-- [ ] Créer dashboards Grafana custom
-- [ ] Configurer alertes Prometheus
-- [ ] Backup régulier des volumes Docker
-- [ ] Monitoring des services (healthchecks)
-- [ ] Rate limiting sur API analytics
-- [ ] Logs Vector en mode JSON (pas console)
-- [ ] Optimiser taille des chunks Loki
-- [ ] Index Meilisearch: pagination optimale
-
----
-
-**Auteur**: Système Vector Pipeline Analytics  
-**Version**: 1.0.0  
-**Date**: 2025-10-26  
-**Status**: ✅ Production Ready
+- ✅ Pipeline Vector → Meilisearch fonctionnel
+- ✅ Extraction brand/gamme depuis URLs /pieces/
+- ✅ Détection bots (googlebot, bingbot, other)
+- ✅ Facettes: brand, gamme, bot, day, status, method
+- ✅ Script génération logs test avec paires cohérentes
+- ✅ Batch optimisé (50 events / 10s)
+- ✅ Intégration .env.vector pour clés API
+- ✅ Paires marque/modèle réalistes (renault→clio/megane, peugeot→208/308)
