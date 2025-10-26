@@ -19,6 +19,9 @@ import { SitemapHygieneService } from './services/sitemap-hygiene.service';
 // 🌍 Service Hreflang
 import { HreflangService } from './services/hreflang.service';
 
+// 🖼️ Service Images Produits
+import { ProductImageService } from './services/product-image.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -58,6 +61,7 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
     SitemapScalableService, // 🚀 Service Sitemap V2 Scalable
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap
     HreflangService, // 🌍 Service Hreflang
+    ProductImageService, // 🖼️ Service Images Produits
 
     // Logger spécialisé pour V4
     {
@@ -74,6 +78,7 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
     SitemapScalableService, // 🚀 Service Sitemap V2 Scalable exporté
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap exporté
     HreflangService, // 🌍 Service Hreflang exporté
+    ProductImageService, // 🖼️ Service Images Produits exporté
   ],
 })
 export class SeoModule {
@@ -89,6 +94,7 @@ export class SeoModule {
     this.logger.log('   • SitemapScalableService (🚀 V2 Scalable)');
     this.logger.log('   • SitemapHygieneService (🧹 V3 Hygiene)');
     this.logger.log('   • HreflangService (🌍 Multilingual)');
+    this.logger.log('   • ProductImageService (🖼️ Images Produits)');
     this.logger.log('✅ Contrôleurs disponibles:');
     this.logger.log('   • SeoController');
     this.logger.log('   • SeoEnhancedController');
@@ -122,6 +128,11 @@ export class SeoModule {
     this.logger.log('   • Symétrie parfaite entre variantes');
     this.logger.log('   • x-default automatique');
     this.logger.log('   • Validation intégrité hreflang');
+    this.logger.log('🖼️ Sitemaps Images (Boost E-commerce):');
+    this.logger.log('   • 1 image principale + 2-4 vues utiles');
+    this.logger.log('   • URLs publiques stables (CDN Supabase)');
+    this.logger.log('   • Balises image:image conformes Google');
+    this.logger.log('   • Titres et captions auto-générés');
   }
 }
 
