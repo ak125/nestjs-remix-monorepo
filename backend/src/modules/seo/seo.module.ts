@@ -25,6 +25,9 @@ import { ProductImageService } from './services/product-image.service';
 // 🔄 Service Delta Sitemap
 import { SitemapDeltaService } from './services/sitemap-delta.service';
 
+// 🗜️ Service Streaming Sitemap
+import { SitemapStreamingService } from './services/sitemap-streaming.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -38,6 +41,9 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
 
 // 🔄 Contrôleur Delta Sitemap
 import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
+
+// 🗜️ Contrôleur Streaming Sitemap
+import { SitemapStreamingController } from './controllers/sitemap-streaming.controller';
 
 @Module({
   imports: [
@@ -58,6 +64,7 @@ import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
     DynamicSeoController, // 🎯 Contrôleur V4 Ultimate
     SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
+    SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
   ],
 
   providers: [
@@ -70,6 +77,7 @@ import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
     HreflangService, // 🌍 Service Hreflang
     ProductImageService, // 🖼️ Service Images Produits
     SitemapDeltaService, // 🔄 Service Delta Sitemap
+    SitemapStreamingService, // 🗜️ Service Streaming Sitemap
 
     // Logger spécialisé pour V4
     {
@@ -88,6 +96,7 @@ import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
     HreflangService, // 🌍 Service Hreflang exporté
     ProductImageService, // 🖼️ Service Images Produits exporté
     SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
+    SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
   ],
 })
 export class SeoModule {
@@ -105,6 +114,7 @@ export class SeoModule {
     this.logger.log('   • HreflangService (🌍 Multilingual)');
     this.logger.log('   • ProductImageService (🖼️ Images Produits)');
     this.logger.log('   • SitemapDeltaService (🔄 Delta Journalier)');
+    this.logger.log('   • SitemapStreamingService (🗜️ Streaming GZIP)');
     this.logger.log('✅ Contrôleurs disponibles:');
     this.logger.log('   • SeoController');
     this.logger.log('   • SeoEnhancedController');
@@ -112,6 +122,7 @@ export class SeoModule {
     this.logger.log('   • DynamicSeoController (🎯 V4 Ultimate)');
     this.logger.log('   • SitemapScalableController (🚀 V2 Scalable)');
     this.logger.log('   • SitemapDeltaController (🔄 Delta Sitemap)');
+    this.logger.log('   • SitemapStreamingController (🗜️ Streaming GZIP)');
     this.logger.log('🚀 Améliorations V4 Ultimate:');
     this.logger.log('   • +400% fonctionnalités vs service original');
     this.logger.log('   • +250% performance avec cache intelligent');
@@ -149,6 +160,12 @@ export class SeoModule {
     this.logger.log('   • Détection changements automatique');
     this.logger.log('   • sitemap-latest.xml quotidien');
     this.logger.log('   • Rétention 30 jours dans Redis');
+    this.logger.log('🗜️ Streaming GZIP (Gros Volumes):');
+    this.logger.log('   • Écriture shards .xml.gz sur disque');
+    this.logger.log('   • Compression GZIP niveau 9 (70-90% réduction)');
+    this.logger.log('   • 50k URLs par shard (limite Google)');
+    this.logger.log('   • Index auto-généré après shards');
+    this.logger.log('   • SHA256 pour intégrité fichiers');
   }
 }
 
