@@ -1,0 +1,321 @@
+#!/bin/bash
+
+# ============================================
+# Analytics trafic par brand/gamme/country/bot
+# ============================================
+
+MEILISEARCH_URL="http://localhost:7700"
+MEILISEARCH_KEY="masterKey"
+INDEX="access_logs"
+
+# Couleurs
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+# Paramètres
+PERIOD=${1:-"today"}     # today, yesterday, 7days, 30days, custom
+CUSTOM_DAY=${2:-""}      # Si period=custom, spécifier YYYY-MM-DD
+
+echo -e "${CYAN}📊 ANALYTICS TRAFIC E-COMMERCE${NC}\n"
+
+# Calcul période
+case $PERIOD in
+  "today")
+    DAY_FILTER="day = \"$(date +%Y-%m-%d)\""
+    PERIOD_LABEL="Aujourd'hui ($(date +%Y-%m-%d))"
+    ;;
+  "yesterday")
+    DAY_FILTER="day = \"$(date -d yesterday +%Y-%m-%d)\""
+    PERIOD_LABEL="Hier ($(date -d yesterday +%Y-%m-%d))"
+    ;;
+  "7days")
+    DAY_FILTER="day >= \"$(date -d '7 days ago' +%Y-%m-%d)\""
+    PERIOD_LABEL="7 derniers jours"
+    ;;
+  "30days")
+    DAY_FILTER="day >= \"$(date -d '30 days ago' +%Y-%m-%d)\""
+    PERIOD_LABEL="30 derniers jours"
+    ;;
+  "custom")
+    if [ -z "$CUSTOM_DAY" ]; then
+      echo "Erreur: Spécifier un jour (YYYY-MM-DD) pour period=custom"
+      exit 1
+    fi
+    DAY_FILTER="day = \"${CUSTOM_DAY}\""
+    PERIOD_LABEL="Jour spécifique (${CUSTOM_DAY})"
+    ;;
+  *)
+    echo "Erreur: Period invalide (today|yesterday|7days|30days|custom)"
+    exit 1
+    ;;
+esac
+
+echo -e "${BLUE}📅 Période: ${PERIOD_LABEL}${NC}\n"
+
+# ============================================
+# 1. TRAFIC PAR BRAND
+# ============================================
+echo -e "${YELLOW}🚗 TOP BRANDS${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER} AND brand EXISTS\",
+    \"facets\": [\"brand\"],
+    \"limit\": 0
+  }" | jq -r '
+"┌─────────────────────────────────────────┐",
+"│  BRAND            HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+(
+  .facetDistribution.brand | 
+  to_entries | 
+  sort_by(-.value) | 
+  .[0:15] |
+  (map(.value) | add) as $total |
+  .[] | 
+  "│  \(.key | ljust(15))  \(.value | tostring | ljust(8))  \(((.value / $total * 100) | floor | tostring) + "%" | ljust(10)) │"
+),
+"└─────────────────────────────────────────┘"
+'
+
+# ============================================
+# 2. TRAFIC PAR GAMME (TOP MODÈLES)
+# ============================================
+echo -e "\n${YELLOW}🏎️  TOP GAMMES (MODÈLES)${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER} AND gamme EXISTS\",
+    \"facets\": [\"gamme\"],
+    \"limit\": 0
+  }" | jq -r '
+"┌─────────────────────────────────────────┐",
+"│  GAMME            HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+(
+  .facetDistribution.gamme | 
+  to_entries | 
+  sort_by(-.value) | 
+  .[0:15] |
+  (map(.value) | add) as $total |
+  .[] | 
+  "│  \(.key | ljust(15))  \(.value | tostring | ljust(8))  \(((.value / $total * 100) | floor | tostring) + "%" | ljust(10)) │"
+),
+"└─────────────────────────────────────────┘"
+'
+
+# ============================================
+# 3. TRAFIC PAR PAYS
+# ============================================
+echo -e "\n${YELLOW}🌍 DISTRIBUTION GÉOGRAPHIQUE${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER} AND country EXISTS\",
+    \"facets\": [\"country\"],
+    \"limit\": 0
+  }" | jq -r '
+"┌─────────────────────────────────────────┐",
+"│  PAYS             HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+(
+  .facetDistribution.country | 
+  to_entries | 
+  sort_by(-.value) | 
+  .[0:10] |
+  (map(.value) | add) as $total |
+  .[] | 
+  "│  \(.key | ljust(15))  \(.value | tostring | ljust(8))  \(((.value / $total * 100) | floor | tostring) + "%" | ljust(10)) │"
+),
+"└─────────────────────────────────────────┘"
+'
+
+# ============================================
+# 4. MATRICE BRAND x GAMME (TOP COMBOS)
+# ============================================
+echo -e "\n${YELLOW}🔥 TOP COMBINAISONS BRAND + GAMME${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER} AND brand EXISTS AND gamme EXISTS\",
+    \"limit\": 1000,
+    \"attributesToRetrieve\": [\"brand\", \"gamme\"]
+  }" | jq -r '
+"┌───────────────────────────────────────────────────┐",
+"│  BRAND + GAMME                        HITS        │",
+"├───────────────────────────────────────────────────┤",
+(
+  [.hits | group_by("\(.brand)|\(.gamme)") | .[] | {
+    combo: (.[0].brand + " " + .[0].gamme),
+    hits: length
+  }] |
+  sort_by(-.hits) | 
+  .[0:15] | 
+  .[] | 
+  "│  \(.combo | ljust(35))  \(.hits | tostring | ljust(11)) │"
+),
+"└───────────────────────────────────────────────────┘"
+'
+
+# ============================================
+# 5. TRAFIC BOTS vs HUMAINS
+# ============================================
+echo -e "\n${YELLOW}🤖 TRAFIC BOTS vs HUMAINS${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER}\",
+    \"facets\": [\"bot\"],
+    \"limit\": 0
+  }" | jq -r '
+(.facetDistribution.bot // {} | to_entries | map(.value) | add // 0) as $bot_hits |
+(.estimatedTotalHits - $bot_hits) as $human_hits |
+
+"┌─────────────────────────────────────────┐",
+"│  TYPE             HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+"│  Humains          \($human_hits | tostring | ljust(8))  \((($human_hits / .estimatedTotalHits * 100) | floor | tostring) + "%" | ljust(10)) │",
+"│  Bots             \($bot_hits | tostring | ljust(8))  \((($bot_hits / .estimatedTotalHits * 100) | floor | tostring) + "%" | ljust(10)) │",
+"└─────────────────────────────────────────┘",
+"",
+"Top Bots:",
+(.facetDistribution.bot | to_entries | sort_by(-.value) | .[0:5] | .[] | "  - \(.key): \(.value) hits")
+'
+
+# ============================================
+# 6. STATUTS HTTP
+# ============================================
+echo -e "\n${YELLOW}📈 DISTRIBUTION STATUTS HTTP${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER}\",
+    \"facets\": [\"status\"],
+    \"limit\": 0
+  }" | jq -r '
+"┌─────────────────────────────────────────┐",
+"│  STATUS           HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+(
+  .facetDistribution.status | 
+  to_entries | 
+  sort_by(.key | tonumber) |
+  (map(.value) | add) as $total |
+  .[] | 
+  "│  \(.key | ljust(15))  \(.value | tostring | ljust(8))  \(((.value / $total * 100) | floor | tostring) + "%" | ljust(10)) │"
+),
+"└─────────────────────────────────────────┘"
+'
+
+# ============================================
+# 7. MÉTHODES HTTP
+# ============================================
+echo -e "\n${YELLOW}🔧 DISTRIBUTION MÉTHODES HTTP${NC}"
+
+curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+  -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"filter\": \"${DAY_FILTER}\",
+    \"facets\": [\"method\"],
+    \"limit\": 0
+  }" | jq -r '
+"┌─────────────────────────────────────────┐",
+"│  METHOD           HITS      % TRAFIC    │",
+"├─────────────────────────────────────────┤",
+(
+  .facetDistribution.method | 
+  to_entries | 
+  sort_by(-.value) |
+  (map(.value) | add) as $total |
+  .[] | 
+  "│  \(.key | ljust(15))  \(.value | tostring | ljust(8))  \(((.value / $total * 100) | floor | tostring) + "%" | ljust(10)) │"
+),
+"└─────────────────────────────────────────┘"
+'
+
+# ============================================
+# 8. TENDANCE JOURNALIÈRE (si période > 1 jour)
+# ============================================
+if [[ "$PERIOD" == "7days" ]] || [[ "$PERIOD" == "30days" ]]; then
+  echo -e "\n${YELLOW}📊 TENDANCE PAR JOUR${NC}"
+  
+  curl -s "${MEILISEARCH_URL}/indexes/${INDEX}/search" \
+    -H "Authorization: Bearer ${MEILISEARCH_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"filter\": \"${DAY_FILTER}\",
+      \"facets\": [\"day\"],
+      \"limit\": 0
+    }" | jq -r '
+  "┌───────────────────────────────┐",
+  "│  DATE           HITS          │",
+  "├───────────────────────────────┤",
+  (
+    .facetDistribution.day | 
+    to_entries | 
+    sort_by(.key) |
+    .[] | 
+    "│  \(.key)      \(.value | tostring | ljust(12)) │"
+  ),
+  "└───────────────────────────────┘"
+  '
+fi
+
+echo -e "\n${GREEN}✅ Analytics terminées${NC}\n"
+
+# Aide
+cat << 'HELP'
+═══════════════════════════════════════════════════════════════
+USAGE:
+  ./query-traffic-analytics.sh [PERIOD] [CUSTOM_DAY]
+
+PÉRIODES:
+  today      - Aujourd'hui (défaut)
+  yesterday  - Hier
+  7days      - 7 derniers jours
+  30days     - 30 derniers jours
+  custom     - Jour spécifique (nécessite CUSTOM_DAY)
+
+EXEMPLES:
+  ./query-traffic-analytics.sh                    # Aujourd'hui
+  ./query-traffic-analytics.sh yesterday          # Hier
+  ./query-traffic-analytics.sh 7days              # 7 jours
+  ./query-traffic-analytics.sh 30days             # 30 jours
+  ./query-traffic-analytics.sh custom 2025-10-20  # 20 octobre 2025
+
+ANALYTICS FOURNIES:
+  1. 🚗 Top brands (Renault, Peugeot, BMW...)
+  2. 🏎️  Top gammes (Clio, 208, Serie 3...)
+  3. 🌍 Distribution géographique (FR, BE, CH...)
+  4. 🔥 Top combinaisons brand + gamme
+  5. 🤖 Trafic bots vs humains
+  6. 📈 Distribution statuts HTTP
+  7. 🔧 Distribution méthodes HTTP
+  8. 📊 Tendance journalière (si 7j/30j)
+
+INSIGHTS BUSINESS:
+  - Identifier produits stars pour stock
+  - Optimiser SEO sur brands/gammes populaires
+  - Cibler campagnes marketing par pays
+  - Détecter erreurs 404 par produit
+  - Analyser comportement bots SEO
+═══════════════════════════════════════════════════════════════
+HELP
+

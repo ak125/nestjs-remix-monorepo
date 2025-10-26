@@ -79,7 +79,7 @@ export class PiecesPhpLogicCompleteService extends SupabaseBaseService {
           .eq('piece_display', 1),
 
         // MARQUES/ÉQUIPEMENTIERS (logique PHP)
-        this.client.from('pieces_marques').select('*').in('pm_id', pmIds),
+        this.client.from('pieces_marque').select('*').in('pm_id', pmIds),
 
         // PRIX DES PIÈCES (logique PHP avec bonne table)
         this.client

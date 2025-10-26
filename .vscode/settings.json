@@ -24,5 +24,11 @@
     "debug.overrideProxyUrl": "",
     "debug.testOverrideProxyUrl": "",
     "debug.filterLogCategories": []
+  },
+  "github.copilot.chat.mcp.enabled": true,
+  "github.copilot.chat.mcp.servers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=cxpojprgwgubzjyqzmoq"
+    }
   }
 }

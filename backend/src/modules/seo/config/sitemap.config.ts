@@ -367,6 +367,8 @@ export function getSitemapConfig(name: string): SitemapConfig | undefined {
 /**
  * Helper pour trouver une config par path
  */
-export function getSitemapConfigByPath(path: string): SitemapConfig | undefined {
+export function getSitemapConfigByPath(
+  path: string,
+): SitemapConfig | undefined {
   return SITEMAP_CONFIGS.find((config) => config.path === path);
 }

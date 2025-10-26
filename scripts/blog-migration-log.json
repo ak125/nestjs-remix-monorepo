@@ -1,0 +1,77 @@
+[
+  {
+    "file": "modules/blog/services/blog.service.ts",
+    "modifications": [
+      "Col: bc_id \u2192 bsm_id",
+      "Col: bgl_id \u2192 ba_id",
+      "Col: bgl_visit \u2192 ba_visit",
+      "Table: blog_articles \u2192 __blog_advice",
+      "Col: title \u2192 ba_title",
+      "Col: content \u2192 ba_content",
+      "Col: slug \u2192 ba_alias"
+    ]
+  },
+  {
+    "file": "modules/blog/services/glossary.service.ts",
+    "modifications": [
+      "Table: __blog_glossaire \u2192 __blog_advice",
+      "Col: bgl_id \u2192 ba_id",
+      "Col: bgl_terme \u2192 ba_title",
+      "Col: bgl_definition \u2192 ba_content",
+      "Col: bgl_alias \u2192 ba_alias",
+      "Col: bgl_create \u2192 ba_create",
+      "Col: bgl_update \u2192 ba_update",
+      "Col: bgl_visit \u2192 ba_visit"
+    ]
+  },
+  {
+    "file": "modules/blog/services/advice.service.ts",
+    "modifications": [
+      "Col: title \u2192 ba_title",
+      "Col: content \u2192 ba_content",
+      "Col: views \u2192 ba_visit"
+    ]
+  },
+  {
+    "file": "modules/blog/services/constructeur.service.ts",
+    "modifications": [
+      "Table: __blog_constructeur \u2192 __blog_seo_marque",
+      "Col: bc_id \u2192 bsm_id",
+      "Col: bc_keywords \u2192 bsm_keywords",
+      "Col: bc_constructeur \u2192 bsm_marque_id",
+      "Col: bc_update \u2192 bsm_update",
+      "Table: __blog_constructeur_modele \u2192 __blog_advice_cross",
+      "Col: bcm_constructeur \u2192 bac_ba_id",
+      "Table: __blog_constructeur_h2 \u2192 __blog_advice_h2",
+      "Col: bc2_id \u2192 ba2_id",
+      "Col: bc2_h2 \u2192 ba2_h2",
+      "Col: bc2_content \u2192 ba2_content",
+      "Col: bc2_bc_id \u2192 ba2_ba_id",
+      "Table: __blog_constructeur_h3 \u2192 __blog_advice_h3",
+      "Col: bc3_id \u2192 ba3_id",
+      "Col: bc3_h3 \u2192 ba3_h3",
+      "Col: bc3_content \u2192 ba3_content",
+      "Col: content \u2192 ba_content",
+      "Col: views \u2192 ba_visit"
+    ]
+  },
+  {
+    "file": "modules/blog/services/guide.service.ts",
+    "modifications": [
+      "Col: slug \u2192 ba_alias"
+    ]
+  },
+  {
+    "file": "modules/blog/controllers/content.controller.ts",
+    "modifications": [
+      "Col: slug \u2192 ba_alias"
+    ]
+  },
+  {
+    "file": "modules/blog/controllers/blog.controller.ts",
+    "modifications": [
+      "Col: slug \u2192 ba_alias",
+      "Col: views \u2192 ba_visit"
+    ]
+  }
+]

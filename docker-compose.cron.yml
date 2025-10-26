@@ -1,0 +1,60 @@
+##############################################################################
+# 🐳 DOCKER COMPOSE - CRON WORKER
+#
+# Service dédié pour exécuter les cron jobs
+# Partage le même réseau que les services principaux
+##############################################################################
+
+version: '3.8'
+
+services:
+  cron-worker:
+    image: node:20-alpine
+    container_name: automecanik-cron-worker
+    restart: unless-stopped
+    
+    working_dir: /app
+    
+    volumes:
+      - ./:/app
+      - ./logs/cron:/app/logs/cron
+      - ./public/sitemaps:/app/public/sitemaps
+    
+    environment:
+      - NODE_ENV=production
+      - TZ=Europe/Paris
+      - NESTJS_API_URL=http://backend:3000
+      - REDIS_URL=redis://redis:6379
+    
+    networks:
+      - automecanik-network
+    
+    depends_on:
+      - backend
+      - redis
+    
+    # Installation de cronie (cron pour Alpine)
+    entrypoint: /bin/sh
+    command: -c "
+      apk add --no-cache dcron curl jq &&
+      mkdir -p /app/logs/cron &&
+      chmod +x /app/scripts/cron-sitemap-nightly.sh &&
+      echo '0 3 * * * /app/scripts/cron-sitemap-nightly.sh' | crontab - &&
+      echo '0 */6 * * * curl -X POST http://backend:3000/sitemap-v2/delta/generate' | crontab - &&
+      crond -f -l 2
+      "
+    
+    healthcheck:
+      test: ["CMD", "pgrep", "crond"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    labels:
+      - "com.automecanik.service=cron-worker"
+      - "com.automecanik.description=Sitemap generation cron jobs"
+
+networks:
+  automecanik-network:
+    external: true

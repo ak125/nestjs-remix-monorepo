@@ -536,11 +536,11 @@ export class DashboardService extends SupabaseBaseService {
 
       // Utiliser les tables META existantes
       const { count: totalPages } = await this.supabase
-        .from('___META_TAGS_ARIANE')
+        .from('___meta_tags_ariane')
         .select('*', { count: 'exact', head: true });
 
       const { count: optimizedPages } = await this.supabase
-        .from('___META_TAGS_ARIANE')
+        .from('___meta_tags_ariane')
         .select('*', { count: 'exact', head: true })
         .not('meta_title', 'is', null)
         .not('meta_description', 'is', null);

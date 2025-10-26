@@ -23,6 +23,11 @@
       "types": "./dist/components/badge.d.ts",
       "import": "./dist/components/badge.js",
       "require": "./dist/components/badge.cjs"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "require": "./dist/*.cjs"
     }
   },
   "files": [

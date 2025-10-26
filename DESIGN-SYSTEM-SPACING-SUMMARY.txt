@@ -1,0 +1,189 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║     📏 DESIGN SYSTEM - SYSTÈME D'ESPACEMENT (8px GRID)                       ║
+║                                                                               ║
+║     Version: 1.0 | Date: 24 octobre 2025 | Status: ✅ Production Ready       ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 🎯 PRINCIPE FONDAMENTAL                                                       │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ✅ Toujours des multiples de 8px
+    ✅ Alignement pixel-perfect (HD, 2K, 4K)
+    ✅ Compatible Material Design & Apple HIG
+    ✅ Cohérence visuelle garantie
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 📐 ÉCHELLE D'ESPACEMENT (Progression Logique)                                │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──┐
+    │  │ XS = 4px   → Micro-espaces (badges, icônes)
+    └──┘
+
+    ┌────┐
+    │    │ SM = 8px   → Serré (label ↔ input)
+    └────┘
+
+    ┌────────┐
+    │        │ MD = 16px  → Standard (padding cartes)
+    └────────┘
+
+    ┌────────────┐
+    │            │ LG = 24px  → Sections / blocs
+    └────────────┘
+
+    ┌────────────────┐
+    │                │ XL = 32px  → Grilles / marges
+    └────────────────┘
+
+    ┌────────────────────┐
+    │                    │ 2XL = 40px → Large grilles
+    └────────────────────┘
+
+    ┌────────────────────────┐
+    │                        │ 3XL = 48px → Hero sections
+    └────────────────────────┘
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 🛠️ CLASSES TAILWIND GÉNÉRÉES                                                 │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    Padding:    p-xs, p-sm, p-md, p-lg, p-xl, p-2xl, p-3xl
+    Margin:     m-xs, mt-sm, mb-md, ml-lg, mr-xl
+    Gap:        gap-xs, gap-sm, gap-md, gap-lg, gap-xl
+    Space:      space-x-sm, space-y-md, space-y-lg
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 📋 USAGE PAR CONTEXTE                                                         │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ XS (4px) - Badge / Icône                                               │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <span className="px-xs py-xs bg-success text-white rounded-full">  │
+    │     12                                                                 │
+    │   </span>                                                              │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ SM (8px) - Formulaire                                                  │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <label className="mb-sm">Référence OEM</label>                      │
+    │   <input className="px-sm py-sm border rounded-md" />                 │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ MD (16px) - Card Produit                                               │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <div className="p-md bg-white rounded-lg shadow-md">                │
+    │     <h3 className="mb-sm">Plaquettes de frein</h3>                    │
+    │     <p className="mb-md">Compatible Renault Clio 4</p>                │
+    │     <button className="px-md py-sm">Acheter</button>                  │
+    │   </div>                                                               │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ LG (24px) - Grid Produits                                              │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <div className="grid grid-cols-3 gap-lg">                           │
+    │     <ProductCard />                                                    │
+    │     <ProductCard />                                                    │
+    │     <ProductCard />                                                    │
+    │   </div>                                                               │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ XL (32px) - Sections                                                   │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <section className="py-xl px-md">                                    │
+    │     <h2 className="mb-lg">Nos meilleures ventes</h2>                  │
+    │     <div className="grid gap-xl">...</div>                            │
+    │   </section>                                                           │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 3XL (48px) - Hero Section                                              │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │                                                                        │
+    │   <section className="py-3xl px-xl bg-gradient-to-r">                 │
+    │     <h1 className="text-5xl mb-2xl">+ de 50 000 références</h1>       │
+    │     <button className="px-xl py-lg">Voir le catalogue</button>        │
+    │   </section>                                                           │
+    │                                                                        │
+    └────────────────────────────────────────────────────────────────────────┘
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ ✅ BONNES PRATIQUES                                                           │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ✅ CORRECT                              ❌ À ÉVITER
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <div className="p-md">                  <div className="p-[13px]">
+    <div className="gap-lg">                <div className="gap-3">
+    <div className="space-y-sm">            <div style={{ padding: '15px' }}>
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 📊 TABLEAU RÉCAPITULATIF                                                      │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ╔═══════╦═══════╦═══════════════════════════════════════════════════════╗
+    ║ Nom   ║ px    ║ Usage                                                 ║
+    ╠═══════╬═══════╬═══════════════════════════════════════════════════════╣
+    ║ XS    ║ 4px   ║ Badge, icône, micro-espace                            ║
+    ║ SM    ║ 8px   ║ Label → Input, espacement serré                       ║
+    ║ MD    ║ 16px  ║ Padding card, espacement standard                     ║
+    ║ LG    ║ 24px  ║ Grid gap, séparation sections                         ║
+    ║ XL    ║ 32px  ║ Marges page, sections majeures                        ║
+    ║ 2XL   ║ 40px  ║ Hero sections, large grilles                          ║
+    ║ 3XL   ║ 48px  ║ Landing pages, espacement exceptionnel                ║
+    ╚═══════╩═══════╩═══════════════════════════════════════════════════════╝
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 🔗 RESSOURCES                                                                 │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    📖 Guide Complet        → DESIGN-SYSTEM-SPACING.md
+    📋 Guide Utilisation    → DESIGN-SYSTEM-USAGE-GUIDE.md
+    🎨 Exemples Visuels     → DesignSystemExamples.tsx
+    ⚙️  Configuration        → frontend/tailwind.config.cjs
+    🔧 Tokens Source        → packages/design-tokens/src/tokens/design-tokens.json
+
+
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ 📊 STATISTIQUES                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+
+    ✓ 8 valeurs sémantiques (XS → 4XL)
+    ✓ Progression logique (×2 / ×1.5)
+    ✓ 100% multiples de 8px
+    ✓ Mobile → Desktop adaptatif
+    ✓ Compatible Material Design
+
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║     ✅ SYSTÈME D'ESPACEMENT OPÉRATIONNEL                                     ║
+║                                                                               ║
+║     👉 Toujours utiliser ces steps → Cohérence visuelle garantie             ║
+║     👉 Même sur 4K → Alignement pixel-perfect                                ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝

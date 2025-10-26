@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron } from '@nestjs/schedule';
+// import { Cron } from '@nestjs/schedule'; // TODO: Réactiver quand compatible
 import { MeiliSearch } from 'meilisearch';
 
 export interface CaddyLogEntry {
@@ -114,11 +114,12 @@ export class LogIngestionService {
 
   /**
    * Cron job : Ingérer logs Caddy toutes les 5 minutes
+   * TODO: Réactiver quand @nestjs/schedule sera compatible
    */
-  @Cron('*/5 * * * *', {
-    name: 'ingest-caddy-logs',
-    timeZone: 'Europe/Paris',
-  })
+  // @Cron('*/5 * * * *', {
+  //   name: 'ingest-caddy-logs',
+  //   timeZone: 'Europe/Paris',
+  // })
   async ingestCaddyLogs(): Promise<LogIngestionStats> {
     const startTime = Date.now();
     this.logger.log('🔄 Démarrage ingestion logs Caddy...');
@@ -521,6 +522,249 @@ export class LogIngestionService {
       };
     } catch (error) {
       this.logger.error('❌ Erreur récupération erreurs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analytics : Dashboard trafic e-commerce
+   */
+  async getTrafficAnalytics(period: 'today' | 'yesterday' | '7days' | '30days' = 'today') {
+    try {
+      const index = this.meilisearch.index('access_logs');
+      
+      // Calculer le filtre de date
+      let dayFilter: string;
+      const today = new Date().toISOString().split('T')[0];
+      
+      switch (period) {
+        case 'yesterday':
+          const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+          dayFilter = `day = "${yesterday}"`;
+          break;
+        case '7days':
+          const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+          dayFilter = `day >= "${sevenDaysAgo}"`;
+          break;
+        case '30days':
+          const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+          dayFilter = `day >= "${thirtyDaysAgo}"`;
+          break;
+        default: // today
+          dayFilter = `day = "${today}"`;
+      }
+
+      // Requêtes parallèles pour les différentes facettes
+      const [brandsResult, gammesResult, countriesResult, botsResult, statusResult, methodResult] = await Promise.all([
+        // Top brands
+        index.search('', {
+          filter: `${dayFilter} AND brand EXISTS`,
+          facets: ['brand'],
+          limit: 0,
+        }),
+        // Top gammes
+        index.search('', {
+          filter: `${dayFilter} AND gamme EXISTS`,
+          facets: ['gamme'],
+          limit: 0,
+        }),
+        // Distribution pays
+        index.search('', {
+          filter: `${dayFilter} AND country EXISTS`,
+          facets: ['country'],
+          limit: 0,
+        }),
+        // Bots vs humains
+        index.search('', {
+          filter: dayFilter,
+          facets: ['bot'],
+          limit: 0,
+        }),
+        // Statuts HTTP
+        index.search('', {
+          filter: dayFilter,
+          facets: ['status'],
+          limit: 0,
+        }),
+        // Méthodes HTTP
+        index.search('', {
+          filter: dayFilter,
+          facets: ['method'],
+          limit: 0,
+        }),
+      ]);
+
+      // Top combos brand + gamme
+      const combosResult = await index.search('', {
+        filter: `${dayFilter} AND brand EXISTS AND gamme EXISTS`,
+        limit: 1000,
+        attributesToRetrieve: ['brand', 'gamme'],
+      });
+
+      // Calculer les combos
+      const combos = new Map<string, number>();
+      combosResult.hits.forEach((hit: any) => {
+        const key = `${hit.brand}|${hit.gamme}`;
+        combos.set(key, (combos.get(key) || 0) + 1);
+      });
+
+      const topCombos = Array.from(combos.entries())
+        .map(([combo, count]) => {
+          const [brand, gamme] = combo.split('|');
+          return { brand, gamme, hits: count };
+        })
+        .sort((a, b) => b.hits - a.hits)
+        .slice(0, 15);
+
+      // Calculer bots vs humains
+      const botHits = Object.values(botsResult.facetDistribution?.bot || {})
+        .reduce((sum: number, val: any) => sum + val, 0);
+      const totalHits = botsResult.estimatedTotalHits || 0;
+      const humanHits = totalHits - botHits;
+
+      return {
+        period,
+        totalHits,
+        topBrands: Object.entries(brandsResult.facetDistribution?.brand || {})
+          .map(([brand, count]) => ({ brand, hits: count }))
+          .sort((a, b) => (b.hits as number) - (a.hits as number))
+          .slice(0, 15),
+        topGammes: Object.entries(gammesResult.facetDistribution?.gamme || {})
+          .map(([gamme, count]) => ({ gamme, hits: count }))
+          .sort((a, b) => (b.hits as number) - (a.hits as number))
+          .slice(0, 15),
+        topCountries: Object.entries(countriesResult.facetDistribution?.country || {})
+          .map(([country, count]) => ({ country, hits: count }))
+          .sort((a, b) => (b.hits as number) - (a.hits as number))
+          .slice(0, 10),
+        topCombos,
+        traffic: {
+          human: humanHits,
+          bots: botHits,
+          humanPercent: totalHits > 0 ? Math.round((humanHits / totalHits) * 100) : 0,
+          botsPercent: totalHits > 0 ? Math.round((botHits / totalHits) * 100) : 0,
+        },
+        topBots: Object.entries(botsResult.facetDistribution?.bot || {})
+          .map(([bot, count]) => ({ bot, hits: count }))
+          .sort((a, b) => (b.hits as number) - (a.hits as number))
+          .slice(0, 10),
+        statusDistribution: Object.entries(statusResult.facetDistribution?.status || {})
+          .map(([status, count]) => ({ status: parseInt(status), hits: count }))
+          .sort((a, b) => a.status - b.status),
+        methodDistribution: Object.entries(methodResult.facetDistribution?.method || {})
+          .map(([method, count]) => ({ method, hits: count }))
+          .sort((a, b) => (b.hits as number) - (a.hits as number)),
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur analytics trafic:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analytics : Chemins lents (> seuil latence)
+   */
+  async getSlowPaths(thresholdMs = 800, limit = 50, day?: string) {
+    try {
+      const index = this.meilisearch.index('access_logs');
+      
+      const today = day || new Date().toISOString().split('T')[0];
+      
+      const results = await index.search('', {
+        filter: `latency_ms >= ${thresholdMs} AND day = "${today}"`,
+        limit: 1000,
+        sort: ['latency_ms:desc'],
+        attributesToRetrieve: ['path', 'route', 'latency_ms', 'status', 'method', 'brand', 'gamme', 'country', 'bot'],
+        facets: ['route', 'brand', 'status', 'method'],
+      });
+
+      // Statistiques globales
+      const latencies = results.hits.map((hit: any) => hit.latency_ms).filter((l: number) => l);
+      const sortedLatencies = [...latencies].sort((a, b) => a - b);
+      
+      const stats = {
+        total: results.estimatedTotalHits,
+        avgLatency: latencies.length > 0 ? Math.floor(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0,
+        p50: sortedLatencies[Math.floor(sortedLatencies.length * 0.50)] || 0,
+        p95: sortedLatencies[Math.floor(sortedLatencies.length * 0.95)] || 0,
+        p99: sortedLatencies[Math.floor(sortedLatencies.length * 0.99)] || 0,
+        maxLatency: Math.max(...latencies, 0),
+      };
+
+      // Grouper par route pour calculer stats par route
+      const routeGroups = new Map<string, number[]>();
+      results.hits.forEach((hit: any) => {
+        const route = hit.route || 'unknown';
+        if (!routeGroups.has(route)) {
+          routeGroups.set(route, []);
+        }
+        if (hit.latency_ms) {
+          routeGroups.get(route)!.push(hit.latency_ms);
+        }
+      });
+
+      const topSlowRoutes = Array.from(routeGroups.entries())
+        .map(([route, latencies]) => {
+          const sorted = [...latencies].sort((a, b) => a - b);
+          return {
+            route,
+            count: latencies.length,
+            avgLatency: Math.floor(latencies.reduce((a, b) => a + b, 0) / latencies.length),
+            p95: sorted[Math.floor(sorted.length * 0.95)] || 0,
+            maxLatency: Math.max(...latencies),
+          };
+        })
+        .sort((a, b) => b.avgLatency - a.avgLatency)
+        .slice(0, 10);
+
+      return {
+        threshold: thresholdMs,
+        day: today,
+        stats,
+        topSlowPaths: results.hits.slice(0, limit),
+        topSlowRoutes,
+        byBrand: results.facetDistribution?.brand || {},
+        byStatus: results.facetDistribution?.status || {},
+        byMethod: results.facetDistribution?.method || {},
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur chemins lents:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analytics : Hits par bot
+   */
+  async getBotHits(botName?: string, limit = 100, offset = 0) {
+    try {
+      const index = this.meilisearch.index('access_logs');
+      
+      const filter = botName ? `bot = "${botName}"` : 'bot EXISTS';
+      
+      const results = await index.search('', {
+        filter,
+        limit,
+        offset,
+        sort: ['ts:desc'],
+        attributesToRetrieve: ['ts', 'bot', 'path', 'status', 'method', 'brand', 'gamme', 'country', 'latency_ms', 'referer'],
+        facets: ['bot', 'status', 'brand', 'country'],
+      });
+
+      return {
+        filter: botName || 'all_bots',
+        total: results.estimatedTotalHits,
+        processingTime: results.processingTimeMs,
+        hits: results.hits,
+        facets: {
+          bots: results.facetDistribution?.bot || {},
+          status: results.facetDistribution?.status || {},
+          brands: results.facetDistribution?.brand || {},
+          countries: results.facetDistribution?.country || {},
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur bot hits:', error);
       throw error;
     }
   }
