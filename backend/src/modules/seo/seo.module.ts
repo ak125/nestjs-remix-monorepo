@@ -2,6 +2,7 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // Services SEO existants
 import { SeoService } from './seo.service';
@@ -35,6 +36,9 @@ import { RobotsTxtService } from './services/robots-txt.service';
 // 📄 Service Headers SEO
 import { SeoHeadersService } from './services/seo-headers.service';
 
+// 📊 Service Monitoring SEO
+import { SeoMonitoringService } from './services/seo-monitoring.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -55,12 +59,16 @@ import { SitemapStreamingController } from './controllers/sitemap-streaming.cont
 // 🤖 Contrôleur Robots.txt
 import { RobotsTxtController } from './controllers/robots-txt.controller';
 
-// 🛡️ Interceptor Headers SEO
+// � Contrôleur Monitoring SEO
+import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
+
+// �🛡️ Interceptor Headers SEO
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 
 @Module({
   imports: [
     ConfigModule,
+    ScheduleModule.forRoot(), // 📊 Enable cron jobs pour monitoring
 
     // 🎯 Cache Redis pour SEO V4 Ultimate
     CacheModule.register({
@@ -79,6 +87,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
     RobotsTxtController, // 🤖 Contrôleur Robots.txt
+    SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
   ],
 
   providers: [
@@ -94,6 +103,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap
     RobotsTxtService, // 🤖 Service Robots.txt
     SeoHeadersService, // 📄 Service Headers SEO
+    SeoMonitoringService, // 📊 Service Monitoring SEO
     
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -142,6 +152,7 @@ export class SeoModule {
     this.logger.log('   • SitemapStreamingService (🗜️ Streaming GZIP)');
     this.logger.log('   • RobotsTxtService (🤖 Robots.txt Dynamique)');
     this.logger.log('   • SeoHeadersService (📄 Headers SEO)');
+    this.logger.log('   • SeoMonitoringService (📊 Monitoring & Alertes)');
     this.logger.log('✅ Interceptors activés:');
     this.logger.log('   • SeoHeadersInterceptor (🛡️ Headers SEO globaux)');
     this.logger.log('✅ Contrôleurs disponibles:');
@@ -153,6 +164,9 @@ export class SeoModule {
     this.logger.log('   • SitemapDeltaController (🔄 Delta Sitemap)');
     this.logger.log('   • SitemapStreamingController (🗜️ Streaming GZIP)');
     this.logger.log('   • RobotsTxtController (🤖 Robots.txt /robots.txt)');
+    this.logger.log(
+      '   • SeoMonitoringController (📊 Monitoring /seo-monitoring)',
+    );
     this.logger.log('🚀 Améliorations V4 Ultimate:');
     this.logger.log('   • +400% fonctionnalités vs service original');
     this.logger.log('   • +250% performance avec cache intelligent');
