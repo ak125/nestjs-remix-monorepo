@@ -2,17 +2,19 @@
 # Caddy → Vector → Loki + Meilisearch
 
 # ==============================================================================
+# CONFIGURATION GLOBALE
+# ==============================================================================
+data_dir = "/var/lib/vector"
+
+# ==============================================================================
 # SOURCES - Ingestion des logs Caddy
 # ==============================================================================
 
 [sources.caddy_access_logs]
 type = "file"
-include = ["/var/log/caddy/access.json"]
+include = ["/var/log/caddy/access.json", "/workspaces/nestjs-remix-monorepo/logs/caddy-access.json"]
 read_from = "beginning"
 fingerprinting.strategy = "device_and_inode"
-
-# Décoder le JSON Caddy
-data_dir = "/var/lib/vector"
 
 # ==============================================================================
 # TRANSFORMS - Enrichissement et filtrage
@@ -40,18 +42,18 @@ source = '''
   .host = .request.host
 '''
 
-# 2. Enrichissement GeoIP
-[transforms.enrich_geoip]
-type = "geoip"
-inputs = ["parse_caddy_json"]
-source = "client_ip"
-database = "/usr/share/GeoIP/GeoLite2-City.mmdb"
-target = "geoip"
+# 2. Enrichissement GeoIP (désactivé pour tests sans GeoLite2)
+# [transforms.enrich_geoip]
+# type = "geoip"
+# inputs = ["parse_caddy_json"]
+# source = "client_ip"
+# database = "/usr/share/GeoIP/GeoLite2-City.mmdb"
+# target = "geoip"
 
 # 3. Enrichissement User-Agent + Extraction marque/gamme
 [transforms.enrich_user_agent]
 type = "remap"
-inputs = ["enrich_geoip"]
+inputs = ["parse_caddy_json"]
 source = '''
   # Détection bot
   .is_bot = false
@@ -167,11 +169,6 @@ source = '''
   if exists(.gamme) {
     .loki_labels.gamme = .gamme
   }
-  
-  # GeoIP country
-  if exists(.geoip.country_code) {
-    .loki_labels.country = .geoip.country_code
-  }
 '''
 
 # 5. Filtrer pour Meilisearch (seulement logs SEO pertinents)
@@ -202,7 +199,7 @@ source = '''
   .status = .status
   .method = .method
   .day = .day
-  .country = .geoip.country_code || null
+  .country = null
   .brand = .brand
   .gamme = .gamme
   .bot = .bot
@@ -221,50 +218,38 @@ source = '''
   .client_ip = .client_ip
   .bytes_written = .bytes_written
   .host = .host
-  
-  # GeoIP détaillé (optionnel)
-  if exists(.geoip.city_name) {
-    .city = .geoip.city_name
-  }
+  .city = null
   
   # Nettoyer champs inutiles
   del(.loki_labels)
-  del(.geoip)
   del(.message)
-  del(.request)
   del(.timestamp)
-  del(.user_agent)
   del(.uri)
   del(.is_bot)
   del(.duration_ms)
-  del(.request_id)
 '''
 
 # ==============================================================================
 # SINKS - Destinations des logs
 # ==============================================================================
 
-# SINK 1: Loki (TOUS les logs - source de vérité)
-[sinks.loki]
-type = "loki"
-inputs = ["add_loki_labels"]
-endpoint = "${LOKI_URL:-http://localhost:3100}"
-encoding.codec = "json"
-labels = "{{ loki_labels }}"
+# SINK 1: Loki (temporairement désactivé pour debug)
+# [sinks.loki]
+# type = "loki"
+# inputs = ["add_loki_labels"]
+# endpoint = "${LOKI_URL:-http://localhost:3100}"
+# encoding.codec = "json"
 
-# Compression GZIP
-compression = "gzip"
+# # Labels pour Loki (extraits du champ loki_labels)
+# [sinks.loki.labels]
+# job = "{{ loki_labels.job }}"
+# environment = "{{ loki_labels.environment }}"
+# host = "{{ loki_labels.host }}"
+# status = "{{ loki_labels.status }}"
+# method = "{{ loki_labels.method }}"
 
-# Batching pour performance
-batch.max_bytes = 1048576  # 1MB
-batch.timeout_secs = 5
-
-# Retry policy
-request.retry_attempts = 5
-request.retry_backoff_secs = 1
-
-# Health check
-healthcheck.enabled = true
+# # Compression GZIP
+# compression = "gzip"
 
 # SINK 2: Meilisearch (logs SEO filtrés uniquement)
 [sinks.meilisearch]
@@ -279,14 +264,6 @@ encoding.codec = "json"
 Authorization = "Bearer ${MEILISEARCH_API_KEY}"
 Content-Type = "application/json"
 
-# Batching (max 1000 docs par requête Meilisearch)
-batch.max_events = 1000
-batch.timeout_secs = 10
-
-# Retry policy
-request.retry_attempts = 3
-request.retry_backoff_secs = 2
-
 # SINK 3: Stdout (debug - optionnel)
 # Décommenter pour debug local
 # [sinks.console]
@@ -295,32 +272,22 @@ request.retry_backoff_secs = 2
 # encoding.codec = "json"
 
 # SINK 4: Prometheus metrics (métriques système)
-[sinks.prometheus_exporter]
-type = "prometheus_exporter"
-inputs = ["add_loki_labels"]
-address = "0.0.0.0:9598"
-default_namespace = "caddy"
+# Temporairement désactivé pour debug
+# [sinks.prometheus_exporter]
+# type = "prometheus_exporter"
+# inputs = ["add_loki_labels"]
+# address = "0.0.0.0:9598"
+# default_namespace = "caddy"
+# name = "http_request_duration_ms"
+# field = "duration_ms"
+# labels.status = "{{ status }}"
+# labels.page_type = "{{ page_type }}"
 
-# Métriques custom
-[[sinks.prometheus_exporter.metrics]]
-type = "counter"
-name = "http_requests_total"
-labels.status = "{{ status }}"
-labels.method = "{{ method }}"
-labels.is_bot = "{{ is_bot }}"
-
-[[sinks.prometheus_exporter.metrics]]
-type = "histogram"
-name = "http_request_duration_ms"
-field = "duration_ms"
-labels.status = "{{ status }}"
-labels.page_type = "{{ page_type }}"
-
-[[sinks.prometheus_exporter.metrics]]
-type = "counter"
-name = "http_response_bytes_total"
-field = "bytes_written"
-labels.status = "{{ status }}"
+# [[sinks.prometheus_exporter.metrics]]
+# type = "counter"
+# name = "http_response_bytes_total"
+# field = "bytes_written"
+# labels.status = "{{ status }}"
 
 # ==============================================================================
 # CONFIGURATION GLOBALE
@@ -330,9 +297,6 @@ labels.status = "{{ status }}"
 enabled = true
 address = "0.0.0.0:8686"
 playground = false
-
-# Data directory pour checkpoints
-data_dir = "/var/lib/vector"
 
 # Log level
 [log_schema]
