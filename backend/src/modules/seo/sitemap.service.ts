@@ -36,7 +36,9 @@ export class SitemapService extends SupabaseBaseService {
       // map_modele_alias, map_modele_id, map_type_alias, map_type_id, map_has_item
       const { data: existingLinks } = await this.client
         .from('__sitemap_p_link')
-        .select('map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_has_item')
+        .select(
+          'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_has_item',
+        )
         .eq('map_has_item', 1) // Filtrer les liens avec items disponibles
         .limit(1000)
         .order('map_pg_id', { ascending: true });
@@ -313,7 +315,10 @@ export class SitemapService extends SupabaseBaseService {
           .order('type_id');
 
         if (typeError) {
-          this.logger.error(`Erreur chargement types offset ${offset}:`, typeError);
+          this.logger.error(
+            `Erreur chargement types offset ${offset}:`,
+            typeError,
+          );
           hasMore = false;
           break;
         }
@@ -456,7 +461,7 @@ export class SitemapService extends SupabaseBaseService {
       const entries: SitemapEntry[] = [];
 
       // ✅ Récupérer les articles conseils depuis __blog_advice
-      const { data: adviceArticles, error: adviceError} = await this.client
+      const { data: adviceArticles, error: adviceError } = await this.client
         .from('__blog_advice')
         .select('ba_id, ba_alias, ba_create, ba_update')
         .order('ba_create', { ascending: false });
@@ -700,21 +705,21 @@ ${entries
   .map((entry) => {
     // Gérer lastmod undefined
     const lastmod = entry.lastmod || new Date().toISOString();
-    
+
     let urlXml = `  <url>
     <loc>https://automecanik.com${entry.loc}</loc>
     <lastmod>${lastmod}</lastmod>`;
-    
+
     // Ajouter changefreq si présent
     if (entry.changefreq) {
       urlXml += `\n    <changefreq>${entry.changefreq}</changefreq>`;
     }
-    
+
     // Ajouter priority si définie
     if (entry.priority !== undefined) {
       urlXml += `\n    <priority>${entry.priority}</priority>`;
     }
-    
+
     urlXml += '\n  </url>';
     return urlXml;
   })
@@ -798,7 +803,7 @@ ${entries
 
   /**
    * Génère le sitemap d'un constructeur spécifique
-   * ✅ Colonnes réelles de auto_modele: modele_id, modele_parent, modele_marque_id, 
+   * ✅ Colonnes réelles de auto_modele: modele_id, modele_parent, modele_marque_id,
    * modele_alias, modele_name, modele_name_url, etc. (21 colonnes)
    */
   async generateConstructeurSitemap(marqueId: number): Promise<string> {
@@ -815,7 +820,10 @@ ${entries
       if (modeles) {
         modeles.forEach((modele) => {
           // Format nginx: /constructeurs/{marque}/{modele}-{id}.html
-          const alias = modele.modele_alias || modele.modele_name_url || modele.modele_name.toLowerCase();
+          const alias =
+            modele.modele_alias ||
+            modele.modele_name_url ||
+            modele.modele_name.toLowerCase();
           entries.push({
             loc: `/constructeurs/marque-${marqueId}/${alias}-${modele.modele_id}.html`,
             lastmod: new Date().toISOString(), // Pas de colonne date fiable

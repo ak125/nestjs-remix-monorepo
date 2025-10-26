@@ -88,6 +88,47 @@ function generateCSS(tokens) {
     });
   }
 
+  // Spacing Fluid (for responsive sections)
+  if (tokens.spacingFluid) {
+    css += '\n  /* Spacing Fluid (Responsive) */\n';
+    Object.entries(tokens.spacingFluid).forEach(([key, value]) => {
+      css += `  --spacing-fluid-${key}: ${value};\n`;
+    });
+  }
+
+  // Layout (Grid, Container, Breakpoints)
+  if (tokens.layout) {
+    css += '\n  /* Layout */\n';
+    
+    if (tokens.layout.container) {
+      css += '\n  /* Container Max-Widths */\n';
+      Object.entries(tokens.layout.container).forEach(([key, value]) => {
+        css += `  --container-${key}: ${value};\n`;
+      });
+    }
+    
+    if (tokens.layout.grid) {
+      css += '\n  /* Grid System */\n';
+      if (tokens.layout.grid.columns) {
+        Object.entries(tokens.layout.grid.columns).forEach(([key, value]) => {
+          css += `  --grid-columns-${key}: ${value};\n`;
+        });
+      }
+      if (tokens.layout.grid.gutter) {
+        Object.entries(tokens.layout.grid.gutter).forEach(([key, value]) => {
+          css += `  --grid-gutter-${key}: ${value};\n`;
+        });
+      }
+    }
+    
+    if (tokens.layout.breakpoints) {
+      css += '\n  /* Breakpoints */\n';
+      Object.entries(tokens.layout.breakpoints).forEach(([key, value]) => {
+        css += `  --breakpoint-${key}: ${value};\n`;
+      });
+    }
+  }
+
   // Typography
   if (tokens.typography) {
     css += '\n  /* Typography */\n';
@@ -101,9 +142,24 @@ function generateCSS(tokens) {
         css += `  --font-size-${key}: ${value};\n`;
       });
     }
+    if (tokens.typography.fontSizeFluid) {
+      Object.entries(tokens.typography.fontSizeFluid).forEach(([key, value]) => {
+        css += `  --font-size-fluid-${key}: ${value};\n`;
+      });
+    }
     if (tokens.typography.lineHeight) {
       Object.entries(tokens.typography.lineHeight).forEach(([key, value]) => {
         css += `  --line-height-${key}: ${value};\n`;
+      });
+    }
+    if (tokens.typography.letterSpacing) {
+      Object.entries(tokens.typography.letterSpacing).forEach(([key, value]) => {
+        css += `  --letter-spacing-${key}: ${value};\n`;
+      });
+    }
+    if (tokens.typography.maxWidth) {
+      Object.entries(tokens.typography.maxWidth).forEach(([key, value]) => {
+        css += `  --max-width-${key}: ${value};\n`;
       });
     }
   }
@@ -141,6 +197,114 @@ function generateCSS(tokens) {
   }
 
   css += '}\n';
+  
+  // 🎨 SHADCN/UI COMPATIBILITY
+  // Ajout automatique des variables shadcn après les tokens principaux
+  css += `
+/* ========================================
+   SHADCN/UI COMPATIBILITY
+   Ces variables permettent aux composants shadcn
+   de continuer à fonctionner sans modification
+   ======================================== */
+:root {
+  /* Layout */
+  --background: 0 0% 100%;             /* Blanc */
+  --foreground: 222.2 84% 4.9%;        /* Texte principal */
+
+  /* Card */
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+
+  /* Popover */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+
+  /* Primary (référence nos tokens) */
+  --primary: 9 100% 59%;               /* Équivalent HSL de #FF3B30 */
+  --primary-foreground: 0 0% 0%;       /* Texte sur primary */
+
+  /* Secondary */
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  /* Muted */
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  /* Accent */
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  /* Destructive */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* Border & Input */
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 9 100% 59%;                  /* Focus ring = primary */
+
+  /* Charts */
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+
+  /* Radius (référence notre token) */
+  --radius: var(--radius-lg);
+}
+
+/* ========================================
+   DARK MODE
+   ======================================== */
+.dark {
+  /* Layout */
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  /* Card */
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+
+  /* Popover */
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+
+  /* Primary */
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+
+  /* Secondary */
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  /* Muted */
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  /* Accent */
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  /* Destructive */
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* Border & Input */
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+
+  /* Charts */
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+}
+`;
+  
   return css;
 }
 
@@ -290,6 +454,102 @@ function generateUtilities(tokens) {
       css += `.gap-space-${key} { gap: var(--spacing-${key}); }\n`;
       css += '\n';
     });
+  }
+
+  // === SPACING FLUID (Responsive Sections) ===
+  if (tokens.spacingFluid) {
+    css += '/* === SPACING FLUID (Responsive) === */\n\n';
+    Object.keys(tokens.spacingFluid).forEach(key => {
+      css += `.p-${key} { padding: var(--spacing-fluid-${key}); }\n`;
+      css += `.py-${key} { padding-top: var(--spacing-fluid-${key}); padding-bottom: var(--spacing-fluid-${key}); }\n`;
+      css += `.pt-${key} { padding-top: var(--spacing-fluid-${key}); }\n`;
+      css += `.pb-${key} { padding-bottom: var(--spacing-fluid-${key}); }\n`;
+      css += `.m-${key} { margin: var(--spacing-fluid-${key}); }\n`;
+      css += `.my-${key} { margin-top: var(--spacing-fluid-${key}); margin-bottom: var(--spacing-fluid-${key}); }\n`;
+      css += `.mt-${key} { margin-top: var(--spacing-fluid-${key}); }\n`;
+      css += `.mb-${key} { margin-bottom: var(--spacing-fluid-${key}); }\n`;
+      if (key.startsWith('gap-')) {
+        css += `.${key} { gap: var(--spacing-fluid-${key}); }\n`;
+      }
+      css += '\n';
+    });
+  }
+
+  // === LAYOUT (Container & Grid) ===
+  if (tokens.layout) {
+    css += '/* === LAYOUT === */\n\n';
+    
+    // Container utilities
+    if (tokens.layout.container) {
+      css += '/* Container Max-Widths */\n';
+      css += `.container {\n`;
+      css += `  width: 100%;\n`;
+      css += `  margin-left: auto;\n`;
+      css += `  margin-right: auto;\n`;
+      css += `  padding-left: var(--spacing-md);\n`;
+      css += `  padding-right: var(--spacing-md);\n`;
+      css += `}\n\n`;
+      
+      Object.entries(tokens.layout.container).forEach(([key, value]) => {
+        if (key !== 'full') {
+          css += `.container-${key} { max-width: var(--container-${key}); }\n`;
+          // Responsive container
+          css += `@media (min-width: ${value}) {\n`;
+          css += `  .container { max-width: var(--container-${key}); }\n`;
+          css += `}\n\n`;
+        }
+      });
+    }
+    
+    // Grid utilities
+    if (tokens.layout.grid) {
+      css += '/* Grid System */\n';
+      css += `.grid-container {\n`;
+      css += `  display: grid;\n`;
+      css += `  width: 100%;\n`;
+      css += `  gap: var(--grid-gutter-mobile);\n`;
+      css += `  grid-template-columns: repeat(var(--grid-columns-mobile), 1fr);\n`;
+      css += `}\n\n`;
+      
+      if (tokens.layout.breakpoints) {
+        // Tablet
+        css += `@media (min-width: ${tokens.layout.breakpoints.sm}) {\n`;
+        css += `  .grid-container {\n`;
+        css += `    gap: var(--grid-gutter-tablet);\n`;
+        css += `    grid-template-columns: repeat(var(--grid-columns-tablet), 1fr);\n`;
+        css += `  }\n`;
+        css += `}\n\n`;
+        
+        // Desktop
+        css += `@media (min-width: ${tokens.layout.breakpoints.lg}) {\n`;
+        css += `  .grid-container {\n`;
+        css += `    gap: var(--grid-gutter-desktop);\n`;
+        css += `    grid-template-columns: repeat(var(--grid-columns-desktop), 1fr);\n`;
+        css += `  }\n`;
+        css += `}\n\n`;
+        
+        // Wide
+        css += `@media (min-width: ${tokens.layout.breakpoints['2xl']}) {\n`;
+        css += `  .grid-container-wide {\n`;
+        css += `    grid-template-columns: repeat(var(--grid-columns-wide), 1fr);\n`;
+        css += `  }\n`;
+        css += `}\n\n`;
+      }
+      
+      // Grid span utilities
+      css += '/* Grid Column Spans */\n';
+      for (let i = 1; i <= 16; i++) {
+        css += `.col-span-${i} { grid-column: span ${i} / span ${i}; }\n`;
+      }
+      css += '\n';
+      
+      // Grid row utilities
+      css += '/* Grid Row Spans */\n';
+      for (let i = 1; i <= 6; i++) {
+        css += `.row-span-${i} { grid-row: span ${i} / span ${i}; }\n`;
+      }
+      css += '\n';
+    }
   }
 
   // === BORDER RADIUS ===
@@ -444,6 +704,12 @@ try {
   const stats = {
     colors: Object.keys(tokens.colors || {}).length,
     spacing: Object.keys(tokens.spacing || {}).length,
+    spacingFluid: Object.keys(tokens.spacingFluid || {}).length,
+    layout: tokens.layout ? 
+      (Object.keys(tokens.layout.container || {}).length + 
+       Object.keys(tokens.layout.grid?.columns || {}).length +
+       Object.keys(tokens.layout.grid?.gutter || {}).length +
+       Object.keys(tokens.layout.breakpoints || {}).length) : 0,
     typography: Object.keys(tokens.typography || {}).length,
     shadows: Object.keys(tokens.shadows || {}).length,
     borderRadius: Object.keys(tokens.borderRadius || {}).length,
@@ -456,6 +722,8 @@ try {
   console.log('\n📊 Statistiques:');
   console.log(`   Colors: ${stats.colors}`);
   console.log(`   Spacing: ${stats.spacing}`);
+  console.log(`   Spacing Fluid: ${stats.spacingFluid}`);
+  console.log(`   Layout (Grid/Container): ${stats.layout}`);
   console.log(`   Typography: ${stats.typography}`);
   console.log(`   Shadows: ${stats.shadows}`);
   console.log(`   Border Radius: ${stats.borderRadius}`);

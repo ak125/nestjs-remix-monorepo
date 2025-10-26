@@ -138,7 +138,7 @@ export class BlogService {
 
       // Insérer dans les tables modernes
       const { data, error } = await this.supabaseService.client
-        .from('blog_articles')
+        .from('__blog_advice')
         .insert(newArticle)
         .select()
         .single();
@@ -180,7 +180,7 @@ export class BlogService {
       updateData.updatedAt = new Date();
 
       const { data, error } = await this.supabaseService.client
-        .from('blog_articles')
+        .from('__blog_advice')
         .update(updateData)
         .eq('id', id)
         .select()
@@ -688,7 +688,7 @@ export class BlogService {
 
       // Chercher d'abord dans la table moderne
       const { data: modernArticle } = await this.supabaseService.client
-        .from('blog_articles')
+        .from('__blog_advice')
         .select('*')
         .eq('id', id)
         .single();
@@ -1472,11 +1472,11 @@ export class BlogService {
           break;
         case '__blog_constructeur':
           viewField = 'bc_visit';
-          idField = 'bc_id';
+          idField = 'bsm_id';
           break;
         case '__blog_glossaire':
-          viewField = 'bgl_visit';
-          idField = 'bgl_id';
+          viewField = 'ba_visit';
+          idField = 'ba_id';
           break;
         default:
           throw new Error(`Table non supportée: ${legacy_table}`);

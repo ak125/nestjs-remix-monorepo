@@ -24,6 +24,7 @@ interface BreadcrumbsProps {
   showHome?: boolean;
   maxItems?: number;
   className?: string;
+  enableSchema?: boolean; // Active JSON-LD schema.org
 }
 
 export function Breadcrumbs({
@@ -31,11 +32,26 @@ export function Breadcrumbs({
   separator = 'chevron',
   showHome = true,
   maxItems = 5,
-  className = ""
+  className = "",
+  enableSchema = true
 }: BreadcrumbsProps) {
   
   // Génération automatique si pas d'items fournis
   const breadcrumbItems = items.length > 0 ? items : generateFromPath();
+
+  // Générer schema JSON-LD pour SEO
+  const breadcrumbSchema = enableSchema && breadcrumbItems.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": breadcrumbItems
+      .filter(item => item.href) // Seulement les items avec URL
+      .map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.label,
+        "item": `https://automecanik.com${item.href}`
+      }))
+  } : null;
 
   function generateFromPath(): BreadcrumbItem[] {
     const path = window.location.pathname;
@@ -93,36 +109,48 @@ export function Breadcrumbs({
   };
 
   return (
-    <nav className={`breadcrumbs ${className}`} aria-label="Fil d'Ariane">
-      <ol className="flex items-center space-x-1 text-sm">
-        {displayItems.map((item, index) => (
-          <li key={index} className="flex items-center">
-            {index > 0 && getSeparator()}
-            
-            {item.href ? (
-              <Link
-                to={item.href}
-                className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ) : (
-              <span 
-                className={`flex items-center space-x-1 ${
-                  item.current 
-                    ? 'text-gray-900 font-medium' 
-                    : 'text-gray-500'
-                }`}
-                aria-current={item.current ? 'page' : undefined}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </span>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <>
+      <nav className={`breadcrumbs ${className}`} aria-label="Fil d'Ariane">
+        <ol className="flex items-center space-x-1 text-sm">
+          {displayItems.map((item, index) => (
+            <li key={index} className="flex items-center">
+              {index > 0 && getSeparator()}
+              
+              {item.href ? (
+                <Link
+                  to={item.href}
+                  className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <span 
+                  className={`flex items-center space-x-1 ${
+                    item.current 
+                      ? 'text-gray-900 font-medium' 
+                      : 'text-gray-500'
+                  }`}
+                  aria-current={item.current ? 'page' : undefined}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {/* JSON-LD Schema pour SEO */}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(breadcrumbSchema)
+          }}
+        />
+      )}
+    </>
   );
 }

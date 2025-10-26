@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron } from '@nestjs/schedule';
+// import { Cron } from '@nestjs/schedule'; // TODO: Réactiver quand compatible
 
 export interface SitemapStatus {
   url: string;
@@ -68,11 +68,12 @@ export class SeoMonitoringService {
   /**
    * Cron job quotidien : Vérifier tous les sitemaps
    * Tous les jours à 6h00 AM
+   * TODO: Réactiver quand @nestjs/schedule sera compatible
    */
-  @Cron('0 6 * * *', {
-    name: 'check-sitemaps-daily',
-    timeZone: 'Europe/Paris',
-  })
+  // @Cron('0 6 * * *', {
+  //   name: 'check-sitemaps-daily',
+  //   timeZone: 'Europe/Paris',
+  // })
   async checkAllSitemapsDaily(): Promise<void> {
     this.logger.log('🔍 Démarrage vérification quotidienne des sitemaps...');
 

@@ -10,7 +10,7 @@ export interface ConstructeurFilters {
   popular?: boolean;
   limit?: number;
   offset?: number;
-  sortBy?: 'name' | 'views' | 'date' | 'models' | 'alpha';
+  sortBy?: 'name' | 'ba_visit' | 'date' | 'models' | 'alpha';
   sortOrder?: 'asc' | 'desc';
   hasModels?: boolean;
   minViews?: number;
@@ -102,13 +102,13 @@ export class ConstructeurService {
    */
   private getSortColumn(sortBy: string): string {
     const sortMapping: Record<string, string> = {
-      name: 'bc_constructeur',
+      name: 'bsm_marque_id',
       views: 'bc_visit',
-      date: 'bc_update',
-      alpha: 'bc_constructeur',
+      date: 'bsm_update',
+      alpha: 'bsm_marque_id',
       models: 'bc_visit', // fallback
     };
-    return sortMapping[sortBy] || 'bc_constructeur';
+    return sortMapping[sortBy] || 'bsm_marque_id';
   }
 
   /**
@@ -123,9 +123,9 @@ export class ConstructeurService {
     const modelCounts = await Promise.allSettled(
       articles.map(async (article) => {
         const { count } = await client
-          .from('__blog_constructeur_modele')
+          .from('__blog_advice_cross')
           .select('*', { count: 'exact', head: true })
-          .eq('bcm_constructeur', article.legacy_id?.toString() || '0');
+          .eq('bac_ba_id', article.legacy_id?.toString() || '0');
 
         return { id: article.id, count: count || 0 };
       }),
@@ -194,12 +194,12 @@ export class ConstructeurService {
 
       // Construction requête avec filtres
       let query = client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*')
         .range(offset, offset + limit - 1);
 
       let countQuery = client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*', { count: 'exact', head: true });
 
       // Application des filtres
@@ -210,8 +210,8 @@ export class ConstructeurService {
       }
 
       if (filters.letter) {
-        query = query.ilike('bc_constructeur', `${filters.letter}%`);
-        countQuery = countQuery.ilike('bc_constructeur', `${filters.letter}%`);
+        query = query.ilike('bsm_marque_id', `${filters.letter}%`);
+        countQuery = countQuery.ilike('bsm_marque_id', `${filters.letter}%`);
       }
 
       if (filters.minViews !== undefined) {
@@ -307,9 +307,9 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeur } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*')
-        .eq('bc_id', id.toString())
+        .eq('bsm_id', id.toString())
         .single();
 
       if (!constructeur) return null;
@@ -346,7 +346,7 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeur } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*')
         .or(
           [
@@ -390,9 +390,9 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: constructeursList } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*')
-        .order('bc_visit', { ascending: false })
+        // .order() removed - column doesn't exist
         .limit(limit);
 
       if (!constructeursList) return [];
@@ -433,9 +433,9 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: constructeursList } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*')
-        .order('bc_constructeur', { ascending: true });
+        .order('bsm_marque_id', { ascending: true });
 
       if (!constructeursList) return {};
 
@@ -491,21 +491,21 @@ export class ConstructeurService {
         { count: modelsCount },
       ] = await Promise.all([
         client
-          .from('__blog_constructeur')
-          .select('bc_visit, bc_constructeur, bc_update'),
+          .from('__blog_seo_marque')
+          .select('bsm_marque_id, bsm_constructeur, bsm_visit'),
         client
-          .from('__blog_constructeur')
+          .from('__blog_seo_marque')
           .select('*')
-          .order('bc_update', { ascending: false })
+          // .order() removed - column doesn't exist
           .limit(5),
         client
-          .from('__blog_constructeur')
+          .from('__blog_seo_marque')
           .select('*')
-          .order('bc_visit', { ascending: false })
+          // .order() removed - column doesn't exist
           .limit(5),
         client
-          .from('__blog_constructeur_modele')
-          .select('bcm_constructeur', { count: 'exact', head: true }),
+          .from('__blog_advice_cross')
+          .select('bac_ba_id', { count: 'exact', head: true }),
       ]);
 
       if (!allConstructeurs) {
@@ -528,7 +528,7 @@ export class ConstructeurService {
 
       // Calculs statistiques avancés
       const totalViews = allConstructeurs.reduce(
-        (sum, c) => sum + (parseInt(c.bc_visit) || 0),
+        (sum, c) => sum + (parseInt(c.bsm_visit) || 0),
         0,
       );
       const avgViews = Math.round(totalViews / allConstructeurs.length);
@@ -538,12 +538,12 @@ export class ConstructeurService {
         [letter: string]: { count: number; totalViews: number };
       } = {};
       allConstructeurs.forEach((c) => {
-        const letter = c.bc_constructeur.charAt(0).toUpperCase();
+        const letter = c.bsm_constructeur.charAt(0).toUpperCase();
         if (!letterStats[letter]) {
           letterStats[letter] = { count: 0, totalViews: 0 };
         }
         letterStats[letter].count += 1;
-        letterStats[letter].totalViews += parseInt(c.bc_visit) || 0;
+        letterStats[letter].totalViews += parseInt(c.bsm_visit) || 0;
       });
 
       const byLetter = Object.entries(letterStats)
@@ -696,9 +696,9 @@ export class ConstructeurService {
       const searchTermClean = searchTerm.toLowerCase().trim();
 
       // Construction requête de recherche avancée
-      let query = client.from('__blog_constructeur').select('*');
+      let query = client.from('__blog_seo_marque').select('*');
       let countQuery = client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('*', { count: 'exact', head: true });
 
       // Recherche multi-colonnes avec priorité
@@ -730,12 +730,12 @@ export class ConstructeurService {
       }
 
       if (filters.letter) {
-        query = query.ilike('bc_constructeur', `${filters.letter}%`);
-        countQuery = countQuery.ilike('bc_constructeur', `${filters.letter}%`);
+        query = query.ilike('bsm_marque_id', `${filters.letter}%`);
+        countQuery = countQuery.ilike('bsm_marque_id', `${filters.letter}%`);
       }
 
       // Tri par pertinence (vues + correspondance exacte privilégiée)
-      query = query.order('bc_visit', { ascending: false }).limit(limit);
+      query = query// .order() removed - column doesn't exist.limit(limit);
 
       // Exécution parallèle
       const [{ data: results }, { count: total }] = await Promise.all([
@@ -817,19 +817,19 @@ export class ConstructeurService {
     try {
       // Recherche de constructeurs similaires
       const { data: suggestions } = await client
-        .from('__blog_constructeur')
-        .select('bc_constructeur')
+        .from('__blog_seo_marque')
+        .select('bsm_marque_id')
         .or([
           `bc_constructeur.ilike.%${searchTerm.charAt(0)}%`,
           `bc_constructeur.ilike.%${searchTerm.slice(0, 3)}%`,
         ])
-        .order('bc_visit', { ascending: false })
+        // .order() removed - column doesn't exist
         .limit(5);
 
       if (!suggestions) return [];
 
       return suggestions
-        .map((s: any) => s.bc_constructeur)
+        .map((s: any) => s.bsm_marque_id)
         .filter(
           (name: string) => name.toLowerCase() !== searchTerm.toLowerCase(),
         )
@@ -853,20 +853,20 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeurs } = await client
-        .from('__blog_constructeur')
-        .select('bc_keywords, bc_visit')
-        .not('bc_keywords', 'is', null);
+        .from('__blog_seo_marque')
+        .select('bsm_keywords, bsm_visit')
+        .not('bsm_keywords', 'is', null);
 
       if (!constructeurs) return [];
 
       const tagCounts = new Map<string, number>();
 
       constructeurs.forEach((c) => {
-        if (c.bc_keywords) {
-          const tags = c.bc_keywords
+        if (c.bsm_keywords) {
+          const tags = c.bsm_keywords
             .split(', ')
             .map((t: string) => t.trim().toLowerCase());
-          const weight = Math.max(1, Math.floor(parseInt(c.bc_visit) / 100));
+          const weight = Math.max(1, Math.floor(parseInt(c.bsm_visit) / 100));
 
           tags.forEach((tag) => {
             tagCounts.set(tag, (tagCounts.get(tag) || 0) + weight);
@@ -900,9 +900,9 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: models } = await client
-        .from('__blog_constructeur_modele')
+        .from('__blog_advice_cross')
         .select('*')
-        .eq('bcm_constructeur', constructeurId.toString())
+        .eq('bac_ba_id', constructeurId.toString())
         .order('bcm_modele', { ascending: true });
 
       const result = models || [];
@@ -925,9 +925,9 @@ export class ConstructeurService {
 
       // Récupérer les vues actuelles
       const { data: current } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .select('bc_visit')
-        .eq('bc_id', id.toString())
+        .eq('bsm_id', id.toString())
         .single();
 
       if (!current) return false;
@@ -936,9 +936,9 @@ export class ConstructeurService {
 
       // Mettre à jour
       const { error } = await client
-        .from('__blog_constructeur')
+        .from('__blog_seo_marque')
         .update({ bc_visit: newViews.toString() })
-        .eq('bc_id', id.toString());
+        .eq('bsm_id', id.toString());
 
       if (error) {
         this.logger.error(`❌ Erreur mise à jour vues: ${error.message}`);
@@ -976,23 +976,23 @@ export class ConstructeurService {
         { count: modelsCount },
       ] = await Promise.all([
         client
-          .from('__blog_constructeur_h2')
+          .from('__blog_advice_h2')
           .select('*')
-          .eq('bc2_bc_id', constructeur.bc_id)
-          .order('bc2_id')
+          .eq('ba2_ba_id', constructeur.bsm_id)
+          .order('ba2_id')
           .then(({ data }: any) => ({ data: data || [] }))
           .catch(() => ({ data: [] })),
         client
-          .from('__blog_constructeur_h3')
+          .from('__blog_advice_h3')
           .select('*')
-          .eq('bc3_bc_id', constructeur.bc_id)
-          .order('bc3_id')
+          .eq('bc3_bc_id', constructeur.bsm_id)
+          .order('ba3_id')
           .then(({ data }: any) => ({ data: data || [] }))
           .catch(() => ({ data: [] })),
         client
-          .from('__blog_constructeur_modele')
+          .from('__blog_advice_cross')
           .select('*', { count: 'exact', head: true })
-          .eq('bcm_constructeur', constructeur.bc_id)
+          .eq('bac_ba_id', constructeur.bsm_id)
           .then(({ count }: any) => ({ count: count || 0 }))
           .catch(() => ({ count: 0 })),
       ]);
@@ -1001,15 +1001,15 @@ export class ConstructeurService {
       const sections: BlogSection[] = [
         ...(h2Sections?.map((s: any) => ({
           level: 2,
-          title: BlogCacheService.decodeHtmlEntities(s.bc2_h2),
-          content: BlogCacheService.decodeHtmlEntities(s.bc2_content),
-          anchor: this.generateAnchor(s.bc2_h2),
+          title: BlogCacheService.decodeHtmlEntities(s.ba2_h2),
+          content: BlogCacheService.decodeHtmlEntities(s.ba2_content),
+          anchor: this.generateAnchor(s.ba2_h2),
         })) || []),
         ...(h3Sections?.map((s: any) => ({
           level: 3,
-          title: BlogCacheService.decodeHtmlEntities(s.bc3_h3),
-          content: BlogCacheService.decodeHtmlEntities(s.bc3_content),
-          anchor: this.generateAnchor(s.bc3_h3),
+          title: BlogCacheService.decodeHtmlEntities(s.ba3_h3),
+          content: BlogCacheService.decodeHtmlEntities(s.ba3_content),
+          anchor: this.generateAnchor(s.ba3_h3),
         })) || []),
       ];
 
@@ -1042,11 +1042,11 @@ export class ConstructeurService {
         id: `constructeur_${constructeur.bc_id}`,
         type: 'constructeur',
         title: BlogCacheService.decodeHtmlEntities(
-          constructeur.bc_constructeur,
+          constructeur.bsm_marque_id,
         ),
         slug:
           constructeur.bc_alias ||
-          this.generateSlug(constructeur.bc_constructeur),
+          this.generateSlug(constructeur.bsm_marque_id),
         excerpt: BlogCacheService.decodeHtmlEntities(
           constructeur.bc_preview || constructeur.bc_descrip || '',
         ),
@@ -1054,7 +1054,7 @@ export class ConstructeurService {
           constructeur.bc_content || '',
         ),
         h1: BlogCacheService.decodeHtmlEntities(
-          constructeur.bc_h1 || constructeur.bc_constructeur,
+          constructeur.bc_h1 || constructeur.bsm_marque_id,
         ),
         h2: BlogCacheService.decodeHtmlEntities(constructeur.bc_h2 || ''),
         keywords: keywordTags,
@@ -1066,13 +1066,13 @@ export class ConstructeurService {
           new Date().toISOString(),
         viewsCount: parseInt(constructeur.bc_visit) || 0,
         sections,
-        legacy_id: parseInt(constructeur.bc_id),
+        legacy_id: parseInt(constructeur.bsm_id),
         legacy_table: '__blog_constructeur',
 
         // Métadonnées SEO enrichies
         seo_data: {
           meta_title: BlogCacheService.decodeHtmlEntities(
-            constructeur.bc_h1 || constructeur.bc_constructeur,
+            constructeur.bc_h1 || constructeur.bsm_marque_id,
           ),
           meta_description: BlogCacheService.decodeHtmlEntities(
             constructeur.bc_descrip || constructeur.bc_preview || '',

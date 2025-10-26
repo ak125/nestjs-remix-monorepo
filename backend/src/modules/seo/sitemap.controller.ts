@@ -233,7 +233,7 @@ export class SitemapController {
   /**
    * GET /sitemap/stats - Statistiques des sitemaps (pour debug)
    */
-    @Get('debug/types')
+  @Get('debug/types')
   @Header('Content-Type', 'application/json')
   async debugTypes() {
     return this.sitemapService.debugTypesMatching();

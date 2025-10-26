@@ -1,0 +1,14 @@
+{
+  "name": "mcp-supabase-local",
+  "version": "1.0.0",
+  "description": "Serveur MCP local pour accéder à la base Supabase du projet",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

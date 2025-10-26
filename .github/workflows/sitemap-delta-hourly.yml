@@ -1,0 +1,55 @@
+name: 🔄 Sitemap Delta Update (Hourly)
+
+on:
+  # Déclenchement manuel
+  workflow_dispatch:
+
+  # Déclenchement automatique (toutes les heures)
+  schedule:
+    - cron: '0 * * * *'
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  update-delta:
+    name: Update Delta Sitemap
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 🔄 Trigger Delta Generation
+        run: |
+          curl -X POST "${{ secrets.API_BASE_URL }}/sitemap-v2/delta/generate" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}" \
+            -o delta-response.json
+          
+          cat delta-response.json
+          
+          if ! jq -e '.success' delta-response.json > /dev/null; then
+            echo "❌ Delta update failed"
+            exit 1
+          fi
+      
+      - name: 📊 Fetch Stats
+        run: |
+          STATS=$(curl -s "${{ secrets.API_BASE_URL }}/sitemap-v2/delta/stats" \
+            -H "Authorization: Bearer ${{ secrets.API_TOKEN }}")
+          
+          echo "## Delta Stats"
+          echo "$STATS" | jq .
+          
+          CHANGES=$(echo "$STATS" | jq -r '.data.totalChanges')
+          echo "Total changes today: $CHANGES"
+      
+      - name: 💬 Notify if high activity
+        if: success()
+        run: |
+          CHANGES=$(jq -r '.data.totalChanges' delta-response.json)
+          
+          if [ "$CHANGES" -gt 1000 ]; then
+            curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"text\":\"⚠️ High delta activity: $CHANGES changes detected\"}"
+          fi

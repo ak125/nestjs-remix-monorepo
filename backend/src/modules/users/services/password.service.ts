@@ -377,7 +377,7 @@ export class PasswordService extends SupabaseBaseService {
   private async invalidateAllUserSessions(userId: string): Promise<void> {
     try {
       const { error } = await this.client
-        .from('user_sessions')
+        .from('sessions')
         .update({
           is_active: false,
           ended_at: new Date().toISOString(),

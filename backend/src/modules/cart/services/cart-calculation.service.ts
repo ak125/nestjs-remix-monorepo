@@ -100,7 +100,7 @@ export class CartCalculationService extends SupabaseBaseService {
 
       // Récupérer les règles de frais de port depuis la base
       const { data: shippingRules, error } = await this.supabase
-        .from('delivery_agents')
+        .from('___xtr_delivery_agent')
         .select('*')
         .eq('is_active', true)
         .order('min_weight', { ascending: true });
@@ -245,7 +245,7 @@ export class CartCalculationService extends SupabaseBaseService {
       try {
         // Récupérer la catégorie du produit
         const { data: product, error } = await this.supabase
-          .from('products')
+          .from('pieces')
           .select('category_id, categories(name)')
           .eq('id', item.product_id)
           .single();

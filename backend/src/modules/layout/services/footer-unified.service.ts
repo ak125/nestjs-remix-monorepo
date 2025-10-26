@@ -269,7 +269,7 @@ export class FooterService extends SupabaseBaseService {
   private async getCompanyInfo(): Promise<FooterData['company']> {
     try {
       const { data, error } = await this.supabase
-        .from('company_settings')
+        .from('___config')
         .select('name, address, phone, email')
         .eq('is_active', true)
         .single();
@@ -305,7 +305,7 @@ export class FooterService extends SupabaseBaseService {
   ): Promise<FooterData['columns']> {
     try {
       const { data, error } = await this.supabase
-        .from('___FOOTER_MENU')
+        .from('___footer_menu')
         .select('category, label, url')
         .eq('is_active', true)
         .order('position');

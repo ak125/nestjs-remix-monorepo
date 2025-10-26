@@ -18,11 +18,14 @@ import { TopBar } from "./components/navbar/TopBar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-ignore
+import animationsStylesheet from "./styles/animations.css?url";
+// @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
+  { rel: "stylesheet", href: animationsStylesheet },
 ];
 
 export const meta: MetaFunction = () => [
@@ -73,19 +76,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="h-full bg-gray-100">
         <NotificationProvider>
           <div className="min-h-screen flex flex-col">
-                {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
-                <TopBar user={user} />
-                
-                <Navbar logo={logo} />
-                <main className="flex-grow flex flex-col">
-                  <div className="flex-grow">
-                    {children}
-                  </div>
-                 </main>
-            </div>
-            <Footer />
-            <NotificationContainer />
-          </NotificationProvider>
+              {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
+              <TopBar user={user} />
+              
+              <Navbar logo={logo} />
+              <main className="flex-grow flex flex-col">
+                <div className="flex-grow">
+                  {children}
+                </div>
+               </main>
+          </div>
+          <Footer />
+          <NotificationContainer />
+        </NotificationProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

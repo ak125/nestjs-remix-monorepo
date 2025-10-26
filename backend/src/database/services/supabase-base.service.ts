@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getAppConfig } from '../../config/app.config';
 
+interface CircuitBreakerState {
+  failures: number;
+  lastFailure: number;
+  state: 'closed' | 'open' | 'half-open';
+}
+
 @Injectable()
 export abstract class SupabaseBaseService {
   protected readonly logger = new Logger(SupabaseBaseService.name);
@@ -10,6 +16,16 @@ export abstract class SupabaseBaseService {
   protected readonly supabaseUrl: string;
   protected readonly supabaseServiceKey: string;
   protected readonly baseUrl: string;
+
+  // Circuit breaker pour éviter de surcharger Supabase en cas d'erreurs
+  private circuitBreaker: CircuitBreakerState = {
+    failures: 0,
+    lastFailure: 0,
+    state: 'closed',
+  };
+  private readonly maxFailures = 5;
+  private readonly resetTimeout = 60000; // 1 minute
+  private readonly halfOpenAttempts = 3;
 
   constructor(protected configService?: ConfigService) {
     // Context7 : Resilient configuration loading
@@ -88,5 +104,141 @@ export abstract class SupabaseBaseService {
       console.error('Erreur test connexion:', error);
       return false;
     }
+  }
+
+  /**
+   * Wrapper pour exécuter des requêtes avec retry et circuit breaker
+   */
+  protected async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    operationName: string,
+    maxRetries = 3,
+  ): Promise<T | null> {
+    // Vérifier l'état du circuit breaker
+    if (!this.canExecute()) {
+      this.logger.warn(
+        `Circuit breaker OPEN - Opération ${operationName} bloquée`,
+      );
+      return null;
+    }
+
+    let lastError: any;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const result = await operation();
+
+        // Succès - réinitialiser le circuit breaker
+        this.onSuccess();
+        return result;
+      } catch (error: any) {
+        lastError = error;
+
+        // Vérifier si c'est une erreur Cloudflare 500
+        const isCloudflareError =
+          error?.message?.includes('500 Internal Server Error') ||
+          error?.message?.includes('cloudflare');
+
+        if (isCloudflareError) {
+          this.logger.error(
+            `Erreur Cloudflare détectée lors de ${operationName} (tentative ${attempt}/${maxRetries})`,
+          );
+          this.onFailure();
+
+          // Attendre avant de réessayer (exponential backoff)
+          if (attempt < maxRetries) {
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            this.logger.log(
+              `Attente de ${delay}ms avant nouvelle tentative...`,
+            );
+            await this.sleep(delay);
+          }
+        } else {
+          // Autre type d'erreur - ne pas réessayer
+          this.logger.error(`Erreur lors de ${operationName}:`, error);
+          throw error;
+        }
+      }
+    }
+
+    this.logger.error(
+      `Échec de ${operationName} après ${maxRetries} tentatives`,
+      lastError,
+    );
+    return null;
+  }
+
+  /**
+   * Vérifier si on peut exécuter une requête (circuit breaker)
+   */
+  private canExecute(): boolean {
+    const now = Date.now();
+
+    switch (this.circuitBreaker.state) {
+      case 'closed':
+        return true;
+
+      case 'open':
+        // Vérifier si on peut passer en half-open
+        if (now - this.circuitBreaker.lastFailure > this.resetTimeout) {
+          this.logger.log('Circuit breaker: OPEN → HALF-OPEN');
+          this.circuitBreaker.state = 'half-open';
+          this.circuitBreaker.failures = 0;
+          return true;
+        }
+        return false;
+
+      case 'half-open':
+        return this.circuitBreaker.failures < this.halfOpenAttempts;
+
+      default:
+        return true;
+    }
+  }
+
+  /**
+   * Enregistrer un succès
+   */
+  private onSuccess(): void {
+    if (this.circuitBreaker.state === 'half-open') {
+      this.logger.log('Circuit breaker: HALF-OPEN → CLOSED (succès détecté)');
+      this.circuitBreaker.state = 'closed';
+      this.circuitBreaker.failures = 0;
+    }
+  }
+
+  /**
+   * Enregistrer un échec
+   */
+  private onFailure(): void {
+    this.circuitBreaker.failures++;
+    this.circuitBreaker.lastFailure = Date.now();
+
+    if (
+      this.circuitBreaker.state === 'closed' &&
+      this.circuitBreaker.failures >= this.maxFailures
+    ) {
+      this.logger.warn(
+        `Circuit breaker: CLOSED → OPEN (${this.circuitBreaker.failures} échecs consécutifs)`,
+      );
+      this.circuitBreaker.state = 'open';
+    } else if (this.circuitBreaker.state === 'half-open') {
+      this.logger.warn('Circuit breaker: HALF-OPEN → OPEN (échec détecté)');
+      this.circuitBreaker.state = 'open';
+    }
+  }
+
+  /**
+   * Utilitaire pour attendre
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Obtenir l'état du circuit breaker (pour monitoring)
+   */
+  getCircuitBreakerStatus(): CircuitBreakerState {
+    return { ...this.circuitBreaker };
   }
 }
