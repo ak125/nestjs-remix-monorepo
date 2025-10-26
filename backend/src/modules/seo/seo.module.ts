@@ -1,6 +1,7 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // Services SEO existants
 import { SeoService } from './seo.service';
@@ -28,6 +29,12 @@ import { SitemapDeltaService } from './services/sitemap-delta.service';
 // 🗜️ Service Streaming Sitemap
 import { SitemapStreamingService } from './services/sitemap-streaming.service';
 
+// 🤖 Service Robots.txt
+import { RobotsTxtService } from './services/robots-txt.service';
+
+// 📄 Service Headers SEO
+import { SeoHeadersService } from './services/seo-headers.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -44,6 +51,12 @@ import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
 
 // 🗜️ Contrôleur Streaming Sitemap
 import { SitemapStreamingController } from './controllers/sitemap-streaming.controller';
+
+// 🤖 Contrôleur Robots.txt
+import { RobotsTxtController } from './controllers/robots-txt.controller';
+
+// 🛡️ Interceptor Headers SEO
+import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 
 @Module({
   imports: [
@@ -65,6 +78,7 @@ import { SitemapStreamingController } from './controllers/sitemap-streaming.cont
     SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
     SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
+    RobotsTxtController, // 🤖 Contrôleur Robots.txt
   ],
 
   providers: [
@@ -78,6 +92,14 @@ import { SitemapStreamingController } from './controllers/sitemap-streaming.cont
     ProductImageService, // 🖼️ Service Images Produits
     SitemapDeltaService, // 🔄 Service Delta Sitemap
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap
+    RobotsTxtService, // 🤖 Service Robots.txt
+    SeoHeadersService, // 📄 Service Headers SEO
+    
+    // 🛡️ Interceptor Headers SEO (activé globalement)
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SeoHeadersInterceptor,
+    },
 
     // Logger spécialisé pour V4
     {
@@ -97,6 +119,9 @@ import { SitemapStreamingController } from './controllers/sitemap-streaming.cont
     ProductImageService, // 🖼️ Service Images Produits exporté
     SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
+    RobotsTxtService, // 🤖 Service Robots.txt exporté
+    SeoHeadersService, // 📄 Service Headers SEO exporté
+    // Note: SeoHeadersInterceptor est activé globalement via APP_INTERCEPTOR, pas besoin de l'exporter
   ],
 })
 export class SeoModule {
@@ -115,6 +140,10 @@ export class SeoModule {
     this.logger.log('   • ProductImageService (🖼️ Images Produits)');
     this.logger.log('   • SitemapDeltaService (🔄 Delta Journalier)');
     this.logger.log('   • SitemapStreamingService (🗜️ Streaming GZIP)');
+    this.logger.log('   • RobotsTxtService (🤖 Robots.txt Dynamique)');
+    this.logger.log('   • SeoHeadersService (📄 Headers SEO)');
+    this.logger.log('✅ Interceptors activés:');
+    this.logger.log('   • SeoHeadersInterceptor (🛡️ Headers SEO globaux)');
     this.logger.log('✅ Contrôleurs disponibles:');
     this.logger.log('   • SeoController');
     this.logger.log('   • SeoEnhancedController');
@@ -123,6 +152,7 @@ export class SeoModule {
     this.logger.log('   • SitemapScalableController (🚀 V2 Scalable)');
     this.logger.log('   • SitemapDeltaController (🔄 Delta Sitemap)');
     this.logger.log('   • SitemapStreamingController (🗜️ Streaming GZIP)');
+    this.logger.log('   • RobotsTxtController (🤖 Robots.txt /robots.txt)');
     this.logger.log('🚀 Améliorations V4 Ultimate:');
     this.logger.log('   • +400% fonctionnalités vs service original');
     this.logger.log('   • +250% performance avec cache intelligent');
