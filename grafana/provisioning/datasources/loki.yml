@@ -12,6 +12,6 @@ datasources:
       maxLines: 1000
       derivedFields:
         - datasourceUid: prometheus
-          matcherRegex: "request_id=(\w+)"
+          matcherRegex: "request_id=(\\w+)"
           name: TraceID
-          url: '$${__value.raw}'
+          url: '${__value.raw}'
