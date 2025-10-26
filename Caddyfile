@@ -11,14 +11,19 @@
     admin off
     auto_https on
     
-    # Logs globaux
+    # Logs globaux (format optimisé pour Vector)
     log {
         output file /var/log/caddy/access.log {
             roll_size 100mb
             roll_keep 10
             roll_keep_for 720h
         }
-        format json
+        format json {
+            time_format "iso8601"
+            message_key "msg"
+            level_key "level"
+            name_key "logger"
+        }
         level INFO
     }
 }
@@ -206,15 +211,17 @@ automecanik.fr {
     # ===== COMPRESSION =====
     encode gzip zstd
     
-    # ===== LOGGING SPÉCIFIQUE AU DOMAINE =====
+    # ===== LOGGING SPÉCIFIQUE AU DOMAINE (format optimisé pour Vector) =====
     log {
         output file /var/log/caddy/automecanik.log {
             roll_size 50mb
             roll_keep 5
         }
         format json {
-            time_format "2006-01-02T15:04:05Z07:00"
-            message_key "message"
+            time_format "iso8601"
+            message_key "msg"
+            level_key "level"
+            name_key "logger"
         }
         level INFO
     }
