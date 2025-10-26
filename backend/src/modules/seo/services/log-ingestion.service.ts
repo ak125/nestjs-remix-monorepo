@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// import { Cron } from '@nestjs/schedule'; // TODO: Réactiver quand compatible
 import { MeiliSearch } from 'meilisearch';
 
 export interface CaddyLogEntry {
@@ -113,13 +112,8 @@ export class LogIngestionService {
   }
 
   /**
-   * Cron job : Ingérer logs Caddy toutes les 5 minutes
-   * TODO: Réactiver quand @nestjs/schedule sera compatible
+   * Ingérer logs Caddy (appel manuel ou via worker)
    */
-  // @Cron('*/5 * * * *', {
-  //   name: 'ingest-caddy-logs',
-  //   timeZone: 'Europe/Paris',
-  // })
   async ingestCaddyLogs(): Promise<LogIngestionStats> {
     const startTime = Date.now();
     this.logger.log('🔄 Démarrage ingestion logs Caddy...');
