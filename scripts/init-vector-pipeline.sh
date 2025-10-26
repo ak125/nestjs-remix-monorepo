@@ -126,29 +126,23 @@ curl -X PATCH 'http://localhost:7700/indexes/access_logs/settings' \
   -H 'Content-Type: application/json' \
   --data-binary '{
     "searchableAttributes": [
-      "url",
+      "path",
+      "route",
       "referer",
-      "user_agent",
-      "bot_name",
-      "city",
-      "country"
+      "ua"
     ],
     "filterableAttributes": [
       "status",
-      "is_bot",
-      "is_sitemap",
-      "is_robots",
-      "timestamp_unix",
-      "bot_name",
-      "page_type",
-      "device_type",
-      "country_code",
-      "method"
+      "method",
+      "day",
+      "country",
+      "brand",
+      "gamme",
+      "bot"
     ],
     "sortableAttributes": [
-      "timestamp_unix",
-      "duration_ms",
-      "response_size"
+      "ts",
+      "latency_ms"
     ],
     "rankingRules": [
       "words",
@@ -157,7 +151,13 @@ curl -X PATCH 'http://localhost:7700/indexes/access_logs/settings' \
       "attribute",
       "sort",
       "exactness"
-    ]
+    ],
+    "displayedAttributes": [
+      "*"
+    ],
+    "faceting": {
+      "maxValuesPerFacet": 100
+    }
   }'
 
 echo "✅ Index Meilisearch configuré"
