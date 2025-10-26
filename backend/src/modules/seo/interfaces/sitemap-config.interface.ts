@@ -2,6 +2,8 @@
  * Types et interfaces pour l'architecture de sitemaps scalable
  */
 
+import { SitemapImage } from './sitemap-image.interface';
+
 export enum SitemapType {
   INDEX = 'index', // Index maître
   SUB_INDEX = 'sub-index', // Sous-index (catégorie)
@@ -47,7 +49,14 @@ export interface SitemapConfig {
   children?: string[];
   sharding?: ShardingStrategy;
   shards?: ShardConfig[];
-  changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+  changefreq?:
+    | 'always'
+    | 'hourly'
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'yearly'
+    | 'never';
   priority?: number;
   cacheTTL?: number; // En secondes
 }
@@ -66,6 +75,7 @@ export interface SitemapEntry {
   changefreq?: string;
   priority?: number;
   alternates?: HreflangLink[]; // Liens hreflang pour variantes linguistiques
+  images?: SitemapImage[]; // Images du produit/contenu
 }
 
 export interface SitemapIndexEntry {
