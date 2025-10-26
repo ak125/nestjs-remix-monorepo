@@ -7,30 +7,30 @@
 export const designTokens = {
   "colors": {
     "primary": {
-      "50": "#f0f9ff",
-      "100": "#e0f2fe",
-      "200": "#bae6fd",
-      "300": "#7dd3fc",
-      "400": "#38bdf8",
-      "500": "#0ea5e9",
-      "600": "#0284c7",
-      "700": "#0369a1",
-      "800": "#075985",
-      "900": "#0c4a6e",
-      "950": "#082f49"
+      "50": "#ffe5e5",
+      "100": "#ffcccc",
+      "200": "#ff9999",
+      "300": "#ff6666",
+      "400": "#ff4d4d",
+      "500": "#FF3B30",
+      "600": "#e63629",
+      "700": "#cc2f24",
+      "800": "#b3291f",
+      "900": "#99221a",
+      "950": "#7f1b15"
     },
     "secondary": {
-      "50": "#f8fafc",
-      "100": "#f1f5f9",
-      "200": "#e2e8f0",
-      "300": "#cbd5e1",
-      "400": "#94a3b8",
-      "500": "#64748b",
-      "600": "#475569",
-      "700": "#334155",
-      "800": "#1e293b",
-      "900": "#0f172a",
-      "950": "#020617"
+      "50": "#e6f0f7",
+      "100": "#cce1ef",
+      "200": "#99c3df",
+      "300": "#66a5cf",
+      "400": "#3387bf",
+      "500": "#0F4C81",
+      "600": "#0d4473",
+      "700": "#0b3c65",
+      "800": "#093457",
+      "900": "#072c49",
+      "950": "#05243b"
     },
     "accent": {
       "khmerCurry": "#ED5555",
@@ -42,16 +42,35 @@ export const designTokens = {
       "extraLightTurquoise": "#F3F8F8"
     },
     "neutral": {
+      "50": "#F5F7FA",
+      "100": "#E5E7EB",
+      "200": "#D1D5DB",
+      "300": "#9CA3AF",
+      "400": "#6B7280",
+      "500": "#4B5563",
+      "600": "#374151",
+      "700": "#2D3748",
+      "800": "#1F2937",
+      "900": "#212529",
+      "950": "#111827",
       "darkIron": "#B0B0B0",
       "iron": "#EEEEEE",
       "white": "#FFFFFF",
       "black": "#000000"
     },
     "semantic": {
-      "success": "#10b981",
-      "warning": "#f59e0b",
-      "error": "#ef4444",
-      "info": "#3b82f6"
+      "action": "#D63027",
+      "actionContrast": "#FFFFFF",
+      "info": "#0F4C81",
+      "infoContrast": "#FFFFFF",
+      "success": "#1E8449",
+      "successContrast": "#FFFFFF",
+      "warning": "#D68910",
+      "warningContrast": "#000000",
+      "danger": "#C0392B",
+      "dangerContrast": "#FFFFFF",
+      "neutral": "#4B5563",
+      "neutralContrast": "#FFFFFF"
     }
   },
   "spacing": {
@@ -60,7 +79,6 @@ export const designTokens = {
     "2": "0.5rem",
     "3": "0.75rem",
     "4": "1rem",
-    "5": "1.25rem",
     "6": "1.5rem",
     "8": "2rem",
     "10": "2.5rem",
@@ -68,13 +86,69 @@ export const designTokens = {
     "16": "4rem",
     "20": "5rem",
     "24": "6rem",
-    "32": "8rem"
+    "32": "8rem",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "40px",
+    "3xl": "48px",
+    "4xl": "64px",
+    "5xl": "80px",
+    "6xl": "96px"
+  },
+  "spacingFluid": {
+    "section-xs": "clamp(1.5rem, 4vw, 2rem)",
+    "section-sm": "clamp(2rem, 5vw, 3rem)",
+    "section-md": "clamp(3rem, 6vw, 4rem)",
+    "section-lg": "clamp(4rem, 8vw, 6rem)",
+    "section-xl": "clamp(6rem, 10vw, 8rem)",
+    "section-2xl": "clamp(8rem, 12vw, 10rem)",
+    "gap-xs": "clamp(0.5rem, 1vw, 0.75rem)",
+    "gap-sm": "clamp(0.75rem, 1.5vw, 1rem)",
+    "gap-md": "clamp(1rem, 2vw, 1.5rem)",
+    "gap-lg": "clamp(1.5rem, 2.5vw, 2rem)",
+    "gap-xl": "clamp(2rem, 3vw, 2.5rem)"
+  },
+  "layout": {
+    "container": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px",
+      "full": "100%"
+    },
+    "grid": {
+      "columns": {
+        "mobile": "4",
+        "tablet": "8",
+        "desktop": "12",
+        "wide": "16"
+      },
+      "gutter": {
+        "mobile": "1rem",
+        "tablet": "1.5rem",
+        "desktop": "2rem"
+      }
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    }
   },
   "typography": {
     "fontFamily": {
-      "sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-      "serif": "Georgia, Cambria, 'Times New Roman', Times, serif",
-      "mono": "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace"
+      "heading": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Montserrat', sans-serif",
+      "body": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "data": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace",
+      "sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "serif": "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+      "mono": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace"
     },
     "fontSize": {
       "xs": "0.75rem",
@@ -88,13 +162,33 @@ export const designTokens = {
       "5xl": "3rem",
       "6xl": "3.75rem"
     },
+    "fontSizeFluid": {
+      "xs": "clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)",
+      "sm": "clamp(0.875rem, 0.825rem + 0.25vw, 1rem)",
+      "base": "clamp(1rem, 0.95rem + 0.25vw, 1.125rem)",
+      "lg": "clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem)",
+      "xl": "clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem)",
+      "2xl": "clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem)",
+      "3xl": "clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem)",
+      "4xl": "clamp(2.25rem, 1.95rem + 1.5vw, 3rem)",
+      "5xl": "clamp(3rem, 2.55rem + 2.25vw, 3.75rem)",
+      "6xl": "clamp(3.75rem, 3.15rem + 3vw, 4.5rem)"
+    },
     "lineHeight": {
       "none": "1",
-      "tight": "1.25",
+      "tight": "1.2",
       "snug": "1.375",
       "normal": "1.5",
-      "relaxed": "1.625",
-      "loose": "2"
+      "relaxed": "1.6",
+      "loose": "1.8"
+    },
+    "letterSpacing": {
+      "tighter": "-0.05em",
+      "tight": "-0.025em",
+      "normal": "0",
+      "wide": "0.025em",
+      "wider": "0.05em",
+      "widest": "0.1em"
     },
     "fontWeight": {
       "thin": "100",
@@ -106,6 +200,11 @@ export const designTokens = {
       "bold": "700",
       "extrabold": "800",
       "black": "900"
+    },
+    "maxWidth": {
+      "prose": "70ch",
+      "proseWide": "75ch",
+      "proseNarrow": "60ch"
     }
   },
   "shadows": {

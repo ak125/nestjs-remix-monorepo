@@ -1,0 +1,151 @@
+#!/bin/bash
+
+# Script de test pour la page Design System
+
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                              ║"
+echo "║                   🧪 TESTS DESIGN SYSTEM - CURL                             ║"
+echo "║                                                                              ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+echo ""
+
+# Configuration
+BASE_URL="${BASE_URL:-http://localhost:3000}"
+DESIGN_SYSTEM_PATH="/design-system"
+
+echo "📋 Configuration:"
+echo "   Base URL: $BASE_URL"
+echo "   Page: $DESIGN_SYSTEM_PATH"
+echo ""
+
+# Test 1: Page accessible
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 1: Page /design-system accessible"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${BASE_URL}${DESIGN_SYSTEM_PATH}")
+
+if [ "$HTTP_CODE" = "200" ]; then
+    echo "✅ PASS - HTTP $HTTP_CODE (OK)"
+else
+    echo "❌ FAIL - HTTP $HTTP_CODE (Expected 200)"
+    exit 1
+fi
+echo ""
+
+# Test 2: Contenu Alert présent
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 2: Composant Alert présent"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+RESPONSE=$(curl -s "${BASE_URL}${DESIGN_SYSTEM_PATH}")
+
+if echo "$RESPONSE" | grep -q "Alert Component"; then
+    echo "✅ PASS - Titre 'Alert Component' trouvé"
+else
+    echo "❌ FAIL - Titre 'Alert Component' non trouvé"
+    exit 1
+fi
+
+if echo "$RESPONSE" | grep -q "border-success-500"; then
+    echo "✅ PASS - Classes sémantiques success trouvées"
+else
+    echo "❌ FAIL - Classes sémantiques success non trouvées"
+    exit 1
+fi
+echo ""
+
+# Test 3: Composant Badge présent
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 3: Composant Badge présent"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if echo "$RESPONSE" | grep -q "Badge Component"; then
+    echo "✅ PASS - Titre 'Badge Component' trouvé"
+else
+    echo "❌ FAIL - Titre 'Badge Component' non trouvé"
+    exit 1
+fi
+
+if echo "$RESPONSE" | grep -q "10 variantes disponibles"; then
+    echo "✅ PASS - Description badges trouvée"
+else
+    echo "❌ FAIL - Description badges non trouvée"
+    exit 1
+fi
+echo ""
+
+# Test 4: Composant Button présent
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 4: Composant Button présent"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if echo "$RESPONSE" | grep -q "Button Component"; then
+    echo "✅ PASS - Titre 'Button Component' trouvé"
+else
+    echo "❌ FAIL - Titre 'Button Component' non trouvé"
+    exit 1
+fi
+
+if echo "$RESPONSE" | grep -q "16 variantes"; then
+    echo "✅ PASS - Description buttons trouvée"
+else
+    echo "❌ FAIL - Description buttons non trouvée"
+    exit 1
+fi
+echo ""
+
+# Test 5: Statistiques de migration présentes
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 5: Statistiques de migration"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if echo "$RESPONSE" | grep -q "95.4%"; then
+    echo "✅ PASS - Stat '95.4%' trouvée"
+else
+    echo "❌ FAIL - Stat '95.4%' non trouvée"
+    exit 1
+fi
+
+if echo "$RESPONSE" | grep -q "Migration Statistics"; then
+    echo "✅ PASS - Section statistiques trouvée"
+else
+    echo "❌ FAIL - Section statistiques non trouvée"
+    exit 1
+fi
+echo ""
+
+# Test 6: Couleurs branding documentées
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "Test 6: Couleurs branding (purple/orange)"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if echo "$RESPONSE" | grep -q "Hybride"; then
+    echo "✅ PASS - Badge 'Hybride' (purple) trouvé"
+else
+    echo "❌ FAIL - Badge 'Hybride' non trouvé"
+    exit 1
+fi
+
+if echo "$RESPONSE" | grep -q "Diesel"; then
+    echo "✅ PASS - Badge 'Diesel' (orange) trouvé"
+else
+    echo "❌ FAIL - Badge 'Diesel' non trouvé"
+    exit 1
+fi
+echo ""
+
+# Résumé
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║                                                                              ║"
+echo "║                        ✅ TOUS LES TESTS RÉUSSIS ! ✅                         ║"
+echo "║                                                                              ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+echo ""
+echo "📊 Résultats:"
+echo "   ✅ 6/6 tests passés"
+echo "   🌐 Page accessible: ${BASE_URL}${DESIGN_SYSTEM_PATH}"
+echo ""
+echo "💡 Pour tester manuellement:"
+echo "   curl ${BASE_URL}${DESIGN_SYSTEM_PATH} | grep -i 'design system'"
+echo ""

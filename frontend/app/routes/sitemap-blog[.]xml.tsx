@@ -5,7 +5,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // ✅ Utiliser l'API REST existante pour le blog (109 articles)
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/sitemap/blog`);
+    const response = await fetch(`${backendUrl}/api/sitemap/blog.xml`);
     
     if (!response.ok) {
       throw new Error(`Backend API Error: ${response.status} ${response.statusText}`);

@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-// Composants modernisés
+import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
 import ConseilsSection from "../components/pieces/ConseilsSection";
 import EquipementiersSection from "../components/pieces/EquipementiersSection";
@@ -9,7 +9,11 @@ import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
 import PerformanceIndicator from "../components/pieces/PerformanceIndicator";
+import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
+import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import { buildCanonicalUrl } from "../utils/seo/canonical";
+import { generateGammeMeta } from "../utils/seo/meta-generators";
 
 interface LoaderData {
   status: number;
@@ -20,6 +24,12 @@ interface LoaderData {
     robots: string;
     canonical: string;
     relfollow: number;
+  };
+  breadcrumbs?: {
+    items: Array<{
+      label: string;
+      href: string;
+    }>;
   };
   performance?: {
     total_time_ms: number;
@@ -132,7 +142,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data || data.status !== 200) {
     return [
       { title: "Page non trouvée" },
@@ -140,13 +150,57 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ];
   }
 
-  return [
-    { title: data.meta?.title || "Pièces Auto" },
-    { name: "description", content: data.meta?.description || "" },
-    { name: "keywords", content: data.meta?.keywords || "" },
-    { name: "robots", content: data.meta?.robots || "index, follow" },
-    ...(data.meta?.canonical ? [{ tagName: "link", rel: "canonical", href: `https://automecanik.com/${data.meta.canonical}` }] : []),
-  ];
+  // Construire l'URL canonique avec les utilitaires SEO
+  // Note: L'URL canonique sera gérée via <link rel="canonical"> dans le component
+  const searchParams = new URL(location.pathname + location.search, 'https://automecanik.com').searchParams;
+  const paramsObj: Record<string, string> = {};
+  searchParams.forEach((value, key) => {
+    paramsObj[key] = value;
+  });
+
+  const _canonicalUrl = buildCanonicalUrl({
+    baseUrl: location.pathname,
+    params: paramsObj,
+    includeHost: true,
+  });
+  
+  // TODO: Ajouter l'URL canonique via <Links> dans le component ou SEOHelmet
+
+  // Générer les meta tags optimisés pour CTR
+  const metaTags = generateGammeMeta({
+    name: data.content?.pg_name || data.meta?.title || "Pièces Auto",
+    count: data.motorisations?.items.length || 0,
+    minPrice: undefined, // Calculer depuis les données si disponible
+    vehicleBrand: paramsObj.marque,
+    vehicleModel: paramsObj.modele,
+    onSale: false, // Déterminer depuis les données
+  });
+
+  // Construire le tableau de meta tags Remix
+  const result: Array<{ title?: string; name?: string; content?: string }> = [];
+
+  // Title
+  result.push({ title: metaTags.title });
+
+  // Description
+  result.push({ name: "description", content: metaTags.description });
+
+  // Keywords
+  if (metaTags.keywords && metaTags.keywords.length > 0) {
+    result.push({ name: "keywords", content: metaTags.keywords.join(", ") });
+  }
+
+  // Canonical (géré via <link> dans le head via SEOHelmet ou autre méthode)
+  // Pour Remix, on peut aussi ajouter via le component <Links />
+  
+  // Robots
+  if (data.meta?.robots) {
+    result.push({ name: "robots", content: data.meta.robots });
+  } else {
+    result.push({ name: "robots", content: "index, follow" });
+  }
+
+  return result;
 };
 
 export default function PiecesDetailPage() {
@@ -161,8 +215,46 @@ export default function PiecesDetailPage() {
     </div>;
   }
 
+  // Construire les breadcrumbs depuis l'API ou fallback manuel
+  const breadcrumbs: BreadcrumbItem[] = data.breadcrumbs?.items || [
+    { label: "Accueil", href: "/" },
+    { label: "Pièces Auto", href: "/pieces" },
+    { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      
+      {/* SEO avec schemas JSON-LD enrichis */}
+      <SEOHelmet
+        seo={{
+          title: data.meta?.title || "",
+          description: data.meta?.description || "",
+          canonicalUrl: data.meta?.canonical,
+          keywords: data.meta?.keywords ? [data.meta.keywords] : undefined,
+          breadcrumbs,
+          organization: {
+            name: "Automecanik",
+            logo: "https://automecanik.com/logo.png",
+            url: "https://automecanik.com",
+            contactPoint: {
+              telephone: "+33-1-XX-XX-XX-XX",
+              contactType: "Service Client",
+              email: "contact@automecanik.com"
+            },
+            sameAs: [
+              "https://www.facebook.com/automecanik",
+              "https://twitter.com/automecanik"
+            ]
+          }
+        }}
+      />
+
+      {/* Breadcrumbs visuels */}
+      <div className="container mx-auto px-4 pt-4">
+        <Breadcrumbs items={breadcrumbs} enableSchema={false} />
+      </div>
+
       <div className="container mx-auto px-4 py-8">
         
         {/* Indicateur de performance */}
@@ -247,20 +339,66 @@ export default function PiecesDetailPage() {
         {/* Guide Expert */}
         <GuideSection guide={data.guide} />
 
-        {/* Motorisations */}
+        {/* Motorisations - Section critique, chargée immédiatement */}
         <MotorisationsSection motorisations={data.motorisations} />
 
-        {/* Catalogue Même Famille */}
-        <CatalogueSection catalogueMameFamille={data.catalogueMameFamille} />
+        {/* Catalogue Même Famille - Lazy load avec skeleton */}
+        <LazySection
+          id="catalogue-section"
+          threshold={0.1}
+          rootMargin="200px"
+          fallback={<LazySectionSkeleton rows={4} height="h-48" />}
+        >
+          <CatalogueSection catalogueMameFamille={data.catalogueMameFamille} />
+        </LazySection>
 
-        {/* Équipementiers */}
-        <EquipementiersSection equipementiers={data.equipementiers} />
+        {/* Équipementiers - Lazy load */}
+        <LazySection
+          id="equipementiers-section"
+          threshold={0.1}
+          rootMargin="200px"
+          fallback={<LazySectionSkeleton rows={3} height="h-32" />}
+        >
+          <EquipementiersSection equipementiers={data.equipementiers} />
+        </LazySection>
 
-        {/* Conseils */}
-        <ConseilsSection conseils={data.conseils} />
+        {/* Conseils - Lazy load */}
+        <LazySection
+          id="conseils-section"
+          threshold={0.05}
+          rootMargin="300px"
+          fallback={
+            <div className="bg-white p-6 rounded-lg shadow-md mb-8 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+              <div className="space-y-3">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-24 bg-gray-100 rounded"></div>
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <ConseilsSection conseils={data.conseils} />
+        </LazySection>
 
-        {/* Informations */}
-        <InformationsSection informations={data.informations} />
+        {/* Informations - Lazy load (footer-like) */}
+        <LazySection
+          id="informations-section"
+          threshold={0}
+          rootMargin="400px"
+          fallback={
+            <div className="bg-white p-6 rounded-lg shadow-md mb-8 animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div className="space-y-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-4 bg-gray-100 rounded"></div>
+                ))}
+              </div>
+            </div>
+          }
+        >
+          <InformationsSection informations={data.informations} />
+        </LazySection>
 
       </div>
     </div>

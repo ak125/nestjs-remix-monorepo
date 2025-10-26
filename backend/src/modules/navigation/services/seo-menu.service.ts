@@ -270,7 +270,7 @@ export class SeoMenuService extends SupabaseBaseService {
   private async getPagesWithoutSEO() {
     try {
       const { count } = await this.client
-        .from('___META_TAGS_ARIANE')
+        .from('___meta_tags_ariane')
         .select('*', { count: 'exact', head: true })
         .or('meta_title.is.null,meta_description.is.null');
 

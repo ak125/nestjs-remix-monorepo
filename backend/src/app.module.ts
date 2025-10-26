@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 // import { APP_GUARD } from '@nestjs/core'; // TEMPORAIREMENT DÉSACTIVÉ
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-// import { ScheduleModule } from '@nestjs/schedule'; // Temporairement désactivé
+// import { ScheduleModule } from '@nestjs/schedule'; // Non utilisé - Cron désactivés
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -65,7 +65,7 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     // Event Emitter global
     EventEmitterModule.forRoot(),
 
-    // Scheduler pour les tâches CRON (temporairement désactivé)
+    // Scheduler désactivé - Cron jobs non utilisés
     // ScheduleModule.forRoot(),
 
     // 🔐 Module crypto centralisé (Global)

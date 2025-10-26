@@ -119,57 +119,58 @@ export class RedirectService extends SupabaseBaseService {
   private async findPatternRedirect(
     url: string,
   ): Promise<RedirectEntry | null> {
-    try {
-      const { data: redirects, error } = await this.supabase
-        .from('___xtr_msg')
-        .select('*')
-        .eq('msg_subject', 'REDIRECT_RULE')
-        .eq('msg_open', '1') // Actif
-        .like('msg_content', '%*%'); // Contient des wildcards
+    return this.executeWithRetry(
+      async () => {
+        const { data: redirects, error } = await this.supabase
+          .from('___xtr_msg')
+          .select('*')
+          .eq('msg_subject', 'REDIRECT_RULE')
+          .eq('msg_open', '1') // Actif
+          .like('msg_content', '%*%'); // Contient des wildcards
 
-      if (error) {
-        this.logger.error('Erreur lors de la recherche pattern:', error);
-        return null;
-      }
-
-      for (const redirect of redirects || []) {
-        try {
-          const metadata = JSON.parse(redirect.msg_content || '{}');
-          const pattern = metadata.source_path?.replace(/\*/g, '.*');
-
-          if (!pattern) continue;
-
-          const regex = new RegExp(`^${pattern}$`);
-
-          if (regex.test(url)) {
-            await this.incrementHitCount(redirect.msg_id);
-
-            // Remplacer les wildcards dans destination_path
-            const newPath = metadata.destination_path?.replace(
-              /\$(\d+)/g,
-              (match: string, index: string) => {
-                const captures = url.match(regex);
-                return captures?.[parseInt(index)] || match;
-              },
-            );
-
-            return {
-              old_path: metadata.source_path,
-              new_path: newPath || metadata.destination_path,
-              redirect_type: metadata.status_code || 301,
-              reason: metadata.description,
-            };
-          }
-        } catch (parseError) {
-          this.logger.error('Erreur parsing metadata:', parseError);
+        if (error) {
+          this.logger.error('Erreur lors de la recherche pattern:', error);
+          throw error; // Lancer l'erreur pour déclencher le retry
         }
-      }
 
-      return null;
-    } catch (error) {
-      this.logger.error('Erreur dans findPatternRedirect:', error);
-      return null;
-    }
+        for (const redirect of redirects || []) {
+          try {
+            const metadata = JSON.parse(redirect.msg_content || '{}');
+            const pattern = metadata.source_path?.replace(/\*/g, '.*');
+
+            if (!pattern) continue;
+
+            const regex = new RegExp(`^${pattern}$`);
+
+            if (regex.test(url)) {
+              await this.incrementHitCount(redirect.msg_id);
+
+              // Remplacer les wildcards dans destination_path
+              const newPath = metadata.destination_path?.replace(
+                /\$(\d+)/g,
+                (match: string, index: string) => {
+                  const captures = url.match(regex);
+                  return captures?.[parseInt(index)] || match;
+                },
+              );
+
+              return {
+                old_path: metadata.source_path,
+                new_path: newPath || metadata.destination_path,
+                redirect_type: metadata.status_code || 301,
+                reason: metadata.description,
+              };
+            }
+          } catch (parseError) {
+            this.logger.error('Erreur parsing metadata:', parseError);
+          }
+        }
+
+        return null;
+      },
+      'findPatternRedirect',
+      2, // Seulement 2 tentatives pour les recherches
+    );
   }
 
   /**
@@ -512,6 +513,8 @@ export class RedirectService extends SupabaseBaseService {
    * Incrémente le compteur de hits pour une règle
    */
   private async incrementHitCount(ruleId: string): Promise<void> {
+    // Ne pas utiliser executeWithRetry ici pour éviter de bloquer la redirection
+    // si la mise à jour des stats échoue
     try {
       // Récupérer la règle actuelle
       const { data: currentRule } = await this.supabase
@@ -532,8 +535,12 @@ export class RedirectService extends SupabaseBaseService {
           })
           .eq('msg_id', ruleId);
       }
-    } catch {
-      // Ne pas logger cette erreur car ce n'est pas critique
+    } catch (error) {
+      // Ne pas logger cette erreur en ERROR car ce n'est pas critique
+      // La redirection fonctionnera même si les stats ne sont pas mises à jour
+      this.logger.warn(
+        `Erreur lors de la mise à jour des statistiques: ${error?.message || 'Erreur inconnue'}`,
+      );
     }
   }
 

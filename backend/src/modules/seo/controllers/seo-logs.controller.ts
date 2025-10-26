@@ -103,4 +103,64 @@ export class SeoLogsController {
       data: stats,
     };
   }
+
+  /**
+   * GET /seo-logs/analytics/traffic
+   * Dashboard analytics trafic e-commerce (brand, gamme, country, bots)
+   */
+  @Get('analytics/traffic')
+  async getTrafficAnalytics(
+    @Query('period') period?: 'today' | 'yesterday' | '7days' | '30days',
+  ) {
+    const analytics = await this.logIngestionService.getTrafficAnalytics(
+      period || 'today',
+    );
+    return {
+      success: true,
+      data: analytics,
+    };
+  }
+
+  /**
+   * GET /seo-logs/analytics/slow-paths
+   * Chemins lents (> seuil latence)
+   */
+  @Get('analytics/slow-paths')
+  async getSlowPaths(
+    @Query('threshold', new ParseIntPipe({ optional: true }))
+    threshold = 800,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 50,
+    @Query('day') day?: string,
+  ) {
+    const slowPaths = await this.logIngestionService.getSlowPaths(
+      threshold,
+      limit,
+      day,
+    );
+    return {
+      success: true,
+      data: slowPaths,
+    };
+  }
+
+  /**
+   * GET /seo-logs/analytics/bot-hits
+   * Liste des hits par bot
+   */
+  @Get('analytics/bot-hits')
+  async getBotHits(
+    @Query('bot') bot?: string,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit = 100,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset = 0,
+  ) {
+    const botHits = await this.logIngestionService.getBotHits(
+      bot,
+      limit,
+      offset,
+    );
+    return {
+      success: true,
+      data: botHits,
+    };
+  }
 }

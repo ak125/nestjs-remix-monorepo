@@ -195,7 +195,7 @@ export class FooterService {
 
     try {
       const { data, error } = await this.supabaseClient
-        .from('___FOOTER_MENU')
+        .from('___footer_menu')
         .select('*')
         .eq('is_active', true)
         .order('position');

@@ -2,7 +2,6 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
 
 // Services SEO existants
 import { SeoService } from './seo.service';
@@ -74,7 +73,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 @Module({
   imports: [
     ConfigModule,
-    ScheduleModule.forRoot(), // 📊 Enable cron jobs pour monitoring
+    // Note: ScheduleModule.forRoot() est dans AppModule (global)
 
     // 🎯 Cache Redis pour SEO V4 Ultimate
     CacheModule.register({

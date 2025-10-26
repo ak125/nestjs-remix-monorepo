@@ -672,7 +672,7 @@ export class StockManagementService extends SupabaseBaseService {
     try {
       // Test simple de connectivité à la base
       const { error } = await this.supabase
-        .from('products')
+        .from('pieces')
         .select('id')
         .limit(1);
 

@@ -437,7 +437,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
       // 🎯 TEMPLATE SEO AVEC CACHE
       const { data: seoTemplate } = await this.supabase
-        .from('seo_gamme_car')
+        .from('__seo_gamme_car')
         .select('sgc_title, sgc_descrip, sgc_h1, sgc_content')
         .eq('sgc_pg_id', crossGamme.pg_id)
         .single();
@@ -844,7 +844,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
   private async getGammeSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('seo_gamme_car_switch')
+      .from('__seo_gamme_car_switch')
       .select('*')
       .eq('sgcs_pg_id', pgId);
     return data || [];
@@ -861,7 +861,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
   private async getExternalSwitches(typeId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('seo_type_switch')
+      .from('__seo_type_switch')
       .select('*')
       .eq('sts_type_id', typeId);
     return data || [];

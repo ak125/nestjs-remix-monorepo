@@ -73,7 +73,7 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
 
         // MARQUES
         this.client
-          .from('pieces_marques')
+          .from('pieces_marque')
           .select('pm_id, pm_name, pm_logo, pm_alias, pm_oes, pm_nb_stars')
           .in('pm_id', pmIds),
 

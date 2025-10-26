@@ -5,7 +5,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // ✅ Utiliser l'API REST existante pour les constructeurs (117 marques)
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/sitemap/constructeurs`);
+    const response = await fetch(`${backendUrl}/api/sitemap/constructeurs.xml`);
     
     if (!response.ok) {
       throw new Error(`Backend API Error: ${response.status} ${response.statusText}`);

@@ -32,7 +32,7 @@ export interface AdviceFilters {
   keywords?: string[];
   minViews?: number;
   gammeId?: number;
-  sortBy?: 'views' | 'date' | 'popularity';
+  sortBy?: 'ba_visit' | 'date' | 'popularity';
 }
 
 /**
