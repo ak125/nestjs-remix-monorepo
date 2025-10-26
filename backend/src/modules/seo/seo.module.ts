@@ -39,6 +39,9 @@ import { SeoHeadersService } from './services/seo-headers.service';
 // 📊 Service Monitoring SEO
 import { SeoMonitoringService } from './services/seo-monitoring.service';
 
+// 📊 Service Ingestion Logs (Loki + Meilisearch)
+import { LogIngestionService } from './services/log-ingestion.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -59,8 +62,11 @@ import { SitemapStreamingController } from './controllers/sitemap-streaming.cont
 // 🤖 Contrôleur Robots.txt
 import { RobotsTxtController } from './controllers/robots-txt.controller';
 
-// � Contrôleur Monitoring SEO
+// 📊 Contrôleur Monitoring SEO
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
+
+// � Contrôleur SEO Logs (Meilisearch)
+import { SeoLogsController } from './controllers/seo-logs.controller';
 
 // �🛡️ Interceptor Headers SEO
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
@@ -88,6 +94,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
     RobotsTxtController, // 🤖 Contrôleur Robots.txt
     SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
+    SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
   ],
 
   providers: [
@@ -104,6 +111,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     RobotsTxtService, // 🤖 Service Robots.txt
     SeoHeadersService, // 📄 Service Headers SEO
     SeoMonitoringService, // 📊 Service Monitoring SEO
+    LogIngestionService, // 📊 Service Ingestion Logs (Loki + Meilisearch)
     
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -153,6 +161,7 @@ export class SeoModule {
     this.logger.log('   • RobotsTxtService (🤖 Robots.txt Dynamique)');
     this.logger.log('   • SeoHeadersService (📄 Headers SEO)');
     this.logger.log('   • SeoMonitoringService (📊 Monitoring & Alertes)');
+    this.logger.log('   • LogIngestionService (📊 Loki + Meilisearch)');
     this.logger.log('✅ Interceptors activés:');
     this.logger.log('   • SeoHeadersInterceptor (🛡️ Headers SEO globaux)');
     this.logger.log('✅ Contrôleurs disponibles:');
@@ -167,6 +176,7 @@ export class SeoModule {
     this.logger.log(
       '   • SeoMonitoringController (📊 Monitoring /seo-monitoring)',
     );
+    this.logger.log('   • SeoLogsController (📊 SEO Logs /seo-logs)');
     this.logger.log('🚀 Améliorations V4 Ultimate:');
     this.logger.log('   • +400% fonctionnalités vs service original');
     this.logger.log('   • +250% performance avec cache intelligent');
