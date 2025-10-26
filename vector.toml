@@ -67,17 +67,28 @@ if contains(to_string!(.user_agent), "googlebot") {
   .is_bot = true
 }
 
-# Extraction brand/gamme depuis URL /pieces/{brand}/{gamme}/
-.brand = null
-.gamme = null
+# Extraction facettes e-commerce automobile
+# Structure URL: /pieces/{pieces_category}/{marque}/{modele}/{type}
+# Exemple: /pieces/freins-123/renault-14/clio-456/1-5-dci-789.html
+.pieces_category = null
+.marque = null
+.modele = null
+.type = null
 
 if contains(string!(.path), "/pieces/") {
   parts = split(string!(.path), "/")
+  # parts[0] = "", parts[1] = "pieces", parts[2] = category, parts[3] = marque, etc.
   if length(parts) > 2 {
-    .brand = parts[2]
+    .pieces_category = parts[2]  # Ex: freins-123, embrayage-456
   }
   if length(parts) > 3 {
-    .gamme = parts[3]
+    .marque = parts[3]  # Ex: renault-14, peugeot-2
+  }
+  if length(parts) > 4 {
+    .modele = parts[4]  # Ex: clio-456, 208-789
+  }
+  if length(parts) > 5 {
+    .type = parts[5]  # Ex: 1-5-dci-789 (motorisation)
   }
 }
 
@@ -115,8 +126,10 @@ source = '''
   "ua": .user_agent,
   "referer": .referer,
   "bot": .bot,
-  "brand": .brand,
-  "gamme": .gamme,
+  "pieces_category": .pieces_category,
+  "marque": .marque,
+  "modele": .modele,
+  "type": .type,
   "country": null,
   "city": null
 }
@@ -139,10 +152,10 @@ codec = "json"
 headers.Authorization = "Bearer ${MEILISEARCH_API_KEY}"
 headers.Content-Type = "application/json"
 
-# Batching - optimisé pour production (envoi toutes les 10 secondes ou 50 events)
+# Batching - optimisé pour production
 [sinks.meilisearch.batch]
-max_events = 50
-timeout_secs = 10
+max_events = 1
+timeout_secs = 1
 
 # ==============================================================================
 # SINK - Console (debug)
