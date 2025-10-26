@@ -12,6 +12,7 @@ import { getSitemapConfig } from '../config/sitemap.config';
 import { SitemapHygieneService } from './sitemap-hygiene.service';
 import { HreflangService } from './hreflang.service';
 import { MultilingualContentType } from '../config/hreflang.config';
+import { ProductImageService } from './product-image.service';
 
 @Injectable()
 export class SitemapScalableService extends SupabaseBaseService {
@@ -20,11 +21,13 @@ export class SitemapScalableService extends SupabaseBaseService {
   constructor(
     private readonly hygieneService: SitemapHygieneService,
     private readonly hreflangService: HreflangService,
+    private readonly productImageService: ProductImageService,
   ) {
     super();
     this.logger.log('✅ SitemapScalableService initialized');
     this.logger.log('🧹 Hygiene validation enabled');
     this.logger.log('🌍 Hreflang multilingual enabled');
+    this.logger.log('🖼️ Product images enabled');
   }
 
   /**
@@ -149,6 +152,7 @@ export class SitemapScalableService extends SupabaseBaseService {
   /**
    * Valide et filtre les URLs selon les règles d'hygiène SEO
    * et ajoute les liens hreflang pour le multilingue
+   * et ajoute les images pour les produits (e-commerce)
    */
   private async validateAndFilterUrls(
     urls: SitemapEntry[],
@@ -177,10 +181,17 @@ export class SitemapScalableService extends SupabaseBaseService {
           contentType,
         );
 
+        // Générer les images pour les produits (boost e-commerce SEO)
+        let images;
+        if (this.shouldIncludeImages(config)) {
+          images = await this.generateProductImages(url);
+        }
+
         validatedUrls.push({
           ...url,
           loc: validation.normalizedUrl, // URL normalisée
           alternates: hreflangLinks.length > 0 ? hreflangLinks : undefined, // Hreflang si disponibles
+          images: images && images.length > 0 ? images : undefined, // Images si disponibles
           // lastmod: validation.lastModified.toISOString(), // TODO: Activer quand on aura les vraies dates
         });
       } else {
@@ -200,6 +211,51 @@ export class SitemapScalableService extends SupabaseBaseService {
     }
 
     return validatedUrls;
+  }
+
+  /**
+   * Vérifie si ce sitemap doit inclure des images
+   */
+  private shouldIncludeImages(config: SitemapConfig): boolean {
+    // Activer les images uniquement pour les produits e-commerce
+    return (
+      config.category === SitemapCategory.PRODUCTS ||
+      config.name.startsWith('products') ||
+      config.name.includes('niveau') // Sitemaps products-niveau1, products-niveau2
+    );
+  }
+
+  /**
+   * Génère les images pour un produit
+   * Format: 1 image principale + 2-4 vues utiles
+   */
+  private async generateProductImages(url: SitemapEntry): Promise<any[]> {
+    // Extraire product ID de l'URL selon le format réel
+    // Format possible 1: /products/12345-reference-produit
+    // Format possible 2: /pieces/slug-12345.html (format actuel)
+    let match = url.loc.match(/products\/(\d+)/);
+    if (!match) {
+      // Essayer format /pieces/slug-{id}.html
+      match = url.loc.match(/pieces\/[\w-]+-(\d+)\.html/);
+    }
+
+    if (!match) {
+      // Pas de product ID trouvé, retourner tableau vide
+      return [];
+    }
+
+    const productId = parseInt(match[1], 10);
+
+    // Pour l'instant, génération simple
+    // TODO: Intégrer avec vraie database pour récupérer les infos produit
+    const images = await this.productImageService.getProductSitemapImages(
+      productId,
+      `Produit ${productId}`, // TODO: Récupérer vrai nom depuis DB
+      `REF-${productId}`, // TODO: Récupérer vraie référence depuis DB
+      5, // Max 5 images par produit
+    );
+
+    return images;
   }
 
   /**
@@ -633,7 +689,7 @@ ${entries
   }
 
   /**
-   * Construit le XML d'un sitemap final avec support hreflang
+   * Construit le XML d'un sitemap final avec support hreflang et images
    */
   private buildSitemapXml(urls: SitemapEntry[], config: SitemapConfig): string {
     // Vérifier si au moins une URL a des alternates
@@ -641,13 +697,19 @@ ${entries
       (url) => url.alternates && url.alternates.length > 0,
     );
 
-    // Namespace xhtml requis pour hreflang
+    // Vérifier si au moins une URL a des images
+    const hasImages = urls.some((url) => url.images && url.images.length > 0);
+
+    // Namespaces XML requis
     const xmlnsXhtml = hasHreflang
       ? ' xmlns:xhtml="http://www.w3.org/1999/xhtml"'
       : '';
+    const xmlnsImage = hasImages
+      ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"'
+      : '';
 
     return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${xmlnsXhtml}>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${xmlnsXhtml}${xmlnsImage}>
 ${urls
   .map((url) => {
     let xml = `  <url>
@@ -671,10 +733,48 @@ ${urls
       });
     }
 
+    // Ajouter les images si disponibles (boost e-commerce SEO)
+    if (url.images && url.images.length > 0) {
+      url.images.forEach((image) => {
+        xml += '\n    <image:image>';
+        xml += `\n      <image:loc>${this.escapeXml(image.loc)}</image:loc>`;
+
+        if (image.title) {
+          xml += `\n      <image:title>${this.escapeXml(image.title)}</image:title>`;
+        }
+
+        if (image.caption) {
+          xml += `\n      <image:caption>${this.escapeXml(image.caption)}</image:caption>`;
+        }
+
+        if (image.geoLocation) {
+          xml += `\n      <image:geo_location>${this.escapeXml(image.geoLocation)}</image:geo_location>`;
+        }
+
+        if (image.license) {
+          xml += `\n      <image:license>${this.escapeXml(image.license)}</image:license>`;
+        }
+
+        xml += '\n    </image:image>';
+      });
+    }
+
     xml += '\n  </url>';
     return xml;
   })
   .join('\n')}
 </urlset>`;
+  }
+
+  /**
+   * Échapper les caractères spéciaux XML
+   */
+  private escapeXml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 }
