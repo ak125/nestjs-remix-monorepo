@@ -11,6 +11,9 @@ services:
     
     command: ["--config", "/etc/vector/vector.toml"]
     
+    env_file:
+      - .env.vector
+    
     volumes:
       # Configuration Vector
       - ./vector.toml:/etc/vector/vector.toml:ro
