@@ -22,6 +22,9 @@ import { HreflangService } from './services/hreflang.service';
 // 🖼️ Service Images Produits
 import { ProductImageService } from './services/product-image.service';
 
+// 🔄 Service Delta Sitemap
+import { SitemapDeltaService } from './services/sitemap-delta.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -32,6 +35,9 @@ import { DynamicSeoController } from './dynamic-seo.controller';
 
 // 🚀 Contrôleur Sitemap Scalable
 import { SitemapScalableController } from './controllers/sitemap-scalable.controller';
+
+// 🔄 Contrôleur Delta Sitemap
+import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
 
 @Module({
   imports: [
@@ -51,6 +57,7 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
     SitemapController,
     DynamicSeoController, // 🎯 Contrôleur V4 Ultimate
     SitemapScalableController, // 🚀 Contrôleur Sitemap V2 Scalable
+    SitemapDeltaController, // 🔄 Contrôleur Delta Sitemap
   ],
 
   providers: [
@@ -62,6 +69,7 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap
     HreflangService, // 🌍 Service Hreflang
     ProductImageService, // 🖼️ Service Images Produits
+    SitemapDeltaService, // 🔄 Service Delta Sitemap
 
     // Logger spécialisé pour V4
     {
@@ -79,6 +87,7 @@ import { SitemapScalableController } from './controllers/sitemap-scalable.contro
     SitemapHygieneService, // 🧹 Service Hygiène Sitemap exporté
     HreflangService, // 🌍 Service Hreflang exporté
     ProductImageService, // 🖼️ Service Images Produits exporté
+    SitemapDeltaService, // 🔄 Service Delta Sitemap exporté
   ],
 })
 export class SeoModule {
@@ -95,12 +104,14 @@ export class SeoModule {
     this.logger.log('   • SitemapHygieneService (🧹 V3 Hygiene)');
     this.logger.log('   • HreflangService (🌍 Multilingual)');
     this.logger.log('   • ProductImageService (🖼️ Images Produits)');
+    this.logger.log('   • SitemapDeltaService (🔄 Delta Journalier)');
     this.logger.log('✅ Contrôleurs disponibles:');
     this.logger.log('   • SeoController');
     this.logger.log('   • SeoEnhancedController');
     this.logger.log('   • SitemapController');
     this.logger.log('   • DynamicSeoController (🎯 V4 Ultimate)');
     this.logger.log('   • SitemapScalableController (🚀 V2 Scalable)');
+    this.logger.log('   • SitemapDeltaController (🔄 Delta Sitemap)');
     this.logger.log('🚀 Améliorations V4 Ultimate:');
     this.logger.log('   • +400% fonctionnalités vs service original');
     this.logger.log('   • +250% performance avec cache intelligent');
@@ -133,6 +144,11 @@ export class SeoModule {
     this.logger.log('   • URLs publiques stables (CDN Supabase)');
     this.logger.log('   • Balises image:image conformes Google');
     this.logger.log('   • Titres et captions auto-générés');
+    this.logger.log('🔄 Delta Sitemap (Diff Journalier):');
+    this.logger.log('   • Hash SHA1 par URL (prix + stock + metadata)');
+    this.logger.log('   • Détection changements automatique');
+    this.logger.log('   • sitemap-latest.xml quotidien');
+    this.logger.log('   • Rétention 30 jours dans Redis');
   }
 }
 
