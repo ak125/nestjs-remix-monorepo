@@ -1,0 +1,299 @@
+# Vector Configuration - Caddy Logs Pipeline
+# Caddy → Vector → Loki + Meilisearch
+
+# ==============================================================================
+# SOURCES - Ingestion des logs Caddy
+# ==============================================================================
+
+[sources.caddy_access_logs]
+type = "file"
+include = ["/var/log/caddy/access.json"]
+read_from = "beginning"
+fingerprinting.strategy = "device_and_inode"
+
+# Décoder le JSON Caddy
+data_dir = "/var/lib/vector"
+
+# ==============================================================================
+# TRANSFORMS - Enrichissement et filtrage
+# ==============================================================================
+
+# 1. Parse JSON Caddy
+[transforms.parse_caddy_json]
+type = "remap"
+inputs = ["caddy_access_logs"]
+source = '''
+  . = parse_json!(.message)
+  .timestamp = to_timestamp!(.ts)
+  .request_id = .request.id
+  .method = .request.method
+  .uri = .request.uri
+  .status = .status
+  .duration_ms = .duration * 1000
+  .bytes_read = .request.size
+  .bytes_written = .size
+  .user_agent = .request.headers.User-Agent[0] || ""
+  .referer = .request.headers.Referer[0] || ""
+  .client_ip = .request.remote_ip
+  .protocol = .request.proto
+  .tls_version = .request.tls.version
+  .host = .request.host
+'''
+
+# 2. Enrichissement GeoIP
+[transforms.enrich_geoip]
+type = "geoip"
+inputs = ["parse_caddy_json"]
+source = "client_ip"
+database = "/usr/share/GeoIP/GeoLite2-City.mmdb"
+target = "geoip"
+
+# 3. Enrichissement User-Agent (détection bot)
+[transforms.enrich_user_agent]
+type = "remap"
+inputs = ["enrich_geoip"]
+source = '''
+  # Détection bot
+  .is_bot = false
+  .bot_name = null
+  
+  user_agent_lower = downcase(.user_agent)
+  
+  if contains(user_agent_lower, "googlebot") {
+    .is_bot = true
+    .bot_name = "Googlebot"
+  } else if contains(user_agent_lower, "bingbot") {
+    .is_bot = true
+    .bot_name = "Bingbot"
+  } else if contains(user_agent_lower, "slurp") {
+    .is_bot = true
+    .bot_name = "Yahoo"
+  } else if contains(user_agent_lower, "duckduckbot") {
+    .is_bot = true
+    .bot_name = "DuckDuckBot"
+  } else if contains(user_agent_lower, "baiduspider") {
+    .is_bot = true
+    .bot_name = "Baidu"
+  } else if contains(user_agent_lower, "yandexbot") {
+    .is_bot = true
+    .bot_name = "Yandex"
+  } else if contains(user_agent_lower, "facebot") {
+    .is_bot = true
+    .bot_name = "Facebook"
+  } else if contains(user_agent_lower, "semrushbot") {
+    .is_bot = true
+    .bot_name = "SEMrush"
+  } else if contains(user_agent_lower, "ahrefsbot") {
+    .is_bot = true
+    .bot_name = "Ahrefs"
+  } else if contains(user_agent_lower, "mj12bot") {
+    .is_bot = true
+    .bot_name = "Majestic"
+  } else if contains(user_agent_lower, "dotbot") {
+    .is_bot = true
+    .bot_name = "Moz"
+  } else if match(user_agent_lower, r'bot|crawler|spider') {
+    .is_bot = true
+    .bot_name = "Unknown Bot"
+  }
+  
+  # Détection SEO relevance
+  .is_sitemap = contains(.uri, "sitemap")
+  .is_robots = .uri == "/robots.txt"
+  
+  # Catégorisation type de page
+  .page_type = "other"
+  if contains(.uri, "/pieces/") || contains(.uri, "/produits/") {
+    .page_type = "product"
+  } else if contains(.uri, "/blog/") || contains(.uri, "/conseils/") {
+    .page_type = "blog"
+  } else if .is_sitemap {
+    .page_type = "sitemap"
+  } else if .is_robots {
+    .page_type = "robots"
+  } else if .status >= 400 {
+    .page_type = "error"
+  }
+  
+  # Device type (simple detection)
+  if contains(user_agent_lower, "mobile") || contains(user_agent_lower, "android") || contains(user_agent_lower, "iphone") {
+    .device_type = "mobile"
+  } else if contains(user_agent_lower, "tablet") || contains(user_agent_lower, "ipad") {
+    .device_type = "tablet"
+  } else {
+    .device_type = "desktop"
+  }
+'''
+
+# 4. Ajouter labels pour Loki
+[transforms.add_loki_labels]
+type = "remap"
+inputs = ["enrich_user_agent"]
+source = '''
+  # Labels Loki (indexés)
+  .loki_labels = {
+    "job": "caddy",
+    "environment": get_env_var!("NODE_ENV"),
+    "host": .host,
+    "status": to_string(.status),
+    "method": .method,
+    "is_bot": to_string(.is_bot),
+    "page_type": .page_type,
+    "device_type": .device_type
+  }
+  
+  # Garder bot_name si présent
+  if exists(.bot_name) {
+    .loki_labels.bot_name = .bot_name
+  }
+  
+  # GeoIP country
+  if exists(.geoip.country_code) {
+    .loki_labels.country = .geoip.country_code
+  }
+'''
+
+# 5. Filtrer pour Meilisearch (seulement logs SEO pertinents)
+[transforms.filter_seo_logs]
+type = "filter"
+inputs = ["add_loki_labels"]
+condition = '''
+  # Inclure : crawlers, sitemaps, robots, redirects, erreurs 4xx/5xx
+  .is_bot == true || 
+  .is_sitemap == true || 
+  .is_robots == true || 
+  .status == 301 || 
+  .status == 302 || 
+  .status == 404 || 
+  .status == 410 || 
+  .status >= 500
+'''
+
+# 6. Préparer format Meilisearch
+[transforms.format_meilisearch]
+type = "remap"
+inputs = ["filter_seo_logs"]
+source = '''
+  # Structure optimisée pour Meilisearch
+  .id = .request_id
+  .timestamp_unix = to_unix_timestamp(.timestamp)
+  .url = .uri
+  .response_size = .bytes_written
+  
+  # Simplifier structure (flat)
+  if exists(.geoip.country_name) {
+    .country = .geoip.country_name
+    .country_code = .geoip.country_code
+  }
+  
+  if exists(.geoip.city_name) {
+    .city = .geoip.city_name
+  }
+  
+  # Nettoyer champs non nécessaires pour Meilisearch
+  del(.loki_labels)
+  del(.geoip)
+  del(.message)
+  del(.request)
+  del(.ts)
+'''
+
+# ==============================================================================
+# SINKS - Destinations des logs
+# ==============================================================================
+
+# SINK 1: Loki (TOUS les logs - source de vérité)
+[sinks.loki]
+type = "loki"
+inputs = ["add_loki_labels"]
+endpoint = "${LOKI_URL:-http://localhost:3100}"
+encoding.codec = "json"
+labels = "{{ loki_labels }}"
+
+# Compression GZIP
+compression = "gzip"
+
+# Batching pour performance
+batch.max_bytes = 1048576  # 1MB
+batch.timeout_secs = 5
+
+# Retry policy
+request.retry_attempts = 5
+request.retry_backoff_secs = 1
+
+# Health check
+healthcheck.enabled = true
+
+# SINK 2: Meilisearch (logs SEO filtrés uniquement)
+[sinks.meilisearch]
+type = "http"
+inputs = ["format_meilisearch"]
+uri = "${MEILISEARCH_HOST:-http://localhost:7700}/indexes/access_logs/documents"
+method = "post"
+encoding.codec = "json"
+
+# Headers pour authentification Meilisearch
+[sinks.meilisearch.headers]
+Authorization = "Bearer ${MEILISEARCH_API_KEY}"
+Content-Type = "application/json"
+
+# Batching (max 1000 docs par requête Meilisearch)
+batch.max_events = 1000
+batch.timeout_secs = 10
+
+# Retry policy
+request.retry_attempts = 3
+request.retry_backoff_secs = 2
+
+# SINK 3: Stdout (debug - optionnel)
+# Décommenter pour debug local
+# [sinks.console]
+# type = "console"
+# inputs = ["add_loki_labels"]
+# encoding.codec = "json"
+
+# SINK 4: Prometheus metrics (métriques système)
+[sinks.prometheus_exporter]
+type = "prometheus_exporter"
+inputs = ["add_loki_labels"]
+address = "0.0.0.0:9598"
+default_namespace = "caddy"
+
+# Métriques custom
+[[sinks.prometheus_exporter.metrics]]
+type = "counter"
+name = "http_requests_total"
+labels.status = "{{ status }}"
+labels.method = "{{ method }}"
+labels.is_bot = "{{ is_bot }}"
+
+[[sinks.prometheus_exporter.metrics]]
+type = "histogram"
+name = "http_request_duration_ms"
+field = "duration_ms"
+labels.status = "{{ status }}"
+labels.page_type = "{{ page_type }}"
+
+[[sinks.prometheus_exporter.metrics]]
+type = "counter"
+name = "http_response_bytes_total"
+field = "bytes_written"
+labels.status = "{{ status }}"
+
+# ==============================================================================
+# CONFIGURATION GLOBALE
+# ==============================================================================
+
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+playground = false
+
+# Data directory pour checkpoints
+data_dir = "/var/lib/vector"
+
+# Log level
+[log_schema]
+host_key = "host"
+message_key = "message"
+timestamp_key = "timestamp"
