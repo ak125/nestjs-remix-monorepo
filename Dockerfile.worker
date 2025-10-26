@@ -1,0 +1,68 @@
+# 🔧 DOCKERFILE WORKER - SUPERCRONIC + BULLMQ
+# Container dédié pour cron jobs + queue workers
+
+FROM node:20-alpine AS base
+
+# Installation Supercronic (meilleur que cron)
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.29/supercronic-linux-amd64 \
+    SUPERCRONIC=supercronic-linux-amd64 \
+    SUPERCRONIC_SHA1SUM=cd48d45c4b10f3f0bfdd3a57d054cd05ac96812b
+
+RUN apk add --no-cache curl ca-certificates \
+    && curl -fsSLO "$SUPERCRONIC_URL" \
+    && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
+    && chmod +x "$SUPERCRONIC" \
+    && mv "$SUPERCRONIC" /usr/local/bin/supercronic
+
+# Builder stage
+FROM base AS builder
+
+WORKDIR /app
+
+# Copier fichiers de dépendances
+COPY package*.json ./
+COPY turbo.json ./
+COPY backend/package*.json ./backend/
+
+# Installer dépendances
+RUN npm ci
+
+# Copier code source
+COPY backend ./backend
+COPY scripts ./scripts
+
+# Build backend
+RUN npm run build -w backend
+
+# Production stage
+FROM base AS production
+
+WORKDIR /app
+
+# Copier node_modules depuis builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/backend/node_modules ./backend/node_modules
+COPY --from=builder /app/backend/dist ./backend/dist
+
+# Copier fichiers de configuration
+COPY backend/package*.json ./backend/
+COPY crontab ./crontab
+COPY scripts/start-worker.sh ./scripts/
+
+# Rendre le script exécutable
+RUN chmod +x ./scripts/start-worker.sh
+
+# Variables d'environnement
+ENV NODE_ENV=production \
+    REDIS_URL=redis://redis:6379 \
+    WORKER_CONCURRENCY=5
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+
+# Exposer port monitoring
+EXPOSE 3001
+
+# Démarrer Supercronic + Worker
+CMD ["/app/scripts/start-worker.sh"]
