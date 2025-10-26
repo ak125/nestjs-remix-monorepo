@@ -49,6 +49,9 @@ limits_config:
   
   # Max entries per query
   max_entries_limit_per_query: 10000
+  
+  # Split queries (moved from query_range)
+  split_queries_by_interval: 1h
 
 # Schema configuration
 schema_config:
@@ -89,8 +92,7 @@ query_range:
         max_size_bytes: 500MB
         ttl: 1h
   
-  # Split queries into smaller ranges
-  split_queries_by_interval: 1h
+  # Query alignment
   align_queries_with_step: true
   
   # Parallelism
