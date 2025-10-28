@@ -12,11 +12,14 @@ import PerformanceIndicator from "../components/pieces/PerformanceIndicator";
 import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import { buildCanonicalUrl } from "../utils/seo/canonical";
 import { generateGammeMeta } from "../utils/seo/meta-generators";
+import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
 
 interface LoaderData {
   status: number;
+  selectedVehicle?: VehicleCookie | null;
   meta?: {
     title: string;
     description: string;
@@ -29,6 +32,7 @@ interface LoaderData {
     items: Array<{
       label: string;
       href: string;
+      current?: boolean;
     }>;
   };
   performance?: {
@@ -112,7 +116,7 @@ interface LoaderData {
   };
 }
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const slug = params.slug;
   if (!slug) {
     throw new Response("Not Found", { status: 404 });
@@ -126,6 +130,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   const gammeId = match[1];
 
+  // 🚗 Récupérer véhicule depuis cookie
+  const selectedVehicle = await getVehicleFromCookie(
+    request.headers.get("Cookie")
+  );
+
+  console.log('🚗 Véhicule depuis cookie:', selectedVehicle ? 
+    `${selectedVehicle.marque_name} ${selectedVehicle.modele_name}` : 
+    'Aucun véhicule sélectionné'
+  );
+
   try {
     const response = await fetch(`http://localhost:3000/api/gamme-rest-optimized/${gammeId}/page-data`);
     
@@ -135,7 +149,27 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     const data: LoaderData = await response.json();
     
-    return json(data);
+    // 🍞 Construire breadcrumb de base
+    const baseBreadcrumb = [
+      { label: "Accueil", href: "/" },
+      { label: "Pièces", href: "/pieces/catalogue" },
+      { label: data.content?.pg_name || "Pièce", current: true }
+    ];
+
+    // 🍞 Ajouter véhicule au breadcrumb si disponible
+    const breadcrumbItems = buildBreadcrumbWithVehicle(
+      baseBreadcrumb,
+      selectedVehicle
+    );
+
+    console.log('🍞 Breadcrumb généré:', breadcrumbItems.map(i => i.label).join(' → '));
+
+    // Retourner data avec breadcrumb mis à jour et véhicule
+    return json({
+      ...data,
+      breadcrumbs: { items: breadcrumbItems },
+      selectedVehicle
+    });
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);
     throw new Response("Internal Server Error", { status: 500 });
@@ -215,10 +249,14 @@ export default function PiecesDetailPage() {
     </div>;
   }
 
-  // Construire les breadcrumbs depuis l'API ou fallback manuel
-  const breadcrumbs: BreadcrumbItem[] = data.breadcrumbs?.items || [
+  // Construire les breadcrumbs depuis l'API (déjà avec véhicule si présent)
+  const breadcrumbs: BreadcrumbItem[] = data.breadcrumbs?.items.map(item => ({
+    label: item.label,
+    href: item.href || "",
+    current: item.current
+  })) || [
     { label: "Accueil", href: "/" },
-    { label: "Pièces Auto", href: "/pieces" },
+    { label: "Pièces", href: "/pieces/catalogue" },
     { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
   ];
 
@@ -255,6 +293,16 @@ export default function PiecesDetailPage() {
         <Breadcrumbs items={breadcrumbs} enableSchema={false} />
       </div>
 
+      {/* 🚗 Badge véhicule actif (si présent) */}
+      {data.selectedVehicle && (
+        <div className="container mx-auto px-4 mt-4">
+          <VehicleFilterBadge 
+            vehicle={data.selectedVehicle}
+            showDetails={true}
+          />
+        </div>
+      )}
+
       <div className="container mx-auto px-4 py-8">
         
         {/* Indicateur de performance */}
@@ -263,36 +311,56 @@ export default function PiecesDetailPage() {
         {/* Vehicle Selector pour trouver des pièces compatibles */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-xl font-bold mb-4 text-gray-800">
-            Sélectionnez votre véhicule pour cette gamme
+            {data.selectedVehicle ? 'Changer de véhicule' : 'Sélectionnez votre véhicule pour cette gamme'}
           </h2>
           <VehicleSelectorV2
             mode="full"
             variant="card"
             context="homepage"
             redirectOnSelect={false}
+            currentVehicle={data.selectedVehicle ? {
+              brand: { 
+                id: data.selectedVehicle.marque_id, 
+                name: data.selectedVehicle.marque_name 
+              },
+              model: { 
+                id: data.selectedVehicle.modele_id, 
+                name: data.selectedVehicle.modele_name 
+              },
+              type: { 
+                id: data.selectedVehicle.type_id, 
+                name: data.selectedVehicle.type_name 
+              }
+            } : undefined}
             onVehicleSelect={(selection) => {
-              // Navigation vers la page pièces avec véhicule
-              if (selection.brand && selection.model && selection.type && data?.content) {
-                const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
-                const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
-                
-                // Gérer les types sans alias
-                let typeAlias = selection.type.type_alias;
-                if (!typeAlias && selection.type.type_liter && selection.type.type_fuel) {
-                  const liter = (parseInt(selection.type.type_liter) / 100).toFixed(1).replace('.', '-');
-                  const fuel = selection.type.type_fuel.toLowerCase();
-                  typeAlias = `${liter}-${fuel}`;
-                }
-                
-                const typeSlug = `${typeAlias || 'type'}-${selection.type.type_id}.html`;
-                const url = `/pieces/${data.content.pg_alias}/${brandSlug}/${modelSlug}/${typeSlug}`;
-                
-                console.log('🚀 Navigation vers:', url);
-                
-                // Navigation avec délai
-                setTimeout(() => {
-                  window.location.href = url;
-                }, 1500);
+              // 🍪 Stocker véhicule dans cookie
+              if (selection.brand && selection.model && selection.type) {
+                storeVehicleClient({
+                  marque_id: selection.brand.marque_id,
+                  marque_name: selection.brand.marque_name,
+                  marque_alias: selection.brand.marque_alias || selection.brand.marque_name.toLowerCase().replace(/\s+/g, '-'),
+                  modele_id: selection.model.modele_id,
+                  modele_name: selection.model.modele_name,
+                  modele_alias: selection.model.modele_alias || selection.model.modele_name.toLowerCase().replace(/\s+/g, '-'),
+                  type_id: selection.type.type_id,
+                  type_name: selection.type.type_name,
+                  type_alias: selection.type.type_alias || 'type'
+                });
+
+                console.log('🍪 Véhicule stocké dans cookie:', 
+                  `${selection.brand.marque_name} ${selection.model.modele_name}`
+                );
+
+                // Option 1: Recharger la page pour afficher le breadcrumb mis à jour
+                window.location.reload();
+
+                // Option 2 (alternative): Rediriger vers page pièces avec véhicule
+                // if (data?.content) {
+                //   const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
+                //   const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
+                //   const typeSlug = `${selection.type.type_alias || 'type'}-${selection.type.type_id}.html`;
+                //   window.location.href = `/pieces/${data.content.pg_alias}/${brandSlug}/${modelSlug}/${typeSlug}`;
+                // }
               }
             }}
             className="bg-gray-50 p-4 rounded-md"
