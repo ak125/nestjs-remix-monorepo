@@ -1,5 +1,9 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
+
+// Configuration
+import paymentConfig from '../../config/payment.config';
 
 // Controllers
 import { PaymentsController } from './controllers/payments.controller';
@@ -28,9 +32,16 @@ import { PaymentDataService } from './repositories/payment-data.service';
  *
  * VERSION : 1.0.0 (Refactoring 2025-10-05)
  * CONTRÔLEURS : 3 → 1 (-66%)
+ *
+ * CONFIGURATION :
+ * - Variables d'environnement via ConfigModule
+ * - Configuration type-safe avec validation
  */
 @Module({
-  imports: [DatabaseModule],
+  imports: [
+    DatabaseModule,
+    ConfigModule.forFeature(paymentConfig), // ✅ Configuration dédiée aux paiements
+  ],
   controllers: [
     PaymentsController, // ✅ Contrôleur unifié activé
   ],

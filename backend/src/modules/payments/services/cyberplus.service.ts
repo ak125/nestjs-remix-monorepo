@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { fetch } from 'undici';
 import { createHmac } from 'crypto';
+import { PaymentConfig } from '../../../config/payment.config';
 
 export interface PaymentData {
   amount: number;
@@ -23,21 +24,16 @@ export interface CyberplusFormData {
 @Injectable()
 export class CyberplusService {
   private readonly logger = new Logger(CyberplusService.name);
-  private readonly apiUrl: string;
-  private readonly merchantId: string;
-  private readonly secretKey: string;
-  private readonly isProduction: boolean;
+  private readonly paymentConfig: PaymentConfig;
 
   constructor(private configService: ConfigService) {
-    this.apiUrl =
-      this.configService.get<string>('CYBERPLUS_API_URL') ||
-      'https://secure-paypage.lyra.com';
-    this.merchantId =
-      this.configService.get<string>('CYBERPLUS_MERCHANT_ID') || '';
-    this.secretKey =
-      this.configService.get<string>('CYBERPLUS_SECRET_KEY') || '';
-    this.isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
+    // ✅ Utilisation de la configuration type-safe
+    this.paymentConfig = this.configService.get<PaymentConfig>('payment')!;
+
+    // ⚠️ Sécurité : Ne jamais logger le certificat
+    this.logger.log(
+      `Cyberplus initialized in ${this.paymentConfig.cyberplus.mode} mode`,
+    );
   }
 
   async createPayment(
@@ -47,7 +43,7 @@ export class CyberplusService {
   ): Promise<any> {
     try {
       const paymentData = {
-        merchantId: this.merchantId,
+        merchantId: this.paymentConfig.cyberplus.siteId,
         amount,
         orderId,
         customerEmail,
@@ -57,14 +53,17 @@ export class CyberplusService {
 
       const signature = this.generateSignature(paymentData);
 
-      const response = await fetch(`${this.apiUrl}/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${signature}`,
+      const response = await fetch(
+        `${this.paymentConfig.cyberplus.paymentUrl}/payments`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${signature}`,
+          },
+          body: JSON.stringify(paymentData),
         },
-        body: JSON.stringify(paymentData),
-      });
+      );
 
       if (!response.ok) {
         throw new BadRequestException(
@@ -101,11 +100,11 @@ export class CyberplusService {
   async getPaymentStatus(transactionId: string): Promise<any> {
     try {
       const response = await fetch(
-        `${this.apiUrl}/payments/${transactionId}/status`,
+        `${this.paymentConfig.cyberplus.paymentUrl}/payments/${transactionId}/status`,
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${this.secretKey}`,
+            Authorization: `Bearer ${this.paymentConfig.cyberplus.certificat}`,
           },
         },
       );
@@ -127,8 +126,11 @@ export class CyberplusService {
 
   private generateSignature(data: any): string {
     // Implémentation HMAC-SHA256 conforme aux standards Cyberplus
-    const payload = JSON.stringify(data) + this.secretKey;
-    return createHmac('sha256', this.secretKey).update(payload).digest('hex');
+    const payload =
+      JSON.stringify(data) + this.paymentConfig.cyberplus.certificat;
+    return createHmac('sha256', this.paymentConfig.cyberplus.certificat)
+      .update(payload)
+      .digest('hex');
   }
 
   /**
@@ -136,7 +138,7 @@ export class CyberplusService {
    */
   generatePaymentForm(paymentData: PaymentData): CyberplusFormData {
     const parameters: Record<string, string> = {
-      merchant_id: this.merchantId,
+      merchant_id: this.paymentConfig.cyberplus.siteId,
       amount: (paymentData.amount * 100).toString(), // Montant en centimes
       currency: paymentData.currency,
       order_id: paymentData.orderId,
@@ -145,7 +147,7 @@ export class CyberplusService {
       cancel_url: paymentData.cancelUrl,
       notify_url: paymentData.notifyUrl,
       description: paymentData.description || `Order ${paymentData.orderId}`,
-      mode: this.isProduction ? 'PRODUCTION' : 'TEST',
+      mode: this.paymentConfig.cyberplus.mode,
     };
 
     // Ajout de la signature
@@ -161,7 +163,7 @@ export class CyberplusService {
       .join('\n    ');
 
     const html = `
-<form id="cyberplus-form" method="POST" action="${this.apiUrl}/payment">
+<form id="cyberplus-form" method="POST" action="${this.paymentConfig.cyberplus.paymentUrl}/payment">
     ${formFields}
     <button type="submit">Procéder au paiement</button>
 </form>
@@ -171,7 +173,7 @@ export class CyberplusService {
 
     return {
       html,
-      url: `${this.apiUrl}/payment`,
+      url: `${this.paymentConfig.cyberplus.paymentUrl}/payment`,
       parameters,
     };
   }
@@ -189,20 +191,23 @@ export class CyberplusService {
         transaction_id: transactionId,
         amount: amount ? (amount * 100).toString() : '', // Montant en centimes
         reason: reason || 'Remboursement demandé',
-        merchant_id: this.merchantId,
+        merchant_id: this.paymentConfig.cyberplus.siteId,
       };
 
       const signature = this.generateSignature(body);
       body.signature = signature;
 
-      const response = await fetch(`${this.apiUrl}/refund`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.secretKey}`,
+      const response = await fetch(
+        `${this.paymentConfig.cyberplus.paymentUrl}/refund`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.paymentConfig.cyberplus.certificat}`,
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
 
       if (!response.ok) {
         throw new BadRequestException(
