@@ -7,10 +7,12 @@ import paymentConfig from '../../config/payment.config';
 
 // Controllers
 import { PaymentsController } from './controllers/payments.controller';
+import { SystemPayRedirectController } from './controllers/systempay-redirect.controller';
 
 // Services
 import { PaymentService } from './services/payment.service';
 import { CyberplusService } from './services/cyberplus.service';
+import { PayboxService } from './services/paybox.service';
 import { PaymentValidationService } from './services/payment-validation.service';
 import { PaymentDataService } from './repositories/payment-data.service';
 
@@ -44,11 +46,13 @@ import { PaymentDataService } from './repositories/payment-data.service';
   ],
   controllers: [
     PaymentsController, // ✅ Contrôleur unifié activé
+    SystemPayRedirectController, // ✅ Redirection SystemPay
   ],
   providers: [
     // Services
     PaymentService,
     CyberplusService,
+    PayboxService,
     PaymentValidationService,
 
     // Data Services
