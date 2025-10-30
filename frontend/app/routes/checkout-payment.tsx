@@ -1,7 +1,6 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
-import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { useLoaderData, useActionData, Link } from "@remix-run/react";
+import { useRef, useState } from "react";
 import { requireAuth } from "../auth/unified.server";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
@@ -60,6 +59,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       image: '/placeholder-product.png', // TODO: ajouter l'image
     }));
 
+    // ✅ Récupérer les informations du client depuis la commande
+    const customerName = orderDetails.customer 
+      ? `${orderDetails.customer.cst_fname || ''} ${orderDetails.customer.cst_name || ''}`.trim()
+      : '';
+    
+    const customerEmail = orderDetails.customer?.cst_mail || '';
+
+    console.log('🔍 DEBUG customerName:', customerName);
+    console.log('🔍 DEBUG customerEmail:', customerEmail);
+    console.log('🔍 DEBUG customer object:', orderDetails.customer);
+
     // Transformer les données de la commande pour l'interface OrderSummary
     const order: OrderSummary = {
       id: orderDetails.ord_id,
@@ -73,6 +83,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currency: 'EUR',
       // ✅ Phase 7: Récupérer le montant des consignes
       consigneTotal: parseFloat(orderDetails.ord_deposit_ttc || '0'),
+      // ✅ Informations client
+      customerName,
+      customerEmail,
+      shippingAddress: orderDetails.customer ? {
+        street: orderDetails.customer.cst_address || '',
+        postalCode: orderDetails.customer.cst_zip_code || '',
+        city: orderDetails.customer.cst_city || '',
+        country: orderDetails.customer.cst_country || 'FR',
+      } : undefined,
     };
 
     console.log('✅ Order transformed:', order);
@@ -96,15 +115,122 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  const user = await requireAuth(request);
-  const formData = await request.formData();
-  const orderId = formData.get("orderId") as string;
-  const paymentMethod = formData.get("paymentMethod") as string;
-  const acceptTerms = formData.get("acceptTerms") as string;
+  console.log('🔥 ACTION CHECKOUT-PAYMENT APPELÉE 🔥');
+  console.log('🔍 Request URL:', request.url);
+  console.log('🔍 Request method:', request.method);
+  console.log('🔍 Content-Type:', request.headers.get('content-type'));
+  
+  let orderId: string | undefined;
+  let paymentMethod: string | undefined;
+  let acceptTerms: boolean;
+  
+  // ✅ Lire depuis le header X-Fetch-Body (workaround HMR Codespaces)
+  const fetchBody = request.headers.get('X-Fetch-Body');
+  
+  if (!fetchBody) {
+    console.error('❌ Header X-Fetch-Body manquant');
+    return json<ActionData>(
+      { error: "Données de formulaire manquantes" },
+      { status: 400 }
+    );
+  }
+  
+  console.log('✅ Body reçu depuis header X-Fetch-Body (length:', fetchBody.length, ')');
+  
+  const params = new URLSearchParams(fetchBody);
+  orderId = params.get("orderId") || undefined;
+  paymentMethod = params.get("paymentMethod") || undefined;
+  acceptTerms = params.get("acceptTerms") === "on";
+  
+  console.log('✅ Données extraites:', { orderId, paymentMethod, acceptTerms });
+
+  // Maintenant vérifier l'authentification
+  if (false) { // Code mort - à supprimer
+    const params = new URLSearchParams("");
+    const keys = Array.from(params.keys());
+    console.log('� Paramètres:', keys.join(', '));
+    
+    orderId = params.get("orderId") || undefined;
+    paymentMethod = params.get("paymentMethod") || undefined;
+    acceptTerms = params.get("acceptTerms") === "on";
+    
+    console.log('✅ Données extraites:', { orderId, paymentMethod, acceptTerms });
+  } // Fin du if(false) - code mort supprimé
+  
+  // Vérification authentification suit immédiatement
+  if (false) { console.log('mort');}
+  if (false) { try { console.log('mort');
+    
+    // Créer une promesse avec timeout pour éviter de bloquer indéfiniment
+    const timeoutPromise = new Promise<string>((_, reject) => {
+      setTimeout(() => reject(new Error('⏱️ Timeout: la lecture du body a pris plus de 3 secondes')), 3000);
+    });
+    
+    const bodyPromise = request.text();
+    
+    const bodyText = await Promise.race([bodyPromise, timeoutPromise]);
+    console.log('✅ Body text reçu (length:', bodyText.length, '):', bodyText);
+    
+    // Parser manuellement les données URL-encoded
+    const params = new URLSearchParams(bodyText);
+    const keys = Array.from(params.keys());
+    console.log('📋 Nombre de paramètres:', keys.length);
+    console.log('📋 Clés:', keys);
+    
+    orderId = params.get("orderId") || undefined;
+    console.log('✅ orderId extrait:', orderId);
+    
+    paymentMethod = params.get("paymentMethod") || undefined;
+    console.log('✅ paymentMethod extrait:', paymentMethod);
+    
+    acceptTerms = params.get("acceptTerms") === "on";
+    console.log('✅ acceptTerms extrait:', acceptTerms);
+    
+  } catch (bodyError: unknown) {
+    console.error('❌ Erreur lecture body:', bodyError);
+    console.error('❌ Type erreur:', bodyError instanceof Error ? bodyError.constructor.name : typeof bodyError);
+    console.error('❌ Message:', bodyError instanceof Error ? bodyError.message : String(bodyError));
+    console.error('❌ Stack:', bodyError instanceof Error ? bodyError.stack : 'no stack');
+    
+    // Si c'est un timeout, message spécifique
+    if (bodyError instanceof Error && bodyError.message.includes('Timeout')) {
+      return json<ActionData>(
+        { error: "Le serveur met trop de temps à répondre. Veuillez recharger la page et réessayer, ou redémarrer le serveur de développement." },
+        { status: 504 }
+      );
+    }
+    
+    return json<ActionData>(
+      { error: "Erreur lors de la lecture des données du formulaire: " + (bodyError instanceof Error ? bodyError.message : String(bodyError)) },
+      { status: 400 }
+    );
+    }
+  }
+
+  console.log('📝 Données complètes reçues:', {
+    orderId,
+    paymentMethod,
+    acceptTerms,
+  });
+
+  // Maintenant vérifier l'authentification
+  console.log('🔐 Vérification authentification...');
+  let user: any;
+  try {
+    user = await requireAuth(request);
+    console.log('✅ Utilisateur authentifié:', user.id, user.email);
+  } catch (authError) {
+    console.error('❌ Erreur authentification:', authError);
+    return json<ActionData>(
+      { error: "Vous devez être connecté pour effectuer un paiement" },
+      { status: 401 }
+    );
+  }
 
   if (!orderId || !paymentMethod) {
+    console.error('❌ Données manquantes:', { orderId, paymentMethod });
     return json<ActionData>(
-      { error: "Données manquantes" },
+      { error: "Données de paiement manquantes" },
       { status: 400 }
     );
   }
@@ -119,6 +245,8 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     // ✅ Phase 7: Récupérer les infos de la commande pour obtenir le montant total avec consignes
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    console.log('🔍 Fetching order details from:', `${backendUrl}/api/orders/${orderId}`);
+    
     const orderResponse = await fetch(`${backendUrl}/api/orders/${orderId}`, {
       headers: {
         'Cookie': request.headers.get('Cookie') || '',
@@ -126,15 +254,46 @@ export async function action({ request }: ActionFunctionArgs) {
       },
     });
 
+    console.log('📦 Order response status:', orderResponse.status);
+
     if (!orderResponse.ok) {
+      const errorText = await orderResponse.text();
+      console.error('❌ Order fetch failed:', errorText);
       throw new Error('Impossible de récupérer la commande');
     }
 
     const orderData = await orderResponse.json();
     const orderDetails = orderData.data;
+    console.log('✅ Order details fetched successfully');
     
     const totalAmount = parseFloat(orderDetails.ord_total_ttc || '0');
     const consigneTotal = parseFloat(orderDetails.ord_deposit_ttc || '0');
+
+    // ✅ Récupérer les infos client depuis la commande
+    const customerName = orderDetails.customer 
+      ? `${orderDetails.customer.cst_fname || ''} ${orderDetails.customer.cst_name || ''}`.trim()
+      : `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Client';
+    
+    const customerEmail = orderDetails.customer?.cst_mail 
+      || user.email 
+      || '';
+
+    console.log('💰 Payment amounts:', { totalAmount, consigneTotal, customerName, customerEmail });
+
+    console.log('💳 Calling initializePayment with:', {
+      orderId,
+      userId: user.id,
+      paymentMethod,
+      amount: totalAmount,
+      consigneTotal,
+      customerName,
+      customerEmail,
+    });
+
+    // Construire l'URL de base depuis la requête
+    const url = new URL(request.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
+    console.log('🔗 Base URL détectée:', baseUrl);
 
     // Initialiser le paiement côté serveur
     const paymentData = await initializePayment({
@@ -143,14 +302,20 @@ export async function action({ request }: ActionFunctionArgs) {
       paymentMethod,
       amount: totalAmount, // ✅ Phase 7: Montant total incluant consignes
       consigneTotal, // ✅ Phase 7: Montant des consignes
-      returnUrl: `${process.env.BASE_URL}/checkout-payment-return`,
+      customerName, // ✅ Nom complet du client
+      customerEmail, // ✅ Email du client
+      returnUrl: `${baseUrl}/checkout-payment-return`,
+      baseUrl, // ✅ Passer le baseUrl pour les callbacks
       ipAddress: request.headers.get("X-Forwarded-For") || 
                  request.headers.get("X-Real-IP") || 
                  "unknown",
     });
 
-    if (paymentMethod === "CYBERPLUS" && paymentData.formData && paymentData.gatewayUrl) {
+    console.log('✅ Payment initialized:', paymentData);
+
+    if (paymentMethod.toLowerCase() === "cyberplus" && paymentData.formData && paymentData.gatewayUrl) {
       // Retourner les données pour le formulaire Cyberplus
+      console.log('🔵 Returning Cyberplus form data to frontend');
       return json<ActionData>({
         cyberplus: true,
         formData: paymentData.formData,
@@ -176,23 +341,89 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function PaymentPage() {
-  const { order, paymentMethods } = useLoaderData<typeof loader>();
-  const navigation = useNavigation();
+  const { order, user, paymentMethods } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const formRef = useRef<HTMLFormElement>(null);
   const cyberplusFormRef = useRef<HTMLFormElement>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
-
-  const isProcessing = navigation.state === "submitting";
-
-  // Auto-submit du formulaire Cyberplus si on a les données
-  useEffect(() => {
-    if (actionData?.cyberplus && actionData.formData && cyberplusFormRef.current) {
-      cyberplusFormRef.current.submit();
+  console.log('👤 User:', user?.email || 'unknown');
+  console.log('🔍 actionData:', actionData);
+  
+  // Handler pour soumettre avec fetch + header X-Fetch-Body
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('🚀 handleSubmit called');
+    
+    if (!acceptedTerms) {
+      console.log('❌ Terms not accepted');
+      alert('Vous devez accepter les conditions générales');
+      return;
     }
-  }, [actionData]);
+    
+    console.log('✅ Terms accepted, preparing payment...');
+    setIsProcessing(true);
+    
+    try {
+      console.log('📤 Sending payment request to /api/payments');
+      
+      const response = await fetch('/api/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          orderId: order.id,
+          userId: user?.id || order.customerEmail,
+          amount: order.totalTTC,
+          currency: order.currency || 'EUR',
+          method: 'CYBERPLUS',
+          description: `Commande ${order.id}`,
+          customerEmail: order.customerEmail || '',
+          consigne_total: order.consigneTotal || 0,
+          returnUrl: `${window.location.origin}/checkout-payment-return`,
+          cancelUrl: `${window.location.origin}/checkout-payment`,
+          notifyUrl: `${window.location.origin}/api/payments/callback/cyberplus`,
+        }),
+      });
+      
+      console.log('📥 Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Response:', result);
+      
+      const redirectData = result.data?.redirectData;
+      
+      if (!redirectData?.html) {
+        console.error('❌ Missing HTML in redirectData:', result);
+        alert('Erreur: HTML de redirection manquant');
+        setIsProcessing(false);
+        return;
+      }
+      
+      console.log('✅ Payment created:', result.data.id);
+      console.log('🔵 Redirecting to backend SystemPay redirect...');
+      
+      // Rediriger directement vers la route backend qui sert le HTML SystemPay
+      const redirectUrl = `/api/systempay/redirect?orderId=${encodeURIComponent(order.id)}&amount=${encodeURIComponent(order.totalTTC)}&email=${encodeURIComponent(order.customerEmail)}`;
+      
+      console.log('🚀 Redirect URL:', redirectUrl);
+      window.location.href = redirectUrl;
+      
+    } catch (error) {
+      console.error('❌ ERROR:', error);
+      alert('Erreur lors du traitement du paiement: ' + error);
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50">
@@ -371,7 +602,7 @@ export default function PaymentPage() {
               
                                 {/* Affichage des erreurs */}
                   {actionData?.error && (
-<Alert className="rounded-xl p-4 mb-4" variant="error">
+                    <div className="rounded-xl p-4 mb-4 bg-red-50 border border-red-200">
                       <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -381,10 +612,10 @@ export default function PaymentPage() {
                           <p className="text-sm text-red-700 mt-1">{actionData.error}</p>
                         </div>
                       </div>
-                    </Alert>
+                    </div>
                   )}
 
-                  <Form ref={formRef} method="post" className="space-y-6">
+                  <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                     <input type="hidden" name="orderId" value={order.id} />
                     
                     <div>
@@ -435,6 +666,8 @@ export default function PaymentPage() {
                           type="checkbox"
                           name="acceptTerms"
                           required
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
                           className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-slate-300 rounded mt-0.5"
                         />
                         <span className="text-sm text-slate-700">
@@ -483,7 +716,7 @@ export default function PaymentPage() {
                         </>
                       )}
                     </button>
-                  </Form>
+                  </form>
                 </div>
               </div>
             </div>
@@ -491,18 +724,27 @@ export default function PaymentPage() {
         </div>
 
       {/* Formulaire Cyberplus auto-submit (caché) */}
-      {actionData && actionData.cyberplus && actionData.formData && actionData.gatewayUrl && (
-        <form
-          ref={cyberplusFormRef}
-          method="POST"
-          action={actionData.gatewayUrl}
-          style={{ display: 'none' }}
-        >
-          {Object.entries(actionData.formData).map(([key, value]) => (
-            <input key={key} type="hidden" name={key} value={value} />
-          ))}
-        </form>
-      )}
+      {(() => {
+        if (actionData && actionData.cyberplus && actionData.formData && actionData.gatewayUrl) {
+          console.log('🔵 Rendering Cyberplus form with', Object.keys(actionData.formData).length, 'fields');
+          return (
+            <form
+              ref={cyberplusFormRef}
+              method="POST"
+              action={actionData.gatewayUrl}
+              style={{ display: 'none' }}
+            >
+              {Object.entries(actionData.formData).map(([key, value]) => {
+                console.log(`  📝 Field: ${key} = ${value}`);
+                return <input key={key} type="hidden" name={key} value={value} />;
+              })}
+            </form>
+          );
+        } else {
+          console.log('⚠️ Cyberplus form NOT rendered - conditions not met');
+          return null;
+        }
+      })()}
     </div>
   );
 }
