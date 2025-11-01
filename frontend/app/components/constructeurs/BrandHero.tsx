@@ -1,3 +1,4 @@
+import { Alert } from '~/components/ui/alert';
 import { Badge } from '@fafa/ui';
 // 🏭 BrandHero - Section héro moderne pour page constructeur
 // Design moderne avec informations marque et VehicleSelector intégré

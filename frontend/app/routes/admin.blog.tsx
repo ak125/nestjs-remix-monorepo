@@ -1,3 +1,4 @@
+import { Alert } from '~/components/ui/alert';
 /**
  * Interface d'Administration du Blog - Version Simplifiée
  * Interface robuste avec gestion d'erreurs améliorée

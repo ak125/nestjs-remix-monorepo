@@ -215,7 +215,7 @@ function AutoFormatDemo() {
   const isSubmitting = navigation.state === "submitting";
 
   const [form, fields] = useForm({
-    lastResult: actionData?.lastResult,
+    lastResult: (actionData && 'lastResult' in actionData) ? actionData.lastResult : undefined,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: immatriculationSchema });
     },
@@ -273,15 +273,15 @@ function AutoFormatDemo() {
       </Form>
 
       {/* Résultat */}
-      {actionData?.success && actionData.vehicle && (
+      {actionData && 'success' in actionData && (actionData as any).success && 'vehicle' in actionData && (actionData as any).vehicle && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="font-semibold text-green-800 mb-2">✅ Véhicule trouvé !</p>
           <div className="text-sm space-y-1 text-green-700">
-            <p><strong>Marque:</strong> {actionData.vehicle.brand}</p>
-            <p><strong>Modèle:</strong> {actionData.vehicle.model}</p>
-            <p><strong>Année:</strong> {actionData.vehicle.year}</p>
-            <p><strong>VIN:</strong> {actionData.vehicle.vin}</p>
-            <p><strong>Type Mine:</strong> {actionData.vehicle.typeMine}</p>
+            <p><strong>Marque:</strong> {(actionData as any).vehicle.brand}</p>
+            <p><strong>Modèle:</strong> {(actionData as any).vehicle.model}</p>
+            <p><strong>Année:</strong> {(actionData as any).vehicle.year}</p>
+            <p><strong>VIN:</strong> {(actionData as any).vehicle.vin}</p>
+            <p><strong>Type Mine:</strong> {(actionData as any).vehicle.typeMine}</p>
           </div>
         </div>
       )}
@@ -310,7 +310,7 @@ function InlineValidationDemo() {
   const isSubmitting = navigation.state === "submitting";
 
   const [form, fields] = useForm({
-    lastResult: actionData?.lastResult,
+    lastResult: (actionData && 'lastResult' in actionData) ? actionData.lastResult : undefined,
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: contactSchema });
     },
@@ -392,9 +392,9 @@ function InlineValidationDemo() {
       </Form>
 
       {/* Succès */}
-      {actionData?.success && (
+      {actionData && 'success' in actionData && (actionData as any).success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="font-semibold text-green-800">✅ {actionData.message}</p>
+          <p className="font-semibold text-green-800">✅ {(actionData as any).message}</p>
         </div>
       )}
 

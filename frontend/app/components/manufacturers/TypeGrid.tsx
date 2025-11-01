@@ -1,4 +1,3 @@
-import { Badge } from '@fafa/ui';
 /**
  * 🚗 TYPE GRID COMPONENT
  * 
