@@ -1,3 +1,4 @@
+import { Alert } from '~/components/ui/alert';
 /**
  * 🏭 LISTE DES MANUFACTURIERS
  * 

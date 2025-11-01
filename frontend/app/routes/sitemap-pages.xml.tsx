@@ -116,7 +116,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return new Response(null, {
       status: 304,
       headers: {
-        'ETag': cachedETag,
+        'ETag': cachedETag || '',
         'Last-Modified': LAST_MODIFIED,
         'Cache-Control': 'public, max-age=604800', // 7 jours
       },
@@ -128,7 +128,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     status: 200,
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
-      'ETag': cachedETag,
+      'ETag': cachedETag || '',
       'Last-Modified': LAST_MODIFIED,
       'Cache-Control': 'public, max-age=604800, stale-while-revalidate=2592000', // 7j + 30j stale
       'X-Content-Type-Options': 'nosniff',

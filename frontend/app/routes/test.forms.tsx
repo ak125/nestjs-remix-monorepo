@@ -12,8 +12,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "@fafa/ui";
 import { useRemixForm, validateFormData } from "~/hooks/useRemixForm";
-import { loginSchema, contactSchema, searchSchema, registerSchema } from "~/schemas/auth";
-import type { ContactFormData, SearchFormData } from "~/schemas/auth";
+import { loginSchema, contactSchema, searchSchema, registerSchema, type ContactFormData, type SearchFormData } from "~/schemas/auth";
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

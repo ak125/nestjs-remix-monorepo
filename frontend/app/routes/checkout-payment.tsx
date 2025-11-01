@@ -186,22 +186,41 @@ export async function action({ request }: ActionFunctionArgs) {
     acceptTerms = params.get("acceptTerms") === "on";
     console.log('✅ acceptTerms extrait:', acceptTerms);
     
-  } catch (bodyError: unknown) {
-    console.error('❌ Erreur lecture body:', bodyError);
-    console.error('❌ Type erreur:', bodyError instanceof Error ? bodyError.constructor.name : typeof bodyError);
-    console.error('❌ Message:', bodyError instanceof Error ? bodyError.message : String(bodyError));
-    console.error('❌ Stack:', bodyError instanceof Error ? bodyError.stack : 'no stack');
+  } catch (err: unknown) {
+    console.error('❌ Erreur lecture body:', err);
     
-    // Si c'est un timeout, message spécifique
-    if (bodyError instanceof Error && bodyError.message.includes('Timeout')) {
-      return json<ActionData>(
-        { error: "Le serveur met trop de temps à répondre. Veuillez recharger la page et réessayer, ou redémarrer le serveur de développement." },
-        { status: 504 }
-      );
+    let errorMessage: string;
+    let errorType: string;
+    let errorStack: string;
+    
+    const error = err as Error;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      errorType = error.constructor.name;
+      errorStack = error.stack || 'no stack';
+      
+      console.error('❌ Type erreur:', errorType);
+      console.error('❌ Message:', errorMessage);
+      console.error('❌ Stack:', errorStack);
+      
+      // Si c'est un timeout, message spécifique
+      if (error.message.includes('Timeout')) {
+        return json<ActionData>(
+          { error: "Le serveur met trop de temps à répondre. Veuillez recharger la page et réessayer, ou redémarrer le serveur de développement." },
+          { status: 504 }
+        );
+      }
+    } else {
+      errorMessage = String(err);
+      errorType = typeof err;
+      errorStack = 'no stack';
+      
+      console.error('❌ Type erreur:', errorType);
+      console.error('❌ Message:', errorMessage);
     }
     
     return json<ActionData>(
-      { error: "Erreur lors de la lecture des données du formulaire: " + (bodyError instanceof Error ? bodyError.message : String(bodyError)) },
+      { error: "Erreur lors de la lecture des données du formulaire: " + errorMessage },
       { status: 400 }
     );
     }

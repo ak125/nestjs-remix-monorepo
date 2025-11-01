@@ -39,7 +39,7 @@ export function AddToCartButton({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isOptimistic, setIsOptimistic] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const { addNotification } = useNotifications();
+  const { showSuccess, showError } = useNotifications();
 
     // Utiliser fetch directement vers l'API NestJS au lieu de Remix fetcher
     const handleAddToCart = async () => {
@@ -64,7 +64,7 @@ export function AddToCartButton({
       }
 
       // 🔔 Notification immédiate
-      addNotification('success', `✅ ${piece.name} ajouté au panier (${quantity}x)`);
+      showSuccess(`✅ ${piece.name} ajouté au panier (${quantity}x)`);
 
       // 🎯 Bounce du badge panier (si disponible)
       triggerCartBadgeBounce();
@@ -108,7 +108,7 @@ export function AddToCartButton({
           onError?.(error);
 
           // Notification d'erreur
-          addNotification('error', `❌ ${error}`);
+          showError(`❌ ${error}`);
 
           console.error("❌ [AddToCart] Erreur HTTP:", response.status, error);
         }
@@ -126,7 +126,7 @@ export function AddToCartButton({
         onError?.(errorMsg);
 
         // Notification d'erreur
-        addNotification('error', `❌ ${errorMsg}`);
+        showError(`❌ ${errorMsg}`);
       } finally {
         setIsLoading(false);
       }

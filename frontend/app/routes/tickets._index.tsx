@@ -1,3 +1,4 @@
+import { Alert } from '~/components/ui/alert';
 /**
  * Page de gestion des tickets - Liste et recherche
  * Remix Route Component pour la gestion des tickets de support

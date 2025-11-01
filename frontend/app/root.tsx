@@ -1,4 +1,3 @@
-import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
 import { 
   Links, 
@@ -54,7 +53,7 @@ export const useOptionalUser = () => {
 
 declare module "@remix-run/node" {
   interface AppLoadContext {
-    remixService: RemixService;
+    remixService: any;
     remixIntegration?: any; // injection côté Nest: RemixApiService
     parsedBody?: any;
     user: unknown;
