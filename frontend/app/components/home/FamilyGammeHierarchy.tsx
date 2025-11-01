@@ -2,9 +2,10 @@
 // 🏗️ Composant d'affichage de la hiérarchie Familles → Gammes (sous-catégories)
 
 import { Link } from '@remix-run/react';
-import { Button } from '~/components/ui/button';
 import { useState, useEffect } from 'react';
+
 import { type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
+import { Button } from '../ui/button';
 
 // 🎨 Fonctions utilitaires locales pour éviter les imports API redondants
 const getFamilyIcon = (family: FamilyWithGammes): string => {
@@ -73,9 +74,9 @@ export default function FamilyGammeHierarchy({
       setFamilies(hierarchyData.families);
       setStats(hierarchyData.stats);
       
-      // Auto-expand les premières familles pour l'affichage
+      // ✅ AUTO-EXPAND TOUTES LES FAMILLES PAR DÉFAUT pour afficher toutes les sous-catégories
       if (hierarchyData.families.length > 0) {
-        setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
+        setExpandedFamilies(hierarchyData.families.map(f => f.mf_id));
       }
       setLoading(false);
     } else {
@@ -235,8 +236,9 @@ export default function FamilyGammeHierarchy({
                     <h4 className="font-semibold text-gray-800 mb-3">
                       Sous-catégories ({family.gammes_count})
                     </h4>
-                    <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                                            {family.gammes.slice(0, 10).map((gamme, index) => {
+                    <div className="grid grid-cols-1 gap-2 max-h-none overflow-visible">
+                      {/* ✅ AFFICHER TOUTES LES SOUS-CATÉGORIES (pas de .slice(0, 10)) */}
+                      {family.gammes.map((gamme, index) => {
                         console.log('🔍 Debug gamme:', { 
                           gamme, 
                           pgId: gamme.pg_id, 
@@ -266,17 +268,6 @@ export default function FamilyGammeHierarchy({
                           </Link>
                         );
                       })}
-                      
-                      {family.gammes_count > 10 && (
-                        <div className="text-center py-2">
-                          <Link
-                            to={`/products/catalog?family=${family.mf_id}`}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Voir les {family.gammes_count - 10} autres →
-                          </Link>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}

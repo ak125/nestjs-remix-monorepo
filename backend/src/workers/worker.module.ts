@@ -7,13 +7,17 @@ import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 // Processors
-import { SitemapProcessor } from './processors/sitemap.processor';
-import { CacheProcessor } from './processors/cache.processor';
-import { EmailProcessor } from './processors/email.processor';
+// import { SitemapProcessor } from './processors/sitemap.processor'; // ❌ DÉSACTIVÉ temporairement
+// import { CacheProcessor } from './processors/cache.processor'; // ❌ DÉSACTIVÉ - Besoin IORedis Module
+// import { EmailProcessor } from './processors/email.processor'; // ❌ DÉSACTIVÉ temporairement
+import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 
 // Services (depuis modules existants)
-import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service';
-import { SitemapDeltaService } from '../modules/seo/services/sitemap-delta.service';
+// import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service'; // ❌ DÉSACTIVÉ
+// import { SitemapDeltaService } from '../modules/seo/services/sitemap-delta.service'; // ❌ DÉSACTIVÉ
+
+// Services Workers
+import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
 
 @Module({
   imports: [
@@ -46,21 +50,25 @@ import { SitemapDeltaService } from '../modules/seo/services/sitemap-delta.servi
 
     // Queues BullMQ
     BullModule.registerQueue(
-      { name: 'sitemap' }, // Queue sitemaps
-      { name: 'cache' }, // Queue cache cleanup
-      { name: 'email' }, // Queue emails
+      // { name: 'sitemap' }, // ❌ DÉSACTIVÉ temporairement
+      // { name: 'cache' }, // ❌ DÉSACTIVÉ temporairement
+      // { name: 'email' }, // ❌ DÉSACTIVÉ temporairement
+      { name: 'seo-monitor' }, // ✅ Queue monitoring SEO anti-désindexation
     ),
   ],
 
   providers: [
     // Processors
-    SitemapProcessor,
-    CacheProcessor,
-    EmailProcessor,
+    // SitemapProcessor, // ❌ DÉSACTIVÉ
+    // CacheProcessor, // ❌ DÉSACTIVÉ
+    // EmailProcessor, // ❌ DÉSACTIVÉ
+    SeoMonitorProcessor, // ✅ ACTIF
 
     // Services
-    SitemapStreamingService,
-    SitemapDeltaService,
+    // SitemapStreamingService, // ❌ DÉSACTIVÉ
+    // SitemapDeltaService, // ❌ DÉSACTIVÉ
+    SeoMonitorSchedulerService, // ✅ ACTIF
   ],
+  exports: [SeoMonitorSchedulerService],
 })
 export class WorkerModule {}

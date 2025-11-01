@@ -3,7 +3,6 @@
 
 import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
 import { Form, useNavigate } from '@remix-run/react';
-import { Alert } from '~/components/ui/alert';
 import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
@@ -86,6 +85,23 @@ export default function VehicleSelectorV2({
         const brandsData = await enhancedVehicleApi.getBrands();
         setBrands(brandsData);
         console.log(`🏭 ${brandsData.length} marques chargées pour contexte: ${context}`);
+        
+        // 🎯 Pré-sélectionner la marque si fournie dans currentVehicle
+        if (_currentVehicle?.brand?.id && brandsData.length > 0) {
+          const preselectedBrand = brandsData.find(b => b.marque_id === _currentVehicle.brand!.id);
+          if (preselectedBrand) {
+            console.log(`🎯 Marque pré-sélectionnée: ${preselectedBrand.marque_name}`);
+            setSelectedBrand(preselectedBrand);
+            
+            // Charger les années pour cette marque
+            try {
+              const yearsData = await enhancedVehicleApi.getYearsByBrand(preselectedBrand.marque_id);
+              setYears(yearsData.sort((a, b) => b - a));
+            } catch (error) {
+              console.warn('❌ Erreur chargement années pour marque pré-sélectionnée:', error);
+            }
+          }
+        }
       } catch (error) {
         console.error('❌ Erreur chargement marques:', error);
         setBrands([]);
@@ -93,7 +109,7 @@ export default function VehicleSelectorV2({
     };
 
     loadBrands();
-  }, [context]);
+  }, [context, _currentVehicle]);
 
   // 🏷️ Gestion sélection marque
   const handleBrandChange = async (brandId: number) => {
@@ -171,6 +187,15 @@ export default function VehicleSelectorV2({
 
   // ⚙️ Gestion sélection type avec navigation configurée
   const handleTypeSelect = (type: VehicleType) => {
+    console.log('🎯 handleTypeSelect appelé avec:', {
+      type: type?.type_name,
+      brand: selectedBrand?.marque_name,
+      year: selectedYear,
+      model: selectedModel?.modele_name,
+      redirectOnSelect,
+      redirectTo
+    });
+    
     if (!selectedBrand || !selectedModel || !type) {
       console.log('🚫 Données incomplètes pour la navigation:', {
         brand: selectedBrand?.marque_name,
@@ -184,6 +209,7 @@ export default function VehicleSelectorV2({
     
     // 📞 Callback si fourni - toujours appeler même si redirectOnSelect est false
     if (selectedYear && onVehicleSelect) {
+      console.log('📞 Appel du callback onVehicleSelect');
       onVehicleSelect({
         brand: selectedBrand,
         year: selectedYear,
@@ -194,6 +220,7 @@ export default function VehicleSelectorV2({
     
     // 🧭 Navigation selon configuration avec format alias-id
     if (redirectOnSelect) {
+      console.log('🧭 redirectOnSelect activé, redirectTo:', redirectTo);
       let url = '';
       let brandSlug = '';
       let modelSlug = '';
@@ -256,7 +283,15 @@ export default function VehicleSelectorV2({
             typeAlias: type.type_alias
           }
         });
-        navigate(url);
+        
+        // 🔄 Forcer un rechargement complet pour la page véhicule
+        // Utiliser window.location.href au lieu de navigate() pour éviter les problèmes de cache
+        if (redirectTo === 'vehicle-page') {
+          console.log('🔄 Rechargement complet de la page via window.location.href');
+          window.location.href = url;
+        } else {
+          navigate(url);
+        }
       } else {
         console.error('🚫 Navigation annulée - URL invalide:', url);
         console.error('🔍 Données problématiques:', { 
@@ -503,7 +538,7 @@ export default function VehicleSelectorV2({
 
         {/* Résultat sélection */}
         {selectedType && (
-<Alert className="mt-6 p-4    rounded-xl" variant="success">
+          <div className="mt-6 p-4 rounded-xl bg-green-50 border border-green-200">
             <h4 className="text-green-800 font-medium mb-2">✅ Véhicule sélectionné</h4>
             <div className="text-sm text-green-700">
               <p>• Marque : {selectedBrand?.marque_name}</p>
@@ -511,7 +546,7 @@ export default function VehicleSelectorV2({
               <p>• Modèle : {selectedModel?.modele_name}</p>
               <p>• Motorisation : {selectedType.type_name}</p>
             </div>
-          </Alert>
+          </div>
         )}
       </div>
     </div>

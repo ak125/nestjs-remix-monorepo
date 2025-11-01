@@ -248,12 +248,33 @@ export class OrdersService extends SupabaseBaseService {
         .select('*')
         .eq('orl_ord_id', orderId);
 
+      // ✅ Récupérer les données client
+      let customer = null;
+      if (order.ord_cst_id) {
+        this.logger.log(`🔍 Fetching customer with ID: ${order.ord_cst_id}`);
+        const { data: customerData, error: customerError } = await this.supabase
+          .from('___xtr_customer')
+          .select('cst_id, cst_fname, cst_name, cst_mail, cst_tel, cst_gsm, cst_address, cst_zip_code, cst_city, cst_country')
+          .eq('cst_id', order.ord_cst_id)
+          .single();
+        
+        if (customerError) {
+          this.logger.error(`❌ Error fetching customer:`, customerError);
+        } else {
+          this.logger.log(`✅ Customer found:`, customerData);
+          customer = customerData;
+        }
+      } else {
+        this.logger.warn(`⚠️ No ord_cst_id in order ${orderId}`);
+      }
+
       // TODO: Récupérer historique statuts
       // Note: ___xtr_order_status est une table de référence, pas d'historique
       // const statusHistory = await this.statusService.getOrderStatusHistory(orderId);
 
       return {
         ...order,
+        customer, // ✅ Ajouter les données client
         lines: lines || [],
         statusHistory: [], // Temporaire - à implémenter avec une vraie table d'historique
       };

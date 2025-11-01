@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
 interface SitemapEntry {
   loc: string;
@@ -12,7 +13,9 @@ interface SitemapEntry {
 export class SitemapService extends SupabaseBaseService {
   protected readonly logger = new Logger(SitemapService.name);
 
-  constructor() {
+  constructor(
+    private readonly vehiclePiecesValidator?: SitemapVehiclePiecesValidator,
+  ) {
     super(); // ✅ Appel super() sans ConfigService - utilise getAppConfig()
   }
 
@@ -847,5 +850,352 @@ ${entries
       );
       return this.buildSitemapXml([]);
     }
+  }
+
+  /**
+   * 🛡️ NOUVEAU: Génère le sitemap des URLs véhicule-pièces VALIDÉES
+   *
+   * Format: /pieces/{gamme}/{marque}/{modele}/{type}.html
+   * Exemple: /pieces/amortisseur-1/mercedes-107/classe-c-107003/220-cdi-14820.html
+   *
+   * ✅ Filtre les URLs invalides:
+   * - type_id inexistant dans auto_type
+   * - 0 pièces disponibles
+   * - < 50% des pièces avec marque (qualité insuffisante)
+   *
+   * @param limit - Limite d'URLs à générer (défaut: 10000 en production)
+   *                En test/dev, utiliser limit=100 pour éviter surcharge
+   * @returns XML du sitemap avec URLs validées uniquement
+   */
+  async generateVehiclePiecesSitemap(limit = 10000): Promise<string> {
+    try {
+      if (!this.vehiclePiecesValidator) {
+        this.logger.warn(
+          '⚠️ SitemapVehiclePiecesValidator non injecté - génération sitemap simple',
+        );
+        return this.generateProductsSitemap(); // Fallback sur sitemap simple
+      }
+
+      this.logger.log(
+        '🔍 Début génération sitemap véhicule-pièces avec validation...',
+      );
+
+      // 1. Récupérer des lignes avec diversification (x5 pour avoir des combinaisons uniques)
+      // Limité à 50k max pour éviter timeout/crash
+      const fetchLimit = Math.min(limit * 5, 50000);
+
+      const { data: rawCombinations, error } = await this.client
+        .from('pieces_relation_type')
+        .select('rtp_type_id, rtp_pg_id')
+        .limit(fetchLimit);
+
+      if (error) {
+        this.logger.error(
+          'Erreur récupération combinaisons type+gamme:',
+          error,
+        );
+        return this.buildSitemapXml([]);
+      }
+
+      if (!rawCombinations || rawCombinations.length === 0) {
+        this.logger.warn('Aucune combinaison trouvée');
+        return this.buildSitemapXml([]);
+      }
+
+      this.logger.log(
+        `📊 ${rawCombinations.length} lignes brutes récupérées, dédoublonnage...`,
+      );
+
+      // 2. Dédoublonner pour avoir les combinaisons UNIQUES
+      const uniqueCombinations = new Map<string, any>();
+      for (const combo of rawCombinations) {
+        const key = `${combo.rtp_type_id}-${combo.rtp_pg_id}`;
+        if (!uniqueCombinations.has(key)) {
+          uniqueCombinations.set(key, combo);
+        }
+        // Arrêter dès qu'on a assez de combinaisons uniques
+        if (uniqueCombinations.size >= limit) break;
+      }
+
+      this.logger.log(
+        `📊 ${uniqueCombinations.size} combinaisons uniques trouvées (${((uniqueCombinations.size / rawCombinations.length) * 100).toFixed(1)}% de taux d'unicité)`,
+      );
+
+      const combinations = Array.from(uniqueCombinations.values());
+
+      // 3. Construire les URLs candidates (sans alias pour l'instant - VERSION SIMPLIFIÉE)
+      const candidateUrls = [];
+      for (const combo of combinations) {
+        const typeId = Number(combo.rtp_type_id);
+        const gammeId = Number(combo.rtp_pg_id);
+
+        // URL simplifiée temporaire pour test
+        const url = `/pieces/gamme-${gammeId}/type-${typeId}.html`;
+
+        candidateUrls.push({
+          typeId,
+          gammeId,
+          url,
+        });
+      }
+
+      this.logger.log(
+        `🔍 ${candidateUrls.length} URLs candidates construites, début validation...`,
+      );
+
+      // 3. ⭐ FILTRER avec validation d'intégrité
+      const validatedUrls =
+        await this.vehiclePiecesValidator.filterUrlsForSitemap(candidateUrls);
+
+      this.logger.log(
+        `✅ Validation terminée: ${validatedUrls.length}/${candidateUrls.length} URLs valides (${((validatedUrls.length / candidateUrls.length) * 100).toFixed(1)}% taux d'acceptation)`,
+      );
+
+      // 4. Générer le XML
+      const sitemapEntries = validatedUrls.map((item) => ({
+        loc: item.url,
+        lastmod: item.lastmod,
+        changefreq: item.changefreq,
+        priority: item.priority,
+      }));
+
+      return this.buildSitemapXml(sitemapEntries);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap véhicule-pièces:', error);
+      return this.buildSitemapXml([]);
+    }
+  }
+
+  /**
+   * 📊 Génère un rapport de qualité du sitemap véhicule-pièces
+   * Utile pour analyser les raisons d'exclusion
+   */
+  async generateVehiclePiecesQualityReport(sampleSize = 1000): Promise<{
+    total: number;
+    valid: number;
+    invalid: number;
+    invalidReasons: Array<{
+      reason: string;
+      count: number;
+      examples: string[];
+    }>;
+  }> {
+    if (!this.vehiclePiecesValidator) {
+      throw new Error('SitemapVehiclePiecesValidator non injecté');
+    }
+
+    // Récupérer un échantillon
+    const { data: combinations } = await this.client
+      .from('pieces_relation_type')
+      .select(
+        `
+        rtp_type_id,
+        rtp_pg_id,
+        auto_type!inner (type_id, type_alias),
+        pieces_gamme!inner (pg_id, pg_alias)
+      `,
+      )
+      .limit(sampleSize);
+
+    if (!combinations || combinations.length === 0) {
+      return { total: 0, valid: 0, invalid: 0, invalidReasons: [] };
+    }
+
+    const urls = combinations.map((combo: any) => ({
+      typeId: Number(combo.rtp_type_id),
+      gammeId: Number(combo.rtp_pg_id),
+      url: `/pieces/${combo.pieces_gamme.pg_alias}/.../type-${combo.rtp_type_id}.html`,
+    }));
+
+    return this.vehiclePiecesValidator.generateQualityReport(urls);
+  }
+
+  /**
+   * 🚀 Génère le sitemap à partir de la table pré-calculée __sitemap_p_link
+   * Cette table contient 714k URLs déjà formatées
+   */
+  async generateVehiclePiecesSitemapFromCache(limit = 50000): Promise<string> {
+    try {
+      this.logger.log(
+        `🔍 Génération sitemap depuis __sitemap_p_link (limit=${limit})...`,
+      );
+
+      // Récupérer les URLs depuis la table pré-calculée avec pagination
+      // Supabase limite à 1000 lignes, donc on utilise range()
+      const { data: sitemapUrls, error } = await this.client
+        .from('__sitemap_p_link')
+        .select('*')
+        .range(0, Math.min(limit, 1000) - 1); // Max 1000 lignes par requête
+
+      if (error) {
+        this.logger.error('Erreur récupération __sitemap_p_link:', error);
+        return this.buildSitemapXml([]);
+      }
+
+      if (!sitemapUrls || sitemapUrls.length === 0) {
+        this.logger.warn('Aucune URL dans __sitemap_p_link');
+        return this.buildSitemapXml([]);
+      }
+
+      this.logger.log(
+        `📊 ${sitemapUrls.length} URLs récupérées depuis __sitemap_p_link`,
+      );
+
+      // Construire les entrées sitemap avec le format URL correct
+      // Format: /pieces/{pg_alias}-{pg_id}/{marque_alias}-{marque_id}/{modele_alias}-{modele_id}/{type_alias}-{type_id}.html
+      const sitemapEntries = sitemapUrls
+        .filter((item) => item.map_has_item && item.map_has_item > 0) // Seulement si pièces disponibles
+        .map((item) => ({
+          loc: `/pieces/${item.map_pg_alias}-${item.map_pg_id}/${item.map_marque_alias}-${item.map_marque_id}/${item.map_modele_alias}-${item.map_modele_id}/${item.map_type_alias}-${item.map_type_id}.html`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly' as const,
+          priority: 0.7,
+        }));
+
+      this.logger.log(
+        `✅ ${sitemapEntries.length} URLs ajoutées au sitemap (${sitemapUrls.length - sitemapEntries.length} filtrées car map_has_item=0)`,
+      );
+
+      return this.buildSitemapXml(sitemapEntries);
+    } catch (error) {
+      this.logger.error(
+        'Erreur génération sitemap depuis __sitemap_p_link:',
+        error,
+      );
+      return this.buildSitemapXml([]);
+    }
+  }
+
+  /**
+   * 🗂️ Génère un sitemap paginé depuis __sitemap_p_link
+   * @param page Numéro de page (1-based)
+   * @param pageSize Taille de page (max 1000 à cause de Supabase)
+   */
+  async generatePaginatedSitemap(
+    page: number,
+    pageSize = 1000,
+  ): Promise<string> {
+    try {
+      const offset = (page - 1) * pageSize;
+      const limit = Math.min(pageSize, 1000); // Supabase hard limit
+
+      this.logger.log(
+        `🔍 Génération sitemap paginé page=${page}, offset=${offset}, limit=${limit}`,
+      );
+
+      const { data: sitemapUrls, error } = await this.client
+        .from('__sitemap_p_link')
+        .select('*')
+        .range(offset, offset + limit - 1);
+
+      if (error) {
+        this.logger.error('Erreur récupération page:', error);
+        return this.buildSitemapXml([]);
+      }
+
+      if (!sitemapUrls || sitemapUrls.length === 0) {
+        this.logger.warn(`Aucune URL pour page ${page}`);
+        return this.buildSitemapXml([]);
+      }
+
+      const sitemapEntries = sitemapUrls
+        .filter((item) => item.map_has_item && item.map_has_item > 0)
+        .map((item) => ({
+          loc: `/pieces/${item.map_pg_alias}-${item.map_pg_id}/${item.map_marque_alias}-${item.map_marque_id}/${item.map_modele_alias}-${item.map_modele_id}/${item.map_type_alias}-${item.map_type_id}.html`,
+          lastmod: new Date().toISOString(),
+          changefreq: 'weekly' as const,
+          priority: 0.7,
+        }));
+
+      this.logger.log(`✅ Page ${page}: ${sitemapEntries.length} URLs valides`);
+
+      return this.buildSitemapXml(sitemapEntries);
+    } catch (error) {
+      this.logger.error(`Erreur page ${page}:`, error);
+      return this.buildSitemapXml([]);
+    }
+  }
+
+  /**
+   * 📋 Génère un sitemap index pièces listant tous les sitemaps paginés
+   */
+  async generatePiecesSitemapIndex(): Promise<string> {
+    try {
+      // Compter le nombre total d'URLs dans __sitemap_p_link
+      const { count, error } = await this.client
+        .from('__sitemap_p_link')
+        .select('*', { count: 'exact', head: true });
+
+      if (error || !count) {
+        this.logger.error('Erreur comptage URLs:', error);
+        return this.buildSitemapIndexXml([]);
+      }
+
+      const pageSize = 1000; // Supabase limite
+      const totalPages = Math.ceil(count / pageSize);
+
+      this.logger.log(
+        `📊 Génération index: ${count} URLs totales, ${totalPages} pages`,
+      );
+
+      // Générer la liste des sitemaps
+      const sitemaps = [];
+      const baseUrl = process.env.BASE_URL || 'https://automecanik.com';
+
+      // Ajouter les autres sitemaps statiques
+      sitemaps.push({
+        loc: `${baseUrl}/sitemap-blog.xml`,
+        lastmod: new Date().toISOString(),
+      });
+
+      sitemaps.push({
+        loc: `${baseUrl}/sitemap-motorisations.xml`,
+        lastmod: new Date().toISOString(),
+      });
+
+      sitemaps.push({
+        loc: `${baseUrl}/sitemap-marques.xml`,
+        lastmod: new Date().toISOString(),
+      });
+
+      // Ajouter tous les sitemaps de pièces paginés
+      for (let page = 1; page <= totalPages; page++) {
+        sitemaps.push({
+          loc: `${baseUrl}/api/sitemap/pieces-page-${page}.xml`,
+          lastmod: new Date().toISOString(),
+        });
+      }
+
+      this.logger.log(`✅ Index généré avec ${sitemaps.length} sitemaps`);
+
+      return this.buildSitemapIndexXml(sitemaps);
+    } catch (error) {
+      this.logger.error('Erreur génération index:', error);
+      return this.buildSitemapIndexXml([]);
+    }
+  }
+
+  /**
+   * 🏗️ Construit le XML d'un sitemap index
+   */
+  private buildSitemapIndexXml(
+    sitemaps: Array<{ loc: string; lastmod: string }>,
+  ): string {
+    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+    const sitemapIndexOpen =
+      '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+    const sitemapIndexClose = '</sitemapindex>';
+
+    const sitemapEntries = sitemaps
+      .map(
+        (sitemap) => `
+  <sitemap>
+    <loc>${sitemap.loc}</loc>
+    <lastmod>${sitemap.lastmod}</lastmod>
+  </sitemap>`,
+      )
+      .join('');
+
+    return `${xmlHeader}\n${sitemapIndexOpen}${sitemapEntries}\n${sitemapIndexClose}`;
   }
 }

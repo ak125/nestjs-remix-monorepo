@@ -132,6 +132,13 @@ async function bootstrap() {
               objectSrc: ["'none'"],
               mediaSrc: ["'self'"],
               frameSrc: ["'none'"],
+              formAction: [
+                "'self'",
+                'https://paiement.systempay.fr',
+                'https://paiement-secure.test.lyra-collect.com',
+                'https://tpeweb.paybox.com', // Paybox PRODUCTION
+                'https://preprod-tpeweb.paybox.com', // Paybox PREPROD
+              ], // Autoriser soumission vers SystemPay et Paybox
             },
           },
         }),

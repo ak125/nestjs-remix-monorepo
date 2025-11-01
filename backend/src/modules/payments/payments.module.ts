@@ -8,6 +8,10 @@ import paymentConfig from '../../config/payment.config';
 // Controllers
 import { PaymentsController } from './controllers/payments.controller';
 import { SystemPayRedirectController } from './controllers/systempay-redirect.controller';
+import { PayboxRedirectController } from './controllers/paybox-redirect.controller';
+import { PayboxCallbackController } from './controllers/paybox-callback.controller';
+import { PayboxTestController } from './controllers/paybox-test.controller';
+import { PayboxMonitoringController } from './controllers/paybox-monitoring.controller';
 
 // Services
 import { PaymentService } from './services/payment.service';
@@ -47,6 +51,10 @@ import { PaymentDataService } from './repositories/payment-data.service';
   controllers: [
     PaymentsController, // ✅ Contrôleur unifié activé
     SystemPayRedirectController, // ✅ Redirection SystemPay
+    PayboxRedirectController, // ✅ Redirection Paybox (PRODUCTION)
+    PayboxCallbackController, // ✅ Callback IPN Paybox
+    PayboxTestController, // ✅ Page de test Paybox (PHP → TS)
+    PayboxMonitoringController, // ✅ Monitoring admin Paybox
   ],
   providers: [
     // Services

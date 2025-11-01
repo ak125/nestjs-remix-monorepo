@@ -179,7 +179,7 @@ export default function BlogConseilsIndex() {
         description={`${totalArticles} guides pratiques • ${stats.totalCategories} catégories • ${formatViews(stats.totalViews)} vues`}
         breadcrumb={[
           { label: "Accueil", href: "/" },
-          { label: "Pièces Auto", href: "/blog-pieces-auto/conseils" },
+          { label: "Blog", href: "/blog" },
           { label: "Montage et Entretien" },
         ]}
         stats={[

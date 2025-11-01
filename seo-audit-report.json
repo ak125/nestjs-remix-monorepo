@@ -1,0 +1,236 @@
+{
+  "timestamp": "2025-10-28T14:25:12.483807",
+  "tables": {
+    "__sitemap_blog": {
+      "total_rows": 109,
+      "columns": [
+        "map_id",
+        "map_alias",
+        "map_date"
+      ],
+      "sample_size": 10,
+      "null_analysis": {
+        "map_id": 0,
+        "map_alias": 1,
+        "map_date": 0
+      },
+      "issues": []
+    },
+    "__sitemap_gamme": {
+      "total_rows": 0,
+      "columns": [],
+      "sample_size": 0,
+      "null_analysis": {},
+      "issues": [
+        "⚠️ Table vide"
+      ]
+    },
+    "__sitemap_marque": {
+      "total_rows": 35,
+      "columns": [
+        "map_id",
+        "map_marque_alias",
+        "map_marque_id"
+      ],
+      "sample_size": 10,
+      "null_analysis": {
+        "map_id": 0,
+        "map_marque_alias": 0,
+        "map_marque_id": 0
+      },
+      "issues": []
+    },
+    "__sitemap_motorisation": {
+      "total_rows": 12756,
+      "columns": [
+        "map_id",
+        "map_marque_alias",
+        "map_marque_id",
+        "map_modele_alias",
+        "map_modele_id",
+        "map_type_alias",
+        "map_type_id"
+      ],
+      "sample_size": 10,
+      "null_analysis": {
+        "map_id": 0,
+        "map_marque_alias": 0,
+        "map_marque_id": 0,
+        "map_modele_alias": 0,
+        "map_modele_id": 0,
+        "map_type_alias": 0,
+        "map_type_id": 0
+      },
+      "issues": []
+    },
+    "__sitemap_p_link": {
+      "total_rows": 714336,
+      "columns": [
+        "map_id",
+        "map_pg_alias",
+        "map_pg_id",
+        "map_marque_alias",
+        "map_marque_id",
+        "map_modele_alias",
+        "map_modele_id",
+        "map_type_alias",
+        "map_type_id",
+        "map_has_item"
+      ],
+      "sample_size": 10,
+      "null_analysis": {
+        "map_id": 0,
+        "map_pg_alias": 0,
+        "map_pg_id": 0,
+        "map_marque_alias": 0,
+        "map_marque_id": 0,
+        "map_modele_alias": 0,
+        "map_modele_id": 0,
+        "map_type_alias": 0,
+        "map_type_id": 0,
+        "map_has_item": 0
+      },
+      "issues": []
+    },
+    "__sitemap_p_xml": {
+      "total_rows": 1960,
+      "columns": [
+        "map_id",
+        "map_pg_id",
+        "map_marque_id",
+        "map_file",
+        "map_has_link"
+      ],
+      "sample_size": 10,
+      "null_analysis": {
+        "map_id": 0,
+        "map_pg_id": 0,
+        "map_marque_id": 0,
+        "map_file": 0,
+        "map_has_link": 0
+      },
+      "issues": []
+    },
+    "__sitemap_search_link": {
+      "total_rows": 1,
+      "columns": [
+        "map_id",
+        "map_pg_alias",
+        "map_pg_id",
+        "map_marque_alias",
+        "map_marque_id",
+        "map_modele_alias",
+        "map_modele_id",
+        "map_type_alias",
+        "map_type_id"
+      ],
+      "sample_size": 1,
+      "null_analysis": {
+        "map_id": 0,
+        "map_pg_alias": 1,
+        "map_pg_id": 0,
+        "map_marque_alias": 1,
+        "map_marque_id": 0,
+        "map_modele_alias": 1,
+        "map_modele_id": 0,
+        "map_type_alias": 1,
+        "map_type_id": 0
+      },
+      "issues": [
+        "⚠️ Colonne 'map_pg_alias' avec 1/1 valeurs nulles",
+        "⚠️ Colonne 'map_marque_alias' avec 1/1 valeurs nulles",
+        "⚠️ Colonne 'map_modele_alias' avec 1/1 valeurs nulles",
+        "⚠️ Colonne 'map_type_alias' avec 1/1 valeurs nulles"
+      ]
+    }
+  },
+  "url_analysis": {
+    "__sitemap_p_link": {
+      "total": 714336,
+      "sample_size": 100,
+      "with_items_percent": 961.0,
+      "unique_gammes": 1,
+      "unique_marques": 0,
+      "valid_url_percent": 100.0,
+      "invalid_urls_count": 0
+    },
+    "__sitemap_p_xml": {
+      "total_files": 1000,
+      "sample": [
+        {
+          "map_id": "1",
+          "map_pg_id": "4",
+          "map_marque_id": "13",
+          "map_file": "https-sitemap-alternateur-alfa-romeo.xml",
+          "map_has_link": "187"
+        },
+        {
+          "map_id": "2",
+          "map_pg_id": "4",
+          "map_marque_id": "22",
+          "map_file": "https-sitemap-alternateur-audi.xml",
+          "map_has_link": "1104"
+        },
+        {
+          "map_id": "3",
+          "map_pg_id": "4",
+          "map_marque_id": "33",
+          "map_file": "https-sitemap-alternateur-bmw.xml",
+          "map_has_link": "1157"
+        },
+        {
+          "map_id": "4",
+          "map_pg_id": "4",
+          "map_marque_id": "44",
+          "map_file": "https-sitemap-alternateur-chevrolet.xml",
+          "map_has_link": "88"
+        },
+        {
+          "map_id": "5",
+          "map_pg_id": "4",
+          "map_marque_id": "45",
+          "map_file": "https-sitemap-alternateur-chrysler.xml",
+          "map_has_link": "28"
+        }
+      ]
+    },
+    "__sitemap_motorisation": {
+      "total": 12756,
+      "sample": [
+        {
+          "map_id": "1",
+          "map_marque_alias": "alfa-romeo",
+          "map_marque_id": "13",
+          "map_modele_alias": "145",
+          "map_modele_id": "13000",
+          "map_type_alias": "1-4-i-e",
+          "map_type_id": "3822"
+        },
+        {
+          "map_id": "2",
+          "map_marque_alias": "alfa-romeo",
+          "map_marque_id": "13",
+          "map_modele_alias": "145",
+          "map_modele_id": "13000",
+          "map_type_alias": "1-4-i-e-16v-ts",
+          "map_type_id": "7765"
+        },
+        {
+          "map_id": "3",
+          "map_marque_alias": "alfa-romeo",
+          "map_marque_id": "13",
+          "map_modele_alias": "145",
+          "map_modele_id": "13000",
+          "map_type_alias": "1-6-16v-ts",
+          "map_type_id": "54968"
+        }
+      ]
+    }
+  },
+  "issues": [],
+  "recommendations": [
+    "✅ Utiliser __sitemap_p_link pour génération des sitemaps (714k URLs)",
+    "✅ Paginer les sitemaps à 1000 URLs/page max (limite Supabase)",
+    "✅ Filtrer sur map_has_item > 0 pour exclure les URLs sans pièces"
+  ]
+}
