@@ -55,19 +55,29 @@ export abstract class SupabaseBaseService {
 
     this.baseUrl = `${this.supabaseUrl}/rest/v1`;
 
-    // Créer le client Supabase
+    // Créer le client Supabase avec bypass RLS
+    // 🔥 CRITIQUE: service_role bypasse automatiquement RLS, pas besoin d'options spéciales
     this.supabase = createClient(this.supabaseUrl, this.supabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
       },
+      db: {
+        schema: 'public',
+      },
+      global: {
+        headers: {
+          'x-client-info': 'supabase-js-node',
+        },
+      },
     });
 
-    this.logger.log('SupabaseBaseService initialized');
-    this.logger.log(`URL: ${this.supabaseUrl}`);
+    this.logger.log('✅ SupabaseBaseService initialized');
+    this.logger.log(`📍 URL: ${this.supabaseUrl}`);
     this.logger.log(
-      `Service key present: ${this.supabaseServiceKey ? 'Yes' : 'No'}`,
+      `🔑 Service key present: ${this.supabaseServiceKey ? 'Yes' : 'No'}`,
     );
+    this.logger.log(`🔓 RLS: Bypassed automatically with service_role key`);
   }
 
   /**

@@ -185,7 +185,7 @@ export default function IndexV3() {
                 {brands.filter(b => b.isFavorite).slice(0, 12).map((brand) => (
                   <Link
                     key={brand.id}
-                    to={`/constructeurs/${brand.code}-${brand.id}`}
+                    to={`/constructeurs/${brand.code}-${brand.id}.html`}
                     className="group relative inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-300 border border-blue-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-0.5"
                   >
                     <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">

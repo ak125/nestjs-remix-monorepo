@@ -1,0 +1,18 @@
+# 🛡️ Cron Job SEO Monitoring - Détection pages sans articles
+# 
+# Surveille les pages critiques toutes les 30 minutes pour détecter
+# les problèmes AVANT que le pipeline Vector ne désindexe les pages
+#
+# Installation:
+#   crontab -e
+#   Ajouter cette ligne:
+#   */30 * * * * /workspaces/nestjs-remix-monorepo/scripts/monitor-pages-no-results.sh >> /var/log/seo-monitor.log 2>&1
+
+# Exécution toutes les 30 minutes
+*/30 * * * * cd /workspaces/nestjs-remix-monorepo && ./scripts/monitor-pages-no-results.sh >> /var/log/seo-monitor.log 2>&1
+
+# Alertes critiques (exécution toutes les 5 minutes en heures de pointe)
+*/5 8-20 * * * cd /workspaces/nestjs-remix-monorepo && ./scripts/monitor-pages-no-results.sh >> /var/log/seo-monitor-critical.log 2>&1
+
+# Rapport quotidien à 6h du matin
+0 6 * * * cd /workspaces/nestjs-remix-monorepo && ./scripts/monitor-pages-no-results.sh && echo "Rapport quotidien SEO envoyé" | mail -s "SEO Monitor Daily Report" admin@example.com

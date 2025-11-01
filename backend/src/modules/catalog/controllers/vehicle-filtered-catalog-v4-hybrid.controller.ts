@@ -31,6 +31,7 @@ export class VehicleFilteredCatalogV4Controller {
       return {
         success: true,
         catalog: result.catalog,
+        popularParts: result.catalog.popularParts || [],
         performance: {
           responseTime: `${responseTime}ms`,
           source: result.metrics.source,

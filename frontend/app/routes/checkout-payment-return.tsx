@@ -19,10 +19,11 @@ interface PaymentResult {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const status = url.searchParams.get("status");
-  const transactionId = url.searchParams.get("trans_id") || url.searchParams.get("transaction_id");
+  const status = url.searchParams.get("status") || url.searchParams.get("vads_trans_status");
+  const transactionId = url.searchParams.get("trans_id") || url.searchParams.get("transaction_id") || url.searchParams.get("vads_trans_id");
 
   if (!transactionId) {
+    console.log("❌ Missing transaction ID, params:", Object.fromEntries(url.searchParams));
     return redirect("/cart");
   }
 

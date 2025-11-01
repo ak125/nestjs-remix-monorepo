@@ -16,6 +16,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { CyberplusService } from '../services/cyberplus.service';
+import { PayboxService } from '../services/paybox.service';
 import { PaymentValidationService } from '../services/payment-validation.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
@@ -56,10 +57,11 @@ export class PaymentsController {
   constructor(
     private readonly paymentService: PaymentService,
     private readonly cyberplusService: CyberplusService,
+    private readonly payboxService: PayboxService,
     private readonly validationService: PaymentValidationService,
     private readonly paymentDataService: PaymentDataService,
   ) {
-    this.logger.log('✅ PaymentsController initialized');
+    this.logger.log('✅ PaymentsController initialized with Paybox');
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -105,10 +107,19 @@ export class PaymentsController {
     @Request() req?: any,
   ) {
     try {
+      this.logger.log('🔵 =================================');
+      this.logger.log('🔵 POST /api/payments - CREATE PAYMENT');
+      this.logger.log('🔵 =================================');
       this.logger.log(`Creating payment for order ${createPaymentDto.orderId}`);
+      this.logger.log(
+        '📥 CreatePaymentDto:',
+        JSON.stringify(createPaymentDto, null, 2),
+      );
+      this.logger.log('👤 Request user:', req?.user);
 
       // Récupérer userId depuis session si disponible
       const userId = req?.user?.id || createPaymentDto.userId;
+      this.logger.log('✅ Final userId:', userId);
       if (!userId) {
         throw new BadRequestException('User ID is required');
       }
@@ -124,7 +135,11 @@ export class PaymentsController {
 
       // Si méthode Cyberplus, générer le formulaire de redirection
       let redirectData = null;
-      if (createPaymentDto.method === PaymentMethod.CYBERPLUS) {
+      const methodLower = createPaymentDto.method?.toString().toLowerCase();
+      this.logger.log(`🔍 Payment method check: "${createPaymentDto.method}" -> "${methodLower}" (comparing with "cyberplus")`);
+      
+      if (methodLower === 'cyberplus' || createPaymentDto.method === PaymentMethod.CYBERPLUS) {
+        this.logger.log('🔵 Generating Cyberplus payment form...');
         redirectData = this.cyberplusService.generatePaymentForm({
           amount: payment.amount,
           currency: payment.currency,
@@ -136,14 +151,24 @@ export class PaymentsController {
           cancelUrl:
             createPaymentDto.cancelUrl ||
             `${process.env.BASE_URL}/payment/cancel`,
-          notifyUrl: `${process.env.BASE_URL}/api/payments/callback/cyberplus`,
+          notifyUrl:
+            createPaymentDto.notifyUrl ||
+            `${process.env.BASE_URL}/api/payments/callback/cyberplus`,
           description: payment.description,
         });
+        this.logger.log(
+          '✅ Cyberplus form generated with URL:',
+          redirectData.url,
+        );
+        this.logger.log(
+          '✅ Form parameters:',
+          JSON.stringify(redirectData.parameters, null, 2),
+        );
       }
 
       this.logger.log(`✅ Payment created: ${payment.id}`);
 
-      return {
+      const response = {
         success: true,
         data: {
           ...payment,
@@ -151,6 +176,13 @@ export class PaymentsController {
         },
         message: 'Paiement créé avec succès',
       };
+
+      this.logger.log(
+        '📤 Sending response:',
+        JSON.stringify(response, null, 2),
+      );
+
+      return response;
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';

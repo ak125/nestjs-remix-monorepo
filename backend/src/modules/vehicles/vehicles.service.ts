@@ -315,6 +315,31 @@ export class VehiclesService extends SupabaseBaseService {
   }
 
   /**
+   * Récupérer une marque (CONSTRUCTEUR automobile) par son ID
+   * NOTE: auto_marque = CONSTRUCTEURS (RENAULT, PEUGEOT...)
+   *       Ne pas confondre avec pieces_marque = FABRICANTS de pièces (BOSCH, FEBI...)
+   */
+  async getBrandById(brandId: string) {
+    try {
+      const { data, error } = await this.client
+        .from('auto_marque')
+        .select('*')
+        .eq('marque_id', brandId)
+        .single();
+
+      if (error) {
+        this.logger.error(`Erreur getBrandById(${brandId}):`, error);
+        throw error;
+      }
+
+      return { data };
+    } catch (error) {
+      this.logger.error(`Erreur dans getBrandById(${brandId}):`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Récupérer les modèles d'une marque
    */
   async findModelsByBrand(

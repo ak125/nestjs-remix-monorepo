@@ -36,8 +36,20 @@ export function Breadcrumbs({
   enableSchema = true
 }: BreadcrumbsProps) {
   
-  // Génération automatique si pas d'items fournis
-  const breadcrumbItems = items.length > 0 ? items : generateFromPath();
+  // Utiliser les items fournis ou générer automatiquement
+  let breadcrumbItems = items.length > 0 ? items : generateFromPath();
+  
+  // S'assurer que "Accueil" est toujours le premier élément si showHome = true
+  if (showHome && breadcrumbItems.length > 0 && breadcrumbItems[0].label !== 'Accueil') {
+    breadcrumbItems = [
+      {
+        label: 'Accueil',
+        href: '/',
+        icon: <Home className="w-4 h-4" />
+      },
+      ...breadcrumbItems
+    ];
+  }
 
   // Générer schema JSON-LD pour SEO
   const breadcrumbSchema = enableSchema && breadcrumbItems.length > 0 ? {

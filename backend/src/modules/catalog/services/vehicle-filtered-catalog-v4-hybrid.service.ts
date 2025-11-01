@@ -131,7 +131,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    */
   private async buildCatalogParallel(typeId: number): Promise<any> {
     this.logger.log(
-      `� [V4 SIMPLE] Catalogue complet (SANS filtrage) pour type_id ${typeId}`,
+      `🔍 [V4 SIMPLE] Catalogue complet (SANS filtrage) pour type_id ${typeId}`,
     );
 
     // 🚀 3 requêtes parallèles ultra-simples
@@ -159,22 +159,37 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
         .order('pg_id', { ascending: true }),
     ]);
 
-    // Vérification erreurs
-    if (familiesData.error) throw familiesData.error;
-    if (catalogGammeData.error) throw catalogGammeData.error;
-    if (gammeData.error) throw gammeData.error;
+    // 🔍 DEBUG: Vérifier les erreurs retournées
+    if (familiesData.error) {
+      this.logger.error(
+        `❌ [catalog_family] Erreur RLS: ${JSON.stringify(familiesData.error)}`,
+      );
+      throw familiesData.error;
+    }
+    if (catalogGammeData.error) {
+      this.logger.error(
+        `❌ [catalog_gamme] Erreur RLS: ${JSON.stringify(catalogGammeData.error)}`,
+      );
+      throw catalogGammeData.error;
+    }
+    if (gammeData.error) {
+      this.logger.error(
+        `❌ [pieces_gamme] Erreur RLS: ${JSON.stringify(gammeData.error)}`,
+      );
+      throw gammeData.error;
+    }
 
     this.logger.log(
-      `✅ [V4 SIMPLE] ${familiesData.data.length} familles, ` +
-        `${gammeData.data.length} gammes, ` +
-        `${catalogGammeData.data.length} liaisons`,
+      `✅ [V4 SIMPLE] ${familiesData.data?.length || 0} familles, ` +
+        `${gammeData.data?.length || 0} gammes, ` +
+        `${catalogGammeData.data?.length || 0} liaisons`,
     );
 
     // 🔗 Construction simple des familles
     return this.buildCompleteCatalog(
-      familiesData.data,
-      catalogGammeData.data,
-      gammeData.data,
+      familiesData.data || [],
+      catalogGammeData.data || [],
+      gammeData.data || [],
     );
   }
 
@@ -187,17 +202,17 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     liaisons: any[],
     gammes: any[],
   ): any {
-    // Map pour lookup rapide O(1)
-    const gammeMap = new Map(gammes.map((g) => [g.pg_id, g]));
+    // 🔥 CRITIQUE: Convertir les IDs en nombres (Supabase retourne des strings)
+    const gammeMap = new Map(gammes.map((g) => [parseInt(g.pg_id), g]));
 
     // Grouper gammes par famille
     const familyGammesMap = new Map<number, any[]>();
 
     liaisons.forEach((liaison) => {
-      const gamme = gammeMap.get(liaison.mc_pg_id);
+      const gamme = gammeMap.get(parseInt(liaison.mc_pg_id));
       if (!gamme) return; // Skip si gamme n'existe pas
 
-      const familyId = liaison.mc_mf_id;
+      const familyId = parseInt(liaison.mc_mf_id);
       if (!familyGammesMap.has(familyId)) {
         familyGammesMap.set(familyId, []);
       }
@@ -215,13 +230,13 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     // Construire les familles finales
     const finalFamilies = families
       .map((family) => {
-        const familyGammes = familyGammesMap.get(family.mf_id) || [];
+        const familyGammes = familyGammesMap.get(parseInt(family.mf_id)) || [];
 
         // Trier gammes par mc_sort
         const sortedGammes = familyGammes.sort((a, b) => a.pg_sort - b.pg_sort);
 
         return {
-          mf_id: family.mf_id,
+          mf_id: parseInt(family.mf_id),
           mf_name: family.mf_name,
           mf_name_system: family.mf_name_system,
           mf_description: family.mf_description || `Système ${family.mf_name}`,

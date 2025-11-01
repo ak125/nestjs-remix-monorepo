@@ -254,7 +254,7 @@ export default function BlogGuidesIndex() {
         gradientTo="to-emerald-600"
         breadcrumb={[
           { label: "Accueil", href: "/" },
-          { label: "Pièces Auto", href: "/blog-pieces-auto/conseils" },
+          { label: "Blog", href: "/blog" },
           { label: "Guide d'Achat" },
         ]}
       />

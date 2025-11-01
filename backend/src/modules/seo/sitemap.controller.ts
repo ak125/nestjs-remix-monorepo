@@ -287,4 +287,294 @@ export class SitemapController {
       );
     }
   }
+
+  /**
+   * 🛡️ NOUVEAU: GET /sitemap/vehicle-pieces-validated.xml
+   * Sitemap des URLs véhicule-pièces VALIDÉES (filtre les invalides)
+   *
+   * Paramètres query:
+   * - limit: Nombre max d'URLs (défaut: 10000)
+   *
+   * Exemple: /api/sitemap/vehicle-pieces-validated.xml?limit=1000
+   */
+  @Get('vehicle-pieces-validated.xml')
+  @Header('Content-Type', 'application/xml')
+  async getVehiclePiecesValidatedSitemap(@Res() res: Response) {
+    try {
+      const limit = 5000; // Production: 5k combinaisons uniques (x50 = 250k lignes)
+      this.logger.log(
+        `🔍 Génération sitemap véhicule-pièces validé (limit=${limit})...`,
+      );
+
+      const xmlContent =
+        await this.sitemapService.generateVehiclePiecesSitemap(limit);
+
+      const urlCount = xmlContent.split('<url>').length - 1;
+      this.logger.log(`✅ Sitemap généré avec ${urlCount} URLs valides`);
+
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap véhicule-pièces:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap véhicule-pièces',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📊 GET /sitemap/vehicle-pieces-quality-report
+   * Rapport de qualité des URLs véhicule-pièces
+   *
+   * Analyse un échantillon pour identifier les raisons d'exclusion
+   */
+  @Get('vehicle-pieces-quality-report')
+  async getVehiclePiecesQualityReport() {
+    try {
+      const sampleSize = 1000;
+      this.logger.log(
+        `📊 Génération rapport qualité (échantillon=${sampleSize})...`,
+      );
+
+      const report =
+        await this.sitemapService.generateVehiclePiecesQualityReport(
+          sampleSize,
+        );
+
+      this.logger.log(
+        `✅ Rapport généré: ${report.valid}/${report.total} URLs valides (${((report.valid / report.total) * 100).toFixed(1)}%)`,
+      );
+
+      return {
+        success: true,
+        data: report,
+      };
+    } catch (error) {
+      this.logger.error('Erreur génération rapport qualité:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du rapport',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🚀 GET /sitemap/vehicle-pieces-from-cache.xml
+   * Sitemap utilisant la table pré-calculée __sitemap_p_link (714k URLs)
+   */
+  @Get('vehicle-pieces-from-cache.xml')
+  @Header('Content-Type', 'application/xml')
+  async getVehiclePiecesFromCache(@Res() res: Response) {
+    try {
+      const limit = 50000; // 50k URLs (Google recommande max 50k par sitemap)
+      this.logger.log(
+        `🚀 Génération sitemap depuis __sitemap_p_link (limit=${limit})...`,
+      );
+
+      const xmlContent =
+        await this.sitemapService.generateVehiclePiecesSitemapFromCache(limit);
+
+      const urlCount = xmlContent.split('<url>').length - 1;
+      this.logger.log(`✅ Sitemap généré avec ${urlCount} URLs depuis cache`);
+
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération sitemap depuis cache:', error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📄 GET /sitemap/pieces-page-:page.xml
+   * Sitemap paginé (1000 URLs par page)
+   */
+  @Get('pieces-page-:page.xml')
+  @Header('Content-Type', 'application/xml')
+  async getPiecesSitemapPage(
+    @Param('page') page: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const pageNum = parseInt(page, 10);
+      if (isNaN(pageNum) || pageNum < 1) {
+        throw new HttpException(
+          'Numéro de page invalide',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      this.logger.log(`🔍 Génération sitemap page ${pageNum}...`);
+
+      const xmlContent = await this.sitemapService.generatePaginatedSitemap(
+        pageNum,
+        1000,
+      );
+
+      const urlCount = xmlContent.split('<url>').length - 1;
+      this.logger.log(`✅ Page ${pageNum}: ${urlCount} URLs`);
+
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error(`Erreur page ${page}:`, error);
+      throw new HttpException(
+        'Erreur lors de la génération du sitemap',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 📋 GET /sitemap/pieces-index.xml
+   * Index des sitemaps pièces (liste tous les sitemaps paginés)
+   */
+  @Get('pieces-index.xml')
+  @Header('Content-Type', 'application/xml')
+  async getPiecesSitemapIndex(@Res() res: Response) {
+    try {
+      this.logger.log('📋 Génération sitemap index pièces...');
+
+      const xmlContent = await this.sitemapService.generatePiecesSitemapIndex();
+
+      const sitemapCount = xmlContent.split('<sitemap>').length - 1;
+      this.logger.log(`✅ Index généré avec ${sitemapCount} sitemaps`);
+
+      res.send(xmlContent);
+    } catch (error) {
+      this.logger.error('Erreur génération index:', error);
+      throw new HttpException(
+        "Erreur lors de la génération de l'index",
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * 🔍 GET /sitemap/debug-cache-table
+   * Diagnostic: Voir la structure de __sitemap_p_link
+   */
+  @Get('debug-cache-table')
+  async debugCacheTable() {
+    try {
+      const { data, error } = await this.sitemapService['client']
+        .from('__sitemap_p_link')
+        .select('*')
+        .limit(5);
+
+      if (error) {
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+
+      return {
+        success: true,
+        sample_count: data?.length || 0,
+        columns: data && data.length > 0 ? Object.keys(data[0]) : [],
+        sample_data: data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * 🔍 GET /sitemap/debug-xml-table
+   * Diagnostic: Voir la structure de __sitemap_p_xml (sitemaps pré-générés)
+   */
+  @Get('debug-xml-table')
+  async debugXmlTable() {
+    try {
+      const { data, error } = await this.sitemapService['client']
+        .from('__sitemap_p_xml')
+        .select('*')
+        .limit(10);
+
+      if (error) {
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+
+      // Analyser les données
+      const analysis = {
+        total_rows: data?.length || 0,
+        columns: data && data.length > 0 ? Object.keys(data[0]) : [],
+        sample: data?.map((row) => ({
+          ...row,
+          map_file_preview: row.map_file?.substring(0, 200) + '...' || 'null',
+        })),
+      };
+
+      return {
+        success: true,
+        ...analysis,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  /**
+   * 🔍 GET /sitemap/debug-all-tables
+   * Diagnostic: Analyser TOUTES les tables sitemap et leur structure
+   */
+  @Get('debug-all-tables')
+  async debugAllSitemapTables() {
+    try {
+      const tables = [
+        '__sitemap_blog',
+        '__sitemap_gamme',
+        '__sitemap_marque',
+        '__sitemap_motorisation',
+        '__sitemap_p_link',
+        '__sitemap_p_xml',
+        '__sitemap_search_link',
+      ];
+
+      const results = {};
+
+      for (const table of tables) {
+        const { data, error, count } = await this.sitemapService['client']
+          .from(table)
+          .select('*', { count: 'exact' })
+          .limit(2);
+
+        results[table] = {
+          success: !error,
+          error: error?.message,
+          total_rows: count || 0,
+          columns: data && data.length > 0 ? Object.keys(data[0]) : [],
+          sample: data?.slice(0, 1), // 1 seul exemple pour économiser la bande passante
+        };
+      }
+
+      return {
+        success: true,
+        tables: results,
+        summary: {
+          total_tables: tables.length,
+          total_rows: Object.values(results).reduce(
+            (sum: number, t: any) => sum + (t.total_rows || 0),
+            0,
+          ),
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
 }
