@@ -401,6 +401,29 @@ export class PaymentDataService extends SupabaseBaseService {
   }
 
   /**
+   * Récupérer les paiements récents
+   * Utilise ic_postback trié par date décroissante
+   */
+  async getRecentPayments(limit: number = 20): Promise<Payment[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('ic_postback')
+        .select('*')
+        .order('datepayment', { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        throw new Error(`Failed to get recent payments: ${error.message}`);
+      }
+
+      return data.map((postback: any) => this.mapPostbackToPayment(postback));
+    } catch (error) {
+      this.logger.error('Error in getRecentPayments:', error);
+      return [];
+    }
+  }
+
+  /**
    * Obtenir les statistiques de paiement
    * Utilise ic_postback avec agrégation
    */

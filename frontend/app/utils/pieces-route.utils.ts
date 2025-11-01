@@ -37,6 +37,49 @@ export function parseUrlParam(param: string): { alias: string; id: number } {
 }
 
 /**
+ * ✅ VALIDATION STRICTE - Vérifie que tous les IDs sont présents et valides
+ * Lance une erreur explicite si un ID manque pour éviter les désindexations
+ */
+export function validateVehicleIds(params: {
+  marqueId: number;
+  modeleId: number;
+  typeId: number;
+  gammeId: number;
+  source?: string;
+}): void {
+  const errors: string[] = [];
+  
+  if (!params.marqueId || params.marqueId <= 0) {
+    errors.push(`marqueId invalide: ${params.marqueId}`);
+  }
+  if (!params.modeleId || params.modeleId <= 0) {
+    errors.push(`modeleId invalide: ${params.modeleId}`);
+  }
+  if (!params.typeId || params.typeId <= 0) {
+    errors.push(`typeId invalide: ${params.typeId}`);
+  }
+  if (!params.gammeId || params.gammeId <= 0) {
+    errors.push(`gammeId invalide: ${params.gammeId}`);
+  }
+  
+  if (errors.length > 0) {
+    const errorMsg = `❌ [VALIDATION-IDS] IDs manquants ou invalides:\n${errors.join('\n')}`;
+    console.error(errorMsg, {
+      source: params.source || 'unknown',
+      receivedParams: params
+    });
+    
+    // 🚨 CRITIQUE: Lancer une erreur pour empêcher le rendu sans données
+    throw new Error(
+      `IDs véhicule invalides - Page non affichable pour éviter désindexation SEO. ` +
+      `Détails: ${errors.join(', ')}`
+    );
+  }
+  
+  console.log('✅ [VALIDATION-IDS] Tous les IDs sont valides:', params);
+}
+
+/**
  * Formatage intelligent des noms de gammes
  */
 export function formatGammeName(gamme: GammeData): string {
@@ -186,17 +229,16 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
   const modele = parseUrlParam(modeleParam);
   const type = parseUrlParam(typeParam);
   
-  console.log(`🔍 [V5-RESOLVE] Parsing: marque=${marque.alias}(${marque.id}), modele=${modele.alias}(${modele.id}), type=${type.alias}(${type.id})`);
-  
-  // Si on a déjà des IDs dans l'URL, les utiliser
+  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les utiliser directement
   if (marque.id > 0 && modele.id > 0 && type.id > 0) {
-    console.log(`✅ [V5-RESOLVE] IDs trouvés dans l'URL`);
     return {
       marqueId: marque.id,
       modeleId: modele.id,
       typeId: type.id
     };
   }
+  
+  console.warn(`⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`);
   
   try {
     // Sinon essayer l'API de résolution
@@ -215,7 +257,6 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
           );
           
           if (modelData) {
-            console.log(`✅ [V5-RESOLVE] API: ${brand.marque_name} ${modelData.modele_name}`);
             return {
               marqueId: brand.marque_id,
               modeleId: modelData.modele_id,
@@ -226,7 +267,7 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
       }
     }
   } catch (error) {
-    console.warn('⚠️ [V5-RESOLVE] API failed:', error);
+    console.warn('⚠️ [RESOLVE-VEHICLE] Erreur appel API:', error);
   }
   
   // Fallback intelligent avec mappings connus
@@ -239,7 +280,7 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
   };
   
   const fallback = knownIds[marque.alias] || knownIds["renault"];
-  console.log(`⚠️ [V5-RESOLVE] Fallback pour ${marque.alias}:`, fallback);
+  console.log(`⚠️ [RESOLVE-VEHICLE] Fallback utilisé pour ${marque.alias}:`, fallback);
   
   return {
     marqueId: fallback.marqueId,
@@ -255,12 +296,6 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
   // Parse le paramètre pour extraire l'ID s'il existe
   const gamme = parseUrlParam(gammeParam);
   
-  // Si on a un ID dans l'URL, l'utiliser
-  if (gamme.id > 0) {
-    console.log(`✅ [GAMME-ID] ID trouvé dans l'URL pour ${gamme.alias}: ${gamme.id}`);
-    return gamme.id;
-  }
-  
   // Mappings directs avec les IDs réels de la base de données
   // ⚠️ Ces mappings sont pour les routes SANS ID dans l'URL
   // Les routes avec ID (ex: courroie-d-accessoire-10) utilisent directement l'ID
@@ -275,9 +310,37 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     "filtres-a-air": 76,
     "filtres-a-carburant": 77,
     "filtres-habitacle": 78,
-    "amortisseurs": 85,
-    "amortisseur": 85
+    "amortisseurs": 854,  // ✅ CORRIGÉ: ID réel de la gamme Amortisseur
+    "amortisseur": 854     // ✅ CORRIGÉ: ID réel de la gamme Amortisseur
   };
+  
+  // Si on a un ID dans l'URL, le valider avant de l'utiliser
+  if (gamme.id > 0) {
+    console.log(`✅ [GAMME-ID] ID trouvé dans l'URL pour ${gamme.alias}: ${gamme.id}`);
+    
+    // 🛡️ VALIDATION: Vérifier que cet ID existe dans la base
+    try {
+      const response = await fetch('http://localhost:3000/api/catalog/gammes');
+      const gammes = await response.json();
+      const gammeExists = gammes.some((g: any) => g.id === gamme.id);
+      
+      if (!gammeExists) {
+        console.error(`❌ [GAMME-ID] ID ${gamme.id} n'existe pas dans la base, utilisation du mapping`);
+        // Fallback sur le mapping par alias
+        const fallbackId = knownGammeMap[gamme.alias];
+        if (fallbackId) {
+          console.log(`✅ [GAMME-ID] Fallback mapping trouvé pour ${gamme.alias}: ${fallbackId}`);
+          return fallbackId;
+        }
+      } else {
+        return gamme.id;
+      }
+    } catch (error) {
+      console.error(`❌ [GAMME-ID] Erreur validation ID ${gamme.id}:`, error);
+      // En cas d'erreur, utiliser l'ID tel quel (évite de casser le site)
+      return gamme.id;
+    }
+  }
   
   const gammeId = knownGammeMap[gamme.alias];
   

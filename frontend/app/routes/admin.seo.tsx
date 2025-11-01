@@ -1,5 +1,5 @@
 // app/routes/admin.seo.tsx
-import {  Alert, Badge, Alert } from '@fafa/ui';
+import { Alert, Badge } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";
@@ -20,37 +20,53 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie') || '';
   
   try {
-    // ✅ Utiliser les APIs existantes complètes (714K+ données, services 518 lignes)
-    const [analyticsRes, configRes, pagesRes] = await Promise.all([
+    // ✅ Charger les KPIs critiques et analytics
+    const [analyticsRes, kpisRes, pagesRes] = await Promise.all([
       fetch(`${backendUrl}/api/seo/analytics`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
+      }).catch(err => {
+        console.warn('[SEO Admin] Analytics API error:', err);
+        return null;
       }),
-      fetch(`${backendUrl}/api/seo/config`, {
+      fetch(`${backendUrl}/api/seo/kpis/dashboard`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
-      }), 
+      }).catch(err => {
+        console.warn('[SEO Admin] KPIs API error:', err);
+        return null;
+      }),
       fetch(`${backendUrl}/api/seo/pages-without-seo?limit=50`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
+      }).catch(err => {
+        console.warn('[SEO Admin] Pages API error:', err);
+        return null;
       })
     ]);
     
-    const [analytics, config, pagesWithoutSeo] = await Promise.all([
-      analyticsRes.json(),
-      configRes.json(), 
-      pagesRes.json()
-    ]);
+    // Parser les réponses avec gestion d'erreur
+    const analytics = analyticsRes && analyticsRes.ok 
+      ? await analyticsRes.json().catch(() => null)
+      : null;
+      
+    const kpis = kpisRes && kpisRes.ok
+      ? await kpisRes.json().catch(() => null)
+      : null;
+      
+    const pagesWithoutSeo = pagesRes && pagesRes.ok
+      ? await pagesRes.json().catch(() => null)
+      : null;
     
     return json({ 
       analytics,
-      config, 
+      kpis, 
       pagesWithoutSeo,
       success: true,
       error: null
@@ -59,7 +75,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     console.error('[SEO Admin] Erreur:', error);
     return json({ 
       analytics: null,
-      config: null,
+      kpis: null,
       pagesWithoutSeo: null,
       error: error instanceof Error ? error.message : 'Erreur de connexion au backend',
       success: false 
@@ -148,7 +164,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function SeoAdmin() {
-  const { analytics, config, pagesWithoutSeo, error } = useLoaderData<typeof loader>();
+  const { analytics, kpis, pagesWithoutSeo, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [selectedUrl, setSelectedUrl] = useState("");
@@ -193,6 +209,148 @@ export default function SeoAdmin() {
         >
           {(actionData && 'error' in actionData && actionData.error) || error}
         </Alert>
+      )}
+
+      {/* 📊 KPIs CRITIQUES - Section prioritaire */}
+      {kpis?.data && (
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                📊 KPIs Critiques SEO
+                <Badge 
+                  variant={
+                    kpis.data.overallHealth?.grade === 'A' ? 'success' :
+                    kpis.data.overallHealth?.grade === 'B' ? 'default' :
+                    kpis.data.overallHealth?.grade === 'C' ? 'warning' :
+                    'destructive'
+                  }
+                  className="text-lg px-3 py-1"
+                >
+                  Grade {kpis.data.overallHealth?.grade || 'N/A'} - Score {kpis.data.overallHealth?.score || 0}/100
+                </Badge>
+              </CardTitle>
+            </div>
+            <CardDescription>
+              {kpis.data.overallHealth?.passedKPIs || 0}/{kpis.data.overallHealth?.totalKPIs || 5} KPIs atteignent les seuils minimum requis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              
+              {/* KPI 1: Sitemap Discovery */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🗺️ Sitemap → Découvertes
+                    <Badge 
+                      variant={kpis.data.sitemapDiscovery.status === 'success' ? 'success' : kpis.data.sitemapDiscovery.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapDiscovery.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.sitemapDiscovery.discoveredViaSitemap?.toLocaleString() || 0} URLs sur {kpis.data.sitemapDiscovery.totalUrls?.toLocaleString() || 0} découvertes via sitemap
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapDiscovery.percentage || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: ≥{kpis.data.sitemapDiscovery.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 2: Indexation */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    📈 Sitemap → Indexées
+                    <Badge 
+                      variant={kpis.data.sitemapIndexation.status === 'success' ? 'success' : kpis.data.sitemapIndexation.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapIndexation.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.sitemapIndexation.overall?.indexed?.toLocaleString() || 0} indexées / {kpis.data.sitemapIndexation.overall?.listed?.toLocaleString() || 0} listées
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapIndexation.overall?.percentage?.toFixed(1) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: ≥{kpis.data.sitemapIndexation.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 3: TTL Crawl */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    ⏱️ TTL Crawl
+                    <Badge 
+                      variant={kpis.data.crawlTTL.status === 'success' ? 'success' : kpis.data.crawlTTL.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.crawlTTL.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Délai median - P75: {kpis.data.crawlTTL.p75}h, P95: {kpis.data.crawlTTL.p95}h
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.crawlTTL.medianTTL}h</div>
+                  <div className="text-xs text-gray-500">Cible: ≤{kpis.data.crawlTTL.target}h</div>
+                </div>
+              </div>
+
+              {/* KPI 4: Erreurs Sitemap */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🚨 Erreurs Sitemap
+                    <Badge 
+                      variant={kpis.data.sitemapErrors.status === 'success' ? 'success' : kpis.data.sitemapErrors.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapErrors.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    4xx: {kpis.data.sitemapErrors.errors4xx}, 5xx: {kpis.data.sitemapErrors.errors5xx} sur {kpis.data.sitemapErrors.totalChecked?.toLocaleString() || 0}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapErrors.errorRate?.toFixed(2) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: &lt;{kpis.data.sitemapErrors.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 5: Hreflang Health */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🌍 Hreflang Health
+                    <Badge 
+                      variant={kpis.data.hreflangHealth.status === 'success' ? 'success' : kpis.data.hreflangHealth.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.hreflangHealth.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.hreflangHealth.validPairs?.toLocaleString() || 0} paires valides / {kpis.data.hreflangHealth.totalPairs?.toLocaleString() || 0} total
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.hreflangHealth.percentage?.toFixed(1) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: &gt;{kpis.data.hreflangHealth.target}%</div>
+                </div>
+              </div>
+
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Dashboard Analytics Amélioré - Interface moderne avec graphiques */}
@@ -964,34 +1122,6 @@ export default function SeoAdmin() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Configuration SEO en bas de page */}
-      {config && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuration SEO Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <strong>Suffixe titre par défaut:</strong>
-                <br />
-                {config.default_title_suffix || " | Automecanik"}
-              </div>
-              <div>
-                <strong>Description par défaut:</strong>
-                <br />
-                {config.default_description || "Pièces automobiles et accessoires"}
-              </div>
-              <div>
-                <strong>Mots-clés par défaut:</strong>
-                <br />
-                {config.default_keywords || "auto, pièces, automobile, mécanique"}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

@@ -73,10 +73,11 @@ export class PayboxService {
 
   /**
    * Génère le formulaire de paiement Paybox
-   * Reproduit EXACTEMENT le comportement du PHP original
+   * Configuration INTELLIGENTE : avec ou sans URLs selon l'environnement
    */
   generatePaymentForm(params: PayboxPaymentParams): PayboxFormData {
     this.logger.log('Generation formulaire Paybox...');
+    this.logger.log(`Mode: ${this.mode}`);
     this.logger.log(`Montant: ${params.amount} ${params.currency}`);
     this.logger.log(`Commande: ${params.orderId}`);
 
@@ -86,7 +87,7 @@ export class PayboxService {
     // Date/heure au format ISO8601 (comme date("c") en PHP)
     const dateTime = new Date().toISOString();
 
-    // Paramètres Paybox dans l'ordre EXACT du PHP
+    // Paramètres Paybox de base (toujours présents)
     const payboxParams: Record<string, string> = {
       PBX_SITE: this.site,
       PBX_RANG: this.rang,
@@ -100,21 +101,29 @@ export class PayboxService {
       PBX_TIME: dateTime,
     };
 
-    // Construire la chaîne de signature EXACTEMENT comme le PHP
-    // Format: "PBX_SITE=xxx&PBX_RANG=xxx&..."
-    const signatureString =
-      `PBX_SITE=${payboxParams.PBX_SITE}` +
-      `&PBX_RANG=${payboxParams.PBX_RANG}` +
-      `&PBX_IDENTIFIANT=${payboxParams.PBX_IDENTIFIANT}` +
-      `&PBX_TOTAL=${payboxParams.PBX_TOTAL}` +
-      `&PBX_DEVISE=${payboxParams.PBX_DEVISE}` +
-      `&PBX_CMD=${payboxParams.PBX_CMD}` +
-      `&PBX_PORTEUR=${payboxParams.PBX_PORTEUR}` +
-      `&PBX_RETOUR=${payboxParams.PBX_RETOUR}` +
-      `&PBX_HASH=${payboxParams.PBX_HASH}` +
-      `&PBX_TIME=${payboxParams.PBX_TIME}`;
+    // ⭐ STRATÉGIE INTELLIGENTE : Ajouter les URLs SEULEMENT en PRODUCTION
+    // Le compte TEST (1999888) ne supporte pas correctement ces paramètres
+    const isProduction = this.mode === 'PRODUCTION' || this.site === '5259250';
+    
+    if (isProduction) {
+      this.logger.log('✅ Mode PRODUCTION: ajout des URLs de retour');
+      payboxParams.PBX_EFFECTUE = params.returnUrl;
+      payboxParams.PBX_REFUSE = params.cancelUrl;
+      payboxParams.PBX_ANNULE = params.cancelUrl;
+      
+      if (params.notifyUrl) {
+        payboxParams.PBX_REPONDRE_A = params.notifyUrl;
+      }
+    } else {
+      this.logger.log('🧪 Mode TEST: URLs de retour omises (compte test limité)');
+    }
 
-    this.logger.log(`Signature string: ${signatureString.substring(0, 100)}...`);
+    // Construire la chaîne de signature avec les paramètres présents
+    const signatureString = this.buildSignatureString(payboxParams);
+
+    this.logger.log(
+      `Signature string: ${signatureString.substring(0, 100)}...`,
+    );
 
     // Calculer HMAC-SHA512 comme le PHP: hash_hmac('sha512', $string, pack("H*", $key))
     const keyBuffer = Buffer.from(this.hmacKey, 'hex'); // pack("H*", $key)
@@ -124,7 +133,9 @@ export class PayboxService {
 
     payboxParams.PBX_HMAC = signature;
 
-    this.logger.log(`HMAC signature (20 premiers chars): ${signature.substring(0, 20)}...`);
+    this.logger.log(
+      `HMAC signature (20 premiers chars): ${signature.substring(0, 20)}...`,
+    );
     this.logger.log('Formulaire Paybox genere');
     this.logger.log(`URL: ${this.paymentUrl}`);
 
@@ -132,6 +143,35 @@ export class PayboxService {
       url: this.paymentUrl,
       parameters: payboxParams,
     };
+  }
+
+  /**
+   * Construit la chaîne de signature dans l'ordre EXACT requis par Paybox
+   */
+  private buildSignatureString(params: Record<string, string>): string {
+    // Ordre EXACT des paramètres pour la signature
+    const orderedKeys = [
+      'PBX_SITE',
+      'PBX_RANG',
+      'PBX_IDENTIFIANT',
+      'PBX_TOTAL',
+      'PBX_DEVISE',
+      'PBX_CMD',
+      'PBX_PORTEUR',
+      'PBX_RETOUR',
+      'PBX_EFFECTUE',
+      'PBX_REFUSE',
+      'PBX_ANNULE',
+      'PBX_REPONDRE_A',
+      'PBX_HASH',
+      'PBX_TIME',
+    ];
+
+    // Construire la chaîne uniquement avec les paramètres présents
+    return orderedKeys
+      .filter((key) => params[key] !== undefined)
+      .map((key) => `${key}=${params[key]}`)
+      .join('&');
   }
 
   /**

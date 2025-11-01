@@ -86,6 +86,8 @@ interface LoaderData {
   popularParts: PopularPart[];
   seo: SEOData;
   breadcrumb: {
+    items?: Array<{ name: string; url: string }>;
+    // Legacy support
     brand: string;
     model: string;
     type: string;
@@ -130,7 +132,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const typeWithoutHtml = type.replace('.html', '');
   const typeParts = typeWithoutHtml.split('-');
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
-  const type_alias = typeWithoutHtml;
+  // 🔥 FIX: type_alias doit être SANS l'ID final
+  const type_alias = typeParts.slice(0, -1).join('-') || typeWithoutHtml;
 
   // === APPEL API POUR RÉCUPÉRER LES VRAIES DONNÉES ===
   console.log(`🔍 Appel API pour type_id=${type_id}`);
@@ -445,6 +448,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       canonical: canonicalLink
     },
     breadcrumb: {
+      items: [
+        { name: "Accueil", url: "/" },
+        { name: "Constructeurs", url: "/constructeurs" },
+        { name: vehicleData.marque_name, url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html` },
+        { name: `${vehicleData.modele_name} ${vehicleData.type_name}`, url: "" }
+      ],
+      // Legacy support
       brand: vehicleData.marque_name,
       model: vehicleData.modele_name,
       type: vehicleData.type_name
@@ -464,7 +474,43 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return json(loaderData);
 }
 
-// 🎯 Meta function avec SEO optimisé (logique PHP)
+// � Générer le breadcrumb structuré Schema.org
+function generateBreadcrumbSchema(vehicle: any, breadcrumb: any) {
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://votre-site.com';
+  
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Accueil",
+        "item": `${baseUrl}/`
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Constructeurs",
+        "item": `${baseUrl}/constructeurs`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": breadcrumb.brand,
+        "item": `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": `${breadcrumb.model} ${breadcrumb.type}`,
+        "item": `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_id}.html`
+      }
+    ]
+  };
+}
+
+// �🎯 Meta function avec SEO optimisé (logique PHP)
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) {
     return [
@@ -481,7 +527,11 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { name: "canonical", href: data.seo.canonical },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
-    { property: "og:type", content: "website" }
+    { property: "og:type", content: "website" },
+    // 🍞 Breadcrumb Schema.org pour les rich snippets Google
+    {
+      "script:ld+json": generateBreadcrumbSchema(data.vehicle, data.breadcrumb)
+    }
   ];
 };
 
@@ -506,10 +556,44 @@ export default function VehicleDetailPage() {
             
             {/* Informations véhicule */}
             <div className="flex-1">
-              <nav className="text-blue-200 text-sm mb-4">
-                <a href="/" className="hover:text-white transition-colors">Accueil</a> → 
-                <a href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} className="mx-1 hover:text-white transition-colors">{breadcrumb.brand}</a> → 
-                <span className="text-white">{breadcrumb.model} {breadcrumb.type}</span>
+              {/* 🍞 Fil d'ariane optimisé SEO avec 4 niveaux */}
+              <nav className="text-blue-200 text-sm mb-4" itemScope itemType="https://schema.org/BreadcrumbList">
+                {/* Niveau 1: Accueil */}
+                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+                  <a href="/" itemProp="item" className="hover:text-white transition-colors">
+                    <span itemProp="name">Accueil</span>
+                  </a>
+                  <meta itemProp="position" content="1" />
+                </span>
+                {' → '}
+                
+                {/* Niveau 2: Constructeurs */}
+                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+                  <a href="/constructeurs" itemProp="item" className="mx-1 hover:text-white transition-colors">
+                    <span itemProp="name">Constructeurs</span>
+                  </a>
+                  <meta itemProp="position" content="2" />
+                </span>
+                {' → '}
+                
+                {/* Niveau 3: Marque */}
+                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+                  <a 
+                    href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} 
+                    itemProp="item"
+                    className="mx-1 hover:text-white transition-colors"
+                  >
+                    <span itemProp="name">{breadcrumb.brand}</span>
+                  </a>
+                  <meta itemProp="position" content="3" />
+                </span>
+                {' → '}
+                
+                {/* Niveau 4: Modèle + Type (page actuelle) */}
+                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+                  <span itemProp="name" className="text-white font-medium">{breadcrumb.model} {breadcrumb.type}</span>
+                  <meta itemProp="position" content="4" />
+                </span>
               </nav>
               
               <h1 className="text-3xl font-bold mb-2" dangerouslySetInnerHTML={{ __html: seo.h1 }} />
@@ -648,6 +732,36 @@ export default function VehicleDetailPage() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// 🔥 Error Boundary pour capturer les erreurs de rendu
+export function ErrorBoundary() {
+  console.error('🔥🔥🔥 ERROR BOUNDARY TRIGGERED 🔥🔥🔥');
+  return (
+    <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">
+          ❌ Erreur de chargement de la page véhicule
+        </h1>
+        <p className="text-gray-700 mb-4">
+          Une erreur s'est produite lors du chargement des informations du véhicule.
+        </p>
+        <div className="bg-gray-100 p-4 rounded">
+          <p className="text-sm text-gray-600">
+            Vérifiez la console pour plus de détails.
+          </p>
+        </div>
+        <div className="mt-6">
+          <a
+            href="/constructeurs"
+            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            ← Retour aux constructeurs
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

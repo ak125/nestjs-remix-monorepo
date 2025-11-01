@@ -1,0 +1,130 @@
+#!/bin/bash
+
+###############################################################################
+# 🛡️ MONITORING SEO - Détection Pages Sans Articles
+# 
+# Ce script vérifie que les pages produits retournent bien des articles
+# pour éviter les désindexations SEO automatiques par le pipeline Vector
+#
+# Usage: ./monitor-pages-no-results.sh
+###############################################################################
+
+set -euo pipefail
+
+# Configuration
+API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
+FRONTEND_BASE_URL="${FRONTEND_BASE_URL:-http://localhost:5173}"
+LOG_FILE="/tmp/seo-monitor-$(date +%Y%m%d-%H%M%S).log"
+ALERT_THRESHOLD=0  # Nombre minimum de pièces acceptables
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo "🔍 Démarrage du monitoring SEO - Pages sans articles"
+echo "📊 API: $API_BASE_URL"
+echo "🌐 Frontend: $FRONTEND_BASE_URL"
+echo "📝 Logs: $LOG_FILE"
+echo ""
+
+# URLs critiques à surveiller (format: typeId|pgId|url_frontend)
+CRITICAL_URLS=(
+  "19052|7|/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html"
+  "55593|75|/pieces/filtres-a-huile-75/renault-23/clio-123/1-2-tce-55593.html"
+  # Ajouter d'autres URLs critiques ici
+)
+
+ERRORS=0
+WARNINGS=0
+SUCCESS=0
+
+for url_data in "${CRITICAL_URLS[@]}"; do
+  IFS='|' read -r type_id pg_id frontend_url <<< "$url_data"
+  
+  echo -e "${YELLOW}Vérification:${NC} typeId=$type_id, pgId=$pg_id"
+  
+  # 1. Test API Backend
+  api_url="$API_BASE_URL/api/catalog/pieces/php-logic/$type_id/$pg_id"
+  api_response=$(curl -s "$api_url" || echo '{"success":false}')
+  
+  piece_count=$(echo "$api_response" | jq -r '.data.count // 0' 2>/dev/null || echo "0")
+  api_success=$(echo "$api_response" | jq -r '.success // false')
+  
+  echo "  📦 API Response: count=$piece_count, success=$api_success" | tee -a "$LOG_FILE"
+  
+  # 2. Validation
+  if [[ "$api_success" == "false" ]]; then
+    echo -e "  ${RED}❌ ERREUR:${NC} API call failed pour typeId=$type_id, pgId=$pg_id" | tee -a "$LOG_FILE"
+    ((ERRORS++))
+    
+    # Alert Vector
+    cat << EOF | curl -X POST http://localhost:8686/api/logs \
+      -H "Content-Type: application/json" \
+      -d @- 2>/dev/null || true
+{
+  "level": "error",
+  "message": "SEO: Page sans articles détectée",
+  "metadata": {
+    "type_id": "$type_id",
+    "pg_id": "$pg_id",
+    "url": "$frontend_url",
+    "piece_count": $piece_count,
+    "risk": "désindexation SEO",
+    "service": "seo-monitor"
+  }
+}
+EOF
+    
+  elif [[ "$piece_count" -le "$ALERT_THRESHOLD" ]]; then
+    echo -e "  ${YELLOW}⚠️  WARNING:${NC} Seulement $piece_count pièces (seuil: >$ALERT_THRESHOLD)" | tee -a "$LOG_FILE"
+    ((WARNINGS++))
+    
+    # Alert Vector (warning)
+    cat << EOF | curl -X POST http://localhost:8686/api/logs \
+      -H "Content-Type: application/json" \
+      -d @- 2>/dev/null || true
+{
+  "level": "warn",
+  "message": "SEO: Page avec peu d'articles",
+  "metadata": {
+    "type_id": "$type_id",
+    "pg_id": "$pg_id",
+    "url": "$frontend_url",
+    "piece_count": $piece_count,
+    "threshold": $ALERT_THRESHOLD,
+    "service": "seo-monitor"
+  }
+}
+EOF
+    
+  else
+    echo -e "  ${GREEN}✅ OK:${NC} $piece_count pièces trouvées" | tee -a "$LOG_FILE"
+    ((SUCCESS++))
+  fi
+  
+  echo ""
+done
+
+# Résumé
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 RÉSUMÉ DU MONITORING"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "${GREEN}✅ Succès:${NC} $SUCCESS"
+echo -e "${YELLOW}⚠️  Warnings:${NC} $WARNINGS"
+echo -e "${RED}❌ Erreurs:${NC} $ERRORS"
+echo "📝 Logs détaillés: $LOG_FILE"
+echo ""
+
+# Code de sortie
+if [[ $ERRORS -gt 0 ]]; then
+  echo -e "${RED}❌ ÉCHEC: $ERRORS page(s) sans articles détectée(s)${NC}"
+  exit 1
+elif [[ $WARNINGS -gt 0 ]]; then
+  echo -e "${YELLOW}⚠️  ATTENTION: $WARNINGS page(s) avec peu d'articles${NC}"
+  exit 0
+else
+  echo -e "${GREEN}✅ SUCCÈS: Toutes les pages retournent des articles${NC}"
+  exit 0
+fi

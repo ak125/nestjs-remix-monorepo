@@ -3,6 +3,20 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  */
 
+// ✅ Type pour les paramètres URL avec validation obligatoire des IDs
+export interface UrlParamWithId {
+  alias: string;
+  id: number; // Toujours requis, jamais 0
+}
+
+// ✅ Type pour validation des IDs de véhicule
+export interface ValidatedVehicleIds {
+  marqueId: number;
+  modeleId: number;
+  typeId: number;
+  source: 'url' | 'api' | 'fallback'; // Pour tracer l'origine
+}
+
 export interface VehicleData {
   marque: string;
   modele: string;

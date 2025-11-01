@@ -6,11 +6,16 @@ export enum PaymentMode {
 }
 
 export interface PaymentConfig {
-  cyberplus: {
+  systempay: {
     siteId: string;
-    certificat: string;
+    certificate: string;
+    // Optional HMAC key (for HMAC signature method)
+    hmacKey?: string;
+    // Signature method: 'SHA1' (legacy) or 'HMAC'
+    signatureMethod?: 'SHA1' | 'HMAC';
+    certificateTest: string;
     mode: PaymentMode;
-    paymentUrl: string;
+    apiUrl: string;
   };
   app: {
     url: string;
@@ -19,41 +24,61 @@ export interface PaymentConfig {
 }
 
 /**
- * Configuration centralisée pour les paiements
+ * Configuration centralisée pour les paiements SystemPay
  *
  * ⚠️ SÉCURITÉ :
- * - Les valeurs sensibles (CERTIFICAT) ne doivent JAMAIS être loggées
+ * - Les valeurs sensibles (CERTIFICATE) ne doivent JAMAIS être loggées
  * - Utilisez des secrets managers en production (Vault, AWS Secrets Manager)
  * - Ne commitez JAMAIS le fichier .env
  */
 export default registerAs('payment', (): PaymentConfig => {
   const mode = (
-    process.env.CYBERPLUS_MODE || 'TEST'
+    process.env.SYSTEMPAY_MODE || 'TEST'
   ).toUpperCase() as PaymentMode;
 
   // Validation du mode
   if (!Object.values(PaymentMode).includes(mode)) {
     throw new Error(
-      `Invalid CYBERPLUS_MODE: ${mode}. Must be TEST or PRODUCTION`,
+      `Invalid SYSTEMPAY_MODE: ${mode}. Must be TEST or PRODUCTION`,
     );
   }
 
   // Validation des variables requises
-  const requiredVars = ['CYBERPLUS_SITE_ID', 'CYBERPLUS_CERTIFICAT', 'APP_URL'];
+  const requiredVars = [
+    'SYSTEMPAY_SITE_ID',
+    'SYSTEMPAY_CERTIFICATE_PROD',
+    'SYSTEMPAY_CERTIFICATE_TEST',
+    'APP_URL',
+  ];
   for (const varName of requiredVars) {
     if (!process.env[varName]) {
       throw new Error(`Missing required environment variable: ${varName}`);
     }
   }
 
+  // Sélectionner le bon certificat selon le mode
+  const certificate =
+    mode === PaymentMode.PRODUCTION
+      ? process.env.SYSTEMPAY_CERTIFICATE_PROD!
+      : process.env.SYSTEMPAY_CERTIFICATE_TEST!;
+
+  const signatureMethod = (process.env.SYSTEMPAY_SIGNATURE_METHOD || 'SHA1') as
+    | 'SHA1'
+    | 'HMAC';
+
+  const hmacKey = process.env.SYSTEMPAY_HMAC_KEY || '';
+
   return {
-    cyberplus: {
-      siteId: process.env.CYBERPLUS_SITE_ID!,
-      certificat: process.env.CYBERPLUS_CERTIFICAT!,
+    systempay: {
+      siteId: process.env.SYSTEMPAY_SITE_ID!,
+      certificate,
+      hmacKey,
+      signatureMethod,
+      certificateTest: process.env.SYSTEMPAY_CERTIFICATE_TEST!,
       mode,
-      paymentUrl:
-        process.env.CYBERPLUS_PAYMENT_URL ||
-        'https://secure.systempay.fr/vads-payment/',
+      apiUrl:
+        process.env.SYSTEMPAY_API_URL ||
+        'https://paiement.systempay.fr/vads-payment/',
     },
     app: {
       url: process.env.APP_URL!,

@@ -8,6 +8,7 @@
 import React from 'react';
 import { Badge } from '@fafa/ui';
 import { type PieceData } from '../../types/pieces-route.types';
+import { useCart } from '../../hooks/useCart';
 
 interface PiecesGridViewProps {
   pieces: PieceData[];
@@ -44,6 +45,7 @@ const generateSrcSet = (imageUrl: string | undefined): string => {
  * Vue Grid avec cartes pièces
  */
 export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesGridViewProps) {
+  const { addToCart } = useCart();
   
   if (pieces.length === 0) {
     return (
@@ -63,7 +65,14 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {pieces.map(piece => {
         const isSelected = selectedPieces.includes(piece.id);
-        const hasStock = piece.stock === 'En stock' || piece.stock === 'available';
+        // ✅ FIX: Gérer tous les statuts de disponibilité
+        // "En stock", "available", "Sur commande" = disponible
+        // Tout le reste ou undefined = rupture
+        const hasStock = piece.stock 
+          ? (piece.stock === 'En stock' || piece.stock === 'available' || piece.stock === 'Sur commande')
+          : true; // Si pas de champ stock, considérer comme disponible par défaut
+        
+        console.log(`🔍 Piece ${piece.id}: stock=${piece.stock}, hasStock=${hasStock}`);
         
         return (
           <div 
@@ -171,6 +180,12 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   }`}
                   disabled={!hasStock}
+                  onClick={() => {
+                    console.log('🛒 Click Ajouter panier, piece:', piece.id, 'hasStock:', hasStock);
+                    if (hasStock) {
+                      addToCart(piece.id, 1);
+                    }
+                  }}
                 >
                   {hasStock ? (
                     <span className="flex items-center justify-center gap-2">

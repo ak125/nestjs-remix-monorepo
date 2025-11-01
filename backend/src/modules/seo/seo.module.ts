@@ -3,6 +3,12 @@ import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
+// Module Workers (pour accès à SeoMonitorSchedulerService)
+import { WorkerModule } from '../../workers/worker.module';
+
+// 🛡️ Module Catalog (pour accès à CatalogDataIntegrityService)
+import { CatalogModule } from '../catalog/catalog.module';
+
 // Services SEO existants
 import { SeoService } from './seo.service';
 import { SeoEnhancedService } from './seo-enhanced.service';
@@ -41,6 +47,15 @@ import { SeoMonitoringService } from './services/seo-monitoring.service';
 // 📊 Service Ingestion Logs (Loki + Meilisearch)
 import { LogIngestionService } from './services/log-ingestion.service';
 
+// � Service URL Compatibility
+import { UrlCompatibilityService } from './services/url-compatibility.service';
+
+// 📊 Service SEO KPIs Dashboard
+import { SeoKpisService } from './services/seo-kpis.service';
+
+// 🛡️ Service Validation Sitemap Véhicule-Pièces
+import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -64,7 +79,10 @@ import { RobotsTxtController } from './controllers/robots-txt.controller';
 // 📊 Contrôleur Monitoring SEO
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 
-// � Contrôleur SEO Logs (Meilisearch)
+// 🛡️ Contrôleur SEO Monitor (BullMQ)
+import { SeoMonitorController } from './controllers/seo-monitor.controller';
+
+// 📊 Contrôleur SEO Logs (Meilisearch)
 import { SeoLogsController } from './controllers/seo-logs.controller';
 
 // �🛡️ Interceptor Headers SEO
@@ -73,6 +91,8 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 @Module({
   imports: [
     ConfigModule,
+    WorkerModule, // 🔄 Import pour accès à SeoMonitorSchedulerService (exporté)
+    CatalogModule, // 🛡️ Import pour accès à CatalogDataIntegrityService
     // Note: ScheduleModule.forRoot() est dans AppModule (global)
 
     // 🎯 Cache Redis pour SEO V4 Ultimate
@@ -93,6 +113,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapStreamingController, // 🗜️ Contrôleur Streaming Sitemap
     RobotsTxtController, // 🤖 Contrôleur Robots.txt
     SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
+    SeoMonitorController, // 🛡️ Contrôleur SEO Monitor (BullMQ)
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
   ],
 
@@ -111,6 +132,9 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoHeadersService, // 📄 Service Headers SEO
     SeoMonitoringService, // 📊 Service Monitoring SEO
     LogIngestionService, // 📊 Service Ingestion Logs (Loki + Meilisearch)
+    UrlCompatibilityService, // 🔍 Service Compatibilité URLs
+    SeoKpisService, // 📊 Service KPIs Dashboard
+    SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap Véhicule-Pièces
     
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -138,6 +162,8 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SitemapStreamingService, // 🗜️ Service Streaming Sitemap exporté
     RobotsTxtService, // 🤖 Service Robots.txt exporté
     SeoHeadersService, // 📄 Service Headers SEO exporté
+    UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
+    SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap exporté
     // Note: SeoHeadersInterceptor est activé globalement via APP_INTERCEPTOR, pas besoin de l'exporter
   ],
 })

@@ -4,6 +4,7 @@ import { DatabaseModule } from '../database/database.module';
 import { NavigationModule } from './navigation/navigation.module';
 import { CommercialModule } from './commercial/commercial.module';
 import { SystemModule } from './system/system.module';
+import { SeoLogsModule } from './seo-logs/seo-logs.module';
 
 // Services
 import { LegacyUserService } from '../database/services/legacy-user.service';
@@ -20,6 +21,7 @@ import { OrdersController } from '../controllers/orders.controller';
     NavigationModule,
     CommercialModule, // Module commercial avec archives
     SystemModule, // Nouveau module system avec monitoring
+    SeoLogsModule, // Module d'analyse des logs SEO via Loki
   ],
   providers: [LegacyUserService, LegacyOrderService],
   controllers: [UsersController, OrdersController],

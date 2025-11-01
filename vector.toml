@@ -169,6 +169,27 @@ inputs = ["format_meilisearch"]
 codec = "json"
 
 # ==============================================================================
+# SINK - Loki (logs centralisés pour analyse crawl)
+# ==============================================================================
+
+[sinks.loki]
+type = "loki"
+inputs = ["enrich"]
+endpoint = "${LOKI_URL:-http://loki:3100}"
+encoding.codec = "json"
+
+# Labels pour Loki (utilisés pour l'indexation et les filtres)
+[sinks.loki.labels]
+job = "caddy-access"
+host = "{{ host }}"
+status = "{{ status }}"
+method = "{{ method }}"
+bot = "{{ bot }}"
+marque = "{{ marque }}"
+modele = "{{ modele }}"
+pieces_category = "{{ pieces_category }}"
+
+# ==============================================================================
 # API
 # ==============================================================================
 

@@ -14,6 +14,7 @@ import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
 import { UserService } from '../database/services/user.service';
+import { CartDataService } from '../database/services/cart-data.service';
 import {
   ModuleAccessDto,
   BulkModuleAccessDto,
@@ -28,6 +29,7 @@ export class AuthController {
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly cartDataService: CartDataService,
   ) {}
 
   /**
@@ -176,7 +178,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('authenticate')
-  login(@Req() request: Express.Request, @Res() response: Response) {
+  async login(@Req() request: Express.Request, @Res() response: Response) {
     console.log('--- POST /authenticate - Redirection conditionnelle ---');
     console.log('User connecté:', request.user);
 
@@ -185,27 +187,79 @@ export class AuthController {
       return response.redirect('/');
     }
 
+    // 🔄 FUSION DE PANIER: Sauvegarder l'ancienne session AVANT régénération
+    const oldSessionId = (request as any).session?.id;
+    console.log(`🔑 Session AVANT login: ${oldSessionId}`);
+
     const user = request.user as any;
 
     // Convertir le niveau en nombre pour la comparaison
     const userLevel = parseInt(user.level) || 0;
 
-    // Redirection selon le type et niveau d'utilisateur
-    if (user.isAdmin && userLevel >= 7) {
-      console.log(
-        `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
-      );
-      return response.redirect('/admin');
-    } else if (user.isAdmin && userLevel >= 4) {
-      console.log(`Admin niveau ${userLevel} détecté, redirection vers admin`);
-      return response.redirect('/admin');
-    } else if (user.isPro) {
-      console.log('Utilisateur pro détecté, redirection vers dashboard pro');
-      return response.redirect('/pro/dashboard');
-    } else {
-      console.log('Utilisateur standard, redirection vers accueil');
-      return response.redirect('/');
-    }
+    // 🔄 Régénérer la session de manière sécurisée
+    return new Promise<void>((resolve) => {
+      (request as any).session.regenerate(async (regenerateErr: any) => {
+        if (regenerateErr) {
+          console.error('❌ Erreur régénération session:', regenerateErr);
+          response.redirect('/');
+          return resolve();
+        }
+
+        // Réattacher l'utilisateur à la nouvelle session
+        (request as any).login(user, async (loginErr: any) => {
+          if (loginErr) {
+            console.error('❌ Erreur réattachement utilisateur:', loginErr);
+            response.redirect('/');
+            return resolve();
+          }
+
+          // 🔄 FUSION DE PANIER: Nouvelle session créée
+          const newSessionId = (request as any).session?.id;
+          console.log(`🔑 Session APRÈS login: ${newSessionId}`);
+
+          // Fusionner les paniers si les sessions sont différentes
+          if (oldSessionId && newSessionId && oldSessionId !== newSessionId) {
+            try {
+              const mergedCount = await this.cartDataService.mergeCart(
+                oldSessionId,
+                newSessionId,
+              );
+              if (mergedCount > 0) {
+                console.log(
+                  `✅ Panier fusionné: ${mergedCount} articles transférés`,
+                );
+              }
+            } catch (mergeError) {
+              console.error('⚠️ Erreur fusion panier:', mergeError);
+              // Ne pas bloquer le login
+            }
+          }
+
+          // Redirection selon le type et niveau d'utilisateur
+          if (user.isAdmin && userLevel >= 7) {
+            console.log(
+              `Admin niveau ${userLevel} détecté, redirection vers dashboard admin`,
+            );
+            response.redirect('/admin');
+          } else if (user.isAdmin && userLevel >= 4) {
+            console.log(
+              `Admin niveau ${userLevel} détecté, redirection vers admin`,
+            );
+            response.redirect('/admin');
+          } else if (user.isPro) {
+            console.log(
+              'Utilisateur pro détecté, redirection vers dashboard pro',
+            );
+            response.redirect('/pro/dashboard');
+          } else {
+            console.log('Utilisateur standard, redirection vers accueil');
+            response.redirect('/');
+          }
+
+          resolve();
+        });
+      });
+    });
   }
 
   @Post('auth/logout')

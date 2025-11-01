@@ -368,54 +368,25 @@ export default function PaymentPage() {
     setIsProcessing(true);
     
     try {
-      console.log('📤 Sending payment request to /api/payments');
+      console.log('🔵 Redirecting directly to Paybox...');
       
-      const response = await fetch('/api/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          orderId: order.id,
-          userId: user?.id || order.customerEmail,
-          amount: order.totalTTC,
-          currency: order.currency || 'EUR',
-          method: 'CYBERPLUS',
-          description: `Commande ${order.id}`,
-          customerEmail: order.customerEmail || '',
-          consigne_total: order.consigneTotal || 0,
-          returnUrl: `${window.location.origin}/checkout-payment-return`,
-          cancelUrl: `${window.location.origin}/checkout-payment`,
-          notifyUrl: `${window.location.origin}/api/payments/callback/cyberplus`,
-        }),
-      });
+      // ✅ OPTIMISATION: Redirection directe vers Paybox (pas de création de paiement préalable)
+      // Le paiement sera créé au retour du callback Paybox
       
-      console.log('📥 Response status:', response.status);
+      // ✅ Utiliser l'email du client ou celui de l'utilisateur connecté en fallback
+      const customerEmail = order.customerEmail || user?.email || '';
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('✅ Response:', result);
-      
-      const redirectData = result.data?.redirectData;
-      
-      if (!redirectData?.html) {
-        console.error('❌ Missing HTML in redirectData:', result);
-        alert('Erreur: HTML de redirection manquant');
+      if (!customerEmail) {
+        console.error('❌ No customer email available');
+        alert('Erreur: Aucun email client disponible');
         setIsProcessing(false);
         return;
       }
       
-      console.log('✅ Payment created:', result.data.id);
-      console.log('🔵 Redirecting to backend SystemPay redirect...');
-      
-      // Rediriger directement vers la route backend qui sert le HTML SystemPay
-      const redirectUrl = `/api/systempay/redirect?orderId=${encodeURIComponent(order.id)}&amount=${encodeURIComponent(order.totalTTC)}&email=${encodeURIComponent(order.customerEmail)}`;
+      const redirectUrl = `/api/paybox/redirect?orderId=${encodeURIComponent(order.id)}&amount=${encodeURIComponent(order.totalTTC)}&email=${encodeURIComponent(customerEmail)}`;
       
       console.log('🚀 Redirect URL:', redirectUrl);
+      console.log('📧 Customer email:', customerEmail);
       window.location.href = redirectUrl;
       
     } catch (error) {
