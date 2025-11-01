@@ -1,4 +1,5 @@
 import { Award, Rocket, BookOpen, Facebook, Twitter, Linkedin } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 export function WhyChooseUs() {
   const features = [

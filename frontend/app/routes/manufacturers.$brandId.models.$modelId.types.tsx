@@ -1,3 +1,4 @@
+import { Alert } from '~/components/ui/alert';
 /**
  * ⚙️ TYPES/MOTORISATIONS D'UN MODÈLE
  * 

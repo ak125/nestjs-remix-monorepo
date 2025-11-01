@@ -57,6 +57,7 @@ export function useRemixForm<T extends z.ZodType>(
   const isSubmitting = navigation.state === 'submitting';
 
   const form = useForm<FormValues>({
+    // @ts-expect-error - Type incompatibility between zod versions
     resolver: zodResolver(schema),
     defaultValues: actionData?.values as any,
     ...options,
