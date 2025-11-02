@@ -26,6 +26,7 @@
     "@conform-to/react": "^1.13.1",
     "@conform-to/zod": "^1.13.1",
     "@fafa/design-tokens": "^1.0.0",
+    "@fafa/ui": "^1.0.0",
     "@hookform/resolvers": "^5.2.2",
     "@monorepo/shared-types": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
