@@ -34,13 +34,13 @@ export function convertSupabaseIds<T extends Record<string, any>>(
 ): T[] {
   return data.map((item) => {
     const converted = { ...item } as Record<string, any>;
-    
+
     for (const field of idFields) {
       if (field in converted) {
         converted[field] = parseSupabaseId(converted[field]);
       }
     }
-    
+
     return converted as T;
   });
 }
@@ -67,14 +67,14 @@ export function groupSupabaseBy<T>(
   keyField: keyof T,
 ): Map<number, T[]> {
   const grouped = new Map<number, T[]>();
-  
+
   for (const item of data) {
     const key = parseSupabaseId(item[keyField] as any);
-    
+
     if (!grouped.has(key)) {
       grouped.set(key, []);
     }
-    
+
     grouped.get(key)!.push(item);
   }
   return grouped;

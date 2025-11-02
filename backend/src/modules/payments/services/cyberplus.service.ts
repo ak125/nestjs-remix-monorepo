@@ -213,9 +213,9 @@ ${formFields}
   /**
    * Génère la signature SystemPay selon le protocole officiel
    * Méthode HMAC-SHA-256 (recommandée par Paybox/SystemPay depuis DSP2)
-   * 
+   *
    * Format: HMAC-SHA-256(valeur1+valeur2+...+valeurN, certificat)
-   * 
+   *
    * Alternative SHA-1 : Si HMAC ne fonctionne pas, utilisez :
    * SHA-1(valeur1+valeur2+...+valeurN+certificat)
    */

@@ -523,25 +523,33 @@ export class LogIngestionService {
   /**
    * Analytics : Dashboard trafic e-commerce
    */
-  async getTrafficAnalytics(period: 'today' | 'yesterday' | '7days' | '30days' = 'today') {
+  async getTrafficAnalytics(
+    period: 'today' | 'yesterday' | '7days' | '30days' = 'today',
+  ) {
     try {
       const index = this.meilisearch.index('access_logs');
-      
+
       // Calculer le filtre de date
       let dayFilter: string;
       const today = new Date().toISOString().split('T')[0];
-      
+
       switch (period) {
         case 'yesterday':
-          const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+          const yesterday = new Date(Date.now() - 86400000)
+            .toISOString()
+            .split('T')[0];
           dayFilter = `day = "${yesterday}"`;
           break;
         case '7days':
-          const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+          const sevenDaysAgo = new Date(Date.now() - 7 * 86400000)
+            .toISOString()
+            .split('T')[0];
           dayFilter = `day >= "${sevenDaysAgo}"`;
           break;
         case '30days':
-          const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+          const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+            .toISOString()
+            .split('T')[0];
           dayFilter = `day >= "${thirtyDaysAgo}"`;
           break;
         default: // today
@@ -549,7 +557,14 @@ export class LogIngestionService {
       }
 
       // Requêtes parallèles pour les différentes facettes
-      const [brandsResult, gammesResult, countriesResult, botsResult, statusResult, methodResult] = await Promise.all([
+      const [
+        brandsResult,
+        gammesResult,
+        countriesResult,
+        botsResult,
+        statusResult,
+        methodResult,
+      ] = await Promise.all([
         // Top brands
         index.search('', {
           filter: `${dayFilter} AND brand EXISTS`,
@@ -611,8 +626,9 @@ export class LogIngestionService {
         .slice(0, 15);
 
       // Calculer bots vs humains
-      const botHits = Object.values(botsResult.facetDistribution?.bot || {})
-        .reduce((sum: number, val: any) => sum + val, 0);
+      const botHits = Object.values(
+        botsResult.facetDistribution?.bot || {},
+      ).reduce((sum: number, val: any) => sum + val, 0);
       const totalHits = botsResult.estimatedTotalHits || 0;
       const humanHits = totalHits - botHits;
 
@@ -627,7 +643,9 @@ export class LogIngestionService {
           .map(([gamme, count]) => ({ gamme, hits: count }))
           .sort((a, b) => (b.hits as number) - (a.hits as number))
           .slice(0, 15),
-        topCountries: Object.entries(countriesResult.facetDistribution?.country || {})
+        topCountries: Object.entries(
+          countriesResult.facetDistribution?.country || {},
+        )
           .map(([country, count]) => ({ country, hits: count }))
           .sort((a, b) => (b.hits as number) - (a.hits as number))
           .slice(0, 10),
@@ -635,17 +653,23 @@ export class LogIngestionService {
         traffic: {
           human: humanHits,
           bots: botHits,
-          humanPercent: totalHits > 0 ? Math.round((humanHits / totalHits) * 100) : 0,
-          botsPercent: totalHits > 0 ? Math.round((botHits / totalHits) * 100) : 0,
+          humanPercent:
+            totalHits > 0 ? Math.round((humanHits / totalHits) * 100) : 0,
+          botsPercent:
+            totalHits > 0 ? Math.round((botHits / totalHits) * 100) : 0,
         },
         topBots: Object.entries(botsResult.facetDistribution?.bot || {})
           .map(([bot, count]) => ({ bot, hits: count }))
           .sort((a, b) => (b.hits as number) - (a.hits as number))
           .slice(0, 10),
-        statusDistribution: Object.entries(statusResult.facetDistribution?.status || {})
+        statusDistribution: Object.entries(
+          statusResult.facetDistribution?.status || {},
+        )
           .map(([status, count]) => ({ status: parseInt(status), hits: count }))
           .sort((a, b) => a.status - b.status),
-        methodDistribution: Object.entries(methodResult.facetDistribution?.method || {})
+        methodDistribution: Object.entries(
+          methodResult.facetDistribution?.method || {},
+        )
           .map(([method, count]) => ({ method, hits: count }))
           .sort((a, b) => (b.hits as number) - (a.hits as number)),
       };
@@ -661,25 +685,42 @@ export class LogIngestionService {
   async getSlowPaths(thresholdMs = 800, limit = 50, day?: string) {
     try {
       const index = this.meilisearch.index('access_logs');
-      
+
       const today = day || new Date().toISOString().split('T')[0];
-      
+
       const results = await index.search('', {
         filter: `latency_ms >= ${thresholdMs} AND day = "${today}"`,
         limit: 1000,
         sort: ['latency_ms:desc'],
-        attributesToRetrieve: ['path', 'route', 'latency_ms', 'status', 'method', 'brand', 'gamme', 'country', 'bot'],
+        attributesToRetrieve: [
+          'path',
+          'route',
+          'latency_ms',
+          'status',
+          'method',
+          'brand',
+          'gamme',
+          'country',
+          'bot',
+        ],
         facets: ['route', 'brand', 'status', 'method'],
       });
 
       // Statistiques globales
-      const latencies = results.hits.map((hit: any) => hit.latency_ms).filter((l: number) => l);
+      const latencies = results.hits
+        .map((hit: any) => hit.latency_ms)
+        .filter((l: number) => l);
       const sortedLatencies = [...latencies].sort((a, b) => a - b);
-      
+
       const stats = {
         total: results.estimatedTotalHits,
-        avgLatency: latencies.length > 0 ? Math.floor(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0,
-        p50: sortedLatencies[Math.floor(sortedLatencies.length * 0.50)] || 0,
+        avgLatency:
+          latencies.length > 0
+            ? Math.floor(
+                latencies.reduce((a, b) => a + b, 0) / latencies.length,
+              )
+            : 0,
+        p50: sortedLatencies[Math.floor(sortedLatencies.length * 0.5)] || 0,
         p95: sortedLatencies[Math.floor(sortedLatencies.length * 0.95)] || 0,
         p99: sortedLatencies[Math.floor(sortedLatencies.length * 0.99)] || 0,
         maxLatency: Math.max(...latencies, 0),
@@ -703,7 +744,9 @@ export class LogIngestionService {
           return {
             route,
             count: latencies.length,
-            avgLatency: Math.floor(latencies.reduce((a, b) => a + b, 0) / latencies.length),
+            avgLatency: Math.floor(
+              latencies.reduce((a, b) => a + b, 0) / latencies.length,
+            ),
             p95: sorted[Math.floor(sorted.length * 0.95)] || 0,
             maxLatency: Math.max(...latencies),
           };
@@ -733,15 +776,26 @@ export class LogIngestionService {
   async getBotHits(botName?: string, limit = 100, offset = 0) {
     try {
       const index = this.meilisearch.index('access_logs');
-      
+
       const filter = botName ? `bot = "${botName}"` : 'bot EXISTS';
-      
+
       const results = await index.search('', {
         filter,
         limit,
         offset,
         sort: ['ts:desc'],
-        attributesToRetrieve: ['ts', 'bot', 'path', 'status', 'method', 'brand', 'gamme', 'country', 'latency_ms', 'referer'],
+        attributesToRetrieve: [
+          'ts',
+          'bot',
+          'path',
+          'status',
+          'method',
+          'brand',
+          'gamme',
+          'country',
+          'latency_ms',
+          'referer',
+        ],
         facets: ['bot', 'status', 'brand', 'country'],
       });
 

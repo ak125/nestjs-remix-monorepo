@@ -58,7 +58,7 @@ export class PayboxService {
     } else {
       this.logger.log(`Paybox configure en mode ${this.mode}`);
       this.logger.log(`Site: ${this.site}, Rang: ${this.rang}`);
-      
+
       // Pour les comptes de test mutualisés (pas de clé HMAC)
       if (!this.hmacKey || this.hmacKey.startsWith('0123456789ABCDEF')) {
         this.logger.warn(
@@ -104,18 +104,20 @@ export class PayboxService {
     // ⭐ STRATÉGIE INTELLIGENTE : Ajouter les URLs SEULEMENT en PRODUCTION
     // Le compte TEST (1999888) ne supporte pas correctement ces paramètres
     const isProduction = this.mode === 'PRODUCTION' || this.site === '5259250';
-    
+
     if (isProduction) {
       this.logger.log('✅ Mode PRODUCTION: ajout des URLs de retour');
       payboxParams.PBX_EFFECTUE = params.returnUrl;
       payboxParams.PBX_REFUSE = params.cancelUrl;
       payboxParams.PBX_ANNULE = params.cancelUrl;
-      
+
       if (params.notifyUrl) {
         payboxParams.PBX_REPONDRE_A = params.notifyUrl;
       }
     } else {
-      this.logger.log('🧪 Mode TEST: URLs de retour omises (compte test limité)');
+      this.logger.log(
+        '🧪 Mode TEST: URLs de retour omises (compte test limité)',
+      );
     }
 
     // Construire la chaîne de signature avec les paramètres présents

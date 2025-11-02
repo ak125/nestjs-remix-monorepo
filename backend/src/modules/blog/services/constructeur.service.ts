@@ -735,7 +735,7 @@ export class ConstructeurService {
       }
 
       // Tri par pertinence (vues + correspondance exacte privilégiée)
-      query = query// .order() removed - column doesn't exist.limit(limit);
+      query = query; // .order() removed - column doesn't exist.limit(limit);
 
       // Exécution parallèle
       const [{ data: results }, { count: total }] = await Promise.all([
@@ -1041,9 +1041,7 @@ export class ConstructeurService {
       const article: BlogArticle = {
         id: `constructeur_${constructeur.bc_id}`,
         type: 'constructeur',
-        title: BlogCacheService.decodeHtmlEntities(
-          constructeur.bsm_marque_id,
-        ),
+        title: BlogCacheService.decodeHtmlEntities(constructeur.bsm_marque_id),
         slug:
           constructeur.bc_alias ||
           this.generateSlug(constructeur.bsm_marque_id),

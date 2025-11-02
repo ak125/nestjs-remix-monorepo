@@ -24,12 +24,18 @@ export class PayboxTestController {
     const rang = this.config.get<string>('PAYBOX_RANG', '32');
     const ident = this.config.get<string>('PAYBOX_IDENTIFIANT', '107904482'); // ✅ Identifiant de test officiel
     const hmacKey = this.config.get<string>('PAYBOX_HMAC_KEY', '');
-    const baseUrl = this.config.get<string>('BASE_URL', 'http://localhost:5173');
+    const baseUrl = this.config.get<string>(
+      'BASE_URL',
+      'http://localhost:5173',
+    );
 
     // Server selection according to mode
-    const action = mode === 'PRODUCTION'
-      ? (this.config.get<string>('PAYBOX_PAYMENT_URL') || 'https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi')
-      : (this.config.get<string>('PAYBOX_PAYMENT_URL') || 'https://preprod-tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi');
+    const action =
+      mode === 'PRODUCTION'
+        ? this.config.get<string>('PAYBOX_PAYMENT_URL') ||
+          'https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi'
+        : this.config.get<string>('PAYBOX_PAYMENT_URL') ||
+          'https://preprod-tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi';
 
     // Example data (like the PHP example)
     const amount = 999; // centimes (9.99 EUR)
@@ -64,15 +70,24 @@ export class PayboxTestController {
     try {
       if (!hmacKey) throw new Error('PAYBOX_HMAC_KEY not configured');
       const binaryKey = Buffer.from(hmacKey, 'hex');
-      hmac = crypto.createHmac('sha512', binaryKey).update(signString, 'utf8').digest('hex').toUpperCase();
+      hmac = crypto
+        .createHmac('sha512', binaryKey)
+        .update(signString, 'utf8')
+        .digest('hex')
+        .toUpperCase();
     } catch (e) {
       this.logger.error('Erreur génération HMAC:', e?.message || e);
-      return res.status(500).send(`Erreur serveur génération HMAC: ${e?.message || e}`);
+      return res
+        .status(500)
+        .send(`Erreur serveur génération HMAC: ${e?.message || e}`);
     }
 
     // Build HTML form
     const inputs = Object.entries(params)
-      .map(([k, v]) => `    <input type="hidden" name="${k}" value="${this.escape(v)}">`)
+      .map(
+        ([k, v]) =>
+          `    <input type="hidden" name="${k}" value="${this.escape(v)}">`,
+      )
       .join('\n');
 
     const html = `<!doctype html>

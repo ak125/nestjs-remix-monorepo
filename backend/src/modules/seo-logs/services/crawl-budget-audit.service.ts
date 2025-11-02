@@ -318,20 +318,20 @@ export class CrawlBudgetAuditService {
    */
   private normalizeDomain(url: string, targetDomain: 'com' | 'fr'): string {
     let normalized = url;
-    
+
     // Normaliser domaine (.fr ↔ .com)
     if (targetDomain === 'com') {
       normalized = normalized.replace(/automecanik\.fr/g, 'automecanik.com');
     } else {
       normalized = normalized.replace(/automecanik\.com/g, 'automecanik.fr');
     }
-    
+
     // Toujours retirer www. pour comparaison uniforme
     normalized = normalized.replace(/www\./g, '');
-    
+
     // Forcer https://
     normalized = normalized.replace(/^http:\/\//g, 'https://');
-    
+
     return normalized;
   }
 

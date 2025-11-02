@@ -3,7 +3,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 /**
  * 📊 SEO KPIs SERVICE - Métriques Critiques pour Dashboard
- * 
+ *
  * Fournit les 5 KPIs essentiels pour le monitoring SEO :
  * 1. Sitemap → Découvertes (% discovered via sitemap)
  * 2. Sitemap → Indexées (% indexées / listées par famille)

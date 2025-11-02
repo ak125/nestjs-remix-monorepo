@@ -89,7 +89,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     const cleanMarqueAlias = this.slugify(marqueAlias);
     const cleanModeleAlias = this.slugify(modeleAlias);
     const cleanTypeAlias = this.slugify(typeAlias);
-    
+
     return `/pieces/${cleanPgAlias}-${pgId}/${cleanMarqueAlias}-${marqueId}/${cleanModeleAlias}-${modeleId}/${cleanTypeAlias}-${typeId}.html`;
   }
 
@@ -99,7 +99,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
    */
   private slugify(text: string): string {
     if (!text) return '';
-    
+
     return text
       .toLowerCase()
       .normalize('NFD') // Décomposer les caractères accentués
@@ -156,7 +156,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
       return data.map((gamme) => {
         const hasAlias = !!gamme.pg_alias;
         const alias = gamme.pg_alias || this.slugify(gamme.pg_name);
-        
+
         return {
           pg_id: gamme.pg_id,
           pg_name: gamme.pg_name,

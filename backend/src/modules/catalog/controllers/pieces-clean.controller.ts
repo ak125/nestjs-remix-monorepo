@@ -36,18 +36,20 @@ export class PiecesCleanController {
       // ✅ VALIDATION CRITIQUE: Vérifier que les IDs sont valides
       const typeIdNum = parseInt(typeId);
       const pgIdNum = parseInt(pgId);
-      
+
       if (isNaN(typeIdNum) || typeIdNum <= 0) {
         this.logger.error(`❌ [PHP-LOGIC] typeId invalide: ${typeId}`);
         throw new Error(`typeId invalide: ${typeId}. Doit être un nombre > 0`);
       }
-      
+
       if (isNaN(pgIdNum) || pgIdNum <= 0) {
         this.logger.error(`❌ [PHP-LOGIC] pgId invalide: ${pgId}`);
         throw new Error(`pgId invalide: ${pgId}. Doit être un nombre > 0`);
       }
-      
-      this.logger.log(`🎯 [COMPATIBILITY] type_id=${typeIdNum}, pg_id=${pgIdNum}`);
+
+      this.logger.log(
+        `🎯 [COMPATIBILITY] type_id=${typeIdNum}, pg_id=${pgIdNum}`,
+      );
 
       const result = await this.vehiclePiecesService.getPiecesExactPHP(
         typeIdNum,
@@ -58,9 +60,13 @@ export class PiecesCleanController {
 
       // ✅ VALIDATION: Vérifier qu'on a bien des pièces
       if (!result.success || !result.pieces || result.pieces.length === 0) {
-        this.logger.warn(`⚠️ [PHP-LOGIC] Aucune pièce trouvée pour type=${typeIdNum}, gamme=${pgIdNum}`);
+        this.logger.warn(
+          `⚠️ [PHP-LOGIC] Aucune pièce trouvée pour type=${typeIdNum}, gamme=${pgIdNum}`,
+        );
       } else {
-        this.logger.log(`✅ [PHP-LOGIC] ${result.pieces.length} pièces trouvées`);
+        this.logger.log(
+          `✅ [PHP-LOGIC] ${result.pieces.length} pièces trouvées`,
+        );
       }
 
       return {

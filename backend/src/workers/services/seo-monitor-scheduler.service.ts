@@ -1,6 +1,6 @@
 /**
  * 📅 SERVICE DE SCHEDULING MONITORING SEO
- * 
+ *
  * Configure et gère les jobs répétitifs BullMQ pour
  * surveiller les pages critiques et prévenir la désindexation SEO.
  */
@@ -35,7 +35,6 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
 
       this.logger.log('✅ Scheduler monitoring SEO configuré');
       await this.logScheduledJobs();
-
     } catch (error) {
       this.logger.error(
         '❌ Erreur configuration scheduler monitoring SEO:',
@@ -49,7 +48,7 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    */
   private async cleanOldRepeatableJobs() {
     const repeatableJobs = await this.seoMonitorQueue.getRepeatableJobs();
-    
+
     for (const job of repeatableJobs) {
       await this.seoMonitorQueue.removeRepeatableByKey(job.key);
       this.logger.log(`🗑️ Ancien job répétitif supprimé: ${job.name}`);
@@ -109,7 +108,9 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
       },
     );
 
-    this.logger.log('✅ Surveillance échantillon aléatoire: toutes les 6 heures');
+    this.logger.log(
+      '✅ Surveillance échantillon aléatoire: toutes les 6 heures',
+    );
   }
 
   /**
@@ -117,9 +118,9 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    */
   private async logScheduledJobs() {
     const repeatableJobs = await this.seoMonitorQueue.getRepeatableJobs();
-    
+
     this.logger.log(`📋 Jobs répétitifs actifs: ${repeatableJobs.length}`);
-    
+
     for (const job of repeatableJobs) {
       const nextRun = new Date(job.next);
       this.logger.log(
@@ -132,7 +133,9 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    * 🚀 Déclenche un monitoring manuel (via API)
    */
   async triggerManualCheck(
-    taskType: 'check-critical-urls' | 'check-random-sample' = 'check-critical-urls',
+    taskType:
+      | 'check-critical-urls'
+      | 'check-random-sample' = 'check-critical-urls',
   ) {
     this.logger.log(`🚀 Déclenchement manuel monitoring SEO (${taskType})`);
 
