@@ -12,7 +12,7 @@ import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { useRemixForm, validateFormData } from "~/hooks/useRemixForm";
-import { loginSchema, contactSchema, searchSchema, registerSchema, type ContactFormData, type SearchFormData } from "~/schemas/auth";
+import { loginSchema, contactSchema, searchSchema, registerSchema, type SearchFormData } from "~/schemas/auth";
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
