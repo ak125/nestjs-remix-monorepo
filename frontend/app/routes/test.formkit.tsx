@@ -13,7 +13,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { Button } from "@fafa/ui";
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { FormInput } from "~/components/forms/FormInput";
 
