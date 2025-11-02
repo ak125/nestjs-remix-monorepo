@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 import { 
   json, 
   type LoaderFunctionArgs, 
@@ -334,9 +335,7 @@ export default function BlogArticle() {
               {/* Contenu HTML de l'article */}
               <div className="p-8">
                 {article.excerpt && (
-                  <div className="text-xl text-gray-700 font-medium mb-8 p-6 bg-blue-50 rounded-xl border-l-4 border-blue-600">
-                    {article.excerpt}
-                  </div>
+                  <Alert intent="info">{article.excerpt}</Alert>
                 )}
 
                 {/* 🎯 AFFICHAGE DU CONTENU HTML */}
@@ -388,7 +387,7 @@ export default function BlogArticle() {
                         <Badge 
                           key={index} 
                           variant="secondary"
-                          className="bg-blue-100 text-blue-800 hover:bg-blue-200"
+                          className="bg-info/20 text-info hover:bg-primary/30"
                         >
                           {keyword}
                         </Badge>
@@ -430,7 +429,7 @@ export default function BlogArticle() {
                         to={`/blog/article/${related.slug}`}
                         className="block group"
                       >
-                        <div className="p-4 rounded-lg border hover:border-blue-600 hover:bg-blue-50 transition-all">
+                        <div className="p-4 rounded-lg border hover:border-blue-600 hover:bg-info/20 transition-all">
                           <Badge variant="secondary" className="mb-2 text-xs">
                             {getTypeLabel(related.type)}
                           </Badge>

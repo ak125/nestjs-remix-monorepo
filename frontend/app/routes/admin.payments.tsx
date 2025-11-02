@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
@@ -13,6 +14,7 @@ import {
   Users,
   Calendar
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données de paiements
@@ -94,9 +96,7 @@ export default function AdminPaymentsLayout() {
               <DollarSign className="h-8 w-8 text-green-600" />
               <h2 className="text-lg font-semibold text-gray-900">Revenus</h2>
             </div>
-            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-              TOTAL
-            </div>
+            <Alert intent="success">TOTAL</Alert>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -114,9 +114,7 @@ export default function AdminPaymentsLayout() {
               <Clock className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">En Attente</h2>
             </div>
-            <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium">
-              PENDING
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">PENDING</Badge>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -134,9 +132,7 @@ export default function AdminPaymentsLayout() {
               <CheckCircle className="h-8 w-8 text-blue-600" />
               <h2 className="text-lg font-semibold text-gray-900">Aujourd'hui</h2>
             </div>
-            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-              COMPLÉTÉ
-            </div>
+            <Alert intent="info">COMPLÉTÉ</Alert>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -154,9 +150,7 @@ export default function AdminPaymentsLayout() {
               <AlertCircle className="h-8 w-8 text-red-600" />
               <h2 className="text-lg font-semibold text-gray-900">Échecs</h2>
             </div>
-            <div className="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">
-              ERREUR
-            </div>
+            <Alert intent="error">ERREUR</Alert>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">

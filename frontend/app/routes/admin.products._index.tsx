@@ -34,6 +34,9 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';
+import { Alert } from '~/components/ui/alert';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 
 interface Product {
   piece_id: number;
@@ -139,12 +142,7 @@ export default function AdminProducts() {
             </p>
           </div>
           <div className="flex space-x-3">
-            <Link
-              to="/admin/products/new"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            >
-              ➕ Nouveau Produit
-            </Link>
+            <Button className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md" variant="blue" asChild><Link to="/admin/products/new">➕ Nouveau Produit</Link></Button>
             <Link
               to="/admin/products/export"
               className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -199,12 +197,7 @@ export default function AdminProducts() {
               className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             />
           </div>
-          <button
-            type="submit"
-            className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            🔍 Rechercher
-          </button>
+          <Button className="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" variant="blue" type="submit">\n  🔍 Rechercher\n</Button>
           {searchQuery && (
             <Link
               to="/admin/products"
@@ -218,24 +211,20 @@ export default function AdminProducts() {
 
       {/* Actions en lot */}
       {selectedProducts.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
           <div className="flex items-center justify-between">
             <span className="text-sm text-blue-800">
               {selectedProducts.length} produit(s) sélectionné(s)
             </span>
             <div className="flex space-x-2">
-              <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                Activer
-              </button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="blue">\n  Activer\n</Button>
               <button className="text-sm bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">
                 Désactiver
               </button>
-              <button className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                Supprimer
-              </button>
+              <Button className="text-sm  px-3 py-1 rounded" variant="red">\n  Supprimer\n</Button>
             </div>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Tableau des produits */}
@@ -323,13 +312,7 @@ export default function AdminProducts() {
                         {product.piece_sku}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          product.piece_activ 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.piece_activ ? 'Actif' : 'Inactif'}
-                        </span>
+                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Actif' : 'Inactif'}\n</Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <Link
@@ -404,7 +387,7 @@ export default function AdminProducts() {
                             to={`/admin/products?page=${pageNum}&search=${searchQuery}`}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               pageNum === products.pagination.page
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                ? 'z-10 bg-primary/5 border-blue-500 text-blue-600'
                                 : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                             }`}
                           >

@@ -14,6 +14,7 @@
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 
 // ====================================
 // 🎯 INTERFACES & TYPES
@@ -186,7 +187,7 @@ export default function LegacyPartUrlMigrationPage() {
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             {/* Icône et titre */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
                 <ArrowRight className="w-8 h-8 text-green-600" />
               </div>
             </div>
@@ -201,7 +202,7 @@ export default function LegacyPartUrlMigrationPage() {
 
             {/* Informations de migration */}
             {migration.metadata && (
-              <div className="bg-blue-50 rounded-xl p-6 mb-6 text-left">
+              <div className="bg-primary/5 rounded-xl p-6 mb-6 text-left">
                 <h3 className="font-semibold text-blue-900 mb-3">Informations de redirection</h3>
                 <div className="space-y-2 text-sm">
                   <div>
@@ -230,14 +231,14 @@ export default function LegacyPartUrlMigrationPage() {
 
             {/* Redirection automatique */}
             {redirect_in_seconds > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+<Alert className="rounded-xl p-4 mb-6" variant="warning">
                 <div className="flex items-center justify-center text-yellow-800">
                   <Clock className="w-5 h-5 mr-2" />
                   <span className="font-medium">
                     Redirection automatique dans {redirect_in_seconds} secondes...
                   </span>
                 </div>
-              </div>
+              </Alert>
             )}
 
             {/* Redirection manuelle */}
@@ -282,7 +283,7 @@ export default function LegacyPartUrlMigrationPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           {/* Icône d'erreur */}
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
           </div>
@@ -296,7 +297,7 @@ export default function LegacyPartUrlMigrationPage() {
           </p>
 
           {/* Informations d'erreur */}
-          <div className="bg-red-50 rounded-xl p-6 mb-6 text-left">
+          <div className="bg-destructive/5 rounded-xl p-6 mb-6 text-left">
             <h3 className="font-semibold text-red-900 mb-3">Détails de l'erreur</h3>
             <div className="space-y-2 text-sm">
               <div>

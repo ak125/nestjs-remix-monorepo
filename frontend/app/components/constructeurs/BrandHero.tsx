@@ -1,8 +1,10 @@
+import { Badge } from '@fafa/ui';
 // 🏭 BrandHero - Section héro moderne pour page constructeur
 // Design moderne avec informations marque et VehicleSelector intégré
 
 import { Link } from '@remix-run/react';
 import { Car, Home, ChevronRight } from 'lucide-react';
+import { Alert } from '~/components/ui/alert';
 import VehicleSelectorV2 from '../vehicle/VehicleSelectorV2';
 
 interface BrandHeroProps {
@@ -78,9 +80,7 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
                 </h1>
                 <p className="text-lg text-gray-600">
                   {brand.marque_country && (
-                    <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mr-2">
-                      {brand.marque_country}
-                    </span>
+                    <Badge variant="info">{brand.marque_country}</Badge>
                   )}
                   Constructeur automobile
                 </p>
@@ -126,13 +126,13 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
             </div>
             
             {/* 🔍 Indicateur véhicule actuel */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+<Alert className="rounded-xl p-4 mb-6" variant="info">
               <div className="flex items-center text-blue-800">
                 <Car className="w-5 h-5 mr-2" />
                 <span className="font-medium">Marque sélectionnée :</span>
                 <strong className="ml-2">{brand.marque_name}</strong>
               </div>
-            </div>
+            </Alert>
             
             {/* 🚗 VehicleSelector intégré */}
             <VehicleSelectorV2 
@@ -158,9 +158,9 @@ const BrandHero: React.FC<BrandHeroProps> = ({ brand, seo, className = "" }) => 
             />
             
             {/* 💡 Conseils */}
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="mt-6 p-4 bg-success/5 border border-green-200 rounded-lg">
               <div className="flex items-center text-green-800 text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
                 <span className="font-medium">Conseil :</span>
               </div>
               <div className="mt-1 text-sm text-green-700">

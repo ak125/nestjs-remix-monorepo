@@ -1,6 +1,7 @@
 // 📁 frontend/app/components/home/BrandCarousel.tsx
 // 🎠 Carousel des marques automobiles
 
+import { Alert } from '@fafa/ui';
 import { Link } from '@remix-run/react';
 import { ChevronLeft, ChevronRight, Car, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -143,9 +144,7 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
                         )}
                         
                         {brand.products_count && (
-                          <div className="bg-blue-100 text-blue-800 text-xs py-1 px-2 rounded-full inline-block mb-2">
-                            {brand.products_count.toLocaleString()} pièces
-                          </div>
+                          <Alert intent="info">{brand.products_count.toLocaleString()} pièces</Alert>
                         )}
                         
                         {brand.is_featured && (
@@ -197,8 +196,8 @@ export function BrandCarousel({ brands, autoPlay = true, interval = 4000 }: Bran
               onClick={() => goToSlide(index)}
               className={`w-3 h-3 rounded-full transition-all ${
                 index === currentIndex 
-                  ? 'bg-blue-600 w-8' 
-                  : 'bg-gray-300 hover:bg-gray-400'
+                  ? 'bg-primary w-8' 
+                  : 'bg-muted/50 hover:bg-gray-400'
               }`}
               aria-label={`Aller au slide ${index + 1}`}
             />

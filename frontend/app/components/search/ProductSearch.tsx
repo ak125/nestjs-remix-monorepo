@@ -2,6 +2,7 @@
 // 🔍 Composant de recherche produits UNIVERSEL avec dropdown de résultats
 // Utilisable partout : Hero, Navbar, Catalogue, etc.
 
+import { Badge } from '@fafa/ui';
 import { useNavigate } from '@remix-run/react';
 import { Search, Package, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -79,8 +80,8 @@ export function ProductSearch({
     ? 'w-full px-6 py-4 text-lg text-gray-900 bg-white rounded-lg shadow-lg focus:outline-none focus:ring-4 focus:ring-blue-300 pr-32'
     : 'w-full px-4 py-2 text-base text-gray-900 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-24';
   const buttonClass = isHero
-    ? 'absolute right-2 top-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2'
-    : 'absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm';
+    ? 'absolute right-2 top-2 px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2'
+    : 'absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm';
   const defaultPlaceholder = isHero 
     ? 'Rechercher par référence, marque, modèle...'
     : 'Rechercher une pièce...';
@@ -140,7 +141,7 @@ export function ProductSearch({
                       <button
                         type="button"
                         onClick={() => handleResultClick(result)}
-                        className="w-full p-4 hover:bg-blue-50 transition-colors flex items-center gap-4 text-left"
+                        className="w-full p-4 hover:bg-info/20 transition-colors flex items-center gap-4 text-left"
                       >
                         {/* Image */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
@@ -160,9 +161,7 @@ export function ProductSearch({
                           <p className="font-medium text-gray-900 truncate">{result.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             {result.marque_name && (
-                              <span className="text-xs text-blue-600 font-medium px-2 py-0.5 bg-blue-50 rounded">
-                                {result.marque_name}
-                              </span>
+                              <Badge variant="info">{result.marque_name}</Badge>
                             )}
                             {result.reference && (
                               <span className="text-xs text-gray-500">

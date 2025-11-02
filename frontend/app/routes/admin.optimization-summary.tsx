@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { useEffect, useState } from 'react'
@@ -198,19 +199,19 @@ export default function OptimizationSummaryPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               📈 Analytics & A/B Testing
               {testResults.analytics ? (
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Actif</span>
+                <Badge variant="success">✅ Actif</Badge>
               ) : (
-                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">⏳ Test...</span>
+                <Badge variant="warning">⏳ Test...</Badge>
               )}
             </h3>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg">
                 <span className="font-medium">Tracking d'Événements</span>
                 <span className="text-green-600 font-bold">✅ Fonctionnel</span>
               </div>
               
-              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-success/5 rounded-lg">
                 <span className="font-medium">A/B Testing</span>
                 <span className="text-green-600 font-bold">✅ Fonctionnel</span>
               </div>
@@ -242,21 +243,21 @@ export default function OptimizationSummaryPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
               🤖 Monitoring & IA Assistant
               {testResults.monitoring?.service_active ? (
-                <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">✅ Actif</span>
+                <Badge variant="success">✅ Actif</Badge>
               ) : (
-                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">⏳ Test...</span>
+                <Badge variant="warning">⏳ Test...</Badge>
               )}
             </h3>
             
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-primary/5 rounded-lg">
                 <span className="font-medium">Monitoring Temps Réel</span>
                 <span className="text-green-600 font-bold">
                   ✅ {testResults.monitoring?.service_active ? 'Actif' : 'En attente'}
                 </span>
               </div>
               
-              <div className="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-success/5 rounded-lg">
                 <span className="font-medium">Détection d'Erreurs</span>
                 <span className="text-green-600 font-bold">✅ Configuré</span>
               </div>
@@ -292,18 +293,18 @@ export default function OptimizationSummaryPage() {
             </h3>
             <div className="grid gap-4">
               {aiAssistant.suggestions.map((suggestion) => (
-                <div key={suggestion.id} className="border border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div key={suggestion.id} className="border border-blue-200 rounded-lg p-4 bg-primary/5">
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{suggestion.icon}</div>
                     <div className="flex-grow">
                       <h4 className="font-semibold text-gray-900">{suggestion.title}</h4>
                       <p className="text-gray-600 text-sm mt-1">{suggestion.description}</p>
                       <div className="flex gap-2 mt-3">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                        <Badge variant="info">
                           {suggestion.category}
-                        </span>
+                        </Badge>
                         <span className={`px-2 py-1 rounded text-xs ${
-                          suggestion.priority === 'high' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                          suggestion.priority === 'high' ? 'error' : 'bg-gray-100 text-gray-800'
                         }`}>
                           {suggestion.priority}
                         </span>

@@ -61,32 +61,32 @@ const CATEGORY_COLORS: Record<
   { bg: string; border: string; text: string; gradient: string; badge: string }
 > = {
   "Freinage": { 
-    bg: "bg-red-50", 
+    bg: "bg-destructive/5", 
     border: "border-red-300", 
     text: "text-red-800", 
     gradient: "from-red-500 to-red-700", 
-    badge: "bg-red-100 text-red-800 border-red-300" 
+    badge: 'error', 
   },
   "Filtres": { 
-    bg: "bg-yellow-50", 
+    bg: "bg-warning/5", 
     border: "border-yellow-300", 
     text: "text-yellow-900", 
     gradient: "from-yellow-500 to-yellow-700", 
-    badge: "bg-yellow-100 text-yellow-900 border-yellow-300" 
+    badge: "bg-warning/15 text-yellow-900 border-yellow-300" 
   },
   "Amortisseurs": { 
     bg: "bg-purple-50", 
     border: "border-purple-300", 
     text: "text-purple-800", 
     gradient: "from-purple-500 to-purple-700", 
-    badge: "bg-purple-100 text-purple-800 border-purple-300" 
+    badge: 'purple', 
   },
   "Batteries": { 
     bg: "bg-orange-50", 
     border: "border-orange-300", 
     text: "text-orange-800", 
     gradient: "from-orange-500 to-orange-700", 
-    badge: "bg-orange-100 text-orange-800 border-orange-300" 
+    badge: 'orange', 
   },
   "Pneus": { 
     bg: "bg-slate-50", 
@@ -103,11 +103,11 @@ const CATEGORY_COLORS: Record<
     badge: "bg-gray-100 text-gray-800 border-gray-400" 
   },
   "Éclairage": { 
-    bg: "bg-yellow-50", 
+    bg: "bg-warning/5", 
     border: "border-yellow-400", 
     text: "text-yellow-900", 
     gradient: "from-yellow-400 to-yellow-600", 
-    badge: "bg-yellow-100 text-yellow-900 border-yellow-400" 
+    badge: "bg-warning/15 text-yellow-900 border-yellow-400" 
   },
   "Accessoires": { 
     bg: "bg-pink-50", 
@@ -254,7 +254,7 @@ export default function BlogGuidesIndex() {
         gradientTo="to-emerald-600"
         breadcrumb={[
           { label: "Accueil", href: "/" },
-          { label: "Pièces Auto", href: "/blog-pieces-auto/conseils" },
+          { label: "Blog", href: "/blog" },
           { label: "Guide d'Achat" },
         ]}
       />
@@ -375,7 +375,7 @@ export default function BlogGuidesIndex() {
                     <div className="flex-1">
                       <h2 className="text-3xl md:text-4xl font-bold text-green-900 mb-1">Tous les guides d'achat</h2>
                       <div className="flex items-center gap-3">
-                        <Badge className="bg-green-100 text-green-800 border-green-300">{totalGuides} guide{totalGuides > 1 ? "s" : ""}</Badge>
+                        <Badge className="bg-success/20 text-success border-green-300">{totalGuides} guide{totalGuides > 1 ? "s" : ""}</Badge>
                       </div>
                     </div>
                   </div>
@@ -403,7 +403,7 @@ export default function BlogGuidesIndex() {
                                   <BookOpen className="w-16 h-16 text-white" />
                                 </div>
                               )}
-                              <Badge className="absolute top-2 left-2 bg-green-600 text-white border-0 shadow-lg">
+                              <Badge className="absolute top-2 left-2 bg-success text-white border-0 shadow-lg">
                                 <Sparkles className="w-3 h-3 mr-1" />
                                 Guide d'Achat
                               </Badge>
@@ -441,7 +441,7 @@ export default function BlogGuidesIndex() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50 p-0 h-auto font-semibold border-none"
+                                  className="text-green-600 hover:text-green-700 hover:bg-success/20 p-0 h-auto font-semibold border-none"
                                 >
                                   Lire le guide →
                                 </Button>
@@ -481,7 +481,7 @@ export default function BlogGuidesIndex() {
           <div className="flex items-center justify-center gap-4">
             <Button
               size="lg"
-              className="bg-white text-green-600 hover:bg-green-50 font-semibold px-8"
+              className="bg-white text-green-600 hover:bg-success/20 font-semibold px-8"
             >
               Demander conseil
             </Button>

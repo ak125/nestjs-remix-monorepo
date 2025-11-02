@@ -198,7 +198,7 @@ export function TypeGrid({
             <CardContent className="p-6">
               {/* Header avec icône et ID */}
               <div className="flex items-center justify-between mb-4">
-                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                <div className="p-2 bg-primary/5 rounded-lg group-hover:bg-info/20 transition-colors">
                   <Zap className="h-6 w-6 text-blue-600" />
                 </div>
                 <span className="text-xs text-gray-500">#{type.id}</span>
@@ -259,7 +259,7 @@ export function TypeGrid({
                 <span className={`px-2 py-1 text-xs rounded-full ${
                   type.year_to 
                     ? 'bg-gray-100 text-gray-700' 
-                    : 'bg-green-100 text-green-700'
+                    : 'bg-success/15 text-green-700'
                 }`}>
                   {type.year_to ? 'Ancien' : 'Actuel'}
                 </span>
@@ -267,9 +267,7 @@ export function TypeGrid({
                 {type.fuel_type && (
                   <div className="flex items-center">
                     {getFuelIcon(type.fuel_type)}
-                    <span className="ml-1 px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
-                      {type.fuel_type}
-                    </span>
+                    <Badge variant="info">{type.fuel_type}</Badge>
                   </div>
                 )}
               </div>

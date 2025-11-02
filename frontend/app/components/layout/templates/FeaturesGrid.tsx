@@ -37,7 +37,7 @@ export const FeaturesGrid: React.FC<FeaturesGridProps> = ({
             <div key={index} className="feature-item text-center group">
               {/* Icône */}
               <div className="feature-icon mb-4">
-                <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-colors">
                   <span className="text-2xl">{feature.icon}</span>
                 </div>
               </div>

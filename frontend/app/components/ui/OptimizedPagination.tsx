@@ -71,7 +71,7 @@ export const OptimizedPagination = memo(function OptimizedPagination({
             onClick={() => onPageChange(page)}
             className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
               page === currentPage
-                ? 'bg-blue-600 text-white border border-blue-600 shadow-sm'
+                ? 'bg-primary text-primary-foreground border border-blue-600 shadow-sm'
                 : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
             }`}
             aria-label={`Page ${page}`}

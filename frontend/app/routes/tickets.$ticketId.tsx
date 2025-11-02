@@ -2,8 +2,10 @@
  * Page de détail d'un ticket - Consultation et gestion
  * Remix Route Component pour voir et modifier un ticket spécifique
  */
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -90,9 +92,9 @@ export default function TicketDetailPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return "bg-red-100 text-red-800 border-red-200";
+      case "urgent": return "bg-destructive/20 text-destructive border-red-200";
       case "high": return "bg-orange-100 text-orange-800 border-orange-200";
-      case "normal": return "bg-blue-100 text-blue-800 border-blue-200";
+      case "normal": return "bg-info/20 text-info border-blue-200";
       case "low": return "bg-gray-100 text-gray-800 border-gray-200";
       default: return "bg-gray-100 text-gray-800 border-gray-200";
     }
@@ -123,15 +125,11 @@ export default function TicketDetailPage() {
 
       {/* Messages de retour */}
       {actionData?.success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-700">Ticket mis à jour avec succès !</p>
-        </div>
+        <Alert intent="success"><p>Ticket mis à jour avec succès !</p></Alert>
       )}
 
       {actionData?.error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{actionData.error}</p>
-        </div>
+        <Alert intent="error"><p>{actionData.error}</p></Alert>
       )}
 
       {/* Header du ticket */}
@@ -151,7 +149,7 @@ export default function TicketDetailPage() {
               {/* Statut */}
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                 isOpen 
-                  ? "bg-green-100 text-green-800" 
+                  ? "bg-success/20 text-success" 
                   : "bg-gray-100 text-gray-800"
               }`}>
                 {isOpen ? "Ouvert" : "Fermé"}
@@ -166,8 +164,8 @@ export default function TicketDetailPage() {
                   disabled={isSubmitting}
                   className={`px-4 py-2 text-sm font-medium rounded-md ${
                     isOpen
-                      ? "bg-red-600 text-white hover:bg-red-700"
-                      : "bg-green-600 text-white hover:bg-green-700"
+                      ? "bg-destructive text-white hover:bg-destructive/90"
+                      : "bg-success text-white hover:bg-success/90"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isSubmitting 
@@ -221,9 +219,9 @@ export default function TicketDetailPage() {
               {ticket.category && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Catégorie</h3>
-                  <span className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full">
+                  <Badge variant="info">
                     {getCategoryLabel(ticket.category)}
-                  </span>
+                  </Badge>
                 </div>
               )}
 
@@ -309,9 +307,7 @@ export default function TicketDetailPage() {
               <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                 Imprimer
               </button>
-              <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-                Répondre
-              </button>
+              <Button className="px-4 py-2 text-sm font-medium  rounded-md" variant="blue">\n  Répondre\n</Button>
             </div>
           </div>
         </div>

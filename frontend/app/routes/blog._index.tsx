@@ -295,9 +295,9 @@ export default function BlogIndex() {
 
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
+      case 'beginner': return 'success';
+      case 'intermediate': return 'warning';
+      case 'advanced': return 'error';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -427,7 +427,7 @@ export default function BlogIndex() {
                     
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                        <Badge variant="secondary" className="bg-info/20 text-info hover:bg-primary/30">
                           {getTypeLabel(article.type)}
                         </Badge>
                         {article.difficulty && (
@@ -472,7 +472,7 @@ export default function BlogIndex() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="p-2 hover:bg-blue-50"
+                            className="p-2 hover:bg-info/20"
                             onClick={() => {
                               fetcher.submit(
                                 { actionType: 'bookmark', articleId: article.id },
@@ -485,7 +485,7 @@ export default function BlogIndex() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="p-2 hover:bg-blue-50"
+                            className="p-2 hover:bg-info/20"
                             onClick={() => {
                               if (navigator.share) {
                                 navigator.share({
@@ -529,7 +529,7 @@ export default function BlogIndex() {
             {/* Montage et Entretien */}
             <Link to="/blog-pieces-auto/conseils" className="group">
               <Card className="h-full border-2 border-orange-200 hover:border-orange-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-orange-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-muted rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Wrench className="w-8 h-8" />
@@ -569,7 +569,7 @@ export default function BlogIndex() {
             {/* Constructeurs */}
             <Link to="/blog-pieces-auto/auto" className="group">
               <Card className="h-full border-2 border-blue-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-muted rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Car className="w-8 h-8" />
@@ -583,7 +583,7 @@ export default function BlogIndex() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge className="bg-blue-100 text-blue-800 text-sm">
+                    <Badge className="bg-info/20 text-info text-sm">
                       35+ marques
                     </Badge>
                     <ArrowRight className="w-5 h-5 text-blue-600 group-hover:translate-x-2 transition-transform" />
@@ -609,7 +609,7 @@ export default function BlogIndex() {
             {/* Guide d'Achat */}
             <Link to="/blog-pieces-auto/guide" className="group">
               <Card className="h-full border-2 border-green-200 hover:border-green-400 hover:shadow-2xl transition-all duration-300 bg-gradient-to-br from-green-50 to-white overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-bl-full opacity-50" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-success/10 rounded-bl-full opacity-50" />
                 <CardHeader className="relative">
                   <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-2xl p-4 w-16 h-16 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <ShoppingCart className="w-8 h-8" />
@@ -623,7 +623,7 @@ export default function BlogIndex() {
                 </CardHeader>
                 <CardContent className="relative">
                   <div className="flex items-center justify-between mb-4">
-                    <Badge className="bg-green-100 text-green-800 text-sm">
+                    <Badge className="bg-success/20 text-success text-sm">
                       120+ guides
                     </Badge>
                     <ArrowRight className="w-5 h-5 text-green-600 group-hover:translate-x-2 transition-transform" />
@@ -720,7 +720,7 @@ export default function BlogIndex() {
                       
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          <Badge variant="secondary" className="bg-info/20 text-info">
                             {getTypeLabel(article.type)}
                           </Badge>
                           <div className="flex items-center text-sm text-gray-500">

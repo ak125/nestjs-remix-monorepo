@@ -3,13 +3,15 @@
 // ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
 // ========================================
 
 // Composants UI (ordre alphabétique)
+import { Error410 } from '../components/errors/Error410';
+import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PiecesBuyingGuide } from '../components/pieces/PiecesBuyingGuide';
 import { PiecesComparisonView } from '../components/pieces/PiecesComparisonView';
 import { PiecesCompatibilityInfo } from '../components/pieces/PiecesCompatibilityInfo';
@@ -46,7 +48,8 @@ import {
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
-  toTitleCaseFromSlug
+  toTitleCaseFromSlug,
+  validateVehicleIds
 } from '../utils/pieces-route.utils';
 
 // ========================================
@@ -70,14 +73,71 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const typeData = parseUrlParam(rawType);
 
   // 3. Résolution des IDs via API
+  // ✅ IMPORTANT: Passer les paramètres RAW (avec IDs) pas les alias déjà parsés
   const vehicleIds = await resolveVehicleIds(
-    marqueData.alias, 
-    modeleData.alias, 
-    typeData.alias
+    rawMarque,  // ✅ "renault-140"
+    rawModele,  // ✅ "clio-iii-140004"
+    rawType     // ✅ "1-5-dci-19052"
   );
   
   // ✅ Passer le paramètre COMPLET (avec ID) à resolveGammeId pour qu'il puisse extraire l'ID
   const gammeId = await resolveGammeId(rawGamme);
+
+  // ✅ VALIDATION CRITIQUE: Vérifier que tous les IDs sont présents
+  // Empêche le rendu de pages sans articles qui seraient désindexées
+  validateVehicleIds({
+    marqueId: vehicleIds.marqueId,
+    modeleId: vehicleIds.modeleId,
+    typeId: vehicleIds.typeId,
+    gammeId: gammeId,
+    source: 'loader-validation'
+  });
+
+  // 🛡️ VALIDATION PRÉVENTIVE - NIVEAU 0: Vérifier l'intégrité AVANT de fetcher
+  // Évite de fetcher les pièces si on sait déjà que la combinaison est invalide
+  try {
+    const validationUrl = `http://localhost:3000/api/catalog/integrity/validate/${vehicleIds.typeId}/${gammeId}`;
+    const validationResponse = await fetch(validationUrl);
+    
+    if (validationResponse.ok) {
+      const validation = await validationResponse.json();
+      
+      // Si validation échoue, retourner 404/410 IMMÉDIATEMENT
+      if (!validation.success || !validation.data.valid) {
+        const statusCode = validation.data?.http_status || 410;
+        const reason = validation.data?.recommendation || "Cette combinaison n'est pas disponible.";
+        
+        console.warn(
+          `🚨 PRE-VALIDATION FAILED: type_id=${vehicleIds.typeId}, gamme_id=${gammeId}, status=${statusCode}, reason=${reason}`
+        );
+        
+        throw new Response(
+          reason,
+          { 
+            status: statusCode,
+            statusText: statusCode === 410 ? 'Gone' : 'Not Found',
+            headers: {
+              'X-Robots-Tag': 'noindex, nofollow',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'X-Validation-Failed': 'true',
+              'X-Validation-Reason': reason,
+              'X-Performance-Hint': 'Pre-validation saved DB query'
+            }
+          }
+        );
+      }
+      
+      console.log(
+        `✅ PRE-VALIDATION OK: type_id=${vehicleIds.typeId}, gamme_id=${gammeId}, ${validation.data.relations_count} pièces, ${validation.data.data_quality?.pieces_with_brand_percent}% avec marque`
+      );
+    }
+  } catch (error) {
+    // Si l'API de validation est down, continuer avec l'ancienne logique
+    if (error instanceof Response) {
+      throw error; // Re-throw les erreurs de validation
+    }
+    console.error('⚠️ Validation API unavailable, falling back to legacy validation');
+  }
 
   // 4. Construction des données véhicule
   const vehicle: VehicleData = {
@@ -100,10 +160,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // 5. Récupération des pièces via API directe
   let piecesData: PieceData[] = [];
   
+  const apiUrl = `http://localhost:3000/api/catalog/pieces/php-logic/${vehicle.typeId}/${gammeId}`;
+  
   try {
-    const response = await fetch(
-      `http://localhost:3000/api/catalog/pieces/php-logic/${vehicle.typeId}/${gamme.id}`
-    );
+    const response = await fetch(apiUrl);
     
     if (response.ok) {
       const apiResponse = await response.json();
@@ -132,6 +192,89 @@ export async function loader({ params }: LoaderFunctionArgs) {
   } catch (error) {
     console.error('❌ Erreur récupération pièces:', error);
     piecesData = []; // Fallback sur tableau vide en cas d'erreur
+  }
+
+  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 1: Aucune pièce
+  // Si 0 pièces trouvées → 410 Gone (ressource n'existe pas/plus)
+  if (piecesData.length === 0) {
+    console.warn(
+      `🚨 SEO-410: 0 pièces pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`
+    );
+    
+    throw new Response(
+      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible.`,
+      { 
+        status: 410,
+        statusText: 'Gone',
+        headers: {
+          'X-Robots-Tag': 'noindex, nofollow',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      }
+    );
+  }
+
+  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 2: Données suspectes
+  // Si toutes les pièces n'ont pas de marque → probablement des données incorrectes
+  const piecesWithoutBrand = piecesData.filter(p => !p.brand || p.brand === 'Marque inconnue');
+  const percentageWithoutBrand = (piecesWithoutBrand.length / piecesData.length) * 100;
+  
+  if (percentageWithoutBrand > 80) {
+    console.warn(
+      `🚨 SEO-410: ${percentageWithoutBrand.toFixed(0)}% des pièces sans marque pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} - données suspectes`
+    );
+    
+    throw new Response(
+      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible (données incomplètes).`,
+      { 
+        status: 410,
+        statusText: 'Gone',
+        headers: {
+          'X-Robots-Tag': 'noindex, nofollow',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      }
+    );
+  }
+
+  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 2: Mauvaise catégorie
+  // Vérifier que les pièces retournées correspondent bien à la gamme demandée
+  // Ex: si URL = "/pieces/amortisseur-1/..." mais que les pièces sont des batteries → 410 Gone
+  const categoryKeywords: Record<string, string[]> = {
+    'amortisseur': ['amortisseur', 'suspension', 'shock'],
+    'batterie': ['batterie', 'battery', 'accumulateur'],
+    'filtre': ['filtre', 'filter'],
+    'plaquette': ['plaquette', 'brake pad', 'frein'],
+    'disque': ['disque', 'brake disc', 'rotor'],
+  };
+
+  const gammeKeyword = gamme.alias.toLowerCase().split('-')[0]; // "amortisseur" depuis "amortisseur-1"
+  const expectedKeywords = categoryKeywords[gammeKeyword] || [gammeKeyword];
+  
+  // Vérifier si au moins UNE pièce correspond à la catégorie attendue
+  const hasCorrectCategory = piecesData.some(piece => {
+    const pieceName = (piece.name || '').toLowerCase();
+    return expectedKeywords.some(keyword => pieceName.includes(keyword));
+  });
+
+  if (!hasCorrectCategory && piecesData.length < 10) {
+    // Si aucune pièce ne correspond ET qu'il y a peu de résultats → probablement une erreur de données
+    console.warn(
+      `🚨 SEO-410: Catégorie incorrecte pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`,
+      `Attendu: ${expectedKeywords.join('|')}, Trouvé: ${piecesData.map(p => p.name).join(', ')}`
+    );
+    
+    throw new Response(
+      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible (catégorie incorrecte).`,
+      { 
+        status: 410,
+        statusText: 'Gone',
+        headers: {
+          'X-Robots-Tag': 'noindex, nofollow',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        }
+      }
+    );
   }
 
   // 6. Calcul des stats prix
@@ -199,7 +342,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 // ========================================
-// 📄 META - SEO
+// 📄 META - SEO (Schema.org généré par composant Breadcrumbs)
 // ========================================
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -262,6 +405,33 @@ export default function PiecesVehicleRoute() {
         count={data.count}
         performance={data.performance}
       />
+
+      {/* 🍞 Fil d'ariane avec composant existant - COHÉRENT AVEC URL */}
+      {/* URL: /pieces/{gamme}/{marque}/{modele}/{type}.html */}
+      {/* Breadcrumb suit l'ordre URL: Gamme → Véhicule → Résultat */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <Breadcrumbs
+            items={[
+              { 
+                label: data.gamme.name, 
+                href: `/pieces/${data.gamme.alias}`
+              },
+              { 
+                label: `${data.vehicle.marque} ${data.vehicle.modele}`, 
+                href: `/constructeurs/${data.vehicle.marque.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.marqueId}/${data.vehicle.modele.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.modeleId}/${data.vehicle.typeId}.html`
+              },
+              { 
+                label: `${data.count} pièce${data.count > 1 ? 's' : ''}`,
+                current: true
+              }
+            ]}
+            separator="arrow"
+            showHome={true}
+            enableSchema={true}
+          />
+        </div>
+      </div>
 
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -459,6 +629,52 @@ export default function PiecesVehicleRoute() {
           <div>🔍 Filtrées: {filteredProducts.length}</div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ========================================
+// 🚨 ERROR BOUNDARY - Gestion 410 Gone
+// ========================================
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  
+  // Gestion spécifique du 410 Gone (page sans résultats)
+  if (isRouteErrorResponse(error) && error.status === 410) {
+    return (
+      <>
+        <head>
+          <meta name="robots" content="noindex, nofollow" />
+          <meta name="googlebot" content="noindex, nofollow" />
+        </head>
+        <Error410 
+          url={typeof window !== 'undefined' ? window.location.pathname : undefined}
+          isOldLink={false}
+        />
+      </>
+    );
+  }
+
+  // Autres erreurs (404, 500, etc.)
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">
+          Une erreur est survenue
+        </h1>
+        <p className="text-gray-600 mb-6">
+          {isRouteErrorResponse(error) 
+            ? `Erreur ${error.status}: ${error.statusText}`
+            : "Une erreur inattendue s'est produite"}
+        </p>
+        <a
+          href="/"
+          className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium transition-colors"
+        >
+          Retour à l'accueil
+        </a>
+      </div>
     </div>
   );
 }

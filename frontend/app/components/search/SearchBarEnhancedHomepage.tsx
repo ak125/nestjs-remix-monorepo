@@ -409,7 +409,7 @@ export function SearchBarEnhancedHomepage({
                       className="w-full p-3 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group border border-transparent hover:border-blue-200"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-blue-100 transition-colors">
+                        <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-info/20 transition-colors">
                           <Package className="w-4 h-4 text-gray-500 group-hover:text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">

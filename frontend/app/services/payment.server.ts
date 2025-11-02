@@ -10,7 +10,10 @@ export interface InitializePaymentParams {
   paymentMethod: string;
   amount: number; // ✅ Phase 7: Montant total TTC (inclut consignes)
   consigneTotal?: number; // ✅ Phase 7: Montant des consignes
+  customerName?: string; // ✅ Nom complet du client
+  customerEmail?: string; // ✅ Email du client
   returnUrl: string;
+  baseUrl: string; // ✅ URL de base pour les callbacks
   ipAddress: string;
 }
 
@@ -31,33 +34,50 @@ export async function initializePayment(
     console.log('🔄 Initializing payment:', params);
 
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = params.baseUrl; // Utiliser le baseUrl passé en paramètre
+    
+    // ✅ Normaliser la méthode de paiement en minuscules
+    const normalizedMethod = params.paymentMethod.toLowerCase();
+    
+    const requestBody = {
+      orderId: params.orderId,
+      userId: params.userId,
+      amount: params.amount, // ✅ Phase 7: Montant total incluant consignes
+      method: normalizedMethod, // ✅ Utiliser la méthode normalisée
+      currency: 'EUR',
+      // ✅ Phase 7: Informations consignes
+      consigne_total: params.consigneTotal || 0,
+      // ✅ Informations client
+      customerName: params.customerName,
+      customerEmail: params.customerEmail,
+      returnUrl: params.returnUrl,
+      cancelUrl: `${baseUrl}/checkout/payment/cancel`,
+      notifyUrl: `${baseUrl}/api/payments/callback/cyberplus`, // ✅ Utiliser baseUrl public pour que Cyberplus puisse l'atteindre
+      ipAddress: params.ipAddress,
+    };
+
+    console.log('📤 Sending payment request to:', `${backendUrl}/api/payments`);
+    console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
+    
     const response = await fetch(`${backendUrl}/api/payments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Internal-Call': 'true',
       },
-      body: JSON.stringify({
-        orderId: params.orderId,
-        userId: params.userId,
-        amount: params.amount, // ✅ Phase 7: Montant total incluant consignes
-        method: params.paymentMethod,
-        currency: 'EUR',
-        // ✅ Phase 7: Informations consignes
-        consigne_total: params.consigneTotal || 0,
-        returnUrl: params.returnUrl,
-        cancelUrl: `${baseUrl}/checkout/payment/cancel`,
-        notifyUrl: `${baseUrl}/api/payments/callback/cyberplus`,
-        ipAddress: params.ipAddress,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log('📥 Payment API response status:', response.status);
+
     if (!response.ok) {
-      throw new Error(`Payment initialization failed: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error('❌ Payment API error response:', errorText);
+      throw new Error(`Payment initialization failed: ${response.statusText} - ${errorText}`);
     }
 
     const paymentData = await response.json();
+    console.log('📥 Payment API response data:', JSON.stringify(paymentData, null, 2));
 
     // Le backend retourne déjà redirectData avec le formulaire
     if (paymentData.data.redirectData) {

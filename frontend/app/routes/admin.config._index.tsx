@@ -2,6 +2,7 @@
  * 🔧 Configuration Admin - Version Simplifiée Compatible
  */
 
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
+import { Button } from '~/components/ui/button';
 
 // Types simplifiés pour les configurations
 interface ConfigItem {
@@ -56,14 +58,14 @@ const CATEGORIES: ConfigCategory[] = [
     label: 'Base de données', 
     icon: Database,
     description: 'Configuration des connexions et pools',
-    color: 'bg-blue-500' 
+    color: 'bg-primary' 
   },
   { 
     key: 'email', 
     label: 'Email & Notifications', 
     icon: Mail,
     description: 'Services d\'envoi et templates',
-    color: 'bg-green-500' 
+    color: 'bg-success' 
   },
   { 
     key: 'analytics', 
@@ -77,14 +79,14 @@ const CATEGORIES: ConfigCategory[] = [
     label: 'Sécurité', 
     icon: Shield,
     description: 'JWT, cryptage, permissions',
-    color: 'bg-red-500' 
+    color: 'bg-destructive' 
   },
   { 
     key: 'performance', 
     label: 'Performance & Cache', 
     icon: Zap,
     description: 'Redis, optimisations, CDN',
-    color: 'bg-yellow-500' 
+    color: 'bg-warning' 
   },
 ];
 
@@ -320,13 +322,10 @@ export default function AdminConfigIndexPage() {
                 {/* Actions rapides */}
                 <Form method="post" className="inline">
                   <input type="hidden" name="_action" value="backup" />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-                  >
+                  <Button className="px-4 py-2  rounded-md flex items-center" variant="blue" type="submit">
                     <Save className="mr-2 h-4 w-4" />
                     Sauvegarder
-                  </button>
+                  </Button>
                 </Form>
               </div>
             </div>
@@ -334,37 +333,25 @@ export default function AdminConfigIndexPage() {
 
           {/* Messages de statut */}
           {error && (
-            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-                <p className="text-red-800">{error}</p>
-              </div>
-            </div>
+            <Alert intent="error" variant="solid" icon={<AlertCircle />}>
+              {error}
+            </Alert>
           )}
 
           {hasSuccess && (
-            <div className="px-6 py-3 bg-green-50 border-b border-green-200">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                <div>
-                  <p className="text-green-800">{successMessage}</p>
-                  {backupId && (
-                    <p className="text-sm text-green-600 mt-1">
-                      ID de sauvegarde : <code className="bg-green-100 px-2 py-1 rounded">{backupId}</code>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+            <Alert intent="success" variant="solid" icon={<CheckCircle />} title={successMessage}>
+              {backupId && (
+                <p className="text-sm mt-1">
+                  ID de sauvegarde : <Badge variant="success" size="sm">{backupId}</Badge>
+                </p>
+              )}
+            </Alert>
           )}
 
           {hasError && (
-            <div className="px-6 py-3 bg-red-50 border-b border-red-200">
-              <div className="flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-                <p className="text-red-800">{errorMessage}</p>
-              </div>
-            </div>
+            <Alert intent="error" variant="solid" icon={<AlertCircle />}>
+              {errorMessage}
+            </Alert>
           )}
         </div>
 
@@ -400,7 +387,7 @@ export default function AdminConfigIndexPage() {
                       onClick={() => setSelectedCategory(category.key)}
                       className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all duration-200 ${
                         selectedCategory === category.key
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
+                          ? 'bg-primary/10 text-primary border border-blue-200 shadow-sm'
                           : 'hover:bg-gray-50 text-gray-700 border border-transparent'
                       }`}
                     >
@@ -478,31 +465,34 @@ export default function AdminConfigIndexPage() {
                             
                             {/* Badges */}
                             <div className="flex gap-2">
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                config.type === 'boolean' ? 'bg-green-100 text-green-700' :
-                                config.type === 'number' ? 'bg-blue-100 text-blue-700' :
-                                config.type === 'json' ? 'bg-purple-100 text-purple-700' :
-                                'bg-gray-100 text-gray-700'
-                              }`}>
+                              <Badge 
+                                variant={
+                                  config.type === 'boolean' ? 'success' :
+                                  config.type === 'number' ? 'info' :
+                                  config.type === 'json' ? 'purple' :
+                                  'default'
+                                }
+                                size="sm"
+                              >
                                 {config.type}
-                              </span>
+                              </Badge>
                               
                               {config.isSensitive && (
-                                <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                                <Badge variant="error" size="sm">
                                   Sensible
-                                </span>
+                                </Badge>
                               )}
                               
                               {config.requiresRestart && (
-                                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                                <Badge variant="warning" size="sm">
                                   Redémarrage requis
-                                </span>
+                                </Badge>
                               )}
                               
                               {config.isRequired && (
-                                <span className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded-full">
+                                <Badge variant="orange" size="sm">
                                   Requis
-                                </span>
+                                </Badge>
                               )}
                             </div>
                           </div>
@@ -552,17 +542,14 @@ export default function AdminConfigIndexPage() {
                                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                   />
                                 )}
-                                <button
-                                  type="submit"
-                                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
-                                >
+                                <Button className="px-4 py-2  rounded-md flex items-center" variant="green" type="submit">
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Valider
-                                </button>
+                                </Button>
                                 <button
                                   type="button"
                                   onClick={() => setEditingKey(null)}
-                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-muted/50"
                                 >
                                   Annuler
                                 </button>
@@ -605,7 +592,7 @@ export default function AdminConfigIndexPage() {
                                 
                                 <button
                                   onClick={() => setEditingKey(config.key)}
-                                  className="ml-3 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                                  className="ml-3 px-3 py-1 text-sm bg-info/80 text-info-foreground hover:bg-info rounded  transition-colors"
                                 >
                                   Modifier
                                 </button>

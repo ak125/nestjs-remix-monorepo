@@ -68,10 +68,31 @@ export class CatalogGammeService extends SupabaseBaseService {
       }
 
       // 3. Jointure optimisée avec Map pour O(1) lookup
+      // ⚠️ IMPORTANT: pg_id est number, mc_pg_id est string - on doit normaliser
       const piecesMap = new Map();
       (piecesGammes || []).forEach((piece) => {
-        piecesMap.set(piece.pg_id, piece);
+        // Utiliser la string comme clé pour correspondre avec mc_pg_id
+        piecesMap.set(String(piece.pg_id), piece);
       });
+
+      // DEBUG: Log pour comprendre pourquoi Map.get() échoue
+      if (catalogGammes && catalogGammes.length > 0) {
+        const firstCatalog = catalogGammes[0];
+        const firstPiece = piecesGammes?.[0];
+        this.logger.log(
+          `🔍 First catalog mc_pg_id: "${firstCatalog.mc_pg_id}" (type: ${typeof firstCatalog.mc_pg_id})`,
+        );
+        this.logger.log(
+          `🔍 First piece pg_id: "${firstPiece?.pg_id}" (type: ${typeof firstPiece?.pg_id})`,
+        );
+        this.logger.log(`🔍 Map size: ${piecesMap.size}`);
+        this.logger.log(
+          `🔍 Has key "${firstCatalog.mc_pg_id}": ${piecesMap.has(firstCatalog.mc_pg_id)}`,
+        );
+        this.logger.log(
+          `🔍 Map keys sample: ${Array.from(piecesMap.keys()).slice(0, 5).join(', ')}`,
+        );
+      }
 
       // 4. Construire le résultat (tous les catalog ont une correspondance maintenant)
       const enrichedGammes: CatalogGamme[] = (catalogGammes || []).map(
@@ -83,11 +104,11 @@ export class CatalogGammeService extends SupabaseBaseService {
             mc_mf_prime: catalog.mc_mf_prime,
             mc_pg_id: catalog.mc_pg_id,
             mc_sort: catalog.mc_sort,
-            // Données enrichies de pieces_gamme
-            pg_id: piece.pg_id,
-            pg_name: piece.pg_name,
-            pg_alias: piece.pg_alias,
-            pg_image: piece.pg_img,
+            // Données enrichies de pieces_gamme (ou fallback sur mc_pg_id si piece non trouvée)
+            pg_id: piece?.pg_id || catalog.mc_pg_id,
+            pg_name: piece?.pg_name || 'Gamme non trouvée',
+            pg_alias: piece?.pg_alias || '',
+            pg_image: piece?.pg_img || '',
           } as CatalogGamme;
         },
       );

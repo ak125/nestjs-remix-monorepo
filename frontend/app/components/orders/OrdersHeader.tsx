@@ -5,6 +5,7 @@
 
 import { Package, Plus } from 'lucide-react';
 import React from 'react';
+import { Button } from '~/components/ui/button';
 
 import { type OrdersHeaderProps } from '../../types/orders.types';
 
@@ -14,7 +15,7 @@ export function OrdersHeader({ permissions, userRole, totalOrders }: OrdersHeade
       <div className="flex items-center justify-between">
         {/* Titre & Badge */}
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-100 rounded-lg">
+          <div className="p-3 bg-muted rounded-lg">
             <Package className="w-6 h-6 text-blue-600" />
           </div>
           <div>
@@ -30,13 +31,11 @@ export function OrdersHeader({ permissions, userRole, totalOrders }: OrdersHeade
         {/* Actions globales */}
         <div className="flex items-center gap-3">
           {permissions.canValidate && (
-            <button
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              onClick={() => console.log('Nouvelle commande')}
+            <Button className="flex items-center gap-2 px-4 py-2  rounded-lg" variant="blue" onClick={() => console.log('Nouvelle commande')}
             >
               <Plus className="w-4 h-4" />
               Nouvelle commande
-            </button>
+            </Button>
           )}
         </div>
       </div>

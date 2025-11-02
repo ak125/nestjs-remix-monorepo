@@ -6,6 +6,8 @@ import { json, redirect, type ActionFunctionArgs, type MetaFunction } from "@rem
 import { Form, Link, useActionData, useNavigation } from "@remix-run/react";
 import { Star, ArrowLeft, Send } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { createReview } from "../services/api/review.api";
 
 export const meta: MetaFunction = () => {
@@ -139,11 +141,11 @@ export default function CreateReviewPage() {
         <Form method="post" className="space-y-6">
           {/* Erreur générale */}
           {actionData?.errors?.general && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+<Alert className="rounded-md p-4" variant="error">
               <div className="text-red-800 text-sm">
                 {actionData.errors.general}
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Informations client */}
@@ -158,7 +160,7 @@ export default function CreateReviewPage() {
                 name="customer_name"
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.errors?.customer_name
-                    ? "border-red-300 bg-red-50"
+                    ? "border-destructive bg-destructive/10"
                     : "border-gray-300"
                 }`}
                 placeholder="Votre nom complet"
@@ -180,7 +182,7 @@ export default function CreateReviewPage() {
                 name="customer_email"
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.errors?.customer_email
-                    ? "border-red-300 bg-red-50"
+                    ? "border-destructive bg-destructive/10"
                     : "border-gray-300"
                 }`}
                 placeholder="votre@email.com"
@@ -204,7 +206,7 @@ export default function CreateReviewPage() {
               name="product_name"
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 actionData?.errors?.product_name
-                  ? "border-red-300 bg-red-50"
+                  ? "border-destructive bg-destructive/10"
                   : "border-gray-300"
               }`}
               placeholder="Nom du produit ou service"
@@ -255,7 +257,7 @@ export default function CreateReviewPage() {
               rows={6}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 actionData?.errors?.comment
-                  ? "border-red-300 bg-red-50"
+                  ? "border-destructive bg-destructive/10"
                   : "border-gray-300"
               }`}
               placeholder="Décrivez votre expérience avec ce produit ou service. Qu'avez-vous aimé ? Qu'est-ce qui pourrait être amélioré ?"
@@ -271,7 +273,7 @@ export default function CreateReviewPage() {
           </div>
 
           {/* Recommandations d'évaluation */}
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+<Alert className="rounded-md p-4" variant="info">
             <h3 className="text-sm font-medium text-blue-900 mb-2">
               Conseils pour un avis utile
             </h3>
@@ -281,7 +283,7 @@ export default function CreateReviewPage() {
               <li>• Soyez objectif et constructif dans vos commentaires</li>
               <li>• Évitez les propos offensants ou inappropriés</li>
             </ul>
-          </div>
+          </Alert>
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-6 border-t border-gray-200">
@@ -292,11 +294,8 @@ export default function CreateReviewPage() {
               Annuler
             </Link>
             
-            <button
-              type="submit"
-              disabled={isSubmitting || rating === 0}
-              className="inline-flex items-center px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button className="inline-flex items-center px-6 py-2   rounded-md disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
+              disabled={isSubmitting || rating === 0}>
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
@@ -308,7 +307,7 @@ export default function CreateReviewPage() {
                   Publier l'avis
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </Form>
       </div>

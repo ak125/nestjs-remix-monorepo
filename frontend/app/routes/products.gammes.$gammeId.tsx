@@ -343,12 +343,12 @@ export default function ProductsGammeDetail() {
 
         <div className="flex items-center gap-2">
           {user.role === 'pro' && (
-            <Badge variant="outline" className="bg-blue-50">
+            <Badge variant="outline" className="bg-primary/5">
               Mode Pro
             </Badge>
           )}
           {enhanced && (
-            <Badge variant="outline" className="bg-green-50">
+            <Badge variant="outline" className="bg-success/5">
               Mode Avancé
             </Badge>
           )}
@@ -546,7 +546,7 @@ export default function ProductsGammeDetail() {
 
                     {/* Prix si disponible */}
                     {product.pricing && (
-                      <div className="mb-2 p-2 bg-green-50 rounded text-xs">
+                      <div className="mb-2 p-2 bg-success/5 rounded text-xs">
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-green-800">Prix TTC: {product.pricing.price_ttc}€</span>
                           {product.pricing.discount && product.pricing.discount > 0 && (

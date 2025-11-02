@@ -21,6 +21,8 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 // Interfaces pour les messages
@@ -214,8 +216,8 @@ export default function AdminMessages() {
   };
 
   const getStatusColor = (message: Message) => {
-    if (message.msg_close === '1') return 'bg-red-100 text-red-800 border-red-200';
-    if (message.msg_open === '1') return 'bg-green-100 text-green-800 border-green-200';
+    if (message.msg_close === '1') return 'error';
+    if (message.msg_open === '1') return 'success';
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
@@ -262,7 +264,7 @@ export default function AdminMessages() {
             </button>
             <Link 
               to="/admin/messages/new" 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Send className="h-4 w-4" />
               Nouveau Message
@@ -273,7 +275,7 @@ export default function AdminMessages() {
 
       {/* Indicateur de source */}
       <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-        fallbackMode ? 'border-yellow-400 bg-yellow-50' : 'border-green-400 bg-green-50'
+        fallbackMode ? 'border-warning bg-warning/10' : 'border-success bg-success/10'
       }`}>
         <div className="flex items-center gap-2">
           {fallbackMode ? (
@@ -291,12 +293,12 @@ export default function AdminMessages() {
 
       {/* Erreur */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Stats */}
@@ -388,13 +390,10 @@ export default function AdminMessages() {
               </select>
             </div>
             <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-              >
+              <Button className="w-full px-4 py-2  rounded-md flex items-center justify-center gap-2" variant="blue" type="submit">
                 <Search className="h-4 w-4" />
                 Filtrer
-              </button>
+              </Button>
             </div>
           </Form>
         </div>
@@ -461,7 +460,7 @@ export default function AdminMessages() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-primary/15 flex items-center justify-center">
                         <User className="h-4 w-4 text-blue-600" />
                       </div>
                       <div className="ml-3">
@@ -479,7 +478,7 @@ export default function AdminMessages() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-success/15 flex items-center justify-center">
                         <Users className="h-4 w-4 text-green-600" />
                       </div>
                       <div className="ml-3">

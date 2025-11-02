@@ -60,19 +60,19 @@ export function OrdersOverview({
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded-lg">
+        <div className="bg-muted p-3 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{orders.length}</div>
           <div className="text-xs text-blue-600 uppercase tracking-wide">Total</div>
         </div>
-        <div className="bg-yellow-50 p-3 rounded-lg">
+        <div className="bg-warning/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-yellow-600">{pendingOrders.length}</div>
           <div className="text-xs text-yellow-600 uppercase tracking-wide">En attente</div>
         </div>
-        <div className="bg-red-50 p-3 rounded-lg">
+        <div className="bg-destructive/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-red-600">{priorityOrders.length}</div>
           <div className="text-xs text-red-600 uppercase tracking-wide">Priorité</div>
         </div>
-        <div className="bg-green-50 p-3 rounded-lg">
+        <div className="bg-success/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-green-600">
             {orders.reduce((sum, order) => sum + order.totalAmount, 0).toFixed(2)}€
           </div>
@@ -83,7 +83,7 @@ export function OrdersOverview({
       {/* Filtres rapides */}
       {showFilters && (
         <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-200">
-          <button className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+          <button className="px-3 py-1 bg-info/90 text-info-foreground hover:bg-info rounded-full text-xs font-medium">
             Toutes ({orders.length})
           </button>
           <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
@@ -207,15 +207,15 @@ function getOrderBorderColor(status: string): string {
 function getStatusBadgeStyles(status: string): string {
   switch (status) {
     case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'warning';
     case 'PROCESSING':
-      return 'bg-blue-100 text-blue-800';
+      return 'info';
     case 'SHIPPED':
-      return 'bg-purple-100 text-purple-800';
+      return 'purple';
     case 'DELIVERED':
-      return 'bg-green-100 text-green-800';
+      return 'success';
     case 'CANCELLED':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -227,9 +227,9 @@ function getStatusBadgeStyles(status: string): string {
 function getPriorityBadgeStyles(priority: string): string {
   switch (priority) {
     case 'URGENT':
-      return 'bg-red-100 text-red-800';
+      return 'error';
     case 'HIGH':
-      return 'bg-orange-100 text-orange-800';
+      return 'orange';
     default:
       return 'bg-gray-100 text-gray-800';
   }

@@ -212,19 +212,19 @@ export function Error412({
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-warning/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Version de contenu obsolète ou modifiée
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-warning/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   En-têtes de cache ou ETags non correspondants
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-warning/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Conditions de modification temporelle non satisfaites
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-warning/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Permissions ou authentification requises
                 </li>
               </ul>
@@ -240,19 +240,19 @@ export function Error412({
               </h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-success/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Actualiser la page pour obtenir la dernière version
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-success/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Vider le cache de votre navigateur
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-success/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Vérifier vos autorisations d'accès
                 </li>
                 <li className="flex items-start">
-                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                  <span className="w-1.5 h-1.5 bg-success/60 rounded-full mt-2 mr-2 flex-shrink-0"></span>
                   Réessayer votre requête avec de nouveaux paramètres
                 </li>
               </ul>

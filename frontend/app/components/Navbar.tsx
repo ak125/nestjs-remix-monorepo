@@ -48,7 +48,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
   
   return (
     <nav 
-      className={`px-3 py-2 bg-blue-600 text-white flex justify-between items-center sticky top-0 z-50 transition-shadow duration-300 ${
+      className={`px-3 py-2 bg-primary text-primary-foreground flex justify-between items-center sticky top-0 z-50 transition-shadow duration-300 ${
         isScrolled ? 'shadow-lg' : ''
       }`} 
       aria-label="Navigation principale"
@@ -68,7 +68,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           
           {/* 🆕 PHASE 7: Badge rôle admin */}
           {isAdmin && (
-            <Badge variant="secondary" className="bg-blue-800 text-blue-100 border border-blue-400 flex items-center gap-1">
+            <Badge variant="secondary" className="bg-primary/95 text-blue-100 border border-blue-400 flex items-center gap-1">
               <Shield className="w-3 h-3" />
               {isSuperAdmin ? "Super Admin" : "Admin"}
             </Badge>
@@ -108,7 +108,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           >
             <BookOpen className="w-4 h-4" />
             Blog
-            <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
+            <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
               Nouveau
             </span>
           </Link>
@@ -179,7 +179,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           <form method='POST' action='/auth/logout' className="hidden md:block">
             <button 
               type='submit' 
-              className="hover:text-blue-200 transition-colors text-sm px-3 py-1.5 rounded hover:bg-blue-700"
+              className="hover:text-blue-200 transition-colors text-sm px-3 py-1.5 rounded hover:bg-primary/90"
             >
               Déconnexion
             </button>

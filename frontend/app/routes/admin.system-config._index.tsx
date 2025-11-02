@@ -30,6 +30,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import SystemBreadcrumb from '../components/admin/SystemBreadcrumb';
 
 // Types pour les configurations
@@ -223,11 +224,11 @@ export default function SystemConfigurationDashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'border-l-4 border-success bg-success/10';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'border-l-4 border-warning bg-warning/10';
       case 'error':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'border-l-4 border-destructive bg-destructive/10';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -321,7 +322,7 @@ export default function SystemConfigurationDashboard() {
                 onClick={() => setActiveModule('overview')}
                 className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                   activeModule === 'overview'
-                    ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-500'
+                    ? 'bg-primary/15 text-blue-700 border-r-2 border-blue-500'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                 }`}
               >
@@ -491,11 +492,11 @@ function OverviewPanel({ overview, environment }: {
               
               // Déterminons l'icône et la couleur selon le status
               const statusConfig = status === 'healthy' 
-                ? { icon: CheckCircle, color: 'text-green-600 bg-green-50 border-green-200' }
+                ? { icon: CheckCircle, color: 'text-success bg-success/10 border-green-200' }
                 : status === 'warning'
-                ? { icon: AlertCircle, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' }
+                ? { icon: AlertCircle, color: 'text-warning bg-warning/10 border-yellow-200' }
                 : status === 'error'
-                ? { icon: XCircle, color: 'text-red-600 bg-red-50 border-red-200' }
+                ? { icon: XCircle, color: 'text-destructive bg-destructive/10 border-red-200' }
                 : { icon: AlertCircle, color: 'text-gray-600 bg-gray-50 border-gray-200' };
               
               return (
@@ -566,11 +567,11 @@ function OverviewPanel({ overview, environment }: {
               <dd className="mt-1">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                   overview.health.overall === 'healthy' 
-                    ? 'text-green-600 bg-green-50 border-green-200'
+                    ? 'text-success bg-success/10 border-green-200'
                     : overview.health.overall === 'warning'
-                    ? 'text-yellow-600 bg-yellow-50 border-yellow-200'
+                    ? 'text-warning bg-warning/10 border-yellow-200'
                     : overview.health.overall === 'error'
-                    ? 'text-red-600 bg-red-50 border-red-200'
+                    ? 'text-destructive bg-destructive/10 border-red-200'
                     : 'text-gray-600 bg-gray-50 border-gray-200'
                 }`}>
                   {overview.health.overall}
@@ -685,14 +686,11 @@ function ModulePanel({
               <input type="hidden" name="action" value={`validate-${module}`} />
               <input type="hidden" name="environment" value={environment} />
               <input type="hidden" name="module" value={module} />
-              <button
-                type="submit"
-                disabled={fetcher.state === 'submitting'}
-                className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-              >
+              <Button className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm  rounded-md  focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50" variant="blue" type="submit"
+                disabled={fetcher.state === 'submitting'}>
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Valider
-              </button>
+              </Button>
             </fetcher.Form>
 
             <button

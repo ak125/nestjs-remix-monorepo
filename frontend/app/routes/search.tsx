@@ -10,6 +10,7 @@
  * - Interface adaptative
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
@@ -198,9 +199,9 @@ export default function SearchPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-gray-900">Recherche</h1>
             {performance.totalItems !== undefined && (
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+              <Badge variant="info">
                 {performance.totalItems.toLocaleString()} résultats
-              </span>
+              </Badge>
             )}
           </div>
           
@@ -224,7 +225,7 @@ export default function SearchPage() {
 
         {/* Gestion des erreurs */}
         {hasError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-6 p-4 bg-destructive/5 border border-red-200 rounded-lg">
             <div className="flex items-center gap-2">
               <div className="text-red-600">⚠️</div>
               <div>
@@ -299,7 +300,7 @@ export default function SearchPage() {
                         onClick={() => setViewMode('grid')}
                         className={`px-3 py-2 text-sm ${
                           viewMode === 'grid' 
-                            ? 'bg-blue-600 text-white' 
+                            ? 'bg-primary text-primary-foreground' 
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                         } rounded-l-md border border-gray-300`}
                         title="Vue en grille"
@@ -310,7 +311,7 @@ export default function SearchPage() {
                         onClick={() => setViewMode('list')}
                         className={`px-3 py-2 text-sm ${
                           viewMode === 'list' 
-                            ? 'bg-blue-600 text-white' 
+                            ? 'bg-primary text-primary-foreground' 
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                         } rounded-r-md border-l-0 border border-gray-300`}
                         title="Vue en liste"

@@ -17,6 +17,8 @@ import {
   Package,
   MessageSquare
 } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { getReviewById, updateReviewStatus, deleteReview } from "../services/api/review.api";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -119,19 +121,19 @@ export default function ReviewDetailPage() {
     switch (status) {
       case "approved":
         return {
-          className: "bg-green-100 text-green-800 border-green-200",
+          className: 'success',
           label: "Approuvé",
           icon: <Check className="w-4 h-4" />
         };
       case "rejected":
         return {
-          className: "bg-red-100 text-red-800 border-red-200",
+          className: 'error',
           label: "Rejeté",
           icon: <X className="w-4 h-4" />
         };
       case "pending":
         return {
-          className: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          className: 'warning',
           label: "En attente",
           icon: <Flag className="w-4 h-4" />
         };
@@ -179,19 +181,19 @@ export default function ReviewDetailPage() {
 
       {/* Messages d'état */}
       {actionData?.success && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+<Alert className="mb-6    rounded-md p-4" variant="success">
           <div className="text-green-800 text-sm">
             Action effectuée avec succès
           </div>
-        </div>
+        </Alert>
       )}
 
       {actionData?.error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+<Alert className="mb-6    rounded-md p-4" variant="error">
           <div className="text-red-800 text-sm">
             {actionData.error}
           </div>
-        </div>
+        </Alert>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -203,7 +205,7 @@ export default function ReviewDetailPage() {
               {/* En-tête de l'avis */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
                   <div>
@@ -284,42 +286,33 @@ export default function ReviewDetailPage() {
               {review.status !== "approved" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="approve" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="green" type="submit"
+                    disabled={isSubmitting}>
                     <Check className="w-4 h-4 mr-2" />
                     Approuver
-                  </button>
+                  </Button>
                 </Form>
               )}
 
               {review.status !== "rejected" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="reject" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="red" type="submit"
+                    disabled={isSubmitting}>
                     <X className="w-4 h-4 mr-2" />
                     Rejeter
-                  </button>
+                  </Button>
                 </Form>
               )}
 
               {review.status !== "pending" && (
                 <Form method="post">
                   <input type="hidden" name="intent" value="pending" />
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 bg-yellow-600 text-white font-medium rounded-md hover:bg-yellow-700 disabled:opacity-50"
-                  >
+                  <Button className="w-full inline-flex items-center justify-center px-4 py-2   rounded-md disabled:opacity-50" variant="yellow" type="submit"
+                    disabled={isSubmitting}>
                     <Flag className="w-4 h-4 mr-2" />
                     Remettre en attente
-                  </button>
+                  </Button>
                 </Form>
               )}
             </div>
@@ -339,7 +332,7 @@ export default function ReviewDetailPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-red-50 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-destructive/5 disabled:opacity-50"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Supprimer définitivement
@@ -395,12 +388,7 @@ export default function ReviewDetailPage() {
                 Retour à la liste
               </Link>
               
-              <Link
-                to="/reviews/create"
-                className="block w-full text-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-              >
-                Nouvel avis
-              </Link>
+              <Button className="block w-full text-center px-4 py-2   rounded-md" variant="blue" asChild><Link to="/reviews/create">Nouvel avis</Link></Button>
             </div>
           </div>
         </div>

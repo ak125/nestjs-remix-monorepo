@@ -1,3 +1,4 @@
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 
@@ -99,7 +100,7 @@ export default function AdminProductDetail() {
           <div className="flex space-x-3">
             <Link
               to={`/admin/products/${product.piece_id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90"
             >
               ✏️ Modifier
             </Link>
@@ -123,16 +124,15 @@ export default function AdminProductDetail() {
               <span
                 className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
                   product.piece_activ
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                    ? 'success' : 'error'
                 }`}
               >
                 {product.piece_activ ? '✅ Produit Actif' : '❌ Produit Inactif'}
               </span>
               {product.piece_top && (
-                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                <Badge variant="warning">
                   ⭐ Produit TOP
-                </span>
+                </Badge>
               )}
             </div>
           </div>
@@ -269,9 +269,7 @@ export default function AdminProductDetail() {
               </div>
               {product.piece_qte_stock && product.piece_qte_stock_mini && 
                product.piece_qte_stock <= product.piece_qte_stock_mini && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-                  ⚠️ Stock faible !
-                </div>
+                <Alert intent="error">⚠️ Stock faible !</Alert>
               )}
             </div>
           </div>

@@ -9,6 +9,8 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {
@@ -241,12 +243,7 @@ export default function SuppliersIndex() {
           >
             📤 Importer
           </Link>
-          <Link
-            to="/admin/suppliers/new"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm bg-blue-600 text-sm font-medium text-white hover:bg-blue-700"
-          >
-            ➕ Nouveau Fournisseur
-          </Link>
+          <Button className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Nouveau Fournisseur</Link></Button>
         </div>
       </div>
       
@@ -348,12 +345,7 @@ export default function SuppliersIndex() {
                   }
                 </p>
                 <div className="mt-6">
-                  <Link
-                    to="/admin/suppliers/new"
-                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    ➕ Ajouter le premier fournisseur
-                  </Link>
+                  <Button className="px-4 py-2 border border-transparent shadow-sm text-sm  rounded-md" variant="blue" asChild><Link to="/admin/suppliers/new">➕ Ajouter le premier fournisseur</Link></Button>
                 </div>
               </div>
             </div>
@@ -395,10 +387,10 @@ function StatCard({
   color?: "blue" | "green" | "yellow" | "red" | "gray"; 
 }) {
   const colorClasses = {
-    blue: "text-blue-600 bg-blue-50",
-    green: "text-green-600 bg-green-50",
-    yellow: "text-yellow-600 bg-yellow-50",
-    red: "text-red-600 bg-red-50",
+    blue: "text-primary bg-primary/10",
+    green: "text-success bg-success/10",
+    yellow: "text-warning bg-warning/10",
+    red: "text-destructive bg-destructive/10",
     gray: "text-gray-600 bg-gray-50",
   };
 
@@ -434,13 +426,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-lg font-semibold text-gray-900">{supplier.name}</h3>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                supplier.isActive 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {supplier.isActive ? "Actif" : "Inactif"}
-              </span>
+              <Badge className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium " variant={supplier.isActive ? 'success' : 'error'}>\n  {supplier.isActive ? "Actif" : "Inactif"}\n</Badge>
               {supplier.code && (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                   {supplier.code}
@@ -533,8 +519,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
                         key={index}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           link.type === 'brand' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
+                            ? 'info' : 'success'
                         }`}
                         title={link.productInfo ? `${link.productInfo.designation} - ${link.productInfo.brand} (Ref: ${link.productInfo.reference})` : ''}
                       >
@@ -576,7 +561,7 @@ function SupplierCard({ supplier }: { supplier: Supplier }) {
               ✏️ Modifier
             </Link>
             <button 
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-destructive bg-white hover:bg-destructive/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
               🗑️ Supprimer
             </button>

@@ -1,0 +1,198 @@
+# ==============================================================================
+# Vector Configuration - Version Simple et Fonctionnelle
+# Caddy → Vector → Meilisearch (pas de GeoIP, pas de Loki pour l'instant)
+# ==============================================================================
+
+data_dir = "/var/lib/vector"
+
+# ==============================================================================
+# SOURCE - Logs Caddy JSON
+# ==============================================================================
+
+[sources.caddy_logs]
+type = "file"
+include = [
+  "/var/log/caddy/access.json",
+  "/workspaces/nestjs-remix-monorepo/logs/caddy-access.json",
+  "/workspaces/nestjs-remix-monorepo/logs/caddy-access-*.json"
+]
+read_from = "beginning"
+data_dir = "/var/lib/vector"
+
+# ==============================================================================
+# TRANSFORMS - Parsing et enrichissement
+# ==============================================================================
+
+# 1. Parser le JSON et extraire les champs basiques
+[transforms.parse_json]
+type = "remap"
+inputs = ["caddy_logs"]
+source = '''
+# Parser la ligne JSON
+. = parse_json!(.message)
+
+# Champs de base
+.timestamp = parse_timestamp!(.ts, "%+")
+.status = .status
+.method = .request.method
+.uri = .request.uri
+.host = .request.host
+.client_ip = .request.remote_ip
+.user_agent = .request.headers."User-Agent"[0]
+.referer = .request.headers."Referer"[0]
+.latency_ms = to_int(to_float!(.duration) * 1000.0)
+.bytes_written = .size
+
+# Path nettoyé
+.path = split!(.uri, "?")[0]
+'''
+
+# 2. Extraction brand/gamme + détection bot
+[transforms.enrich]
+type = "remap"
+inputs = ["parse_json"]
+source = '''
+# Détection bot simple
+.bot = null
+.is_bot = false
+
+if contains(to_string!(.user_agent), "googlebot") {
+  .bot = "googlebot"
+  .is_bot = true
+} else if contains(to_string!(.user_agent), "bingbot") {
+  .bot = "bingbot"
+  .is_bot = true
+} else if contains(to_string!(.user_agent), "bot") || contains(to_string!(.user_agent), "crawler") {
+  .bot = "other"
+  .is_bot = true
+}
+
+# Extraction facettes e-commerce automobile
+# Structure URL: /pieces/{pieces_category}/{marque}/{modele}/{type}
+# Exemple: /pieces/freins-123/renault-14/clio-456/1-5-dci-789.html
+.pieces_category = null
+.marque = null
+.modele = null
+.type = null
+
+if contains(string!(.path), "/pieces/") {
+  parts = split(string!(.path), "/")
+  # parts[0] = "", parts[1] = "pieces", parts[2] = category, parts[3] = marque, etc.
+  if length(parts) > 2 {
+    .pieces_category = parts[2]  # Ex: freins-123, embrayage-456
+  }
+  if length(parts) > 3 {
+    .marque = parts[3]  # Ex: renault-14, peugeot-2
+  }
+  if length(parts) > 4 {
+    .modele = parts[4]  # Ex: clio-456, 208-789
+  }
+  if length(parts) > 5 {
+    .type = parts[5]  # Ex: 1-5-dci-789 (motorisation)
+  }
+}
+
+# Jour pour facette temporelle
+.day = format_timestamp!(.timestamp, format: "%Y-%m-%d")
+
+# Timestamp Unix pour tri
+.ts = to_unix_timestamp!(.timestamp)
+
+# Route générique
+.route = .path
+'''
+
+# 3. Format pour Meilisearch
+[transforms.format_meilisearch]
+type = "remap"
+inputs = ["enrich"]
+source = '''
+# ID unique (fallback si pas de request_id)
+.id = encode_base64(to_string!(.timestamp) + to_string!(.client_ip) + to_string!(.path))
+
+# Garder seulement les champs nécessaires
+. = {
+  "id": .id,
+  "ts": .ts,
+  "day": .day,
+  "status": .status,
+  "method": .method,
+  "path": .path,
+  "route": .route,
+  "host": .host,
+  "client_ip": .client_ip,
+  "latency_ms": .latency_ms,
+  "bytes_written": .bytes_written,
+  "ua": .user_agent,
+  "referer": .referer,
+  "bot": .bot,
+  "pieces_category": .pieces_category,
+  "marque": .marque,
+  "modele": .modele,
+  "type": .type,
+  "country": null,
+  "city": null
+}
+'''
+
+# ==============================================================================
+# SINK - Meilisearch
+# ==============================================================================
+
+[sinks.meilisearch]
+type = "http"
+inputs = ["format_meilisearch"]
+uri = "${MEILISEARCH_HOST:-http://meilisearch:7700}/indexes/access_logs/documents"
+method = "post"
+
+[sinks.meilisearch.encoding]
+codec = "json"
+
+[sinks.meilisearch.request]
+headers.Authorization = "Bearer ${MEILISEARCH_API_KEY}"
+headers.Content-Type = "application/json"
+
+# Batching - optimisé pour production
+[sinks.meilisearch.batch]
+max_events = 50
+timeout_secs = 10
+
+# ==============================================================================
+# SINK - Console (debug)
+# ==============================================================================
+
+[sinks.console]
+type = "console"
+inputs = ["format_meilisearch"]
+
+[sinks.console.encoding]
+codec = "json"
+
+# ==============================================================================
+# SINK - Loki (logs centralisés pour analyse crawl)
+# ==============================================================================
+
+[sinks.loki]
+type = "loki"
+inputs = ["enrich"]
+endpoint = "${LOKI_URL:-http://loki:3100}"
+encoding.codec = "json"
+
+# Labels pour Loki (utilisés pour l'indexation et les filtres)
+[sinks.loki.labels]
+job = "caddy-access"
+host = "{{ host }}"
+status = "{{ status }}"
+method = "{{ method }}"
+bot = "{{ bot }}"
+marque = "{{ marque }}"
+modele = "{{ modele }}"
+pieces_category = "{{ pieces_category }}"
+
+# ==============================================================================
+# API
+# ==============================================================================
+
+[api]
+enabled = true
+address = "0.0.0.0:8686"

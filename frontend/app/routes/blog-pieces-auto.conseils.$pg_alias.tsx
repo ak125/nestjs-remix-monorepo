@@ -563,7 +563,7 @@ export default function LegacyBlogArticle() {
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     📰 On vous propose
                   </h3>
-                  <div className="h-1 w-16 bg-blue-600 rounded mb-4" />
+                  <div className="h-1 w-16 bg-primary rounded mb-4" />
                   <div className="space-y-3">
                     {article.relatedArticles.map((related) => (
                       <Link

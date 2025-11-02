@@ -1,6 +1,8 @@
+import { Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 import { requireAuth } from "../auth/unified.server";
 
 // Types
@@ -337,7 +339,7 @@ export default function OrderInvoice() {
               </div>
             </div>
             
-            <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+            <div className="border border-primary bg-primary/10 rounded-lg p-4">
               <p className="text-sm">
                 En cliquant sur le bouton « Payer maintenant », vous acceptez de vous conformer aux{' '}
                 <a 
@@ -386,12 +388,7 @@ export default function OrderInvoice() {
                   }
                 }}
               >
-                <button 
-                  type="submit"
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
-                >
-                  Payer maintenant
-                </button>
+                <Button className="font-bold py-3 px-8 rounded-lg text-lg" variant="green" type="submit">\n  Payer maintenant\n</Button>
               </form>
             </div>
           </div>
@@ -399,11 +396,7 @@ export default function OrderInvoice() {
         
         {/* Message si déjà payé */}
         {invoice.isPaid && (
-          <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-center">
-            <p className="text-green-800 font-semibold">
-              ✓ Cette commande a été payée le {invoice.datePay ? new Date(invoice.datePay).toLocaleDateString('fr-FR') : 'N/A'}
-            </p>
-          </div>
+          <Alert intent="success"><p>✓ Cette commande a été payée le {invoice.datePay ? new Date(invoice.datePay).toLocaleDateString('fr-FR') : 'N/A'}</p></Alert>
         )}
         
         {/* Pied de page */}
@@ -426,7 +419,7 @@ export default function OrderInvoice() {
           
           <button 
             onClick={() => window.print()}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-6 rounded transition-colors"
           >
             🖨️ Imprimer
           </button>

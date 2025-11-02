@@ -1,0 +1,592 @@
+{
+  "categories": {
+    "casse_incorrecte": [
+      {
+        "table": "___META_TAGS_ARIANE",
+        "correct": "___meta_tags_ariane",
+        "count": 5,
+        "files": [
+          "modules/navigation/services/seo-menu.service.ts",
+          "modules/dashboard/dashboard.service.ts",
+          "modules/system/services/metrics.service.ts"
+        ]
+      },
+      {
+        "table": "___XTR_ORDER",
+        "correct": "___xtr_order",
+        "count": 14,
+        "files": [
+          "modules/orders/services/order-archive.service.ts",
+          "modules/navigation/services/expedition-menu.service.ts"
+        ]
+      },
+      {
+        "table": "___XTR_ORDER_LINE",
+        "correct": "___xtr_order_line",
+        "count": 3,
+        "files": [
+          "modules/orders/services/order-archive.service.ts"
+        ]
+      },
+      {
+        "table": "___XTR_ORDER_STATUS",
+        "correct": "___xtr_order_status",
+        "count": 2,
+        "files": [
+          "modules/orders/services/order-archive.service.ts"
+        ]
+      },
+      {
+        "table": "___FOOTER_MENU",
+        "correct": "___footer_menu",
+        "count": 2,
+        "files": [
+          "modules/layout/services/footer.service.ts",
+          "modules/layout/services/footer-unified.service.ts"
+        ]
+      }
+    ],
+    "tables_blog": [
+      {
+        "table": "blog_articles",
+        "count": 3,
+        "files": [
+          "modules/blog/services/blog.service.ts"
+        ]
+      },
+      {
+        "table": "__blog_glossaire",
+        "count": 10,
+        "files": [
+          "modules/blog/services/glossary.service.ts"
+        ]
+      },
+      {
+        "table": "__blog_constructeur_modele",
+        "count": 4,
+        "files": [
+          "modules/blog/services/constructeur.service.ts"
+        ]
+      },
+      {
+        "table": "__blog_constructeur",
+        "count": 15,
+        "files": [
+          "modules/blog/services/constructeur.service.ts"
+        ]
+      },
+      {
+        "table": "__blog_constructeur_h2",
+        "count": 1,
+        "files": [
+          "modules/blog/services/constructeur.service.ts"
+        ]
+      },
+      {
+        "table": "__blog_constructeur_h3",
+        "count": 1,
+        "files": [
+          "modules/blog/services/constructeur.service.ts"
+        ]
+      }
+    ],
+    "tables_stock": [
+      {
+        "table": "stock",
+        "count": 16,
+        "files": [
+          "modules/admin/services/stock-management.service.ts"
+        ]
+      },
+      {
+        "table": "stock_movements",
+        "count": 5,
+        "files": [
+          "modules/admin/services/stock-management.service.ts"
+        ]
+      },
+      {
+        "table": "stock_alerts",
+        "count": 2,
+        "files": [
+          "modules/admin/services/stock-management.service.ts"
+        ]
+      }
+    ],
+    "tables_logs": [
+      {
+        "table": "error_logs",
+        "count": 6,
+        "files": [
+          "modules/seo/seo.service.ts",
+          "modules/config/services/enhanced-metadata.service.ts",
+          "modules/navigation/services/seo-menu.service.ts",
+          "modules/errors/services/error-log.service.ts"
+        ]
+      },
+      {
+        "table": "upload_analytics",
+        "count": 8,
+        "files": [
+          "modules/upload/services/upload-analytics.service.ts"
+        ]
+      },
+      {
+        "table": "system_metrics",
+        "count": 1,
+        "files": [
+          "modules/system/services/metrics.service.ts"
+        ]
+      },
+      {
+        "table": "analytics_config",
+        "count": 2,
+        "files": [
+          "modules/analytics/services/enhanced-analytics.service.ts"
+        ]
+      },
+      {
+        "table": "analytics_events",
+        "count": 2,
+        "files": [
+          "modules/analytics/services/enhanced-analytics.service.ts"
+        ]
+      }
+    ],
+    "tables_seo": [
+      {
+        "table": "__seo_conseil",
+        "count": 1,
+        "files": [
+          "modules/gamme-rest/gamme-rest-complete.controller.ts"
+        ]
+      },
+      {
+        "table": "__seo_info",
+        "count": 1,
+        "files": [
+          "modules/gamme-rest/gamme-rest-complete.controller.ts"
+        ]
+      },
+      {
+        "table": "seo_family_gamme_car_switch",
+        "count": 1,
+        "files": [
+          "modules/products/services/cross-selling.service.ts"
+        ]
+      }
+    ],
+    "tables_metier": [
+      {
+        "table": "auto_gamme",
+        "count": 1,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "product_vehicle_compatibility",
+        "count": 1,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "auto_models",
+        "count": 1,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "auto_types",
+        "count": 1,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "vehicules_pieces",
+        "count": 3,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "pieces_criteres",
+        "count": 3,
+        "files": [
+          "modules/products/products.service.ts"
+        ]
+      },
+      {
+        "table": "___xtr_product",
+        "count": 2,
+        "files": [
+          "modules/dashboard/dashboard.service.ts"
+        ]
+      },
+      {
+        "table": "___xtr_order_line_audit",
+        "count": 1,
+        "files": [
+          "modules/orders/services/order-actions.service.ts"
+        ]
+      },
+      {
+        "table": "___xtr_order_status_history",
+        "count": 1,
+        "files": [
+          "modules/orders/services/order-actions.service.ts"
+        ]
+      },
+      {
+        "table": "___xtr_order_history",
+        "count": 1,
+        "files": [
+          "modules/orders/services/order-status.service.ts"
+        ]
+      },
+      {
+        "table": "customers",
+        "count": 1,
+        "files": [
+          "modules/messages/repositories/message-data.service.ts"
+        ]
+      },
+      {
+        "table": "pieces_marques",
+        "count": 3,
+        "files": [
+          "modules/catalog/services/pieces-enhanced.service.ts",
+          "modules/catalog/services/pieces-ultra-enhanced.service.ts",
+          "modules/catalog/services/pieces-php-logic-complete.service.ts"
+        ]
+      },
+      {
+        "table": "pieces_prices",
+        "count": 1,
+        "files": [
+          "modules/catalog/services/pieces-enhanced.service.ts"
+        ]
+      },
+      {
+        "table": "auto_type_engine",
+        "count": 1,
+        "files": [
+          "modules/vehicles/services/core/vehicle-enrichment.service.ts"
+        ]
+      }
+    ],
+    "code_mort": [
+      {
+        "table": "manufacturer_overview_enhanced",
+        "count": 1,
+        "files": [
+          "modules/manufacturers/manufacturers.controller.ts"
+        ]
+      },
+      {
+        "table": "___users",
+        "count": 2,
+        "files": [
+          "modules/users/users.service.ts"
+        ]
+      },
+      {
+        "table": "___xtr_cat",
+        "count": 1,
+        "files": [
+          "modules/dashboard/dashboard.service.ts"
+        ]
+      },
+      {
+        "table": "system_config",
+        "count": 3,
+        "files": [
+          "modules/admin/services/configuration.service.ts"
+        ]
+      },
+      {
+        "table": "vehicules",
+        "count": 1,
+        "files": [
+          "modules/config/services/enhanced-metadata.service.ts"
+        ]
+      },
+      {
+        "table": "marques",
+        "count": 1,
+        "files": [
+          "modules/config/services/enhanced-metadata.service.ts"
+        ]
+      },
+      {
+        "table": "delivery_agents",
+        "count": 1,
+        "files": [
+          "modules/cart/services/cart-calculation.service.ts"
+        ]
+      },
+      {
+        "table": "quantity_discounts",
+        "count": 1,
+        "files": [
+          "modules/cart/services/cart-calculation.service.ts"
+        ]
+      },
+      {
+        "table": "layout_sections",
+        "count": 2,
+        "files": [
+          "modules/layout/services/footer.service.ts",
+          "modules/layout/services/footer-unified.service.ts"
+        ]
+      },
+      {
+        "table": "company_settings",
+        "count": 1,
+        "files": [
+          "modules/layout/services/footer-unified.service.ts"
+        ]
+      },
+      {
+        "table": "social_share_configs",
+        "count": 2,
+        "files": [
+          "modules/layout/services/footer.service.ts",
+          "modules/layout/services/footer-unified.service.ts"
+        ]
+      },
+      {
+        "table": "user_sessions",
+        "count": 1,
+        "files": [
+          "modules/users/services/password.service.ts"
+        ]
+      }
+    ]
+  },
+  "missing_columns": {
+    "pieces": {
+      "count": 21,
+      "columns": [
+        "piece_stock",
+        "reserved",
+        "piece_stock_reserved",
+        "pg_name",
+        "piece_code",
+        "quantity",
+        "pm_name",
+        "id",
+        "name",
+        "pm_alias",
+        "pm_nb_stars",
+        "reference",
+        "pm_logo",
+        "pm_oes",
+        "pg_alias",
+        "pm_id"
+      ],
+      "files": [
+        "modules/catalog/services/pieces-v4-working.service.ts",
+        "modules/cart/services/stock-management.service.ts",
+        "modules/admin/services/stock-management.service.ts",
+        "modules/catalog/services/pieces-ultra-enhanced.service.ts",
+        "pieces/pieces-real.service.ts",
+        "modules/search/services/search-enhanced-existing.service.ts"
+      ]
+    },
+    "___xtr_customer": {
+      "count": 8,
+      "columns": [
+        "ord_is_pay",
+        "cst_company",
+        "cst_phone",
+        "ord_total_ttc",
+        "cst_firstname",
+        "cst_lastname"
+      ],
+      "files": [
+        "modules/shipping/shipping.service.ts",
+        "database/services/legacy-order.service.ts",
+        "modules/system/services/metrics.service.ts"
+      ]
+    },
+    "__seo_gamme_car_switch": {
+      "count": 2,
+      "columns": [
+        "sgcs_content",
+        "sgcs_alias"
+      ],
+      "files": [
+        "modules/seo/dynamic-seo-v4-ultimate.service.ts"
+      ]
+    },
+    "___config": {
+      "count": 2,
+      "columns": [
+        "config_value"
+      ],
+      "files": [
+        "modules/seo/seo.service.ts",
+        "modules/config/services/enhanced-config.service.ts"
+      ]
+    },
+    "pieces_gamme": {
+      "count": 1,
+      "columns": [
+        "pg_image"
+      ],
+      "files": [
+        "modules/catalog/catalog.service.ts"
+      ]
+    },
+    "___xtr_supplier_link_pm": {
+      "count": 1,
+      "columns": [
+        "id"
+      ],
+      "files": [
+        "modules/suppliers/suppliers.service.ts"
+      ]
+    },
+    "___xtr_supplier": {
+      "count": 1,
+      "columns": [
+        "id"
+      ],
+      "files": [
+        "modules/suppliers/suppliers.service.ts"
+      ]
+    },
+    "auto_modele": {
+      "count": 4,
+      "columns": [
+        "marque_name_meta",
+        "marque_name",
+        "marque_alias",
+        "marque_id"
+      ],
+      "files": [
+        "modules/gamme-rest/gamme-rest-complete.controller.ts"
+      ]
+    },
+    "__seo_equip_gamme": {
+      "count": 1,
+      "columns": [
+        "seg_title"
+      ],
+      "files": [
+        "modules/gamme-rest/gamme-rest-complete.controller.ts"
+      ]
+    },
+    "auto_marque": {
+      "count": 1,
+      "columns": [
+        "marque_activ"
+      ],
+      "files": [
+        "modules/products/products.service.ts"
+      ]
+    },
+    "___xtr_order_line": {
+      "count": 4,
+      "columns": [
+        "ord_cst_id",
+        "status",
+        "id",
+        "order_id"
+      ],
+      "files": [
+        "modules/orders/services/order-actions.service.ts",
+        "modules/orders/services/order-status.service.ts",
+        "modules/admin/services/stock-management.service.ts"
+      ]
+    },
+    "products": {
+      "count": 4,
+      "columns": [
+        "stock_quantity",
+        "categories",
+        "category_id",
+        "id"
+      ],
+      "files": [
+        "modules/cart/services/cart-calculation.service.ts",
+        "modules/admin/services/stock-management.service.ts",
+        "modules/cart/services/cart-validation.service.ts"
+      ]
+    },
+    "___xtr_order": {
+      "count": 7,
+      "columns": [
+        "total",
+        "archived_at",
+        "status",
+        "order_id"
+      ],
+      "files": [
+        "database/services/order-repository.service.ts",
+        "modules/commercial/archives/archives.service.ts",
+        "modules/orders/repositories/order.repository.ts"
+      ]
+    },
+    "___meta_tags_ariane": {
+      "count": 2,
+      "columns": [
+        "updated_at"
+      ],
+      "files": [
+        "modules/config/services/enhanced-metadata.service.ts"
+      ]
+    },
+    "pieces_price": {
+      "count": 5,
+      "columns": [
+        "psf_id",
+        "psf_side",
+        "psf_sort"
+      ],
+      "files": [
+        "modules/catalog/services/pieces-ultra-enhanced.service.ts",
+        "modules/catalog/services/vehicle-pieces-compatibility.service.ts"
+      ]
+    },
+    "catalog_family": {
+      "count": 3,
+      "columns": [
+        "mc_pg_id",
+        "mc_sort",
+        "mc_mf_id"
+      ],
+      "files": [
+        "modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts"
+      ]
+    },
+    "auto_type": {
+      "count": 10,
+      "columns": [
+        "type_year",
+        "type_engine_code"
+      ],
+      "files": [
+        "modules/vehicles/services/data/vehicle-types.service.ts",
+        "modules/vehicles/services/data/vehicle-models.service.ts"
+      ]
+    }
+  },
+  "statistics": {
+    "total_missing_tables": 48,
+    "by_category": {
+      "casse_incorrecte": 5,
+      "tables_blog": 6,
+      "tables_stock": 3,
+      "tables_logs": 5,
+      "tables_seo": 3,
+      "tables_metier": 14,
+      "code_mort": 12
+    },
+    "total_missing_columns": 17
+  }
+}

@@ -108,7 +108,7 @@ export default function MessageDetail() {
               {message.MSG_SUBJECT}
             </CardTitle>
             {message.MSG_ORD_ID && (
-              <Badge className="bg-blue-500">
+              <Badge className="bg-primary">
                 Commande #{message.MSG_ORD_ID}/A
               </Badge>
             )}

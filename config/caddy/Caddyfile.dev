@@ -1,0 +1,118 @@
+# 🔧 Configuration Caddy pour développement local
+# Date: 21 octobre 2025
+# Configuration simplifiée sans HTTPS pour le développement
+
+# ===== CONFIGURATION GLOBALE =====
+{
+    # Désactiver HTTPS en développement
+    auto_https off
+    admin localhost:2019
+    
+    # Logs en mode debug
+    log {
+        output stdout
+        format console
+        level DEBUG
+    }
+    
+    # Logs fichier pour Vector (même en dev)
+    log access_logs {
+        output file /var/log/caddy/access.json {
+            roll_size 10mb
+            roll_keep 2
+        }
+        format json {
+            time_format "iso8601"
+            message_key "msg"
+            level_key "level"
+            name_key "logger"
+        }
+        level INFO
+    }
+}
+
+# ===== DÉVELOPPEMENT LOCAL =====
+:80 {
+    
+    # ===== ROUTES API BACKEND (NestJS) =====
+    @api path /api/* /graphql /health /metrics
+    
+    handle @api {
+        reverse_proxy monorepo_dev:3000 {
+            # En-têtes de proxy
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+            
+            # Timeouts plus courts en dev
+            transport http {
+                dial_timeout 5s
+                response_header_timeout 30s
+            }
+        }
+    }
+    
+    # ===== ASSETS STATIQUES =====
+    @static path *.css *.js *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.ico *.webp /build/* /public/* /assets/*
+    
+    handle @static {
+        # Pas de cache en dev pour faciliter le développement
+        header Cache-Control "no-cache, no-store, must-revalidate"
+        reverse_proxy monorepo_dev:3000
+    }
+    
+    # ===== TOUTES LES AUTRES ROUTES (FRONTEND) =====
+    handle {
+        reverse_proxy monorepo_dev:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    
+    # ===== HEADERS DE DÉVELOPPEMENT =====
+    header {
+        # Headers minimaux en dev
+        -Server
+        -X-Powered-By
+        X-Dev-Mode "true"
+    }
+    
+    # ===== COMPRESSION =====
+    encode gzip
+    
+    # ===== LOGGING =====
+    log {
+        output file /var/log/caddy/dev.log {
+            roll_size 10mb
+            roll_keep 2
+        }
+        format json {
+            time_format "iso8601"
+            message_key "msg"
+            level_key "level"
+            name_key "logger"
+        }
+        level INFO
+    }
+}
+
+# ===== ACCÈS DIRECT AUX SERVICES (OPTIONNEL) =====
+# Décommentez pour accéder directement aux services
+
+# API Backend direct
+# :3001 {
+#     reverse_proxy monorepo_dev:3000
+# }
+
+# Redis Admin (si vous utilisez redis-commander)
+# :8081 {
+#     reverse_proxy redis-commander:8081
+# }
+
+# Meilisearch (si activé)
+# :7700 {
+#     reverse_proxy meilisearch:7700
+# }

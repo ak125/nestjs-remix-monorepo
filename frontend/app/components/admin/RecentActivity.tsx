@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 /**
  * 🔄 Composant RecentActivity - Activité récente
  * Compatible avec l'architecture Remix existante
@@ -68,19 +69,19 @@ export function RecentActivity({
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded-lg">
+        <div className="bg-muted p-3 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
           <div className="text-xs text-blue-600 uppercase tracking-wide">Total</div>
         </div>
-        <div className="bg-green-50 p-3 rounded-lg">
+        <div className="bg-success/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-green-600">{stats.today}</div>
           <div className="text-xs text-green-600 uppercase tracking-wide">Aujourd'hui</div>
         </div>
-        <div className="bg-yellow-50 p-3 rounded-lg">
+        <div className="bg-warning/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-yellow-600">{stats.warnings}</div>
           <div className="text-xs text-yellow-600 uppercase tracking-wide">Alertes</div>
         </div>
-        <div className="bg-red-50 p-3 rounded-lg">
+        <div className="bg-destructive/10 p-3 rounded-lg">
           <div className="text-2xl font-bold text-red-600">{stats.errors}</div>
           <div className="text-xs text-red-600 uppercase tracking-wide">Erreurs</div>
         </div>
@@ -89,7 +90,7 @@ export function RecentActivity({
       {/* Filtres rapides */}
       {showFilters && (
         <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-200">
-          <button className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+          <button className="px-3 py-1 bg-info/90 text-info-foreground hover:bg-info rounded-full text-xs font-medium">
             Tout
           </button>
           <button className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium hover:bg-gray-200">
@@ -136,14 +137,10 @@ export function RecentActivity({
                           {activity.title}
                         </p>
                         {activity.severity === 'ERROR' && (
-                          <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
-                            Erreur
-                          </span>
+                          <Badge variant="error">Erreur</Badge>
                         )}
                         {activity.severity === 'WARNING' && (
-                          <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
-                            Alerte
-                          </span>
+                          <Badge variant="warning">Alerte</Badge>
                         )}
                       </div>
                       
@@ -244,27 +241,27 @@ function getActivityIconStyles(type: string, severity: string): string {
   let baseStyles = '';
   switch (severity) {
     case 'ERROR':
-      baseStyles = 'bg-red-500 text-white';
+      baseStyles = 'bg-destructive text-destructive-foreground';
       break;
     case 'WARNING':
-      baseStyles = 'bg-yellow-500 text-white';
+      baseStyles = 'bg-warning text-warning-foreground';
       break;
     case 'SUCCESS':
-      baseStyles = 'bg-green-500 text-white';
+      baseStyles = 'bg-success text-success-foreground';
       break;
     default:
-      baseStyles = 'bg-blue-500 text-white';
+      baseStyles = 'bg-primary text-primary-foreground';
   }
 
   // Styles spécifiques selon le type
   switch (type) {
     case 'ORDER_CREATED':
     case 'ORDER_UPDATED':
-      return severity === 'INFO' ? 'bg-blue-500 text-white' : baseStyles;
+      return severity === 'INFO' ? 'bg-primary text-white' : baseStyles;
     case 'STOCK_ALERT':
       return severity === 'INFO' ? 'bg-orange-500 text-white' : baseStyles;
     case 'USER_REGISTERED':
-      return severity === 'INFO' ? 'bg-green-500 text-white' : baseStyles;
+      return severity === 'INFO' ? 'bg-success text-white' : baseStyles;
     case 'PAYMENT_RECEIVED':
       return severity === 'INFO' ? 'bg-emerald-500 text-white' : baseStyles;
     case 'PRODUCT_UPDATED':

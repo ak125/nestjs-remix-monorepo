@@ -1,5 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 interface YearData {
   year: number;
@@ -110,9 +111,9 @@ export function YearSelector({
                     className={`
                       px-3 py-2 text-sm rounded border transition-colors
                       ${selectedYear === yearData.year 
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                        ? 'bg-primary text-primary-foreground border-blue-600 shadow-md' 
                         : yearData.available
-                          ? 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300'
+                          ? 'bg-white text-gray-700 border-gray-300 hover:bg-info/20 hover:border-blue-300'
                           : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}
                       ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
@@ -130,12 +131,12 @@ export function YearSelector({
           ))}
           
           {selectedYear && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+<Alert className="mt-4 p-3  rounded-lg" variant="info">
               <div className="text-sm">
                 <strong className="text-blue-800">Année sélectionnée :</strong>{' '}
                 <span className="text-blue-700">{selectedYear}</span>
               </div>
-            </div>
+            </Alert>
           )}
         </div>
       )}

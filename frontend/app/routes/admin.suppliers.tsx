@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 // app/routes/admin.suppliers.tsx
 // Interface de gestion des fournisseurs optimisée appliquant "vérifier existant et utiliser le meilleur"
 
@@ -14,6 +15,7 @@ import {
   FileText,
   Settings
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données des fournisseurs
@@ -128,9 +130,7 @@ export default function AdminSuppliersLayout() {
               <Package className="h-8 w-8 text-green-600" />
               <h2 className="text-lg font-semibold text-gray-900">Produits</h2>
             </div>
-            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-              CATALOGUE
-            </div>
+            <Alert intent="success">CATALOGUE</Alert>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -152,9 +152,7 @@ export default function AdminSuppliersLayout() {
               <Clock className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">En Attente</h2>
             </div>
-            <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium">
-              PENDING
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">PENDING</Badge>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -176,9 +174,7 @@ export default function AdminSuppliersLayout() {
               <Users className="h-8 w-8 text-purple-600" />
               <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
             </div>
-            <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
-              TOP
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="purple">TOP</Badge>
           </div>
           
           <div className="text-3xl font-bold text-gray-900 mb-2">
@@ -208,14 +204,14 @@ export default function AdminSuppliersLayout() {
             </div>
             <p className="text-gray-600 text-sm">Délai moyen</p>
             
-            <div className="mt-4 bg-blue-50 rounded-lg p-4">
+            <div className="mt-4 bg-primary/5 rounded-lg p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Objectif</span>
                 <span className="font-medium text-blue-600">≤ 3 jours</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full" 
+                  className="bg-primary h-2 rounded-full" 
                   style={{ width: `${Math.min((3 / supplierStats.averageDeliveryTime) * 100, 100)}%` }}
                 ></div>
               </div>
@@ -231,14 +227,14 @@ export default function AdminSuppliersLayout() {
           </h2>
           
           <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-success/5 rounded-lg">
               <span className="font-medium text-green-900">Actifs</span>
               <span className="text-2xl font-bold text-green-600">
                 {formatNumber(supplierStats.activeSuppliers)}
               </span>
             </div>
             
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+            <div className="flex justify-between items-center p-3 bg-destructive/5 rounded-lg">
               <span className="font-medium text-red-900">Expirent bientôt</span>
               <span className="text-2xl font-bold text-red-600">
                 {formatNumber(supplierStats.contractsExpiring)}

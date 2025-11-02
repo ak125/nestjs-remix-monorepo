@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 
 // 🤖 Types pour l'automation business
 interface AutomationRule {
@@ -302,10 +304,10 @@ export function AutomationCenter() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      inventory: 'bg-blue-100 text-blue-800',
-      marketing: 'bg-green-100 text-green-800',
-      customer: 'bg-purple-100 text-purple-800',
-      finance: 'bg-yellow-100 text-yellow-800',
+      inventory: 'info',
+      marketing: 'success',
+      customer: 'purple',
+      finance: 'warning',
       operations: 'bg-gray-100 text-gray-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -313,12 +315,12 @@ export function AutomationCenter() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
-      paused: 'bg-yellow-100 text-yellow-800',
+      active: 'success',
+      paused: 'warning',
       draft: 'bg-gray-100 text-gray-800',
-      success: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      pending: 'bg-blue-100 text-blue-800'
+      success: 'success',
+      failed: 'error',
+      pending: 'info',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -349,12 +351,8 @@ export function AutomationCenter() {
               <p className="text-gray-600 mt-1">Centre de contrôle des processus automatisés</p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                ➕ Nouvelle règle
-              </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                📊 Rapport complet
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="green">\n  ➕ Nouvelle règle\n</Button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  📊 Rapport complet\n</Button>
             </div>
           </div>
 
@@ -498,7 +496,7 @@ export function AutomationCenter() {
                     </div>
 
                     {/* Impact */}
-                    <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                    <div className="mt-4 p-3 bg-success/5 rounded-lg">
                       <div className="flex items-center">
                         <span className="text-green-600 mr-2">📈</span>
                         <span className="text-sm text-green-800">
@@ -617,9 +615,7 @@ export function AutomationCenter() {
                   <p className="text-sm text-gray-600 mt-1">Tâches à exécuter automatiquement</p>
                 </div>
               </div>
-              <button className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
-                🚀 Commencer à construire
-              </button>
+              <Button className="mt-8  px-6 py-3 rounded-md" variant="blue">\n  🚀 Commencer à construire\n</Button>
             </div>
           </div>
         )}
@@ -673,7 +669,7 @@ export function AutomationCenter() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">💡 Insights automation</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
                   <div className="flex items-center">
                     <span className="text-blue-600 mr-3 text-xl">⚡</span>
                     <div>
@@ -683,9 +679,9 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
                 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
                   <div className="flex items-center">
                     <span className="text-green-600 mr-3 text-xl">💰</span>
                     <div>
@@ -695,9 +691,9 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
                 
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="warning">
                   <div className="flex items-center">
                     <span className="text-yellow-600 mr-3 text-xl">🎯</span>
                     <div>
@@ -707,7 +703,7 @@ export function AutomationCenter() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </Alert>
               </div>
             </div>
           </div>

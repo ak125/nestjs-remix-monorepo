@@ -1,12 +1,22 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
+
+// Configuration
+import paymentConfig from '../../config/payment.config';
 
 // Controllers
 import { PaymentsController } from './controllers/payments.controller';
+import { SystemPayRedirectController } from './controllers/systempay-redirect.controller';
+import { PayboxRedirectController } from './controllers/paybox-redirect.controller';
+import { PayboxCallbackController } from './controllers/paybox-callback.controller';
+import { PayboxTestController } from './controllers/paybox-test.controller';
+import { PayboxMonitoringController } from './controllers/paybox-monitoring.controller';
 
 // Services
 import { PaymentService } from './services/payment.service';
 import { CyberplusService } from './services/cyberplus.service';
+import { PayboxService } from './services/paybox.service';
 import { PaymentValidationService } from './services/payment-validation.service';
 import { PaymentDataService } from './repositories/payment-data.service';
 
@@ -28,16 +38,29 @@ import { PaymentDataService } from './repositories/payment-data.service';
  *
  * VERSION : 1.0.0 (Refactoring 2025-10-05)
  * CONTRÔLEURS : 3 → 1 (-66%)
+ *
+ * CONFIGURATION :
+ * - Variables d'environnement via ConfigModule
+ * - Configuration type-safe avec validation
  */
 @Module({
-  imports: [DatabaseModule],
+  imports: [
+    DatabaseModule,
+    ConfigModule.forFeature(paymentConfig), // ✅ Configuration dédiée aux paiements
+  ],
   controllers: [
     PaymentsController, // ✅ Contrôleur unifié activé
+    SystemPayRedirectController, // ✅ Redirection SystemPay
+    PayboxRedirectController, // ✅ Redirection Paybox (PRODUCTION)
+    PayboxCallbackController, // ✅ Callback IPN Paybox
+    PayboxTestController, // ✅ Page de test Paybox (PHP → TS)
+    PayboxMonitoringController, // ✅ Monitoring admin Paybox
   ],
   providers: [
     // Services
     PaymentService,
     CyberplusService,
+    PayboxService,
     PaymentValidationService,
 
     // Data Services

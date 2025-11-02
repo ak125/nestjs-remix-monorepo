@@ -2,8 +2,10 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useNavigation } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { SearchBar } from '../components/search/SearchBar';
 
 interface SearchResult {
@@ -137,7 +139,7 @@ export default function SearchResults() {
 
         {/* Suggestions */}
         {suggestions && suggestions.length > 0 && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mb-6 p-4 bg-primary/5 rounded-lg">
             <h3 className="text-sm font-medium text-blue-900 mb-2">
               Suggestions de recherche :
             </h3>
@@ -146,7 +148,7 @@ export default function SearchResults() {
                 <a
                   key={index}
                   href={`/search/results?q=${encodeURIComponent(suggestion)}&version=${version}`}
-                  className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-sm rounded-full transition-colors"
+                  className="px-3 py-1 bg-info/90 hover:bg-info text-info-foreground text-sm rounded-full transition-colors"
                 >
                   {suggestion}
                 </a>
@@ -218,9 +220,9 @@ export default function SearchResults() {
                           <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
                             {result.category}
                           </span>
-                          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                          <Badge variant="success">
                             Score: {result.relevanceScore}%
-                          </span>
+                          </Badge>
                         </div>
                         <p className="text-gray-600 mb-3">{result.description}</p>
                         
@@ -229,9 +231,7 @@ export default function SearchResults() {
                             <span className="text-2xl font-bold text-green-600">
                               {result.price.toFixed(2)}€
                             </span>
-                            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                              Ajouter au panier
-                            </button>
+                            <Button className="px-4 py-2  rounded-lg" variant="blue">\n  Ajouter au panier\n</Button>
                           </div>
                         )}
                       </div>

@@ -44,9 +44,9 @@ export const PerformanceMetrics = memo(function PerformanceMetrics({
   };
 
   const getPerformanceColor = (ms: number): string => {
-    if (ms < 50) return 'text-green-600 bg-green-50';
-    if (ms < 200) return 'text-yellow-600 bg-yellow-50';
-    return 'text-red-600 bg-red-50';
+    if (ms < 50) return 'text-success bg-success/10';
+    if (ms < 200) return 'text-warning bg-warning/10';
+    return 'text-destructive bg-destructive/10';
   };
 
   const filterRatio = totalItems > 0 ? ((filteredItems / totalItems) * 100).toFixed(1) : '0';
@@ -136,7 +136,7 @@ export const PerformanceMetrics = memo(function PerformanceMetrics({
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div 
-              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${Math.min(100, (filteredItems / totalItems) * 100)}%` }}
             />
           </div>

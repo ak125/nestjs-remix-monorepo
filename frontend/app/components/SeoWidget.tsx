@@ -24,9 +24,9 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 95) return "text-green-600 bg-green-50 border-green-200";
-    if (rate >= 80) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
+    if (rate >= 95) return 'border-l-4 border-success bg-success/10';
+    if (rate >= 80) return 'border-l-4 border-warning bg-warning/10';
+    return 'border-l-4 border-destructive bg-destructive/10';
   };
 
   const getStatusIcon = (rate: number) => {
@@ -45,7 +45,7 @@ export function SeoWidget({ stats, className = "" }: SeoWidgetProps) {
     <Card className={`${className} border-green-200 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-green-800">
-          <div className="p-1 bg-green-100 rounded-lg">
+          <div className="p-1 bg-success/10 rounded-lg">
             <Search className="h-5 w-5" />
           </div>
           Module SEO Enterprise

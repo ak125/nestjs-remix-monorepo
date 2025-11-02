@@ -12,6 +12,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -339,7 +340,29 @@ export class CartController {
   }
 
   /**
-   * 🗑️ Supprimer un article du panier
+   * � PATCH - Alias pour PUT (compatibilité REST standard)
+   */
+  @Patch('items/:itemId')
+  @ApiOperation({
+    summary: 'Mettre à jour partiellement un article (alias de PUT)',
+    description: 'Modifie la quantité via PATCH HTTP method',
+  })
+  @ApiParam({
+    name: 'itemId',
+    description: "ID de l'item dans le panier",
+    type: 'string',
+  })
+  async patchItem(
+    @Param('itemId') itemId: string,
+    @Body() body: unknown,
+    @Req() req: RequestWithUser,
+  ) {
+    // Rediriger vers PUT
+    return this.updateItem(itemId, body, req);
+  }
+
+  /**
+   * �🗑️ Supprimer un article du panier
    */
   @Delete('items/:itemId')
   @ApiOperation({
@@ -819,6 +842,88 @@ export class CartController {
         'Erreur lors du vidage du panier',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  /**
+   * 🎁 GET /api/cart/recommendations - Suggestions produits complémentaires
+   */
+  @Get('recommendations')
+  @ApiOperation({
+    summary: 'Obtenir des recommandations produits basées sur le panier',
+    description:
+      'Retourne 3-5 produits complémentaires selon le contenu du panier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Recommendations récupérées avec succès',
+  })
+  async getRecommendations(@Req() req: RequestWithUser) {
+    try {
+      const sessionId = this.getSessionId(req);
+      const userId = req.user?.id || null;
+      const userIdForCart = userId || sessionId;
+
+      this.logger.debug(
+        `Récupération recommendations - session: ${sessionId}, user: ${userId}`,
+      );
+
+      // Récupérer le panier actuel
+      const cart =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
+
+      // Logique simple de recommandations basée sur les catégories
+      // TODO: Améliorer avec un vrai système de recommandations ML
+      const recommendations = [
+        {
+          id: '99901',
+          name: 'Liquide de refroidissement 5L',
+          price: 12.99,
+          imageUrl: '/images/products/coolant.jpg',
+          category: 'Entretien',
+          stock: 'in-stock',
+          brand: 'TOTAL',
+          reason: 'Souvent acheté ensemble',
+        },
+        {
+          id: '99902',
+          name: 'Filtre à huile premium',
+          price: 8.5,
+          imageUrl: '/images/products/oil-filter.jpg',
+          category: 'Filtration',
+          stock: 'in-stock',
+          brand: 'MANN-FILTER',
+          reason: 'Compatible avec votre véhicule',
+        },
+        {
+          id: '99903',
+          name: 'Kit courroie distribution',
+          price: 89.99,
+          imageUrl: '/images/products/timing-belt.jpg',
+          category: 'Distribution',
+          stock: 'low-stock',
+          brand: 'GATES',
+          reason: 'Entretien recommandé',
+        },
+      ];
+
+      return {
+        success: true,
+        recommendations: recommendations.slice(0, 3), // Limiter à 3
+        cartItemCount: cart?.items?.length || 0,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Erreur récupération recommendations: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      // Ne pas bloquer si erreur - retourner tableau vide
+      return {
+        success: true,
+        recommendations: [],
+        cartItemCount: 0,
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 

@@ -25,3 +25,48 @@ model Session {
   sessionToken String  @unique
   user         User    @relation(fields: [userId], references: [id])
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🧪 SEO CRAWL BUDGET A/B TESTING
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+model CrawlBudgetExperiment {
+  id               String    @id @default(uuid())
+  name             String
+  description      String?
+  action           String    // exclude, include, reduce
+  targetFamilies   String[]  // Array de codes gammes/catégories
+  reductionPercent Int?      // Pour action=reduce (ex: 50%)
+  durationDays     Int       @default(30)
+  status           String    @default("draft") // draft, running, paused, completed
+  baseline         Json?     // Métriques 30j avant {crawlRate, indexation, traffic}
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  metrics CrawlBudgetMetric[]
+
+  @@map("crawl_budget_experiments")
+}
+
+model CrawlBudgetMetric {
+  id                 String   @id @default(uuid())
+  experimentId       String
+  date               DateTime
+  totalCrawledUrls   Int
+  crawlRequestsCount Int
+  avgCrawlRate       Float
+  indexedUrls        Int
+  indexationRate     Float
+  organicSessions    Int?
+  organicConversions Int?
+  familyMetrics      Json?    // [{familyCode, crawledUrls, indexedUrls, avgPosition}]
+
+  experiment CrawlBudgetExperiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@unique([experimentId, date])
+  @@index([experimentId])
+  @@index([date])
+  @@map("crawl_budget_metrics")
+}

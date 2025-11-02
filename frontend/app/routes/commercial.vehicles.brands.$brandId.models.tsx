@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 /**
  * 🚗 MODÈLES DE MARQUE COMMERCIALE
  * 
@@ -194,9 +195,7 @@ export default function CommercialVehiclesBrandModels() {
           </CardHeader>
           {error ? (
             <CardContent>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
+              <Alert intent="error"><p>{error}</p></Alert>
             </CardContent>
           ) : models.length > 0 ? (
             <CardContent>
@@ -236,7 +235,7 @@ export default function CommercialVehiclesBrandModels() {
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         model.modele_year_to 
                           ? 'bg-gray-100 text-gray-700' 
-                          : 'bg-green-100 text-green-700'
+                          : 'bg-success/15 text-green-700'
                       }`}>
                         {model.modele_year_to ? 'Ancien' : 'Actuel'}
                       </span>

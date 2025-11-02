@@ -27,6 +27,7 @@ import { ReportingController } from './controllers/reporting.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { AdminStaffController } from './controllers/admin-staff.controller';
 import { AdminProductsController } from './controllers/admin-products.controller';
+import { AdminSeoController } from './controllers/admin-seo.controller'; // 📊 Dashboard SEO
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -41,6 +42,7 @@ import { StaffService } from '../staff/staff.service';
 import { OrdersModule } from '../orders/orders.module';
 import { StaffModule } from '../staff/staff.module';
 import { ProductsModule } from '../products/products.module';
+import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { ProductsModule } from '../products/products.module';
     OrdersModule,
     StaffModule,
     ProductsModule,
+    WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
   ],
   controllers: [
     ConfigurationController,
@@ -65,6 +68,7 @@ import { ProductsModule } from '../products/products.module';
     UserManagementController,
     AdminStaffController,
     AdminProductsController,
+    AdminSeoController, // 📊 Dashboard monitoring SEO
   ],
   providers: [
     ConfigurationService,

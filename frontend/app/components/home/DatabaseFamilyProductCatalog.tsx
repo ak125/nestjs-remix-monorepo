@@ -1,6 +1,7 @@
 // 📁 frontend/app/components/home/DatabaseFamilyProductCatalog.tsx
 // 👨‍👩‍👧‍👦 Composant d'affichage des catégories organisées par familles (données DB)
 
+import { Badge } from '@fafa/ui';
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
 import { familiesApi, type FamiliesResponse, type FamilyCategory } from '../../services/api/families.api';
@@ -173,9 +174,7 @@ export default function DatabaseFamilyProductCatalog({ className = '' }: Databas
                                 </p>
                               )}
                               {category.is_featured && (
-                                <span className="inline-block mt-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                                  ⭐ Populaire
-                                </span>
+                                <Badge variant="warning">⭐ Populaire</Badge>
                               )}
                             </div>
                           </div>

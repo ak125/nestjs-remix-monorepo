@@ -16,4 +16,10 @@ declare global {
   function gtag(...args: any[]): void;
 }
 
+// Vite CSS URL imports
+declare module "*.css?url" {
+  const url: string;
+  export default url;
+}
+
 export {};

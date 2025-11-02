@@ -8,6 +8,7 @@
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -94,9 +95,7 @@ export default function VehiclesIndex() {
 
       {/* Statistiques */}
       {error ? (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          <strong>Erreur :</strong> {error}
-        </div>
+        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
       ) : stats ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
@@ -163,7 +162,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Search className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
@@ -183,7 +182,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-lg">
+                <div className="bg-success/10 p-3 rounded-lg">
                   <Settings className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
@@ -203,7 +202,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-purple-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Car className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
@@ -223,7 +222,7 @@ export default function VehiclesIndex() {
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
-                <div className="bg-orange-100 p-3 rounded-lg">
+                <div className="bg-muted p-3 rounded-lg">
                   <Database className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>
@@ -253,7 +252,7 @@ export default function VehiclesIndex() {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-success rounded-full"></div>
               <span className="text-sm text-green-600 font-medium">
                 Opérationnel
               </span>

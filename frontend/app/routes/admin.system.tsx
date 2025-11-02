@@ -1,5 +1,7 @@
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export const meta: MetaFunction = () => {
@@ -113,10 +115,14 @@ export default function AdminSystem() {
   if (error) {
     return (
       <div className="container mx-auto p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-lg font-semibold text-red-800 mb-2">Erreur de connexion</h2>
-          <p className="text-red-600">{String(error)}</p>
-        </div>
+        <Alert 
+          intent="error" 
+          variant="solid"
+          icon={<AlertCircle className="h-5 w-5" />}
+          title="Erreur de connexion"
+        >
+          {String(error)}
+        </Alert>
       </div>
     );
   }
@@ -130,12 +136,16 @@ export default function AdminSystem() {
             Surveillance en temps réel des performances du serveur
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${health?.success ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-          <span className="text-sm font-medium text-gray-700">
-            {health?.success ? 'Opérationnel' : 'Problème détecté'}
-          </span>
-        </div>
+        
+        <Alert 
+          intent={health?.success ? "success" : "error"} 
+          variant="solid"
+          size="sm"
+          icon={health?.success ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+          className="max-w-xs"
+        >
+          {health?.success ? 'Système opérationnel' : 'Problème détecté'}
+        </Alert>
       </div>
 
       <div className="text-xs text-gray-500 text-right">
@@ -215,7 +225,7 @@ export default function AdminSystem() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div 
-                className="bg-blue-500 h-3 rounded-full transition-all duration-500 ease-in-out"
+                className="bg-primary h-3 rounded-full transition-all duration-500 ease-in-out"
                 style={{
                   width: `${Math.min(100, (metrics.data.memory.used / metrics.data.memory.total) * 100)}%`
                 }}
@@ -253,7 +263,12 @@ export default function AdminSystem() {
             <div className="text-sm text-gray-600 space-y-1">
               <div>Mémoire heap: <span className="font-mono bg-gray-100 px-1 rounded">{metrics?.data?.memory ? formatMemory(metrics.data.memory.used) : 'N/A'}</span></div>
               <div>Mémoire totale: <span className="font-mono bg-gray-100 px-1 rounded">{metrics?.data?.memory ? formatMemory(metrics.data.memory.total) : 'N/A'}</span></div>
-              <div>Status: <span className={`font-mono px-1 rounded ${health?.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{health?.status || 'N/A'}</span></div>
+              <div className="flex items-center gap-2">
+                Status: 
+                <Badge variant={health?.success ? 'success' : 'error'} size="sm">
+                  {health?.status || 'N/A'}
+                </Badge>
+              </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,8 @@
 
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE DE PIÈCES
@@ -408,16 +410,14 @@ export default function PiecesCatalogGrid({
                           <Link
                             key={piece.piece_id}
                             to={pieceUrl}
-                            className="bg-white rounded p-3 text-sm hover:bg-blue-50 transition-colors block border border-gray-200"
+                            className="bg-white rounded p-3 text-sm hover:bg-info/20 transition-colors block border border-gray-200"
                           >
                             <div className="flex justify-between items-start mb-2">
                               <span className="font-medium text-gray-700 text-xs line-clamp-2 flex-1 mr-2">
                                 {piece.piece_name}
                               </span>
                               {piece.piece_top && (
-                                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
-                                  TOP
-                                </span>
+                                <Badge variant="warning">TOP</Badge>
                               )}
                             </div>
                             
@@ -433,17 +433,9 @@ export default function PiecesCatalogGrid({
                             </div>
                             
                             <div className="mt-1">
-                              <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                                piece.stock_status === 'in_stock' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : piece.stock_status === 'low_stock'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {piece.stock_status === 'in_stock' && 'En stock'}
+                              <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={piece.stock_status === 'in_stock' ? 'success' : piece.stock_status === 'low_stock' ? 'warning' : 'error'}>\n  {piece.stock_status === 'in_stock' && 'En stock'}
                                 {piece.stock_status === 'low_stock' && 'Stock faible'}
-                                {piece.stock_status === 'out_of_stock' && 'Rupture'}
-                              </span>
+                                {piece.stock_status === 'out_of_stock' && 'Rupture'}\n</Badge>
                             </div>
                           </Link>
                         );
@@ -497,12 +489,7 @@ export default function PiecesCatalogGrid({
             >
               Tout replier
             </button>
-            <Link
-              to="/pieces/catalogue"
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
-            >
-              Voir tout le catalogue
-            </Link>
+            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/pieces/catalogue">Voir tout le catalogue</Link></Button>
           </div>
         </div>
       </div>

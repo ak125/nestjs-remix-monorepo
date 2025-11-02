@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { SeoService } from './seo.service';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
+import { UrlCompatibilityService } from './services/url-compatibility.service';
+import { SeoKpisService } from './services/seo-kpis.service';
 
 interface MetadataDto {
   page_url: string;
@@ -39,7 +41,11 @@ interface SeoAnalyticsResponse {
 export class SeoController {
   private readonly logger = new Logger(SeoController.name);
 
-  constructor(private readonly seoService: SeoService) {}
+  constructor(
+    private readonly seoService: SeoService,
+    private readonly urlCompatibilityService: UrlCompatibilityService,
+    private readonly seoKpisService: SeoKpisService,
+  ) {}
 
   /**
    * GET /seo/metadata/:url - Récupère les métadonnées SEO d'une page
@@ -265,6 +271,332 @@ export class SeoController {
       this.logger.error('Erreur lors de la mise à jour en lot:', error);
       throw new HttpException(
         'Erreur lors de la mise à jour en lot',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/report - Génère un rapport de compatibilité des URLs
+   * Vérifie que les URLs générées sont identiques à l'ancien format nginx
+   */
+  @Get('url-compatibility/report')
+  async getUrlCompatibilityReport() {
+    try {
+      const report =
+        await this.urlCompatibilityService.generateCompatibilityReport();
+
+      return {
+        success: true,
+        data: report,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la génération du rapport de compatibilité:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la génération du rapport',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/verify - Vérifie la compatibilité des URLs
+   * Query params: type (gammes|constructeurs|modeles|all), sampleSize (number)
+   */
+  @Get('url-compatibility/verify')
+  async verifyUrlCompatibility(
+    @Query('type') type?: 'gammes' | 'constructeurs' | 'modeles' | 'all',
+    @Query('sampleSize') sampleSize?: number,
+  ) {
+    try {
+      const result = await this.urlCompatibilityService.verifyUrlCompatibility({
+        type: type || 'gammes',
+        sampleSize: sampleSize ? parseInt(sampleSize.toString(), 10) : 100,
+      });
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la vérification de compatibilité:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la vérification',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/gammes - Liste toutes les URLs de gammes
+   * Query params: limit, offset
+   */
+  @Get('url-compatibility/gammes')
+  async getGammeUrls(
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    try {
+      const urls = await this.urlCompatibilityService.getAllGammeUrls({
+        limit: limit ? parseInt(limit.toString(), 10) : 100,
+        offset: offset ? parseInt(offset.toString(), 10) : 0,
+      });
+
+      return {
+        success: true,
+        count: urls.length,
+        data: urls,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la récupération des URLs gammes:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération des URLs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/constructeurs - Liste toutes les URLs de constructeurs
+   */
+  @Get('url-compatibility/constructeurs')
+  async getConstructeurUrls(
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    try {
+      const urls = await this.urlCompatibilityService.getAllConstructeurUrls({
+        limit: limit ? parseInt(limit.toString(), 10) : 100,
+        offset: offset ? parseInt(offset.toString(), 10) : 0,
+      });
+
+      return {
+        success: true,
+        count: urls.length,
+        data: urls,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la récupération des URLs constructeurs:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération des URLs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/modeles - Liste toutes les URLs de modèles
+   */
+  @Get('url-compatibility/modeles')
+  async getModeleUrls(
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+    @Query('marqueId') marqueId?: number,
+  ) {
+    try {
+      const urls = await this.urlCompatibilityService.getAllModeleUrls({
+        limit: limit ? parseInt(limit.toString(), 10) : 100,
+        offset: offset ? parseInt(offset.toString(), 10) : 0,
+        marqueId: marqueId ? parseInt(marqueId.toString(), 10) : undefined,
+      });
+
+      return {
+        success: true,
+        count: urls.length,
+        data: urls,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Erreur lors de la récupération des URLs modèles:',
+        error,
+      );
+      throw new HttpException(
+        'Erreur lors de la récupération des URLs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/test-vehicule - Teste la génération d'URL avec véhicule
+   * Pour vérifier le format : /pieces/{pg_alias}-{pg_id}/{marque}-{id}/{modele}-{id}/{type}-{id}.html
+   */
+  @Get('url-compatibility/test-vehicule')
+  async testVehiculeUrl(
+    @Query('pgId') pgId?: number,
+    @Query('pgAlias') pgAlias?: string,
+    @Query('marqueId') marqueId?: number,
+    @Query('marqueAlias') marqueAlias?: string,
+    @Query('modeleId') modeleId?: number,
+    @Query('modeleAlias') modeleAlias?: string,
+    @Query('typeId') typeId?: number,
+    @Query('typeAlias') typeAlias?: string,
+  ) {
+    try {
+      // Valeurs par défaut pour le test
+      const testPgId = pgId ? parseInt(pgId.toString(), 10) : 402;
+      const testPgAlias = pgAlias || 'plaquette-de-frein';
+      const testMarqueId = marqueId ? parseInt(marqueId.toString(), 10) : 140;
+      const testMarqueAlias = marqueAlias || 'renault';
+      const testModeleId = modeleId
+        ? parseInt(modeleId.toString(), 10)
+        : 140049;
+      const testModeleAlias = modeleAlias || 'megane-iii';
+      const testTypeId = typeId ? parseInt(typeId.toString(), 10) : 100413;
+      const testTypeAlias = typeAlias || '1-5-dci';
+
+      const generatedUrl =
+        this.urlCompatibilityService.generateGammeVehiculeUrl(
+          testPgId,
+          testPgAlias,
+          testMarqueId,
+          testMarqueAlias,
+          testModeleId,
+          testModeleAlias,
+          testTypeId,
+          testTypeAlias,
+        );
+
+      const expectedUrl = `/pieces/${testPgAlias}-${testPgId}/${testMarqueAlias}-${testMarqueId}/${testModeleAlias}-${testModeleId}/${testTypeAlias}-${testTypeId}.html`;
+
+      return {
+        success: true,
+        data: {
+          input: {
+            pgId: testPgId,
+            pgAlias: testPgAlias,
+            marqueId: testMarqueId,
+            marqueAlias: testMarqueAlias,
+            modeleId: testModeleId,
+            modeleAlias: testModeleAlias,
+            typeId: testTypeId,
+            typeAlias: testTypeAlias,
+          },
+          generated_url: generatedUrl,
+          expected_url: expectedUrl,
+          match: generatedUrl === expectedUrl,
+          segments: {
+            pieces: generatedUrl.split('/')[1] === 'pieces',
+            gamme: generatedUrl.split('/')[2] === `${testPgAlias}-${testPgId}`,
+            marque:
+              generatedUrl.split('/')[3] ===
+              `${testMarqueAlias}-${testMarqueId}`,
+            modele:
+              generatedUrl.split('/')[4] ===
+              `${testModeleAlias}-${testModeleId}`,
+            type:
+              generatedUrl.split('/')[5] ===
+              `${testTypeAlias}-${testTypeId}.html`,
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.error('Erreur test URL véhicule:', error);
+      throw new HttpException(
+        'Erreur lors du test',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/url-compatibility/test-constructeur - Tester génération URL constructeur+type
+   */
+  @Get('url-compatibility/test-constructeur')
+  async testConstructeurUrl(
+    @Query('marqueId') marqueId?: number,
+    @Query('marqueAlias') marqueAlias?: string,
+    @Query('modeleId') modeleId?: number,
+    @Query('modeleAlias') modeleAlias?: string,
+    @Query('typeId') typeId?: number,
+    @Query('typeAlias') typeAlias?: string,
+  ) {
+    try {
+      const testMarqueId = marqueId ? parseInt(marqueId.toString(), 10) : 13;
+      const testMarqueAlias = marqueAlias || 'alfa-romeo';
+      const testModeleId = modeleId ? parseInt(modeleId.toString(), 10) : 13000;
+      const testModeleAlias = modeleAlias || '145';
+      const testTypeId = typeId ? parseInt(typeId.toString(), 10) : 27087;
+      const testTypeAlias = typeAlias || '1-9-d';
+
+      const generatedUrl = this.urlCompatibilityService.generateTypeUrl(
+        testMarqueId,
+        testMarqueAlias,
+        testModeleId,
+        testModeleAlias,
+        testTypeId,
+        testTypeAlias,
+      );
+
+      const expectedUrl = `/constructeurs/${testMarqueAlias}-${testMarqueId}/${testModeleAlias}-${testModeleId}/${testTypeAlias}-${testTypeId}.html`;
+
+      return {
+        success: true,
+        data: {
+          type: 'constructeur_type',
+          input: {
+            marqueId: testMarqueId,
+            marqueAlias: testMarqueAlias,
+            modeleId: testModeleId,
+            modeleAlias: testModeleAlias,
+            typeId: testTypeId,
+            typeAlias: testTypeAlias,
+          },
+          generated_url: generatedUrl,
+          expected_url: expectedUrl,
+          match: generatedUrl === expectedUrl,
+          segments: {
+            constructeurs: generatedUrl.split('/')[1] === 'constructeurs',
+            marque:
+              generatedUrl.split('/')[2] ===
+              `${testMarqueAlias}-${testMarqueId}`,
+            modele:
+              generatedUrl.split('/')[3] ===
+              `${testModeleAlias}-${testModeleId}`,
+            type:
+              generatedUrl.split('/')[4] ===
+              `${testTypeAlias}-${testTypeId}.html`,
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.error('Erreur test URL constructeur:', error);
+      throw new HttpException(
+        'Erreur lors du test',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * GET /seo/kpis/dashboard - KPIs critiques pour dashboard SEO
+   */
+  @Get('kpis/dashboard')
+  async getDashboardKPIs() {
+    try {
+      const kpis = await this.seoKpisService.getDashboardKPIs();
+
+      return {
+        success: true,
+        data: kpis,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error('Erreur récupération KPIs dashboard:', error);
+      throw new HttpException(
+        'Erreur lors de la récupération des KPIs',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

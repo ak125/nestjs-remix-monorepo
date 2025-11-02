@@ -1,3 +1,4 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
@@ -542,9 +543,9 @@ const ArticleCarousel: React.FC<{ constructeurs: ConstructeurArticle[] }> = ({ c
           </div>
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <Badge variant="info">
                 {constructeur.brand || 'Constructeur'}
-              </span>
+              </Badge>
               <span className="flex items-center text-sm text-gray-500">
                 <TrendingIcon />
                 <span className="ml-1">{constructeur.viewsCount.toLocaleString()}</span>
@@ -716,7 +717,7 @@ export default function ConstructeursHomePage() {
                   onClick={() => handleFilterChange('brand', brandName)}
                   className={`w-full text-left px-3 py-2 rounded transition-colors text-sm ${
                     brand === brandName
-                      ? 'bg-blue-500 text-white font-semibold'
+                      ? 'bg-primary text-white font-semibold'
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                 >
@@ -795,7 +796,7 @@ export default function ConstructeursHomePage() {
               onClick={() => handleFilterChange('letter', '')}
               className={`px-3 py-1 rounded-full text-sm transition-colors ${
                 !letter 
-                  ? 'bg-blue-500 text-white' 
+                  ? 'bg-primary text-white' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -807,7 +808,7 @@ export default function ConstructeursHomePage() {
                 onClick={() => handleFilterChange('letter', l)}
                 className={`px-3 py-1 rounded-full text-sm transition-colors ${
                   letter === l 
-                    ? 'bg-blue-500 text-white' 
+                    ? 'bg-primary text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -852,7 +853,7 @@ export default function ConstructeursHomePage() {
                 onClick={() => handlePageChange(pageNum)}
                 className={`px-3 py-2 text-sm font-medium rounded-md ${
                   pageNum === page
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-primary text-white'
                     : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
                 }`}
               >

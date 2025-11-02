@@ -2,6 +2,7 @@
 import { Link } from '@remix-run/react';
 import { Trophy, Rocket, BookOpen, Facebook, Twitter, Linkedin, ArrowRight, Star, ShoppingCart, TrendingUp, Award, DollarSign, Youtube } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 
 // ================================
 // WHY CHOOSE US - Avantages
@@ -74,7 +75,7 @@ function FeatureCard({ icon, title, description, color }: any) {
 
 function SocialShareButton({ icon, label }: any) {
   return (
-    <button className="px-4 py-2 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-lg flex items-center gap-2 transition-all">
+    <button className="px-4 py-2 bg-white hover:bg-info/20 border border-gray-200 hover:border-blue-300 rounded-lg flex items-center gap-2 transition-all">
       {icon}
       <span className="text-sm font-medium">{label}</span>
     </button>
@@ -122,8 +123,8 @@ function FeaturedProducts({ products: _products }: any) {
 
 function ProductCard({ name, price, oldPrice, rating, reviews, image, badge, badgeColor }: any) {
   const badgeColors: Record<string, string> = {
-    green: 'bg-green-500',
-    red: 'bg-red-500',
+    green: 'bg-success',
+    red: 'bg-destructive',
     orange: 'bg-orange-500',
   };
 
@@ -211,7 +212,7 @@ function EcommerceFuture() {
 function InfoCard({ icon, title, description }: any) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all border border-gray-100">
-      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4">
+      <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-blue-600 mb-4">
         {icon}
       </div>
       <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
@@ -253,9 +254,7 @@ function ProductComparison() {
 
           {/* Filtres avancés */}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Filtrer par marque
-            </button>
+            <Button className="px-4 py-2  rounded-lg" variant="blue">\n  Filtrer par marque\n</Button>
             <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-500 transition-colors">
               Filtrer par prix
             </button>
@@ -271,7 +270,7 @@ function ProductComparison() {
 
 function ComparisonRow({ label, values }: { label: string; values: string[] }) {
   return (
-    <tr className="border-b border-gray-200 hover:bg-blue-50 transition-colors">
+    <tr className="border-b border-gray-200 hover:bg-info/20 transition-colors">
       <td className="py-4 px-4 font-medium text-gray-700">{label}</td>
       {values.map((value, idx) => (
         <td key={idx} className="py-4 px-4 text-center text-gray-900">{value}</td>
@@ -320,7 +319,7 @@ function TestimonialsSection({ testimonials: _testimonials }: any) {
     <section className="py-20 bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500 rounded-full filter blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500 rounded-full filter blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full filter blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10">

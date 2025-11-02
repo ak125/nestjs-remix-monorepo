@@ -19,7 +19,7 @@ const navigationItems: NavigationItem[] = [
     icon: BookOpen,
     description: "Guides et conseils par type de pièce",
     color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-primary/10",
     borderColor: "border-blue-200",
   },
   {
@@ -28,7 +28,7 @@ const navigationItems: NavigationItem[] = [
     icon: Wrench,
     description: "Comparatifs et conseils d'achat",
     color: "text-green-600",
-    bgColor: "bg-green-50",
+    bgColor: "bg-success/5",
     borderColor: "border-green-200",
   },
   {
