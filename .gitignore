@@ -90,3 +90,10 @@ logs/caddy/
 *.caddy.log
 # Archived backups (contains sensitive data)
 archives/backups/
+
+# Scripts de développement temporaires
+scripts/dev-docker.sh
+scripts/dev-local.sh
+scripts/dev-start.sh
+scripts/dev-status.sh
+scripts/testing/test-cart-and-urls.sh
