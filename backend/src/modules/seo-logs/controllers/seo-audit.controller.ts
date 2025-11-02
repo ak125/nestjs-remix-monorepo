@@ -221,7 +221,8 @@ export class SeoAuditController {
         )
           .split('\n')
           .filter((line) => line.trim());
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         details.noindexUrls = [];
       }
 
@@ -235,7 +236,8 @@ export class SeoAuditController {
             const [status, ...urlParts] = line.split(' ');
             return { status, url: urlParts.join(' ') };
           });
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         details.errorUrls = [];
       }
 
@@ -248,7 +250,8 @@ export class SeoAuditController {
         )
           .split('\n')
           .filter((line) => line.trim());
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         details.hreflangErrors = [];
       }
 
@@ -261,7 +264,8 @@ export class SeoAuditController {
         )
           .split('\n')
           .filter((line) => line.trim());
-      } catch (e) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_e) {
         details.canonicalErrors = [];
       }
 
@@ -321,7 +325,8 @@ export class SeoAuditController {
             const reportPath = path.join(dir, 'audit-report.json');
             const content = await fs.readFile(reportPath, 'utf-8');
             return JSON.parse(content);
-          } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_e) {
             return null;
           }
         }),
@@ -386,7 +391,8 @@ export class SeoAuditController {
           const reportPath = path.join(dir, 'audit-report.json');
           const content = await fs.readFile(reportPath, 'utf-8');
           audits.push(JSON.parse(content));
-        } catch (e) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_e) {
           // Ignorer les rapports corrompus
         }
       }

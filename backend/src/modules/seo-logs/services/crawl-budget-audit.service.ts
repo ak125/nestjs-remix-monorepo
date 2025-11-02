@@ -144,7 +144,9 @@ export class CrawlBudgetAuditService {
    * Récupérer les URLs générées par l'application (pieces)
    */
   private async getAppGeneratedUrls(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     gammeIds?: number[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     limit = 1000,
   ): Promise<string[]> {
     // TODO: Remplacer par vraie requête Supabase
@@ -212,7 +214,8 @@ export class CrawlBudgetAuditService {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
 
-      const response = await searchconsole.urlInspection.index.inspect({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _response = await searchconsole.urlInspection.index.inspect({
         requestBody: {
           inspectionUrl: siteUrl,
           siteUrl: siteUrl,

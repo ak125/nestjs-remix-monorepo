@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CrawlBudgetSupabaseService } from './crawl-budget-supabase.service';
-import {
-  CreateCrawlBudgetExperimentDto,
-  ExperimentStatus,
-} from '../dto/crawl-budget-experiment.dto';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { CreateCrawlBudgetExperimentDto } from '../dto/crawl-budget-experiment.dto';
 
 /**
  * 🔌 Intégration Google Search Console API
@@ -21,8 +19,11 @@ export class GoogleSearchConsoleService {
    * - Indexation status
    */
   async getCrawlStats(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     siteUrl: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     startDate: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     endDate: string,
   ): Promise<{
     totalCrawledUrls: number;
@@ -48,6 +49,7 @@ export class GoogleSearchConsoleService {
   /**
    * 📄 Soumettre un sitemap via GSC API
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async submitSitemap(siteUrl: string, sitemapUrl: string): Promise<void> {
     // TODO: Implémenter
     // POST https://www.googleapis.com/webmasters/v3/sites/{siteUrl}/sitemaps/{sitemapUrl}
@@ -67,8 +69,11 @@ export class GoogleAnalyticsService {
    * 🔍 Récupérer le trafic organique via GA4 API
    */
   async getOrganicTraffic(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     propertyId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     startDate: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     endDate: string,
   ): Promise<{
     organicSessions: number;

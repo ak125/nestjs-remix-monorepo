@@ -24,7 +24,8 @@ export class PayboxTestController {
     const rang = this.config.get<string>('PAYBOX_RANG', '32');
     const ident = this.config.get<string>('PAYBOX_IDENTIFIANT', '107904482'); // ✅ Identifiant de test officiel
     const hmacKey = this.config.get<string>('PAYBOX_HMAC_KEY', '');
-    const baseUrl = this.config.get<string>(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _baseUrl = this.config.get<string>(
       'BASE_URL',
       'http://localhost:5173',
     );
