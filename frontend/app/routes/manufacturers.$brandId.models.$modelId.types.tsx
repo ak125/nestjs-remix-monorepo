@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * ⚙️ TYPES/MOTORISATIONS D'UN MODÈLE
  * 
@@ -9,6 +8,7 @@ import { Alert } from '~/components/ui/alert';
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Fuel, Zap, Calendar, Settings, Info } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";

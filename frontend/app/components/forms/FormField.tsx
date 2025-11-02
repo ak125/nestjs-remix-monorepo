@@ -10,9 +10,9 @@
 
 import { type ReactNode } from "react";
 import { useFormContext, type FieldPath, type FieldValues } from "react-hook-form";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { Checkbox } from "~/components/ui/checkbox";
 
 interface FormFieldProps<TFieldValues extends FieldValues = FieldValues> {
   name: FieldPath<TFieldValues>;

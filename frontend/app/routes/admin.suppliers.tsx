@@ -3,7 +3,6 @@ import { Alert } from '@fafa/ui';
 // Interface de gestion des fournisseurs optimisée appliquant "vérifier existant et utiliser le meilleur"
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Badge } from '~/components/ui/badge';
 import { Outlet, useLoaderData, NavLink } from '@remix-run/react';
 import { 
   Building2, 
@@ -16,6 +15,7 @@ import {
   FileText,
   Settings
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données des fournisseurs

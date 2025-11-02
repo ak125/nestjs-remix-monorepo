@@ -4,8 +4,8 @@
  */
 
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
+import { Alert } from '~/components/ui/alert';
 import { getCart } from "../services/cart.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

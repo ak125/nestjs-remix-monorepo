@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '~/components/ui/button';
 import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Button } from '~/components/ui/button';
 
 // 📊 Types pour le reporting avancé
 interface ReportTemplate {

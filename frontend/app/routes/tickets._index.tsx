@@ -1,12 +1,12 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * Page de gestion des tickets - Liste et recherche
  * Remix Route Component pour la gestion des tickets de support
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { getAllTickets, searchTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {

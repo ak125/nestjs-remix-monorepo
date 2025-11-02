@@ -3,7 +3,6 @@ import { Alert } from '@fafa/ui';
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Badge } from '~/components/ui/badge';
 import { Outlet, useLoaderData, NavLink } from '@remix-run/react';
 import { 
   CreditCard, 
@@ -15,6 +14,7 @@ import {
   Users,
   Calendar
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 import { requireAuth } from '../auth/unified.server';
 
 // Interface pour les données de paiements

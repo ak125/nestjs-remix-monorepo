@@ -10,7 +10,6 @@
  */
 
 import { Link, useFetcher } from "@remix-run/react";
-import { Alert } from '~/components/ui/alert';
 import { 
   Search, 
   User, 
@@ -25,6 +24,7 @@ import {
   Linkedin
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Alert } from '~/components/ui/alert';
 
 // Imports des modules
 import { useOptionalUser } from "../../root";

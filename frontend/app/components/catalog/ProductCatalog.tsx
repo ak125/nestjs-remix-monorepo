@@ -17,8 +17,8 @@ import {
   Zap
 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE

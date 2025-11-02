@@ -1,5 +1,4 @@
 import { useFetcher } from '@remix-run/react';
-import { Alert } from '~/components/ui/alert';
 import {
   Check,
   CheckCircle,
@@ -10,6 +9,7 @@ import {
   Truck,
   XCircle,
 } from 'lucide-react';
+import { Alert } from '~/components/ui/alert';
 import { type Order } from '../../types/orders.types';
 import { type UserPermissions } from '../../utils/permissions';
 

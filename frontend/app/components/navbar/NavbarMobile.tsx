@@ -19,7 +19,6 @@
  */
 
 import { Link } from '@remix-run/react';
-import { Button } from '~/components/ui/button';
 import { 
   X, 
   Home, 
@@ -36,6 +35,7 @@ import {
   Search
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Button } from '~/components/ui/button';
 import { cn } from '../../lib/utils';
 
 interface NavbarMobileProps {

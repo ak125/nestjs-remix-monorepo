@@ -3,8 +3,6 @@
  * Affichage complet et modération d'un avis spécifique
  */
 import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { 
   Star, 
@@ -19,6 +17,8 @@ import {
   Package,
   MessageSquare
 } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { getReviewById, updateReviewStatus, deleteReview } from "../services/api/review.api";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

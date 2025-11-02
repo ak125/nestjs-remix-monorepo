@@ -3,8 +3,8 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

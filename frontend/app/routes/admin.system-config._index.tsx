@@ -10,7 +10,6 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useFetcher } from '@remix-run/react';
 import { 
   Settings, 
@@ -31,6 +30,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import SystemBreadcrumb from '../components/admin/SystemBreadcrumb';
 
 // Types pour les configurations

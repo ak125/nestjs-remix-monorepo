@@ -1,6 +1,6 @@
+import { Badge } from '@fafa/ui';
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Button } from '~/components/ui/button';
-import { Badge } from '@fafa/ui';
 import { useAdvancedAnalyticsComplete } from '../hooks/useAdvancedAnalyticsComplete'
 import { useAIAssistant } from '../hooks/useAIAssistantSimple'
 

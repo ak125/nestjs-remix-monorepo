@@ -4,8 +4,8 @@
  */
 import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { getTicket, updateTicketStatus, type ContactTicket } from "../services/api/contact.api";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

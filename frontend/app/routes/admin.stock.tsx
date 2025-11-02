@@ -1,9 +1,9 @@
-import { Alert } from '~/components/ui/alert';
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
 import { useState, useEffect } from 'react';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {

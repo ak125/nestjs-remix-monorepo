@@ -1,8 +1,8 @@
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, Link } from '@remix-run/react';
 import { ArrowLeft, User, Save, Mail, Phone, MapPin } from 'lucide-react';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 
 interface User {
   id: string;

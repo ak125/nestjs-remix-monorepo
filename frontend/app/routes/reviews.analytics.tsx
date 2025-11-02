@@ -3,7 +3,6 @@
  * Tableaux de bord et statistiques avancées
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData } from "@remix-run/react";
 import { 
   TrendingUp, 
@@ -16,6 +15,7 @@ import {
   Filter,
   Download
 } from "lucide-react";
+import { Button } from '~/components/ui/button';
 import { getReviewStats } from "../services/api/review.api";
 
 export const meta: MetaFunction = () => {

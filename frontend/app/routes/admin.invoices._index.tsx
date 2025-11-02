@@ -6,8 +6,8 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 // Types pour la gestion des factures (utilisé dans le loader/action)

@@ -1,6 +1,6 @@
+import { Badge } from '@fafa/ui';
 import { Link } from '@remix-run/react';
 import React from 'react';
-import { Badge } from '@fafa/ui';
 
 interface MotorisationItem {
   title: string;

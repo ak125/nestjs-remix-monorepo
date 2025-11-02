@@ -32,11 +32,11 @@
  */
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';
+import { Alert } from '~/components/ui/alert';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 
 interface Product {
   piece_id: number;

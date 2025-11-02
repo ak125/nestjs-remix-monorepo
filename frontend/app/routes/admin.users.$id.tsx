@@ -1,8 +1,8 @@
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from '@remix-run/react';
 import { ArrowLeft, Mail, Phone, User, MapPin, ShoppingBag, Award, Calendar, TrendingUp, Building2, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Button } from '~/components/ui/button';
 
 
 

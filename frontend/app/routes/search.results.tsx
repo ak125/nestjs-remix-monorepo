@@ -4,8 +4,8 @@
 
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useNavigation } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { SearchBar } from '../components/search/SearchBar';
 
 interface SearchResult {

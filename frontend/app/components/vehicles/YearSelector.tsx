@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
-import { Alert } from '~/components/ui/alert';
 import { useEffect, useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 interface YearData {
   year: number;

@@ -1,10 +1,10 @@
 // 📁 frontend/app/components/home/BrandCarousel.tsx
 // 🎠 Carousel des marques automobiles
 
+import { Alert } from '@fafa/ui';
 import { Link } from '@remix-run/react';
 import { ChevronLeft, ChevronRight, Car, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Alert } from '@fafa/ui';
 import  { type VehicleBrand } from '../../services/api/enhanced-vehicle.api';
 
 interface BrandCarouselProps {
