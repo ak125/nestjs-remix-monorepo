@@ -88,3 +88,5 @@ ai-agents-python/**/*.pyc
 caddy-pieces-redirects.conf
 logs/caddy/
 *.caddy.log
+# Archived backups (contains sensitive data)
+archives/backups/

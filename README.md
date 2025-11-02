@@ -120,11 +120,27 @@ nestjs-remix-monorepo/
 │   │   ├── components/     # Composants React
 │   │   └── utils/          # Utilitaires
 │   └── public/
-├── docs/                   # Documentation
-│   ├── REFACTORING-COMPLETE.md  # Documentation consolidée
-│   ├── DAILY-REPORT-2025-10-05.md
-│   └── archives/
-└── scripts/                # Scripts utilitaires
+├── config/                 # 📁 Configuration
+│   ├── caddy/              # Configuration Caddy (reverse proxy)
+│   ├── cron/               # Tâches cron
+│   └── vector/             # Logs & métriques
+├── docs/                   # 📚 Documentation (125 docs organisés)
+│   ├── architecture/       # Architecture & monorepo
+│   ├── breadcrumb/         # Fil d'Ariane
+│   ├── caddy/              # Reverse proxy
+│   ├── design-system/      # Système de design
+│   ├── ecommerce/          # E-commerce features
+│   ├── fixes/              # Corrections de bugs
+│   ├── guides/             # Guides généraux
+│   ├── paybox/             # Système de paiement
+│   ├── seo/                # SEO & optimisations
+│   ├── sitemap/            # Sitemaps
+│   └── testing/            # Tests & validations
+└── scripts/                # 🔧 Scripts (109 scripts organisés)
+    ├── config/             # Scripts de configuration
+    ├── database/           # Scripts SQL
+    ├── seo/                # Scripts SEO & monitoring
+    └── testing/            # Scripts de test
 ```
 
 ---
@@ -280,17 +296,25 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 📚 Documentation
 
+> **📖 125 documents organisés** - Consultez [docs/README.md](./docs/README.md) pour la navigation complète
+
 ### Documents Principaux
 
-- **[REFACTORING-COMPLETE.md](./docs/REFACTORING-COMPLETE.md)** - Documentation technique consolidée
-- **[DAILY-REPORT-2025-10-05.md](./docs/DAILY-REPORT-2025-10-05.md)** - Rapport quotidien détaillé
-- **[GETTING-STARTED.md](./docs/GETTING-STARTED.md)** - Guide de démarrage
+- **[docs/README.md](./docs/README.md)** - Index de toute la documentation
+- **Architecture** : `docs/architecture/` - Monorepo, composants, structure
+- **Design System** : `docs/design-system/` - Système de design complet
+- **E-commerce** : `docs/ecommerce/` - Fonctionnalités e-commerce
+- **SEO** : `docs/seo/` - Optimisations, monitoring, stratégies
+- **Guides** : `docs/guides/` - Guides d'intégration et tutoriels
 
-### Documentation par Module
+### Scripts Utilitaires
 
-- **Payments** : `docs/archives/old-payments-docs/`
-- **Orders** : `docs/archives/old-orders-docs/`
-- **Git** : `docs/archives/old-git-docs/`
+> **🔧 109 scripts organisés** - Consultez [scripts/README.md](./scripts/README.md)
+
+- **SEO** : `scripts/seo/` - Audit, monitoring, analytics
+- **Testing** : `scripts/testing/` - Tests, validation, vérification
+- **Database** : `scripts/database/` - Scripts SQL et optimisations
+- **Config** : `scripts/config/` - Initialisation et configuration
 
 ---
 
