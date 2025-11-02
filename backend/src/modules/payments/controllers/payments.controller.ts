@@ -136,9 +136,14 @@ export class PaymentsController {
       // Si méthode Cyberplus, générer le formulaire de redirection
       let redirectData = null;
       const methodLower = createPaymentDto.method?.toString().toLowerCase();
-      this.logger.log(`🔍 Payment method check: "${createPaymentDto.method}" -> "${methodLower}" (comparing with "cyberplus")`);
-      
-      if (methodLower === 'cyberplus' || createPaymentDto.method === PaymentMethod.CYBERPLUS) {
+      this.logger.log(
+        `🔍 Payment method check: "${createPaymentDto.method}" -> "${methodLower}" (comparing with "cyberplus")`,
+      );
+
+      if (
+        methodLower === 'cyberplus' ||
+        createPaymentDto.method === PaymentMethod.CYBERPLUS
+      ) {
         this.logger.log('🔵 Generating Cyberplus payment form...');
         redirectData = this.cyberplusService.generatePaymentForm({
           amount: payment.amount,

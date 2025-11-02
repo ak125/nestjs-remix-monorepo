@@ -45,9 +45,7 @@ export class CrawlBudgetSupabaseService {
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn(
-        '⚠️ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set',
-      );
+      this.logger.warn('⚠️ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
     }
 
     this.supabase = createClient(supabaseUrl || '', supabaseKey || '');

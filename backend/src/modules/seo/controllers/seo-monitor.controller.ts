@@ -1,17 +1,23 @@
 /**
  * 🛡️ CONTROLLER MONITORING SEO
- * 
+ *
  * API pour gérer et surveiller le système de protection anti-désindexation
  */
 
-import { Controller, Get, Post, Query, Param, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Param,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { SeoMonitorSchedulerService } from '../../../workers/services/seo-monitor-scheduler.service';
 
 @Controller('api/seo/monitor')
 export class SeoMonitorController {
-  constructor(
-    private readonly schedulerService: SeoMonitorSchedulerService,
-  ) {}
+  constructor(private readonly schedulerService: SeoMonitorSchedulerService) {}
 
   /**
    * 📊 GET /api/seo/monitor/stats
@@ -20,7 +26,7 @@ export class SeoMonitorController {
   @Get('stats')
   async getStats() {
     const stats = await this.schedulerService.getQueueStats();
-    
+
     return {
       success: true,
       data: stats,
@@ -61,7 +67,7 @@ export class SeoMonitorController {
   /**
    * 🚀 POST /api/seo/monitor/trigger
    * Déclenche un monitoring manuel
-   * 
+   *
    * Query params:
    * - taskType: 'check-critical-urls' | 'check-random-sample'
    */

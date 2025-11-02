@@ -450,21 +450,24 @@ export class SeoController {
       const testPgAlias = pgAlias || 'plaquette-de-frein';
       const testMarqueId = marqueId ? parseInt(marqueId.toString(), 10) : 140;
       const testMarqueAlias = marqueAlias || 'renault';
-      const testModeleId = modeleId ? parseInt(modeleId.toString(), 10) : 140049;
+      const testModeleId = modeleId
+        ? parseInt(modeleId.toString(), 10)
+        : 140049;
       const testModeleAlias = modeleAlias || 'megane-iii';
       const testTypeId = typeId ? parseInt(typeId.toString(), 10) : 100413;
       const testTypeAlias = typeAlias || '1-5-dci';
 
-      const generatedUrl = this.urlCompatibilityService.generateGammeVehiculeUrl(
-        testPgId,
-        testPgAlias,
-        testMarqueId,
-        testMarqueAlias,
-        testModeleId,
-        testModeleAlias,
-        testTypeId,
-        testTypeAlias,
-      );
+      const generatedUrl =
+        this.urlCompatibilityService.generateGammeVehiculeUrl(
+          testPgId,
+          testPgAlias,
+          testMarqueId,
+          testMarqueAlias,
+          testModeleId,
+          testModeleAlias,
+          testTypeId,
+          testTypeAlias,
+        );
 
       const expectedUrl = `/pieces/${testPgAlias}-${testPgId}/${testMarqueAlias}-${testMarqueId}/${testModeleAlias}-${testModeleId}/${testTypeAlias}-${testTypeId}.html`;
 
@@ -487,9 +490,15 @@ export class SeoController {
           segments: {
             pieces: generatedUrl.split('/')[1] === 'pieces',
             gamme: generatedUrl.split('/')[2] === `${testPgAlias}-${testPgId}`,
-            marque: generatedUrl.split('/')[3] === `${testMarqueAlias}-${testMarqueId}`,
-            modele: generatedUrl.split('/')[4] === `${testModeleAlias}-${testModeleId}`,
-            type: generatedUrl.split('/')[5] === `${testTypeAlias}-${testTypeId}.html`,
+            marque:
+              generatedUrl.split('/')[3] ===
+              `${testMarqueAlias}-${testMarqueId}`,
+            modele:
+              generatedUrl.split('/')[4] ===
+              `${testModeleAlias}-${testModeleId}`,
+            type:
+              generatedUrl.split('/')[5] ===
+              `${testTypeAlias}-${testTypeId}.html`,
           },
         },
       };
@@ -550,9 +559,15 @@ export class SeoController {
           match: generatedUrl === expectedUrl,
           segments: {
             constructeurs: generatedUrl.split('/')[1] === 'constructeurs',
-            marque: generatedUrl.split('/')[2] === `${testMarqueAlias}-${testMarqueId}`,
-            modele: generatedUrl.split('/')[3] === `${testModeleAlias}-${testModeleId}`,
-            type: generatedUrl.split('/')[4] === `${testTypeAlias}-${testTypeId}.html`,
+            marque:
+              generatedUrl.split('/')[2] ===
+              `${testMarqueAlias}-${testMarqueId}`,
+            modele:
+              generatedUrl.split('/')[3] ===
+              `${testModeleAlias}-${testModeleId}`,
+            type:
+              generatedUrl.split('/')[4] ===
+              `${testTypeAlias}-${testTypeId}.html`,
           },
         },
       };

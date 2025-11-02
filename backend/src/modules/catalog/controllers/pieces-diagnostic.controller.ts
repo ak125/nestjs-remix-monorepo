@@ -3,7 +3,7 @@ import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-co
 
 /**
  * 🔍 DIAGNOSTIC DES RELATIONS PIÈCES-VÉHICULES
- * 
+ *
  * Ce contrôleur permet de valider la cohérence des données dans pieces_relation_type
  * et de détecter les associations incorrectes (pièces sans marque, références invalides, etc.)
  */
@@ -22,9 +22,9 @@ export class PiecesDiagnosticController {
 
   /**
    * 🔍 DIAGNOSTIC COMPLET: Vérifie la qualité des relations pour un type_id + pg_id
-   * 
+   *
    * GET /api/catalog/diagnostic/relations/:typeId/:pgId
-   * 
+   *
    * Retourne:
    * - Nombre de relations trouvées
    * - Nombre de pièces uniques
@@ -64,17 +64,20 @@ export class PiecesDiagnosticController {
           data: {
             relations_count: 0,
             message: 'Aucune relation trouvée',
-            recommendation: '❌ Cette combinaison type_id + pg_id ne devrait pas être affichée (410 Gone)',
+            recommendation:
+              '❌ Cette combinaison type_id + pg_id ne devrait pas être affichée (410 Gone)',
           },
           timestamp: new Date().toISOString(),
         };
       }
 
       const pieceIds = [...new Set(relations.map((r) => r.rtp_piece_id))];
-      const pmIds = [...new Set(relations.map((r) => r.rtp_pm_id).filter(Boolean))];
+      const pmIds = [
+        ...new Set(relations.map((r) => r.rtp_pm_id).filter(Boolean)),
+      ];
 
       // 2️⃣ Récupérer les détails des pièces
-            const { data: pieces, error: piecesError } = await this.client
+      const { data: pieces, error: piecesError } = await this.client
         .from('pieces')
         .select('piece_id, piece_ref, piece_pm_id, piece_has_img, piece_name')
         .in('piece_id', pieceIds);
@@ -88,13 +91,14 @@ export class PiecesDiagnosticController {
       }
 
       // 3️⃣ Récupérer les marques
-      const { data: marques, error: marquesError } = pmIds.length > 0
-        ? await this.client
-            .from('pieces_marque')
-            .select('pm_id, pm_name, pm_logo')
-            .in('pm_id', pmIds)
-            .eq('pm_display', 1)
-        : { data: null, error: null };
+      const { data: marques, error: marquesError } =
+        pmIds.length > 0
+          ? await this.client
+              .from('pieces_marque')
+              .select('pm_id, pm_name, pm_logo')
+              .in('pm_id', pmIds)
+              .eq('pm_display', 1)
+          : { data: null, error: null };
 
       if (marquesError) {
         this.logger.warn(`⚠️ Erreur marques: ${marquesError.message}`);
@@ -111,8 +115,12 @@ export class PiecesDiagnosticController {
       }
 
       // 5️⃣ ANALYSE DE LA QUALITÉ DES DONNÉES
-      const marquesMap = new Map<number, any>(marques?.map((m: any) => [m.pm_id, m]) || []);
-      const pricesMap = new Map<number, any>(prices?.map((p: any) => [p.pri_piece_id, p]) || []);
+      const marquesMap = new Map<number, any>(
+        marques?.map((m: any) => [m.pm_id, m]) || [],
+      );
+      const pricesMap = new Map<number, any>(
+        prices?.map((p: any) => [p.pri_piece_id, p]) || [],
+      );
 
       let piecesWithBrand = 0;
       let piecesWithPrice = 0;
@@ -150,14 +158,17 @@ export class PiecesDiagnosticController {
 
       // 6️⃣ DÉTERMINER LE STATUT DE QUALITÉ
       let quality_status = '✅ GOOD';
-      let recommendation = 'Les données sont cohérentes, la page peut être affichée.';
+      let recommendation =
+        'Les données sont cohérentes, la page peut être affichée.';
 
       if (percentWithBrand < 50) {
         quality_status = '❌ CRITICAL';
-        recommendation = 'RETOURNER 410 GONE - Moins de 50% des pièces ont une marque.';
+        recommendation =
+          'RETOURNER 410 GONE - Moins de 50% des pièces ont une marque.';
       } else if (percentWithBrand < 80) {
         quality_status = '⚠️ WARNING';
-        recommendation = 'Données de qualité moyenne - Envisager 410 Gone si < 80%.';
+        recommendation =
+          'Données de qualité moyenne - Envisager 410 Gone si < 80%.';
       }
 
       if (totalPieces === 0) {
@@ -223,9 +234,9 @@ export class PiecesDiagnosticController {
 
   /**
    * 🔍 VÉRIFIER LA VALIDITÉ D'UN TYPE_ID
-   * 
+   *
    * GET /api/catalog/diagnostic/type/:typeId
-   * 
+   *
    * Retourne les informations du véhicule associé à ce type_id
    */
   @Get('type/:typeId')
@@ -236,7 +247,8 @@ export class PiecesDiagnosticController {
       // ✅ FIX: Utiliser .maybeSingle() au lieu de .single()
       const { data: typeData, error } = await this.client
         .from('auto_type')
-        .select(`
+        .select(
+          `
           type_id,
           type_name,
           type_modele_id,
@@ -248,7 +260,8 @@ export class PiecesDiagnosticController {
               marque_name
             )
           )
-        `)
+        `,
+        )
         .eq('type_id', typeIdNum)
         .maybeSingle();
 
@@ -271,17 +284,19 @@ export class PiecesDiagnosticController {
           data: {
             type_id: typeIdNum,
             exists: false,
-            message: '❌ Ce type_id n\'existe pas dans la base',
-            recommendation: 'Vérifier l\'URL ou corriger le type_id',
+            message: "❌ Ce type_id n'existe pas dans la base",
+            recommendation: "Vérifier l'URL ou corriger le type_id",
           },
           timestamp: new Date().toISOString(),
         };
-      }      return {
+      }
+      return {
         success: true,
         data: {
           type_id: typeData.type_id,
           type_name: typeData.type_name,
-          marque: (typeData as any).auto_modele?.[0]?.auto_marque?.[0]?.marque_name,
+          marque: (typeData as any).auto_modele?.[0]?.auto_marque?.[0]
+            ?.marque_name,
           modele: (typeData as any).auto_modele?.[0]?.modele_name,
           exists: true,
           recommendation: '✅ Type ID valide',
@@ -299,17 +314,29 @@ export class PiecesDiagnosticController {
 
   /**
    * 🔍 AUDIT COMPLET: Teste plusieurs combinaisons type_id + pg_id
-   * 
+   *
    * GET /api/catalog/diagnostic/audit-batch
-   * 
+   *
    * Teste les 7 URLs critiques du monitoring SEO
    */
   @Get('audit-batch')
   async auditBatch() {
     const criticalCombinations = [
-      { url: '/pieces/amortisseur-1/mercedes-107/classe-c-107003/220-cdi-18784.html', typeId: 18784, pgId: 854 },
-      { url: '/pieces/freinage-402/renault-140/clio-iii-140004/1-5-dci-19052.html', typeId: 19052, pgId: 402 },
-      { url: '/pieces/distribution-128/peugeot-19/308-19010/1-6-hdi-13894.html', typeId: 13894, pgId: 128 },
+      {
+        url: '/pieces/amortisseur-1/mercedes-107/classe-c-107003/220-cdi-18784.html',
+        typeId: 18784,
+        pgId: 854,
+      },
+      {
+        url: '/pieces/freinage-402/renault-140/clio-iii-140004/1-5-dci-19052.html',
+        typeId: 19052,
+        pgId: 402,
+      },
+      {
+        url: '/pieces/distribution-128/peugeot-19/308-19010/1-6-hdi-13894.html',
+        typeId: 13894,
+        pgId: 128,
+      },
     ];
 
     const results: any[] = [];
@@ -326,7 +353,8 @@ export class PiecesDiagnosticController {
         pg_id: combo.pgId,
         status: diagnostic.data?.quality_status || '❌ ERROR',
         pieces_count: diagnostic.data?.unique_pieces || 0,
-        brand_percentage: diagnostic.data?.quality?.pieces_with_brand?.percentage || '0',
+        brand_percentage:
+          diagnostic.data?.quality?.pieces_with_brand?.percentage || '0',
         recommendation: diagnostic.data?.recommendation,
       });
     }
@@ -349,7 +377,7 @@ export class PiecesDiagnosticController {
   /**
    * 🔍 Endpoint 4: Recherche de type_id correct pour un véhicule
    * GET /api/catalog/diagnostic/find-type/:marqueId/:modeleId/:searchTerm
-   * 
+   *
    * Exemple: /api/catalog/diagnostic/find-type/108/108038/220%20CDI
    */
   @Get('find-type/:marqueId/:modeleId/:searchTerm')

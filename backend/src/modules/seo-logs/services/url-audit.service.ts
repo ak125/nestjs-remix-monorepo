@@ -5,11 +5,11 @@ import { BetaAnalyticsDataClient } from '@google-analytics/data';
 
 /**
  * 🔍 Service d'audit des URLs
- * 
+ *
  * Compare les URLs générées par l'application avec :
  * - Google Search Console (URLs crawlées)
  * - Google Analytics 4 (URLs visitées)
- * 
+ *
  * Prend en compte :
  * - Anciennes URLs en .com
  * - Nouvelles URLs en .fr
@@ -41,7 +41,9 @@ export class UrlAuditService {
         });
         this.logger.log('✅ Google Search Console client initialisé');
       } else {
-        this.logger.warn('⚠️ GSC credentials manquantes - utilisation mock data');
+        this.logger.warn(
+          '⚠️ GSC credentials manquantes - utilisation mock data',
+        );
       }
 
       // Google Analytics 4 Client
@@ -57,7 +59,9 @@ export class UrlAuditService {
         });
         this.logger.log('✅ Google Analytics 4 client initialisé');
       } else {
-        this.logger.warn('⚠️ GA4 credentials manquantes - utilisation mock data');
+        this.logger.warn(
+          '⚠️ GA4 credentials manquantes - utilisation mock data',
+        );
       }
     } catch (error) {
       this.logger.error('❌ Erreur initialisation Google clients:', error);
@@ -189,7 +193,8 @@ export class UrlAuditService {
       .toISOString()
       .split('T')[0];
 
-    const siteUrl = this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
+    const siteUrl =
+      this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
     const ga4PropertyId = this.configService.get('GA4_PROPERTY_ID') || '';
 
     const [gscUrls, ga4Urls] = await Promise.all([
@@ -274,7 +279,8 @@ export class UrlAuditService {
       .toISOString()
       .split('T')[0];
 
-    const siteUrl = this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
+    const siteUrl =
+      this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
 
     const gscUrls = await this.getGscCrawledUrls(siteUrl, startDate, endDate);
 
@@ -331,7 +337,11 @@ export class UrlAuditService {
         clicks: 45,
         impressions: 1200,
       },
-      { url: '/pieces/adaptateur-allume-cigares-3352.html', clicks: 12, impressions: 450 },
+      {
+        url: '/pieces/adaptateur-allume-cigares-3352.html',
+        clicks: 12,
+        impressions: 450,
+      },
       { url: '/pieces/accu-tournevis-4715.html', clicks: 8, impressions: 320 },
       // Anciennes URLs .com (simulation)
       {

@@ -135,7 +135,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs
     SeoKpisService, // 📊 Service KPIs Dashboard
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap Véhicule-Pièces
-    
+
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
       provide: APP_INTERCEPTOR,

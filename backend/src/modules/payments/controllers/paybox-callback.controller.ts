@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Query, Body, Logger, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Body,
+  Logger,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
@@ -31,12 +39,12 @@ export class PayboxCallbackController {
     try {
       this.logger.log('🔔 Callback IPN Paybox reçu');
       this.logger.log(`📦 Query params:`, query);
-      
+
       // Parser la réponse Paybox
       const params = this.payboxService.parsePayboxResponse(
         Object.entries(query)
           .map(([k, v]) => `${k}=${v}`)
-          .join('&')
+          .join('&'),
       );
 
       this.logger.log(`💰 Montant: ${params.amount}`);
@@ -45,7 +53,8 @@ export class PayboxCallbackController {
       this.logger.log(`⚠️  Erreur: ${params.errorCode}`);
 
       // Vérifier la signature
-      const signature = params.signature || params.K || query.Signature || query.K;
+      const signature =
+        params.signature || params.K || query.Signature || query.K;
       if (!signature) {
         this.logger.error('❌ Signature manquante dans le callback');
         return res.status(400).send('Signature manquante');
@@ -59,7 +68,9 @@ export class PayboxCallbackController {
       }
 
       // Vérifier si le paiement est réussi
-      const isSuccess = this.payboxService.isPaymentSuccessful(params.errorCode);
+      const isSuccess = this.payboxService.isPaymentSuccessful(
+        params.errorCode,
+      );
 
       if (isSuccess) {
         this.logger.log('✅ Paiement réussi !');
@@ -75,7 +86,8 @@ export class PayboxCallbackController {
             currency: 'EUR',
             status: 'completed' as any, // PaymentStatus.COMPLETED
             method: 'credit_card' as any, // PaymentMethod.CREDIT_CARD
-            providerTransactionId: params.authorization || params.orderReference,
+            providerTransactionId:
+              params.authorization || params.orderReference,
             providerReference: params.orderReference,
             description: `Paiement Paybox - Commande ${params.orderReference}`,
             metadata: {
@@ -113,7 +125,8 @@ export class PayboxCallbackController {
             currency: 'EUR',
             status: 'failed' as any, // PaymentStatus.FAILED
             method: 'credit_card' as any,
-            providerTransactionId: params.authorization || params.orderReference,
+            providerTransactionId:
+              params.authorization || params.orderReference,
             providerReference: params.orderReference,
             description: `Paiement Paybox échoué - Code ${params.errorCode}`,
             failureReason: `Code erreur Paybox: ${params.errorCode}`,
@@ -130,9 +143,7 @@ export class PayboxCallbackController {
             `⚠️  Échec paiement enregistré pour commande #${params.orderReference}`,
           );
         } catch (error: any) {
-          this.logger.error(
-            `❌ Erreur enregistrement échec: ${error.message}`,
-          );
+          this.logger.error(`❌ Erreur enregistrement échec: ${error.message}`);
         }
 
         return res.status(200).send('OK');
@@ -216,7 +227,7 @@ export class PayboxCallbackController {
             const orderIdMatch = Ref.match(/ORD-(\d+)/);
             if (orderIdMatch) {
               const numericOrderId = orderIdMatch[1]; // Garder en string car ord_id est text
-              
+
               // Mise à jour avec les vrais noms de colonnes
               const { data, error } = await this.paymentDataService['client']
                 .from('___xtr_order')
@@ -229,9 +240,7 @@ export class PayboxCallbackController {
                 .select();
 
               if (error) {
-                this.logger.error(
-                  `❌ TEST: Erreur Supabase: ${error.message}`,
-                );
+                this.logger.error(`❌ TEST: Erreur Supabase: ${error.message}`);
               } else {
                 this.logger.log(
                   `✅ TEST: Commande #${numericOrderId} mise à jour → Payée (ord_is_pay=1, ord_ords_id=3)`,
@@ -259,9 +268,7 @@ export class PayboxCallbackController {
             },
           });
         } catch (error: any) {
-          this.logger.error(
-            `❌ TEST: Erreur enregistrement: ${error.message}`,
-          );
+          this.logger.error(`❌ TEST: Erreur enregistrement: ${error.message}`);
           return res.status(500).json({
             success: false,
             error: error.message,

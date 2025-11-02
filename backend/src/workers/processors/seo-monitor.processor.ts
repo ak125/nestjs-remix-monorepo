@@ -1,10 +1,10 @@
 /**
  * 🛡️ PROCESSOR MONITORING SEO
- * 
+ *
  * Surveille les pages critiques pour détecter les problèmes
  * de parsing d'URL qui pourraient causer 0 articles affichés
  * et déclencher une désindexation SEO injustifiée.
- * 
+ *
  * Job répétitif BullMQ: Toutes les 30 minutes
  */
 
@@ -46,7 +46,9 @@ export class SeoMonitorProcessor {
   constructor(private readonly configService: ConfigService) {
     // Initialiser client Supabase
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseKey = this.configService.get<string>(
+      'SUPABASE_SERVICE_ROLE_KEY',
+    );
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant');
@@ -115,7 +117,9 @@ export class SeoMonitorProcessor {
    * 🔍 Traite le job de monitoring SEO
    */
   @Process('check-pages')
-  async handleMonitoring(job: Job<SeoMonitorJobData>): Promise<MonitoringResult> {
+  async handleMonitoring(
+    job: Job<SeoMonitorJobData>,
+  ): Promise<MonitoringResult> {
     this.logger.log(
       `🔍 [Job #${job.id}] Démarrage monitoring SEO (${job.data.taskType})`,
     );
@@ -130,17 +134,18 @@ export class SeoMonitorProcessor {
 
         for (let i = 0; i < this.CRITICAL_URLS.length; i++) {
           const urlConfig = this.CRITICAL_URLS[i];
-          
+
           const result = await this.checkUrl(
             urlConfig.url,
             urlConfig.typeId,
             urlConfig.gammeId,
           );
-          
+
           results.push(result);
 
           // Mise à jour progression
-          const progress = Math.floor((i + 1) / this.CRITICAL_URLS.length * 80) + 10;
+          const progress =
+            Math.floor(((i + 1) / this.CRITICAL_URLS.length) * 80) + 10;
           await job.progress(progress);
         }
       }
@@ -150,19 +155,19 @@ export class SeoMonitorProcessor {
         await job.progress(10);
 
         const randomUrls = await this.getRandomUrlSample(20);
-        
+
         for (let i = 0; i < randomUrls.length; i++) {
           const urlConfig = randomUrls[i];
-          
+
           const result = await this.checkUrl(
             urlConfig.url,
             urlConfig.typeId,
             urlConfig.gammeId,
           );
-          
+
           results.push(result);
 
-          const progress = Math.floor((i + 1) / randomUrls.length * 80) + 10;
+          const progress = Math.floor(((i + 1) / randomUrls.length) * 80) + 10;
           await job.progress(progress);
         }
       }
@@ -182,11 +187,10 @@ export class SeoMonitorProcessor {
       const duration = Date.now() - startTime;
       this.logger.log(
         `✅ [Job #${job.id}] Monitoring terminé en ${duration}ms - ` +
-        `${analysis.okCount} OK, ${analysis.warningCount} warnings, ${analysis.errorCount} erreurs`,
+          `${analysis.okCount} OK, ${analysis.warningCount} warnings, ${analysis.errorCount} erreurs`,
       );
 
       return analysis;
-
     } catch (error) {
       this.logger.error(
         `❌ [Job #${job.id}] Erreur monitoring:`,
@@ -244,9 +248,7 @@ export class SeoMonitorProcessor {
       }
 
       if (count < 5) {
-        this.logger.warn(
-          `⚠️ WARNING: Seulement ${count} pièce(s) pour ${url}`,
-        );
+        this.logger.warn(`⚠️ WARNING: Seulement ${count} pièce(s) pour ${url}`);
         return {
           url,
           typeId,
@@ -267,12 +269,8 @@ export class SeoMonitorProcessor {
         status: 'ok',
         checkedAt: new Date().toISOString(),
       };
-
     } catch (error) {
-      this.logger.error(
-        `❌ Erreur vérification ${url}:`,
-        error.message,
-      );
+      this.logger.error(`❌ Erreur vérification ${url}:`, error.message);
       return {
         url,
         typeId,
@@ -288,15 +286,17 @@ export class SeoMonitorProcessor {
   /**
    * 🎲 Récupère un échantillon aléatoire d'URLs à surveiller
    */
-  private async getRandomUrlSample(limit: number = 20): Promise<
-    Array<{ url: string; typeId: number; gammeId: number }>
-  > {
+  private async getRandomUrlSample(
+    limit: number = 20,
+  ): Promise<Array<{ url: string; typeId: number; gammeId: number }>> {
     try {
       // Requête pour récupérer 20 combinaisons type+gamme aléatoires
-      const { data, error } = await this.supabase
-        .rpc('get_random_vehicle_gamme_combinations', { 
-          sample_size: limit 
-        });
+      const { data, error } = await this.supabase.rpc(
+        'get_random_vehicle_gamme_combinations',
+        {
+          sample_size: limit,
+        },
+      );
 
       if (error || !data) {
         this.logger.warn('⚠️ Impossible de récupérer échantillon aléatoire');
@@ -304,11 +304,16 @@ export class SeoMonitorProcessor {
       }
 
       return data.map((row: any) => ({
-        url: this.buildUrl(row.marque_alias, row.modele_alias, row.type_alias, row.gamme_alias, row.id_type),
+        url: this.buildUrl(
+          row.marque_alias,
+          row.modele_alias,
+          row.type_alias,
+          row.gamme_alias,
+          row.id_type,
+        ),
         typeId: row.id_type,
         gammeId: row.id_pg,
       }));
-
     } catch (error) {
       this.logger.error('❌ Erreur échantillon aléatoire:', error.message);
       return [];
@@ -332,11 +337,13 @@ export class SeoMonitorProcessor {
    * 📊 Analyse les résultats de monitoring
    */
   private analyzeResults(results: UrlCheckResult[]): MonitoringResult {
-    const okCount = results.filter(r => r.status === 'ok').length;
-    const warningCount = results.filter(r => r.status === 'warning').length;
-    const errorCount = results.filter(r => r.status === 'error').length;
+    const okCount = results.filter((r) => r.status === 'ok').length;
+    const warningCount = results.filter((r) => r.status === 'warning').length;
+    const errorCount = results.filter((r) => r.status === 'error').length;
 
-    const alerts = results.filter(r => r.status === 'error' || r.status === 'warning');
+    const alerts = results.filter(
+      (r) => r.status === 'error' || r.status === 'warning',
+    );
 
     return {
       totalChecked: results.length,

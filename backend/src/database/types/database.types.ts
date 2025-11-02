@@ -510,7 +510,6 @@ export interface VTableHealth {
   last_analyze: string | null;
 }
 
-
 // ===== TABLES SYSTÈME/INTERNES =====
 
 export interface Config {
@@ -1129,113 +1128,206 @@ export interface SitemapSearchLink {
   map_type_id: string | null;
 }
 
-
 // ===== TYPES UTILITAIRES =====
 
-export type TableName = 
-'___config'  | '___config_admin'  | '___config_ip'  | '___config_old'  | '___footer_menu'  | '___header_menu'  | '___meta_tags_ariane'  | '___xtr_customer'  | '___xtr_customer_billing_address'  | '___xtr_customer_delivery_address'  | '___xtr_delivery_agent'  | '___xtr_delivery_ape_corse'  | '___xtr_delivery_ape_domtom1'  | '___xtr_delivery_ape_domtom2'  | '___xtr_delivery_ape_france'  | '___xtr_invoice'  | '___xtr_invoice_line'  | '___xtr_msg'  | '___xtr_order'  | '___xtr_order_line'  | '___xtr_order_line_equiv_ticket'  | '___xtr_order_line_status'  | '___xtr_order_status'  | '___xtr_supplier'  | '___xtr_supplier_link_pm'  | '__blog_advice'  | '__blog_advice_cross'  | '__blog_advice_h2'  | '__blog_advice_h3'  | '__blog_advice_old'  | '__blog_guide'  | '__blog_guide_h2'  | '__blog_guide_h3'  | '__blog_meta_tags_ariane'  | '__blog_seo_marque'  | '__cross_gamme_car'  | '__cross_gamme_car_new'  | '__cross_gamme_car_new2'  | '__seo_equip_gamme'  | '__seo_family_gamme_car_switch'  | '__seo_gamme'  | '__seo_gamme_car'  | '__seo_gamme_car_switch'  | '__seo_gamme_conseil'  | '__seo_gamme_info'  | '__seo_item_switch'  | '__seo_marque'  | '__seo_type_switch'  | '__sitemap_blog'  | '__sitemap_gamme'  | '__sitemap_marque'  | '__sitemap_motorisation'  | '__sitemap_p_link'  | '__sitemap_p_xml'  | '__sitemap_search_link'  | 'am_2022_suppliers'  | 'auto_marque'  | 'auto_modele'  | 'auto_modele_group'  | 'auto_modele_robot'  | 'auto_type'  | 'auto_type_motor_code'  | 'auto_type_motor_fuel'  | 'auto_type_number_code'  | 'cars_engine'  | 'catalog_family'  | 'catalog_gamme'  | 'categories'  | 'ic_postback'  | 'password_resets'  | 'pieces'  | 'pieces_criteria'  | 'pieces_criteria_group'  | 'pieces_criteria_link'  | 'pieces_details'  | 'pieces_gamme'  | 'pieces_gamme_cross'  | 'pieces_list'  | 'pieces_marque'  | 'pieces_media_img'  | 'pieces_price'  | 'pieces_ref_brand'  | 'pieces_ref_ean'  | 'pieces_ref_oem'  | 'pieces_ref_search'  | 'pieces_relation_criteria'  | 'pieces_relation_type'  | 'pieces_side_filtre'  | 'pieces_status'  | 'products'  | 'promo_codes'  | 'promo_usage'  | 'sessions'  | 'shipping_rates_cache'  | 'users'  | 'v_index_usage'  | 'v_table_health';
-
+export type TableName =
+  | '___config'
+  | '___config_admin'
+  | '___config_ip'
+  | '___config_old'
+  | '___footer_menu'
+  | '___header_menu'
+  | '___meta_tags_ariane'
+  | '___xtr_customer'
+  | '___xtr_customer_billing_address'
+  | '___xtr_customer_delivery_address'
+  | '___xtr_delivery_agent'
+  | '___xtr_delivery_ape_corse'
+  | '___xtr_delivery_ape_domtom1'
+  | '___xtr_delivery_ape_domtom2'
+  | '___xtr_delivery_ape_france'
+  | '___xtr_invoice'
+  | '___xtr_invoice_line'
+  | '___xtr_msg'
+  | '___xtr_order'
+  | '___xtr_order_line'
+  | '___xtr_order_line_equiv_ticket'
+  | '___xtr_order_line_status'
+  | '___xtr_order_status'
+  | '___xtr_supplier'
+  | '___xtr_supplier_link_pm'
+  | '__blog_advice'
+  | '__blog_advice_cross'
+  | '__blog_advice_h2'
+  | '__blog_advice_h3'
+  | '__blog_advice_old'
+  | '__blog_guide'
+  | '__blog_guide_h2'
+  | '__blog_guide_h3'
+  | '__blog_meta_tags_ariane'
+  | '__blog_seo_marque'
+  | '__cross_gamme_car'
+  | '__cross_gamme_car_new'
+  | '__cross_gamme_car_new2'
+  | '__seo_equip_gamme'
+  | '__seo_family_gamme_car_switch'
+  | '__seo_gamme'
+  | '__seo_gamme_car'
+  | '__seo_gamme_car_switch'
+  | '__seo_gamme_conseil'
+  | '__seo_gamme_info'
+  | '__seo_item_switch'
+  | '__seo_marque'
+  | '__seo_type_switch'
+  | '__sitemap_blog'
+  | '__sitemap_gamme'
+  | '__sitemap_marque'
+  | '__sitemap_motorisation'
+  | '__sitemap_p_link'
+  | '__sitemap_p_xml'
+  | '__sitemap_search_link'
+  | 'am_2022_suppliers'
+  | 'auto_marque'
+  | 'auto_modele'
+  | 'auto_modele_group'
+  | 'auto_modele_robot'
+  | 'auto_type'
+  | 'auto_type_motor_code'
+  | 'auto_type_motor_fuel'
+  | 'auto_type_number_code'
+  | 'cars_engine'
+  | 'catalog_family'
+  | 'catalog_gamme'
+  | 'categories'
+  | 'ic_postback'
+  | 'password_resets'
+  | 'pieces'
+  | 'pieces_criteria'
+  | 'pieces_criteria_group'
+  | 'pieces_criteria_link'
+  | 'pieces_details'
+  | 'pieces_gamme'
+  | 'pieces_gamme_cross'
+  | 'pieces_list'
+  | 'pieces_marque'
+  | 'pieces_media_img'
+  | 'pieces_price'
+  | 'pieces_ref_brand'
+  | 'pieces_ref_ean'
+  | 'pieces_ref_oem'
+  | 'pieces_ref_search'
+  | 'pieces_relation_criteria'
+  | 'pieces_relation_type'
+  | 'pieces_side_filtre'
+  | 'pieces_status'
+  | 'products'
+  | 'promo_codes'
+  | 'promo_usage'
+  | 'sessions'
+  | 'shipping_rates_cache'
+  | 'users'
+  | 'v_index_usage'
+  | 'v_table_health';
 
 export interface Database {
-  '___config': Config;
-  '___config_admin': ConfigAdmin;
-  '___config_ip': ConfigIp;
-  '___config_old': ConfigOld;
-  '___footer_menu': FooterMenu;
-  '___header_menu': HeaderMenu;
-  '___meta_tags_ariane': MetaTagsAriane;
-  '___xtr_customer': XtrCustomer;
-  '___xtr_customer_billing_address': XtrCustomerBillingAddress;
-  '___xtr_customer_delivery_address': XtrCustomerDeliveryAddress;
-  '___xtr_delivery_agent': XtrDeliveryAgent;
-  '___xtr_delivery_ape_corse': XtrDeliveryApeCorse;
-  '___xtr_delivery_ape_domtom1': XtrDeliveryApeDomtom1;
-  '___xtr_delivery_ape_domtom2': XtrDeliveryApeDomtom2;
-  '___xtr_delivery_ape_france': XtrDeliveryApeFrance;
-  '___xtr_invoice': XtrInvoice;
-  '___xtr_invoice_line': XtrInvoiceLine;
-  '___xtr_msg': XtrMsg;
-  '___xtr_order': XtrOrder;
-  '___xtr_order_line': XtrOrderLine;
-  '___xtr_order_line_equiv_ticket': XtrOrderLineEquivTicket;
-  '___xtr_order_line_status': XtrOrderLineStatus;
-  '___xtr_order_status': XtrOrderStatus;
-  '___xtr_supplier': XtrSupplier;
-  '___xtr_supplier_link_pm': XtrSupplierLinkPm;
-  '__blog_advice': BlogAdvice;
-  '__blog_advice_cross': BlogAdviceCross;
-  '__blog_advice_h2': BlogAdviceH2;
-  '__blog_advice_h3': BlogAdviceH3;
-  '__blog_advice_old': Record<string, any>; // Table vide
-  '__blog_guide': BlogGuide;
-  '__blog_guide_h2': BlogGuideH2;
-  '__blog_guide_h3': BlogGuideH3;
-  '__blog_meta_tags_ariane': BlogMetaTagsAriane;
-  '__blog_seo_marque': BlogSeoMarque;
-  '__cross_gamme_car': CrossGammeCar;
-  '__cross_gamme_car_new': CrossGammeCarNew;
-  '__cross_gamme_car_new2': CrossGammeCarNew2;
-  '__seo_equip_gamme': SeoEquipGamme;
-  '__seo_family_gamme_car_switch': SeoFamilyGammeCarSwitch;
-  '__seo_gamme': SeoGamme;
-  '__seo_gamme_car': SeoGammeCar;
-  '__seo_gamme_car_switch': Record<string, any>; // Table vide ou manquante
-  '__seo_gamme_conseil': SeoGammeConseil;
-  '__seo_gamme_info': SeoGammeInfo;
-  '__seo_item_switch': SeoItemSwitch;
-  '__seo_marque': SeoMarque;
-  '__seo_type_switch': SeoTypeSwitch;
-  '__sitemap_blog': SitemapBlog;
-  '__sitemap_gamme': Record<string, any>; // Table vide ou manquante
-  '__sitemap_marque': SitemapMarque;
-  '__sitemap_motorisation': SitemapMotorisation;
-  '__sitemap_p_link': SitemapPLink;
-  '__sitemap_p_xml': SitemapPXml;
-  '__sitemap_search_link': SitemapSearchLink;
-  'am_2022_suppliers': Am2022Suppliers;
-  'auto_marque': AutoMarque;
-  'auto_modele': AutoModele;
-  'auto_modele_group': AutoModeleGroup;
-  'auto_modele_robot': AutoModeleRobot;
-  'auto_type': AutoType;
-  'auto_type_motor_code': AutoTypeMotorCode;
-  'auto_type_motor_fuel': AutoTypeMotorFuel;
-  'auto_type_number_code': AutoTypeNumberCode;
-  'cars_engine': CarsEngine;
-  'catalog_family': CatalogFamily;
-  'catalog_gamme': CatalogGamme;
-  'categories': Record<string, any>; // Table vide ou manquante
-  'ic_postback': IcPostback;
-  'password_resets': Record<string, any>; // Table vide ou manquante
-  'pieces': Pieces;
-  'pieces_criteria': PiecesCriteria;
-  'pieces_criteria_group': PiecesCriteriaGroup;
-  'pieces_criteria_link': PiecesCriteriaLink;
-  'pieces_details': PiecesDetails;
-  'pieces_gamme': PiecesGamme;
-  'pieces_gamme_cross': PiecesGammeCross;
-  'pieces_list': PiecesList;
-  'pieces_marque': PiecesMarque;
-  'pieces_media_img': PiecesMediaImg;
-  'pieces_price': PiecesPrice;
-  'pieces_ref_brand': PiecesRefBrand;
-  'pieces_ref_ean': PiecesRefEan;
-  'pieces_ref_oem': PiecesRefOem;
-  'pieces_ref_search': PiecesRefSearch;
-  'pieces_relation_criteria': PiecesRelationCriteria;
-  'pieces_relation_type': PiecesRelationType;
-  'pieces_side_filtre': PiecesSideFiltre;
-  'pieces_status': PiecesStatus;
-  'products': Record<string, any>; // Table vide ou manquante (utiliser 'pieces' à la place)
-  'promo_codes': PromoCodes;
-  'promo_usage': Record<string, any>; // Table vide ou manquante
-  'sessions': Record<string, any>; // Table vide ou manquante
-  'shipping_rates_cache': ShippingRatesCache;
-  'users': Users;
-  'v_index_usage': VIndexUsage;
-  'v_table_health': VTableHealth;
+  ___config: Config;
+  ___config_admin: ConfigAdmin;
+  ___config_ip: ConfigIp;
+  ___config_old: ConfigOld;
+  ___footer_menu: FooterMenu;
+  ___header_menu: HeaderMenu;
+  ___meta_tags_ariane: MetaTagsAriane;
+  ___xtr_customer: XtrCustomer;
+  ___xtr_customer_billing_address: XtrCustomerBillingAddress;
+  ___xtr_customer_delivery_address: XtrCustomerDeliveryAddress;
+  ___xtr_delivery_agent: XtrDeliveryAgent;
+  ___xtr_delivery_ape_corse: XtrDeliveryApeCorse;
+  ___xtr_delivery_ape_domtom1: XtrDeliveryApeDomtom1;
+  ___xtr_delivery_ape_domtom2: XtrDeliveryApeDomtom2;
+  ___xtr_delivery_ape_france: XtrDeliveryApeFrance;
+  ___xtr_invoice: XtrInvoice;
+  ___xtr_invoice_line: XtrInvoiceLine;
+  ___xtr_msg: XtrMsg;
+  ___xtr_order: XtrOrder;
+  ___xtr_order_line: XtrOrderLine;
+  ___xtr_order_line_equiv_ticket: XtrOrderLineEquivTicket;
+  ___xtr_order_line_status: XtrOrderLineStatus;
+  ___xtr_order_status: XtrOrderStatus;
+  ___xtr_supplier: XtrSupplier;
+  ___xtr_supplier_link_pm: XtrSupplierLinkPm;
+  __blog_advice: BlogAdvice;
+  __blog_advice_cross: BlogAdviceCross;
+  __blog_advice_h2: BlogAdviceH2;
+  __blog_advice_h3: BlogAdviceH3;
+  __blog_advice_old: Record<string, any>; // Table vide
+  __blog_guide: BlogGuide;
+  __blog_guide_h2: BlogGuideH2;
+  __blog_guide_h3: BlogGuideH3;
+  __blog_meta_tags_ariane: BlogMetaTagsAriane;
+  __blog_seo_marque: BlogSeoMarque;
+  __cross_gamme_car: CrossGammeCar;
+  __cross_gamme_car_new: CrossGammeCarNew;
+  __cross_gamme_car_new2: CrossGammeCarNew2;
+  __seo_equip_gamme: SeoEquipGamme;
+  __seo_family_gamme_car_switch: SeoFamilyGammeCarSwitch;
+  __seo_gamme: SeoGamme;
+  __seo_gamme_car: SeoGammeCar;
+  __seo_gamme_car_switch: Record<string, any>; // Table vide ou manquante
+  __seo_gamme_conseil: SeoGammeConseil;
+  __seo_gamme_info: SeoGammeInfo;
+  __seo_item_switch: SeoItemSwitch;
+  __seo_marque: SeoMarque;
+  __seo_type_switch: SeoTypeSwitch;
+  __sitemap_blog: SitemapBlog;
+  __sitemap_gamme: Record<string, any>; // Table vide ou manquante
+  __sitemap_marque: SitemapMarque;
+  __sitemap_motorisation: SitemapMotorisation;
+  __sitemap_p_link: SitemapPLink;
+  __sitemap_p_xml: SitemapPXml;
+  __sitemap_search_link: SitemapSearchLink;
+  am_2022_suppliers: Am2022Suppliers;
+  auto_marque: AutoMarque;
+  auto_modele: AutoModele;
+  auto_modele_group: AutoModeleGroup;
+  auto_modele_robot: AutoModeleRobot;
+  auto_type: AutoType;
+  auto_type_motor_code: AutoTypeMotorCode;
+  auto_type_motor_fuel: AutoTypeMotorFuel;
+  auto_type_number_code: AutoTypeNumberCode;
+  cars_engine: CarsEngine;
+  catalog_family: CatalogFamily;
+  catalog_gamme: CatalogGamme;
+  categories: Record<string, any>; // Table vide ou manquante
+  ic_postback: IcPostback;
+  password_resets: Record<string, any>; // Table vide ou manquante
+  pieces: Pieces;
+  pieces_criteria: PiecesCriteria;
+  pieces_criteria_group: PiecesCriteriaGroup;
+  pieces_criteria_link: PiecesCriteriaLink;
+  pieces_details: PiecesDetails;
+  pieces_gamme: PiecesGamme;
+  pieces_gamme_cross: PiecesGammeCross;
+  pieces_list: PiecesList;
+  pieces_marque: PiecesMarque;
+  pieces_media_img: PiecesMediaImg;
+  pieces_price: PiecesPrice;
+  pieces_ref_brand: PiecesRefBrand;
+  pieces_ref_ean: PiecesRefEan;
+  pieces_ref_oem: PiecesRefOem;
+  pieces_ref_search: PiecesRefSearch;
+  pieces_relation_criteria: PiecesRelationCriteria;
+  pieces_relation_type: PiecesRelationType;
+  pieces_side_filtre: PiecesSideFiltre;
+  pieces_status: PiecesStatus;
+  products: Record<string, any>; // Table vide ou manquante (utiliser 'pieces' à la place)
+  promo_codes: PromoCodes;
+  promo_usage: Record<string, any>; // Table vide ou manquante
+  sessions: Record<string, any>; // Table vide ou manquante
+  shipping_rates_cache: ShippingRatesCache;
+  users: Users;
+  v_index_usage: VIndexUsage;
+  v_table_health: VTableHealth;
 }
-
 
 // Helper types pour les requêtes
 export type TableRow<T extends TableName> = Database[T];
