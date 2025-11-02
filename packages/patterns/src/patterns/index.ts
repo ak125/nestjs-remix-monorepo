@@ -5,4 +5,4 @@
  */
 
 // Placeholder - à remplir avec les patterns
-export {};
+export const PATTERNS_VERSION = '1.0.0';
