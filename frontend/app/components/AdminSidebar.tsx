@@ -22,7 +22,8 @@ import {
   BookOpen,
   Edit,
   Eye,
-  Tag
+  Tag,
+  Palette
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
@@ -225,6 +226,14 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
           description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`
         }
       ]
+    },
+    {
+      name: "Design System",
+      href: "/admin/design-system",
+      icon: Palette,
+      description: "Tokens & Templates",
+      badge: { count: 'v1.0', color: "bg-purple-600" },
+      notification: false
     },
     {
       name: "Rapports",
