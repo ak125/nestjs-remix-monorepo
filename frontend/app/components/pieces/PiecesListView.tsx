@@ -5,10 +5,10 @@
  * Affichage liste dense avec détails complets
  */
 
-import React from 'react';
 import { Badge } from '@fafa/ui';
-import { type PieceData } from '../../types/pieces-route.types';
+import React from 'react';
 import { useCart } from '../../hooks/useCart';
+import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesListViewProps {
   pieces: PieceData[];

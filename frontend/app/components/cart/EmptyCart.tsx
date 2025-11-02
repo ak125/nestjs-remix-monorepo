@@ -3,8 +3,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Button } from '~/components/ui/button';
 import { ShoppingBag } from "lucide-react";
+import { Button } from '~/components/ui/button';
 
 export function EmptyCart() {
   return (

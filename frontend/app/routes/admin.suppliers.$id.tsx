@@ -6,9 +6,9 @@
  */
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
-import { Badge } from '~/components/ui/badge';
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { requireUser } from "../auth/unified.server";
 
 // Types pour les données du fournisseur

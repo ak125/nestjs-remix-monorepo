@@ -1,9 +1,9 @@
 // 📁 frontend/app/components/home/DatabaseFamilyProductCatalog.tsx
 // 👨‍👩‍👧‍👦 Composant d'affichage des catégories organisées par familles (données DB)
 
+import { Badge } from '@fafa/ui';
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
-import { Badge } from '@fafa/ui';
 import { familiesApi, type FamiliesResponse, type FamilyCategory } from '../../services/api/families.api';
 
 interface DatabaseFamilyProductCatalogProps {

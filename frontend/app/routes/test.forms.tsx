@@ -4,13 +4,13 @@
  * Page showcase de tous les patterns de formulaires validés et accessibles
  */
 
+import { Button } from "@fafa/ui";
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { useState } from "react";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Button } from "@fafa/ui";
 import { useRemixForm, validateFormData } from "~/hooks/useRemixForm";
 import { loginSchema, contactSchema, searchSchema, registerSchema, type ContactFormData, type SearchFormData } from "~/schemas/auth";
 

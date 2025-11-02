@@ -1,8 +1,8 @@
 // PARTIE 2/3 - Composants restants pour homepage.v3.tsx
 import { Link } from '@remix-run/react';
-import { Button } from '~/components/ui/button';
 import { Trophy, Rocket, BookOpen, Facebook, Twitter, Linkedin, ArrowRight, Star, ShoppingCart, TrendingUp, Award, DollarSign, Youtube } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 
 // ================================
 // WHY CHOOSE US - Avantages

@@ -5,9 +5,9 @@
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link, Form, useFetcher, useNavigation } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 // Icons
 const PencilIcon = ({ className }: { className: string }) => (

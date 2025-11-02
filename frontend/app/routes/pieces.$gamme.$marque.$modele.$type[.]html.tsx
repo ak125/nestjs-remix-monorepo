@@ -10,6 +10,7 @@ import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/r
 // ========================================
 
 // Composants UI (ordre alphabétique)
+import { Error410 } from '../components/errors/Error410';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PiecesBuyingGuide } from '../components/pieces/PiecesBuyingGuide';
 import { PiecesComparisonView } from '../components/pieces/PiecesComparisonView';
@@ -23,7 +24,6 @@ import { PiecesListView } from '../components/pieces/PiecesListView';
 import { PiecesSEOSection } from '../components/pieces/PiecesSEOSection';
 import { PiecesStatistics } from '../components/pieces/PiecesStatistics';
 import VehicleSelectorV2 from '../components/vehicle/VehicleSelectorV2';
-import { Error410 } from '../components/errors/Error410';
 
 // Hook custom
 import { usePiecesFilters } from '../hooks/use-pieces-filters';

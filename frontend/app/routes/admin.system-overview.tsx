@@ -4,7 +4,6 @@ import { Alert } from '@fafa/ui';
 // Applique "vérifier existant et utiliser le meilleur"
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Badge } from '~/components/ui/badge';
 import { useLoaderData } from '@remix-run/react';
 import { 
   Shield, 
@@ -18,6 +17,7 @@ import {
   MonitorSpeaker,
   Award
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 
 // Simuler les données système (en production, venir du backend)
 interface SystemOverview {

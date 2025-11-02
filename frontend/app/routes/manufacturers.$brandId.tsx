@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * 🚗 PAGE PUBLIQUE MANUFACTURIER
  * 
@@ -9,6 +8,7 @@ import { Alert } from '~/components/ui/alert';
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";

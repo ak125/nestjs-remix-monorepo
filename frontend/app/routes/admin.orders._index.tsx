@@ -17,12 +17,12 @@
  * - UI Components: components/orders/* (10 composants)
  */
 
+import { Alert } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import { Alert } from '@fafa/ui';
 import toast, { Toaster } from 'react-hot-toast';
+import { Button } from '~/components/ui/button';
 import { requireUser } from '../auth/unified.server';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
 import { OrderEditForm } from '../components/orders/OrderEditForm';

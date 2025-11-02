@@ -15,8 +15,8 @@ import {
   type ComboboxItem
 } from '@fafa/ui';
 import { type MetaFunction } from '@remix-run/node';
-import { useState } from 'react';
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X, Check, Zap, Star } from 'lucide-react';
+import { useState } from 'react';
 
 export const meta: MetaFunction = () => {
   return [

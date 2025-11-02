@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 📊 Types pour les métriques business
 interface BusinessMetrics {

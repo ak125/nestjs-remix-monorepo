@@ -1,5 +1,4 @@
 import { json, type LoaderFunction } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
 import { useLoaderData } from "@remix-run/react";
 import { 
   User, 
@@ -7,6 +6,7 @@ import {
   Mail,
   Key
 } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";

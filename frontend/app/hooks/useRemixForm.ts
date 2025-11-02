@@ -25,11 +25,11 @@
  * ```
  */
 
-import { useEffect } from 'react';
-import { useForm, UseFormProps, UseFormReturn, FieldValues, Path } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useActionData, useNavigation } from '@remix-run/react';
-import { z } from 'zod';
+import { useEffect } from 'react';
+import  { type UseFormProps, type UseFormReturn, type FieldValues, type Path , useForm } from 'react-hook-form';
+import  { type z } from 'zod';
 
 export interface RemixFormActionData {
   errors?: Record<string, string | string[]>;

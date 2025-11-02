@@ -14,8 +14,8 @@
  * - Téléphone FR: 06 12 34 56 78
  */
 
-import * as React from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
+import * as React from "react";
 import { cn } from "~/lib/utils";
 
 type FormInputState = "default" | "loading" | "validating" | "error" | "success" | "disabled";

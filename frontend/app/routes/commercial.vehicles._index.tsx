@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * 🚗 GESTION VÉHICULES COMMERCIAL
  * 
@@ -9,6 +8,7 @@ import { Alert } from '~/components/ui/alert';
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";

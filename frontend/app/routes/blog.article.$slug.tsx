@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 import { 
   json, 
   type LoaderFunctionArgs, 
@@ -19,7 +20,6 @@ import {
   Tag
 } from 'lucide-react';
 import { useState } from "react";
-import { Alert } from '@fafa/ui';
 
 // UI Components
 import { Badge } from "~/components/ui/badge";

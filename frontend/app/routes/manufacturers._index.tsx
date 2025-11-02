@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * 🏭 LISTE DES MANUFACTURIERS
  * 
@@ -12,6 +11,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";

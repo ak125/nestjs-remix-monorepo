@@ -18,9 +18,9 @@ import { NotificationContainer, NotificationProvider } from "./components/notifi
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // @ts-ignore
+import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 import animationsStylesheet from "./styles/animations.css?url";
 // @ts-ignore
-import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },

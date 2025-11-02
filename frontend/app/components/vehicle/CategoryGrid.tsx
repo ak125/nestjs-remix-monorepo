@@ -1,6 +1,6 @@
+import { Badge } from '@fafa/ui';
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Badge } from '@fafa/ui';
 import  { type VehicleData } from "~/types/vehicle.types";
 
 // ========================================

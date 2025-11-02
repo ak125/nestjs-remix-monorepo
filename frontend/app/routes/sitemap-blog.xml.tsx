@@ -13,7 +13,7 @@
  * - CDN-friendly
  */
 
-import type { LoaderFunctionArgs } from '@remix-run/node';
+import  { type LoaderFunctionArgs } from '@remix-run/node';
 import { generateBlogSitemap } from '~/utils/seo/blog-sitemap.server';
 
 /**

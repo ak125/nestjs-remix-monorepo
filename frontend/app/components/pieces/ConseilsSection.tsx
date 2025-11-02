@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { Badge } from '@fafa/ui';
+import React, { useState } from 'react';
 
 interface ConseilItem {
   id: number;

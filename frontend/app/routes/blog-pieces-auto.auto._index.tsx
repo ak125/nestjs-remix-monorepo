@@ -1,12 +1,12 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
 import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowRight, Car, Factory, Search, Sparkles, TrendingUp } from "lucide-react";
 import * as React from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { Alert } from '~/components/ui/alert';
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";

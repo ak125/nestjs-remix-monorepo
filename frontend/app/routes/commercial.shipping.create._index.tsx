@@ -8,7 +8,6 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Form, useNavigation, Link } from '@remix-run/react';
 import { 
   Package, Truck, Calculator, FileText,
@@ -16,6 +15,7 @@ import {
   Printer, ArrowLeft
 } from "lucide-react";
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour la création d'expédition
 interface Order {

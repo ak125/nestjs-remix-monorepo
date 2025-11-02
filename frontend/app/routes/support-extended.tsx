@@ -3,7 +3,6 @@
  * Dashboard principal avec tous les services de support
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { Link, useLoaderData } from "@remix-run/react";
 import { 
   MessageSquare, 
@@ -17,6 +16,7 @@ import {
   Clock,
   CheckCircle
 } from "lucide-react";
+import { Button } from '~/components/ui/button';
 import { getAllTickets, getContactStats } from "../services/api/contact.api";
 import { getReviewStats } from "../services/api/review.api";
 

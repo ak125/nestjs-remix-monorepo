@@ -3,8 +3,8 @@
  * Thème pour le site vitrine public
  */
 
-import type { Theme } from './types';
 import { designTokens } from '@fafa/design-tokens';
+import  { type Theme } from './types';
 
 export const vitrineThemeLight: Theme = {
   brand: 'vitrine',

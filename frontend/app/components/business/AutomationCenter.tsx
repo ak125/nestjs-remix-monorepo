@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // 🤖 Types pour l'automation business
 interface AutomationRule {

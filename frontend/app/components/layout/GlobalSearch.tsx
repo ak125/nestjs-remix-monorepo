@@ -11,6 +11,7 @@
  * ✅ Groupement intelligent des résultats
  */
 
+import { Badge } from '@fafa/ui';
 import { useFetcher } from "@remix-run/react";
 import { 
   Search, 
@@ -25,7 +26,6 @@ import {
   Command
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Badge } from '@fafa/ui';
 
 interface GlobalSearchProps {
   isOpen: boolean;

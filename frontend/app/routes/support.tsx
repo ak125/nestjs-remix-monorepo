@@ -3,8 +3,8 @@
  * Page principale pour la gestion du support client
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { Link, useLoaderData } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { getAllTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {

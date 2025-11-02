@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 import { Link, useLocation } from "@remix-run/react"
 import { 
   Home, 
@@ -13,7 +14,6 @@ import {
   AlertTriangle,
 } from "lucide-react"
 import * as React from "react"
-import { Badge } from '@fafa/ui';
 import { Button } from "./ui/button"
 
 // Fonction utilitaire pour combiner les classes CSS

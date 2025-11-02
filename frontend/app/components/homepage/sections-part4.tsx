@@ -1,8 +1,8 @@
 // PARTIE 4/4 - Composants finaux : Team, Contact, Footer, LiveChat, Popup
 import { Link } from "@remix-run/react";
-import { Button } from '~/components/ui/button';
 import { MapPin, Mail, Phone, MessageCircle, Clock, Facebook, Twitter, Linkedin, Instagram, Youtube, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 
 // ================================
 // ÉQUIPE & CULTURE D'ENTREPRISE
