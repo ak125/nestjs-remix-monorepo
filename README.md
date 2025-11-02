@@ -13,24 +13,28 @@
 
 ## 📋 Quick Start
 
+### 🚀 Démarrage Rapide (Recommandé)
+
 ```bash
-# Installation
+# 1. Démarrer Redis
+docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine
+
+# 2. Installation des dépendances
 npm install
 
-# Démarrage (Backend + Frontend)
+# 3. Démarrer l'application (Backend NestJS + Frontend Remix)
 npm run dev
-
-# Backend seul (port 3001)
-cd backend && npm run dev
-
-# Frontend seul (port 5173)
-cd frontend && npm run dev
 ```
 
-**🌐 URLs** :
-- Backend API: `http://localhost:3001`
-- Frontend: `http://localhost:5173`
-- Admin Dashboard: `http://localhost:5173/admin`
+**🌐 Application** :
+- **Application complète** : `http://localhost:3000`
+- **Backend API** : `http://localhost:3000/api/*`
+- **Frontend Remix** : `http://localhost:3000/*`
+- **Admin Dashboard** : `http://localhost:3000/admin`
+
+> 💡 **Architecture** : Le backend NestJS sert aussi le frontend Remix sur le **même port 3000** pour une expérience développement simplifiée.
+
+📖 **Guide complet** : Voir [QUICK-START.md](./QUICK-START.md) pour le guide détaillé et dépannage.
 
 ### 🧹 Nettoyage et Consolidation
 
