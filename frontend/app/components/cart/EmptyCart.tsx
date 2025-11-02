@@ -4,6 +4,7 @@
 
 import { Link } from "@remix-run/react";
 import { ShoppingBag } from "lucide-react";
+import { Button } from '~/components/ui/button';
 
 export function EmptyCart() {
   return (
@@ -20,12 +21,7 @@ export function EmptyCart() {
         Découvrez nos produits et ajoutez-les à votre panier !
       </p>
       
-      <Link
-        to="/products"
-        className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
-        Découvrir nos produits
-      </Link>
+      <Button className="px-6 py-3 border border-transparent text-base  rounded-md  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" variant="blue" asChild><Link to="/products">Découvrir nos produits</Link></Button>
     </div>
   );
 }

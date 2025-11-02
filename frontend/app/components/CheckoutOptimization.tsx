@@ -1,4 +1,6 @@
+import { Badge } from '@fafa/ui';
 import { useEffect, useState, useMemo, useCallback } from 'react'
+import { Button } from '~/components/ui/button';
 import { useAdvancedAnalyticsComplete } from '../hooks/useAdvancedAnalyticsComplete'
 import { useAIAssistant } from '../hooks/useAIAssistantSimple'
 
@@ -149,9 +151,9 @@ export function CheckoutOptimization({
     switch (variant) {
       case 'urgency':
         return (
-          <div className={`${baseClasses} bg-red-50 border-2 border-red-200`}>
+          <div className={`${baseClasses} bg-destructive/5 border-2 border-red-200`}>
             <div className="text-center mb-4">
-              <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold mb-3">
+              <div className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-sm font-bold mb-3">
                 ⚡ OFFRE LIMITÉE
               </div>
               <h3 className="text-xl font-bold text-red-900">
@@ -169,13 +171,8 @@ export function CheckoutOptimization({
               </div>
             </div>
             
-            <button
-              onClick={handleCheckoutAttempt}
-              disabled={conversionInProgress}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-lg transition-colors"
-            >
-              {conversionInProgress ? '⏳ Finalisation...' : '🚀 COMMANDER MAINTENANT'}
-            </button>
+            <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="red" onClick={handleCheckoutAttempt}
+              disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Finalisation...' : '🚀 COMMANDER MAINTENANT'}\n</Button>
             
             <p className="text-xs text-red-600 text-center mt-3">
               ✅ Paiement sécurisé • ✅ Livraison garantie
@@ -185,7 +182,7 @@ export function CheckoutOptimization({
       
       case 'simplified':
         return (
-          <div className={`${baseClasses} bg-green-50 border border-green-200`}>
+          <div className={`${baseClasses} bg-success/5 border border-green-200`}>
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-green-900 mb-2">
                 🎯 Checkout Simplifié
@@ -200,13 +197,8 @@ export function CheckoutOptimization({
                 </div>
               </div>
               
-              <button
-                onClick={handleCheckoutAttempt}
-                disabled={conversionInProgress}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg"
-              >
-                {conversionInProgress ? '⏳ Traitement...' : '✅ Valider & Payer'}
-              </button>
+              <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="green" onClick={handleCheckoutAttempt}
+                disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Traitement...' : '✅ Valider & Payer'}\n</Button>
             </div>
             
             <div className="text-center mt-4 text-sm text-green-600">
@@ -217,15 +209,13 @@ export function CheckoutOptimization({
       
       case 'social_proof':
         return (
-          <div className={`${baseClasses} bg-blue-50 border border-blue-200`}>
+          <div className={`${baseClasses} bg-primary/5 border border-blue-200`}>
             <div className="text-center mb-4">
               <h3 className="text-xl font-bold text-blue-900">
                 🌟 Rejoignez 59,137 utilisateurs satisfaits
               </h3>
               <div className="flex justify-center items-center mt-2 text-sm text-blue-700">
-                <span className="bg-blue-100 px-2 py-1 rounded">
-                  📊 Taux de satisfaction: 95%
-                </span>
+                <Badge variant="info">📊 Taux de satisfaction: 95%</Badge>
               </div>
             </div>
             
@@ -242,13 +232,8 @@ export function CheckoutOptimization({
               </div>
             </div>
             
-            <button
-              onClick={handleCheckoutAttempt}
-              disabled={conversionInProgress}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg"
-            >
-              {conversionInProgress ? '⏳ Finalisation...' : '🤝 Rejoindre la Communauté'}
-            </button>
+            <Button className="w-full  font-bold py-4 px-6 rounded-lg" variant="blue" onClick={handleCheckoutAttempt}
+              disabled={conversionInProgress}>\n  {conversionInProgress ? '⏳ Finalisation...' : '🤝 Rejoindre la Communauté'}\n</Button>
             
             <div className="text-center mt-3 text-xs text-blue-600">
               🔒 Paiement sécurisé • 🚚 Livraison rapide • ⭐ Support 24/7
@@ -302,9 +287,7 @@ export function CheckoutOptimization({
           
           {testActive && (
             <div className="mt-4">
-              <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                ✅ Test Actif - Variante: {variant.toUpperCase()}
-              </span>
+              <Badge variant="success">✅ Test Actif - Variante: {variant.toUpperCase()}</Badge>
             </div>
           )}
         </div>

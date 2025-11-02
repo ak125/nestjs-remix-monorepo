@@ -526,7 +526,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     if (!switches) {
       const { data } = await this.supabase
-        .from('seo_gamme_car_switch')
+        .from('__seo_gamme_car_switch')
         .select('sgcs_content, sgcs_alias')
         .eq('sgcs_pg_id', thisPgId);
 
@@ -758,7 +758,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getSeoTemplate(pgId: number): Promise<any> {
     const { data } = await this.supabase
-      .from('seo_gamme_car')
+      .from('__seo_gamme_car')
       .select('*')
       .eq('sgc_pg_id', pgId)
       .single();
@@ -767,7 +767,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getItemSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('seo_item_switch')
+      .from('__seo_item_switch')
       .select('*')
       .eq('sis_pg_id', pgId);
     return data || [];
@@ -775,7 +775,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getGammeCarSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('seo_gamme_car_switch')
+      .from('__seo_gamme_car_switch')
       .select('*')
       .eq('sgcs_pg_id', pgId);
     return data || [];
@@ -787,7 +787,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   ): Promise<any[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
-      .from('seo_family_switch')
+      .from('__seo_family_gamme_car_switch')
       .select('*')
       .eq('sfs_mf_id', mfId)
       .eq('sfs_pg_id', pgId);

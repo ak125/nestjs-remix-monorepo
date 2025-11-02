@@ -84,7 +84,7 @@ export function PiecesFilterSidebar({
                     <label 
                       key={brand} 
                       className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                        isSelected ? 'bg-blue-50 border border-blue-200' : ''
+                        isSelected ? 'bg-primary/10 border border-blue-200' : ''
                       }`}
                     >
                       <div className="flex items-center">
@@ -133,9 +133,9 @@ export function PiecesFilterSidebar({
             <div className="space-y-2">
               {[
                 { id: 'all', label: 'Tous les prix', desc: '', color: 'border-gray-200' },
-                { id: 'low', label: 'Moins de 50€', desc: '(économique)', color: 'border-green-200 bg-green-50' },
-                { id: 'medium', label: '50€ - 150€', desc: '(standard)', color: 'border-blue-200 bg-blue-50' },
-                { id: 'high', label: 'Plus de 150€', desc: '(premium)', color: 'border-purple-200 bg-purple-50' }
+                { id: 'low', label: 'Moins de 50€', desc: '(économique)', color: 'border-success bg-success/10' },
+                { id: 'medium', label: '50€ - 150€', desc: '(standard)', color: 'border-primary bg-primary/10' },
+                { id: 'high', label: 'Plus de 150€', desc: '(premium)', color: 'border-purple-500 bg-purple-50' }
               ].map(price => {
                 const isSelected = activeFilters.priceRange === price.id;
                 return (
@@ -191,7 +191,7 @@ export function PiecesFilterSidebar({
                   <label 
                     key={quality.id} 
                     className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
-                      isSelected ? 'border-blue-200 bg-blue-50' : 'border-gray-100 hover:bg-gray-50'
+                      isSelected ? 'border-primary bg-primary/10' : 'border-gray-100 hover:bg-gray-50'
                     }`}
                   >
                     <input 
@@ -226,7 +226,7 @@ export function PiecesFilterSidebar({
             </h4>
             <div className="space-y-2">
               <label className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
-                activeFilters.availability === "all" ? 'border-blue-200 bg-blue-50' : 'border-gray-100 hover:bg-gray-50'
+                activeFilters.availability === "all" ? 'border-primary bg-primary/10' : 'border-gray-100 hover:bg-gray-50'
               }`}>
                 <input 
                   type="radio" 
@@ -238,7 +238,7 @@ export function PiecesFilterSidebar({
                 <span className="text-sm">Toutes disponibilités</span>
               </label>
               <label className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
-                activeFilters.availability === "stock" ? 'border-green-200 bg-green-50' : 'border-gray-100 hover:bg-gray-50'
+                activeFilters.availability === "stock" ? 'border-success bg-success/10' : 'border-gray-100 hover:bg-gray-50'
               }`}>
                 <input 
                   type="radio" 
@@ -248,7 +248,7 @@ export function PiecesFilterSidebar({
                   onChange={() => setActiveFilters({...activeFilters, availability: "stock"})}
                 />
                 <span className="text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="w-2 h-2 bg-success rounded-full"></span>
                   En stock uniquement
                 </span>
               </label>

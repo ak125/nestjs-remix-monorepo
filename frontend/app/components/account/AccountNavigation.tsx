@@ -105,7 +105,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
       {/* En-tête utilisateur */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-full">
+          <div className="p-2 bg-muted rounded-full">
             <User className="w-6 h-6 text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
@@ -128,7 +128,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
               isActive(item.href)
-                ? "bg-blue-50 text-blue-700 border border-blue-200"
+                ? 'bg-primary/10 text-primary border border-blue-200'
                 : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
             )}
           >
@@ -187,7 +187,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
 
       {/* Déconnexion */}
       <div className="p-4 border-t border-gray-200 mt-auto">
-        <Button variant="outline" size="sm" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" asChild>
+        <Button variant="outline" size="sm" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
           <Link to="/logout">
             <LogOut className="w-4 h-4 mr-2" />
             Se déconnecter

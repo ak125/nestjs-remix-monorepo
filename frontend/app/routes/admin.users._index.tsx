@@ -279,10 +279,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const getLevelBadge = (level: number) => {
     const colors = {
       1: 'bg-gray-100 text-gray-800',
-      2: 'bg-blue-100 text-blue-800',
-      3: 'bg-green-100 text-green-800',
-      4: 'bg-purple-100 text-purple-800',
-      5: 'bg-yellow-100 text-yellow-800',
+      2: 'info',
+      3: 'success',
+      4: 'purple',
+      5: 'warning',
     };
     return colors[level as keyof typeof colors] || colors[1];
   };
@@ -339,12 +339,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {notification && (
         <div className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
           notification.type === 'success' 
-            ? 'bg-green-50/95 border-green-500 text-green-900' 
-            : 'bg-red-50/95 border-red-500 text-red-900'
+            ? 'bg-success/10 border-green-500 text-success' 
+            : 'bg-destructive/10 border-red-500 text-red-900'
         } animate-in slide-in-from-right duration-300`}>
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${
-              notification.type === 'success' ? 'bg-green-100' : 'bg-red-100'
+              notification.type === 'success' ? 'bg-success/15' : 'bg-destructive/15'
             }`}>
               {notification.type === 'success' ? (
                 <UserCheck className="w-5 h-5" />
@@ -419,7 +419,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Total utilisateurs</span>
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Users className="h-4 w-4 text-blue-600" />
               </div>
             </div>
@@ -436,7 +436,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Utilisateurs actifs</span>
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <UserCheck className="h-4 w-4 text-green-600" />
               </div>
             </div>
@@ -453,7 +453,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium text-gray-600">Utilisateurs Pro</span>
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Award className="h-4 w-4 text-purple-600" />
               </div>
             </div>
@@ -517,7 +517,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Filter className="w-5 h-5 text-blue-600" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900">Recherche et filtres</h2>
@@ -642,7 +642,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           <div className="flex justify-between items-center">
             <div>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
+                <div className="p-2 bg-muted rounded-lg">
                   <Users className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
@@ -725,7 +725,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className={`border-b hover:bg-muted/50 ${selectedUsers.includes(user.id) ? 'bg-blue-50' : ''}`}>
+                  <tr key={user.id} className={`border-b hover:bg-muted/50 ${selectedUsers.includes(user.id) ? 'bg-primary/5' : ''}`}>
                     <td className="p-3 w-12">
                       <input
                         type="checkbox"

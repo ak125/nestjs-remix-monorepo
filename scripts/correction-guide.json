@@ -1,0 +1,856 @@
+{
+  "table_replacements": {
+    "seo_gamme_car": "__seo_gamme_car",
+    "seo_gamme_car_switch": "__seo_gamme_car_switch",
+    "seo_item_switch": "__seo_item_switch",
+    "seo_family_switch": "__seo_family_gamme_car_switch",
+    "seo_type_switch": "__seo_type_switch",
+    "seo_marque": "__seo_marque",
+    "seo_gamme": "__seo_gamme",
+    "blog_advice": "__blog_advice",
+    "blog_guide": "__blog_guide",
+    "sitemap_blog": "__sitemap_blog",
+    "sitemap_marque": "__sitemap_marque",
+    "sitemap_gamme": "__sitemap_gamme",
+    "sitemap_p_link": "__sitemap_p_link",
+    "sitemap_p_xml": "__sitemap_p_xml"
+  },
+  "files_to_fix": {
+    "modules/admin/services/stock-management.service.ts": {
+      "tables": [
+        {
+          "line": 82,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 166,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 219,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 305,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 312,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 352,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 370,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 424,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 435,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 488,
+          "old": "stock_movements",
+          "new": ""
+        },
+        {
+          "line": 521,
+          "old": "stock_alerts",
+          "new": ""
+        },
+        {
+          "line": 564,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 600,
+          "old": "stock_movements",
+          "new": ""
+        },
+        {
+          "line": 630,
+          "old": "stock_alerts",
+          "new": ""
+        },
+        {
+          "line": 724,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 819,
+          "old": "stock_movements",
+          "new": ""
+        },
+        {
+          "line": 848,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 890,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 958,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 979,
+          "old": "stock_movements",
+          "new": ""
+        },
+        {
+          "line": 1070,
+          "old": "stock_movements",
+          "new": ""
+        },
+        {
+          "line": 1127,
+          "old": "stock",
+          "new": ""
+        },
+        {
+          "line": 1154,
+          "old": "stock",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 274,
+          "table": "___xtr_order_line",
+          "column": "id"
+        },
+        {
+          "line": 274,
+          "table": "___xtr_order_line",
+          "column": "order_id"
+        },
+        {
+          "line": 306,
+          "table": "pieces",
+          "column": "quantity"
+        },
+        {
+          "line": 306,
+          "table": "pieces",
+          "column": "reserved"
+        },
+        {
+          "line": 676,
+          "table": "products",
+          "column": "id"
+        },
+        {
+          "line": 809,
+          "table": "pieces",
+          "column": "id"
+        },
+        {
+          "line": 809,
+          "table": "pieces",
+          "column": "reference"
+        },
+        {
+          "line": 809,
+          "table": "pieces",
+          "column": "name"
+        }
+      ]
+    },
+    "modules/blog/services/constructeur.service.ts": {
+      "tables": [
+        {
+          "line": 126,
+          "old": "__blog_constructeur_modele",
+          "new": ""
+        },
+        {
+          "line": 197,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 202,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 310,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 349,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 393,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 436,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 494,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 497,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 502,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 507,
+          "old": "__blog_constructeur_modele",
+          "new": ""
+        },
+        {
+          "line": 699,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 701,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 820,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 856,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 903,
+          "old": "__blog_constructeur_modele",
+          "new": ""
+        },
+        {
+          "line": 928,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 939,
+          "old": "__blog_constructeur",
+          "new": ""
+        },
+        {
+          "line": 979,
+          "old": "__blog_constructeur_h2",
+          "new": ""
+        },
+        {
+          "line": 986,
+          "old": "__blog_constructeur_h3",
+          "new": ""
+        },
+        {
+          "line": 993,
+          "old": "__blog_constructeur_modele",
+          "new": ""
+        }
+      ],
+      "columns": []
+    },
+    "modules/orders/services/order-archive.service.ts": {
+      "tables": [
+        {
+          "line": 39,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 50,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 78,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 106,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 120,
+          "old": "___XTR_ORDER_LINE",
+          "new": ""
+        },
+        {
+          "line": 126,
+          "old": "___XTR_ORDER_STATUS",
+          "new": ""
+        },
+        {
+          "line": 152,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 233,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 244,
+          "old": "___XTR_ORDER_LINE",
+          "new": ""
+        },
+        {
+          "line": 250,
+          "old": "___XTR_ORDER_STATUS",
+          "new": ""
+        },
+        {
+          "line": 285,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 334,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 348,
+          "old": "___XTR_ORDER_LINE",
+          "new": ""
+        },
+        {
+          "line": 354,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 386,
+          "old": "___XTR_ORDER",
+          "new": ""
+        },
+        {
+          "line": 401,
+          "old": "___XTR_ORDER",
+          "new": ""
+        }
+      ],
+      "columns": []
+    },
+    "modules/products/products.service.ts": {
+      "tables": [
+        {
+          "line": 255,
+          "old": "auto_gamme",
+          "new": ""
+        },
+        {
+          "line": 468,
+          "old": "product_vehicle_compatibility",
+          "new": ""
+        },
+        {
+          "line": 1038,
+          "old": "auto_models",
+          "new": ""
+        },
+        {
+          "line": 1061,
+          "old": "auto_types",
+          "new": ""
+        },
+        {
+          "line": 1128,
+          "old": "vehicules_pieces",
+          "new": ""
+        },
+        {
+          "line": 1300,
+          "old": "pieces_criteres",
+          "new": ""
+        },
+        {
+          "line": 1392,
+          "old": "vehicules_pieces",
+          "new": ""
+        },
+        {
+          "line": 1462,
+          "old": "pieces_criteres",
+          "new": ""
+        },
+        {
+          "line": 1489,
+          "old": "vehicules_pieces",
+          "new": ""
+        },
+        {
+          "line": 1539,
+          "old": "pieces_criteres",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 1008,
+          "table": "auto_marque",
+          "column": "marque_activ"
+        }
+      ]
+    },
+    "modules/blog/services/glossary.service.ts": {
+      "tables": [
+        {
+          "line": 49,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 103,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 137,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 173,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 216,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 261,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 310,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 350,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 394,
+          "old": "__blog_glossaire",
+          "new": ""
+        },
+        {
+          "line": 405,
+          "old": "__blog_glossaire",
+          "new": ""
+        }
+      ],
+      "columns": []
+    },
+    "modules/catalog/services/pieces-ultra-enhanced.service.ts": {
+      "tables": [
+        {
+          "line": 76,
+          "old": "pieces_marques",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_id"
+        },
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_name"
+        },
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_logo"
+        },
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_alias"
+        },
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_oes"
+        },
+        {
+          "line": 77,
+          "table": "pieces",
+          "column": "pm_nb_stars"
+        },
+        {
+          "line": 96,
+          "table": "pieces_price",
+          "column": "psf_id"
+        },
+        {
+          "line": 96,
+          "table": "pieces_price",
+          "column": "psf_side"
+        }
+      ]
+    },
+    "modules/upload/services/upload-analytics.service.ts": {
+      "tables": [
+        {
+          "line": 109,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 156,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 204,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 262,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 330,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 364,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 557,
+          "old": "upload_analytics",
+          "new": ""
+        },
+        {
+          "line": 580,
+          "old": "upload_analytics",
+          "new": ""
+        }
+      ],
+      "columns": []
+    },
+    "modules/vehicles/services/data/vehicle-types.service.ts": {
+      "tables": [],
+      "columns": [
+        {
+          "line": 402,
+          "table": "auto_type",
+          "column": "type_year"
+        },
+        {
+          "line": 402,
+          "table": "auto_type",
+          "column": "type_year"
+        },
+        {
+          "line": 402,
+          "table": "auto_type",
+          "column": "type_year"
+        },
+        {
+          "line": 449,
+          "table": "auto_type",
+          "column": "type_engine_code"
+        },
+        {
+          "line": 492,
+          "table": "auto_type",
+          "column": "type_year"
+        },
+        {
+          "line": 492,
+          "table": "auto_type",
+          "column": "type_engine_code"
+        },
+        {
+          "line": 542,
+          "table": "auto_type",
+          "column": "type_year"
+        },
+        {
+          "line": 581,
+          "table": "auto_type",
+          "column": "type_engine_code"
+        }
+      ]
+    },
+    "modules/gamme-rest/gamme-rest-complete.controller.ts": {
+      "tables": [
+        {
+          "line": 321,
+          "old": "__seo_conseil",
+          "new": ""
+        },
+        {
+          "line": 334,
+          "old": "__seo_info",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 182,
+          "table": "auto_modele",
+          "column": "marque_id"
+        },
+        {
+          "line": 182,
+          "table": "auto_modele",
+          "column": "marque_name"
+        },
+        {
+          "line": 182,
+          "table": "auto_modele",
+          "column": "marque_alias"
+        },
+        {
+          "line": 182,
+          "table": "auto_modele",
+          "column": "marque_name_meta"
+        },
+        {
+          "line": 272,
+          "table": "__seo_equip_gamme",
+          "column": "seg_title"
+        }
+      ]
+    },
+    "modules/system/services/metrics.service.ts": {
+      "tables": [
+        {
+          "line": 184,
+          "old": "___META_TAGS_ARIANE",
+          "new": ""
+        },
+        {
+          "line": 187,
+          "old": "___META_TAGS_ARIANE",
+          "new": ""
+        },
+        {
+          "line": 241,
+          "old": "system_metrics",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 117,
+          "table": "___xtr_customer",
+          "column": "ord_total_ttc"
+        },
+        {
+          "line": 117,
+          "table": "___xtr_customer",
+          "column": "ord_is_pay"
+        },
+        {
+          "line": 117,
+          "table": "___xtr_customer",
+          "column": "ord_total_ttc"
+        },
+        {
+          "line": 117,
+          "table": "___xtr_customer",
+          "column": "ord_is_pay"
+        }
+      ]
+    },
+    "modules/seo/dynamic-seo-v4-ultimate.service.ts": {
+      "tables": [
+        {
+          "line": 529,
+          "old": "seo_gamme_car_switch",
+          "new": "__seo_gamme_car_switch"
+        },
+        {
+          "line": 761,
+          "old": "seo_gamme_car",
+          "new": "__seo_gamme_car"
+        },
+        {
+          "line": 770,
+          "old": "seo_item_switch",
+          "new": "__seo_item_switch"
+        },
+        {
+          "line": 778,
+          "old": "seo_gamme_car_switch",
+          "new": "__seo_gamme_car_switch"
+        },
+        {
+          "line": 790,
+          "old": "seo_family_switch",
+          "new": "__seo_family_gamme_car_switch"
+        }
+      ],
+      "columns": []
+    },
+    "modules/dashboard/dashboard.service.ts": {
+      "tables": [
+        {
+          "line": 366,
+          "old": "___xtr_product",
+          "new": ""
+        },
+        {
+          "line": 375,
+          "old": "___xtr_product",
+          "new": ""
+        },
+        {
+          "line": 384,
+          "old": "___xtr_cat",
+          "new": ""
+        },
+        {
+          "line": 539,
+          "old": "___META_TAGS_ARIANE",
+          "new": ""
+        },
+        {
+          "line": 543,
+          "old": "___META_TAGS_ARIANE",
+          "new": ""
+        }
+      ],
+      "columns": []
+    },
+    "modules/config/services/enhanced-metadata.service.ts": {
+      "tables": [
+        {
+          "line": 201,
+          "old": "error_logs",
+          "new": ""
+        },
+        {
+          "line": 440,
+          "old": "vehicules",
+          "new": ""
+        },
+        {
+          "line": 442,
+          "old": "marques",
+          "new": ""
+        }
+      ],
+      "columns": [
+        {
+          "line": 248,
+          "table": "___meta_tags_ariane",
+          "column": "updated_at"
+        },
+        {
+          "line": 248,
+          "table": "___meta_tags_ariane",
+          "column": "updated_at"
+        }
+      ]
+    },
+    "modules/seo/seo-enhanced.service.ts": {
+      "tables": [
+        {
+          "line": 83,
+          "old": "seo_gamme_car",
+          "new": "__seo_gamme_car"
+        },
+        {
+          "line": 94,
+          "old": "seo_gamme_car_switch",
+          "new": "__seo_gamme_car_switch"
+        },
+        {
+          "line": 329,
+          "old": "seo_gamme_car",
+          "new": "__seo_gamme_car"
+        },
+        {
+          "line": 334,
+          "old": "seo_gamme_car_switch",
+          "new": "__seo_gamme_car_switch"
+        }
+      ],
+      "columns": []
+    },
+    "modules/catalog/services/pieces-v4-working.service.ts": {
+      "tables": [],
+      "columns": [
+        {
+          "line": 47,
+          "table": "pieces",
+          "column": "pm_id"
+        },
+        {
+          "line": 47,
+          "table": "pieces",
+          "column": "pm_name"
+        },
+        {
+          "line": 47,
+          "table": "pieces",
+          "column": "pm_oes"
+        },
+        {
+          "line": 47,
+          "table": "pieces",
+          "column": "pm_nb_stars"
+        }
+      ]
+    }
+  }
+}

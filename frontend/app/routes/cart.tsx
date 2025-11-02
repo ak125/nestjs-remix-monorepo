@@ -9,9 +9,11 @@
  * - Compatible avec l'authentification NestJS/Remix
  */
 
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
+import { Button } from '~/components/ui/button';
 import { getCart } from "../services/cart.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -168,10 +170,10 @@ function CartSummary({ summary, children, isUpdating }: {
         <span className="mr-2">📋</span>
         Résumé de la commande
         {isUpdating && (
-          <span className="ml-auto flex items-center text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-            <div className="animate-spin w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
+          <Badge variant="info" size="sm" className="ml-auto">
+            <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-2 inline-block"></div>
             Mise à jour...
-          </span>
+          </Badge>
         )}
       </h2>
       
@@ -182,9 +184,9 @@ function CartSummary({ summary, children, isUpdating }: {
             <span className="mr-2">🔢</span>
             Nombre de pièces
           </span>
-          <span className="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+          <Badge variant="info" size="lg">
             {summary.total_items}
-          </span>
+          </Badge>
         </div>
 
         {/* Sous-total */}
@@ -225,13 +227,13 @@ function CartSummary({ summary, children, isUpdating }: {
         )}
         
         {summary.discount_amount > 0 && (
-          <div className="flex justify-between p-3 bg-green-50 rounded-lg shadow-sm border-2 border-green-300">
+<Alert className="flex justify-between p-3  rounded-lg shadow-sm border-2" variant="success">
             <span className="text-green-700 font-medium flex items-center">
               <span className="mr-2">🎁</span>
               Remise
             </span>
             <span className="font-bold text-green-700">-{summary.discount_amount.toFixed(2)}€</span>
-          </div>
+          </Alert>
         )}
         
         {/* Total avec style imposant */}
@@ -331,9 +333,9 @@ function CartItem({ item, onUpdate, onRemove }: {
             {item.product_brand && item.product_brand !== 'MARQUE INCONNUE' && item.product_brand !== 'Non spécifiée' && (
               <div className="flex items-center">
                 <span className="font-semibold text-gray-500 min-w-[80px]">Marque</span>
-                <span className="text-gray-900 bg-blue-50 px-2 py-1 rounded font-medium">
+                <Badge variant="info">
                   {item.product_brand}
-                </span>
+                </Badge>
               </div>
             )}
             {(item.product_brand === 'MARQUE INCONNUE' || item.product_brand === 'Non spécifiée') && (
@@ -423,13 +425,13 @@ function CartItem({ item, onUpdate, onRemove }: {
               <span>Supprimer</span>
             </button>
           ) : (
-            <div className="flex flex-col space-y-2 bg-red-50 p-3 rounded-xl border-2 border-red-200">
+<Alert className="flex flex-col space-y-2  p-3 rounded-xl border-2" variant="error">
               <p className="text-sm font-semibold text-red-800 mb-1">⚠️ Confirmer la suppression ?</p>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setShowConfirmDelete(false)}
                   disabled={isRemoving}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
+                  className="flex-1 bg-gray-200 hover:bg-muted/50 text-gray-800 px-4 py-2 rounded-lg transition-all font-medium shadow-sm hover:shadow-md"
                 >
                   Annuler
                 </button>
@@ -441,7 +443,7 @@ function CartItem({ item, onUpdate, onRemove }: {
                   {isRemoving ? '⏳ Suppression...' : '✓ Confirmer'}
                 </button>
               </div>
-            </div>
+            </Alert>
           )}
         </div>
       </div>
@@ -519,12 +521,7 @@ export default function CartPage() {
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
             <p className="text-gray-600 mb-6">{error || "Une erreur est survenue"}</p>
-            <Link
-              to="/"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Retour à l'accueil
-            </Link>
+            <Button className="inline-block  px-6 py-3 rounded-lg" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
           </div>
         </div>
       </div>
@@ -546,12 +543,9 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Notification de succès après vidage */}
         {cleared && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-            <div className="flex items-center">
-              <span className="text-lg mr-2">✅</span>
-              <span>Panier vidé avec succès !</span>
-            </div>
-          </div>
+          <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>}>
+            Panier vidé avec succès !
+          </Alert>
         )}
         {/* En-tête */}
         <div className="flex justify-between items-center mb-8">
@@ -575,7 +569,7 @@ export default function CartPage() {
                 alert(result.error || 'Erreur lors du vidage du panier');
               }
             }}
-            className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-red-50 transition-colors"
+            className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-destructive/5 transition-colors"
             title="Supprimer tous les articles du panier"
           >
             Vider le panier
@@ -586,18 +580,13 @@ export default function CartPage() {
           {/* Liste des articles */}
           <div className="lg:col-span-2 space-y-4">
             {notification && (
-              <div className={`p-4 rounded-lg border ${
-                notification.type === 'success' 
-                  ? 'bg-green-100 border-green-400 text-green-700'
-                  : 'bg-red-100 border-red-400 text-red-700'
-              }`}>
-                <div className="flex items-center">
-                  <span className="text-lg mr-2">
-                    {notification.type === 'success' ? '✅' : '❌'}
-                  </span>
-                  <span>{notification.message}</span>
-                </div>
-              </div>
+              <Alert 
+                intent={notification.type === 'success' ? 'success' : 'error'} 
+                variant="solid"
+                icon={<span className="text-lg">{notification.type === 'success' ? '✅' : '❌'}</span>}
+              >
+                {notification.message}
+              </Alert>
             )}
             
             {cart.items.map((item) => (
@@ -614,12 +603,7 @@ export default function CartPage() {
           <div className="lg:col-span-1">
             <CartSummary summary={cart.summary} isUpdating={navigation.state === 'loading'}>                  
               <div className="space-y-3">
-                <Link
-                  to="/checkout"
-                  className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-center block"
-                >
-                  Finaliser ma commande →
-                </Link>
+                <Button className="w-full  py-3 px-4 rounded-lg   text-center block" variant="blue" asChild><Link to="/checkout">Finaliser ma commande →</Link></Button>
                 
                 {/*
                   CONSOLIDATION NOTES:
@@ -656,7 +640,7 @@ export default function CartPage() {
             </CartSummary>
 
             {/* Informations complémentaires */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <div className="mt-6 p-4 bg-primary/5 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">
                 🚚 Livraison gratuite
               </h3>
@@ -665,7 +649,7 @@ export default function CartPage() {
               </p>
             </div>
 
-            <div className="mt-4 p-4 bg-green-50 rounded-lg">
+            <div className="mt-4 p-4 bg-success/5 rounded-lg">
               <h3 className="font-medium text-green-900 mb-2">
                 🔒 Paiement sécurisé
               </h3>

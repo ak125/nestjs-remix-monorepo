@@ -210,7 +210,7 @@ export function NotificationCenter({
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+          <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -258,7 +258,7 @@ export function NotificationCenter({
                   onClick={() => setSelectedFilter(key)}
                   className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     selectedFilter === key
-                      ? 'bg-blue-100 text-blue-700'
+                      ? 'bg-primary/15 text-blue-700'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -269,7 +269,7 @@ export function NotificationCenter({
 
             {/* Actions de masse */}
             {hasSelection && (
-              <div className="flex items-center justify-between mt-3 p-2 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-between mt-3 p-2 bg-primary/5 rounded-lg">
                 <span className="text-sm text-blue-700">
                   {selectedNotifications.size} sélectionnée{selectedNotifications.size > 1 ? 's' : ''}
                 </span>
@@ -334,8 +334,8 @@ export function NotificationCenter({
                 <div
                   key={notification.id}
                   className={`border-b border-gray-100 last:border-b-0 transition-colors ${
-                    notification.isRead ? 'bg-white' : 'bg-blue-50'
-                  } ${isSelected ? 'bg-blue-100' : ''}`}
+                    notification.isRead ? 'bg-white' : 'bg-primary/5'
+                  } ${isSelected ? 'bg-primary/15' : ''}`}
                 >
                   <div className="p-4">
                     <div className="flex items-start space-x-3">
@@ -378,9 +378,9 @@ export function NotificationCenter({
                                     }}
                                     className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                                       action.variant === 'danger'
-                                        ? 'border-red-300 text-red-700 hover:bg-red-50'
+                                        ? 'border-red-300 text-destructive hover:bg-destructive/10'
                                         : action.variant === 'primary'
-                                        ? 'border-blue-300 text-blue-700 hover:bg-blue-50'
+                                        ? 'border-blue-300 text-blue-700 hover:bg-info/20'
                                         : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                     }`}
                                   >
@@ -424,7 +424,7 @@ export function NotificationCenter({
                                     deleteNotifications([notification.id]);
                                     setShowActions(null);
                                   }}
-                                  className="flex items-center w-full px-3 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors"
+                                  className="flex items-center w-full px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                                 >
                                   <Trash2 className="w-4 h-4 mr-2" />
                                   Supprimer

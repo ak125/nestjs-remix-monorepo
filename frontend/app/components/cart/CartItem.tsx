@@ -159,7 +159,7 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
             size="sm"
             onClick={onRemove}
             disabled={isUpdating}
-            className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
             aria-label="Supprimer l'article"
           >
             <Trash2 className="h-4 w-4" />

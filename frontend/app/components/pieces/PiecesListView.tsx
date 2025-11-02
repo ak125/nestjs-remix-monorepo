@@ -5,7 +5,9 @@
  * Affichage liste dense avec détails complets
  */
 
+import { Badge } from '@fafa/ui';
 import React from 'react';
+import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesListViewProps {
@@ -36,6 +38,7 @@ const optimizeImageUrl = (imageUrl: string | undefined, width: number = 150): st
  * Vue Liste compacte avec toutes les infos
  */
 export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesListViewProps) {
+  const { addToCart } = useCart();
   
   if (pieces.length === 0) {
     return (
@@ -55,7 +58,11 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
     <div className="space-y-3">
       {pieces.map(piece => {
         const isSelected = selectedPieces.includes(piece.id);
-        const hasStock = piece.stock === 'En stock' || piece.stock === 'available';
+        // ✅ FIX: Gérer tous les statuts de disponibilité
+        // "En stock", "available", "Sur commande" = disponible
+        const hasStock = piece.stock 
+          ? (piece.stock === 'En stock' || piece.stock === 'available' || piece.stock === 'Sur commande')
+          : true;
         
         return (
           <div 
@@ -106,13 +113,9 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                   <div className="flex-1">
                     {/* Marque + badges */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-2 py-0.5 rounded">
-                        {piece.brand}
-                      </span>
+                      <Badge variant="info">{piece.brand}</Badge>
                       {piece.quality === 'OES' && (
-                        <span className="text-xs font-medium text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded flex items-center gap-1">
-                          🏆 OES
-                        </span>
+                        <Badge variant="warning">🏆 OES</Badge>
                       )}
                       {piece.quality && piece.quality !== 'OES' && (
                         <span className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
@@ -135,14 +138,12 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                   {/* Dispo badge */}
                   <div>
                     {hasStock ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
+                        <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span>
                         En stock
                       </span>
                     ) : (
-                      <span className="text-xs font-medium text-red-700 bg-red-50 px-2 py-1 rounded-full">
-                        Rupture
-                      </span>
+                      <Badge variant="error">Rupture</Badge>
                     )}
                   </div>
                 </div>
@@ -179,6 +180,7 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
                     disabled={!hasStock}
+                    onClick={() => hasStock && addToCart(piece.id, 1)}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

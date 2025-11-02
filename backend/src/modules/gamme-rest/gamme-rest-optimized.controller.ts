@@ -437,6 +437,16 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         canonical: canonicalLink,
         relfollow,
       },
+      breadcrumbs: {
+        items: [
+          { label: 'Accueil', href: '/' },
+          { label: 'Pièces Auto', href: '/pieces' },
+          {
+            label: pgNameSite,
+            href: `/pieces/${pgAlias}-${pgIdNum}.html`,
+          },
+        ],
+      },
       content: {
         h1: pageH1,
         content: pageContent,

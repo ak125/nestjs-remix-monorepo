@@ -141,7 +141,7 @@ export class CartValidationService extends SupabaseBaseService {
   private async checkStock(productId: string): Promise<number> {
     try {
       const { data, error } = await this.supabase
-        .from('products')
+        .from('pieces')
         .select('stock_quantity')
         .eq('id', productId)
         .single();

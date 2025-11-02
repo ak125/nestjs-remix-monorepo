@@ -15,7 +15,7 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
       {/* Total Commandes */}
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <div className="p-3 bg-blue-100 rounded-lg">
+          <div className="p-3 bg-muted rounded-lg">
             <Package className="w-6 h-6 text-blue-600" />
           </div>
           <span className="text-sm font-medium text-gray-500">Total</span>
@@ -27,7 +27,7 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
       {/* Chiffre d'affaires */}
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <div className="p-3 bg-green-100 rounded-lg">
+          <div className="p-3 bg-success/10 rounded-lg">
             <DollarSign className="w-6 h-6 text-green-600" />
           </div>
           <span className="text-sm font-medium text-gray-500">CA Total</span>
@@ -41,7 +41,7 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
       {/* Panier moyen */}
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <div className="p-3 bg-purple-100 rounded-lg">
+          <div className="p-3 bg-muted rounded-lg">
             <CheckCircle className="w-6 h-6 text-purple-600" />
           </div>
           <span className="text-sm font-medium text-gray-500">Panier moyen</span>
@@ -53,7 +53,7 @@ export function OrdersStats({ stats }: OrdersStatsProps) {
       {/* Impayés */}
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <div className="p-3 bg-red-100 rounded-lg">
+          <div className="p-3 bg-destructive/10 rounded-lg">
             <Clock className="w-6 h-6 text-red-600" />
           </div>
           <span className="text-sm font-medium text-gray-500">Impayés</span>

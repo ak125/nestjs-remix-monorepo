@@ -11,6 +11,7 @@
  * ✅ Groupement intelligent des résultats
  */
 
+import { Badge } from '@fafa/ui';
 import { useFetcher } from "@remix-run/react";
 import { 
   Search, 
@@ -278,7 +279,7 @@ export function GlobalSearch({
                 }}
                 className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                   selectedCategory === key
-                    ? 'bg-blue-100 text-blue-700'
+                    ? 'bg-primary/15 text-blue-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -317,7 +318,7 @@ export function GlobalSearch({
                     performSearch(item.query, item.category || selectedCategory);
                   }}
                   className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                    selectedIndex === index ? 'bg-blue-50' : 'hover:bg-gray-50'
+                    selectedIndex === index ? 'bg-primary/10' : 'hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
@@ -373,7 +374,7 @@ export function GlobalSearch({
                             key={result.id}
                             onClick={() => handleSelectResult(result)}
                             className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
-                              selectedIndex === globalIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
+                              selectedIndex === globalIndex ? 'bg-primary/10' : 'hover:bg-muted'
                             }`}
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -388,9 +389,7 @@ export function GlobalSearch({
                             
                             <div className="flex items-center space-x-2 ml-2">
                               {result.metadata?.badge && (
-                                <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                                  {result.metadata.badge}
-                                </span>
+                                <Badge variant="success">{result.metadata.badge}</Badge>
                               )}
                               {result.metadata?.price && (
                                 <span className="font-medium text-gray-900">{result.metadata.price}</span>

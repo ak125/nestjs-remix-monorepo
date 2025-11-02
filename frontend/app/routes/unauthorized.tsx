@@ -19,7 +19,7 @@ export default function Unauthorized() {
             
             {/* Icône d'erreur modernisée */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
                 <AlertTriangle className="h-8 w-8 text-red-500" />
               </div>
             </div>

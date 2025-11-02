@@ -8,6 +8,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { ModelSelector, type VehicleModel } from "../components/vehicles/ModelSelector";
@@ -98,7 +99,7 @@ export default function TypeSelectorComparison() {
                 />
 
                 {selectedType1 && (
-                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+<Alert className="p-3  rounded-lg" variant="success">
                     <h4 className="font-semibold text-green-800 mb-2">Résultat :</h4>
                     <div className="text-sm text-green-700">
                       <p><strong>Modèle :</strong> {selectedModel1?.modele_name}</p>
@@ -106,7 +107,7 @@ export default function TypeSelectorComparison() {
                       <p><strong>Carburant :</strong> {selectedType1.type_fuel}</p>
                       <p><strong>Puissance :</strong> {selectedType1.type_power_ps}cv</p>
                     </div>
-                  </div>
+                  </Alert>
                 )}
               </CardContent>
             </Card>
@@ -153,7 +154,7 @@ export default function TypeSelectorComparison() {
                 />
 
                 {selectedType2 && (
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+<Alert className="p-3  rounded-lg" variant="info">
                     <h4 className="font-semibold text-blue-800 mb-2">Résultat :</h4>
                     <div className="text-sm text-blue-700">
                       <p><strong>Modèle :</strong> {selectedModel2?.modele_name}</p>
@@ -161,7 +162,7 @@ export default function TypeSelectorComparison() {
                       <p><strong>Carburant :</strong> {selectedType2.type_fuel}</p>
                       <p><strong>Puissance :</strong> {selectedType2.type_power_ps}cv</p>
                     </div>
-                  </div>
+                  </Alert>
                 )}
               </CardContent>
             </Card>

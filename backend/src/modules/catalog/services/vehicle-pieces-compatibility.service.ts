@@ -76,6 +76,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
             .eq('piece_display', 1),
 
           // Marques d'équipementiers (logique PHP: SELECT * FROM pieces_marque WHERE pm_id IN (...))
+          // 🔥 Ne PAS filtrer par pm_display - on veut toutes les marques associées aux pièces
           pmIds.length > 0
             ? this.client
                 .from('pieces_marque')
@@ -83,7 +84,6 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
                   'pm_id, pm_name, pm_alias, pm_logo, pm_quality, pm_oes, pm_nb_stars, pm_display',
                 )
                 .in('pm_id', pmIds)
-                .eq('pm_display', 1)
             : { data: [], error: null },
 
           // Prix (logique PHP: ORDER BY PRI_TYPE DESC pour prendre le meilleur prix)
@@ -135,10 +135,18 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       }
 
       // Maps pour jointure rapide en mémoire
-      const marquesMap = new Map(marquesData.map((m) => [m.pm_id, m]));
+      // 🔥 CRITIQUE: Convertir pm_id en string car Supabase retourne des strings
+      const marquesMap = new Map(
+        marquesData.map((m) => [m.pm_id.toString(), m]),
+      );
       const filtresMap = new Map(filtresData.map((f) => [f.psf_id, f]));
       const relationsMap = new Map(
         relationsData.map((r) => [r.rtp_piece_id, r]),
+      );
+
+      // Debug: vérifier le contenu du marquesMap
+      this.logger.log(
+        `🔍 [DEBUG-MARQUES] ${marquesMap.size} marques dans le Map, clés: ${Array.from(marquesMap.keys()).slice(0, 5).join(', ')}`,
       );
 
       // Prix : garde le meilleur prix par pièce (logique PHP)
@@ -156,10 +164,20 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       const pieces = piecesData.map((piece) => {
         const relation = relationsMap.get(piece.piece_id);
 
-        // � Conversion en string pour correspondre aux clés de marquesMap
+        // 🔥 Conversion en string pour correspondre aux clés de marquesMap
         const marqueKey = (
           relation?.rtp_pm_id || piece.piece_pm_id
         )?.toString();
+
+        // Debug pour la première pièce
+        if (piece.piece_id === piecesData[0]?.piece_id) {
+          this.logger.log(
+            `🔍 [DEBUG-MARQUE] Pièce ${piece.piece_id}: relation.rtp_pm_id=${relation?.rtp_pm_id}, piece.piece_pm_id=${piece.piece_pm_id}, marqueKey=${marqueKey}`,
+          );
+          this.logger.log(
+            `🔍 [DEBUG-MARQUE] marquesMap.has("${marqueKey}")=${marquesMap.has(marqueKey)}`,
+          );
+        }
 
         const marqueEquip = marquesMap.get(marqueKey);
         const price = pricesMap.get(piece.piece_id.toString()); // 🔧 Conversion en string

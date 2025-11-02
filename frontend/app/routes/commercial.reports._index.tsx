@@ -11,6 +11,7 @@ import {
   BarChart3, TrendingUp, TrendingDown, Download,
   Calendar, DollarSign, Package, Users
 } from "lucide-react";
+import { Button } from '~/components/ui/button';
 import { requireUser } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -111,10 +112,10 @@ export default function CommercialReports() {
               ← Retour Dashboard
             </button>
           </Link>
-          <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+          <Button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm" variant="blue">
             <Download className="mr-2 h-4 w-4" />
             Exporter Rapport
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -193,7 +194,7 @@ export default function CommercialReports() {
               <span className="text-sm text-gray-600">Commandes Totales</span>
               <div className="flex items-center">
                 <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                  <div className="bg-primary h-2 rounded-full" style={{width: '100%'}}></div>
                 </div>
                 <span className="text-sm font-semibold">{data.statistics.totalOrders}</span>
               </div>
@@ -203,7 +204,7 @@ export default function CommercialReports() {
               <div className="flex items-center">
                 <div className="w-32 bg-gray-200 rounded-full h-2 mr-3">
                   <div 
-                    className="bg-green-600 h-2 rounded-full" 
+                    className="bg-success h-2 rounded-full" 
                     style={{width: `${data.statistics.conversionRate}%`}}
                   ></div>
                 </div>
@@ -278,8 +279,7 @@ export default function CommercialReports() {
                   <div className="flex items-center">
                     <div className={`w-3 h-3 rounded-full mr-3 ${
                       order.status === 'completed' || order.isPaid 
-                        ? 'bg-green-500' 
-                        : 'bg-orange-500'
+                        ? 'bg-success' : 'bg-orange-600'
                     }`}></div>
                     <div>
                       <div className="font-medium">Commande #{order.orderNumber}</div>
@@ -292,8 +292,7 @@ export default function CommercialReports() {
                     <div className="font-semibold">{formatCurrency(order.totalAmount)}</div>
                     <div className={`text-xs px-2 py-1 rounded-full ${
                       order.status === 'completed' || order.isPaid
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-orange-100 text-orange-800'
+                        ? 'success' : 'orange'
                     }`}>
                       {order.status === 'completed' || order.isPaid ? 'Payée' : 'En attente'}
                     </div>
@@ -307,7 +306,7 @@ export default function CommercialReports() {
 
       {/* Actions Rapides */}
       <div className="mt-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="bg-primary/5 border border-blue-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-800 mb-4">Actions Rapides</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link 

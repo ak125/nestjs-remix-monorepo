@@ -62,13 +62,13 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         await Promise.all([
           // MARQUES avec logos
           this.client
-            .from('pieces_marques')
+            .from('pieces_marque')
             .select('pm_id, pm_name, pm_logo, pm_alias, pm_nb_stars, pm_oes')
             .in('pm_id', pmIds),
 
           // PRIX avec meilleur type
           this.client
-            .from('pieces_prices')
+            .from('pieces_price')
             .select(
               'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
             )

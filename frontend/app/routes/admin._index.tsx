@@ -2,6 +2,7 @@
  * Dashboard Admin - Page d'administration
  */
 
+import { Alert, Badge } from "@fafa/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
@@ -25,7 +26,11 @@ import {
   CheckCircle,
   FileText,
   BarChart3,
-  Truck
+  Truck,
+  Palette,
+  Code,
+  Play,
+  Eye
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SeoWidget } from "../components/SeoWidget";
@@ -311,15 +316,6 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-600 bg-green-100 border-green-200';
-      case 'warning': return 'text-yellow-600 bg-yellow-100 border-yellow-200';
-      case 'critical': return 'text-red-600 bg-red-100 border-red-200';
-      default: return 'text-gray-600 bg-gray-100 border-gray-200';
-    }
-  };
-
   return (
     <div className="space-y-8">
       {/* Header principal avec indicateur de santé */}
@@ -327,10 +323,18 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             🎯 Tableau de Bord Administration
-            <span className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(realTimeStats.systemHealth?.status || 'unknown')}`}>
-              <Activity className="h-4 w-4" />
+            <Badge 
+              variant={
+                realTimeStats.systemHealth?.status === 'healthy' ? 'success' :
+                realTimeStats.systemHealth?.status === 'warning' ? 'warning' :
+                realTimeStats.systemHealth?.status === 'critical' ? 'error' :
+                'default'
+              }
+              size="sm"
+              icon={<Activity className="h-4 w-4" />}
+            >
               SYSTÈME {realTimeStats.systemHealth?.status?.toUpperCase() || 'UNKNOWN'}
-            </span>
+            </Badge>
           </h1>
           <p className="text-gray-600 mt-2">
             Interface d'administration complète • Données en temps réel • Analytics avancées
@@ -347,31 +351,28 @@ export default function AdminDashboard() {
 
       {/* Alerte en cas d'erreur critique */}
       {criticalError && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-red-800">
-              <AlertTriangle className="h-4 w-4" />
-              <p className="text-sm font-medium">{criticalError}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert 
+          intent="error" 
+          variant="solid" 
+          icon={<AlertTriangle className="h-4 w-4" />}
+          title="Erreur critique du système"
+        >
+          {criticalError}
+        </Alert>
       )}
 
       {/* Alertes API non critiques */}
       {hasErrors && apiErrors && !criticalError && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-2 text-yellow-800">
-              <AlertTriangle className="h-4 w-4 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">Certaines APIs ne sont pas disponibles</p>
-                <p className="text-xs text-yellow-700 mt-1">
-                  APIs affectées: {apiErrors.join(', ')} • Les données par défaut sont affichées
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Alert 
+          intent="warning" 
+          variant="solid"
+          icon={<AlertTriangle className="h-4 w-4" />}
+          title="Certaines APIs ne sont pas disponibles"
+        >
+          <p className="text-xs">
+            APIs affectées: {apiErrors.join(', ')} • Les données par défaut sont affichées
+          </p>
+        </Alert>
       )}
 
       {/* Métriques principales */}
@@ -388,7 +389,7 @@ export default function AdminDashboard() {
                 {realTimeStats.activeUsers || 0} actifs maintenant
               </p>
             </div>
-            <div className="bg-blue-200 p-3 rounded-full">
+            <div className="bg-primary/30 p-3 rounded-full">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
           </div>
@@ -424,7 +425,7 @@ export default function AdminDashboard() {
                 {realTimeStats.completedOrders || 0} complétées ({realTimeStats.conversionRate || 0}%)
               </p>
             </div>
-            <div className="bg-green-200 p-3 rounded-full">
+            <div className="bg-success/30 p-3 rounded-full">
               <ShoppingCart className="h-8 w-8 text-green-600" />
             </div>
           </div>
@@ -481,7 +482,7 @@ export default function AdminDashboard() {
                 Commandes à traiter
               </p>
             </div>
-            <div className="bg-yellow-200 p-3 rounded-full">
+            <div className="bg-warning/30 p-3 rounded-full">
               <RefreshCw className="h-8 w-8 text-yellow-600" />
             </div>
           </div>
@@ -531,6 +532,7 @@ export default function AdminDashboard() {
             {[
               { id: 'overview', label: 'Vue d\'ensemble', icon: Monitor },
               { id: 'commerce', label: 'Commerce', icon: ShoppingCart },
+              { id: 'design', label: 'Design System', icon: Palette },
               { id: 'seo', label: 'SEO Enterprise', icon: Search },
               { id: 'performance', label: 'Performance', icon: Zap },
               { id: 'security', label: 'Sécurité', icon: Shield },
@@ -559,16 +561,16 @@ export default function AdminDashboard() {
               {/* Insights IA */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-purple-100 p-2 rounded-lg">
+                  <div className="bg-muted p-2 rounded-lg">
                     <Brain className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-purple-900">Insights IA</h3>
                     <p className="text-sm text-purple-600">Recommandations intelligentes</p>
                   </div>
-                  <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium ml-auto">
+                  <Badge variant="subtle" size="sm" className="ml-auto">
                     SMART ANALYTICS
-                  </span>
+                  </Badge>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="bg-white p-4 rounded-lg border border-purple-100">
@@ -577,7 +579,7 @@ export default function AdminDashboard() {
                         <h4 className="font-medium text-purple-900">Opportunité de conversion</h4>
                         <p className="text-sm text-purple-700 mt-1">Optimiser les pages produits pourrait augmenter la conversion de 5%</p>
                       </div>
-                      <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-medium">HIGH</span>
+                      <Badge variant="error" size="sm">HIGH</Badge>
                     </div>
                   </div>
                   <div className="bg-white p-4 rounded-lg border border-purple-100">
@@ -586,14 +588,14 @@ export default function AdminDashboard() {
                         <h4 className="font-medium text-purple-900">Tendance de trafic</h4>
                         <p className="text-sm text-purple-700 mt-1">Augmentation du trafic mobile de 12% cette semaine</p>
                       </div>
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">MEDIUM</span>
+                      <Badge variant="warning" size="sm">MEDIUM</Badge>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Alertes système */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+              <div className="bg-warning/5 border border-yellow-200 rounded-xl p-6">
                 <div className="flex items-start gap-3">
                   <Bell className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div className="flex-1">
@@ -619,7 +621,7 @@ export default function AdminDashboard() {
               <div className="grid gap-6 md:grid-cols-3">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-100 p-2 rounded-lg">
+                    <div className="bg-muted p-2 rounded-lg">
                       <Database className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
@@ -645,7 +647,7 @@ export default function AdminDashboard() {
 
                 <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-green-100 p-2 rounded-lg">
+                    <div className="bg-success/10 p-2 rounded-lg">
                       <ShoppingCart className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
@@ -763,7 +765,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div 
-                              className="bg-green-600 h-2 rounded-full" 
+                              className="bg-success h-2 rounded-full" 
                               style={{ width: `${category.percentage}%` }}
                             ></div>
                           </div>
@@ -790,9 +792,9 @@ export default function AdminDashboard() {
                         <div className="flex-1">
                           <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-gray-900">{supplier.name}</span>
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            <Badge variant="success" size="sm">
                               {supplier.reliability}% fiable
-                            </span>
+                            </Badge>
                           </div>
                           <div className="text-xs text-gray-600 mt-1">
                             {formatNumber(supplier.orders)} commandes ce mois
@@ -800,6 +802,415 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Design System */}
+          {activeTab === 'design' && (
+            <div className="space-y-6">
+              {/* Header Design System */}
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-purple-100 p-3 rounded-lg">
+                    <Palette className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-purple-900">Design System Manager</h2>
+                    <p className="text-purple-600">Gestion centralisée des tokens, styles et composants</p>
+                  </div>
+                  <Badge variant="success" size="sm" className="ml-auto">
+                    @fafa/design-tokens v1.0.0
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Statistiques Design System */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="bg-white rounded-lg shadow-md p-6 border border-purple-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Palette className="h-5 w-5 text-purple-600" />
+                    <span className="font-medium">Couleurs</span>
+                  </div>
+                  <div className="text-2xl font-bold text-purple-900">120+</div>
+                  <div className="text-sm text-gray-600 mt-2">Tokens de couleur</div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="h-5 w-5 text-blue-600" />
+                    <span className="font-medium">Spacing</span>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-900">30+</div>
+                  <div className="text-sm text-gray-600 mt-2">Tokens d'espacement</div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 border border-green-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="h-5 w-5 text-green-600" />
+                    <span className="font-medium">Typography</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-900">15+</div>
+                  <div className="text-sm text-gray-600 mt-2">Tokens de typo</div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 border border-orange-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Code className="h-5 w-5 text-orange-600" />
+                    <span className="font-medium">Build Status</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                    <span className="text-lg font-bold text-green-900">Ready</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions rapides Design System */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                    <Play className="h-5 w-5 text-blue-600" />
+                    Commandes de Build
+                  </h3>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => {
+                        const command = 'cd packages/design-tokens && npm run build';
+                        navigator.clipboard.writeText(command);
+                        alert('✅ Commande copiée !\n\n' + command + '\n\nExécutez cette commande dans votre terminal.');
+                      }}
+                      className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-lg transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary p-2 rounded-lg">
+                          <Play className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">Build Tokens</p>
+                          <p className="text-xs text-gray-600">Copier la commande</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">
+                        npm run build
+                      </Badge>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        window.open('http://localhost:3001', '_blank');
+                      }}
+                      className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border border-green-200 rounded-lg transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-success p-2 rounded-lg">
+                          <Eye className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">Preview Frontend</p>
+                          <p className="text-xs text-gray-600">Voir l'application en direct</p>
+                        </div>
+                      </div>
+                      <Badge variant="success" size="sm">
+                        Port 3001
+                      </Badge>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText('cd packages/design-tokens && npm run build');
+                        alert('Commande copiée dans le presse-papiers !');
+                      }}
+                      className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 rounded-lg transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="bg-purple-600 p-2 rounded-lg">
+                          <Code className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">Copier Commande</p>
+                          <p className="text-xs text-gray-600">Terminal command</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline">
+                        Copier
+                      </Badge>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-green-600" />
+                    Documentation
+                  </h3>
+                  <div className="space-y-3">
+                    <Link
+                      to="/admin/design-system"
+                      className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-lg border-2 border-purple-300 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Palette className="h-5 w-5 text-purple-600" />
+                        <span className="font-bold text-purple-900">Interface complète</span>
+                      </div>
+                      <Badge variant="success">
+                        Nouvelle page
+                      </Badge>
+                    </Link>
+                    
+                    <a
+                      href="https://github.com/ak125/nestjs-remix-monorepo/blob/main/DESIGN-SYSTEM-USAGE-GUIDE.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-gray-900">Guide d'utilisation</span>
+                      </div>
+                      <Badge variant="outline">
+                        GitHub
+                      </Badge>
+                    </a>
+
+                    <a
+                      href="https://github.com/ak125/nestjs-remix-monorepo/blob/main/DESIGN-SYSTEM-QUICK-REF.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-gray-900">Quick Reference</span>
+                      </div>
+                      <Badge variant="success">
+                        Aide-mémoire
+                      </Badge>
+                    </a>
+
+                    <a
+                      href="https://github.com/ak125/nestjs-remix-monorepo/blob/main/packages/design-tokens/README.md"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Package className="h-4 w-4 text-purple-600" />
+                        <span className="font-medium text-gray-900">Package README</span>
+                      </div>
+                      <Badge variant="outline">
+                        Technique
+                      </Badge>
+                    </a>
+
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800 font-medium mb-1">💡 Astuce</p>
+                      <p className="text-xs text-blue-700">
+                        Utilisez les tokens sémantiques (p-md, bg-primary-500) plutôt que des valeurs hardcodées
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Aperçu des Tokens */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-purple-600" />
+                  Palette de Couleurs
+                </h3>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {/* Primary */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Primary (CTA)</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-primary-500 shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#FF3B30</p>
+                        <p className="text-xs text-gray-600">primary-500</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Boutons d'action, CTA</p>
+                  </div>
+
+                  {/* Secondary */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Secondary (Navigation)</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-secondary-500 shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#0F4C81</p>
+                        <p className="text-xs text-gray-600">secondary-500</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Liens, navigation</p>
+                  </div>
+
+                  {/* Success */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Success</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-success shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#27AE60</p>
+                        <p className="text-xs text-gray-600">success</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Validations, succès</p>
+                  </div>
+
+                  {/* Warning */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Warning</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-warning shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#F39C12</p>
+                        <p className="text-xs text-gray-600">warning</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Alertes, attention</p>
+                  </div>
+
+                  {/* Error */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Error</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-error shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#C0392B</p>
+                        <p className="text-xs text-gray-600">error</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Erreurs, incompatibilité</p>
+                  </div>
+
+                  {/* Info */}
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 mb-3">Info</h4>
+                    <div className="flex items-center gap-2">
+                      <div className="w-12 h-12 rounded-lg bg-info shadow-md"></div>
+                      <div>
+                        <p className="text-sm font-medium">#3498DB</p>
+                        <p className="text-xs text-gray-600">info</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">Informations</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Spacing Grid */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <Target className="h-5 w-5 text-blue-600" />
+                  Échelle d'Espacement (8px Grid)
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { name: 'XS', value: '4px', class: 'p-xs', usage: 'Micro-espaces (badges)' },
+                    { name: 'SM', value: '8px', class: 'p-sm', usage: 'Serré (label → input)' },
+                    { name: 'MD', value: '16px', class: 'p-md', usage: 'Standard (padding cartes)' },
+                    { name: 'LG', value: '24px', class: 'p-lg', usage: 'Sections/blocs' },
+                    { name: 'XL', value: '32px', class: 'p-xl', usage: 'Grilles/marges' },
+                    { name: '2XL', value: '40px', class: 'p-2xl', usage: 'Large grilles' },
+                    { name: '3XL', value: '48px', class: 'p-3xl', usage: 'Hero sections' }
+                  ].map((spacing, index) => (
+                    <div key={index} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                      <div 
+                        className="bg-primary-500 rounded"
+                        style={{ width: spacing.value, height: '32px' }}
+                      ></div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-gray-900 w-12">{spacing.name}</span>
+                          <code className="px-2 py-1 bg-gray-200 rounded text-xs font-mono">{spacing.class}</code>
+                          <span className="text-sm text-gray-600">{spacing.value}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">{spacing.usage}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Typography Preview */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  Typographie
+                </h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-2">Headings - Montserrat (font-heading)</p>
+                    <h1 className="font-heading font-bold text-3xl">Titre Principal H1</h1>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-2">Body - Inter (font-sans)</p>
+                    <p className="font-sans text-base">
+                      Texte de description avec une lisibilité optimale pour le contenu principal de l'application.
+                    </p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-2">Data - Roboto Mono (font-mono)</p>
+                    <code className="font-mono text-sm">Réf OEM: 7701208265 | Stock: 42 unités | 149,99 €</code>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exemples de Composants */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <Code className="h-5 w-5 text-orange-600" />
+                  Exemples de Composants
+                </h3>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Bouton Primary */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">Bouton CTA</h4>
+                    <button className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                      Ajouter au panier
+                    </button>
+                    <code className="block text-xs bg-gray-100 p-2 rounded">
+                      className="bg-primary-500 hover:bg-primary-600"
+                    </code>
+                  </div>
+
+                  {/* Badge Success */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">Badge Compatible</h4>
+                    <span className="inline-flex bg-success text-white px-4 py-2 rounded-full text-sm">
+                      ✓ Compatible
+                    </span>
+                    <code className="block text-xs bg-gray-100 p-2 rounded">
+                      className="bg-success text-white"
+                    </code>
+                  </div>
+
+                  {/* Alert Warning */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">Alerte Délai</h4>
+                    <div className="bg-warning/10 border border-warning text-warning-foreground p-4 rounded-md">
+                      ⚠️ Livraison sous 5-7 jours
+                    </div>
+                    <code className="block text-xs bg-gray-100 p-2 rounded">
+                      className="bg-warning/10 border border-warning"
+                    </code>
+                  </div>
+
+                  {/* Card */}
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-gray-900">Card Produit</h4>
+                    <div className="bg-white border border-neutral-200 rounded-lg shadow-md p-4">
+                      <h5 className="font-heading font-bold mb-2">Plaquettes de frein</h5>
+                      <p className="font-mono text-sm text-gray-600 mb-2">Réf: 7701208265</p>
+                      <p className="font-mono text-xl font-bold">45,99 €</p>
+                    </div>
+                    <code className="block text-xs bg-gray-100 p-2 rounded">
+                      className="bg-white border rounded-lg p-4"
+                    </code>
                   </div>
                 </div>
               </div>
@@ -878,7 +1289,7 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold text-blue-900">{realTimeStats.systemHealth?.cpuUsage || 0}%</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full" 
+                      className="bg-primary h-2 rounded-full" 
                       style={{ width: `${realTimeStats.systemHealth?.cpuUsage || 0}%` }}
                     ></div>
                   </div>
@@ -892,7 +1303,7 @@ export default function AdminDashboard() {
                   <div className="text-2xl font-bold text-green-900">{realTimeStats.systemHealth?.memoryUsage || 0}%</div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div 
-                      className="bg-green-600 h-2 rounded-full" 
+                      className="bg-success h-2 rounded-full" 
                       style={{ width: `${realTimeStats.systemHealth?.memoryUsage || 0}%` }}
                     ></div>
                   </div>
@@ -949,9 +1360,9 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Niveau de menace</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.threatLevel || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Attaques bloquées</span>
@@ -976,9 +1387,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">SSL</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.sslStatus || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -991,9 +1402,9 @@ export default function AdminDashboard() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Status</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-medium">
+                      <Badge variant="success" size="sm">
                         {(realTimeStats.security?.backupStatus || 'unknown').toUpperCase()}
-                      </span>
+                      </Badge>
                     </div>
                     <div className="text-sm text-gray-600">
                       Dernière sauvegarde: Aujourd'hui
@@ -1021,9 +1432,9 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Optimisation BDD</span>
-                      <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
+                      <Badge variant="success" size="sm">
                         NON NÉCESSAIRE
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 </div>
@@ -1059,7 +1470,7 @@ export default function AdminDashboard() {
         </h2>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Link to="/admin/products" className="block p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all group">
+          <Link to="/admin/products" className="block p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all group">
             <div className="flex items-center gap-3">
               <Package className="h-6 w-6 text-blue-500 group-hover:text-blue-600" />
               <div>
@@ -1069,7 +1480,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/users" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all group">
+          <Link to="/admin/users" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all group">
             <div className="flex items-center gap-3">
               <Users className="h-6 w-6 text-green-500 group-hover:text-green-600" />
               <div>
@@ -1102,7 +1513,20 @@ export default function AdminDashboard() {
         
         {/* Ligne 2 : Fonctionnalités avancées */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Link to="/admin/seo" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all group">
+          <button 
+            onClick={() => setActiveTab('design')}
+            className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group text-left"
+          >
+            <div className="flex items-center gap-3">
+              <Palette className="h-6 w-6 text-purple-500 group-hover:text-purple-600" />
+              <div>
+                <p className="font-medium text-gray-900">Design System</p>
+                <p className="text-sm text-gray-500">Tokens & Templates</p>
+              </div>
+            </div>
+          </button>
+          
+          <Link to="/admin/seo" className="block p-4 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all group">
             <div className="flex items-center gap-3">
               <Search className="h-6 w-6 text-green-500 group-hover:text-green-600" />
               <div>
@@ -1112,7 +1536,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/analytics" className="block p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-yellow-50 transition-all group">
+          <Link to="/admin/analytics" className="block p-4 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 hover:bg-warning/5 transition-all group">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-6 w-6 text-yellow-500 group-hover:text-yellow-600" />
               <div>
@@ -1122,7 +1546,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/system" className="block p-4 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all group">
+          <Link to="/admin/system" className="block p-4 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-destructive/5 transition-all group">
             <div className="flex items-center gap-3">
               <Monitor className="h-6 w-6 text-red-500 group-hover:text-red-600" />
               <div>
@@ -1145,7 +1569,7 @@ export default function AdminDashboard() {
         
         {/* Accès rapides avancés de l'ancienne version */}
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mt-6">
-          <Link to="/admin/analytics-test-simple" className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all bg-gradient-to-r from-blue-50 to-purple-50">
+          <Link to="/admin/analytics-test-simple" className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-blue-500" />
               <div>
@@ -1155,7 +1579,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/optimization-summary" className="block p-3 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all bg-gradient-to-r from-green-50 to-blue-50">
+          <Link to="/admin/optimization-summary" className="block p-3 rounded-lg border-2 border-green-200 hover:border-green-400 hover:bg-success/20 transition-all bg-gradient-to-r from-green-50 to-blue-50">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <div>
@@ -1165,7 +1589,7 @@ export default function AdminDashboard() {
             </div>
           </Link>
           
-          <Link to="/admin/checkout-ab-test" className="block p-3 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-red-50 transition-all bg-gradient-to-r from-red-50 to-orange-50">
+          <Link to="/admin/checkout-ab-test" className="block p-3 rounded-lg border-2 border-red-200 hover:border-red-400 hover:bg-destructive/5 transition-all bg-gradient-to-r from-red-50 to-orange-50">
             <div className="flex items-center gap-3">
               <RefreshCw className="h-5 w-5 text-red-500" />
               <div>
@@ -1182,9 +1606,9 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2">
           <Search className="h-5 w-5 text-green-600" />
           <h2 className="text-xl font-semibold">Module SEO Enterprise</h2>
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+          <Badge variant="success" size="sm">
             ACTIF
-          </span>
+          </Badge>
         </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

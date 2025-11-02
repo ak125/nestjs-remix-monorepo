@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 
 // 🧠 Types pour l'intelligence client
 interface CustomerSegment {
@@ -296,9 +298,7 @@ export function CustomerIntelligence() {
               <p className="text-gray-600 mt-1">Analyse comportementale et segmentation client</p>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                📊 Générer rapport
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  📊 Générer rapport\n</Button>
             </div>
           </div>
 
@@ -358,9 +358,8 @@ export function CustomerIntelligence() {
                       {segment.averageValue}€ moy.
                     </div>
                     <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      segment.churnRisk === 'low' ? 'bg-green-100 text-green-800' :
-                      segment.churnRisk === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
+                      segment.churnRisk === 'low' ? 'success' :
+                      segment.churnRisk === 'medium' ? 'warning' : 'error'
                     }`}>
                       Risque: {segment.churnRisk}
                     </div>
@@ -591,12 +590,8 @@ export function CustomerIntelligence() {
                           Dernière activité: {new Date(prediction.lastActivity).toLocaleDateString('fr-FR')}
                         </span>
                         <div className="space-x-2">
-                          <button className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700">
-                            Contacter
-                          </button>
-                          <button className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700">
-                            Offre spéciale
-                          </button>
+                          <Button className="px-3 py-1 rounded text-xs" variant="blue">\n  Contacter\n</Button>
+                          <Button className="px-3 py-1 rounded text-xs" variant="green">\n  Offre spéciale\n</Button>
                         </div>
                       </div>
                     </div>
@@ -613,7 +608,7 @@ export function CustomerIntelligence() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">🤖 Insights IA automatiques</h3>
                 <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
                     <div className="flex items-start">
                       <span className="text-blue-600 mr-3 text-xl">🎯</span>
                       <div>
@@ -623,9 +618,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
                     <div className="flex items-start">
                       <span className="text-green-600 mr-3 text-xl">📈</span>
                       <div>
@@ -635,9 +630,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="warning">
                     <div className="flex items-start">
                       <span className="text-yellow-600 mr-3 text-xl">⚠️</span>
                       <div>
@@ -647,14 +642,14 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                 </div>
               </div>
               
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">🔮 Prédictions IA</h3>
                 <div className="space-y-4">
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="default">
                     <div className="flex items-start">
                       <span className="text-purple-600 mr-3 text-xl">📊</span>
                       <div>
@@ -664,9 +659,9 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
                     <div className="flex items-start">
                       <span className="text-red-600 mr-3 text-xl">🚨</span>
                       <div>
@@ -676,7 +671,7 @@ export function CustomerIntelligence() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Alert>
                   
                   <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                     <div className="flex items-start">

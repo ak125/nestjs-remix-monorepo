@@ -4,6 +4,7 @@
  */
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { getAllTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {
@@ -66,9 +67,9 @@ export default function SupportDashboard() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return "bg-red-100 text-red-800";
-      case "high": return "bg-orange-100 text-orange-800";
-      case "normal": return "bg-blue-100 text-blue-800";
+      case "urgent": return 'error';
+      case "high": return 'orange';
+      case "normal": return 'info';
       case "low": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
@@ -88,12 +89,7 @@ export default function SupportDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard Support</h1>
             <p className="text-gray-600 mt-1">Vue d'ensemble de l'activité support client</p>
           </div>
-          <Link
-            to="/contact"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-          >
-            Nouveau ticket
-          </Link>
+          <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
         </div>
       </div>
 
@@ -102,7 +98,7 @@ export default function SupportDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-6a2 2 0 00-2 2v3a2 2 0 002 2h6V13z" />
                 </svg>
@@ -118,7 +114,7 @@ export default function SupportDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -134,7 +130,7 @@ export default function SupportDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -150,7 +146,7 @@ export default function SupportDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
@@ -208,9 +204,7 @@ export default function SupportDashboard() {
                       </div>
                       <div className="ml-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          ticket.msg_open === "1" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-gray-100 text-gray-800"
+                          ticket.msg_open === '1' ? 'success' : "bg-gray-100 text-gray-800"
                         }`}>
                           {ticket.msg_open === "1" ? "Ouvert" : "Fermé"}
                         </span>
@@ -240,12 +234,7 @@ export default function SupportDashboard() {
             {recentTickets.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 mb-4">Aucun ticket trouvé</p>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-                >
-                  Créer le premier ticket
-                </Link>
+                <Button className="px-4 py-2  text-sm  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
               </div>
             ) : (
               <div className="space-y-4">
@@ -277,9 +266,7 @@ export default function SupportDashboard() {
                       </div>
                       <div className="ml-4">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          ticket.msg_open === "1" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-gray-100 text-gray-800"
+                          ticket.msg_open === '1' ? 'success' : "bg-gray-100 text-gray-800"
                         }`}>
                           {ticket.msg_open === "1" ? "Ouvert" : "Fermé"}
                         </span>
@@ -301,7 +288,7 @@ export default function SupportDashboard() {
             to="/contact"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
-            <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center mr-3">
+            <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center mr-3">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -316,7 +303,7 @@ export default function SupportDashboard() {
             to="/tickets?status=open"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
-            <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center mr-3">
+            <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center mr-3">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
@@ -331,7 +318,7 @@ export default function SupportDashboard() {
             to="/tickets"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
-            <div className="w-8 h-8 bg-purple-100 rounded-md flex items-center justify-center mr-3">
+            <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center mr-3">
               <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>

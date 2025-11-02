@@ -7,6 +7,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useFetcher, useNavigation } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 // Icons
 const PencilIcon = ({ className }: { className: string }) => (
@@ -191,7 +192,7 @@ export default function AdminArticlesPage() {
   const [selectedType, setSelectedType] = useState<string>('');
 
   const getTypeColor = (type: string) => {
-    return type === 'guide' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800';
+    return type === 'guide' ? 'purple' : 'info';
   };
 
   const formatDate = (dateString: string) => {
@@ -217,7 +218,7 @@ export default function AdminArticlesPage() {
             <div className="flex items-center space-x-4">
               <Link
                 to="/admin/articles/new"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
               >
                 <PlusIcon className="w-5 h-5" />
                 <span>Nouvel Article</span>
@@ -261,12 +262,12 @@ export default function AdminArticlesPage() {
 
         {/* Message d'erreur */}
         {isError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+<Alert className="rounded-lg p-4 mb-8" variant="error">
             <div className="text-red-800">
               <h3 className="font-medium">Erreur de chargement</h3>
               <p className="text-sm mt-1">{errorMessage}</p>
             </div>
-          </div>
+          </Alert>
         )}
 
         {/* Liste des articles */}
@@ -283,7 +284,7 @@ export default function AdminArticlesPage() {
                 <p>Commencez par créer votre premier article</p>
                 <Link
                   to="/admin/articles/new"
-                  className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="mt-4 inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                 >
                   <PlusIcon className="w-5 h-5 mr-2" />
                   Créer un article

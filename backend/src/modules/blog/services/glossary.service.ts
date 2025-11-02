@@ -46,20 +46,20 @@ export class GlossaryService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client.from('__blog_glossaire').select('*');
+      let query = client.from('__blog_advice').select('*');
 
       // Appliquer les filtres
       if (filters.letter) {
-        query = query.ilike('bgl_terme', `${filters.letter}%`);
+        query = query.ilike('ba_title', `${filters.letter}%`);
       }
 
       if (filters.minViews) {
-        query = query.gte('bgl_visit', filters.minViews.toString());
+        query = query.gte('ba_visit', filters.minViews.toString());
       }
 
       // Pagination et tri
       query = query
-        .order('bgl_terme', { ascending: true })
+        .order('ba_title', { ascending: true })
         .range(offset, offset + limit - 1);
 
       const { data: termsList, count } = await query;
@@ -100,9 +100,9 @@ export class GlossaryService {
 
       const client = this.supabaseService.getClient();
       const { data: term } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
-        .eq('bgl_id', id.toString())
+        .eq('ba_id', id.toString())
         .single();
 
       if (!term) return null;
@@ -134,10 +134,10 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
-        .ilike('bgl_terme', `${letter}%`)
-        .order('bgl_terme', { ascending: true });
+        .ilike('ba_title', `${letter}%`)
+        .order('ba_title', { ascending: true });
 
       if (!termsList) return [];
 
@@ -170,7 +170,7 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
         .or(
           [
@@ -179,7 +179,7 @@ export class GlossaryService {
             `bgl_keywords.ilike.%${query}%`,
           ].join(','),
         )
-        .order('bgl_visit', { ascending: false })
+        .order('ba_visit', { ascending: false })
         .limit(limit);
 
       if (!termsList) return [];
@@ -213,9 +213,9 @@ export class GlossaryService {
       const client = this.supabaseService.getClient();
 
       const { data: termsList } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
-        .order('bgl_terme', { ascending: true });
+        .order('ba_title', { ascending: true });
 
       if (!termsList) return {};
 
@@ -258,10 +258,10 @@ export class GlossaryService {
 
       // Utiliser une fonction random ou ordre aléatoire
       const { data: termsList } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
         .limit(count * 2) // Prendre plus pour avoir du choix
-        .order('bgl_visit', { ascending: false });
+        .order('ba_visit', { ascending: false });
 
       if (!termsList) return [];
 
@@ -307,8 +307,8 @@ export class GlossaryService {
 
       // Statistiques de base
       const { data: allTerms } = await client
-        .from('__blog_glossaire')
-        .select('bgl_visit, bgl_terme, bgl_definition');
+        .from('__blog_advice')
+        .select('ba_visit, ba_title, ba_content');
 
       if (!allTerms) {
         return {
@@ -322,14 +322,14 @@ export class GlossaryService {
       }
 
       const totalViews = allTerms.reduce(
-        (sum, term) => sum + (parseInt(term.bgl_visit) || 0),
+        (sum, term) => sum + (parseInt(term.ba_visit) || 0),
         0,
       );
       const avgViews = Math.round(totalViews / allTerms.length);
 
       // Longueur moyenne des définitions
       const totalLength = allTerms.reduce(
-        (sum, term) => sum + (term.bgl_definition?.length || 0),
+        (sum, term) => sum + (term.ba_content?.length || 0),
         0,
       );
       const averageDefinitionLength = Math.round(totalLength / allTerms.length);
@@ -337,7 +337,7 @@ export class GlossaryService {
       // Distribution par lettre
       const letterCount: { [letter: string]: number } = {};
       allTerms.forEach((term) => {
-        const letter = term.bgl_terme.charAt(0).toUpperCase();
+        const letter = term.ba_title.charAt(0).toUpperCase();
         letterCount[letter] = (letterCount[letter] || 0) + 1;
       });
 
@@ -347,9 +347,9 @@ export class GlossaryService {
 
       // Termes les plus populaires
       const { data: popularTerms } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .select('*')
-        .order('bgl_visit', { ascending: false })
+        .order('ba_visit', { ascending: false })
         .limit(10);
 
       const mostPopular = popularTerms
@@ -391,20 +391,20 @@ export class GlossaryService {
 
       // Récupérer les vues actuelles
       const { data: current } = await client
-        .from('__blog_glossaire')
-        .select('bgl_visit')
-        .eq('bgl_id', id.toString())
+        .from('__blog_advice')
+        .select('ba_visit')
+        .eq('ba_id', id.toString())
         .single();
 
       if (!current) return false;
 
-      const newViews = (parseInt(current.bgl_visit) || 0) + 1;
+      const newViews = (parseInt(current.ba_visit) || 0) + 1;
 
       // Mettre à jour
       const { error } = await client
-        .from('__blog_glossaire')
+        .from('__blog_advice')
         .update({ bgl_visit: newViews.toString() })
-        .eq('bgl_id', id.toString());
+        .eq('ba_id', id.toString());
 
       if (error) {
         this.logger.error(`❌ Erreur mise à jour vues: ${error.message}`);
@@ -433,7 +433,7 @@ export class GlossaryService {
       {
         level: 2,
         title: 'Définition',
-        content: term.bgl_definition,
+        content: term.ba_content,
         anchor: 'definition',
       },
     ];
@@ -441,19 +441,19 @@ export class GlossaryService {
     return {
       id: `glossary_${term.bgl_id}`,
       type: 'glossaire',
-      title: term.bgl_terme,
-      slug: term.bgl_alias,
+      title: term.ba_title,
+      slug: term.ba_alias,
       excerpt: term.bgl_definition?.substring(0, 150) + '...',
-      content: term.bgl_definition,
-      h1: term.bgl_terme,
+      content: term.ba_content,
+      h1: term.ba_title,
       h2: 'Définition',
       keywords: term.bgl_keywords ? term.bgl_keywords.split(', ') : [],
       tags: [`glossaire`, `terme:${term.bgl_terme.toLowerCase()}`],
-      publishedAt: term.bgl_create,
-      updatedAt: term.bgl_update,
-      viewsCount: parseInt(term.bgl_visit) || 0,
+      publishedAt: term.ba_create,
+      updatedAt: term.ba_update,
+      viewsCount: parseInt(term.ba_visit) || 0,
       sections,
-      legacy_id: parseInt(term.bgl_id),
+      legacy_id: parseInt(term.ba_id),
       legacy_table: '__blog_glossaire',
       seo_data: {
         meta_title: `${term.bgl_terme} - Définition automobile`,

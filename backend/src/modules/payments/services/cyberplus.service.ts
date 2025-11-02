@@ -1,7 +1,8 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { fetch } from 'undici';
-import { createHmac } from 'crypto';
+import { createHmac, createHash } from 'crypto';
+import { PaymentConfig } from '../../../config/payment.config';
 
 export interface PaymentData {
   amount: number;
@@ -23,21 +24,17 @@ export interface CyberplusFormData {
 @Injectable()
 export class CyberplusService {
   private readonly logger = new Logger(CyberplusService.name);
-  private readonly apiUrl: string;
-  private readonly merchantId: string;
-  private readonly secretKey: string;
-  private readonly isProduction: boolean;
+  private readonly paymentConfig: PaymentConfig;
 
   constructor(private configService: ConfigService) {
-    this.apiUrl =
-      this.configService.get<string>('CYBERPLUS_API_URL') ||
-      'https://secure-paypage.lyra.com';
-    this.merchantId =
-      this.configService.get<string>('CYBERPLUS_MERCHANT_ID') || '';
-    this.secretKey =
-      this.configService.get<string>('CYBERPLUS_SECRET_KEY') || '';
-    this.isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
+    // ✅ Utilisation de la configuration type-safe
+    this.paymentConfig = this.configService.get<PaymentConfig>('payment')!;
+
+    // ⚠️ Sécurité : Ne jamais logger le certificat
+    this.logger.log(
+      `SystemPay initialized in ${this.paymentConfig.systempay.mode} mode`,
+    );
+    this.logger.log(`Site ID: ${this.paymentConfig.systempay.siteId}`);
   }
 
   async createPayment(
@@ -47,7 +44,7 @@ export class CyberplusService {
   ): Promise<any> {
     try {
       const paymentData = {
-        merchantId: this.merchantId,
+        merchantId: this.paymentConfig.systempay.siteId,
         amount,
         orderId,
         customerEmail,
@@ -57,14 +54,17 @@ export class CyberplusService {
 
       const signature = this.generateSignature(paymentData);
 
-      const response = await fetch(`${this.apiUrl}/payments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${signature}`,
+      const response = await fetch(
+        `${this.paymentConfig.systempay.apiUrl}/payments`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${signature}`,
+          },
+          body: JSON.stringify(paymentData),
         },
-        body: JSON.stringify(paymentData),
-      });
+      );
 
       if (!response.ok) {
         throw new BadRequestException(
@@ -101,11 +101,11 @@ export class CyberplusService {
   async getPaymentStatus(transactionId: string): Promise<any> {
     try {
       const response = await fetch(
-        `${this.apiUrl}/payments/${transactionId}/status`,
+        `${this.paymentConfig.systempay.apiUrl}/payments/${transactionId}/status`,
         {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${this.secretKey}`,
+            Authorization: `Bearer ${this.paymentConfig.systempay.certificate}`,
           },
         },
       );
@@ -126,54 +126,142 @@ export class CyberplusService {
   }
 
   private generateSignature(data: any): string {
-    // Implémentation HMAC-SHA256 conforme aux standards Cyberplus
-    const payload = JSON.stringify(data) + this.secretKey;
-    return createHmac('sha256', this.secretKey).update(payload).digest('hex');
+    // Implémentation HMAC-SHA256 pour API SystemPay
+    const payload =
+      JSON.stringify(data) + this.paymentConfig.systempay.certificate;
+    return createHmac('sha256', this.paymentConfig.systempay.certificate)
+      .update(payload)
+      .digest('hex');
   }
 
   /**
-   * Génère un formulaire HTML pour redirection vers Cyberplus
+   * Génère un formulaire HTML pour redirection vers SystemPay (protocole Lyra)
+   * Documentation: https://paiement.systempay.fr/doc/
    */
   generatePaymentForm(paymentData: PaymentData): CyberplusFormData {
+    // Montant en centimes (ex: 475.16 EUR → 47516)
+    const amountInCents = Math.round(paymentData.amount * 100);
+
+    // Date/heure au format YYYYMMDDHHmmss UTC
+    const now = new Date();
+    const vads_trans_date = now
+      .toISOString()
+      .replace(/[-:T]/g, '')
+      .substring(0, 14);
+
+    // Transaction ID: 6 chiffres uniques (utiliser timestamp modulo)
+    const vads_trans_id = String(Date.now() % 1000000).padStart(6, '0');
+
+    // Paramètres SystemPay (ordre alphabétique requis pour signature)
     const parameters: Record<string, string> = {
-      merchant_id: this.merchantId,
-      amount: (paymentData.amount * 100).toString(), // Montant en centimes
-      currency: paymentData.currency,
-      order_id: paymentData.orderId,
-      customer_email: paymentData.customerEmail,
-      return_url: paymentData.returnUrl,
-      cancel_url: paymentData.cancelUrl,
-      notify_url: paymentData.notifyUrl,
-      description: paymentData.description || `Order ${paymentData.orderId}`,
-      mode: this.isProduction ? 'PRODUCTION' : 'TEST',
+      vads_action_mode: 'INTERACTIVE',
+      vads_amount: amountInCents.toString(),
+      vads_capture_delay: '0',
+      vads_ctx_mode: this.paymentConfig.systempay.mode,
+      vads_currency: '978', // EUR
+      vads_cust_country: 'FR',
+      vads_cust_email: paymentData.customerEmail,
+      vads_order_id: paymentData.orderId,
+      vads_page_action: 'PAYMENT',
+      vads_payment_config: 'SINGLE',
+      vads_return_mode: 'POST', // ✅ Mode de retour POST (important pour signature)
+      vads_site_id: this.paymentConfig.systempay.siteId,
+      vads_trans_date: vads_trans_date,
+      vads_trans_id: vads_trans_id,
+      vads_url_cancel: paymentData.cancelUrl,
+      vads_url_error: paymentData.returnUrl, // Même URL que success pour simplifier
+      vads_url_refused: paymentData.cancelUrl,
+      vads_url_success: paymentData.returnUrl,
+      vads_version: 'V2',
     };
 
-    // Ajout de la signature
-    const signature = this.generateSignature(parameters);
+    // Générer la signature SHA-1 selon le protocole SystemPay
+    const signature = this.generateSystemPaySignature(parameters);
     parameters.signature = signature;
+
+    this.logger.log(`✅ SystemPay form generated`);
+    this.logger.log(`📋 Order: ${paymentData.orderId}`);
+    this.logger.log(
+      `💰 Amount: ${amountInCents} centimes (${paymentData.amount} EUR)`,
+    );
+    this.logger.log(`🔐 Signature: ${signature.substring(0, 20)}...`);
 
     // Génération du formulaire HTML
     const formFields = Object.entries(parameters)
       .map(
         ([key, value]) =>
-          `<input type="hidden" name="${key}" value="${value}" />`,
+          `    <input type="hidden" name="${key}" value="${value}" />`,
       )
-      .join('\n    ');
+      .join('\n');
 
     const html = `
-<form id="cyberplus-form" method="POST" action="${this.apiUrl}/payment">
-    ${formFields}
+<form id="systempay-form" method="POST" action="${this.paymentConfig.systempay.apiUrl}">
+${formFields}
     <button type="submit">Procéder au paiement</button>
 </form>
 <script>
-    document.getElementById('cyberplus-form').submit();
+    document.getElementById('systempay-form').submit();
 </script>`;
 
     return {
       html,
-      url: `${this.apiUrl}/payment`,
+      url: this.paymentConfig.systempay.apiUrl,
       parameters,
     };
+  }
+
+  /**
+   * Génère la signature SystemPay selon le protocole officiel
+   * Méthode HMAC-SHA-256 (recommandée par Paybox/SystemPay depuis DSP2)
+   *
+   * Format: HMAC-SHA-256(valeur1+valeur2+...+valeurN, certificat)
+   *
+   * Alternative SHA-1 : Si HMAC ne fonctionne pas, utilisez :
+   * SHA-1(valeur1+valeur2+...+valeurN+certificat)
+   */
+  private generateSystemPaySignature(
+    parameters: Record<string, string>,
+  ): string {
+    // Trier les clés par ordre alphabétique et extraire les valeurs
+    const sortedKeys = Object.keys(parameters)
+      .filter((key) => key.startsWith('vads_'))
+      .sort();
+
+    const values = sortedKeys.map((key) => parameters[key]);
+    const dataString = values.join('+');
+
+    // 🔐 MÉTHODE 1 : HMAC-SHA-256 (recommandée depuis DSP2)
+    // Utiliser la clé HMAC si fournie, sinon retomber sur le certificat
+    const hmacKey =
+      (this.paymentConfig.systempay as any).hmacKey ||
+      this.paymentConfig.systempay.certificate;
+    const signatureHmac = createHmac('sha256', hmacKey)
+      .update(dataString)
+      .digest('hex');
+
+    // 🔐 MÉTHODE 2 : SHA-1 simple (ancienne méthode CGI)
+    const signatureSha1 = createHash('sha1')
+      .update(dataString + '+' + this.paymentConfig.systempay.certificate)
+      .digest('hex');
+
+    // Log complet pour debug (masquer certificat)
+    const debugString = dataString + '+[CERTIFICAT_MASQUE]';
+    this.logger.log(`🔐 Signature params (${sortedKeys.length} fields):`);
+    this.logger.log(`   Keys: ${sortedKeys.join(', ')}`);
+    this.logger.log(`   Data: ${debugString}`);
+    this.logger.log(`   HMAC-SHA256: ${signatureHmac}`);
+    this.logger.log(`   SHA1 (legacy): ${signatureSha1}`);
+
+    // Choisir la méthode configurée (SHA1 legacy ou HMAC)
+    const method =
+      (this.paymentConfig.systempay as any).signatureMethod || 'SHA1';
+    if (method === 'HMAC') {
+      this.logger.log('Using HMAC-SHA256 signature method');
+      return signatureHmac;
+    }
+
+    this.logger.log('Using legacy SHA1 signature method');
+    return signatureSha1;
   }
 
   /**
@@ -189,20 +277,23 @@ export class CyberplusService {
         transaction_id: transactionId,
         amount: amount ? (amount * 100).toString() : '', // Montant en centimes
         reason: reason || 'Remboursement demandé',
-        merchant_id: this.merchantId,
+        merchant_id: this.paymentConfig.systempay.siteId,
       };
 
       const signature = this.generateSignature(body);
       body.signature = signature;
 
-      const response = await fetch(`${this.apiUrl}/refund`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.secretKey}`,
+      const response = await fetch(
+        `${this.paymentConfig.systempay.apiUrl}/refund`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.paymentConfig.systempay.certificate}`,
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
 
       if (!response.ok) {
         throw new BadRequestException(

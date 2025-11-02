@@ -1,5 +1,7 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
+import { Badge } from '@fafa/ui';
 import React from 'react';
+import { Button } from '~/components/ui/button';
 
 interface VehicleData {
   marque: string;
@@ -107,7 +109,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
             {/* Statistiques rapides */}
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
                   <span className="text-blue-600 text-sm">🔧</span>
                 </div>
                 <div>
@@ -119,7 +121,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
                   <span className="text-green-600 text-sm">✅</span>
                 </div>
                 <div>
@@ -129,7 +131,7 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
                   <span className="text-purple-600 text-sm">🚚</span>
                 </div>
                 <div>
@@ -143,10 +145,10 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
           {/* Actions */}
           <div className="flex-shrink-0 ml-6">
             <div className="flex flex-col gap-3">
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <Button className="px-6 py-3 rounded-lg   flex items-center gap-2" variant="blue">
                 <span>📋</span>
                 Devis rapide
-              </button>
+              </Button>
               <button className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center gap-2">
                 <span>❤️</span>
                 Favoris
@@ -159,15 +161,11 @@ export const VehicleHeader: React.FC<VehicleHeaderProps> = ({
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm text-gray-500">Catégories :</span>
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-              {gamme.alias}
-            </span>
+            <Badge variant="info">{gamme.alias}</Badge>
             <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
               Type {vehicle.typeId}
             </span>
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
-              Pièces d'origine
-            </span>
+            <Badge variant="success">Pièces d'origine</Badge>
           </div>
         </div>
       </div>

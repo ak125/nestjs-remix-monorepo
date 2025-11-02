@@ -1,6 +1,9 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
 import { useState, useEffect } from 'react';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {
@@ -213,7 +216,7 @@ export default function AdminStock() {
     return (
       <div className="p-6">
               {!success && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
           <h2 className="text-lg font-semibold text-red-800">
             Erreur de chargement
           </h2>
@@ -226,7 +229,7 @@ export default function AdminStock() {
               <li>Les routes /api/admin/stock/* sont disponibles</li>
             </ul>
           </div>
-        </div>
+        </Alert>
       )}
       </div>
     );
@@ -247,7 +250,7 @@ export default function AdminStock() {
         <div className="flex space-x-3">
           <button
             onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
           >
             🔄 Actualiser
           </button>
@@ -256,7 +259,7 @@ export default function AdminStock() {
               const url = `${process.env.API_URL || 'http://localhost:3000'}/api/admin/stock/health`;
               window.open(url, '_blank');
             }}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            className="bg-success hover:bg-success/90 text-success-foreground px-4 py-2 rounded-lg transition-colors"
           >
             📊 Rapport Complet
           </button>
@@ -373,12 +376,7 @@ export default function AdminStock() {
           </div>
 
           <div className="flex items-end">
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              🔍 Filtrer
-            </button>
+            <Button className="w-full  px-4 py-2 rounded-lg" variant="blue" type="submit">\n  🔍 Filtrer\n</Button>
           </div>
         </Form>
       </div>
@@ -436,13 +434,13 @@ export default function AdminStock() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {item.pri_dispo === '1' ? (
-                      <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded-full">
+                      <Badge variant="success">
                         ✓ Disponible
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">
+                      <Badge variant="error">
                         ✗ Indisponible
-                      </span>
+                      </Badge>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -565,13 +563,8 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-                </button>
+                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="blue" type="submit"
+                  disabled={isSubmitting}>\n  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}\n</Button>
               </div>
             </Form>
           </div>
@@ -644,13 +637,8 @@ export default function AdminStock() {
                 >
                   Annuler
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Ajustement...' : 'Ajuster'}
-                </button>
+                <Button className="px-4 py-2  rounded-lg disabled:opacity-50" variant="green" type="submit"
+                  disabled={isSubmitting}>\n  {isSubmitting ? 'Ajustement...' : 'Ajuster'}\n</Button>
               </div>
             </Form>
           </div>

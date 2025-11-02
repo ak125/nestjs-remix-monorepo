@@ -1,0 +1,336 @@
+#!/bin/bash
+
+################################################################################
+# 🔍 Script de Vérification URLs - Ancien vs Nouveau Sitemap
+# 
+# Objectif : Vérifier que les URLs générées par la nouvelle app sont 
+#            IDENTIQUES à l'ancien format nginx
+#
+# Format attendu (ancien sitemap) :
+#   - Gammes : /pieces/{pg_alias}-{pg_id}.html
+#   - Exemple : /pieces/plaquette-de-frein-402.html
+#
+# Usage :
+#   bash scripts/verify-url-compatibility.sh
+#   bash scripts/verify-url-compatibility.sh --sample 100
+#   bash scripts/verify-url-compatibility.sh --gamme-id 402
+################################################################################
+
+set -e
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Configuration
+API_BASE_URL=${API_BASE_URL:-"http://localhost:3000"}
+SAMPLE_SIZE=${1:-50}
+GAMME_ID=""
+OUTPUT_DIR="/tmp"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --sample)
+      SAMPLE_SIZE="$2"
+      shift 2
+      ;;
+    --gamme-id)
+      GAMME_ID="$2"
+      shift 2
+      ;;
+    --api)
+      API_BASE_URL="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}🔍 VÉRIFICATION COMPATIBILITÉ URLs${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "${YELLOW}Configuration :${NC}"
+echo "  API Base URL : $API_BASE_URL"
+echo "  Sample size  : $SAMPLE_SIZE gammes"
+if [ -n "$GAMME_ID" ]; then
+  echo "  Gamme ID     : $GAMME_ID (mode test spécifique)"
+fi
+echo ""
+
+# Fonction pour générer l'URL attendue (format ancien sitemap)
+generate_expected_url() {
+  local pg_alias=$1
+  local pg_id=$2
+  
+  # Format nginx : /pieces/{pg_alias}-{pg_id}.html
+  echo "/pieces/${pg_alias}-${pg_id}.html"
+}
+
+# Fonction pour générer l'URL actuelle (nouvelle app)
+generate_actual_url() {
+  local pg_alias=$1
+  local pg_id=$2
+  
+  # Format actuel (doit être identique !)
+  echo "/pieces/${pg_alias}-${pg_id}.html"
+}
+
+# Fonction pour nettoyer l'alias (slugify)
+slugify() {
+  local text=$1
+  echo "$text" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g' | sed 's/^-//;s/-$//'
+}
+
+echo -e "${YELLOW}📊 Étape 1/4 : Récupération des gammes depuis Supabase${NC}"
+echo ""
+
+# Requête pour récupérer les gammes
+if [ -n "$GAMME_ID" ]; then
+  # Mode test : une seule gamme
+  SQL_QUERY="SELECT pg_id, pg_name, pg_alias FROM pieces_gamme WHERE pg_id = $GAMME_ID AND pg_display = '1' LIMIT 1"
+else
+  # Mode normal : échantillon de gammes
+  SQL_QUERY="SELECT pg_id, pg_name, pg_alias FROM pieces_gamme WHERE pg_display = '1' ORDER BY pg_id LIMIT $SAMPLE_SIZE"
+fi
+
+# Appeler l'API Supabase
+GAMMES_JSON=$(curl -s -X POST "$API_BASE_URL/api/supabase/query" \
+  -H "Content-Type: application/json" \
+  -d "{\"query\": \"$SQL_QUERY\"}" | jq -r '.data // []')
+
+if [ "$GAMMES_JSON" == "[]" ] || [ -z "$GAMMES_JSON" ]; then
+  echo -e "${RED}❌ Erreur : Impossible de récupérer les gammes depuis l'API${NC}"
+  echo ""
+  echo "Vérifiez que :"
+  echo "  - L'API backend est démarrée sur $API_BASE_URL"
+  echo "  - L'endpoint /api/supabase/query est accessible"
+  echo "  - La table pieces_gamme contient des données"
+  exit 1
+fi
+
+GAMMES_COUNT=$(echo "$GAMMES_JSON" | jq 'length')
+echo -e "${GREEN}✅ $GAMMES_COUNT gammes récupérées${NC}"
+echo ""
+
+echo -e "${YELLOW}📊 Étape 2/4 : Génération des URLs (ancien format)${NC}"
+echo ""
+
+# Fichiers de sortie
+REPORT_FILE="$OUTPUT_DIR/url-compatibility-report-$TIMESTAMP.txt"
+JSON_FILE="$OUTPUT_DIR/url-compatibility-$TIMESTAMP.json"
+
+# Variables de comptage
+TOTAL=0
+EXACT_MATCH=0
+ALIAS_MISMATCH=0
+FORMAT_ERROR=0
+
+# Tableau JSON pour stocker les résultats
+RESULTS_JSON="[]"
+
+# Parser chaque gamme
+echo "$GAMMES_JSON" | jq -c '.[]' | while read -r gamme; do
+  pg_id=$(echo "$gamme" | jq -r '.pg_id')
+  pg_name=$(echo "$gamme" | jq -r '.pg_name')
+  pg_alias=$(echo "$gamme" | jq -r '.pg_alias // empty')
+  
+  TOTAL=$((TOTAL + 1))
+  
+  # Générer alias si manquant
+  if [ -z "$pg_alias" ] || [ "$pg_alias" == "null" ]; then
+    pg_alias=$(slugify "$pg_name")
+    ALIAS_MISMATCH=$((ALIAS_MISMATCH + 1))
+  fi
+  
+  # URLs attendue et actuelle
+  expected_url=$(generate_expected_url "$pg_alias" "$pg_id")
+  actual_url=$(generate_actual_url "$pg_alias" "$pg_id")
+  
+  # Vérifier correspondance exacte
+  if [ "$expected_url" == "$actual_url" ]; then
+    status="✅ MATCH"
+    EXACT_MATCH=$((EXACT_MATCH + 1))
+  else
+    status="❌ DIFF"
+    FORMAT_ERROR=$((FORMAT_ERROR + 1))
+  fi
+  
+  # Ajouter au rapport
+  echo "$status | PG_ID: $pg_id | Expected: $expected_url | Actual: $actual_url" >> "$REPORT_FILE"
+  
+  # Ajouter au JSON
+  RESULT_ITEM=$(jq -n \
+    --arg pg_id "$pg_id" \
+    --arg pg_name "$pg_name" \
+    --arg pg_alias "$pg_alias" \
+    --arg expected "$expected_url" \
+    --arg actual "$actual_url" \
+    --arg status "$status" \
+    '{
+      pg_id: $pg_id,
+      pg_name: $pg_name,
+      pg_alias: $pg_alias,
+      expected_url: $expected,
+      actual_url: $actual,
+      match: ($expected == $actual),
+      status: $status
+    }')
+  
+  RESULTS_JSON=$(echo "$RESULTS_JSON" | jq --argjson item "$RESULT_ITEM" '. += [$item]')
+  
+  # Afficher progression
+  if [ $((TOTAL % 10)) -eq 0 ]; then
+    echo "  Traité : $TOTAL gammes..."
+  fi
+done
+
+# Lire les compteurs depuis le fichier de rapport
+EXACT_MATCH=$(grep -c "✅ MATCH" "$REPORT_FILE" || echo 0)
+FORMAT_ERROR=$(grep -c "❌ DIFF" "$REPORT_FILE" || echo 0)
+TOTAL=$(wc -l < "$REPORT_FILE")
+
+echo ""
+echo -e "${GREEN}✅ URLs générées : $TOTAL${NC}"
+echo ""
+
+echo -e "${YELLOW}📊 Étape 3/4 : Analyse des différences${NC}"
+echo ""
+
+# Calculer le taux de matching
+MATCH_RATE=0
+if [ "$TOTAL" -gt 0 ]; then
+  MATCH_RATE=$(echo "scale=2; $EXACT_MATCH * 100 / $TOTAL" | bc)
+fi
+
+echo "📊 Résultats :"
+echo ""
+echo "  Total URLs testées        : $TOTAL"
+echo -e "  ${GREEN}✅ Correspondance exacte  : $EXACT_MATCH ($MATCH_RATE%)${NC}"
+echo -e "  ${RED}❌ Différences détectées  : $FORMAT_ERROR${NC}"
+if [ "$ALIAS_MISMATCH" -gt 0 ]; then
+  echo -e "  ${YELLOW}⚠️  Alias manquants        : $ALIAS_MISMATCH${NC}"
+fi
+echo ""
+
+# Sauvegarder le JSON complet
+FINAL_JSON=$(jq -n \
+  --arg timestamp "$TIMESTAMP" \
+  --argjson total "$TOTAL" \
+  --argjson exact_match "$EXACT_MATCH" \
+  --argjson format_error "$FORMAT_ERROR" \
+  --argjson alias_mismatch "$ALIAS_MISMATCH" \
+  --arg match_rate "$MATCH_RATE" \
+  --argjson results "$RESULTS_JSON" \
+  '{
+    timestamp: $timestamp,
+    summary: {
+      total: $total,
+      exact_match: $exact_match,
+      format_error: $format_error,
+      alias_mismatch: $alias_mismatch,
+      match_rate: $match_rate
+    },
+    results: $results
+  }')
+
+echo "$FINAL_JSON" > "$JSON_FILE"
+
+echo -e "${YELLOW}📊 Étape 4/4 : Exemples de comparaison${NC}"
+echo ""
+
+# Afficher les 5 premières URLs
+echo "🔍 Premières URLs testées :"
+echo ""
+head -5 "$REPORT_FILE"
+echo ""
+
+# Si des différences, les afficher
+if [ "$FORMAT_ERROR" -gt 0 ]; then
+  echo -e "${RED}❌ Différences détectées :${NC}"
+  echo ""
+  grep "❌ DIFF" "$REPORT_FILE" | head -5
+  echo ""
+fi
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}📄 FICHIERS GÉNÉRÉS${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo "  Rapport texte : $REPORT_FILE"
+echo "  Données JSON  : $JSON_FILE"
+echo ""
+
+# Interpréter les résultats
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}💡 INTERPRÉTATION${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+if [ "$MATCH_RATE" == "100.00" ]; then
+  echo -e "${GREEN}✅ PARFAIT !${NC}"
+  echo ""
+  echo "Toutes les URLs générées sont IDENTIQUES au format ancien sitemap."
+  echo "Vous pouvez procéder à la phase suivante :"
+  echo ""
+  echo "  1. Tester les URLs avec le sitemap actuel"
+  echo "  2. Lancer l'audit crawl budget (scripts/audit-crawl-budget.sh)"
+  echo "  3. Comparer avec Google Search Console"
+  echo ""
+elif (( $(echo "$MATCH_RATE >= 95" | bc -l) )); then
+  echo -e "${GREEN}✅ TRÈS BON${NC}"
+  echo ""
+  echo "Taux de matching : $MATCH_RATE%"
+  echo "Quelques différences mineures détectées (probablement alias manquants)."
+  echo ""
+  echo "Actions recommandées :"
+  echo "  - Vérifier les gammes sans alias dans pieces_gamme"
+  echo "  - Générer les alias manquants avec slugify(pg_name)"
+  echo ""
+elif (( $(echo "$MATCH_RATE >= 80" | bc -l) )); then
+  echo -e "${YELLOW}⚠️  BON MAIS À AMÉLIORER${NC}"
+  echo ""
+  echo "Taux de matching : $MATCH_RATE%"
+  echo ""
+  echo "Actions recommandées :"
+  echo "  - Analyser les différences dans $REPORT_FILE"
+  echo "  - Corriger la génération des alias"
+  echo "  - Re-tester après corrections"
+  echo ""
+else
+  echo -e "${RED}🚨 CRITIQUE${NC}"
+  echo ""
+  echo "Taux de matching : $MATCH_RATE%"
+  echo ""
+  echo "Actions URGENTES :"
+  echo "  - Analyser le fichier $REPORT_FILE"
+  echo "  - Vérifier la logique de génération des URLs"
+  echo "  - Corriger les différences avant de continuer"
+  echo ""
+fi
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}🔧 COMMANDES UTILES${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo "# Voir toutes les différences"
+echo "cat $REPORT_FILE | grep '❌ DIFF'"
+echo ""
+echo "# Analyser le JSON complet"
+echo "cat $JSON_FILE | jq '.summary'"
+echo ""
+echo "# Vérifier une gamme spécifique"
+echo "cat $JSON_FILE | jq '.results[] | select(.pg_id == \"402\")'"
+echo ""
+echo "# Tester une gamme spécifique"
+echo "bash scripts/verify-url-compatibility.sh --gamme-id 402"
+echo ""
+
+exit 0

@@ -94,7 +94,7 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
             w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm
             transition-colors duration-200
             ${item.isActive 
-              ? 'bg-blue-100 text-blue-700 font-medium' 
+              ? 'bg-primary/15 text-blue-700 font-medium' 
               : 'text-gray-700 hover:bg-gray-100'
             }
             ${hasChildren ? 'cursor-pointer' : item.url ? 'cursor-pointer' : 'cursor-default'}
@@ -115,13 +115,7 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
                 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                 ${typeof item.badge === 'string' 
                   ? 'bg-gray-100 text-gray-800'
-                  : item.badge.type === 'success' 
-                  ? 'bg-green-100 text-green-800' 
-                  : item.badge.type === 'warning'
-                  ? 'bg-orange-100 text-orange-800'
-                  : item.badge.type === 'error'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-gray-100 text-gray-800'
+                  : item.badge.type === 'success' ? 'success' : item.badge.type === 'warning' ? 'orange' : item.badge.type === 'error' ? 'error' : 'bg-gray-100 text-gray-800'
                 }
               `}>
                 {typeof item.badge === 'string' ? item.badge : item.badge.text}
@@ -161,14 +155,14 @@ export const DynamicMenu: React.FC<DynamicMenuProps> = ({ module, className = ''
 
   if (error) {
     return (
-      <div className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}>
+      <div className={`p-4 bg-destructive/5 border border-red-200 rounded-lg ${className}`}>
         <p className="text-red-800 text-sm font-medium">
           Erreur de chargement
         </p>
         <p className="text-red-600 text-xs mt-1">{error}</p>
         <button
           onClick={loadMenu}
-          className="mt-2 px-3 py-1 bg-red-100 text-red-800 rounded text-xs hover:bg-red-200 transition-colors"
+          className="mt-2 px-3 py-1 bg-destructive/20 text-destructive rounded text-xs hover:bg-destructive/30 transition-colors"
         >
           Réessayer
         </button>

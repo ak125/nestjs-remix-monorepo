@@ -36,11 +36,11 @@ interface UserShipmentsProps {
 
 const statusConfig = {
   pending: { label: 'En attente', color: 'bg-gray-100 text-gray-800', icon: Clock },
-  shipped: { label: 'Expédié', color: 'bg-blue-100 text-blue-800', icon: Package },
-  in_transit: { label: 'En transit', color: 'bg-yellow-100 text-yellow-800', icon: Truck },
-  out_for_delivery: { label: 'En livraison', color: 'bg-orange-100 text-orange-800', icon: Truck },
-  delivered: { label: 'Livré', color: 'bg-green-100 text-green-800', icon: CheckCircle },
-  returned: { label: 'Retourné', color: 'bg-red-100 text-red-800', icon: Package },
+  shipped: { label: 'Expédié', color: 'info', icon: Package },
+  in_transit: { label: 'En transit', color: 'warning', icon: Truck },
+  out_for_delivery: { label: 'En livraison', color: 'orange', icon: Truck },
+  delivered: { label: 'Livré', color: 'success', icon: CheckCircle },
+  returned: { label: 'Retourné', color: 'error', icon: Package },
 };
 
 export function UserShipments({ userId }: UserShipmentsProps) {
@@ -148,7 +148,7 @@ export function UserShipments({ userId }: UserShipmentsProps) {
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
+                    <div className="p-2 bg-primary/5 rounded-lg">
                       <StatusIcon className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>

@@ -10,7 +10,7 @@ export function LiveChat() {
         className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-2xl z-50 transition transform hover:scale-110"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-        <span className="absolute top-0 right-0 h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
+        <span className="absolute top-0 right-0 h-3 w-3 bg-success rounded-full animate-pulse"></span>
       </button>
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden">

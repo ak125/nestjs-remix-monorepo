@@ -12,6 +12,8 @@ import {
   Link
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { getSession } from "../server/session.server";
 
 // Interface de contact temporaire pour éviter les erreurs d'import
@@ -233,7 +235,7 @@ export default function ContactPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-lg p-8 text-center border-t-4 border-green-500">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -253,12 +255,7 @@ export default function ContactPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Link 
-                to="/" 
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Retour à l'accueil
-              </Link>
+              <Button className="px-6 py-3   rounded-md" variant="blue" asChild><Link to="/">Retour à l'accueil</Link></Button>
               {isAuthenticated && (
                 <Link 
                   to="/account/messages" 
@@ -341,7 +338,7 @@ export default function ContactPage() {
             </div>
 
             {/* Actions rapides */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
               <h4 className="font-medium text-blue-900 mb-3 flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -368,18 +365,18 @@ export default function ContactPage() {
                   ↩️ Politique de retour →
                 </Link>
               </div>
-            </div>
+            </Alert>
 
             {/* Statut du support */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
                 <span className="text-sm font-medium text-green-800">Support disponible</span>
               </div>
               <p className="text-xs text-green-600 mt-1">
                 Temps de réponse moyen : 2-4h
               </p>
-            </div>
+            </Alert>
           </div>
 
           {/* Formulaire principal */}
@@ -388,14 +385,14 @@ export default function ContactPage() {
               <Form ref={formRef} method="post" className="space-y-6">
                 {/* Erreur générale */}
                 {actionData?.error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+<Alert className="text-red-700 px-4 py-3 rounded-md" variant="error">
                     <div className="flex">
                       <svg className="w-5 h-5 text-red-400 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>{actionData.error}</span>
                     </div>
-                  </div>
+                  </Alert>
                 )}
 
                 {/* Informations personnelles */}
@@ -742,11 +739,8 @@ export default function ContactPage() {
                     <p className="text-sm text-gray-500">
                       * Champs obligatoires
                     </p>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="relative px-8 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
+                    <Button className="relative px-8 py-3   rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit"
+                      disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
                           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -758,7 +752,7 @@ export default function ContactPage() {
                       ) : (
                         "Envoyer le message"
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </Form>

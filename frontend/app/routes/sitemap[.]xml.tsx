@@ -5,7 +5,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // ✅ Utiliser l'API REST existante - 714K+ enregistrements, service complet
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
-    const response = await fetch(`${backendUrl}/api/sitemap/index`);
+    const response = await fetch(`${backendUrl}/api/sitemap`);
     
     if (!response.ok) {
       throw new Error(`Backend API Error: ${response.status} ${response.statusText}`);

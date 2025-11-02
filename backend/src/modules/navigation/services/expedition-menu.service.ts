@@ -204,7 +204,7 @@ export class ExpeditionMenuService extends SupabaseBaseService {
   private async getPreparationCount() {
     try {
       const { count } = await this.client
-        .from('___XTR_ORDER')
+        .from('___xtr_order')
         .select('*', { count: 'exact', head: true })
         .eq('status', 2);
 
@@ -218,7 +218,7 @@ export class ExpeditionMenuService extends SupabaseBaseService {
   private async getInTransitCount() {
     try {
       const { count } = await this.client
-        .from('___XTR_ORDER')
+        .from('___xtr_order')
         .select('*', { count: 'exact', head: true })
         .eq('status', 5);
 
@@ -232,7 +232,7 @@ export class ExpeditionMenuService extends SupabaseBaseService {
   private async getReturnsCount() {
     try {
       const { count } = await this.client
-        .from('___XTR_ORDER')
+        .from('___xtr_order')
         .select('*', { count: 'exact', head: true })
         .in('status', [91, 92]);
 

@@ -43,7 +43,7 @@ export default function ForgotPassword() {
         </CardHeader>
         <CardContent>
           {status === "sent" && (
-            <Alert className="mb-4 border-green-200 bg-green-50">
+            <Alert className="mb-4 border-success bg-success/10">
               <AlertDescription className="text-green-800">
                 Si un compte avec cet email existe, vous recevrez un lien de réinitialisation.
               </AlertDescription>
@@ -51,7 +51,7 @@ export default function ForgotPassword() {
           )}
 
           {(error || actionData?.error) && (
-            <Alert className="mb-4 border-red-200 bg-red-50">
+            <Alert className="mb-4 border-destructive bg-destructive/10">
               <AlertDescription className="text-red-800">
                 {error === "server_error" && "Une erreur serveur est survenue"}
                 {actionData?.error}

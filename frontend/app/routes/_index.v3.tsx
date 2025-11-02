@@ -185,7 +185,7 @@ export default function IndexV3() {
                 {brands.filter(b => b.isFavorite).slice(0, 12).map((brand) => (
                   <Link
                     key={brand.id}
-                    to={`/constructeurs/${brand.code}-${brand.id}`}
+                    to={`/constructeurs/${brand.code}-${brand.id}.html`}
                     className="group relative inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl transition-all duration-300 border border-blue-200 hover:border-blue-400 hover:shadow-lg hover:-translate-y-0.5"
                   >
                     <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-700 transition-colors">
@@ -401,7 +401,7 @@ export default function IndexV3() {
                 Explorer le catalogue
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">
+            <Button asChild size="lg" variant="outline" className="border-2 border-blue-600 text-blue-600 hover:bg-info/20 px-8 py-6 text-lg">
               <Link to="#newsletter">
                 Recevoir les offres exclusives
               </Link>
@@ -457,7 +457,7 @@ export default function IndexV3() {
             Nos experts sont là pour vous accompagner dans votre recherche
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
               <Link to="/contact">
                 <Phone className="mr-2 h-5 w-5" />
                 01 48 49 78 69
@@ -510,8 +510,8 @@ function FeatureCard({ icon, title, description, color }: {
   color: string;
 }) {
   const colorClasses: Record<string, string> = {
-    blue: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100',
-    green: 'text-green-600 bg-green-50 group-hover:bg-green-100',
+    blue: 'text-primary bg-primary/10 group-hover:bg-info/20',
+    green: 'text-success bg-success/10 group-hover:bg-success/20',
     orange: 'text-orange-600 bg-orange-50 group-hover:bg-orange-100',
     purple: 'text-purple-600 bg-purple-50 group-hover:bg-purple-100',
     indigo: 'text-indigo-600 bg-indigo-50 group-hover:bg-indigo-100',

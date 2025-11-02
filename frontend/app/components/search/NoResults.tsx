@@ -53,7 +53,7 @@ export function NoResults({
                 <button
                   key={`suggestion-${index}`}
                   onClick={() => onSuggestionClick?.(suggestion)}
-                  className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full transition-colors duration-200 text-sm font-medium"
+                  className="px-4 py-2 bg-info/90 hover:bg-info text-info-foreground rounded-full transition-colors duration-200 text-sm font-medium"
                 >
                   {suggestion}
                 </button>
@@ -110,7 +110,7 @@ export function NoResults({
         </div>
 
         {/* Contact support */}
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+        <div className="mt-8 p-4 bg-primary/5 rounded-lg">
           <p className="text-sm text-blue-800">
             <strong>Besoin d'aide ?</strong> Notre équipe peut vous aider à trouver la pièce qu'il vous faut.
           </p>

@@ -15,6 +15,7 @@ import {
   Printer, ArrowLeft
 } from "lucide-react";
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour la création d'expédition
 interface Order {
@@ -300,7 +301,7 @@ export default function CreateShipment() {
                   <Link
                     key={orderItem.id}
                     to={`/commercial/shipping/create?orderId=${orderItem.id}`}
-                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                    className="block p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-info/20 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -472,7 +473,7 @@ export default function CreateShipment() {
                           key={service.id}
                           className={`block p-3 border rounded-lg cursor-pointer transition-colors ${
                             selectedService?.id === service.id
-                              ? 'border-blue-500 bg-blue-50'
+                              ? 'border-blue-500 bg-primary/10'
                               : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
@@ -517,7 +518,7 @@ export default function CreateShipment() {
 
               {/* Récapitulatif et validation */}
               {selectedService && (
-                <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="mt-8 p-4 bg-primary/5 border border-blue-200 rounded-lg">
                   <h3 className="font-semibold text-blue-900 mb-2">Récapitulatif</h3>
                   <div className="space-y-1 text-sm text-blue-800">
                     <div>Transporteur: {selectedCarrier?.name}</div>
@@ -543,8 +544,8 @@ export default function CreateShipment() {
                     disabled={!selectedService || isSubmitting}
                     className={`flex-1 px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 ${
                       selectedService && !isSubmitting
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-muted/50 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     {isSubmitting ? (
@@ -561,13 +562,10 @@ export default function CreateShipment() {
                   </button>
 
                   {selectedService && (
-                    <button
-                      type="button"
-                      className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
-                    >
+                    <Button className="px-4 py-3  rounded-lg flex items-center gap-2" variant="green" type="button">
                       <Printer className="w-4 h-4" />
                       Étiquette
-                    </button>
+                    </Button>
                   )}
                 </div>
               </Form>

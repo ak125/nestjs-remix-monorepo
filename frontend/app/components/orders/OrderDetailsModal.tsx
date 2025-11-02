@@ -76,7 +76,7 @@ export function OrderDetailsModal({
         {/* Header */}
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Package className="w-6 h-6 text-blue-600" />
             </div>
             <div>
@@ -214,7 +214,7 @@ export function OrderDetailsModal({
           {!order.ord_is_pay && permissions.canMarkPaid && onMarkPaid && (
             <button
               onClick={() => onMarkPaid(order.ord_id)}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
             >
               <CreditCard className="w-4 h-4" />
               Marquer comme payé
@@ -223,14 +223,14 @@ export function OrderDetailsModal({
           {order.ord_ords_id !== '7' && permissions.canCancel && onCancel && (
             <button
               onClick={() => onCancel(order.ord_id)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg transition-colors"
             >
               Annuler la commande
             </button>
           )}
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-muted/50 transition-colors"
           >
             Fermer
           </button>

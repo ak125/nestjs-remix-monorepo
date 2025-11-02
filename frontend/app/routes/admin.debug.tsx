@@ -33,7 +33,7 @@ export default function AdminDebug() {
           <pre className="text-sm">{JSON.stringify(data.context, null, 2)}</pre>
         </div>
         
-        <div className="bg-blue-100 p-4 rounded">
+        <div className="bg-muted p-4 rounded">
           <h2 className="font-bold mb-2">🎯 Conditions d'accès Admin:</h2>
           <ul className="text-sm space-y-1">
             <li>✅ Utilisateur connecté: {data.user ? 'OUI' : 'NON'}</li>
@@ -50,7 +50,7 @@ export default function AdminDebug() {
           </ul>
         </div>
         
-        <div className="bg-green-100 p-4 rounded">
+        <div className="bg-success/10 p-4 rounded">
           <h2 className="font-bold mb-2">🚀 Test des routes:</h2>
           <div className="space-y-2">
             <a href="/admin" className="block text-blue-600 hover:underline">

@@ -1,0 +1,51 @@
+{
+  "name": "@fafa/patterns",
+  "version": "1.0.0",
+  "description": "Patterns compositionnels (ProductCard, VehicleSelector, AdminShell, etc.)",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./patterns/*": {
+      "types": "./dist/patterns/*.d.ts",
+      "import": "./dist/patterns/*.mjs",
+      "require": "./dist/patterns/*.cjs"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx",
+    "test": "vitest",
+    "clean": "rm -rf dist .turbo"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@fafa/ui": "*",
+    "@fafa/theme-automecanik": "*",
+    "@fafa/theme-admin": "*"
+  },
+  "devDependencies": {
+    "@fafa/typescript-config": "*",
+    "@types/react": "^18.2.20",
+    "eslint": "^8.57.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "keywords": ["patterns", "components", "design-system"],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from '~/components/ui/alert';
 import { ModelSelector, type Model } from '../components/forms/ModelSelector';
 import { TypeSelector, type VehicleType } from '../components/forms/TypeSelector';
 import { YearSelector } from '../components/forms/YearSelector';
@@ -43,9 +44,7 @@ export default function VehicleSelectorsDemo() {
             className="w-full"
           />
           {selectedModel && (
-            <div className="mt-3 p-3 bg-green-50 rounded">
-              <strong>Sélectionné:</strong> {selectedModel.modele_ful_name || selectedModel.modele_name}
-            </div>
+            <Alert intent="success"><strong>Sélectionné:</strong> {selectedModel.modele_ful_name || selectedModel.modele_name}</Alert>
           )}
         </div>
 
@@ -61,7 +60,7 @@ export default function VehicleSelectorsDemo() {
               className="w-full"
             />
             {selectedType && (
-              <div className="mt-3 p-3 bg-green-50 rounded">
+              <div className="mt-3 p-3 bg-success/5 rounded">
                 <strong>Sélectionné:</strong> {selectedType.type_name}
                 <br />
                 <span className="text-sm text-gray-600">
@@ -83,16 +82,14 @@ export default function VehicleSelectorsDemo() {
               className="w-full"
             />
             {selectedYear && (
-              <div className="mt-3 p-3 bg-green-50 rounded">
-                <strong>Sélectionné:</strong> {selectedYear}
-              </div>
+              <Alert intent="success"><strong>Sélectionné:</strong> {selectedYear}</Alert>
             )}
           </div>
         )}
 
         {/* Summary */}
         {(selectedModel || selectedType || selectedYear) && (
-          <div className="bg-blue-50 p-6 rounded-lg">
+          <div className="bg-primary/5 p-6 rounded-lg">
             <h3 className="text-lg font-semibold mb-4">📋 Résumé de la Sélection</h3>
             <div className="space-y-2">
               {selectedModel && (
@@ -107,7 +104,7 @@ export default function VehicleSelectorsDemo() {
             </div>
             
             {selectedModel && selectedType && selectedYear && (
-              <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded">
+              <div className="mt-4 p-4 bg-success/10 border border-green-300 rounded">
                 <p className="text-green-800 font-medium">
                   ✅ Sélection complète ! Vous pouvez maintenant rechercher des pièces compatibles.
                 </p>

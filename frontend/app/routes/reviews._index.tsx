@@ -2,6 +2,7 @@
  * Page Gestion des Avis Clients
  * Interface complète pour la modération et gestion des avis
  */
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, Link, useLoaderData, useSubmit, useNavigation } from "@remix-run/react";
 import { 
@@ -17,6 +18,7 @@ import {
   MessageSquare
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 import { getReviewStats, getAllReviews, updateReviewStatus } from "../services/api/review.api";
 
 export const meta: MetaFunction = () => {
@@ -129,29 +131,21 @@ export default function ReviewsPage() {
     ));
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusVariant = (status: string): "success" | "error" | "warning" | "default" => {
     switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-800";
-      case "rejected":
-        return "bg-red-100 text-red-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "approved": return "success";
+      case "rejected": return "error";
+      case "pending": return "warning";
+      default: return "default";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "approved":
-        return "Approuvé";
-      case "rejected":
-        return "Rejeté";
-      case "pending":
-        return "En attente";
-      default:
-        return "Inconnu";
+      case "approved": return "Approuvé";
+      case "rejected": return "Rejeté";
+      case "pending": return "En attente";
+      default: return "Inconnu";
     }
   };
 
@@ -193,7 +187,7 @@ export default function ReviewsPage() {
           <div className="flex gap-3">
             <Link
               to="/reviews/create"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md"
             >
               <Plus className="w-4 h-4 mr-2" />
               Nouvel avis
@@ -214,7 +208,7 @@ export default function ReviewsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-blue-600" />
               </div>
             </div>
@@ -228,7 +222,7 @@ export default function ReviewsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-warning/10 rounded-md flex items-center justify-center">
                 <Star className="w-5 h-5 text-yellow-600" />
               </div>
             </div>
@@ -247,7 +241,7 @@ export default function ReviewsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-warning/10 rounded-md flex items-center justify-center">
                 <span className="text-sm font-semibold text-yellow-600">⏳</span>
               </div>
             </div>
@@ -261,7 +255,7 @@ export default function ReviewsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center">
                 <Check className="w-5 h-5 text-green-600" />
               </div>
             </div>
@@ -275,7 +269,7 @@ export default function ReviewsPage() {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-red-100 rounded-md flex items-center justify-center">
+              <div className="w-8 h-8 bg-destructive/10 rounded-md flex items-center justify-center">
                 <X className="w-5 h-5 text-red-600" />
               </div>
             </div>
@@ -324,13 +318,10 @@ export default function ReviewsPage() {
                   <option value="50">50 par page</option>
                 </select>
                 
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-                >
+                <Button className="inline-flex items-center px-4 py-2   rounded-md" variant="blue" type="submit">
                   <Filter className="w-4 h-4 mr-2" />
                   Filtrer
-                </button>
+                </Button>
               </div>
             </div>
           </Form>
@@ -354,7 +345,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "approved"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-md hover:bg-green-200"
+                  className="px-3 py-1 bg-success/20 text-success text-sm rounded-md hover:bg-success/30"
                 >
                   Approuver
                 </button>
@@ -363,7 +354,7 @@ export default function ReviewsPage() {
                     selectedReviews.forEach(id => handleStatusUpdate(id, "rejected"));
                     setSelectedReviews([]);
                   }}
-                  className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded-md hover:bg-red-200"
+                  className="px-3 py-1 bg-destructive/20 text-destructive text-sm rounded-md hover:bg-destructive/30"
                 >
                   Rejeter
                 </button>
@@ -382,7 +373,7 @@ export default function ReviewsPage() {
               </p>
               <Link
                 to="/reviews/create"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
+                className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Créer le premier avis
@@ -423,9 +414,9 @@ export default function ReviewsPage() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(review.status)}`}>
+                          <Badge variant={getStatusVariant(review.status)} size="sm">
                             {getStatusText(review.status)}
-                          </span>
+                          </Badge>
                           
                           <div className="relative">
                             <button
@@ -465,7 +456,7 @@ export default function ReviewsPage() {
                               <button
                                 onClick={() => handleStatusUpdate(review.id, "approved")}
                                 disabled={navigation.state !== "idle"}
-                                className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+                                className="inline-flex items-center px-2 py-1 text-xs bg-success/80 text-success-foreground hover:bg-success rounded  disabled:opacity-50"
                               >
                                 <Check className="w-3 h-3 mr-1" />
                                 Approuver
@@ -474,7 +465,7 @@ export default function ReviewsPage() {
                               <button
                                 onClick={() => handleStatusUpdate(review.id, "rejected")}
                                 disabled={navigation.state !== "idle"}
-                                className="inline-flex items-center px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 disabled:opacity-50"
+                                className="inline-flex items-center px-2 py-1 text-xs bg-destructive/15 text-red-700 rounded hover:bg-destructive/30 disabled:opacity-50"
                               >
                                 <X className="w-3 h-3 mr-1" />
                                 Rejeter
@@ -519,7 +510,7 @@ export default function ReviewsPage() {
                       to={`?page=${pageNum}&limit=${pagination.limit}`}
                       className={`px-3 py-2 text-sm rounded-md ${
                         pageNum === pagination.page
-                          ? "bg-blue-600 text-white"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >

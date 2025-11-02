@@ -5,6 +5,7 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
+import {  Badge, Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
@@ -248,9 +249,7 @@ export default function CommercialVehiclesModelTypes() {
           </CardHeader>
           {error ? (
             <CardContent>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
+              <Alert intent="error"><p>{error}</p></Alert>
             </CardContent>
           ) : types.length > 0 ? (
             <CardContent>
@@ -261,7 +260,7 @@ export default function CommercialVehiclesModelTypes() {
                     className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-blue-50 rounded-lg">
+                      <div className="p-2 bg-primary/5 rounded-lg">
                         <Zap className="h-6 w-6 text-blue-600" />
                       </div>
                       <span className="text-xs text-gray-500">#{type.type_id}</span>
@@ -300,13 +299,13 @@ export default function CommercialVehiclesModelTypes() {
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         type.type_year_to 
                           ? 'bg-gray-100 text-gray-700' 
-                          : 'bg-green-100 text-green-700'
+                          : 'bg-success/15 text-green-700'
                       }`}>
                         {type.type_year_to ? 'Ancien' : 'Actuel'}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
+                      <Badge variant="info">
                         {type.type_fuel}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 ))}

@@ -70,7 +70,7 @@ export default function LoginPage() {
         {/* Success message */}
         {searchParams.get("register") === "success" && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Badge className="w-full justify-center py-2 bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
+            <Badge className="w-full justify-center py-2 bg-success/20 text-success hover:bg-success/20 border-green-200">
               ✓ Compte créé avec succès !
             </Badge>
           </div>
@@ -79,7 +79,7 @@ export default function LoginPage() {
         {/* Error/Message display */}
         {(error || message) && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive bg-destructive/10">
               <CardContent className="pt-6">
                 <p className="text-sm text-red-800 flex items-center gap-2">
                   <span className="text-lg">⚠️</span>

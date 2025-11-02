@@ -1,0 +1,252 @@
+name: 🗺️ Generate Sitemaps (Nightly)
+
+on:
+  # Déclenchement manuel
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Sitemap type to generate'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - products
+          - blog
+          - pages
+          - delta
+      
+      includeHreflang:
+        description: 'Include hreflang links'
+        required: false
+        default: true
+        type: boolean
+      
+      includeImages:
+        description: 'Include image sitemaps'
+        required: false
+        default: true
+        type: boolean
+
+  # Déclenchement automatique (3h du matin UTC)
+  schedule:
+    - cron: '0 3 * * *'
+
+  # Déclenchement sur push tags (releases)
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  NODE_VERSION: '20.x'
+  PNPM_VERSION: '8.10.0'
+
+jobs:
+  generate-sitemaps:
+    name: Generate & Deploy Sitemaps
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      ##########################################################################
+      # SETUP
+      ##########################################################################
+      
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+      
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      
+      - name: 📚 Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      ##########################################################################
+      # BUILD
+      ##########################################################################
+      
+      - name: 🏗️ Build backend
+        run: pnpm turbo run build --filter=backend
+        env:
+          NODE_ENV: production
+      
+      ##########################################################################
+      # START SERVICES
+      ##########################################################################
+      
+      - name: 🐳 Start Docker services
+        run: |
+          docker-compose -f docker-compose.prod.yml up -d redis
+          docker-compose -f docker-compose.prod.yml up -d meilisearch
+          sleep 10  # Wait for services
+      
+      - name: 🚀 Start NestJS backend
+        run: |
+          cd backend
+          pnpm start:prod &
+          sleep 30  # Wait for backend to be ready
+          curl --retry 10 --retry-delay 5 http://localhost:3000/health
+        env:
+          NODE_ENV: production
+          REDIS_URL: redis://localhost:6379
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      
+      ##########################################################################
+      # GENERATE SITEMAPS
+      ##########################################################################
+      
+      - name: 🔄 Generate Delta Sitemap
+        run: |
+          curl -X POST "http://localhost:3000/sitemap-v2/delta/generate" \
+            -H "Content-Type: application/json" \
+            -o delta-response.json
+          cat delta-response.json
+          
+          if ! jq -e '.success' delta-response.json > /dev/null; then
+            echo "❌ Delta sitemap generation failed"
+            exit 1
+          fi
+      
+      - name: 🗜️ Generate Streaming Sitemaps
+        run: |
+          TYPE="${{ github.event.inputs.type || 'all' }}"
+          HREFLANG="${{ github.event.inputs.includeHreflang || 'true' }}"
+          IMAGES="${{ github.event.inputs.includeImages || 'true' }}"
+          
+          curl -X POST "http://localhost:3000/sitemap-v2/streaming/generate?type=$TYPE&includeHreflang=$HREFLANG&includeImages=$IMAGES" \
+            -H "Content-Type: application/json" \
+            -o streaming-response.json
+          cat streaming-response.json
+          
+          if ! jq -e '.success' streaming-response.json > /dev/null; then
+            echo "❌ Streaming sitemap generation failed"
+            exit 1
+          fi
+      
+      - name: 📊 Fetch Generation Stats
+        run: |
+          echo "## 📈 Delta Stats"
+          curl -s "http://localhost:3000/sitemap-v2/delta/stats" | jq .
+          
+          echo "## 📦 Streaming Files"
+          curl -s "http://localhost:3000/sitemap-v2/streaming/files" | jq '.data | length'
+      
+      ##########################################################################
+      # VALIDATE
+      ##########################################################################
+      
+      - name: ✅ Validate Sitemaps XML
+        run: |
+          cd public/sitemaps
+          
+          for file in *.xml; do
+            if [ -f "$file" ]; then
+              echo "Validating $file..."
+              xmllint --noout "$file" || exit 1
+            fi
+          done
+          
+          echo "✅ All XML files are valid"
+      
+      - name: 🔍 Check Sitemap Sizes
+        run: |
+          cd public/sitemaps
+          
+          echo "## File Sizes"
+          du -sh *
+          
+          echo "## Compression Ratios"
+          for gz in *.xml.gz; do
+            if [ -f "$gz" ]; then
+              ORIGINAL=$(gzip -l "$gz" | tail -1 | awk '{print $2}')
+              COMPRESSED=$(stat -f%z "$gz" 2>/dev/null || stat -c%s "$gz")
+              RATIO=$(echo "scale=1; 100 - ($COMPRESSED * 100 / $ORIGINAL)" | bc)
+              echo "$gz: ${RATIO}% compression"
+            fi
+          done
+      
+      ##########################################################################
+      # UPLOAD TO S3 (optionnel)
+      ##########################################################################
+      
+      - name: ☁️ Upload to S3
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      
+      - name: 📤 Sync sitemaps to S3
+        if: github.ref == 'refs/heads/main'
+        run: |
+          aws s3 sync public/sitemaps/ s3://automecanik-sitemaps/ \
+            --delete \
+            --cache-control "public, max-age=86400" \
+            --metadata-directive REPLACE
+          
+          echo "✅ Sitemaps uploaded to S3"
+      
+      ##########################################################################
+      # NOTIFY
+      ##########################################################################
+      
+      - name: 💬 Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} Sitemap Generation: ${{ job.status }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Sitemap Generation*\nStatus: ${{ job.status }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+      
+      ##########################################################################
+      # CLEANUP
+      ##########################################################################
+      
+      - name: 🧹 Cleanup old deltas
+        run: |
+          curl -X POST "http://localhost:3000/sitemap-v2/delta/cleanup" \
+            -H "Content-Type: application/json"
+      
+      - name: 🐳 Stop Docker services
+        if: always()
+        run: docker-compose -f docker-compose.prod.yml down
+      
+      ##########################################################################
+      # ARTIFACTS
+      ##########################################################################
+      
+      - name: 📦 Upload artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: sitemaps-${{ github.run_number }}
+          path: |
+            public/sitemaps/**
+            logs/cron/**
+            delta-response.json
+            streaming-response.json
+          retention-days: 7

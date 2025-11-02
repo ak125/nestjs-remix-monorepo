@@ -86,7 +86,7 @@ function MessageCard({ message }: { message: Message }) {
   
   return (
     <Card className={`transition-all duration-200 hover:shadow-md ${
-      isUnread ? 'bg-blue-50 border-blue-200' : 'bg-white'
+      isUnread ? 'bg-primary/5 border-blue-200' : 'bg-white'
     }`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4">
@@ -98,18 +98,18 @@ function MessageCard({ message }: { message: Message }) {
                 {message.title}
               </h3>
               {isUnread && (
-                <Badge className="bg-blue-100 text-blue-800">
+                <Badge className="bg-info/20 text-info">
                   Nouveau
                 </Badge>
               )}
               {isSystem && (
-                <Badge className="bg-red-100 text-red-800">
+                <Badge className="bg-destructive/20 text-destructive">
                   <AlertCircle className="w-3 h-3 mr-1" />
                   Système
                 </Badge>
               )}
               {message.type === 'support' && (
-                <Badge className="bg-green-100 text-green-800">
+                <Badge className="bg-success/20 text-success">
                   <MessageCircle className="w-3 h-3 mr-1" />
                   Support
                 </Badge>
@@ -166,7 +166,7 @@ function SidebarItem({
       to={href}
       className={`flex items-center justify-between px-3 py-2 rounded-md transition-colors ${
         active 
-          ? 'bg-blue-50 text-blue-700' 
+          ? 'bg-primary/10 text-primary' 
           : 'text-gray-700 hover:bg-gray-100'
       }`}
     >
@@ -175,7 +175,7 @@ function SidebarItem({
         <span className="ml-3 text-sm font-medium">{label}</span>
       </div>
       {count !== undefined && count > 0 && (
-        <Badge className={active ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}>
+        <Badge className={active ? 'bg-info/20 text-info' : 'bg-gray-100 text-gray-600'}>
           {count}
         </Badge>
       )}
@@ -296,7 +296,7 @@ export default function AccountMessages() {
         {/* Messages urgents */}
         {urgentMessages.length > 0 && (
           <div className="p-4">
-            <Card className="border-red-200 bg-red-50">
+            <Card className="border-destructive bg-destructive/10">
               <CardHeader>
                 <CardTitle className="text-red-800 flex items-center gap-2">
                   <Bell className="w-5 h-5" />

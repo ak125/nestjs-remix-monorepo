@@ -85,7 +85,7 @@ export default function SystemMonitoring() {
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Monitoring Système</h2>
         <div className="flex items-center gap-2">
-          <div className={`w-3 h-3 rounded-full ${health?.success ? 'bg-green-500' : 'bg-red-500'}`}></div>
+          <div className={`w-3 h-3 rounded-full ${health?.success ? 'bg-success' : 'bg-destructive'}`}></div>
           <span className="text-sm font-medium">
             {health?.success ? 'Système opérationnel' : 'Problème détecté'}
           </span>
@@ -171,7 +171,7 @@ export default function SystemMonitoring() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{
                     width: `${(metrics.data.memory.used / metrics.data.memory.total) * 100}%`
                   }}

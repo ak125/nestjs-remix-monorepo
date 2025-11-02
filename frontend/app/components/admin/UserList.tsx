@@ -1,5 +1,7 @@
+import { Badge } from '@fafa/ui';
 import { Form, useNavigate } from "@remix-run/react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 
 interface User {
   id: string;
@@ -65,12 +67,7 @@ export function UserList({
           placeholder="Rechercher par email, nom..."
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Rechercher
-        </button>
+        <Button className="px-6 py-2  rounded-lg" variant="blue" type="submit">\n  Rechercher\n</Button>
       </Form>
       
       {/* Tableau des utilisateurs */}
@@ -138,9 +135,7 @@ export function UserList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {user.isPro ? (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                      PRO
-                    </span>
+                    <Badge variant="default">PRO</Badge>
                   ) : (
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                       Standard
@@ -149,13 +144,9 @@ export function UserList({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {user.isActive !== false ? (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                      Actif
-                    </span>
+                    <Badge variant="success">Actif</Badge>
                   ) : (
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                      Inactif
-                    </span>
+                    <Badge variant="error">Inactif</Badge>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

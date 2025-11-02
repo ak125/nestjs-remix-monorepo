@@ -101,7 +101,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex space-x-3">
                 <button
                   onClick={() => window.location.reload()}
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                 >
                   Recharger la page
                 </button>
@@ -152,7 +152,7 @@ export class ErrorBoundary extends Component<Props, State> {
                   
                   alert('Rapport d\'erreur envoyé. Merci !');
                 }}
-                className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
               >
                 Envoyer le rapport d'erreur
               </button>

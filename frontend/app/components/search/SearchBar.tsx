@@ -403,8 +403,7 @@ export function SearchBar({
           <div className={cn(
             "absolute -top-2 right-2 px-2 py-1 text-xs font-medium rounded-full",
             version === 'enhanced' || enhancedMode
-              ? "bg-purple-100 text-purple-800"
-              : "bg-blue-100 text-blue-800"
+              ? 'purple' : 'info'
           )}>
             {enhancedMode && version === 'enhanced' ? 'ENHANCED' : version.toUpperCase()}
             {enhancedMode && (
@@ -433,7 +432,7 @@ export function SearchBar({
                 onClick={() => handleSuggestionClick(suggestion)}
                 className={cn(
                   'w-full flex items-center px-4 py-3 text-left hover:bg-gray-50 transition-colors',
-                  selectedIndex === index && 'bg-blue-50',
+                  selectedIndex === index && 'bg-primary/5',
                   'border-b border-gray-100 last:border-b-0'
                 )}
               >

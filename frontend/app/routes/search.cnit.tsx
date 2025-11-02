@@ -143,14 +143,14 @@ export default function SearchCnitPage() {
               />
               <Button
                 type="submit"
-                className="px-8 bg-green-600 hover:bg-green-700"
+                className="px-8 bg-success hover:bg-success/90"
                 disabled={!cnitCode.trim()}
               >
                 <Search className="h-4 w-4 mr-2" />
                 Rechercher
               </Button>
             </div>
-            <div className="flex items-start gap-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+            <div className="flex items-start gap-2 text-sm text-primary bg-primary/10 p-3 rounded-lg">
               <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
               <p>
                 Le code CNIT se trouve sur la carte grise du véhicule dans la case K.
@@ -194,7 +194,7 @@ export default function SearchCnitPage() {
                 <div className="flex gap-3">
                   <Link
                     to={`/vehicles/catalog/${vehicle.auto_type?.type_id}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
                   >
                     Voir les pièces compatibles
                     <ArrowRight className="h-4 w-4" />
@@ -231,7 +231,7 @@ export default function SearchCnitPage() {
             <div className="flex gap-3 pt-4 border-t">
               <Link
                 to="/search/mine"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-info/80 text-info-foreground hover:bg-info rounded-lg  transition-colors"
               >
                 Recherche par code mine
               </Link>
@@ -248,7 +248,7 @@ export default function SearchCnitPage() {
 
       {/* Informations sur le CNIT */}
       {!searchTerm && (
-        <Card className="bg-green-50">
+        <Card className="bg-success/5">
           <CardHeader>
             <CardTitle className="text-lg">Qu'est-ce qu'un code CNIT ?</CardTitle>
           </CardHeader>
@@ -267,7 +267,7 @@ export default function SearchCnitPage() {
                 <code className="bg-white px-3 py-2 rounded border">GHI123JKL456</code>
               </div>
             </div>
-            <div className="bg-green-100 p-4 rounded-lg">
+            <div className="bg-success/10 p-4 rounded-lg">
               <h4 className="font-medium text-green-900 mb-2">Différence avec le code mine :</h4>
               <ul className="text-sm text-green-700 space-y-1">
                 <li>• <strong>Code mine (J.1)</strong> : Identifiant constructeur (plus technique)</li>

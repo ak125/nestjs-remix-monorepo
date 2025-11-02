@@ -33,15 +33,26 @@ def main():
     for result in analysis_results:
         output_file = results_dir / f"{result.agent_name}_results.json"
         import json
+        
+        # Convertir les findings en dictionnaires
+        findings_json = []
+        for finding in result.findings:
+            if hasattr(finding, '__dict__'):
+                findings_json.append(vars(finding))
+            elif isinstance(finding, dict):
+                findings_json.append(finding)
+            else:
+                findings_json.append(str(finding))
+        
         with open(output_file, 'w') as f:
             json.dump({
                 'agent_name': result.agent_name,
                 'status': result.status,
                 'duration_ms': result.duration_ms,
-                'findings': result.findings,
+                'findings': findings_json,
                 'errors': result.errors,
                 'warnings': result.warnings
-            }, f, indent=2)
+            }, f, indent=2, default=str)
     
     # Fix
     print("\n🔧 CORRECTIONS...")

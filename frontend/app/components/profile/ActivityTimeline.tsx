@@ -42,13 +42,13 @@ function getActivityIcon(type: ActivityItem["type"]) {
 function getActivityColor(type: ActivityItem["type"]) {
   switch (type) {
     case "login":
-      return "text-blue-500 bg-blue-50";
+      return "text-primary bg-primary/10";
     case "order":
-      return "text-green-500 bg-green-50";
+      return "text-success bg-success/10";
     case "profile_update":
       return "text-purple-500 bg-purple-50";
     case "password_change":
-      return "text-red-500 bg-red-50";
+      return "text-destructive bg-destructive/10";
     case "address_add":
       return "text-orange-500 bg-orange-50";
     default:

@@ -194,7 +194,7 @@ function BlogCard({ article }: any) {
           alt={article.title}
           className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
         />
-        <div className="absolute top-4 left-4 px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-semibold">
+        <div className="absolute top-4 left-4 px-3 py-1 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-xs font-semibold">
           {article.category}
         </div>
       </div>
@@ -226,7 +226,7 @@ function BlogCard({ article }: any) {
 
 function ShareButton({ icon }: any) {
   return (
-    <button className="p-2 bg-gray-100 hover:bg-blue-100 rounded-lg text-gray-600 hover:text-blue-600 transition-all">
+    <button className="p-2 bg-gray-100 hover:bg-info/20 rounded-lg text-gray-600 hover:text-blue-600 transition-all">
       {icon}
     </button>
   );
@@ -309,7 +309,7 @@ export function FAQSection() {
             <p className="text-gray-600 mb-4">Vous ne trouvez pas votre réponse ?</p>
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-lg transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold shadow-lg transition-all"
             >
               <MessageCircle className="w-5 h-5" />
               Contactez notre support
@@ -387,7 +387,7 @@ export function NewsletterSection() {
           </form>
 
           {isSubscribed && (
-            <div className="bg-green-500 text-white px-6 py-3 rounded-full inline-block animate-bounce">
+            <div className="bg-success text-success-foreground px-6 py-3 rounded-full inline-block animate-bounce">
               ✓ Inscription réussie ! Vérifiez votre email
             </div>
           )}

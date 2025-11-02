@@ -311,7 +311,7 @@ export default function ProductsRangesAdvanced() {
         </div>
 
         {enhanced && (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          <Badge variant="secondary" className="bg-info/20 text-info">
             ⚡ Mode Avancé
           </Badge>
         )}
@@ -497,12 +497,12 @@ export default function ProductsRangesAdvanced() {
                         </CardTitle>
                         <div className="flex items-center gap-2 mb-2">
                           {range.is_active ? (
-                            <Badge className="bg-green-100 text-green-800">✅ Actif</Badge>
+                            <Badge className="bg-success/20 text-success">✅ Actif</Badge>
                           ) : (
                             <Badge variant="secondary">❌ Inactif</Badge>
                           )}
                           {range.is_top && (
-                            <Badge className="bg-yellow-100 text-yellow-800">⭐ Top</Badge>
+                            <Badge className="bg-warning/20 text-warning">⭐ Top</Badge>
                           )}
                         </div>
                         <p className="text-sm text-gray-600 line-clamp-2">
@@ -585,12 +585,12 @@ export default function ProductsRangesAdvanced() {
                             </h3>
                             <div className="flex items-center gap-2">
                               {range.is_active ? (
-                                <Badge className="bg-green-100 text-green-800">✅</Badge>
+                                <Badge className="bg-success/20 text-success">✅</Badge>
                               ) : (
                                 <Badge variant="secondary">❌</Badge>
                               )}
                               {range.is_top && (
-                                <Badge className="bg-yellow-100 text-yellow-800">⭐</Badge>
+                                <Badge className="bg-warning/20 text-warning">⭐</Badge>
                               )}
                             </div>
                           </div>

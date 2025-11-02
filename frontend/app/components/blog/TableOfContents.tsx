@@ -72,7 +72,7 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
                   w-full text-left text-sm transition-all duration-200
                   ${isH2 ? 'font-medium text-gray-900' : 'ml-4 text-gray-600'}
                   ${isActive 
-                    ? 'text-blue-600 font-semibold bg-blue-50 -ml-2 pl-2 py-1 rounded-r-lg border-l-2 border-blue-600' 
+                    ? 'text-primary font-semibold bg-primary/10 -ml-2 pl-2 py-1 rounded-r-lg border-l-2 border-primary' 
                     : 'hover:text-blue-600 hover:bg-gray-50 -ml-2 pl-2 py-1 rounded-r-lg'
                   }
                 `}
@@ -96,7 +96,7 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
             <div 
-              className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+              className="bg-primary h-1.5 rounded-full transition-all duration-300"
               style={{ 
                 width: `${((sections.findIndex(s => s.anchor === activeSection) + 1) / sections.length) * 100}%` 
               }}

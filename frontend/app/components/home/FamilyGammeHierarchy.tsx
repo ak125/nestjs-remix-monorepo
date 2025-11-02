@@ -3,7 +3,9 @@
 
 import { Link } from '@remix-run/react';
 import { useState, useEffect } from 'react';
+
 import { type FamilyWithGammes, type HierarchyStats } from '../../services/api/hierarchy.api';
+import { Button } from '../ui/button';
 
 // 🎨 Fonctions utilitaires locales pour éviter les imports API redondants
 const getFamilyIcon = (family: FamilyWithGammes): string => {
@@ -24,8 +26,8 @@ const getFamilyIcon = (family: FamilyWithGammes): string => {
 
 const getFamilyColor = (family: FamilyWithGammes): string => {
   const colors = [
-    'bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-purple-500',
-    'bg-yellow-500', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
+    'bg-primary', 'bg-success', 'bg-destructive', 'bg-purple-500',
+    'bg-warning', 'bg-pink-500', 'bg-indigo-500', 'bg-gray-500'
   ];
   const index = parseInt(family.mf_id) % colors.length;
   return colors[index];
@@ -72,9 +74,9 @@ export default function FamilyGammeHierarchy({
       setFamilies(hierarchyData.families);
       setStats(hierarchyData.stats);
       
-      // Auto-expand les premières familles pour l'affichage
+      // ✅ AUTO-EXPAND TOUTES LES FAMILLES PAR DÉFAUT pour afficher toutes les sous-catégories
       if (hierarchyData.families.length > 0) {
-        setExpandedFamilies(hierarchyData.families.slice(0, 3).map(f => f.mf_id));
+        setExpandedFamilies(hierarchyData.families.map(f => f.mf_id));
       }
       setLoading(false);
     } else {
@@ -234,8 +236,9 @@ export default function FamilyGammeHierarchy({
                     <h4 className="font-semibold text-gray-800 mb-3">
                       Sous-catégories ({family.gammes_count})
                     </h4>
-                    <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                                            {family.gammes.slice(0, 10).map((gamme, index) => {
+                    <div className="grid grid-cols-1 gap-2 max-h-none overflow-visible">
+                      {/* ✅ AFFICHER TOUTES LES SOUS-CATÉGORIES (pas de .slice(0, 10)) */}
+                      {family.gammes.map((gamme, index) => {
                         console.log('🔍 Debug gamme:', { 
                           gamme, 
                           pgId: gamme.pg_id, 
@@ -252,7 +255,7 @@ export default function FamilyGammeHierarchy({
                           <Link
                             key={gamme.pg_id}
                             to={categoryUrl}
-                            className="bg-white rounded p-2 text-sm hover:bg-blue-50 transition-colors block"
+                            className="bg-white rounded p-2 text-sm hover:bg-info/20 transition-colors block"
                           >
                             <div className="flex justify-between items-center">
                               <span className="font-medium text-gray-700">
@@ -265,17 +268,6 @@ export default function FamilyGammeHierarchy({
                           </Link>
                         );
                       })}
-                      
-                      {family.gammes_count > 10 && (
-                        <div className="text-center py-2">
-                          <Link
-                            to={`/products/catalog?family=${family.mf_id}`}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                          >
-                            Voir les {family.gammes_count - 10} autres →
-                          </Link>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
@@ -314,12 +306,7 @@ export default function FamilyGammeHierarchy({
             >
               Tout replier
             </button>
-            <Link
-              to="/catalog"
-              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors"
-            >
-              Voir tout le catalogue
-            </Link>
+            <Button className="text-sm  px-4 py-2 rounded" variant="blue" asChild><Link to="/catalog">Voir tout le catalogue</Link></Button>
           </div>
         </div>
       </div>

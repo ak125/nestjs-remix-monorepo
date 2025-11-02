@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import  { type VehicleData } from "~/types/vehicle.types";
@@ -113,7 +114,7 @@ function LazyImage({
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
           <div className="animate-pulse">
-            <div className="w-8 h-8 bg-gray-300 rounded"></div>
+            <div className="w-8 h-8 bg-muted/50 rounded"></div>
           </div>
         </div>
       )}
@@ -203,9 +204,7 @@ function CategoryCard({
             {category.name}
           </h3>
           {category.featured && (
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              Populaire
-            </span>
+            <Badge variant="info">Populaire</Badge>
           )}
         </div>
 

@@ -179,7 +179,7 @@ export default function AdminReports() {
 
       {/* Message d'erreur si nécessaire */}
       {error && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-destructive bg-destructive/10">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-600">
               <AlertTriangle className="h-5 w-5" />
@@ -205,7 +205,7 @@ export default function AdminReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Prêts</CardTitle>
-            <div className="h-2 w-2 bg-green-500 rounded-full" />
+            <div className="h-2 w-2 bg-success rounded-full" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.readyReports}</div>
@@ -216,7 +216,7 @@ export default function AdminReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">En Cours</CardTitle>
-            <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse" />
+            <div className="h-2 w-2 bg-warning rounded-full animate-pulse" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.generatingReports}</div>
@@ -227,7 +227,7 @@ export default function AdminReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Programmés</CardTitle>
-            <div className="h-2 w-2 bg-blue-500 rounded-full" />
+            <div className="h-2 w-2 bg-primary rounded-full" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{analytics.scheduledReports}</div>

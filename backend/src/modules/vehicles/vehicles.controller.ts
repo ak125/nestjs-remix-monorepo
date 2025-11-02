@@ -29,6 +29,11 @@ export class VehiclesController {
     return this.vehiclesService.findAll(params);
   }
 
+  @Get('brands/:brandId')
+  async getBrandById(@Param('brandId') brandId: string) {
+    return this.vehiclesService.getBrandById(brandId);
+  }
+
   @Get('brands/:brandId/models')
   async getModelsByBrand(
     @Param('brandId') brandId: string,

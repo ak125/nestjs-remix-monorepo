@@ -6,6 +6,7 @@ import * as React from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
+import { Alert } from '~/components/ui/alert';
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -239,7 +240,7 @@ export default function BlogPiecesAutoIndex() {
                           
                           {/* Arrow Icon */}
                           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shadow-lg">
+                            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shadow-lg">
                               <ArrowRight className="w-3 h-3 text-white" />
                             </div>
                           </div>
@@ -397,7 +398,7 @@ export default function BlogPiecesAutoIndex() {
                   Nos gammes automobiles populaires
                 </p>
               </div>
-              <Badge className="bg-green-100 text-green-800 px-3 py-1.5">
+              <Badge className="bg-success/20 text-success px-3 py-1.5">
                 <TrendingUp className="w-4 h-4 mr-1.5" />
                 Top 12
               </Badge>
@@ -411,14 +412,14 @@ export default function BlogPiecesAutoIndex() {
                   <>
                     <button
                       onClick={prevModels}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-info/20 hover:border-blue-300 transition-all"
                       aria-label="Modèles précédents"
                     >
                       <ArrowRight className="w-6 h-6 rotate-180 text-gray-700" />
                     </button>
                     <button
                       onClick={nextModels}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 transition-all"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 rounded-full bg-white shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-info/20 hover:border-blue-300 transition-all"
                       aria-label="Modèles suivants"
                     >
                       <ArrowRight className="w-6 h-6 text-gray-700" />
@@ -480,7 +481,7 @@ export default function BlogPiecesAutoIndex() {
                             <span className="text-sm font-medium text-gray-600">
                               Voir les pièces
                             </span>
-                            <div className="p-1 bg-green-50 rounded-md group-hover:bg-green-100 transition-colors">
+                            <div className="p-1 bg-success/5 rounded-md group-hover:bg-success/20 transition-colors">
                               <ArrowRight className="w-4 h-4 text-green-600 group-hover:translate-x-0.5 transition-transform" />
                             </div>
                           </div>
@@ -499,8 +500,8 @@ export default function BlogPiecesAutoIndex() {
                         onClick={() => setCurrentModelIndex(index * modelsPerPage)}
                         className={`w-2 h-2 rounded-full transition-all ${
                           Math.floor(currentModelIndex / modelsPerPage) === index
-                            ? "bg-green-600 w-8"
-                            : "bg-gray-300 hover:bg-gray-400"
+                            ? "bg-success w-8"
+                            : "bg-muted/50 hover:bg-gray-400"
                         }`}
                         aria-label={`Page ${index + 1}`}
                       />
@@ -523,7 +524,7 @@ export default function BlogPiecesAutoIndex() {
           <div className="max-w-6xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
-              <Badge className="mb-4 bg-blue-100 text-blue-800 px-4 py-2">
+              <Badge className="mb-4 bg-info/20 text-info px-4 py-2">
                 <Factory className="w-4 h-4 mr-2" />
                 Catalogue Complet
               </Badge>
@@ -557,8 +558,8 @@ export default function BlogPiecesAutoIndex() {
                     </p>
 
                     <div className="space-y-4">
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 border border-green-200">
-                        <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="success">
+                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -567,10 +568,10 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Marque</p>
                           <p className="text-sm text-gray-600">Accédez facilement aux pièces par constructeur</p>
                         </div>
-                      </div>
+                      </Alert>
 
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200">
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="info">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
@@ -579,9 +580,9 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Modèle</p>
                           <p className="text-sm text-gray-600">Trouvez les pièces pour votre modèle exact</p>
                         </div>
-                      </div>
+                      </Alert>
 
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-purple-50 border border-purple-200">
+<Alert className="flex items-start gap-3 p-4 rounded-xl" variant="default">
                         <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -591,14 +592,14 @@ export default function BlogPiecesAutoIndex() {
                           <p className="font-semibold text-gray-900">Par Motorisation & Année</p>
                           <p className="text-sm text-gray-600">Pièces spécifiques à votre configuration</p>
                         </div>
-                      </div>
+                      </Alert>
                     </div>
                   </div>
 
                   {/* Right Column */}
                   <div className="flex flex-col justify-center">
                     <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 border-2 border-blue-200 shadow-inner">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full blur-3xl" />
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30/30 rounded-full blur-3xl" />
                       <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-3xl" />
                       
                       <div className="relative">
@@ -614,7 +615,7 @@ export default function BlogPiecesAutoIndex() {
 
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">Navigation par marque</span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -626,7 +627,7 @@ export default function BlogPiecesAutoIndex() {
                             <span className="text-gray-700 font-medium">Filtrage par motorisation</span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-blue-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">Recherche par année</span>
                           </div>
                         </div>
@@ -650,7 +651,7 @@ export default function BlogPiecesAutoIndex() {
       {/* CTA */}
       <section className="relative py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/60/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
         <div className="container mx-auto px-4 relative z-10">
@@ -683,15 +684,15 @@ export default function BlogPiecesAutoIndex() {
 
             <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm text-blue-100">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Pièces OEM garanties</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Livraison rapide 24-48h</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-success/60 animate-pulse" />
                 <span>Support technique gratuit</span>
               </div>
             </div>

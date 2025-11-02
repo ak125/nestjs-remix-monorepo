@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
+import { CacheModule } from '../../cache/cache.module';
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -12,6 +13,8 @@ import { GammeUnifiedController } from './controllers/gamme-unified.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
 import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
+import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
+import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
@@ -31,6 +34,7 @@ import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-com
 import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from './services/pieces-enhanced.service';
 import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
+import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 
@@ -60,6 +64,7 @@ import { PricingService } from '../products/services/pricing.service';
 @Module({
   imports: [
     DatabaseModule,
+    CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     // forwardRef(() => VehiclesModule), // Import circulaire géré - TEMPORAIREMENT DÉSACTIVÉ
   ],
   controllers: [
@@ -71,6 +76,8 @@ import { PricingService } from '../products/services/pricing.service';
     EquipementiersController,
     VehicleFilteredCatalogV4Controller,
     PiecesCleanController,
+    PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
+    CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
@@ -88,6 +95,7 @@ import { PricingService } from '../products/services/pricing.service';
     PiecesPhpLogicCompleteService,
     PiecesEnhancedService,
     PiecesUltraEnhancedService,
+    CatalogDataIntegrityService, // 🛡️ Service de validation de l'intégrité
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
@@ -101,6 +109,7 @@ import { PricingService } from '../products/services/pricing.service';
     CatalogGammeService,
     FamilyGammeHierarchyService,
     VehicleFilteredCatalogV4HybridService,
+    CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
   ],
 })
 export class CatalogModule {

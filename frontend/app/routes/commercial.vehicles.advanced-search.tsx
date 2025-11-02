@@ -1,7 +1,9 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
+import { Button } from '~/components/ui/button';
 import { ModelSelector, type Model } from '../components/forms/ModelSelector';
 import { TypeSelector, type VehicleType } from '../components/forms/TypeSelector';
 import { YearSelector } from '../components/forms/YearSelector';
@@ -353,7 +355,7 @@ export default function AdvancedVehicleSearch() {
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-lg hover:bg-blue-100 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-info bg-info/10 border border-blue-300 rounded-lg hover:bg-info/20 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
               >
                 {isExporting ? (
                   <>
@@ -372,7 +374,7 @@ export default function AdvancedVehicleSearch() {
             <button
               onClick={handleSaveSearch}
               disabled={isSaving || !(selectedModel || selectedType || selectedYear)}
-              className="px-4 py-2 text-sm font-medium text-green-700 bg-green-50 border border-green-300 rounded-lg hover:bg-green-100 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2 text-sm font-medium text-success bg-success/10 border border-green-300 rounded-lg hover:bg-success/20 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
             >
               {isSaving ? (
                 <>
@@ -407,7 +409,7 @@ export default function AdvancedVehicleSearch() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${(completedSteps / totalSteps) * 100}%` }}
             />
           </div>
@@ -415,13 +417,13 @@ export default function AdvancedVehicleSearch() {
         
         {/* Statistiques */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-blue-50 p-4 rounded-lg text-center">
+          <div className="bg-primary/5 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-blue-600">
               {stats?.totalBrands?.toLocaleString() || 0}
             </div>
             <div className="text-sm text-gray-600">Marques</div>
           </div>
-          <div className="bg-green-50 p-4 rounded-lg text-center">
+          <div className="bg-success/5 p-4 rounded-lg text-center">
             <div className="text-2xl font-bold text-green-600">
               {stats?.totalModels?.toLocaleString() || 0}
             </div>
@@ -636,7 +638,7 @@ export default function AdvancedVehicleSearch() {
                     {product.category && (
                       <p className="flex items-center gap-2">
                         <span className="font-medium">Catégorie:</span> 
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{product.category}</span>
+                        <Badge variant="info">{product.category}</Badge>
                       </p>
                     )}
                     {product.rating && (
@@ -662,10 +664,10 @@ export default function AdvancedVehicleSearch() {
                   )}
                   
                   <div className="mt-4 flex gap-2">
-                    <button className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-sm hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+                    <Button className="flex-1  py-2 px-3 rounded-lg text-sm   flex items-center justify-center gap-2" variant="blue">
                       <ShoppingCart className="h-4 w-4" />
                       Ajouter au panier
-                    </button>
+                    </Button>
                     <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors flex items-center gap-1">
                       <Eye className="h-4 w-4" />
                       Détails
@@ -691,7 +693,7 @@ export default function AdvancedVehicleSearch() {
             </p>
             <button
               onClick={() => handleSearch()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg"
             >
               Relancer la recherche
             </button>

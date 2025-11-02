@@ -1,0 +1,17 @@
+{
+  "timestamp": "20251028_222702",
+  "baseUrl": "https://fantastic-zebra-qp49wrgxxxx264gg-3000.app.github.dev",
+  "results": {
+    "total": 4,
+    "success": 0,
+    "warnings": 4,
+    "errors": 4,
+    "score": 0
+  },
+  "urls_tested": [
+  "/constructeurs/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html",
+  "/pieces/freinage/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html",
+  "/pieces/filtre-a-huile",
+  "/blog/guide-achat"
+]
+}
