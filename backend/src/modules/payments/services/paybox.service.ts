@@ -205,7 +205,8 @@ export class PayboxService {
   ): boolean {
     try {
       // Extraire la signature reçue
-      const { PBX_HMAC, ...paramsWithoutSignature } = params;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { PBX_HMAC: _PBX_HMAC, ...paramsWithoutSignature } = params;
 
       // Recalculer la signature
       const calculatedSignature = this.generateSignature(

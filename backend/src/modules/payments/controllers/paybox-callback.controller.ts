@@ -229,7 +229,7 @@ export class PayboxCallbackController {
               const numericOrderId = orderIdMatch[1]; // Garder en string car ord_id est text
 
               // Mise à jour avec les vrais noms de colonnes
-              const { data, error } = await this.paymentDataService['client']
+              const { error } = await this.paymentDataService['client']
                 .from('___xtr_order')
                 .update({
                   ord_is_pay: '1', // Marquer comme payé

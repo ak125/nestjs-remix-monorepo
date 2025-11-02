@@ -19,7 +19,8 @@ export class PayboxMonitoringController {
   @Get('paybox-monitoring')
   async getPayboxMonitoring(
     @Query('limit') limit?: string,
-    @Query('days') days?: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Query('days') _days?: string,
   ) {
     try {
       const limitNum = parseInt(limit || '50', 10);
