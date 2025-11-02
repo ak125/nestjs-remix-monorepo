@@ -12,9 +12,9 @@
  */
 
 import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
 import { useLoaderData, Link } from "@remix-run/react";
 import { AlertTriangle, ArrowRight, Clock, ExternalLink } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 
 // ====================================
 // 🎯 INTERFACES & TYPES

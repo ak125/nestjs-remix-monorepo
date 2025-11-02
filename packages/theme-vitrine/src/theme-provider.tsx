@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useEffect, useState } from 'react';
-import type { ThemeMode, ThemeBrand } from './types';
+import  { type ThemeMode, type ThemeBrand } from './types';
 
 export interface ThemeContextValue {
   brand: ThemeBrand;

@@ -9,7 +9,6 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Form, Link, useNavigation } from '@remix-run/react';
 import { 
   RotateCcw, Package, FileText, CheckCircle,
@@ -17,6 +16,7 @@ import {
   Download, Printer, Search, Filter
 } from "lucide-react";
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour les retours
 interface ReturnRequest {

@@ -1,7 +1,7 @@
-import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
-import { Command } from 'cmdk';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Command } from 'cmdk';
+import * as React from 'react';
 import { cn } from '../lib/utils';
 
 /**

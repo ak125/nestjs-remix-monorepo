@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * Interface d'Administration du Blog - Version Simplifiée
  * Interface robuste avec gestion d'erreurs améliorée
@@ -9,6 +8,7 @@ import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 // Icons simplifiés
 const ChartBarIcon = ({ className }: { className: string }) => (

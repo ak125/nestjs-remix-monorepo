@@ -3,8 +3,8 @@
  * Thème pour l'interface d'administration
  */
 
-import type { Theme } from './types';
 import { designTokens } from '@fafa/design-tokens';
+import  { type Theme } from './types';
 
 export const adminThemeLight: Theme = {
   brand: 'admin',

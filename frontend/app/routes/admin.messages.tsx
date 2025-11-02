@@ -4,8 +4,6 @@
  */
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs, redirect } from "@remix-run/node";
-import { Alert } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { 
   MessageSquare, 
@@ -23,6 +21,8 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 // Interfaces pour les messages

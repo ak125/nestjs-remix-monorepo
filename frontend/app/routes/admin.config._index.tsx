@@ -4,7 +4,6 @@
 
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
 import { 
   Settings, 
@@ -23,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
+import { Button } from '~/components/ui/button';
 
 // Types simplifiés pour les configurations
 interface ConfigItem {

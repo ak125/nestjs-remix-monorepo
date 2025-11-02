@@ -1,5 +1,5 @@
-import React from 'react';
 import { Badge } from '@fafa/ui';
+import React from 'react';
 
 interface EquipementierItem {
   pm_id: number;

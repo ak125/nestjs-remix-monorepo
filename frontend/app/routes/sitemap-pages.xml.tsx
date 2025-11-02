@@ -9,8 +9,8 @@
  * Cache agressif (7 jours) car contenu rarement modifié
  */
 
-import type { LoaderFunctionArgs } from '@remix-run/node';
 import { createHash } from 'crypto';
+import  { type LoaderFunctionArgs } from '@remix-run/node';
 
 interface StaticPage {
   loc: string;

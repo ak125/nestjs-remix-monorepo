@@ -6,12 +6,12 @@
  */
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { 
   BarChart3, TrendingUp, TrendingDown, Download,
   Calendar, DollarSign, Package, Users
 } from "lucide-react";
+import { Button } from '~/components/ui/button';
 import { requireUser } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

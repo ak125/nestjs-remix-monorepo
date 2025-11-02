@@ -1,7 +1,7 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
+import { Badge } from '@fafa/ui';
 import React from 'react';
 import { Button } from '~/components/ui/button';
-import { Badge } from '@fafa/ui';
 
 interface VehicleData {
   marque: string;

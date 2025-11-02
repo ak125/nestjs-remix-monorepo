@@ -4,7 +4,6 @@
 
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
   Truck, Package, Clock,
@@ -12,6 +11,7 @@ import {
   TrendingUp, Globe, RefreshCw
 } from "lucide-react";
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour les expéditions
 interface ShippingOrder {

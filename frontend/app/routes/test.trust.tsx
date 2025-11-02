@@ -8,12 +8,12 @@
  * - PricingDisplay (Prix barré crédible)
  */
 
+import { Button } from "@fafa/ui";
 import { useState } from "react";
-import { TrustBadge, TrustBadgeGroup } from "~/components/trust/TrustBadge";
-import { SocialProof, StarRating } from "~/components/trust/SocialProof";
 import { FrictionReducer, FrictionReducerGroup } from "~/components/trust/FrictionReducer";
 import { PricingDisplay, PriceComparison } from "~/components/trust/PricingDisplay";
-import { Button } from "@fafa/ui";
+import { SocialProof, StarRating } from "~/components/trust/SocialProof";
+import { TrustBadge, TrustBadgeGroup } from "~/components/trust/TrustBadge";
 
 export default function TestTrustPage() {
   const [activeTab, setActiveTab] = useState<"badges" | "social" | "friction" | "pricing">("badges");

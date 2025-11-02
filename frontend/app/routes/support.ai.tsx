@@ -1,8 +1,8 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 
 // Interfaces simplifiées pour éviter les problèmes d'import
 interface SentimentAnalysis {

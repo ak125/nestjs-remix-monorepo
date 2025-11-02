@@ -1,4 +1,3 @@
-import { Alert } from '~/components/ui/alert';
 /**
  * 🔍 RECHERCHE VÉHICULES AVANCÉE
  * 
@@ -10,6 +9,7 @@ import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { Car, Filter, RotateCcw, Search } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";

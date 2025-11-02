@@ -1,9 +1,9 @@
 import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { Button } from '~/components/ui/button';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
+import { Button } from '~/components/ui/button';
 import { ModelSelector, type Model } from '../components/forms/ModelSelector';
 import { TypeSelector, type VehicleType } from '../components/forms/TypeSelector';
 import { YearSelector } from '../components/forms/YearSelector';

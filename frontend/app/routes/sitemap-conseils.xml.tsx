@@ -5,8 +5,8 @@
  * Cache 24h avec revalidation
  */
 
-import type { LoaderFunctionArgs } from '@remix-run/node';
 import { createHash } from 'crypto';
+import  { type LoaderFunctionArgs } from '@remix-run/node';
 
 interface ConseilArticle {
   slug: string;

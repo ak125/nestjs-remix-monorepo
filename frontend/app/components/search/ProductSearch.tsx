@@ -2,10 +2,10 @@
 // 🔍 Composant de recherche produits UNIVERSEL avec dropdown de résultats
 // Utilisable partout : Hero, Navbar, Catalogue, etc.
 
+import { Badge } from '@fafa/ui';
 import { useNavigate } from '@remix-run/react';
 import { Search, Package, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { Badge } from '@fafa/ui';
 import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
 
 interface ProductSearchProps {

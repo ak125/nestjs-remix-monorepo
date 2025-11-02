@@ -11,9 +11,9 @@
 
 import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { Button } from '~/components/ui/button';
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
+import { Button } from '~/components/ui/button';
 import { getCart } from "../services/cart.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
