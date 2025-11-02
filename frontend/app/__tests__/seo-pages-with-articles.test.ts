@@ -5,7 +5,7 @@
  * pour éviter les désindexations SEO
  */
 
-import { describe, it, expect, beforeAll } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
 describe('SEO - Pages Pièces avec Articles', () => {
   const API_BASE_URL = process.env.API_URL || 'http://localhost:3000';
@@ -124,8 +124,8 @@ describe('SEO - Pages Pièces avec Articles', () => {
         }
 
         const gamme = parseUrlParam(gammeParam);
-        const marque = parseUrlParam(marqueParam);
-        const modele = parseUrlParam(modeleParam);
+        const _marque = parseUrlParam(marqueParam);
+        const _modele = parseUrlParam(modeleParam);
         const type = parseUrlParam(typeParam);
 
         // 2. Vérifier extraction IDs

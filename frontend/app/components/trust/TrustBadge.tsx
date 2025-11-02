@@ -10,7 +10,7 @@
  * - eco: Éco-responsable
  */
 
-import { Shield, Package, Clock, Truck, CheckCircle, Leaf } from "lucide-react";
+import { Shield, Package, Truck, CheckCircle, Leaf } from "lucide-react";
 import { cn } from "~/lib/utils";
 
 export type BadgeType = "oem" | "warranty" | "stock" | "fast-delivery" | "certified" | "eco";
