@@ -5,6 +5,7 @@ import {
   CrawlBudgetMetrics,
 } from '../dto/crawl-budget-experiment.dto';
 import { CrawlBudgetSupabaseService } from './crawl-budget-supabase.service';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { google } from 'googleapis';
 import { randomBytes } from 'crypto';
 
@@ -59,6 +60,7 @@ export class CrawlBudgetExperimentService {
   /**
    * 📊 Collecter les métriques de baseline (30j avant)
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async collectBaselineMetrics(_families: string[]) {
     // TODO: Query Loki pour récupérer crawl stats des 30 derniers jours
     // TODO: Query sitemap actuel pour compter URLs par famille
@@ -76,6 +78,7 @@ export class CrawlBudgetExperimentService {
   /**
    * 📋 Liste des expériences
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async listExperiments(_filters: {
     status?: ExperimentStatus;
     limit: number;
@@ -97,6 +100,7 @@ export class CrawlBudgetExperimentService {
    */
   async getExperimentMetrics(
     id: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _period: string,
   ): Promise<CrawlBudgetMetrics> {
     // TODO: Collecter depuis Loki + GSC API
@@ -116,6 +120,7 @@ export class CrawlBudgetExperimentService {
    * 📈 Comparaison avant/pendant/après
    */
   async getComparison(id: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _experiment = await this.getExperiment(id);
 
     return {
@@ -161,6 +166,7 @@ export class CrawlBudgetExperimentService {
    * 🗺️ Générer sitemap filtré
    */
   async generateFilteredSitemap(id: string): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _experiment = await this.getExperiment(id);
 
     // TODO: Récupérer toutes les URLs du sitemap actuel

@@ -194,7 +194,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
           );
           return JSON.parse(cached as string);
         }
-      } catch (error) {
+      } catch {
         this.logger.warn('⚠️ Erreur lecture cache Redis, continue sans cache');
       }
     }
@@ -325,7 +325,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
         this.logger.log(
           `💾 Résultat mis en cache pour type_id=${typeId}, gamme_id=${gammeId} (TTL: ${this.CACHE_TTL}s)`,
         );
-      } catch (error) {
+      } catch {
         this.logger.warn(`⚠️ Erreur écriture cache Redis, continue sans cache`);
       }
     }
