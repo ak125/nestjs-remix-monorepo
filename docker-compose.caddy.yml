@@ -9,7 +9,7 @@ services:
       - "443:443/udp" # HTTP/3
     volumes:
       # Configuration
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       
       # Données persistantes (certificats SSL)
       - caddy_data:/data
@@ -19,7 +19,7 @@ services:
       - ./logs/caddy:/var/log/caddy
       
       # Configuration générée pour redirections (optionnel)
-      - ./caddy-pieces-redirects.conf:/etc/caddy/redirects.conf:ro
+      - ./config/caddy/caddy-pieces-redirects.conf:/etc/caddy/redirects.conf:ro
     
     environment:
       - CADDY_ADMIN=off

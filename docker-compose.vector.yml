@@ -12,11 +12,11 @@ services:
     command: ["--config", "/etc/vector/vector.toml"]
     
     env_file:
-      - .env.vector
+      - ./config/vector/.env.vector
     
     volumes:
       # Configuration Vector
-      - ./vector.toml:/etc/vector/vector.toml:ro
+      - ./config/vector/vector.toml:/etc/vector/vector.toml:ro
       
       # Logs Caddy (read-only)
       - /var/log/caddy:/var/log/caddy:ro
@@ -81,7 +81,7 @@ services:
       - "3100:3100"
     
     volumes:
-      - ./loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./config/vector/loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki-data:/loki
     
     command: -config.file=/etc/loki/local-config.yaml
@@ -169,7 +169,7 @@ services:
       - "9090:9090"
     
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/vector/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     
     command:
