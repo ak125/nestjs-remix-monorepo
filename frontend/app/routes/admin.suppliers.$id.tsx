@@ -7,6 +7,8 @@
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { requireUser } from "../auth/unified.server";
 
 // Types pour les données du fournisseur
@@ -133,12 +135,7 @@ export default function SupplierDetail() {
             <p className="text-gray-600 mb-6">
               {error || "Le fournisseur demandé n'existe pas ou n'est plus accessible."}
             </p>
-            <Link
-              to="/admin/suppliers"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              ← Retour à la liste des fournisseurs
-            </Link>
+            <Button className="px-4 py-2  rounded-lg" variant="blue" asChild><Link to="/admin/suppliers">← Retour à la liste des fournisseurs</Link></Button>
           </div>
         </div>
       </div>
@@ -185,13 +182,7 @@ export default function SupplierDetail() {
           </div>
           
           <div className="flex items-center space-x-3">
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              supplier.status === 'active' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {supplier.status === 'active' ? 'Actif' : 'Inactif'}
-            </span>
+            <Badge className="px-3 py-1 rounded-full text-sm font-medium " variant={supplier.status === 'active' ? 'success' : 'error'}>\n  {supplier.status === 'active' ? 'Actif' : 'Inactif'}\n</Badge>
           </div>
         </div>
 
@@ -297,8 +288,8 @@ export default function SupplierDetail() {
                   disabled={fetcher.state !== 'idle'}
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                     supplier.status === 'active'
-                      ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
+                      ? 'bg-warning hover:bg-warning/90 text-white'
+                      : 'bg-success hover:bg-success/90 text-white'
                   } disabled:opacity-50`}
                 >
                   {fetcher.state !== 'idle' ? 'Chargement...' : 
@@ -307,19 +298,14 @@ export default function SupplierDetail() {
                 
                 <Link
                   to={`/admin/suppliers/${supplier.id}/edit`}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
                 >
                   Modifier
                 </Link>
               </div>
               
-              <button
-                onClick={handleDelete}
-                disabled={fetcher.state !== 'idle'}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
-              >
-                Supprimer
-              </button>
+              <Button className="px-4 py-2  rounded-lg font-medium  disabled:opacity-50" variant="red" onClick={handleDelete}
+                disabled={fetcher.state !== 'idle'}>\n  Supprimer\n</Button>
             </div>
           </div>
         </div>
@@ -412,13 +398,7 @@ export default function SupplierDetail() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          link.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {link.isActive ? 'Actif' : 'Inactif'}
-                        </span>
+                        <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={link.isActive ? 'success' : 'error'}>\n  {link.isActive ? 'Actif' : 'Inactif'}\n</Badge>
                       </td>
                     </tr>
                   ))}

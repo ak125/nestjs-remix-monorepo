@@ -99,7 +99,7 @@ export function ServerPagination({
                 variant={page === currentPage ? "default" : "outline"}
                 size="sm"
                 onClick={() => onPageChange(page)}
-                className={page === currentPage ? "bg-blue-600 text-white" : ""}
+                className={page === currentPage ? "bg-primary text-primary-foreground" : ""}
               >
                 {page}
               </Button>
@@ -163,7 +163,7 @@ export function ServerPagination({
         <div className="mt-3">
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-primary h-2 rounded-full transition-all duration-300"
               style={{ width: `${(currentPage / totalPages) * 100}%` }}
             />
           </div>

@@ -1,20 +1,17 @@
 /**
- * 🚛 SUIVI DES EXPÉDITIONS EN TEMPS RÉEL
- * 
- * Interface de suivi avancée avec WebSockets pour les mises à jour instantanées
- * ✅ Tracking automatique multi-transporteurs
- * ✅ Notifications en temps réel
- * ✅ Géolocalisation des colis
+ * 📦 Suivi des expéditions - Interface commerciale
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Link } from '@remix-run/react';
+import { Badge } from "@fafa/ui";
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
 import { 
   Clock, CheckCircle, Truck,
   Package, Bell, RefreshCw, Eye,
   Navigation, Phone, Mail, AlertTriangle
 } from "lucide-react";
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour le suivi
 interface TrackingEvent {
@@ -177,15 +174,16 @@ const mockShipments: ShipmentTracking[] = [
   }
 ];
 
-function getStatusColor(status: string): string {
+// Helper function to get Badge variant from status
+function getStatusVariant(status: string): "success" | "error" | "warning" | "info" | "default" | "purple" | "orange" {
   switch (status) {
-    case 'preparing': return 'bg-yellow-100 text-yellow-800';
-    case 'shipped': return 'bg-blue-100 text-blue-800';
-    case 'in_transit': return 'bg-indigo-100 text-indigo-800';
-    case 'out_for_delivery': return 'bg-orange-100 text-orange-800';
-    case 'delivered': return 'bg-green-100 text-green-800';
-    case 'exception': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'preparing': return 'warning';
+    case 'shipped': return 'info';
+    case 'in_transit': return 'purple';
+    case 'out_for_delivery': return 'orange';
+    case 'delivered': return 'success';
+    case 'exception': return 'error';
+    default: return 'default';
   }
 }
 
@@ -299,8 +297,8 @@ export default function ShippingTracking() {
               <Navigation className="w-8 h-8 text-blue-600" />
               Suivi des Expéditions
               {isConnected && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-success/20 text-success">
+                  <div className="w-2 h-2 bg-success rounded-full mr-2 animate-pulse"></div>
                   Temps réel
                 </span>
               )}
@@ -313,15 +311,15 @@ export default function ShippingTracking() {
           <div className="flex gap-3">
             <Link
               to="/commercial/shipping/create"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <Package className="w-4 h-4" />
               Créer expédition
             </Link>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+            <Button className="px-4 py-2 rounded-lg flex items-center gap-2" variant="green">
               <RefreshCw className="w-4 h-4" />
               Actualiser
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -401,9 +399,9 @@ export default function ShippingTracking() {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(shipment.status)}`}>
+                        <Badge variant={getStatusVariant(shipment.status)} size="sm">
                           {getStatusLabel(shipment.status)}
-                        </span>
+                        </Badge>
                         <Link
                           to={`/commercial/shipping/${shipment.id}`}
                           className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
@@ -426,9 +424,9 @@ export default function ShippingTracking() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full transition-all duration-500 ${
-                            shipment.status === 'delivered' ? 'bg-green-500' : 
-                            shipment.status === 'out_for_delivery' ? 'bg-orange-500' : 
-                            shipment.status === 'in_transit' ? 'bg-blue-500' : 'bg-yellow-500'
+                            shipment.status === 'delivered' ? 'bg-success' : 
+                            shipment.status === 'out_for_delivery' ? 'bg-orange-600' : 
+                            shipment.status === 'in_transit' ? 'bg-info' : 'bg-warning'
                           }`}
                           style={{ 
                             width: shipment.status === 'delivered' ? '100%' : 
@@ -443,7 +441,7 @@ export default function ShippingTracking() {
                     <div className="space-y-2">
                       {shipment.events.slice(0, 2).map((event) => (
                         <div key={event.id} className="flex items-center gap-3 text-sm">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-info rounded-full"></div>
                           <div className="text-gray-600">
                             {new Date(event.timestamp).toLocaleDateString('fr-FR', {
                               day: '2-digit',
@@ -475,7 +473,7 @@ export default function ShippingTracking() {
             
             <div className="space-y-3 max-h-80 overflow-y-auto">
               {realTimeUpdates.map((update, index) => (
-                <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm animate-fade-in">
+                <div key={index} className="p-3 bg-primary/5 border border-blue-200 rounded-lg text-sm animate-fade-in">
                   {update}
                 </div>
               ))}

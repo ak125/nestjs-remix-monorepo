@@ -30,6 +30,7 @@ interface UseCartReturn {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
+  addToCart: (productId: number, quantity?: number) => Promise<void>;
   removeItem: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   refreshCart: () => void;
@@ -218,6 +219,38 @@ export function useCart(): UseCartReturn {
     }
   }, [removeItem, refreshCart]);
 
+  const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
+    try {
+      console.log('➕ addToCart:', { productId, quantity });
+      
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          product_id: productId, 
+          quantity 
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Article ajouté au panier');
+        // Recharger le panier et l'ouvrir
+        refreshCart();
+        openCart();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Erreur ajout panier:', response.status, errorData);
+        setError(errorData.message || 'Erreur lors de l\'ajout au panier');
+      }
+    } catch (error) {
+      console.error('❌ Erreur addToCart:', error);
+      setError('Erreur réseau lors de l\'ajout au panier');
+    }
+  }, [refreshCart, openCart]);
+
   return {
     items,
     summary,
@@ -229,6 +262,7 @@ export function useCart(): UseCartReturn {
     toggleCart,
     openCart,
     closeCart,
+    addToCart,
     removeItem,
     updateQuantity,
     refreshCart,

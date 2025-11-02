@@ -9,6 +9,7 @@ import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { ArrowRight, Car, Cog, Search } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -251,9 +252,7 @@ export default function VehiclesCompatibility() {
 
       {/* Messages d'erreur */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          <strong>Erreur :</strong> {error}
-        </div>
+        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
       )}
 
       {/* Résultats - Pièce vers véhicules */}
@@ -267,7 +266,7 @@ export default function VehiclesCompatibility() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Informations de la pièce */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-primary/5 border border-blue-200 rounded-lg p-4">
               <h3 className="font-semibold text-blue-900 mb-2">
                 Pièce analysée
               </h3>
@@ -323,7 +322,7 @@ export default function VehiclesCompatibility() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Info véhicule */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
               <h3 className="font-semibold text-green-900 mb-2">
                 Véhicule analysé
               </h3>
@@ -334,7 +333,7 @@ export default function VehiclesCompatibility() {
                   <span> | <strong>Type ID:</strong> {vehicleInfo.typeId}</span>
                 )}
               </div>
-            </div>
+            </Alert>
 
             {/* Liste des pièces */}
             <div>

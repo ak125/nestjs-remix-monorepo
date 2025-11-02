@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 import { Link, useLocation } from "@remix-run/react"
 import { 
   Home, 
@@ -116,7 +117,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
           {/* Header */}
           <div className="flex h-16 items-center border-b border-gray-200 px-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">C</span>
               </div>
               <span className="text-lg font-semibold text-gray-900">Commercial</span>
@@ -127,14 +128,14 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
           {stats && (
             <div className="border-b border-gray-200 p-4">
               <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-blue-50 p-2 rounded">
+                <div className="bg-primary/5 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <ShoppingCart className="h-3 w-3 text-blue-600" />
                     <span className="text-blue-900 font-medium">Commandes</span>
                   </div>
                   <div className="text-blue-700 font-bold">{stats.totalOrders?.toLocaleString()}</div>
                 </div>
-                <div className="bg-green-50 p-2 rounded">
+                <div className="bg-success/5 p-2 rounded">
                   <div className="flex items-center space-x-1">
                     <TrendingUp className="h-3 w-3 text-green-600" />
                     <span className="text-green-900 font-medium">CA</span>
@@ -173,7 +174,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                   className={cn(
                     "group flex items-center justify-between rounded-md px-2 py-2 text-sm font-medium transition-colors",
                     active
-                      ? "bg-blue-100 text-blue-900"
+                      ? "bg-primary/15 text-blue-900"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
@@ -193,9 +194,7 @@ export function CommercialSidebar({ className, stats, ...props }: CommercialSide
                     </div>
                   </div>
                   {item.badge && (
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                      {item.badge}
-                    </span>
+                    <Badge variant="error">{item.badge}</Badge>
                   )}
                 </Link>
               )

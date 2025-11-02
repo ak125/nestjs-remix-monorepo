@@ -8,6 +8,9 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 import { getRemixApiService } from "../server/remix-api.server";
 
@@ -155,9 +158,9 @@ export default function AdminStaff() {
 
   // Fonction pour obtenir la classe CSS du niveau
   const getLevelClass = (level: number) => {
-    if (level >= 9) return 'bg-red-100 text-red-800';
-    if (level >= 8) return 'bg-orange-100 text-orange-800';
-    if (level >= 7) return 'bg-yellow-100 text-yellow-800';
+    if (level >= 9) return 'error';
+    if (level >= 8) return 'orange';
+    if (level >= 7) return 'warning';
     return 'bg-gray-100 text-gray-800';
   };
 
@@ -196,19 +199,14 @@ export default function AdminStaff() {
           </div>
           
           <div className="flex gap-3">
-            <Link
-              to="/admin/staff/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Nouveau Staff
-            </Link>
+            <Button className="px-4 py-2 rounded-lg" variant="blue" asChild><Link to="/admin/staff/new">Nouveau Staff</Link></Button>
           </div>
         </div>
       </div>
 
       {/* Indicateur de mode fallback */}
       {data.fallbackMode && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+<Alert className="rounded-lg p-4 mb-6" variant="warning">
           <div className="flex items-center gap-2">
             <span className="text-yellow-600">⚠️</span>
             <span className="text-yellow-800 font-medium">Mode Développement</span>
@@ -216,7 +214,7 @@ export default function AdminStaff() {
               - Données de test affichées
             </span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Statistiques du staff */}
@@ -227,7 +225,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Total Staff</p>
               <p className="text-2xl font-bold text-gray-900">{data.stats.total}</p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <span className="text-blue-600 text-xl">👥</span>
             </div>
           </div>
@@ -239,7 +237,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Staff Actif</p>
               <p className="text-2xl font-bold text-green-600">{data.stats.active}</p>
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
+            <div className="p-3 bg-success/10 rounded-full">
               <span className="text-green-600 text-xl">✅</span>
             </div>
           </div>
@@ -251,7 +249,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Staff Inactif</p>
               <p className="text-2xl font-bold text-red-600">{data.stats.inactive}</p>
             </div>
-            <div className="p-3 bg-red-100 rounded-full">
+            <div className="p-3 bg-destructive/10 rounded-full">
               <span className="text-red-600 text-xl">⏸️</span>
             </div>
           </div>
@@ -263,7 +261,7 @@ export default function AdminStaff() {
               <p className="text-sm font-medium text-gray-600">Super Admins</p>
               <p className="text-2xl font-bold text-purple-600">{data.stats.byLevel['9'] || 0}</p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <span className="text-purple-600 text-xl">👑</span>
             </div>
           </div>
@@ -318,13 +316,8 @@ export default function AdminStaff() {
             </div>
             
             <div className="flex items-end">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? 'Recherche...' : 'Filtrer'}
-              </button>
+              <Button className="w-full  px-4 py-2 rounded-md  disabled:opacity-50" variant="blue" type="submit"
+                disabled={isLoading}>\n  {isLoading ? 'Recherche...' : 'Filtrer'}\n</Button>
             </div>
           </div>
         </Form>
@@ -378,7 +371,7 @@ export default function AdminStaff() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                             <span className="text-blue-600 font-bold text-sm">
                               {staff.cnfa_fname.charAt(0).toUpperCase()}
                               {staff.cnfa_name.charAt(0).toUpperCase()}
@@ -410,13 +403,7 @@ export default function AdminStaff() {
                       {staff.cnfa_tel}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        staff.cnfa_activ === '1' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {staff.cnfa_activ === '1' ? 'Actif' : 'Inactif'}
-                      </span>
+                      <Badge className="inline-flex px-2 py-1 text-xs font-semibold rounded-full " variant={staff.cnfa_activ === '1' ? 'success' : 'error'}>\n  {staff.cnfa_activ === '1' ? 'Actif' : 'Inactif'}\n</Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
@@ -508,7 +495,7 @@ export default function AdminStaff() {
                             to={`?page=${page}`}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               page === data.pagination.page
-                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                ? 'z-10 bg-primary/5 border-blue-500 text-blue-600'
                                 : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                             }`}
                           >

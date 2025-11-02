@@ -14,6 +14,7 @@ import { GuideService } from './services/guide.service';
 import { ConstructeurService } from './services/constructeur.service';
 import { GlossaryService } from './services/glossary.service';
 import { BlogCacheService } from './services/blog-cache.service';
+import { HtmlContentSanitizerService } from './services/html-content-sanitizer.service';
 
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
@@ -62,6 +63,7 @@ import { SearchModule } from '../search/search.module';
     // Services principaux
     BlogService,
     BlogCacheService,
+    HtmlContentSanitizerService, // Nettoyage contenu HTML
 
     // Services spécialisés par type de contenu
     AdviceService,

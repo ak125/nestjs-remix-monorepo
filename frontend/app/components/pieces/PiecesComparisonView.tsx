@@ -5,6 +5,7 @@
  * Affichage comparatif côte à côte (max 4 pièces)
  */
 
+import { Badge } from '@fafa/ui';
 import React from 'react';
 import { type PieceData } from '../../types/pieces-route.types';
 
@@ -69,7 +70,7 @@ export function PiecesComparisonView({ pieces, selectedPieces, onRemovePiece }: 
                   >
                     <button
                       onClick={() => onRemovePiece(piece.id)}
-                      className="absolute top-2 right-2 w-6 h-6 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center transition-colors"
+                      className="absolute top-2 right-2 w-6 h-6 bg-destructive/15 hover:bg-destructive/30 text-red-600 rounded-full flex items-center justify-center transition-colors"
                       title="Retirer de la comparaison"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +126,7 @@ export function PiecesComparisonView({ pieces, selectedPieces, onRemovePiece }: 
 
       {/* Légende prix */}
       {comparedPieces.length > 1 && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-blue-200">
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-900">
               <strong>Prix minimum:</strong> {Math.min(...comparedPieces.map(p => p.price)).toFixed(2)}€
@@ -171,9 +172,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
 
     case 'brand':
       return (
-        <span className="inline-block text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded">
-          {piece.brand}
-        </span>
+        <Badge variant="info">{piece.brand}</Badge>
       );
 
     case 'name':
@@ -202,9 +201,7 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
       if (!piece.quality) return <span className="text-gray-400">-</span>;
       return (
         <span className={`inline-block text-xs font-medium px-2 py-1 rounded ${
-          piece.quality === 'OES' 
-            ? 'bg-yellow-100 text-yellow-800' 
-            : 'bg-gray-100 text-gray-700'
+          piece.quality === 'OES' ? 'warning' : 'bg-gray-100 text-gray-700'
         }`}>
           {piece.quality === 'OES' ? '🏆 OES' : piece.quality}
         </span>
@@ -215,12 +212,11 @@ function renderComparisonCell(key: string, piece: PieceData, allPieces: PieceDat
       return (
         <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
           hasStock 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-red-100 text-red-800'
+            ? 'success' : 'error'
         }`}>
           {hasStock ? (
             <>
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span>
               En stock
             </>
           ) : (

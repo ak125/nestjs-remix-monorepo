@@ -31,7 +31,7 @@ export function ScrollToTop() {
       onClick={scrollToTop}
       className={`
         fixed bottom-8 right-8 z-50
-        bg-blue-600 hover:bg-blue-700 text-white
+        bg-primary hover:bg-primary/90 text-primary-foreground
         p-4 rounded-full shadow-2xl
         transition-all duration-300 transform
         ${isVisible 

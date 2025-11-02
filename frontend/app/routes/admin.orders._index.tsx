@@ -17,10 +17,12 @@
  * - UI Components: components/orders/* (10 composants)
  */
 
+import { Alert } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import { Button } from '~/components/ui/button';
 import { requireUser } from '../auth/unified.server';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
 import { OrderEditForm } from '../components/orders/OrderEditForm';
@@ -717,14 +719,10 @@ export default function OrdersRoute() {
         
         {/* Messages succès/erreur */}
         {actionData?.success && (
-          <div className="mt-4 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-            <p className="text-sm text-green-800">{actionData.message}</p>
-          </div>
+          <Alert intent="success"><p>{actionData.message}</p></Alert>
         )}
         {actionData?.error && (
-          <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <p className="text-sm text-red-800">{actionData.error}</p>
-          </div>
+          <Alert intent="error"><p>{actionData.error}</p></Alert>
         )}
         
         {/* Statistiques */}
@@ -836,20 +834,15 @@ export default function OrdersRoute() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={handleShipOrder}
-                disabled={!trackingNumber.trim() || isLoading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {isLoading ? 'Expédition...' : 'Confirmer l\'expédition'}
-              </button>
+              <Button className="flex-1 px-4 py-2  rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium" variant="blue" onClick={handleShipOrder}
+                disabled={!trackingNumber.trim() || isLoading}>\n  {isLoading ? 'Expédition...' : 'Confirmer l\'expédition'}\n</Button>
               <button
                 onClick={() => {
                   setShipModalOpen(false);
                   setTrackingNumber('');
                 }}
                 disabled={isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-muted/50 disabled:opacity-50 font-medium"
               >
                 Annuler
               </button>
@@ -882,20 +875,15 @@ export default function OrdersRoute() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={handleCancelOrder}
-                disabled={!cancelReason.trim() || isLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-              >
-                {isLoading ? 'Annulation...' : 'Confirmer l\'annulation'}
-              </button>
+              <Button className="flex-1 px-4 py-2  rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium" variant="red" onClick={handleCancelOrder}
+                disabled={!cancelReason.trim() || isLoading}>\n  {isLoading ? 'Annulation...' : 'Confirmer l\'annulation'}\n</Button>
               <button
                 onClick={() => {
                   setCancelModalOpen(false);
                   setCancelReason('');
                 }}
                 disabled={isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50 font-medium"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-muted/50 disabled:opacity-50 font-medium"
               >
                 Fermer
               </button>

@@ -20,6 +20,7 @@ import { json, type LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { ArrowLeft, Car, Search } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -265,9 +266,7 @@ export default function CommercialVehiclesBrands() {
 
         {/* Message d'erreur */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            <strong>Erreur :</strong> {error}
-          </div>
+          <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
         )}
 
         {/* Grille des marques */}

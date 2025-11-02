@@ -179,11 +179,11 @@ export default function SystemBreadcrumb({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'border-l-4 border-success bg-success/10';
       case 'warning':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'border-l-4 border-warning bg-warning/10';
       case 'error':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'border-l-4 border-destructive bg-destructive/10';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -241,8 +241,7 @@ export default function SystemBreadcrumb({
                           }}
                           className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                             item.isActive
-                              ? 'text-blue-700 bg-blue-50'
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                              ? 'text-blue-700 bg-primary/10' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                           }`}
                         >
                           {ItemIcon && <ItemIcon className="h-4 w-4" />}
@@ -332,8 +331,8 @@ export default function SystemBreadcrumb({
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className={`w-2 h-2 rounded-full ${
-                  environment === 'production' ? 'bg-green-500' :
-                  environment === 'staging' ? 'bg-yellow-500' : 'bg-gray-500'
+                  environment === 'production' ? 'bg-success' :
+                  environment === 'staging' ? 'bg-warning' : 'bg-gray-500'
                 }`} />
                 <span className="capitalize">
                   {ENVIRONMENTS.find(env => env.value === environment)?.label || environment}
@@ -353,7 +352,7 @@ export default function SystemBreadcrumb({
                           setIsEnvironmentDropdownOpen(false);
                         }}
                         className={`w-full flex items-center space-x-3 px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
-                          environment === env.value ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          environment === env.value ? 'bg-primary/10 text-primary' : 'text-gray-700'
                         }`}
                       >
                         <div className={`w-2 h-2 rounded-full bg-${env.color}-500`} />

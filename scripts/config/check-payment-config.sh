@@ -1,0 +1,173 @@
+#!/bin/bash
+# 🔐 Script de validation de la configuration de paiement
+# Usage: ./check-payment-config.sh
+
+set -e
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔐 VÉRIFICATION DE LA CONFIGURATION PAIEMENT"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Compteurs
+ERRORS=0
+WARNINGS=0
+
+# Fonction pour afficher les erreurs
+error() {
+  echo -e "${RED}❌ ERREUR:${NC} $1"
+  ((ERRORS++))
+}
+
+# Fonction pour afficher les warnings
+warning() {
+  echo -e "${YELLOW}⚠️  WARNING:${NC} $1"
+  ((WARNINGS++))
+}
+
+# Fonction pour afficher les succès
+success() {
+  echo -e "${GREEN}✅${NC} $1"
+}
+
+# 1. Vérifier que .env existe
+echo "📁 Vérification des fichiers..."
+if [ ! -f "backend/.env" ]; then
+  error "Fichier backend/.env introuvable"
+  echo "   💡 Solution: cp backend/.env.example backend/.env"
+else
+  success "Fichier backend/.env trouvé"
+fi
+
+# 2. Vérifier que .env n'est pas versionné
+if git check-ignore backend/.env >/dev/null 2>&1; then
+  success "Fichier .env correctement ignoré par git"
+else
+  error "Fichier .env n'est PAS dans .gitignore !"
+  echo "   ⚠️  RISQUE DE SÉCURITÉ : Vérifiez votre .gitignore"
+fi
+
+# 3. Charger les variables
+if [ -f "backend/.env" ]; then
+  set -a
+  source backend/.env
+  set +a
+fi
+
+echo ""
+echo "🔑 Vérification des variables d'environnement..."
+
+# 4. Vérifier CYBERPLUS_SITE_ID
+if [ -z "$CYBERPLUS_SITE_ID" ]; then
+  error "CYBERPLUS_SITE_ID non défini"
+else
+  # Masquer partiellement pour la sécurité
+  MASKED_ID="${CYBERPLUS_SITE_ID:0:4}****${CYBERPLUS_SITE_ID: -4}"
+  success "CYBERPLUS_SITE_ID: $MASKED_ID"
+fi
+
+# 5. Vérifier CYBERPLUS_CERTIFICAT
+if [ -z "$CYBERPLUS_CERTIFICAT" ]; then
+  error "CYBERPLUS_CERTIFICAT non défini"
+else
+  # Ne jamais afficher le certificat, même masqué
+  success "CYBERPLUS_CERTIFICAT: ********** (défini)"
+  
+  # Vérifier la longueur
+  CERT_LENGTH=${#CYBERPLUS_CERTIFICAT}
+  if [ $CERT_LENGTH -lt 16 ]; then
+    warning "Certificat très court ($CERT_LENGTH caractères) - Vérifiez sa validité"
+  fi
+fi
+
+# 6. Vérifier CYBERPLUS_MODE
+if [ -z "$CYBERPLUS_MODE" ]; then
+  error "CYBERPLUS_MODE non défini"
+elif [ "$CYBERPLUS_MODE" != "TEST" ] && [ "$CYBERPLUS_MODE" != "PRODUCTION" ]; then
+  error "CYBERPLUS_MODE invalide: $CYBERPLUS_MODE (doit être TEST ou PRODUCTION)"
+else
+  if [ "$CYBERPLUS_MODE" = "PRODUCTION" ]; then
+    echo -e "${YELLOW}⚠️  Mode PRODUCTION activé${NC}"
+    if [ "$NODE_ENV" != "production" ]; then
+      warning "CYBERPLUS_MODE=PRODUCTION mais NODE_ENV=$NODE_ENV"
+    fi
+  else
+    success "CYBERPLUS_MODE: $CYBERPLUS_MODE"
+  fi
+fi
+
+# 7. Vérifier CYBERPLUS_PAYMENT_URL
+if [ -z "$CYBERPLUS_PAYMENT_URL" ]; then
+  warning "CYBERPLUS_PAYMENT_URL non défini (valeur par défaut sera utilisée)"
+else
+  success "CYBERPLUS_PAYMENT_URL: $CYBERPLUS_PAYMENT_URL"
+  
+  # Vérifier HTTPS en production
+  if [ "$CYBERPLUS_MODE" = "PRODUCTION" ] && [[ ! "$CYBERPLUS_PAYMENT_URL" =~ ^https:// ]]; then
+    error "CYBERPLUS_PAYMENT_URL doit utiliser HTTPS en production"
+  fi
+fi
+
+# 8. Vérifier APP_URL
+if [ -z "$APP_URL" ]; then
+  error "APP_URL non défini"
+else
+  success "APP_URL: $APP_URL"
+  
+  # Vérifier HTTPS en production
+  if [ "$CYBERPLUS_MODE" = "PRODUCTION" ] && [[ ! "$APP_URL" =~ ^https:// ]]; then
+    warning "APP_URL devrait utiliser HTTPS en production"
+  fi
+fi
+
+echo ""
+echo "🔍 Vérification de la configuration TypeScript..."
+
+# 9. Vérifier que le fichier de config existe
+if [ ! -f "backend/src/config/payment.config.ts" ]; then
+  error "Fichier payment.config.ts introuvable"
+else
+  success "Fichier payment.config.ts trouvé"
+fi
+
+# 10. Vérifier l'import dans le module
+if grep -q "paymentConfig" backend/src/modules/payments/payments.module.ts; then
+  success "Configuration importée dans PaymentsModule"
+else
+  warning "Configuration pas importée dans PaymentsModule"
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 RÉSULTAT"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ $ERRORS -eq 0 ] && [ $WARNINGS -eq 0 ]; then
+  echo -e "${GREEN}✅ Configuration parfaite !${NC}"
+  echo ""
+  echo "Vous pouvez démarrer l'application :"
+  echo "  cd backend && npm run dev"
+  exit 0
+elif [ $ERRORS -eq 0 ]; then
+  echo -e "${YELLOW}⚠️  Configuration OK avec $WARNINGS warning(s)${NC}"
+  echo ""
+  echo "Vous pouvez démarrer l'application :"
+  echo "  cd backend && npm run dev"
+  exit 0
+else
+  echo -e "${RED}❌ $ERRORS erreur(s) et $WARNINGS warning(s)${NC}"
+  echo ""
+  echo "Corrigez les erreurs avant de démarrer l'application."
+  echo ""
+  echo "💡 Actions recommandées :"
+  echo "  1. Copier le template : cp backend/.env.example backend/.env"
+  echo "  2. Remplir les variables CYBERPLUS_* dans backend/.env"
+  echo "  3. Relancer ce script : ./check-payment-config.sh"
+  exit 1
+fi

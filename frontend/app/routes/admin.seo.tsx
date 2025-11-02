@@ -1,10 +1,10 @@
 // app/routes/admin.seo.tsx
+import { Alert, Badge } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { requireUser } from "../auth/unified.server";
-import { Alert, AlertDescription } from "../components/ui/alert";
-import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -20,37 +20,53 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const cookieHeader = request.headers.get('Cookie') || '';
   
   try {
-    // ✅ Utiliser les APIs existantes complètes (714K+ données, services 518 lignes)
-    const [analyticsRes, configRes, pagesRes] = await Promise.all([
+    // ✅ Charger les KPIs critiques et analytics
+    const [analyticsRes, kpisRes, pagesRes] = await Promise.all([
       fetch(`${backendUrl}/api/seo/analytics`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
+      }).catch(err => {
+        console.warn('[SEO Admin] Analytics API error:', err);
+        return null;
       }),
-      fetch(`${backendUrl}/api/seo/config`, {
+      fetch(`${backendUrl}/api/seo/kpis/dashboard`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
-      }), 
+      }).catch(err => {
+        console.warn('[SEO Admin] KPIs API error:', err);
+        return null;
+      }),
       fetch(`${backendUrl}/api/seo/pages-without-seo?limit=50`, {
         headers: {
           'Cookie': cookieHeader,
           'Content-Type': 'application/json'
         }
+      }).catch(err => {
+        console.warn('[SEO Admin] Pages API error:', err);
+        return null;
       })
     ]);
     
-    const [analytics, config, pagesWithoutSeo] = await Promise.all([
-      analyticsRes.json(),
-      configRes.json(), 
-      pagesRes.json()
-    ]);
+    // Parser les réponses avec gestion d'erreur
+    const analytics = analyticsRes && analyticsRes.ok 
+      ? await analyticsRes.json().catch(() => null)
+      : null;
+      
+    const kpis = kpisRes && kpisRes.ok
+      ? await kpisRes.json().catch(() => null)
+      : null;
+      
+    const pagesWithoutSeo = pagesRes && pagesRes.ok
+      ? await pagesRes.json().catch(() => null)
+      : null;
     
     return json({ 
       analytics,
-      config, 
+      kpis, 
       pagesWithoutSeo,
       success: true,
       error: null
@@ -59,7 +75,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     console.error('[SEO Admin] Erreur:', error);
     return json({ 
       analytics: null,
-      config: null,
+      kpis: null,
       pagesWithoutSeo: null,
       error: error instanceof Error ? error.message : 'Erreur de connexion au backend',
       success: false 
@@ -148,7 +164,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function SeoAdmin() {
-  const { analytics, config, pagesWithoutSeo, error } = useLoaderData<typeof loader>();
+  const { analytics, kpis, pagesWithoutSeo, error } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [selectedUrl, setSelectedUrl] = useState("");
@@ -177,18 +193,164 @@ export default function SeoAdmin() {
 
       {/* Messages de feedback */}
       {actionData?.success && 'message' in actionData && (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-800">
-            ✅ {actionData.message}
-          </AlertDescription>
+        <Alert 
+          intent="success"
+          variant="solid"
+          icon={<CheckCircle className="h-4 w-4" />}
+        >
+          {actionData.message}
         </Alert>
       )}
       {((actionData && 'error' in actionData && actionData.error) || error) && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-800">
-            ❌ {(actionData && 'error' in actionData && actionData.error) || error}
-          </AlertDescription>
+        <Alert 
+          intent="error"
+          variant="solid"
+          icon={<XCircle className="h-4 w-4" />}
+        >
+          {(actionData && 'error' in actionData && actionData.error) || error}
         </Alert>
+      )}
+
+      {/* 📊 KPIs CRITIQUES - Section prioritaire */}
+      {kpis?.data && (
+        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                📊 KPIs Critiques SEO
+                <Badge 
+                  variant={
+                    kpis.data.overallHealth?.grade === 'A' ? 'success' :
+                    kpis.data.overallHealth?.grade === 'B' ? 'default' :
+                    kpis.data.overallHealth?.grade === 'C' ? 'warning' :
+                    'destructive'
+                  }
+                  className="text-lg px-3 py-1"
+                >
+                  Grade {kpis.data.overallHealth?.grade || 'N/A'} - Score {kpis.data.overallHealth?.score || 0}/100
+                </Badge>
+              </CardTitle>
+            </div>
+            <CardDescription>
+              {kpis.data.overallHealth?.passedKPIs || 0}/{kpis.data.overallHealth?.totalKPIs || 5} KPIs atteignent les seuils minimum requis
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              
+              {/* KPI 1: Sitemap Discovery */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🗺️ Sitemap → Découvertes
+                    <Badge 
+                      variant={kpis.data.sitemapDiscovery.status === 'success' ? 'success' : kpis.data.sitemapDiscovery.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapDiscovery.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.sitemapDiscovery.discoveredViaSitemap?.toLocaleString() || 0} URLs sur {kpis.data.sitemapDiscovery.totalUrls?.toLocaleString() || 0} découvertes via sitemap
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapDiscovery.percentage || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: ≥{kpis.data.sitemapDiscovery.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 2: Indexation */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    📈 Sitemap → Indexées
+                    <Badge 
+                      variant={kpis.data.sitemapIndexation.status === 'success' ? 'success' : kpis.data.sitemapIndexation.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapIndexation.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.sitemapIndexation.overall?.indexed?.toLocaleString() || 0} indexées / {kpis.data.sitemapIndexation.overall?.listed?.toLocaleString() || 0} listées
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapIndexation.overall?.percentage?.toFixed(1) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: ≥{kpis.data.sitemapIndexation.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 3: TTL Crawl */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    ⏱️ TTL Crawl
+                    <Badge 
+                      variant={kpis.data.crawlTTL.status === 'success' ? 'success' : kpis.data.crawlTTL.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.crawlTTL.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Délai median - P75: {kpis.data.crawlTTL.p75}h, P95: {kpis.data.crawlTTL.p95}h
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.crawlTTL.medianTTL}h</div>
+                  <div className="text-xs text-gray-500">Cible: ≤{kpis.data.crawlTTL.target}h</div>
+                </div>
+              </div>
+
+              {/* KPI 4: Erreurs Sitemap */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🚨 Erreurs Sitemap
+                    <Badge 
+                      variant={kpis.data.sitemapErrors.status === 'success' ? 'success' : kpis.data.sitemapErrors.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.sitemapErrors.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    4xx: {kpis.data.sitemapErrors.errors4xx}, 5xx: {kpis.data.sitemapErrors.errors5xx} sur {kpis.data.sitemapErrors.totalChecked?.toLocaleString() || 0}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.sitemapErrors.errorRate?.toFixed(2) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: &lt;{kpis.data.sitemapErrors.target}%</div>
+                </div>
+              </div>
+
+              {/* KPI 5: Hreflang Health */}
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    🌍 Hreflang Health
+                    <Badge 
+                      variant={kpis.data.hreflangHealth.status === 'success' ? 'success' : kpis.data.hreflangHealth.status === 'warning' ? 'warning' : 'destructive'}
+                      size="sm"
+                    >
+                      {kpis.data.hreflangHealth.status}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {kpis.data.hreflangHealth.validPairs?.toLocaleString() || 0} paires valides / {kpis.data.hreflangHealth.totalPairs?.toLocaleString() || 0} total
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold">{kpis.data.hreflangHealth.percentage?.toFixed(1) || 0}%</div>
+                  <div className="text-xs text-gray-500">Cible: &gt;{kpis.data.hreflangHealth.target}%</div>
+                </div>
+              </div>
+
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Dashboard Analytics Amélioré - Interface moderne avec graphiques */}
@@ -205,13 +367,11 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-blue-700">{analytics.totalPages?.toLocaleString()}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                    Sitemap: 714K+
-                  </div>
+                  <Alert intent="info">Sitemap: 714K+</Alert>
                   <div className="text-xs text-green-600">↗️ Active</div>
                 </div>
-                <div className="w-full bg-blue-200 rounded-full h-1 mt-2">
-                  <div className="bg-blue-500 h-1 rounded-full" style={{ width: '100%' }}></div>
+                <div className="w-full bg-primary/30 rounded-full h-1 mt-2">
+                  <div className="bg-primary h-1 rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -225,13 +385,13 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-green-700">{analytics.pagesWithSeo?.toLocaleString()}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
+                  <Badge variant="success" size="sm">
                     Métadonnées OK
-                  </div>
+                  </Badge>
                   <div className="text-xs text-green-600">📈 +2.1%</div>
                 </div>
-                <div className="w-full bg-green-200 rounded-full h-1 mt-2">
-                  <div className="bg-green-500 h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
+                <div className="w-full bg-success/30 rounded-full h-1 mt-2">
+                  <div className="bg-success h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -265,14 +425,17 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="text-3xl font-bold text-purple-700">{analytics.completionRate}%</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className={`text-xs px-2 py-1 rounded-full ${
-                    analytics.completionRate >= 95 ? 'text-green-600 bg-green-100' :
-                    analytics.completionRate >= 80 ? 'text-yellow-600 bg-yellow-100' :
-                    'text-red-600 bg-red-100'
-                  }`}>
+                  <Badge 
+                    variant={
+                      analytics.completionRate >= 95 ? 'success' :
+                      analytics.completionRate >= 80 ? 'warning' :
+                      'error'
+                    }
+                    size="sm"
+                  >
                     {analytics.completionRate >= 95 ? '🚀 Excellent' :
                      analytics.completionRate >= 80 ? '⚡ Bon' : '🔧 À améliorer'}
-                  </div>
+                  </Badge>
                 </div>
                 <div className="w-full bg-purple-200 rounded-full h-1 mt-2">
                   <div className="bg-gradient-to-r from-purple-500 to-violet-500 h-1 rounded-full" style={{ width: `${analytics.completionRate}%` }}></div>
@@ -396,9 +559,7 @@ export default function SeoAdmin() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      🌐
-                    </div>
+                    <Alert intent="info">🌐</Alert>
                     <div>
                       <div className="text-sm font-medium text-blue-700">Pages Indexées</div>
                       <div className="text-2xl font-bold text-blue-900">{analytics?.totalPages?.toLocaleString() || '714,336'}</div>
@@ -408,9 +569,7 @@ export default function SeoAdmin() {
                 
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      ✅
-                    </div>
+                    <Alert intent="success">✅</Alert>
                     <div>
                       <div className="text-sm font-medium text-green-700">Métadonnées Optimisées</div>
                       <div className="text-2xl font-bold text-green-900">{analytics?.pagesWithSeo?.toLocaleString() || '680,000'}</div>
@@ -420,7 +579,7 @@ export default function SeoAdmin() {
                 
                 <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
+                    <div className="p-2 bg-muted rounded-lg">
                       ⚠️
                     </div>
                     <div>
@@ -446,7 +605,7 @@ export default function SeoAdmin() {
                         <span className="font-bold">650K+</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '91%' }}></div>
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '91%' }}></div>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -456,7 +615,7 @@ export default function SeoAdmin() {
                         <span className="font-bold">117</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                        <div className="bg-success h-2 rounded-full" style={{ width: '100%' }}></div>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -486,9 +645,9 @@ export default function SeoAdmin() {
                         <span className="font-bold text-teal-700">+2,847 pages</span>
                       </div>
                       
-                      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-info rounded-full"></div>
                           <span className="text-sm">Amélioration du taux</span>
                         </div>
                         <span className="font-bold text-blue-700">+1.2% ce mois</span>
@@ -496,7 +655,7 @@ export default function SeoAdmin() {
                       
                       <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
                           <span className="text-sm">Pages critiques résolues</span>
                         </div>
                         <span className="font-bold text-purple-700">1,234</span>
@@ -517,15 +676,15 @@ export default function SeoAdmin() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-destructive rounded-full"></div>
                         <span>🔥 Priorité haute: Optimiser {analytics?.pagesWithoutSeo?.toLocaleString() || '34K'} pages produits</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-orange-600 rounded-full"></div>
                         <span>⚡ Améliorer les descriptions trop courtes (12K pages)</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-info rounded-full"></div>
                         <span>📈 Ajouter des mots-clés longue traîne</span>
                       </div>
                     </div>
@@ -580,9 +739,7 @@ export default function SeoAdmin() {
                           🌐
                         </span>
                       </div>
-                      <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                        💡 Tip: Utilisez des URLs descriptives pour un meilleur référencement
-                      </div>
+                      <Alert intent="info">💡 Tip: Utilisez des URLs descriptives pour un meilleur référencement</Alert>
                     </div>
                     
                     <div className="space-y-2">
@@ -642,9 +799,7 @@ export default function SeoAdmin() {
                         placeholder="plaquettes freinage, freins avant, pièces auto, plaquettes voiture, frein automobile"
                         maxLength={160}
                       />
-                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                        ✨ Suggestion: Utilisez des mots-clés longue traîne pour un meilleur ciblage
-                      </div>
+                      <Alert intent="success">✨ Suggestion: Utilisez des mots-clés longue traîne pour un meilleur ciblage</Alert>
                     </div>
 
                     <div className="pt-4 border-t">
@@ -680,7 +835,7 @@ export default function SeoAdmin() {
               <CardContent>
                 <div className="bg-white p-4 rounded-lg border-2 border-blue-200 space-y-3">
                   <div className="flex items-center gap-2 text-xs text-green-600">
-                    <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 bg-success/10 rounded-full flex items-center justify-center">
                       🌐
                     </div>
                     automecanik.com{selectedUrl || '/votre-page'}
@@ -707,18 +862,18 @@ export default function SeoAdmin() {
                 <div className="mt-4 space-y-3">
                   <div className="text-sm font-semibold text-blue-800">💡 Conseils d'Optimisation:</div>
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+<Alert className="flex items-center gap-2 p-2  rounded" variant="success">
                       <span className="text-green-600">✅</span>
                       <span>Incluez le mot-clé principal au début du titre</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border border-blue-200">
+                    </Alert>
+<Alert className="flex items-center gap-2 p-2  rounded" variant="info">
                       <span className="text-blue-600">💡</span>
                       <span>Rédigez une description qui incite au clic</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-purple-50 rounded border border-purple-200">
+                    </Alert>
+<Alert className="flex items-center gap-2 p-2  rounded" variant="default">
                       <span className="text-purple-600">🎯</span>
                       <span>Utilisez des émojis avec parcimonie pour attirer l'œil</span>
-                    </div>
+                    </Alert>
                   </div>
                 </div>
               </CardContent>
@@ -967,34 +1122,6 @@ export default function SeoAdmin() {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Configuration SEO en bas de page */}
-      {config && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuration SEO Active</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <strong>Suffixe titre par défaut:</strong>
-                <br />
-                {config.default_title_suffix || " | Automecanik"}
-              </div>
-              <div>
-                <strong>Description par défaut:</strong>
-                <br />
-                {config.default_description || "Pièces automobiles et accessoires"}
-              </div>
-              <div>
-                <strong>Mots-clés par défaut:</strong>
-                <br />
-                {config.default_keywords || "auto, pièces, automobile, mécanique"}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

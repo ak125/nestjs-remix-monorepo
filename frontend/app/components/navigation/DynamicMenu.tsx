@@ -6,6 +6,7 @@
 import { Link, useLocation } from '@remix-run/react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
+import { Alert } from '~/components/ui/alert';
 import { type MenuItem, type NavigationResponse, type UserPreferences } from '../../types/navigation';
 
 interface DynamicMenuProps {
@@ -124,7 +125,7 @@ export function DynamicMenu({
           className={`
             menu-item flex items-center justify-between p-3 rounded-lg
             hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
-            ${isActive ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 border-l-4 border-blue-500' : ''}
+            ${isActive ? 'bg-primary/10 dark:bg-primary/98/20 text-primary border-l-4 border-blue-500' : ''}
           `}
         >
           <div className="flex items-center flex-1">
@@ -225,12 +226,12 @@ export function DynamicMenu({
 
   const getBadgeClass = (color: string) => {
     const colors: Record<string, string> = {
-      red: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300',
-      orange: 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300',
-      yellow: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
-      blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300',
-      green: 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300',
-      purple: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300',
+      red: 'error',
+      orange: 'orange',
+      yellow: 'warning',
+      blue: 'info',
+      green: 'success',
+      purple: 'purple',
     };
     return colors[color] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   };
@@ -255,7 +256,7 @@ export function DynamicMenu({
   if (error) {
     return (
       <div className={`p-4 ${className}`}>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="error">
           <div className="flex items-center">
             <span className="text-red-500 mr-2">⚠️</span>
             <p className="text-red-800 font-medium">Erreur de chargement</p>
@@ -263,11 +264,11 @@ export function DynamicMenu({
           <p className="text-red-600 text-sm mt-1">{error}</p>
           <button
             onClick={loadMenu}
-            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-sm transition-colors"
+            className="mt-2 px-3 py-1 bg-destructive/90 hover:bg-destructive text-destructive-foreground rounded text-sm transition-colors"
           >
             Réessayer
           </button>
-        </div>
+        </Alert>
       </div>
     );
   }

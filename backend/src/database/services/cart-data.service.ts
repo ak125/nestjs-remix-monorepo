@@ -679,4 +679,129 @@ export class CartDataService extends SupabaseBaseService {
       throw error;
     }
   }
+
+  // ============================================================
+  // 🔄 FUSION DE PANIER (CART MERGE)
+  // ============================================================
+
+  /**
+   * 🔄 Fusionner deux paniers lors de l'authentification
+   *
+   * Cas d'usage: L'utilisateur a ajouté des articles en navigation anonyme,
+   * puis se connecte. On doit transférer son panier anonyme vers sa session authentifiée.
+   *
+   * Stratégie de fusion:
+   * - Si un produit existe dans les deux paniers, on additionne les quantités
+   * - On préserve le prix le plus récent (celui du panier source/anonyme)
+   * - On transfère également les codes promo et méthodes de livraison
+   * - On nettoie le panier source après la fusion
+   *
+   * @param sourceSessionId - Session anonyme (source des articles à transférer)
+   * @param targetSessionId - Session authentifiée (destination)
+   * @returns Nombre d'articles fusionnés
+   */
+  async mergeCart(
+    sourceSessionId: string,
+    targetSessionId: string,
+  ): Promise<number> {
+    try {
+      this.logger.log(
+        `🔄 Fusion de panier: ${sourceSessionId} → ${targetSessionId}`,
+      );
+
+      // 1. Récupérer les deux paniers
+      const sourceItems = await this.getCartFromRedis(sourceSessionId);
+      const targetItems = await this.getCartFromRedis(targetSessionId);
+
+      if (sourceItems.length === 0) {
+        this.logger.log(`ℹ️ Panier source vide, aucune fusion nécessaire`);
+        return 0;
+      }
+
+      this.logger.log(
+        `📦 Fusion: ${sourceItems.length} items source + ${targetItems.length} items target`,
+      );
+
+      // 2. Créer une map des produits existants dans le panier cible
+      const targetMap = new Map<string, CartItem>();
+      targetItems.forEach((item) => {
+        targetMap.set(item.product_id, item);
+      });
+
+      // 3. Fusionner les items
+      let mergedCount = 0;
+      const mergedItems = [...targetItems];
+
+      for (const sourceItem of sourceItems) {
+        const existingItem = targetMap.get(sourceItem.product_id);
+
+        if (existingItem) {
+          // Produit existe déjà: additionner les quantités
+          existingItem.quantity += sourceItem.quantity;
+          existingItem.updated_at = new Date().toISOString();
+          // Garder le prix le plus récent (celui du panier source)
+          existingItem.price = sourceItem.price;
+          this.logger.log(
+            `➕ Fusion produit ${sourceItem.product_name}: ${existingItem.quantity} total`,
+          );
+        } else {
+          // Nouveau produit: l'ajouter au panier cible
+          const newItem = {
+            ...sourceItem,
+            id: `${targetSessionId}-${sourceItem.product_id}-${Date.now()}`,
+            user_id: targetSessionId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          mergedItems.push(newItem);
+          targetMap.set(sourceItem.product_id, newItem);
+          this.logger.log(
+            `✨ Ajout nouveau produit: ${sourceItem.product_name}`,
+          );
+        }
+        mergedCount++;
+      }
+
+      // 4. Sauvegarder le panier fusionné
+      await this.saveCartToRedis(targetSessionId, mergedItems);
+
+      // 5. Transférer le code promo si le panier cible n'en a pas
+      const sourcePromo = await this.getAppliedPromo(sourceSessionId);
+      const targetPromo = await this.getAppliedPromo(targetSessionId);
+
+      if (sourcePromo && !targetPromo) {
+        await this.applyPromoCode(targetSessionId, sourcePromo);
+        this.logger.log(`🎫 Code promo transféré: ${sourcePromo.code}`);
+      }
+
+      // 6. Transférer la méthode de livraison si le panier cible n'en a pas
+      const sourceShipping = await this.getAppliedShipping(sourceSessionId);
+      const targetShipping = await this.getAppliedShipping(targetSessionId);
+
+      if (sourceShipping && !targetShipping) {
+        await this.applyShipping(targetSessionId, sourceShipping);
+        this.logger.log(
+          `🚚 Méthode livraison transférée: ${sourceShipping.method_name}`,
+        );
+      }
+
+      // 7. Nettoyer le panier source (optionnel mais recommandé)
+      await this.clearUserCart(sourceSessionId);
+      this.logger.log(`🧹 Panier source nettoyé: ${sourceSessionId}`);
+
+      this.logger.log(
+        `✅ Fusion terminée: ${mergedCount} articles fusionnés, ${mergedItems.length} total dans le panier`,
+      );
+
+      return mergedCount;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur fusion paniers ${sourceSessionId} → ${targetSessionId}:`,
+        error,
+      );
+      // Ne pas throw l'erreur pour ne pas bloquer le login
+      // L'utilisateur pourra toujours réajouter ses articles
+      return 0;
+    }
+  }
 }

@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 // app/routes/admin.system-overview.tsx
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
@@ -16,6 +17,7 @@ import {
   MonitorSpeaker,
   Award
 } from 'lucide-react';
+import { Badge } from '~/components/ui/badge';
 
 // Simuler les données système (en production, venir du backend)
 interface SystemOverview {
@@ -120,9 +122,7 @@ export default function SystemOverview() {
               <Shield className="h-8 w-8 text-green-600" />
               <h2 className="text-lg font-semibold text-gray-900">Authentification</h2>
             </div>
-            <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
-              {systemData.auth.status.toUpperCase()}
-            </div>
+            <Alert intent="success">{systemData.auth.status.toUpperCase()}</Alert>
           </div>
           
           <div className="space-y-3">
@@ -152,9 +152,7 @@ export default function SystemOverview() {
               <Users className="h-8 w-8 text-blue-600" />
               <h2 className="text-lg font-semibold text-gray-900">Permissions</h2>
             </div>
-            <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
-              OPTIMISÉ
-            </div>
+            <Alert intent="info">OPTIMISÉ</Alert>
           </div>
           
           <div className="space-y-3">
@@ -184,9 +182,7 @@ export default function SystemOverview() {
               <Activity className="h-8 w-8 text-purple-600" />
               <h2 className="text-lg font-semibold text-gray-900">Performance</h2>
             </div>
-            <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
-              EXCELLENT
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="purple">EXCELLENT</Badge>
           </div>
           
           <div className="space-y-3">
@@ -216,9 +212,7 @@ export default function SystemOverview() {
               <Settings className="h-8 w-8 text-orange-600" />
               <h2 className="text-lg font-semibold text-gray-900">Routes</h2>
             </div>
-            <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm font-medium">
-              {systemData.routes.coverage}% COVERAGE
-            </div>
+            <Badge className="px-2 py-1 rounded text-sm font-medium" variant="orange">{systemData.routes.coverage}% COVERAGE</Badge>
           </div>
           
           <div className="space-y-3">
@@ -302,7 +296,7 @@ export default function SystemOverview() {
           </h2>
           
           <div className="space-y-4">
-            <div className="bg-green-50 p-4 rounded-lg">
+            <div className="bg-success/5 p-4 rounded-lg">
               <h3 className="font-medium text-green-900 mb-2">✅ Réussites</h3>
               <ul className="text-sm text-green-700 space-y-1">
                 <li>• Système NestJS existant identifié comme optimal</li>
@@ -312,7 +306,7 @@ export default function SystemOverview() {
               </ul>
             </div>
             
-            <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="bg-primary/5 p-4 rounded-lg">
               <h3 className="font-medium text-blue-900 mb-2">🚀 Optimisations</h3>
               <ul className="text-sm text-blue-700 space-y-1">
                 <li>• Service Remix adaptatif créé</li>
@@ -343,41 +337,41 @@ export default function SystemOverview() {
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+<Alert className="p-4 rounded-lg" variant="success">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-green-900">Module Access</span>
-              <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">OPTIMAL</div>
+              <Alert intent="success">OPTIMAL</Alert>
             </div>
             <p className="text-sm text-green-700">POST /auth/module-access</p>
             <p className="text-xs text-green-600 mt-1">Réponse: 12ms moyenne</p>
-          </div>
+          </Alert>
           
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+<Alert className="p-4 rounded-lg" variant="info">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-blue-900">Bulk Check</span>
-              <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">EFFICIENT</div>
+              <Alert intent="info">EFFICIENT</Alert>
             </div>
             <p className="text-sm text-blue-700">POST /auth/bulk-module-access</p>
             <p className="text-xs text-blue-600 mt-1">90% moins de requêtes</p>
-          </div>
+          </Alert>
           
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+<Alert className="p-4 rounded-lg" variant="default">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-purple-900">User Permissions</span>
-              <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">CACHED</div>
+              <Badge className="px-2 py-1 rounded text-xs" variant="purple">CACHED</Badge>
             </div>
             <p className="text-sm text-purple-700">GET /auth/user-permissions/:id</p>
             <p className="text-xs text-purple-600 mt-1">Cache hit: 94.7%</p>
-          </div>
+          </Alert>
           
-          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+<Alert className="p-4 rounded-lg" variant="warning">
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-orange-900">Access Log</span>
-              <div className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">AUTO</div>
+              <Badge className="px-2 py-1 rounded text-xs" variant="orange">AUTO</Badge>
             </div>
             <p className="text-sm text-orange-700">POST /auth/log-access</p>
             <p className="text-xs text-orange-600 mt-1">Logging transparent</p>
-          </div>
+          </Alert>
         </div>
       </div>
 

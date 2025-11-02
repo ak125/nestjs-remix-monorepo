@@ -17,6 +17,8 @@ import {
   Zap
 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE
@@ -150,7 +152,7 @@ export function ProductCatalog({
 
           {/* Statistiques rapides */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="bg-primary/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Package className="h-8 w-8 text-blue-600 mr-3" />
                 <div>
@@ -160,7 +162,7 @@ export function ProductCatalog({
               </div>
             </div>
             
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-success/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Filter className="h-8 w-8 text-green-600 mr-3" />
                 <div>
@@ -170,7 +172,7 @@ export function ProductCatalog({
               </div>
             </div>
             
-            <div className="bg-yellow-50 rounded-lg p-4">
+            <div className="bg-warning/5 rounded-lg p-4">
               <div className="flex items-center">
                 <Star className="h-8 w-8 text-yellow-600 mr-3" />
                 <div>
@@ -263,7 +265,7 @@ export function ProductCatalog({
                     onClick={() => handleCategoryClick(category.id)}
                     className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                       isSelected 
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        ? 'border-primary bg-primary/10 text-blue-700'
                         : 'border-gray-200 hover:border-gray-300 text-gray-700'
                     }`}
                   >
@@ -299,7 +301,7 @@ export function ProductCatalog({
                       onClick={() => onProductClick?.(product)}
                       className={`border rounded-lg p-4 hover:shadow-lg transition-all cursor-pointer ${
                         product.piece_top 
-                          ? 'border-yellow-300 bg-yellow-50' 
+                          ? 'border-warning bg-warning/10' 
                           : 'border-gray-200 hover:border-blue-300'
                       }`}
                     >
@@ -326,9 +328,7 @@ export function ProductCatalog({
                               : product.piece_name}
                           </h3>
                           {product.piece_top && (
-                            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
-                              TOP
-                            </span>
+                            <Badge variant="warning">TOP</Badge>
                           )}
                         </div>
                         
@@ -343,18 +343,12 @@ export function ProductCatalog({
                         )}
                         
                         <div className="flex items-center justify-between">
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            product.piece_activ 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {product.piece_activ ? 'Disponible' : 'Indisponible'}
-                          </span>
+                          <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Disponible' : 'Indisponible'}\n</Badge>
                           
-                          <button className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 transition-colors">
+                          <Button className="px-3 py-1 rounded-md text-xs" variant="blue">
                             <Eye className="h-3 w-3 inline mr-1" />
                             Voir
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -368,7 +362,7 @@ export function ProductCatalog({
                       key={product.piece_id}
                       onClick={() => onProductClick?.(product)}
                       className={`py-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                        product.piece_top ? 'bg-yellow-50' : ''
+                        product.piece_top ? 'bg-warning/5' : ''
                       }`}
                     >
                       <div className="flex items-center space-x-4">
@@ -393,9 +387,7 @@ export function ProductCatalog({
                               {product.piece_name}
                             </h3>
                             {product.piece_top && (
-                              <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium">
-                                TOP
-                              </span>
+                              <Badge variant="warning">TOP</Badge>
                             )}
                           </div>
                           
@@ -413,18 +405,12 @@ export function ProductCatalog({
                         
                         {/* Status et actions */}
                         <div className="flex items-center space-x-4">
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            product.piece_activ 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {product.piece_activ ? 'Disponible' : 'Indisponible'}
-                          </span>
+                          <Badge className="text-xs px-2 py-1 rounded-full font-medium " variant={product.piece_activ ? 'success' : 'error'}>\n  {product.piece_activ ? 'Disponible' : 'Indisponible'}\n</Badge>
                           
-                          <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                          <Button className="px-4 py-2 rounded-md text-sm" variant="blue">
                             <Eye className="h-4 w-4 inline mr-2" />
                             Voir détails
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -452,7 +438,7 @@ export function ProductCatalog({
                     setSelectedCategory('');
                     onSearch?.('');
                   }}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg transition-colors"
                 >
                   Effacer les filtres
                 </button>

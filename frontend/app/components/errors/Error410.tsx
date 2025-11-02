@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 interface Error410Props {
   url?: string;
@@ -93,7 +94,7 @@ export function Error410({
             </p>
             
             {url && (
-              <div className="mt-4 p-4 bg-orange-100 rounded-lg">
+              <div className="mt-4 p-4 bg-muted rounded-lg">
                 <p className="text-sm text-gray-600 mb-2">URL demandée :</p>
                 <p className="font-mono text-sm text-gray-800 break-all">{url}</p>
               </div>
@@ -127,7 +128,7 @@ export function Error410({
 
           {/* Redirection suggérée */}
           {redirectTo && (
-            <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-lg">
+<Alert className="mb-8 p-6    rounded-lg" variant="success">
               <div className="flex items-center">
                 <svg className="w-6 h-6 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -141,7 +142,7 @@ export function Error410({
                   </p>
                   <Link 
                     to={redirectTo}
-                    className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -150,7 +151,7 @@ export function Error410({
                   </Link>
                 </div>
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Grid d'actions principales */}

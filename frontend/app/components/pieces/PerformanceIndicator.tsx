@@ -29,9 +29,9 @@ export default function PerformanceIndicator({ performance }: PerformanceIndicat
   };
 
   const getSpeedBadge = (ms: number) => {
-    if (ms < 500) return { text: "Ultra-rapide", color: "bg-green-500" };
-    if (ms < 1000) return { text: "Très rapide", color: "bg-blue-500" };
-    if (ms < 2000) return { text: "Rapide", color: "bg-yellow-500" };
+    if (ms < 500) return { text: "Ultra-rapide", color: "bg-success" };
+    if (ms < 1000) return { text: "Très rapide", color: "bg-primary" };
+    if (ms < 2000) return { text: "Rapide", color: "bg-warning" };
     return { text: "Normal", color: "bg-gray-500" };
   };
 

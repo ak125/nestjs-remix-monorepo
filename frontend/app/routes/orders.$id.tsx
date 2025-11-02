@@ -149,25 +149,25 @@ const getStatusColor = (statusDetails: any) => {
   
   switch (statusDetails.ords_named?.toLowerCase()) {
     case 'en attente':
-    case 'pending': return "bg-yellow-100 text-yellow-800";
+    case 'pending': return 'warning';
     case 'confirmée':
-    case 'confirmed': return "bg-blue-100 text-blue-800";
+    case 'confirmed': return 'info';
     case 'en cours':
-    case 'processing': return "bg-purple-100 text-purple-800";
+    case 'processing': return 'purple';
     case 'expédiée':
-    case 'shipped': return "bg-green-100 text-green-800";
+    case 'shipped': return 'success';
     case 'livrée':
-    case 'delivered': return "bg-green-100 text-green-800";
+    case 'delivered': return 'success';
     case 'annulée':
-    case 'cancelled': return "bg-red-100 text-red-800";
+    case 'cancelled': return 'error';
     default: return "bg-gray-100 text-gray-800";
   }
 };
 
 const getPaymentStatusColor = (isPaid: string) => {
   switch (isPaid) {
-    case "1": return "bg-green-100 text-green-800";
-    case "0": return "bg-yellow-100 text-yellow-800";
+    case "1": return 'success';
+    case "0": return 'warning';
     default: return "bg-gray-100 text-gray-800";
   }
 };
@@ -258,7 +258,7 @@ export default function OrderDetailsReal() {
         {/* Informations client */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Informations client</h3>
@@ -323,7 +323,7 @@ export default function OrderDetailsReal() {
         {/* Adresse de facturation */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <CreditCard className="w-5 h-5 text-purple-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Adresse de facturation</h3>
@@ -365,7 +365,7 @@ export default function OrderDetailsReal() {
         {/* Adresse de livraison */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className="p-2 bg-success/10 rounded-lg">
               <MapPin className="w-5 h-5 text-green-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Adresse de livraison</h3>
@@ -520,7 +520,7 @@ export default function OrderDetailsReal() {
       {order.ord_info && (
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-orange-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <FileText className="w-5 h-5 text-orange-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Informations complémentaires</h3>

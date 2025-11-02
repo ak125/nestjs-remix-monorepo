@@ -11,6 +11,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
@@ -146,7 +147,7 @@ export default function ManufacturersIndex() {
       {/* Header */}
       <div className="text-center mb-12">
         <div className="flex justify-center mb-4">
-          <div className="p-3 bg-blue-100 rounded-full">
+          <div className="p-3 bg-muted rounded-full">
             <Car className="h-8 w-8 text-blue-600" />
           </div>
         </div>
@@ -187,9 +188,7 @@ export default function ManufacturersIndex() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 max-w-2xl mx-auto">
-          <strong>Erreur :</strong> {error}
-        </div>
+        <Alert intent="error"><strong>Erreur :</strong> {error}</Alert>
       )}
 
       {/* Statistiques */}

@@ -15,6 +15,7 @@ import {
   Download
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 import { getPaymentById, processRefund } from "../services/payment-admin.server";
 import { type Payment, PaymentStatus } from "../types/payment";
@@ -93,7 +94,7 @@ export default function AdminPaymentDetail() {
           </p>
           <button
             onClick={() => navigate('/admin/payments/dashboard')}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux paiements
@@ -123,10 +124,10 @@ export default function AdminPaymentDetail() {
 
   const getStatusBadge = (status: PaymentStatus) => {
     const badges = {
-      [PaymentStatus.COMPLETED]: 'bg-green-100 text-green-800',
-      [PaymentStatus.PENDING]: 'bg-yellow-100 text-yellow-800',
-      [PaymentStatus.PROCESSING]: 'bg-blue-100 text-blue-800',
-      [PaymentStatus.FAILED]: 'bg-red-100 text-red-800',
+      [PaymentStatus.COMPLETED]: 'bg-success/20 text-success',
+      [PaymentStatus.PENDING]: 'bg-warning/20 text-warning',
+      [PaymentStatus.PROCESSING]: 'bg-info/20 text-info',
+      [PaymentStatus.FAILED]: 'bg-destructive/20 text-destructive',
       [PaymentStatus.CANCELLED]: 'bg-gray-100 text-gray-800',
       [PaymentStatus.REFUNDED]: 'bg-purple-100 text-purple-800',
     };
@@ -314,7 +315,7 @@ export default function AdminPaymentDetail() {
                       <div className="relative pb-8">
                         <div className="relative flex space-x-3">
                           <div>
-                            <span className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white">
+                            <span className="h-8 w-8 rounded-full bg-primary flex items-center justify-center ring-8 ring-white">
                               <DollarSign className="h-4 w-4 text-white" />
                             </span>
                           </div>
@@ -337,7 +338,7 @@ export default function AdminPaymentDetail() {
                         <div className="relative">
                           <div className="relative flex space-x-3">
                             <div>
-                              <span className="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center ring-8 ring-white">
+                              <span className="h-8 w-8 rounded-full bg-success flex items-center justify-center ring-8 ring-white">
                                 <CheckCircle className="h-4 w-4 text-white" />
                               </span>
                             </div>
@@ -374,7 +375,7 @@ export default function AdminPaymentDetail() {
                 {canRefund && (
                   <button
                     onClick={() => setShowRefundModal(true)}
-                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100"
+                    className="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 rounded-md text-sm font-medium text-destructive bg-destructive/10 hover:bg-destructive/20"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Rembourser
@@ -486,17 +487,12 @@ export default function AdminPaymentDetail() {
                   <button
                     type="button"
                     onClick={() => setShowRefundModal(false)}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="flex-1 px-4 py-2 bg-muted/50 text-gray-700 rounded-md hover:bg-gray-400"
                   >
                     Annuler
                   </button>
-                  <button
-                    type="submit"
-                    disabled={navigation.state === 'submitting'}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {navigation.state === 'submitting' ? 'Traitement...' : 'Rembourser'}
-                  </button>
+                  <Button className="flex-1 px-4 py-2  rounded-md disabled:opacity-50" variant="red" type="submit"
+                    disabled={navigation.state === 'submitting'}>\n  {navigation.state === 'submitting' ? 'Traitement...' : 'Rembourser'}\n</Button>
                 </div>
               </Form>
             </div>

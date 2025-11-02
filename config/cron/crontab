@@ -1,0 +1,26 @@
+# 📅 SUPERCRONIC CRONTAB
+# Format: minute hour day month weekday command
+
+# Sitemaps - Génération delta quotidienne (3h du matin)
+0 3 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/generate
+
+# Sitemaps - Streaming complet hebdomadaire (dimanche 2h)
+0 2 * * 0 curl -X POST http://localhost:3000/sitemap-v2/streaming/generate?type=all
+
+# Sitemaps - Cleanup deltas expirés (tous les jours 4h)
+0 4 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/cleanup
+
+# Cache - Nettoyage Redis (tous les jours 5h)
+0 5 * * * node /app/backend/dist/scripts/cleanup-redis-cache.js
+
+# Monitoring - Vérification santé système (toutes les heures)
+0 * * * * curl -f http://localhost:3000/health || echo "Health check failed"
+
+# BullMQ - Stats quotidiennes (tous les jours 6h)
+0 6 * * * node /app/backend/dist/scripts/bullmq-stats.js
+
+# Backup - Dump Redis (tous les jours 1h)
+0 1 * * * redis-cli --rdb /backups/redis-$(date +\%Y\%m\%d).rdb
+
+# Logs - Rotation (tous les dimanches 23h)
+0 23 * * 0 find /logs -name "*.log" -mtime +7 -delete

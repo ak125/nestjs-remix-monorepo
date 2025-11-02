@@ -25,6 +25,7 @@ export class RemixController {
     // Les routes /admin/breadcrumbs/* sont gérées par le BreadcrumbAdminController
     if (
       request.url.startsWith('/api/') ||
+      request.url.startsWith('/sitemap-v2/') ||
       request.url.startsWith('/admin/breadcrumbs') ||
       request.url.startsWith('/authenticate') ||
       request.url.startsWith('/auth/')

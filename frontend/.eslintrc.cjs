@@ -2,11 +2,11 @@
 module.exports = {
 	root: true,
 	extends: [
-		'@fafa/eslint-config/base.js',
-		'@remix-run/eslint-config',
-		'@remix-run/eslint-config/node',
-		// 'plugin:tailwindcss/recommended',
-	],
+        "@fafa/eslint-config/base.js",
+        "@remix-run/eslint-config",
+        "@remix-run/eslint-config/node",
+        "plugin:storybook/recommended"
+    ],
 	settings: {
 		// tailwindcss: {
 		// 	config: 'tailwind.config.ts',

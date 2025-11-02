@@ -1,4 +1,5 @@
 import { Award, Rocket, BookOpen, Facebook, Twitter, Linkedin } from "lucide-react";
+import { Button } from "~/components/ui/button";
 
 export function WhyChooseUs() {
   const features = [
@@ -57,13 +58,13 @@ export function WhyChooseUs() {
         <div className="text-center">
           <p className="text-gray-600 mb-4 font-semibold">Partagez avec vos amis :</p>
           <div className="flex justify-center space-x-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full transition">
+            <Button className="p-3 rounded-full transition" variant="blue">
               <Facebook className="h-5 w-5" />
-            </button>
+            </Button>
             <button className="bg-sky-500 hover:bg-sky-600 text-white p-3 rounded-full transition">
               <Twitter className="h-5 w-5" />
             </button>
-            <button className="bg-blue-700 hover:bg-blue-800 text-white p-3 rounded-full transition">
+            <button className="bg-primary/90 hover:bg-primary/95 text-white p-3 rounded-full transition">
               <Linkedin className="h-5 w-5" />
             </button>
           </div>

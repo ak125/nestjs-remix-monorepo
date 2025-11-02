@@ -81,7 +81,7 @@ export function QuickActions({ stats, enhanced = false }: QuickActionsProps) {
                 to={action.href}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-md",
-                  action.variant === "primary" && "bg-blue-50 border-blue-200 hover:bg-blue-100",
+                  action.variant === "primary" && "bg-primary/5 border-blue-200 hover:bg-info/20",
                   action.variant === "secondary" && "bg-gray-50 border-gray-200 hover:bg-gray-100",
                   !action.variant && "bg-white border-gray-200 hover:bg-gray-50"
                 )}

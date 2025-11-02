@@ -60,11 +60,11 @@ function StatItem({
   const getVariantStyles = () => {
     switch (variant) {
       case 'success':
-        return 'border-green-200 bg-green-50 text-green-900';
+        return 'border-success bg-success/10 text-green-900';
       case 'warning':
-        return 'border-yellow-200 bg-yellow-50 text-yellow-900';
+        return 'border-warning bg-warning/10 text-yellow-900';
       case 'danger':
-        return 'border-red-200 bg-red-50 text-red-900';
+        return 'border-destructive bg-destructive/10 text-red-900';
       default:
         return 'border-gray-200 bg-white text-gray-900';
     }
@@ -98,9 +98,9 @@ function StatItem({
                 <div 
                   className={cn(
                     'h-1.5 rounded-full transition-all duration-300',
-                    variant === 'success' ? 'bg-green-500' :
-                    variant === 'warning' ? 'bg-yellow-500' :
-                    variant === 'danger' ? 'bg-red-500' : 'bg-blue-500'
+                    variant === 'success' ? 'bg-success' :
+                    variant === 'warning' ? 'bg-warning' :
+                    variant === 'danger' ? 'bg-destructive' : 'bg-info'
                   )}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 />

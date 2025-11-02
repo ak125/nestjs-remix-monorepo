@@ -1,0 +1,58 @@
+{
+  "name": "@fafa/design-tokens",
+  "version": "1.0.0",
+  "description": "Design tokens - Single source of truth pour le Design System (couleurs, spacing, typography, etc.)",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./tokens.json": "./src/tokens/design-tokens.json",
+    "./css": "./dist/tokens.css",
+    "./utilities": "./dist/utilities.css",
+    "./tailwind": "./dist/tailwind.config.js"
+  },
+  "files": [
+    "dist",
+    "src/design-tokens.json",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "npm run build -- --watch",
+    "build": "node scripts/build-tokens.js && tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts",
+    "lint:fix": "eslint src --ext ts --fix",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules/.cache"
+  },
+  "devDependencies": {
+    "@fafa/typescript-config": "*",
+    "@types/node": "^20.17.6",
+    "eslint": "^8.57.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  },
+  "keywords": [
+    "design-tokens",
+    "design-system",
+    "tokens",
+    "css-variables",
+    "tailwind"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

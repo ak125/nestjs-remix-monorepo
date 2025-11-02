@@ -87,7 +87,7 @@ export function UserMenu({ className = "" }: UserMenuProps) {
             
             <Link
               to="/logout"
-              className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <LogOut className="w-4 h-4" />

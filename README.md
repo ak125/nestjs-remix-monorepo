@@ -13,24 +13,28 @@
 
 ## 📋 Quick Start
 
+### 🚀 Démarrage Rapide (Recommandé)
+
 ```bash
-# Installation
+# 1. Démarrer Redis
+docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine
+
+# 2. Installation des dépendances
 npm install
 
-# Démarrage (Backend + Frontend)
+# 3. Démarrer l'application (Backend NestJS + Frontend Remix)
 npm run dev
-
-# Backend seul (port 3001)
-cd backend && npm run dev
-
-# Frontend seul (port 5173)
-cd frontend && npm run dev
 ```
 
-**🌐 URLs** :
-- Backend API: `http://localhost:3001`
-- Frontend: `http://localhost:5173`
-- Admin Dashboard: `http://localhost:5173/admin`
+**🌐 Application** :
+- **Application complète** : `http://localhost:3000`
+- **Backend API** : `http://localhost:3000/api/*`
+- **Frontend Remix** : `http://localhost:3000/*`
+- **Admin Dashboard** : `http://localhost:3000/admin`
+
+> 💡 **Architecture** : Le backend NestJS sert aussi le frontend Remix sur le **même port 3000** pour une expérience développement simplifiée.
+
+📖 **Guide complet** : Voir [QUICK-START.md](./QUICK-START.md) pour le guide détaillé et dépannage.
 
 ### 🧹 Nettoyage et Consolidation
 
@@ -120,11 +124,27 @@ nestjs-remix-monorepo/
 │   │   ├── components/     # Composants React
 │   │   └── utils/          # Utilitaires
 │   └── public/
-├── docs/                   # Documentation
-│   ├── REFACTORING-COMPLETE.md  # Documentation consolidée
-│   ├── DAILY-REPORT-2025-10-05.md
-│   └── archives/
-└── scripts/                # Scripts utilitaires
+├── config/                 # 📁 Configuration
+│   ├── caddy/              # Configuration Caddy (reverse proxy)
+│   ├── cron/               # Tâches cron
+│   └── vector/             # Logs & métriques
+├── docs/                   # 📚 Documentation (125 docs organisés)
+│   ├── architecture/       # Architecture & monorepo
+│   ├── breadcrumb/         # Fil d'Ariane
+│   ├── caddy/              # Reverse proxy
+│   ├── design-system/      # Système de design
+│   ├── ecommerce/          # E-commerce features
+│   ├── fixes/              # Corrections de bugs
+│   ├── guides/             # Guides généraux
+│   ├── paybox/             # Système de paiement
+│   ├── seo/                # SEO & optimisations
+│   ├── sitemap/            # Sitemaps
+│   └── testing/            # Tests & validations
+└── scripts/                # 🔧 Scripts (109 scripts organisés)
+    ├── config/             # Scripts de configuration
+    ├── database/           # Scripts SQL
+    ├── seo/                # Scripts SEO & monitoring
+    └── testing/            # Scripts de test
 ```
 
 ---
@@ -280,17 +300,25 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## 📚 Documentation
 
+> **📖 125 documents organisés** - Consultez [docs/README.md](./docs/README.md) pour la navigation complète
+
 ### Documents Principaux
 
-- **[REFACTORING-COMPLETE.md](./docs/REFACTORING-COMPLETE.md)** - Documentation technique consolidée
-- **[DAILY-REPORT-2025-10-05.md](./docs/DAILY-REPORT-2025-10-05.md)** - Rapport quotidien détaillé
-- **[GETTING-STARTED.md](./docs/GETTING-STARTED.md)** - Guide de démarrage
+- **[docs/README.md](./docs/README.md)** - Index de toute la documentation
+- **Architecture** : `docs/architecture/` - Monorepo, composants, structure
+- **Design System** : `docs/design-system/` - Système de design complet
+- **E-commerce** : `docs/ecommerce/` - Fonctionnalités e-commerce
+- **SEO** : `docs/seo/` - Optimisations, monitoring, stratégies
+- **Guides** : `docs/guides/` - Guides d'intégration et tutoriels
 
-### Documentation par Module
+### Scripts Utilitaires
 
-- **Payments** : `docs/archives/old-payments-docs/`
-- **Orders** : `docs/archives/old-orders-docs/`
-- **Git** : `docs/archives/old-git-docs/`
+> **🔧 109 scripts organisés** - Consultez [scripts/README.md](./scripts/README.md)
+
+- **SEO** : `scripts/seo/` - Audit, monitoring, analytics
+- **Testing** : `scripts/testing/` - Tests, validation, vérification
+- **Database** : `scripts/database/` - Scripts SQL et optimisations
+- **Config** : `scripts/config/` - Initialisation et configuration
 
 ---
 

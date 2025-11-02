@@ -117,9 +117,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-50 border-green-200";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-    return "text-red-600 bg-red-50 border-red-200";
+    if (score >= 80) return 'border-l-4 border-success bg-success/10';
+    if (score >= 60) return 'border-l-4 border-warning bg-warning/10';
+    return 'border-l-4 border-destructive bg-destructive/10';
   };
 
   const getScoreIcon = (score: number) => {
@@ -148,9 +148,9 @@ function SecurityScoreCard({ score }: { score: number }) {
 
 function RecommendationCard({ recommendation }: { recommendation: SecurityData['recommendations'][0] }) {
   const priorityColors = {
-    high: "border-red-200 bg-red-50",
-    medium: "border-yellow-200 bg-yellow-50", 
-    low: "border-blue-200 bg-blue-50"
+    high: "border-destructive bg-destructive/10",
+    medium: "border-warning bg-warning/10", 
+    low: "border-primary bg-primary/10"
   };
 
   const priorityBadges = {
@@ -220,7 +220,7 @@ export default function AccountSecurity() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-muted rounded-lg">
                 <Key className="w-5 h-5 text-blue-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Mot de passe</h3>
@@ -256,7 +256,7 @@ export default function AccountSecurity() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-success/10 rounded-lg">
                 <Smartphone className="w-5 h-5 text-green-600" />
               </div>
               <h3 className="font-semibold text-gray-900">Authentification 2FA</h3>
@@ -266,7 +266,7 @@ export default function AccountSecurity() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Statut</span>
                 {security.twoFactor.enabled ? (
-                  <Badge variant="default" className="bg-green-100 text-green-800">
+                  <Badge variant="default" className="bg-success/20 text-success">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Activée
                   </Badge>
@@ -300,7 +300,7 @@ export default function AccountSecurity() {
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <Clock className="w-5 h-5 text-purple-600" />
             </div>
             <h3 className="font-semibold text-gray-900">Sessions actives ({security.sessions.active})</h3>
@@ -313,7 +313,7 @@ export default function AccountSecurity() {
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-gray-900">{device.device}</p>
                     {device.current && (
-                      <Badge variant="default" className="bg-green-100 text-green-800">
+                      <Badge variant="default" className="bg-success/20 text-success">
                         Session actuelle
                       </Badge>
                     )}

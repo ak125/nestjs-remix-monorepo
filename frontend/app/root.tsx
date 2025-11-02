@@ -1,4 +1,3 @@
-import { type RemixService } from "@fafa/backend";
 import { type LinksFunction, type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
 import { 
   Links, 
@@ -18,11 +17,14 @@ import { TopBar } from "./components/navbar/TopBar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
+import animationsStylesheet from "./styles/animations.css?url";
+// @ts-ignore
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
+  { rel: "stylesheet", href: animationsStylesheet },
 ];
 
 export const meta: MetaFunction = () => [
@@ -51,7 +53,7 @@ export const useOptionalUser = () => {
 
 declare module "@remix-run/node" {
   interface AppLoadContext {
-    remixService: RemixService;
+    remixService: any;
     remixIntegration?: any; // injection côté Nest: RemixApiService
     parsedBody?: any;
     user: unknown;
@@ -73,19 +75,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="h-full bg-gray-100">
         <NotificationProvider>
           <div className="min-h-screen flex flex-col">
-                {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
-                <TopBar user={user} />
-                
-                <Navbar logo={logo} />
-                <main className="flex-grow flex flex-col">
-                  <div className="flex-grow">
-                    {children}
-                  </div>
-                 </main>
-            </div>
-            <Footer />
-            <NotificationContainer />
-          </NotificationProvider>
+              {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
+              <TopBar user={user} />
+              
+              <Navbar logo={logo} />
+              <main className="flex-grow flex flex-col">
+                <div className="flex-grow">
+                  {children}
+                </div>
+               </main>
+          </div>
+          <Footer />
+          <NotificationContainer />
+        </NotificationProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

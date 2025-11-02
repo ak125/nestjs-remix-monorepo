@@ -56,7 +56,7 @@ export const Testimonials: React.FC<TestimonialsProps> = ({
                       className="w-12 h-12 rounded-full mr-4 object-cover"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-blue-100 rounded-full mr-4 flex items-center justify-center">
+                    <div className="w-12 h-12 bg-muted rounded-full mr-4 flex items-center justify-center">
                       <span className="text-blue-600 font-semibold text-lg">
                         {testimonial.author.charAt(0).toUpperCase()}
                       </span>

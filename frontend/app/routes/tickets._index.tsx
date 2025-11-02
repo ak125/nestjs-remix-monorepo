@@ -5,6 +5,8 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { getAllTickets, searchTickets, getContactStats, type ContactTicket, type ContactStats } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {
@@ -122,18 +124,16 @@ export default function TicketsPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "urgent": return "bg-red-100 text-red-800";
-      case "high": return "bg-orange-100 text-orange-800";
-      case "normal": return "bg-blue-100 text-blue-800";
+      case "urgent": return 'error';
+      case "high": return 'orange';
+      case "normal": return 'info';
       case "low": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusColor = (isOpen: string) => {
-    return isOpen === "1" 
-      ? "bg-green-100 text-green-800" 
-      : "bg-gray-100 text-gray-800";
+    return isOpen === '1' ? 'success' : "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -142,24 +142,15 @@ export default function TicketsPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Gestion des Tickets</h1>
-          <Link
-            to="/contact"
-            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
-          >
-            Nouveau ticket
-          </Link>
+          <Button className="px-4 py-2   rounded-md" variant="blue" asChild><Link to="/contact">Nouveau ticket</Link></Button>
         </div>
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-600">Total tickets</p>
-            <p className="text-2xl font-bold text-blue-900">{stats.total_tickets}</p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <p className="text-sm text-green-600">Ouverts</p>
-            <p className="text-2xl font-bold text-green-900">{stats.open_tickets}</p>
-          </div>
+          <Alert intent="info"><p className="text-sm text-blue-600">Total tickets</p>
+            <p className="text-2xl font-bold text-blue-900">{stats.total_tickets}</p></Alert>
+          <Alert intent="success"><p className="text-sm text-green-600">Ouverts</p>
+            <p className="text-2xl font-bold text-green-900">{stats.open_tickets}</p></Alert>
           <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">Fermés</p>
             <p className="text-2xl font-bold text-gray-900">{stats.closed_tickets}</p>
@@ -183,12 +174,7 @@ export default function TicketsPage() {
               placeholder="Rechercher dans les tickets..."
               className="flex-1 lg:w-80 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Rechercher
-            </button>
+            <Button className="px-4 py-2  rounded-md" variant="blue" type="submit">\n  Rechercher\n</Button>
           </form>
 
           {/* Filtres par statut */}
@@ -203,8 +189,8 @@ export default function TicketsPage() {
                 onClick={() => handleStatusFilter(filter.value)}
                 className={`px-3 py-1 text-sm rounded-md ${
                   currentStatus === filter.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-gray-200 text-gray-700 hover:bg-muted/50"
                 }`}
               >
                 {filter.label}
@@ -219,12 +205,7 @@ export default function TicketsPage() {
         {tickets.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-gray-500">Aucun ticket trouvé.</p>
-            <Link
-              to="/contact"
-              className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Créer le premier ticket
-            </Link>
+            <Button className="inline-block mt-4 px-4 py-2  rounded-md" variant="blue" asChild><Link to="/contact">Créer le premier ticket</Link></Button>
           </div>
         ) : (
           <>
@@ -329,7 +310,7 @@ export default function TicketsPage() {
                     onClick={() => handlePageChange(page)}
                     className={`px-3 py-2 text-sm border rounded-md ${
                       currentPage === page
-                        ? "bg-blue-600 text-white border-blue-600"
+                        ? "bg-primary text-primary-foreground border-blue-600"
                         : "border-gray-300 hover:bg-gray-50"
                     }`}
                   >

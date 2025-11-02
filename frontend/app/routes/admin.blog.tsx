@@ -4,9 +4,11 @@
  * @route /admin/blog-simple
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Alert } from '~/components/ui/alert';
 
 // Icons simplifiés
 const ChartBarIcon = ({ className }: { className: string }) => (
@@ -178,22 +180,18 @@ export default function AdminBlogSimplePage() {
               
               {/* Indicateur de statut */}
               <div className="mt-4 flex items-center space-x-4">
-                <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  apiStatus === 'success' 
-                    ? 'bg-green-100 text-green-800' 
-                    : apiStatus === 'timeout'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full mr-2 ${
-                    apiStatus === 'success' 
-                      ? 'bg-green-500' 
-                      : apiStatus === 'timeout'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}></div>
-                  API {apiStatus === 'success' ? 'Connectée' : apiStatus === 'timeout' ? 'Timeout' : 'Erreur'}
-                </div>
+                <Badge 
+                  variant={
+                    apiStatus === 'success' ? 'success' :
+                    apiStatus === 'timeout' ? 'warning' :
+                    'error'
+                  }
+                  size="sm"
+                >
+                  {apiStatus === 'success' ? '✅ API Opérationnelle' :
+                   apiStatus === 'timeout' ? '⏱️ API Lente' :
+                   '❌ API Indisponible'}
+                </Badge>
                 
                 <button
                   onClick={() => setShowDebug(!showDebug)}
@@ -207,21 +205,21 @@ export default function AdminBlogSimplePage() {
             <div className="flex items-center space-x-4">
               <Link
                 to="/blog"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-colors"
               >
                 <EyeIcon className="w-4 h-4 mr-2" />
                 Voir le blog
               </Link>
               <Link
                 to="/admin/performances"
-                className="inline-flex items-center px-4 py-2 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
               >
                 <ChartBarIcon className="w-4 h-4 mr-2" />
                 Performances
               </Link>
               <Link
                 to="/admin/articles"
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-success hover:bg-success/90 text-success-foreground font-medium rounded-lg transition-colors"
               >
                 <DocumentTextIcon className="w-4 h-4 mr-2" />
                 Gestion Articles
@@ -231,7 +229,7 @@ export default function AdminBlogSimplePage() {
 
           {/* Message d'erreur si nécessaire */}
           {isError && (
-            <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+<Alert className="mt-6    rounded-lg p-4" variant="warning">
               <div className="flex">
                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400 mr-3 mt-0.5" />
                 <div>
@@ -241,7 +239,7 @@ export default function AdminBlogSimplePage() {
                   </p>
                 </div>
               </div>
-            </div>
+            </Alert>
           )}
 
           {/* Informations de debug */}
@@ -323,7 +321,7 @@ export default function AdminBlogSimplePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
               to="/blog/advice"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-info/20 transition-colors group"
             >
               <DocumentTextIcon className="w-8 h-8 text-blue-600 mr-4" />
               <div>
@@ -334,7 +332,7 @@ export default function AdminBlogSimplePage() {
 
             <Link
               to="/blog/constructeurs"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-success/20 transition-colors group"
             >
               <UserGroupIcon className="w-8 h-8 text-green-600 mr-4" />
               <div>

@@ -10,7 +10,10 @@ export class CreatePaymentDto {
   metadata?: Record<string, any>;
   returnUrl?: string;
   cancelUrl?: string;
+  notifyUrl?: string;
   customerEmail?: string; // Requis pour certains providers
+  customerName?: string; // Nom complet du client
+  ipAddress?: string; // Adresse IP du client
 
   // ✅ Phase 6: Informations consignes
   consigne_total?: number; // Montant total des consignes inclus dans amount

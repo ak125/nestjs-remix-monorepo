@@ -95,7 +95,7 @@ export default function AccountSettings() {
 
       {/* Messages */}
       {actionData?.success && (
-        <Alert className="border-green-200 bg-green-50">
+        <Alert className="border-success bg-success/10">
           <AlertDescription className="text-green-800">
             {actionData.message}
           </AlertDescription>
@@ -103,7 +103,7 @@ export default function AccountSettings() {
       )}
 
       {actionData?.error && (
-        <Alert className="border-red-200 bg-red-50">
+        <Alert className="border-destructive bg-destructive/10">
           <AlertDescription className="text-red-800">
             {actionData.error}
           </AlertDescription>
@@ -329,15 +329,13 @@ export default function AccountSettings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800 font-medium mb-2">
+            <Alert intent="error"><p className="text-sm text-red-800 font-medium mb-2">
                 ⚠️ Suppression du compte
               </p>
               <p className="text-sm text-red-700">
                 Cette action est définitive. Toutes vos données seront supprimées et
                 vous ne pourrez plus accéder à votre compte ni à vos commandes.
-              </p>
-            </div>
+              </p></Alert>
 
             <Form method="post" className="space-y-4">
               <input type="hidden" name="_action" value="deleteAccount" />

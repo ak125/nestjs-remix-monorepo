@@ -1,6 +1,8 @@
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { Button } from '~/components/ui/button';
 
 // Interfaces simplifiées pour éviter les problèmes d'import
 interface SentimentAnalysis {
@@ -110,10 +112,10 @@ function getSentimentColor(sentiment: string): string {
 
 function getUrgencyColor(urgency: string): string {
   switch (urgency) {
-    case 'critical': return 'text-red-800 bg-red-100';
+    case 'critical': return 'text-destructive bg-destructive/20';
     case 'high': return 'text-orange-800 bg-orange-100';
-    case 'medium': return 'text-yellow-800 bg-yellow-100';
-    case 'low': return 'text-green-800 bg-green-100';
+    case 'medium': return 'text-warning bg-warning/20';
+    case 'low': return 'text-success bg-success/20';
     default: return 'text-gray-800 bg-gray-100';
   }
 }
@@ -227,12 +229,7 @@ export default function AIDemoPage() {
                 Démonstration des capacités IA de notre module support
               </p>
             </div>
-            <Link
-              to="/support"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              ← Retour Support
-            </Link>
+            <Button className="px-4 py-2 rounded-lg" variant="blue" asChild><Link to="/support">← Retour Support</Link></Button>
           </div>
         </div>
 
@@ -247,13 +244,12 @@ export default function AIDemoPage() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span>Statut général</span>
-                  <span className={`px-2 py-1 rounded text-sm font-medium ${
-                    aiHealth.status === 'operational' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <Badge 
+                    variant={aiHealth.status === 'operational' ? 'success' : 'error'} 
+                    size="sm"
+                  >
                     {aiHealth.status === 'operational' ? '✅ Opérationnel' : '❌ Problème'}
-                  </span>
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>Sentiment: {aiHealth.services.sentiment === 'ok' ? '✅' : '❌'}</div>
@@ -341,7 +337,7 @@ export default function AIDemoPage() {
                       key={ticket.msg_id}
                       className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                         selectedTicket === ticket.msg_id
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-blue-500 bg-primary/10'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => handleAnalyzeTicket(ticket.msg_id)}

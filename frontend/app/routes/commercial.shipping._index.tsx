@@ -1,20 +1,17 @@
 /**
- * 🚚 GESTION EXPÉDITIONS COMMERCIALES
- * 
- * Interface commerciale pour la gestion des expéditions et livraisons
- * ✅ Réutilise l'infrastructure ShippingService existante
- * ✅ APIs ShippingController déjà disponibles
- * ✅ Données réelles des commandes avec informations de livraison
+ * 📦 Gestion des expéditions - Interface principale
  */
 
+import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, useSearchParams, Form, Link } from '@remix-run/react';
+import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { 
   Truck, Package, Clock,
   CheckCircle, Search, Filter, Download, Eye,
   TrendingUp, Globe, RefreshCw
 } from "lucide-react";
 import { useState } from 'react';
+import { Button } from '~/components/ui/button';
 
 // Types pour les expéditions
 interface ShippingOrder {
@@ -135,13 +132,14 @@ function getShippingStatusLabel(status: 'pending' | 'shipped' | 'delivered' | 'r
 }
 
 // Fonction pour obtenir la couleur du statut
-function getShippingStatusColor(status: 'pending' | 'shipped' | 'delivered' | 'returned'): string {
+// Helper function to get Badge variant from shipping status
+function getShippingStatusVariant(status: 'pending' | 'shipped' | 'delivered' | 'returned'): "warning" | "info" | "success" | "error" | "default" {
   switch (status) {
-    case 'pending': return 'bg-yellow-100 text-yellow-800';
-    case 'shipped': return 'bg-blue-100 text-blue-800';
-    case 'delivered': return 'bg-green-100 text-green-800';
-    case 'returned': return 'bg-red-100 text-red-800';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'pending': return 'warning';
+    case 'shipped': return 'info';
+    case 'delivered': return 'success';
+    case 'returned': return 'error';
+    default: return 'default';
   }
 }
 
@@ -321,21 +319,21 @@ export default function CommercialShippingIndex() {
           <div className="flex gap-3">
             <Link
               to="/commercial/shipping/create"
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+              className="bg-success hover:bg-success/90 text-success-foreground px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <Package className="w-4 h-4" />
               Créer expédition
             </Link>
             <Link
               to="/commercial/shipping/tracking"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <Eye className="w-4 h-4" />
               Suivi temps réel
             </Link>
             <Link
               to="/commercial/returns"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center gap-2"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
               Retours
@@ -514,13 +512,10 @@ export default function CommercialShippingIndex() {
           </div>
 
           <div className="flex justify-between items-center">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-            >
+            <Button className="px-6 py-2 rounded-lg flex items-center gap-2" variant="blue" type="submit">
               <Filter className="w-4 h-4" />
               Appliquer les filtres
-            </button>
+            </Button>
             
             {(filters.search || filters.status || filters.zone || filters.trackingStatus) && (
               <Link
@@ -639,22 +634,22 @@ export default function CommercialShippingIndex() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <Badge variant="info">
                       {order.deliveryZone === 'france' && '🇫🇷 France'}
                       {order.deliveryZone === 'corsica' && '🏝️ Corse'}
                       {order.deliveryZone === 'domTom' && '🌴 DOM-TOM'}
                       {order.deliveryZone === 'europe' && '🇪🇺 Europe'}
                       {order.deliveryZone === 'international' && '🌍 International'}
                       {order.deliveryZone === 'unknown' && '❓ Inconnue'}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {order.shippingFee.toFixed(2)}€
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getShippingStatusColor(order.shippingStatus)}`}>
+                    <Badge variant={getShippingStatusVariant(order.shippingStatus)} size="sm">
                       {getShippingStatusLabel(order.shippingStatus)}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {order.trackingNumber ? (

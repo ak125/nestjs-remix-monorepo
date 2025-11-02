@@ -1,3 +1,4 @@
+import { Badge } from '@fafa/ui';
 /**
  * 🛒 CartSidebar Component - PHASE 1 POC
  * 
@@ -93,6 +94,64 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           </div>
         )}
 
+        {/* 🎯 Seuil Franco - Indicateur de progression */}
+        {items.length > 0 && summary.subtotal < 150 && (
+          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-green-800">
+                🚚 Livraison gratuite à 150€
+              </p>
+              <p className="text-sm font-bold text-green-700">
+                Plus que {formatPrice(150 - summary.subtotal)} !
+              </p>
+            </div>
+            {/* Barre de progression */}
+            <div className="w-full bg-green-100 rounded-full h-2.5 overflow-hidden shadow-inner">
+              <div
+                className="bg-gradient-to-r from-green-500 to-emerald-600 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                style={{ width: `${Math.min((summary.subtotal / 150) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-green-700 mt-1 text-right font-medium">
+              {Math.round((summary.subtotal / 150) * 100)}%
+            </p>
+          </div>
+        )}
+
+        {/* 🎁 Livraison gratuite atteinte */}
+        {items.length > 0 && summary.subtotal >= 150 && (
+          <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-b-2 border-green-700 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                <ShoppingBag className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-bold text-lg">🎉 Livraison gratuite !</p>
+                <p className="text-sm text-green-100">Vous économisez 15,90€</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 📦 ETA Livraison */}
+        {items.length > 0 && (
+          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200 shadow-sm">
+            <div className="flex items-center gap-3 text-blue-800">
+              <div className="bg-blue-500/20 p-2 rounded-lg">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Livraison estimée</p>
+                <p className="text-xs text-blue-600 font-medium">
+                  {summary.subtotal >= 150 ? '2-3 jours ouvrés' : '3-5 jours ouvrés'} • Suivi inclus
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Liste des articles avec style amélioré */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-transparent to-gray-50/50">
           {isLoading && items.length === 0 ? (
@@ -130,6 +189,43 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           )}
         </div>
 
+        {/* 🎁 Upsell - Produits Recommandés */}
+        {items.length > 0 && items.length < 5 && (
+          <div className="border-t-2 bg-gradient-to-r from-purple-50 to-pink-50 p-4 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="bg-purple-500/20 p-1.5 rounded-lg">
+                <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-purple-900">Souvent acheté avec</h3>
+            </div>
+            <div className="space-y-2">
+              {/* Mini cards recommandations - mock data */}
+              {[
+                { name: 'Filtre à huile', price: 12.90, ref: 'FO-123' },
+                { name: 'Bougies d\'allumage (x4)', price: 24.50, ref: 'BG-456' },
+              ].map((product, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2 bg-white rounded-lg border border-purple-200 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-2xl">
+                    🔧
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 truncate">{product.name}</p>
+                    <p className="text-xs text-gray-500">Réf: {product.ref}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-purple-600">{formatPrice(product.price)}</p>
+                    <button className="text-xs text-purple-600 hover:text-purple-800 font-medium">
+                      + Ajouter
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Footer avec totaux - Design amélioré */}
         {items.length > 0 && (
           <div className="border-t-2 bg-gradient-to-br from-gray-50 to-gray-100 p-5 space-y-3 shadow-inner">
@@ -139,9 +235,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="text-lg">🔢</span>
                 Nombre de pièces
               </span>
-              <span className="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
-                {summary.total_items}
-              </span>
+              <Badge variant="info">{summary.total_items}</Badge>
             </div>
 
             {/* Subtotal produits */}
@@ -247,7 +341,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       <div className="flex-1 min-w-0">
         {/* Marque avec badge */}
         {item.product_brand && (
-          <p className="text-xs text-gray-600 font-semibold uppercase bg-blue-50 inline-block px-2 py-0.5 rounded-full mb-1">
+          <p className="text-xs text-gray-600 font-semibold uppercase bg-primary/5 inline-block px-2 py-0.5 rounded-full mb-1">
             {item.product_brand}
           </p>
         )}
@@ -273,7 +367,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
                 onQuantityChange(item.quantity - 1);
               }}
               disabled={item.quantity <= 1}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
+              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
               aria-label="Diminuer la quantité"
             >
               −
@@ -286,7 +380,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
                 console.log('➕ Bouton + cliqué, quantité actuelle:', item.quantity);
                 onQuantityChange(item.quantity + 1);
               }}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-green-50 font-bold hover:scale-110 transition-transform shadow-sm"
+              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-success/20 font-bold hover:scale-110 transition-transform shadow-sm"
               aria-label="Augmenter la quantité"
             >
               +
@@ -310,7 +404,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       {/* Bouton supprimer */}
       <button
         onClick={onRemove}
-        className="h-6 w-6 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center flex-shrink-0"
+        className="h-6 w-6 rounded text-gray-400 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center flex-shrink-0"
         aria-label="Supprimer l'article"
       >
         <X className="h-4 w-4" />

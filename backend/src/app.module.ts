@@ -3,7 +3,8 @@ import { Module } from '@nestjs/common';
 // import { APP_GUARD } from '@nestjs/core'; // TEMPORAIREMENT DÉSACTIVÉ
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-// import { ScheduleModule } from '@nestjs/schedule'; // Temporairement désactivé
+// import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
+// import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -42,6 +43,7 @@ import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOU
 import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ - Catalogue automobile complet !
 // import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
+import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -65,8 +67,11 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     // Event Emitter global
     EventEmitterModule.forRoot(),
 
-    // Scheduler pour les tâches CRON (temporairement désactivé)
+    // ❌ Schedule Module désactivé - Conflit @nestjs/schedule v6 avec @nestjs/common v10
+    // ❌ BullModule désactivé - Conflit @nestjs/bullmq v11 avec @nestjs/common v10
+    // ✅ Utilisation directe de BullMQ (sans décorateurs NestJS) dans SeoLogsModule
     // ScheduleModule.forRoot(),
+    // BullModule.forRoot({ connection: {...} }),
 
     // 🔐 Module crypto centralisé (Global)
     CryptoModule,
@@ -111,6 +116,9 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
     CatalogModule, // ✅ ACTIVÉ - Catalogue automobile complet avec logique PHP exacte !
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
+
+    // 🔄 WORKERS & BACKGROUND JOBS
+    WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées

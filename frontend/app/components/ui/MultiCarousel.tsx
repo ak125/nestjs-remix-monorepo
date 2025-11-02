@@ -215,8 +215,8 @@ const MultiCarousel: React.FC<MultiCarouselProps> = ({
               disabled={isAnimating}
               className={`w-2 h-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                 index === currentIndex 
-                  ? 'bg-blue-600 w-6' 
-                  : 'bg-gray-300 hover:bg-gray-400'
+                  ? 'bg-primary w-6' 
+                  : 'bg-muted/50 hover:bg-gray-400'
               }`}
               aria-label={`Aller à la page ${index + 1}`}
               aria-current={index === currentIndex ? 'true' : 'false'}

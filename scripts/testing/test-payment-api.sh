@@ -1,0 +1,248 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════════
+# 🧪 Script de test automatisé - API Paiement
+# ═══════════════════════════════════════════════════════════════
+
+set -e
+
+BASE_URL="http://localhost:3000"
+API_URL="${BASE_URL}/api/payments"
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Compteurs
+TESTS_RUN=0
+TESTS_PASSED=0
+TESTS_FAILED=0
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${BLUE}🧪 TESTS AUTOMATISÉS - API PAIEMENT${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo "Base URL: $BASE_URL"
+echo "API URL: $API_URL"
+echo ""
+
+# Fonction pour tester un endpoint
+test_endpoint() {
+  local name="$1"
+  local method="$2"
+  local url="$3"
+  local data="$4"
+  local expected_status="$5"
+  
+  ((TESTS_RUN++))
+  
+  echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: $name... "
+  
+  if [ "$method" = "GET" ]; then
+    response=$(curl -s -w "\n%{http_code}" "$url")
+  else
+    response=$(curl -s -w "\n%{http_code}" -X "$method" "$url" \
+      -H "Content-Type: application/json" \
+      -d "$data")
+  fi
+  
+  status_code=$(echo "$response" | tail -n 1)
+  body=$(echo "$response" | head -n -1)
+  
+  if [ "$status_code" = "$expected_status" ]; then
+    echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
+    ((TESTS_PASSED++))
+    return 0
+  else
+    echo -e "${RED}❌ FAIL${NC} (Expected $expected_status, got $status_code)"
+    echo "Response: $body"
+    ((TESTS_FAILED++))
+    return 1
+  fi
+}
+
+# Fonction pour extraire un ID de la réponse JSON
+extract_id() {
+  echo "$1" | jq -r '.data.id' 2>/dev/null || echo ""
+}
+
+# Variables globales pour stocker les IDs créés
+PAYMENT_ID=""
+PAYMENT_ID_CONSIGNES=""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 SECTION 1 : ENDPOINTS DE BASE"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Test 1: Méthodes de paiement disponibles
+test_endpoint \
+  "GET /methods/available" \
+  "GET" \
+  "${API_URL}/methods/available" \
+  "" \
+  "200"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 SECTION 2 : CRÉATION DE PAIEMENTS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Test 2: Créer un paiement simple
+response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 99.99,
+    "currency": "EUR",
+    "method": "CYBERPLUS",
+    "userId": "test-user-autotest",
+    "orderId": "ORD-AUTOTEST-001",
+    "description": "Test automatisé",
+    "customerEmail": "autotest@test.com"
+  }')
+
+status_code=$(echo "$response" | tail -n 1)
+body=$(echo "$response" | head -n -1)
+
+((TESTS_RUN++))
+echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: POST /payments (création simple)... "
+
+if [ "$status_code" = "201" ]; then
+  PAYMENT_ID=$(extract_id "$body")
+  echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
+  echo -e "   ${BLUE}→${NC} Payment ID: $PAYMENT_ID"
+  ((TESTS_PASSED++))
+else
+  echo -e "${RED}❌ FAIL${NC} (Expected 201, got $status_code)"
+  ((TESTS_FAILED++))
+fi
+
+# Test 3: Créer un paiement avec consignes
+response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/test/create-with-consignes" \
+  -H "Content-Type: application/json" \
+  -d '{"orderId": "ORD-AUTOTEST-CONSIGNES"}')
+
+status_code=$(echo "$response" | tail -n 1)
+body=$(echo "$response" | head -n -1)
+
+((TESTS_RUN++))
+echo -ne "${YELLOW}⏳${NC} Test $TESTS_RUN: POST /test/create-with-consignes... "
+
+if [ "$status_code" = "200" ]; then
+  PAYMENT_ID_CONSIGNES=$(echo "$body" | jq -r '.payment.id' 2>/dev/null || echo "")
+  echo -e "${GREEN}✅ PASS${NC} (HTTP $status_code)"
+  echo -e "   ${BLUE}→${NC} Payment ID: $PAYMENT_ID_CONSIGNES"
+  ((TESTS_PASSED++))
+else
+  echo -e "${RED}❌ FAIL${NC} (Expected 200, got $status_code)"
+  ((TESTS_FAILED++))
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 SECTION 3 : CONSULTATION DE PAIEMENTS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Test 4: Récupérer le paiement par ID
+if [ -n "$PAYMENT_ID" ]; then
+  test_endpoint \
+    "GET /payments/:id" \
+    "GET" \
+    "${API_URL}/${PAYMENT_ID}" \
+    "" \
+    "200"
+fi
+
+# Test 5: Récupérer les paiements d'un utilisateur
+test_endpoint \
+  "GET /payments/user/:userId" \
+  "GET" \
+  "${API_URL}/user/test-user-autotest?limit=10" \
+  "" \
+  "200"
+
+# Test 6: Récupérer par commande
+test_endpoint \
+  "GET /payments/order/:orderId" \
+  "GET" \
+  "${API_URL}/order/ORD-AUTOTEST-001" \
+  "" \
+  "200"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 SECTION 4 : VALIDATION DES ERREURS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Test 7: Montant négatif
+test_endpoint \
+  "POST /payments (montant négatif)" \
+  "POST" \
+  "${API_URL}" \
+  '{"amount": -50, "currency": "EUR", "method": "CYBERPLUS", "userId": "test", "orderId": "INVALID-001"}' \
+  "400"
+
+# Test 8: Données manquantes
+test_endpoint \
+  "POST /payments (données manquantes)" \
+  "POST" \
+  "${API_URL}" \
+  '{"amount": 100}' \
+  "400"
+
+# Test 9: Paiement introuvable
+test_endpoint \
+  "GET /payments/:id (inexistant)" \
+  "GET" \
+  "${API_URL}/PAY_INEXISTANT_123" \
+  "" \
+  "404"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📋 SECTION 5 : SÉCURITÉ"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Test 10: Callback avec signature invalide
+test_endpoint \
+  "POST /callback/cyberplus (signature invalide)" \
+  "POST" \
+  "${API_URL}/callback/cyberplus" \
+  '{"transaction_id": "TXN_TEST", "order_id": "TEST", "status": "success", "signature": "invalid"}' \
+  "200"
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 RÉSULTATS FINAUX"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Tests exécutés : $TESTS_RUN"
+echo -e "Tests réussis  : ${GREEN}$TESTS_PASSED ✅${NC}"
+
+if [ $TESTS_FAILED -gt 0 ]; then
+  echo -e "Tests échoués  : ${RED}$TESTS_FAILED ❌${NC}"
+else
+  echo -e "Tests échoués  : ${GREEN}0 ✅${NC}"
+fi
+
+echo ""
+
+if [ $TESTS_FAILED -eq 0 ]; then
+  PERCENTAGE=100
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${GREEN}✅ TOUS LES TESTS SONT PASSÉS ! (100%)${NC}"
+  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  exit 0
+else
+  PERCENTAGE=$((TESTS_PASSED * 100 / TESTS_RUN))
+  echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${YELLOW}⚠️  CERTAINS TESTS ONT ÉCHOUÉ ($PERCENTAGE% de réussite)${NC}"
+  echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  exit 1
+fi

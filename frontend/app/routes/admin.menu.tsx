@@ -4,6 +4,7 @@
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -112,30 +113,10 @@ export default function AdminMenu() {
             Actions rapides
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Link
-              to="/admin/orders/new"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-center"
-            >
-              Nouvelle commande
-            </Link>
-            <Link
-              to="/admin/staff"
-              className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors text-center"
-            >
-              Gérer le staff
-            </Link>
-            <Link
-              to="/admin/suppliers/new"
-              className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors text-center"
-            >
-              Nouveau fournisseur
-            </Link>
-            <Link
-              to="/admin/reports"
-              className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors text-center"
-            >
-              Voir rapports
-            </Link>
+            <Button className="px-4 py-2 rounded-md  text-center" variant="blue" asChild><Link to="/admin/orders/new">Nouvelle commande</Link></Button>
+            <Button className="px-4 py-2 rounded-md  text-center" variant="green" asChild><Link to="/admin/staff">Gérer le staff</Link></Button>
+            <Button className="px-4 py-2 rounded-md  text-center" variant="purple" asChild><Link to="/admin/suppliers/new">Nouveau fournisseur</Link></Button>
+            <Button className="px-4 py-2 rounded-md  text-center" variant="orange" asChild><Link to="/admin/reports">Voir rapports</Link></Button>
           </div>
         </div>
 

@@ -242,7 +242,7 @@ export function CatalogGrid({
                     </h4>
                     
                     {getItemCount(item) > 0 && (
-                      <div className="bg-yellow-100 text-yellow-700 text-xs py-1 px-2 rounded-full inline-block">
+                      <div className="bg-warning/15 text-yellow-700 text-xs py-1 px-2 rounded-full inline-block">
                         {getItemCount(item).toLocaleString()}
                       </div>
                     )}
@@ -351,7 +351,7 @@ export function CatalogGrid({
                     
                     <Link
                       to={getItemUrl(item)}
-                      className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg transition-colors"
                     >
                       Voir les produits
                     </Link>

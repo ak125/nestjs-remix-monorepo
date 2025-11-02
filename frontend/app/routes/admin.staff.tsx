@@ -6,6 +6,7 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Shield, Users, Crown, Settings, AlertCircle, MessageSquare, Mail } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 
 // Interface pour les données staff basée sur les vraies données users
@@ -165,14 +166,14 @@ export default function AdminStaff() {
   const { staff, total, error, fallbackMode, messagesEnabled } = useLoaderData<StaffData>();
 
   const getRoleColor = (level: number) => {
-    if (level >= 9) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    if (level >= 8) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (level >= 7) return 'bg-green-100 text-green-800 border-green-200';
+    if (level >= 9) return 'warning';
+    if (level >= 8) return 'info';
+    if (level >= 7) return 'success';
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
+    return isActive ? 'success' : 'error';
   };
 
   return (
@@ -198,7 +199,7 @@ export default function AdminStaff() {
             {messagesEnabled && (
               <Link 
                 to="/admin/messages" 
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg"
               >
                 <MessageSquare className="h-4 w-4" />
                 Messages
@@ -206,7 +207,7 @@ export default function AdminStaff() {
             )}
             <Link 
               to="/admin/users" 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
             >
               <Users className="h-4 w-4" />
               Voir tous les utilisateurs
@@ -217,7 +218,7 @@ export default function AdminStaff() {
 
       {/* Indicateur de source */}
       <div className={`mb-6 p-4 rounded-lg border-l-4 ${
-        fallbackMode ? 'border-yellow-400 bg-yellow-50' : 'border-green-400 bg-green-50'
+        fallbackMode ? 'border-warning bg-warning/10' : 'border-success bg-success/10'
       }`}>
         <div className="flex items-center gap-2">
           {fallbackMode ? (
@@ -235,12 +236,12 @@ export default function AdminStaff() {
 
       {/* Erreur */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="mb-6 p-4    rounded-lg" variant="error">
           <div className="flex items-center gap-2 text-red-700">
             <AlertCircle className="h-5 w-5" />
             <span className="font-medium">{error}</span>
           </div>
-        </div>
+        </Alert>
       )}
 
       {/* Stats */}
@@ -344,7 +345,7 @@ export default function AdminStaff() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}{member.lastName?.[0]}
                           </span>
@@ -413,7 +414,7 @@ export default function AdminStaff() {
 
       {/* Information sur la table des messages */}
       {messagesEnabled && (
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mt-8 p-6 bg-primary/5 rounded-lg border border-blue-200">
           <div className="flex items-start gap-3">
             <MessageSquare className="h-6 w-6 text-blue-600 mt-1" />
             <div>
@@ -421,7 +422,7 @@ export default function AdminStaff() {
                 Système de Messagerie Intégré
               </h3>
               <p className="text-blue-800 mb-4">
-                La table <code className="bg-blue-100 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
+                La table <code className="bg-primary/15 px-2 py-1 rounded">___xtr_msg</code> est disponible pour la gestion des communications entre clients et staff.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
@@ -446,7 +447,7 @@ export default function AdminStaff() {
               <div className="mt-4">
                 <Link 
                   to="/admin/messages" 
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
                 >
                   <MessageSquare className="h-4 w-4" />
                   Accéder à la messagerie

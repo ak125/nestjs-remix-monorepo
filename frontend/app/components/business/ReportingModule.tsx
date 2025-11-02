@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Button } from '~/components/ui/button';
 
 // 📊 Types pour le reporting avancé
 interface ReportTemplate {
@@ -253,10 +254,10 @@ export function ReportingModule() {
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      financial: 'bg-green-100 text-green-800',
-      sales: 'bg-blue-100 text-blue-800',
-      marketing: 'bg-purple-100 text-purple-800',
-      operations: 'bg-yellow-100 text-yellow-800',
+      financial: 'success',
+      sales: 'info',
+      marketing: 'purple',
+      operations: 'warning',
       custom: 'bg-indigo-100 text-indigo-800'
     };
     return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -264,12 +265,12 @@ export function ReportingModule() {
 
   const getStatusColor = (status: string) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
-      paused: 'bg-yellow-100 text-yellow-800',
+      active: 'success',
+      paused: 'warning',
       draft: 'bg-gray-100 text-gray-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
-      processing: 'bg-blue-100 text-blue-800'
+      completed: 'success',
+      failed: 'error',
+      processing: 'info',
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -318,12 +319,8 @@ export function ReportingModule() {
               <p className="text-gray-600 mt-1">Générateur de rapports et analytics avancés</p>
             </div>
             <div className="flex items-center space-x-3">
-              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700">
-                ➕ Nouveau rapport
-              </button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700">
-                🚀 Générer maintenant
-              </button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="green">\n  ➕ Nouveau rapport\n</Button>
+              <Button className="px-4 py-2 rounded-md text-sm" variant="blue">\n  🚀 Générer maintenant\n</Button>
             </div>
           </div>
 
@@ -609,9 +606,7 @@ export function ReportingModule() {
                   <p className="text-sm text-gray-600 mt-1">Automatisation et diffusion</p>
                 </div>
               </div>
-              <button className="mt-8 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700">
-                🚀 Commencer à construire
-              </button>
+              <Button className="mt-8  px-6 py-3 rounded-md" variant="blue">\n  🚀 Commencer à construire\n</Button>
             </div>
           </div>
         )}
@@ -742,7 +737,7 @@ export function ReportingModule() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">🤖 Recommandations IA</h3>
               <div className="space-y-4">
-                <div className="border-l-4 border-blue-500 bg-blue-50 p-4">
+                <div className="border-l-4 border-primary bg-primary/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-blue-900">
@@ -753,15 +748,13 @@ export function ReportingModule() {
                         Impact estimé: +25% de précision des prévisions.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">
-                          Implémenter
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="blue">\n  Implémenter\n</Button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-l-4 border-green-500 bg-green-50 p-4">
+                <div className="border-l-4 border-success bg-success/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-green-900">
@@ -772,15 +765,13 @@ export function ReportingModule() {
                         Économie de temps estimée: 8h/mois.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                          Créer le template
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="green">\n  Créer le template\n</Button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-l-4 border-yellow-500 bg-yellow-50 p-4">
+                <div className="border-l-4 border-warning bg-warning/10 p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h4 className="text-sm font-medium text-yellow-900">
@@ -791,9 +782,7 @@ export function ReportingModule() {
                         Recommandation: Optimiser les requêtes de données pour réduire le temps de traitement.
                       </p>
                       <div className="mt-2">
-                        <button className="text-sm bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">
-                          Diagnostiquer
-                        </button>
+                        <Button className="text-sm  px-3 py-1 rounded" variant="yellow">\n  Diagnostiquer\n</Button>
                       </div>
                     </div>
                   </div>
@@ -833,7 +822,7 @@ export function ReportingModule() {
                     <span className="font-semibold">847 GB / 1 TB</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{ width: '84.7%' }}></div>
+                    <div className="bg-primary h-2 rounded-full" style={{ width: '84.7%' }}></div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">CPU moyen</span>

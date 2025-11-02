@@ -7,6 +7,7 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
+import { Button } from '~/components/ui/button';
 import { requireAdmin } from "../auth/unified.server";
 
 // Types pour la gestion des factures (utilisé dans le loader/action)
@@ -162,11 +163,11 @@ export default function InvoicesIndex() {
   // Couleur du statut
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
+      case 'paid': return 'success';
+      case 'sent': return 'info';
       case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-yellow-100 text-yellow-800';
+      case 'overdue': return 'error';
+      case 'cancelled': return 'warning';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -238,13 +239,8 @@ export default function InvoicesIndex() {
                 <option value="cancelled">Annulée</option>
               </select>
             </div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? "Recherche..." : "Rechercher"}
-            </button>
+            <Button className="px-4 py-2  rounded-md disabled:opacity-50" variant="blue" type="submit"
+              disabled={isLoading}>\n  {isLoading ? "Recherche..." : "Rechercher"}\n</Button>
           </Form>
         </div>
       </div>
@@ -253,24 +249,9 @@ export default function InvoicesIndex() {
       <div className="bg-white rounded-lg shadow mb-6">
         <div className="p-6">
           <div className="flex gap-4">
-            <Link
-              to="/admin/invoices/new"
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              ➕ Nouvelle Facture
-            </Link>
-            <Link
-              to="/admin/invoices/stats"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              📊 Statistiques Détaillées
-            </Link>
-            <Link
-              to="/admin/invoices/export"
-              className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
-            >
-              📥 Exporter
-            </Link>
+            <Button className="px-4 py-2  rounded-md" variant="green" asChild><Link to="/admin/invoices/new">➕ Nouvelle Facture</Link></Button>
+            <Button className="px-4 py-2  rounded-md" variant="blue" asChild><Link to="/admin/invoices/stats">📊 Statistiques Détaillées</Link></Button>
+            <Button className="px-4 py-2  rounded-md" variant="purple" asChild><Link to="/admin/invoices/export">📥 Exporter</Link></Button>
           </div>
         </div>
       </div>
@@ -411,12 +392,7 @@ export default function InvoicesIndex() {
       {invoices.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Aucune facture trouvée</p>
-          <Link
-            to="/admin/invoices/new"
-            className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            Créer la première facture
-          </Link>
+          <Button className="mt-4   px-4 py-2  rounded-md" variant="blue" asChild><Link to="/admin/invoices/new">Créer la première facture</Link></Button>
         </div>
       )}
     </div>

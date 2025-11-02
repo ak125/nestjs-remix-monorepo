@@ -58,15 +58,15 @@ export default function FamilyGammeBento({ className = "" }: FamilyGammeBentoPro
         </h2>
         <div className="flex justify-center gap-8 text-sm text-gray-600">
           <span className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-info rounded-full"></div>
             {stats.total_families} familles
           </span>
           <span className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-success rounded-full"></div>
             {stats.total_gammes} gammes
           </span>
           <span className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-purple-600 rounded-full"></div>
             {stats.total_manufacturers} fabricants
           </span>
         </div>

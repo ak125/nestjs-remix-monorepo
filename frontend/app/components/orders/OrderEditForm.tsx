@@ -1,6 +1,8 @@
+import { Alert } from '@fafa/ui';
 import { Form, useFetcher } from '@remix-run/react';
 import { Save, X } from 'lucide-react';
 import { useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 import { type ActionData, type Order } from '../../types/orders.types';
 
 interface OrderEditFormProps {
@@ -162,9 +164,7 @@ export function OrderEditForm({
 
           {/* Error message */}
           {fetcher.data?.error && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800">{fetcher.data.error}</p>
-            </div>
+            <Alert intent="error"><p>{fetcher.data.error}</p></Alert>
           )}
 
           {/* Actions */}
@@ -172,19 +172,15 @@ export function OrderEditForm({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-muted/50 transition-colors"
               disabled={isSubmitting}
             >
               Annuler
             </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
-            >
+            <Button className="flex items-center gap-2 px-4 py-2  rounded-lg  disabled:opacity-50 disabled:cursor-not-allowed" variant="blue" type="submit" disabled={isSubmitting}>
               <Save className="w-4 h-4" />
               {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
-            </button>
+            </Button>
           </div>
         </Form>
       </div>

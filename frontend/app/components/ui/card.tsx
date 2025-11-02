@@ -1,10 +1,14 @@
 import * as React from "react";
 import { cn } from "~/lib/utils";
 
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: string; // Permet d'accepter la prop variant même si non utilisée
+}
+
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  CardProps
+>(({ className, variant: _variant, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(

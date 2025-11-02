@@ -1,5 +1,7 @@
+import { Alert } from '@fafa/ui';
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNotifications } from "../notifications/NotificationContainer";
 
 interface PieceData {
   id: number;
@@ -35,6 +37,9 @@ export function AddToCartButton({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isOptimistic, setIsOptimistic] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { showSuccess, showError } = useNotifications();
 
     // Utiliser fetch directement vers l'API NestJS au lieu de Remix fetcher
     const handleAddToCart = async () => {
@@ -48,8 +53,24 @@ export function AddToCartButton({
         return;
       }
 
-      setIsLoading(true);
+      // ⚡ OPTIMISTIC UI: Afficher immédiatement le succès
+      setIsOptimistic(true);
+      setIsSuccess(true);
       setErrorMessage(null);
+
+      // 🎬 Animation flying to cart
+      if (buttonRef.current) {
+        createFlyingAnimation(buttonRef.current);
+      }
+
+      // 🔔 Notification immédiate
+      showSuccess(`✅ ${piece.name} ajouté au panier (${quantity}x)`);
+
+      // 🎯 Bounce du badge panier (si disponible)
+      triggerCartBadgeBounce();
+
+      // ⏱️ Délai réaliste avant l'API call (simule l'optimisme)
+      setIsLoading(true);
 
       try {
         const response = await fetch('/api/cart/items', {
@@ -67,32 +88,101 @@ export function AddToCartButton({
 
         if (response.ok) {
           await response.json(); // Consommer la réponse
-          setIsSuccess(true);
+          // ✅ Succès confirmé - garder l'état optimistic
+          setIsOptimistic(false);
           onSuccess?.();
           
-          // 🔥 Recharger la page pour synchroniser la session et le compteur panier
+          // � Recharger après 800ms pour voir l'animation
           setTimeout(() => {
             window.location.reload();
-          }, 1000);
+          }, 800);
         } else {
+          // ❌ Échec - revert optimistic update
           const errorData = await response.json().catch(() => ({}));
           const error = errorData.message || "Erreur lors de l'ajout au panier";
+          
+          // Revert état
+          setIsOptimistic(false);
+          setIsSuccess(false);
           setErrorMessage(error);
           onError?.(error);
+
+          // Notification d'erreur
+          showError(`❌ ${error}`);
+
           console.error("❌ [AddToCart] Erreur HTTP:", response.status, error);
         }
       } catch (error) {
-        // 🔥 Ne plus masquer les erreurs avec un faux succès
+        // ❌ Erreur réseau - revert optimistic update
         console.error("❌ [AddToCart] Erreur réseau:", error);
         const errorMsg = error instanceof Error 
           ? `Erreur: ${error.message}` 
           : "Impossible de contacter le serveur";
+        
+        // Revert état
+        setIsOptimistic(false);
+        setIsSuccess(false);
         setErrorMessage(errorMsg);
         onError?.(errorMsg);
+
+        // Notification d'erreur
+        showError(`❌ ${errorMsg}`);
       } finally {
         setIsLoading(false);
       }
     };
+
+  /**
+   * 🎬 Crée une animation de "flying" vers l'icône panier
+   */
+  const createFlyingAnimation = (button: HTMLElement) => {
+    // Créer un clone de l'icône produit
+    const clone = document.createElement('div');
+    clone.innerHTML = '🛒';
+    clone.style.cssText = `
+      position: fixed;
+      font-size: 24px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: flyToCart 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    `;
+
+    // Position de départ (bouton)
+    const rect = button.getBoundingClientRect();
+    clone.style.left = `${rect.left + rect.width / 2}px`;
+    clone.style.top = `${rect.top + rect.height / 2}px`;
+
+    // Ajouter au DOM
+    document.body.appendChild(clone);
+
+    // Supprimer après l'animation
+    setTimeout(() => {
+      clone.remove();
+    }, 600);
+  };
+
+  /**
+   * 🎯 Déclenche le bounce du badge panier
+   */
+  const triggerCartBadgeBounce = () => {
+    const cartBadge = document.querySelector('[data-cart-badge]');
+    if (cartBadge) {
+      cartBadge.classList.add('animate-bounce-success');
+      setTimeout(() => {
+        cartBadge.classList.remove('animate-bounce-success');
+      }, 600);
+    }
+  };
+
+  // Auto-reset du message de succès après 2s
+  useEffect(() => {
+    if (isSuccess && !isOptimistic) {
+      const timer = setTimeout(() => {
+        setIsSuccess(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, isOptimistic]);
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1 && newQuantity <= 99) {
@@ -147,18 +237,18 @@ export function AddToCartButton({
 
   const getButtonColor = () => {
     if (isSuccess) {
-      return "bg-green-600 hover:bg-green-700 text-white";
+      return "bg-success hover:bg-success/90 text-white";
     }
 
     if (errorMessage) {
-      return "bg-red-600 hover:bg-red-700 text-white";
+      return "bg-destructive hover:bg-destructive/90 text-white";
     }
 
     if (piece.stock === "En stock") {
-      return "bg-blue-600 hover:bg-blue-700 text-white";
+      return "bg-primary hover:bg-primary/90 text-primary-foreground";
     }
 
-    return "bg-yellow-600 hover:bg-yellow-700 text-white";
+    return "bg-warning hover:bg-warning/90 text-white";
   };
 
   return (
@@ -199,9 +289,10 @@ export function AddToCartButton({
 
       {/* Bouton d'ajout */}
       <button
+        ref={buttonRef}
         onClick={handleAddToCart}
         disabled={isLoading || piece.stock === "Rupture de stock"}
-        className={`${baseClasses} ${variantClasses[variant]} ${getButtonColor()} ${className} disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={`${baseClasses} ${variantClasses[variant]} ${getButtonColor()} ${className} disabled:opacity-50 disabled:cursor-not-allowed button-press`}
         title={piece.stock === "Rupture de stock" ? "Produit en rupture de stock" : `Ajouter ${piece.name} au panier`}
       >
         {getButtonContent()}
@@ -209,9 +300,7 @@ export function AddToCartButton({
 
       {/* Message d'erreur */}
       {errorMessage && (
-        <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">
-          {errorMessage}
-        </div>
+        <Alert intent="error">{errorMessage}</Alert>
       )}
 
       {/* Informations supplémentaires */}

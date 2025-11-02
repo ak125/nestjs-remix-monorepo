@@ -1,6 +1,7 @@
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import { Send, Paperclip, ArrowLeft } from "lucide-react";
+import { Alert } from '~/components/ui/alert';
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -122,16 +123,16 @@ export default function ComposeMessage() {
 
             {/* Information sur la commande si applicable */}
             {orderId && (
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+<Alert className="p-4  rounded-lg" variant="info">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-800">
+                  <Badge className="bg-info/20 text-info">
                     Commande
                   </Badge>
                   <span className="text-sm font-medium">
                     Concernant la commande #{orderId.slice(0, 8)}
                   </span>
                 </div>
-              </div>
+              </Alert>
             )}
 
             {/* Sujet */}
@@ -220,7 +221,7 @@ export default function ComposeMessage() {
             </div>
 
             {/* Conseils */}
-            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+<Alert className="p-4 rounded-lg" variant="warning">
               <h4 className="font-medium text-yellow-800 mb-2">💡 Conseils pour une réponse rapide</h4>
               <ul className="text-sm text-yellow-700 space-y-1">
                 <li>• Soyez précis dans votre description</li>
@@ -228,7 +229,7 @@ export default function ComposeMessage() {
                 <li>• Décrivez les étapes qui ont mené au problème</li>
                 <li>• Indiquez votre système d'exploitation/navigateur si pertinent</li>
               </ul>
-            </div>
+            </Alert>
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-6 border-t">

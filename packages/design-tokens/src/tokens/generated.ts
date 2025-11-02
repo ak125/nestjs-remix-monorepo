@@ -1,0 +1,253 @@
+/**
+ * 🎨 Design Tokens - Auto-généré
+ * ⚠️  NE PAS MODIFIER MANUELLEMENT
+ * Source: src/tokens/design-tokens.json
+ */
+
+export const designTokens = {
+  "colors": {
+    "primary": {
+      "50": "#ffe5e5",
+      "100": "#ffcccc",
+      "200": "#ff9999",
+      "300": "#ff6666",
+      "400": "#ff4d4d",
+      "500": "#FF3B30",
+      "600": "#e63629",
+      "700": "#cc2f24",
+      "800": "#b3291f",
+      "900": "#99221a",
+      "950": "#7f1b15"
+    },
+    "secondary": {
+      "50": "#e6f0f7",
+      "100": "#cce1ef",
+      "200": "#99c3df",
+      "300": "#66a5cf",
+      "400": "#3387bf",
+      "500": "#0F4C81",
+      "600": "#0d4473",
+      "700": "#0b3c65",
+      "800": "#093457",
+      "900": "#072c49",
+      "950": "#05243b"
+    },
+    "accent": {
+      "khmerCurry": "#ED5555",
+      "persianIndigo": "#350B60",
+      "vert": "#1FDC93",
+      "bleu": "#031754",
+      "bleuClair": "#D0EDFC",
+      "lightTurquoise": "#E2F2F1",
+      "extraLightTurquoise": "#F3F8F8"
+    },
+    "neutral": {
+      "50": "#F5F7FA",
+      "100": "#E5E7EB",
+      "200": "#D1D5DB",
+      "300": "#9CA3AF",
+      "400": "#6B7280",
+      "500": "#4B5563",
+      "600": "#374151",
+      "700": "#2D3748",
+      "800": "#1F2937",
+      "900": "#212529",
+      "950": "#111827",
+      "darkIron": "#B0B0B0",
+      "iron": "#EEEEEE",
+      "white": "#FFFFFF",
+      "black": "#000000"
+    },
+    "semantic": {
+      "action": "#D63027",
+      "actionContrast": "#FFFFFF",
+      "info": "#0F4C81",
+      "infoContrast": "#FFFFFF",
+      "success": "#1E8449",
+      "successContrast": "#FFFFFF",
+      "warning": "#D68910",
+      "warningContrast": "#000000",
+      "danger": "#C0392B",
+      "dangerContrast": "#FFFFFF",
+      "neutral": "#4B5563",
+      "neutralContrast": "#FFFFFF"
+    }
+  },
+  "spacing": {
+    "0": "0",
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem",
+    "20": "5rem",
+    "24": "6rem",
+    "32": "8rem",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "40px",
+    "3xl": "48px",
+    "4xl": "64px",
+    "5xl": "80px",
+    "6xl": "96px"
+  },
+  "spacingFluid": {
+    "section-xs": "clamp(1.5rem, 4vw, 2rem)",
+    "section-sm": "clamp(2rem, 5vw, 3rem)",
+    "section-md": "clamp(3rem, 6vw, 4rem)",
+    "section-lg": "clamp(4rem, 8vw, 6rem)",
+    "section-xl": "clamp(6rem, 10vw, 8rem)",
+    "section-2xl": "clamp(8rem, 12vw, 10rem)",
+    "gap-xs": "clamp(0.5rem, 1vw, 0.75rem)",
+    "gap-sm": "clamp(0.75rem, 1.5vw, 1rem)",
+    "gap-md": "clamp(1rem, 2vw, 1.5rem)",
+    "gap-lg": "clamp(1.5rem, 2.5vw, 2rem)",
+    "gap-xl": "clamp(2rem, 3vw, 2.5rem)"
+  },
+  "layout": {
+    "container": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px",
+      "full": "100%"
+    },
+    "grid": {
+      "columns": {
+        "mobile": "4",
+        "tablet": "8",
+        "desktop": "12",
+        "wide": "16"
+      },
+      "gutter": {
+        "mobile": "1rem",
+        "tablet": "1.5rem",
+        "desktop": "2rem"
+      }
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "768px",
+      "lg": "1024px",
+      "xl": "1280px",
+      "2xl": "1536px"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "heading": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Montserrat', sans-serif",
+      "body": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "data": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace",
+      "sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "serif": "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+      "mono": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace"
+    },
+    "fontSize": {
+      "xs": "0.75rem",
+      "sm": "0.875rem",
+      "base": "1rem",
+      "lg": "1.125rem",
+      "xl": "1.25rem",
+      "2xl": "1.5rem",
+      "3xl": "1.875rem",
+      "4xl": "2.25rem",
+      "5xl": "3rem",
+      "6xl": "3.75rem"
+    },
+    "fontSizeFluid": {
+      "xs": "clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem)",
+      "sm": "clamp(0.875rem, 0.825rem + 0.25vw, 1rem)",
+      "base": "clamp(1rem, 0.95rem + 0.25vw, 1.125rem)",
+      "lg": "clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem)",
+      "xl": "clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem)",
+      "2xl": "clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem)",
+      "3xl": "clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem)",
+      "4xl": "clamp(2.25rem, 1.95rem + 1.5vw, 3rem)",
+      "5xl": "clamp(3rem, 2.55rem + 2.25vw, 3.75rem)",
+      "6xl": "clamp(3.75rem, 3.15rem + 3vw, 4.5rem)"
+    },
+    "lineHeight": {
+      "none": "1",
+      "tight": "1.2",
+      "snug": "1.375",
+      "normal": "1.5",
+      "relaxed": "1.6",
+      "loose": "1.8"
+    },
+    "letterSpacing": {
+      "tighter": "-0.05em",
+      "tight": "-0.025em",
+      "normal": "0",
+      "wide": "0.025em",
+      "wider": "0.05em",
+      "widest": "0.1em"
+    },
+    "fontWeight": {
+      "thin": "100",
+      "extralight": "200",
+      "light": "300",
+      "normal": "400",
+      "medium": "500",
+      "semibold": "600",
+      "bold": "700",
+      "extrabold": "800",
+      "black": "900"
+    },
+    "maxWidth": {
+      "prose": "70ch",
+      "proseWide": "75ch",
+      "proseNarrow": "60ch"
+    }
+  },
+  "shadows": {
+    "none": "none",
+    "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    "base": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+    "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+    "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+    "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+    "inner": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)"
+  },
+  "borderRadius": {
+    "none": "0",
+    "sm": "0.125rem",
+    "base": "0.25rem",
+    "md": "0.375rem",
+    "lg": "0.5rem",
+    "xl": "0.75rem",
+    "2xl": "1rem",
+    "3xl": "1.5rem",
+    "full": "9999px"
+  },
+  "transitions": {
+    "fast": "150ms",
+    "base": "250ms",
+    "slow": "350ms",
+    "slower": "500ms"
+  },
+  "zIndex": {
+    "dropdown": "1000",
+    "sticky": "1020",
+    "fixed": "1030",
+    "modalBackdrop": "1040",
+    "modal": "1050",
+    "popover": "1060",
+    "tooltip": "1070"
+  }
+} as const;
+
+export type DesignTokens = typeof designTokens;
+
+// Type helpers
+export type ColorToken = keyof typeof designTokens.colors;
+export type SpacingToken = keyof typeof designTokens.spacing;
+export type TypographyToken = keyof typeof designTokens.typography;

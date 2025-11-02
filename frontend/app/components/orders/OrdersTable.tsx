@@ -114,7 +114,7 @@ export function OrdersTable({
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 font-medium"
+                          className="px-2 py-1 text-xs bg-info/80 text-info-foreground hover:bg-info rounded  font-medium"
                           onClick={() => onViewOrder?.(order.ord_id)}
                         >
                           Voir

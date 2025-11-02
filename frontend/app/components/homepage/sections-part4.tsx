@@ -2,6 +2,7 @@
 import { Link } from "@remix-run/react";
 import { MapPin, Mail, Phone, MessageCircle, Clock, Facebook, Twitter, Linkedin, Instagram, Youtube, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Button } from '~/components/ui/button';
 
 // ================================
 // ÉQUIPE & CULTURE D'ENTREPRISE
@@ -194,7 +195,7 @@ export function ContactSection() {
             </form>
 
             {/* Option chat en direct */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="mt-6 p-4 bg-primary/5 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <MessageCircle className="w-6 h-6 text-blue-600" />
@@ -205,7 +206,7 @@ export function ContactSection() {
                 </div>
                 <button
                   onClick={() => setIsChatOpen(true)}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  className="px-6 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-semibold transition-colors"
                 >
                   Démarrer
                 </button>
@@ -279,7 +280,7 @@ function ContactInfoCard({ icon, title, content, subtitle }: any) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
+        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center text-blue-600 flex-shrink-0">
           {icon}
         </div>
         <div>
@@ -352,9 +353,7 @@ export function Footer() {
                 placeholder="Votre email"
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 focus:border-blue-500 focus:outline-none text-sm"
               />
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors">
-                OK
-              </button>
+              <Button className="px-4 py-2 rounded-lg font-semibold" variant="blue">\n  OK\n</Button>
             </div>
 
             {/* Moyens de paiement */}
@@ -405,7 +404,7 @@ function SocialIcon({ icon, href }: { icon: React.ReactNode; href: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+      className="w-10 h-10 bg-gray-800 hover:bg-primary rounded-lg flex items-center justify-center transition-colors"
     >
       {icon}
     </a>
@@ -433,7 +432,7 @@ export function LiveChatButton() {
         className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all hover:scale-110 z-50 flex items-center justify-center"
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></span>
+        <span className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-white animate-pulse"></span>
       </button>
 
       {isOpen && (
@@ -458,9 +457,7 @@ export function LiveChatButton() {
                 placeholder="Votre message..."
                 className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none"
               />
-              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors">
-                Envoyer
-              </button>
+              <Button className="px-4 py-2  rounded-xl font-semibold" variant="blue">\n  Envoyer\n</Button>
             </div>
           </div>
         </div>
@@ -472,7 +469,7 @@ export function LiveChatButton() {
 function ChatMessage({ isBot, message, time }: any) {
   return (
     <div className={`flex ${isBot ? 'justify-start' : 'justify-end'}`}>
-      <div className={`max-w-[80%] ${isBot ? 'bg-gray-100' : 'bg-blue-600 text-white'} rounded-xl p-3`}>
+      <div className={`max-w-[80%] ${isBot ? 'bg-gray-100' : 'bg-primary text-primary-foreground'} rounded-xl p-3`}>
         <p className="text-sm">{message}</p>
         <p className={`text-xs mt-1 ${isBot ? 'text-gray-500' : 'text-blue-100'}`}>{time}</p>
       </div>

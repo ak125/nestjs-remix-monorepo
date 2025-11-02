@@ -9,6 +9,7 @@ import {
   Truck,
   XCircle,
 } from 'lucide-react';
+import { Alert } from '~/components/ui/alert';
 import { type Order } from '../../types/orders.types';
 import { type UserPermissions } from '../../utils/permissions';
 
@@ -40,7 +41,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     id: '2',
     name: 'Validée',
     icon: CheckCircle,
-    bgColor: 'bg-blue-100',
+    bgColor: 'bg-primary/15',
     textColor: 'text-blue-700',
     action: 'validate',
     permission: 'canValidate',
@@ -58,7 +59,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     id: '4',
     name: 'Prête',
     icon: Package,
-    bgColor: 'bg-yellow-100',
+    bgColor: 'bg-warning/15',
     textColor: 'text-yellow-700',
     action: 'markReady',
     permission: 'canShip',
@@ -76,7 +77,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     id: '6',
     name: 'Livrée',
     icon: Check,
-    bgColor: 'bg-green-100',
+    bgColor: 'bg-success/15',
     textColor: 'text-green-700',
     action: 'deliver',
     permission: 'canDeliver',
@@ -122,10 +123,10 @@ export function OrderWorkflowButtons({
   // Si commande annulée
   if (order.ord_ords_id === '7') {
     return (
-      <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+<Alert className="flex items-center gap-2 px-4 py-3    rounded-lg" variant="error">
         <XCircle className="w-5 h-5 text-red-600" />
         <span className="font-medium text-red-700">Commande annulée</span>
-      </div>
+      </Alert>
     );
   }
 
@@ -153,7 +154,7 @@ export function OrderWorkflowButtons({
                   isCurrent
                     ? `${step.bgColor} ${step.textColor} ring-2 ring-offset-2 ring-current font-semibold`
                     : isPast
-                      ? 'bg-green-50 text-green-600'
+                      ? 'bg-success/10 text-success'
                       : isClickable
                         ? `${step.bgColor} ${step.textColor} hover:ring-2 hover:ring-offset-1 hover:ring-current cursor-pointer`
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -171,7 +172,7 @@ export function OrderWorkflowButtons({
 
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div
-                  className={`w-8 h-0.5 ${isPast ? 'bg-green-400' : 'bg-gray-300'}`}
+                  className={`w-8 h-0.5 ${isPast ? 'bg-success/60' : 'bg-muted/50'}`}
                 />
               )}
             </div>

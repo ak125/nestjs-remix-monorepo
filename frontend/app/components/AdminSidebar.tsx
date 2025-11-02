@@ -22,7 +22,8 @@ import {
   BookOpen,
   Edit,
   Eye,
-  Tag
+  Tag,
+  Palette
 } from "lucide-react"
 import * as React from "react"
 import { Button } from "./ui/button"
@@ -71,7 +72,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/admin/users", 
       icon: Users,
       description: "Gestion des utilisateurs",
-      badge: stats ? { count: stats.totalUsers, color: "bg-blue-500" } : { count: 0, color: "bg-gray-400" },
+      badge: stats ? { count: stats.totalUsers, color: "bg-primary" } : { count: 0, color: "bg-gray-400" },
       notification: false
     },
     {
@@ -79,7 +80,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/admin/orders",
       icon: ShoppingCart,
       description: "Gestion des commandes",
-      badge: stats ? { count: stats.totalOrders, color: "bg-green-500" } : { count: 0, color: "bg-gray-400" },
+      badge: stats ? { count: stats.totalOrders, color: "bg-success" } : { count: 0, color: "bg-gray-400" },
       notification: stats ? stats.pendingOrders > 0 : false
     },
     {
@@ -95,7 +96,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/products/admin",
       icon: Store,
       description: "Gestion catalogue produits",
-      badge: { count: "4.0M+", color: "bg-blue-500" },
+      badge: { count: "4.0M+", color: "bg-primary" },
       notification: false,
       subItems: [
         {
@@ -129,7 +130,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/admin/blog",
       icon: BookOpen,
       description: "Gestion du blog",
-      badge: { count: 86, color: "bg-blue-500" },
+      badge: { count: 86, color: "bg-primary" },
       notification: false,
       subItems: [
         {
@@ -157,7 +158,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/dashboard",
       icon: Store,
       description: "Interface commerciale",
-      badge: { count: 'PRO', color: "bg-blue-600" },
+      badge: { count: 'PRO', color: "bg-primary" },
       notification: false
     },
     {
@@ -181,7 +182,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/admin/payments",
       icon: CreditCard,
       description: "Gestion des paiements",
-      badge: { count: 50, color: "bg-yellow-500" },
+      badge: { count: 50, color: "bg-warning" },
       notification: true
     },
     {
@@ -199,10 +200,10 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       description: "Optimisation référencement",
       badge: stats?.seoStats ? { 
         count: `${(stats.seoStats.completionRate || 95.2).toFixed(1)}%`, 
-        color: "bg-green-600" 
+        color: "bg-success" 
       } : { 
         count: "95.2%", 
-        color: "bg-green-600" 
+        color: "bg-success" 
       },
       notification: false,
       subItems: [
@@ -227,6 +228,14 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       ]
     },
     {
+      name: "Design System",
+      href: "/admin/design-system",
+      icon: Palette,
+      description: "Tokens & Templates",
+      badge: { count: 'v1.0', color: "bg-purple-600" },
+      notification: false
+    },
+    {
       name: "Rapports",
       href: "/admin/reports",
       icon: BarChart3,
@@ -239,7 +248,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
       href: "/admin/system",
       icon: Monitor,
       description: "Monitoring serveur",
-      badge: { count: 'OK', color: "bg-green-500" },
+      badge: { count: 'OK', color: "bg-success" },
       notification: false
     }
   ];
@@ -295,7 +304,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative shadow-lg">
                 <Shield className="h-4 w-4 text-white" />
                 {/* Indicateur de notifications actives */}
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse shadow-sm" />
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full animate-pulse shadow-sm" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-white">Admin Panel</h2>
@@ -387,7 +396,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
                               "flex items-center space-x-2 rounded-lg px-3 py-2 text-xs transition-all duration-200",
                               "hover:bg-slate-700/30 hover:text-green-300",
                               isSubActive
-                                ? "bg-green-600/20 text-green-300 border-l-2 border-green-400"
+                                ? "bg-success/20 text-green-300 border-l-2 border-green-400"
                                 : "text-slate-400 hover:text-slate-200"
                             )}
                           >
@@ -413,7 +422,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
               {/* Zone de notifications récentes */}
             <Card className="p-3 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-600/30">
               <div className="flex items-center gap-2 text-yellow-300">
-                <div className="h-2 w-2 bg-yellow-400 rounded-full animate-pulse" />
+                <div className="h-2 w-2 bg-warning/60 rounded-full animate-pulse" />
                 <p className="text-xs font-medium">
                   {stats ? `${stats.totalOrders} commandes totales` : '0 commandes totales'}
                 </p>
@@ -436,7 +445,7 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
                     admin@automobile.com
                   </p>
                 </div>
-                <div className="h-2.5 w-2.5 bg-green-400 rounded-full shadow-sm animate-pulse" title="En ligne" />
+                <div className="h-2.5 w-2.5 bg-success/60 rounded-full shadow-sm animate-pulse" title="En ligne" />
               </div>
               
               <form method="POST" action="/auth/logout" className="w-full">

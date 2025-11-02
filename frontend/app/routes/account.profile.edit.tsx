@@ -1,3 +1,4 @@
+import { Alert } from '@fafa/ui';
 import { json, redirect, type ActionFunction, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, Form, useActionData, useNavigation } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";
@@ -138,22 +139,18 @@ export default function AccountProfileEdit() {
 
       {/* Messages de statut */}
       {actionData?.success && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-green-800">Profil mis à jour avec succès !</p>
-        </div>
+        <Alert intent="success"><p>Profil mis à jour avec succès !</p></Alert>
       )}
 
       {actionData?.error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{actionData.error}</p>
-        </div>
+        <Alert intent="error"><p>{actionData.error}</p></Alert>
       )}
 
       {/* Formulaire de modification */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <h3 className="font-semibold text-gray-900">Informations personnelles</h3>
@@ -192,7 +189,7 @@ export default function AccountProfileEdit() {
                 required
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.firstName 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="Votre prénom"
@@ -215,7 +212,7 @@ export default function AccountProfileEdit() {
                 required
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.lastName 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="Votre nom"
@@ -237,7 +234,7 @@ export default function AccountProfileEdit() {
                 defaultValue={user.phone}
                 className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   actionData?.fieldErrors?.phone 
-                    ? "border-red-300 bg-red-50" 
+                    ? "border-destructive bg-destructive/10" 
                     : "border-gray-300"
                 }`}
                 placeholder="+33 6 12 34 56 78"

@@ -1,0 +1,99 @@
+# 🔄 DOCKER COMPOSE - WORKER + SUPERCRONIC
+# Container dédié pour cron jobs et BullMQ workers
+
+version: '3.8'
+
+services:
+  # Worker container avec Supercronic + BullMQ
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: automecanik-worker
+    restart: unless-stopped
+    
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=0
+      - WORKER_CONCURRENCY=5
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    
+    depends_on:
+      - redis
+      - backend
+    
+    networks:
+      - automecanik-network
+    
+    volumes:
+      - ./logs/worker:/logs
+      - ./backups:/backups
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Redis pour BullMQ
+  redis:
+    image: redis:7-alpine
+    container_name: automecanik-redis
+    restart: unless-stopped
+    
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    
+    ports:
+      - "6379:6379"
+    
+    networks:
+      - automecanik-network
+    
+    volumes:
+      - redis-data:/data
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Bull Board - Dashboard UI pour BullMQ
+  bull-board:
+    image: ghcr.io/felixmosh/bull-board:latest
+    container_name: automecanik-bull-board
+    restart: unless-stopped
+    
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - BULL_PREFIX=bull
+    
+    ports:
+      - "3002:3000"
+    
+    depends_on:
+      - redis
+    
+    networks:
+      - automecanik-network
+
+networks:
+  automecanik-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

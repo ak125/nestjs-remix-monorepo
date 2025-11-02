@@ -1,3 +1,4 @@
+
 /**
  * Types pour les paiements côté frontend
  */
@@ -119,6 +120,15 @@ export interface OrderSummary {
   currency: string;
   // ✅ Phase 7: Montant des consignes
   consigneTotal?: number;
+  // ✅ Informations client
+  customerName?: string;
+  customerEmail?: string;
+  shippingAddress?: {
+    street?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+  };
 }
 
 export interface OrderItem {

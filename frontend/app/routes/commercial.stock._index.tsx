@@ -126,12 +126,12 @@ export default function CommercialStockIndex() {
 
   const getStockStatus = (item: StockItem) => {
     if (item.pri_dispo === '0') {
-      return { label: "Rupture", color: "bg-red-100 text-red-800" };
+      return { label: "Rupture", color: 'error', };
     }
     if (parseFloat(item.pri_marge) < 20) {
-      return { label: "Marge faible", color: "bg-orange-100 text-orange-800" };
+      return { label: "Marge faible", color: 'orange', };
     }
-    return { label: "Disponible", color: "bg-green-100 text-green-800" };
+    return { label: "Disponible", color: 'success', };
   };
 
   const handleExport = () => {
@@ -307,7 +307,7 @@ export default function CommercialStockIndex() {
                   return (
                     <tr 
                       key={item.pri_piece_id} 
-                      className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}
+                      className={`border-b hover:bg-gray-50 ${isSelected ? 'bg-primary/5' : ''}`}
                     >
                       <td className="p-4">
                         <input

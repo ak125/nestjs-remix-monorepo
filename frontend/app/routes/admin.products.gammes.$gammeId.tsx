@@ -259,7 +259,7 @@ export default function AdminProductsGammeManagement() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="bg-red-50">
+          <Badge variant="outline" className="bg-destructive/5">
             Admin Level {user.level}
           </Badge>
           {enhanced && (
@@ -457,7 +457,7 @@ export default function AdminProductsGammeManagement() {
                     <div className="flex items-center gap-2">
                       <Badge 
                         variant={product.piece_activ ? "default" : "secondary"}
-                        className={`text-xs ${product.piece_activ ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                        className={`text-xs ${product.piece_activ ? 'success' : 'error'}`}
                       >
                         {product.piece_activ ? '✅ Actif' : '❌ Inactif'}
                       </Badge>

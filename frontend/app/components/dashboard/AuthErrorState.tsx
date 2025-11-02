@@ -17,7 +17,7 @@ export function AuthErrorState({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="max-w-md mx-auto text-center p-6">
-        <div className="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-red-100">
+        <div className="mx-auto h-16 w-16 mb-6 flex items-center justify-center rounded-full bg-destructive/15">
           <AlertTriangle className="h-8 w-8 text-red-600" />
         </div>
         

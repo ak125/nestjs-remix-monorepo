@@ -1,8 +1,8 @@
+import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
-
 import { useLoaderData, Link } from '@remix-run/react';
-
 import { ArrowLeft, Mail, Phone, User, MapPin, ShoppingBag, Award, Calendar, TrendingUp, Building2, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Button } from '~/components/ui/button';
 
 
 
@@ -182,20 +182,17 @@ export function ErrorBoundary() {
         </Link>
       </div>
 
-      <div className="border rounded-lg p-8 bg-red-50 border-red-200">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-            <User className="w-6 h-6 text-red-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-red-900">Utilisateur non trouvé</h1>
-            <p className="text-red-700 mt-1">
-              L'ID utilisateur spécifié n'existe pas dans la base de données.
-            </p>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <Alert 
+          intent="error" 
+          variant="solid"
+          icon={<User className="w-6 h-6" />}
+          title="Utilisateur non trouvé"
+        >
+          L'ID utilisateur spécifié n'existe pas dans la base de données.
+        </Alert>
 
-        <div className="bg-white border border-red-200 rounded p-4 mt-4">
+        <div className="bg-white border border-gray-200 rounded p-4">
           <h3 className="font-semibold mb-2">Suggestions :</h3>
           <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
             <li>Vérifiez que l'ID utilisateur est correct</li>
@@ -206,9 +203,7 @@ export function ErrorBoundary() {
 
         <div className="mt-6">
           <Link to="/admin/users">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Voir tous les utilisateurs
-            </button>
+            <Button className="px-4 py-2  rounded-md" variant="blue">\n  Voir tous les utilisateurs\n</Button>
           </Link>
         </div>
       </div>
@@ -268,20 +263,16 @@ export default function UserDetails() {
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <p className="text-gray-600">{user.email}</p>
-                <span
-                  className={`px-2 py-1 text-xs rounded-full ${
-                    user.isActive
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
+                <Badge 
+                  variant={user.isActive ? 'success' : 'default'}
+                  size="sm"
                 >
                   {user.isActive ? '🟢 Actif' : '⚪ Inactif'}
-                </span>
+                </Badge>
                 {user.isPro && (
-                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
-                    <Award className="w-3 h-3" />
+                  <Badge variant="info" size="sm" icon={<Award className="w-3 h-3" />}>
                     Pro
-                  </span>
+                  </Badge>
                 )}
                 {user.isCompany && (
                   <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800 flex items-center gap-1">
@@ -302,8 +293,8 @@ export default function UserDetails() {
             <button
               className={`px-4 py-2 text-sm rounded-md text-white transition-colors ${
                 user.isActive
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-green-600 hover:bg-green-700'
+                  ? 'bg-destructive hover:bg-destructive/90'
+                  : 'bg-success hover:bg-success/90'
               }`}
             >
               {user.isActive ? '🚫 Désactiver' : '✅ Activer'}
@@ -318,7 +309,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-blue-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <ShoppingBag className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</span>
@@ -332,7 +323,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-green-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-green-100 rounded-lg">
+              <div className="p-2.5 bg-success/10 rounded-lg">
                 <CreditCard className="w-6 h-6 text-green-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Dépensé</span>
@@ -348,7 +339,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-purple-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <TrendingUp className="w-6 h-6 text-purple-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Panier moyen</span>
@@ -364,7 +355,7 @@ export default function UserDetails() {
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-orange-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
           <div className="relative">
             <div className="flex items-center justify-between mb-3">
-              <div className="p-2.5 bg-orange-100 rounded-lg">
+              <div className="p-2.5 bg-muted rounded-lg">
                 <CheckCircle className="w-6 h-6 text-orange-600" />
               </div>
               <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Taux</span>
@@ -382,7 +373,7 @@ export default function UserDetails() {
         {/* Informations personnelles */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200">
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2 bg-muted rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -570,7 +561,7 @@ export default function UserDetails() {
             </h3>
           </div>
           <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="info">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-blue-600" />
                 <label className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
@@ -580,9 +571,9 @@ export default function UserDetails() {
               <p className="text-sm text-blue-900 font-medium">
                 {formatDate(stats.firstOrderDate)}
               </p>
-            </div>
+            </Alert>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-green-600" />
                 <label className="text-xs font-semibold text-green-800 uppercase tracking-wide">
@@ -592,9 +583,9 @@ export default function UserDetails() {
               <p className="text-sm text-green-900 font-medium">
                 {formatDate(stats.lastOrderDate)}
               </p>
-            </div>
+            </Alert>
 
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+<Alert className="rounded-lg p-4" variant="default">
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="w-4 h-4 text-purple-600" />
                 <label className="text-xs font-semibold text-purple-800 uppercase tracking-wide">
@@ -610,23 +601,23 @@ export default function UserDetails() {
                   </span>
                 )}
               </p>
-            </div>
+            </Alert>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+<Alert className="rounded-lg p-3 text-center" variant="success">
                 <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-green-700">
                   {stats.completedOrders}
                 </div>
                 <div className="text-xs text-green-600">Payées</div>
-              </div>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+              </Alert>
+<Alert className="rounded-lg p-3 text-center" variant="warning">
                 <XCircle className="w-5 h-5 text-orange-600 mx-auto mb-1" />
                 <div className="text-2xl font-bold text-orange-700">
                   {stats.pendingOrders}
                 </div>
                 <div className="text-xs text-orange-600">En attente</div>
-              </div>
+              </Alert>
             </div>
           </div>
         </div>
@@ -652,7 +643,7 @@ export default function UserDetails() {
             {recentOrders.map((order) => (
               <div
                 key={order.id}
-                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-200"
+                className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-info/20/30 transition-all duration-200"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                   {/* Gauche: ID et Date */}
@@ -664,7 +655,7 @@ export default function UserDetails() {
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${
                           order.isPaid
-                            ? 'bg-green-100 text-green-800 border border-green-200'
+                            ? 'bg-success/20 text-success border border-green-200'
                             : 'bg-orange-100 text-orange-800 border border-orange-200'
                         }`}
                       >
@@ -753,7 +744,7 @@ export default function UserDetails() {
         <div className="flex gap-3 flex-wrap">
           <a
             href={`mailto:${user.email}`}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow"
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-info bg-info/10 border border-blue-200 rounded-lg hover:bg-info/20 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow"
           >
             <Mail className="w-4 h-4" />
             Envoyer un email
@@ -774,7 +765,7 @@ export default function UserDetails() {
           {user.phone && (
             <a
               href={`tel:${user.phone}`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-green-700 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-success bg-success/10 border border-green-200 rounded-lg hover:bg-success/20 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
             >
               <Phone className="w-4 h-4" />
               Appeler

@@ -181,10 +181,10 @@ export class MetricsService extends SupabaseBaseService {
           .from('__sitemap_p_link')
           .select('*', { count: 'exact', head: true }),
         this.supabase
-          .from('___META_TAGS_ARIANE')
+          .from('___meta_tags_ariane')
           .select('*', { count: 'exact', head: true }),
         this.supabase
-          .from('___META_TAGS_ARIANE')
+          .from('___meta_tags_ariane')
           .select('*', { count: 'exact', head: true })
           .not('meta_title', 'is', null)
           .not('meta_description', 'is', null),

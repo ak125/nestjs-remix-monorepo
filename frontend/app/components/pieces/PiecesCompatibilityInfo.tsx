@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { Alert } from '~/components/ui/alert';
 import { type CompatibilityInfo } from '../../types/pieces-route.types';
 
 interface PiecesCompatibilityInfoProps {
@@ -55,7 +56,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
         {compatibility.engines.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
@@ -71,7 +72,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                   key={index}
                   className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200 flex items-center gap-3"
                 >
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {index + 1}
                   </div>
                   <span className="text-sm font-medium text-gray-900">
@@ -85,7 +86,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
 
         {/* Notes importantes */}
         {compatibility.notes.length > 0 && (
-          <div className="bg-yellow-50 rounded-lg p-5 border-l-4 border-yellow-400">
+<Alert className="rounded-lg p-5" variant="warning">
             <div className="flex items-start gap-3">
               <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -104,7 +105,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                 </ul>
               </div>
             </div>
-          </div>
+          </Alert>
         )}
 
         {/* CTA Vérification */}
@@ -118,7 +119,7 @@ export function PiecesCompatibilityInfo({ compatibility, vehicleName }: PiecesCo
                 Notre équipe vérifie gratuitement la compatibilité avec votre véhicule
               </p>
             </div>
-            <button className="flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-lg">
+            <button className="flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
               Vérifier
             </button>
           </div>

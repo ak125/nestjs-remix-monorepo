@@ -381,7 +381,7 @@ export class ProductsService extends SupabaseBaseService {
   async update(id: string, updateProductDto: UpdateProductDto) {
     try {
       const { data, error } = await this.client
-        .from('products')
+        .from('pieces')
         .update({
           ...updateProductDto,
           updated_at: new Date().toISOString(),
@@ -409,7 +409,7 @@ export class ProductsService extends SupabaseBaseService {
   async remove(id: string) {
     try {
       const { error } = await this.client
-        .from('products')
+        .from('pieces')
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -437,7 +437,7 @@ export class ProductsService extends SupabaseBaseService {
   async updateStock(id: string, quantity: number) {
     try {
       const { data, error } = await this.client
-        .from('products')
+        .from('pieces')
         .update({
           stock_quantity: quantity,
           updated_at: new Date().toISOString(),
@@ -1035,7 +1035,7 @@ export class ProductsService extends SupabaseBaseService {
   async getModels(brandId: number) {
     try {
       const { data, error } = await this.client
-        .from('auto_models')
+        .from('auto_modele')
         .select('*')
         .eq('brand_id', brandId)
         .order('name', { ascending: true });
@@ -1058,7 +1058,7 @@ export class ProductsService extends SupabaseBaseService {
   async getTypes(modelId: number) {
     try {
       const { data, error } = await this.client
-        .from('auto_types')
+        .from('auto_type')
         .select('*')
         .eq('model_id', modelId)
         .order('name', { ascending: true });
@@ -1081,7 +1081,7 @@ export class ProductsService extends SupabaseBaseService {
   async getPopularProducts(limit = 10) {
     try {
       const { data, error } = await this.client
-        .from('products')
+        .from('pieces')
         .select(
           `
           *,

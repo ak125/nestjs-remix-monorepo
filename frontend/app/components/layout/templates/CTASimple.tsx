@@ -42,7 +42,7 @@ export const CTASimple: React.FC<CTASimpleProps> = ({
           <div className="cta-actions">
             <a
               href={action.href}
-              className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors shadow-lg"
+              className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-info/20 transition-colors shadow-lg"
             >
               {action.text}
             </a>

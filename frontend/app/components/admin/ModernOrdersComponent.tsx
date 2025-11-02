@@ -6,6 +6,8 @@
 import React, { useState } from 'react';
 import { z } from 'zod';
 import { useNotifications } from '~/components/notifications/NotificationContainer';
+import { Alert } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { useCrud } from '~/hooks/useApi';
 import { OrderSearchSchema, useZodValidation, type OrderSearchData } from '~/lib/schemas/validation';
 
@@ -137,13 +139,8 @@ export const ModernOrdersComponent: React.FC = () => {
         </div>
 
         <div className="flex space-x-2">
-          <button
-            type="submit"
-            disabled={ordersApi.isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-          >
-            {ordersApi.isLoading ? 'Recherche...' : 'Rechercher'}
-          </button>
+          <Button className="px-4 py-2  rounded-md disabled:opacity-50" variant="blue" type="submit"
+            disabled={ordersApi.isLoading}>\n  {ordersApi.isLoading ? 'Recherche...' : 'Rechercher'}\n</Button>
           
           <button
             type="button"
@@ -159,7 +156,7 @@ export const ModernOrdersComponent: React.FC = () => {
           <button
             type="button"
             onClick={() => showSuccess('Exemple de notification de succès')}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-md"
           >
             Test Notification
           </button>
@@ -168,9 +165,7 @@ export const ModernOrdersComponent: React.FC = () => {
 
       {/* Affichage des erreurs de validation */}
       {ordersApi.error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <strong>Erreur:</strong> {ordersApi.error}
-        </div>
+        <Alert intent="error"><strong>Erreur:</strong> {ordersApi.error}</Alert>
       )}
 
       {/* Liste des commandes depuis le cache Zustand */}
@@ -203,10 +198,10 @@ export const ModernOrdersComponent: React.FC = () => {
                       {order.total ? `${order.total}€` : 'N/A'}
                     </p>
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                      order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'confirmed' ? 'bg-yellow-100 text-yellow-800' :
-                      order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      order.status === 'delivered' ? 'success' :
+                      order.status === 'shipped' ? 'info' :
+                      order.status === 'confirmed' ? 'warning' :
+                      order.status === 'cancelled' ? 'error' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {order.status || 'unknown'}

@@ -1,0 +1,24 @@
+#!/bin/sh
+# 🚀 SCRIPT DE DÉMARRAGE WORKER
+# Lance Supercronic + BullMQ Worker en parallèle
+
+set -e
+
+echo "🔧 Starting Worker Container..."
+echo "📅 Supercronic crontab: /app/crontab"
+echo "🔄 BullMQ worker concurrency: ${WORKER_CONCURRENCY}"
+
+# Démarrer le worker NestJS en arrière-plan
+echo "🚀 Starting BullMQ Worker..."
+node /app/backend/dist/workers/main.js &
+WORKER_PID=$!
+
+# Attendre que le worker soit prêt
+sleep 3
+
+# Démarrer Supercronic en premier plan
+echo "📅 Starting Supercronic..."
+exec supercronic /app/crontab
+
+# Si Supercronic crash, tuer le worker
+trap "kill $WORKER_PID" EXIT

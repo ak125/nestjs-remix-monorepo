@@ -15,6 +15,7 @@ import {
   Filter,
   Download
 } from "lucide-react";
+import { Button } from '~/components/ui/button';
 import { getReviewStats } from "../services/api/review.api";
 
 export const meta: MetaFunction = () => {
@@ -143,10 +144,10 @@ export default function ReviewAnalyticsPage() {
               <Filter className="w-4 h-4 mr-2" />
               Filtres
             </button>
-            <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">
+            <Button className="inline-flex items-center px-4 py-2   rounded-md" variant="blue">
               <Download className="w-4 h-4 mr-2" />
               Export
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -159,7 +160,7 @@ export default function ReviewAnalyticsPage() {
               <p className="text-sm font-medium text-gray-500">Total des Avis</p>
               <p className="text-2xl font-bold text-gray-900">{(stats as any).total || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
               <BarChart3 className="w-6 h-6 text-blue-600" />
             </div>
           </div>
@@ -182,7 +183,7 @@ export default function ReviewAnalyticsPage() {
                 {renderStars(Math.round((stats as any).averageRating || 0))}
               </div>
             </div>
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center">
               <Star className="w-6 h-6 text-yellow-600" />
             </div>
           </div>
@@ -201,7 +202,7 @@ export default function ReviewAnalyticsPage() {
               <p className="text-sm font-medium text-gray-500">En Attente</p>
               <p className="text-2xl font-bold text-gray-900">{(stats as any).pending || 0}</p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
               <Calendar className="w-6 h-6 text-orange-600" />
             </div>
           </div>
@@ -220,7 +221,7 @@ export default function ReviewAnalyticsPage() {
                 {(stats as any).total > 0 ? Math.round(((stats as any).approved / (stats as any).total) * 100) : 0}%
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-green-600" />
             </div>
           </div>
@@ -251,7 +252,7 @@ export default function ReviewAnalyticsPage() {
                 <div className="flex-1 mx-4">
                   <div className="bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                      className="bg-warning/60 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${item.percentage}%` }}
                     />
                   </div>
@@ -289,7 +290,7 @@ export default function ReviewAnalyticsPage() {
               </div>
               <div className="bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min((trends.thisWeek / Math.max(trends.thisWeek, trends.lastWeek, 1)) * 100, 100)}%` }}
                 />
               </div>
@@ -315,7 +316,7 @@ export default function ReviewAnalyticsPage() {
               </div>
               <div className="bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-success h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min((trends.thisMonth / Math.max(trends.thisMonth, trends.lastMonth, 1)) * 100, 100)}%` }}
                 />
               </div>
@@ -335,7 +336,7 @@ export default function ReviewAnalyticsPage() {
             </div>
           </div>
           
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mt-6 p-4 bg-primary/5 rounded-lg">
             <div className="flex items-center">
               <TrendingUp className="w-5 h-5 text-blue-600 mr-2" />
               <span className="text-sm font-medium text-blue-900">Croissance</span>
@@ -355,7 +356,7 @@ export default function ReviewAnalyticsPage() {
         <h2 className="text-lg font-semibold text-gray-900 mb-6">Insights et Recommandations</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="p-4 bg-primary/5 rounded-lg">
             <h3 className="font-medium text-blue-900 mb-2">Performance Globale</h3>
             <p className="text-sm text-blue-800">
               {(stats as any).averageRating >= 4 
@@ -367,7 +368,7 @@ export default function ReviewAnalyticsPage() {
             </p>
           </div>
           
-          <div className="p-4 bg-yellow-50 rounded-lg">
+          <div className="p-4 bg-warning/5 rounded-lg">
             <h3 className="font-medium text-yellow-900 mb-2">Modération</h3>
             <p className="text-sm text-yellow-800">
               {(stats as any).pending > 5
@@ -379,7 +380,7 @@ export default function ReviewAnalyticsPage() {
             </p>
           </div>
           
-          <div className="p-4 bg-green-50 rounded-lg">
+          <div className="p-4 bg-success/5 rounded-lg">
             <h3 className="font-medium text-green-900 mb-2">Tendance</h3>
             <p className="text-sm text-green-800">
               {trends.thisMonth > trends.lastMonth
