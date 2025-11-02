@@ -14,7 +14,7 @@ export class GoogleSearchConsoleService {
 
   /**
    * 📊 Récupérer les stats de crawl via GSC API
-   * 
+   *
    * Utilise l'API URL Inspection pour obtenir:
    * - Nombre de pages crawlées
    * - Fréquence de crawl
@@ -33,9 +33,9 @@ export class GoogleSearchConsoleService {
   }> {
     // TODO: Implémenter avec googleapis
     // Requires: OAuth2 credentials + Search Console API enabled
-    
+
     this.logger.warn('🚧 GSC API not yet implemented, returning mock data');
-    
+
     return {
       totalCrawledUrls: 1200,
       crawlRequestsCount: 450,
@@ -51,7 +51,7 @@ export class GoogleSearchConsoleService {
   async submitSitemap(siteUrl: string, sitemapUrl: string): Promise<void> {
     // TODO: Implémenter
     // POST https://www.googleapis.com/webmasters/v3/sites/{siteUrl}/sitemaps/{sitemapUrl}
-    
+
     this.logger.log(`📤 Sitemap soumis: ${sitemapUrl} (mock)`);
   }
 }
@@ -77,9 +77,9 @@ export class GoogleAnalyticsService {
   }> {
     // TODO: Implémenter avec @google-analytics/data
     // Requires: Service Account credentials + GA4 API enabled
-    
+
     this.logger.warn('🚧 GA4 API not yet implemented, returning mock data');
-    
+
     return {
       organicSessions: 4500,
       organicConversions: 125,
@@ -102,14 +102,14 @@ export class SitemapGeneratorService {
    */
   async generateFilteredSitemap(experimentId: string): Promise<string> {
     const experiment = await this.supabase.getExperiment(experimentId);
-    
+
     if (!experiment) {
       throw new Error(`Experiment ${experimentId} not found`);
     }
 
     // TODO: Récupérer toutes les URLs depuis Supabase
     // SELECT url FROM products WHERE gamme_code NOT IN (experiment.target_families)
-    
+
     const allUrls = await this.getAllProductUrls();
     const filteredUrls = this.applyFilter(
       allUrls,
@@ -133,11 +133,19 @@ export class SitemapGeneratorService {
   > {
     // TODO: Query Supabase
     // const { data } = await this.supabase.from('products').select('url, gamme_code, views_count');
-    
+
     // Mock data
     return [
-      { url: 'https://automecanik.com/products/piece-1', familyCode: 'PIECE_MOTEUR', priority: 0.8 },
-      { url: 'https://automecanik.com/products/piece-2', familyCode: 'PNEU_VIEUX', priority: 0.5 },
+      {
+        url: 'https://automecanik.com/products/piece-1',
+        familyCode: 'PIECE_MOTEUR',
+        priority: 0.8,
+      },
+      {
+        url: 'https://automecanik.com/products/piece-2',
+        familyCode: 'PNEU_VIEUX',
+        priority: 0.5,
+      },
     ];
   }
 
@@ -233,7 +241,7 @@ export class CrawlBudgetOrchestratorService {
    */
   async createExperiment(dto: CreateCrawlBudgetExperimentDto) {
     const baseline = await this.collectBaseline(dto.targetFamilies);
-    
+
     return this.supabase.createExperiment({
       name: dto.name,
       description: dto.description,
@@ -311,7 +319,7 @@ export class CrawlBudgetOrchestratorService {
    */
   async getRecommendations(experimentId: string) {
     const experiment = await this.supabase.getExperiment(experimentId);
-    
+
     if (!experiment) {
       throw new Error('Experiment not found');
     }

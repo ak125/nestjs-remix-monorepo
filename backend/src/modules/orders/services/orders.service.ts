@@ -254,10 +254,12 @@ export class OrdersService extends SupabaseBaseService {
         this.logger.log(`🔍 Fetching customer with ID: ${order.ord_cst_id}`);
         const { data: customerData, error: customerError } = await this.supabase
           .from('___xtr_customer')
-          .select('cst_id, cst_fname, cst_name, cst_mail, cst_tel, cst_gsm, cst_address, cst_zip_code, cst_city, cst_country')
+          .select(
+            'cst_id, cst_fname, cst_name, cst_mail, cst_tel, cst_gsm, cst_address, cst_zip_code, cst_city, cst_country',
+          )
           .eq('cst_id', order.ord_cst_id)
           .single();
-        
+
         if (customerError) {
           this.logger.error(`❌ Error fetching customer:`, customerError);
         } else {

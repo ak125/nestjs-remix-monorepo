@@ -49,4 +49,3 @@ import {
   exports: [SeoAuditSchedulerService, CrawlBudgetOrchestratorService],
 })
 export class SeoLogsModule {}
-

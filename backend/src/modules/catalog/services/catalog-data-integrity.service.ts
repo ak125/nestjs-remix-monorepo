@@ -19,9 +19,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
   constructor(@Optional() private readonly cacheService?: CacheService) {
     super();
     if (!cacheService) {
-      this.logger.warn(
-        '⚠️ Cache Redis non disponible - validation sans cache',
-      );
+      this.logger.warn('⚠️ Cache Redis non disponible - validation sans cache');
     } else {
       this.logger.log('✅ Cache Redis activé pour validation (TTL: 1h)');
     }
@@ -41,7 +39,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
   }> {
     try {
       this.logger.log(`🔍 Validation type_id=${typeId}`);
-      
+
       // ✅ FIX: Utiliser .maybeSingle() au lieu de .single()
       // .single() lance une erreur si 0 ou 2+ résultats
       // .maybeSingle() retourne data: null si 0 résultats (sans erreur)
@@ -51,10 +49,15 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
         .eq('type_id', String(typeId))
         .maybeSingle();
 
-      this.logger.log(`📊 Result: data=${!!data}, error=${error?.message || 'none'}`);
+      this.logger.log(
+        `📊 Result: data=${!!data}, error=${error?.message || 'none'}`,
+      );
 
       if (error) {
-        this.logger.error(`❌ Erreur Supabase lors de la validation type_id=${typeId}:`, error);
+        this.logger.error(
+          `❌ Erreur Supabase lors de la validation type_id=${typeId}:`,
+          error,
+        );
         return {
           valid: false,
           type_id: typeId,
@@ -78,7 +81,10 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
         type_name: data.type_name,
       };
     } catch (error) {
-      this.logger.error(`❌ Exception lors de la validation type_id ${typeId}:`, error);
+      this.logger.error(
+        `❌ Exception lors de la validation type_id ${typeId}:`,
+        error,
+      );
       return {
         valid: false,
         type_id: typeId,
@@ -151,7 +157,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
    * ⚡ AVEC CACHE REDIS pour optimiser les validations répétées
    * - Clé: catalog:validate:{typeId}:{gammeId}
    * - TTL: 1 heure (les données changent rarement)
-   * 
+   *
    * Retourne :
    * - valid: true si la combinaison est valide
    * - relations_count: nombre de pièces compatibles
@@ -189,9 +195,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
           return JSON.parse(cached as string);
         }
       } catch (error) {
-        this.logger.warn(
-          '⚠️ Erreur lecture cache Redis, continue sans cache',
-        );
+        this.logger.warn('⚠️ Erreur lecture cache Redis, continue sans cache');
       }
     }
 
@@ -322,9 +326,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
           `💾 Résultat mis en cache pour type_id=${typeId}, gamme_id=${gammeId} (TTL: ${this.CACHE_TTL}s)`,
         );
       } catch (error) {
-        this.logger.warn(
-          `⚠️ Erreur écriture cache Redis, continue sans cache`,
-        );
+        this.logger.warn(`⚠️ Erreur écriture cache Redis, continue sans cache`);
       }
     }
 

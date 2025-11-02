@@ -181,7 +181,7 @@ export class SeoMonitoringService {
   }> {
     // TODO: Utiliser googleapis pour appeler Search Console API
     // https://developers.google.com/webmaster-tools/v1/sitemaps
-    
+
     /*
     const { google } = require('googleapis');
     const searchconsole = google.searchconsole('v1');

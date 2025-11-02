@@ -49,7 +49,10 @@ export class PayboxRedirectController {
         `);
       }
 
-      const baseUrl = this.configService.get<string>('BASE_URL', 'http://localhost:5173');
+      const baseUrl = this.configService.get<string>(
+        'BASE_URL',
+        'http://localhost:5173',
+      );
 
       // Paramètres du paiement
       const paymentParams = {
@@ -98,9 +101,15 @@ export class PayboxRedirectController {
   /**
    * Génère le HTML du formulaire avec auto-submit
    */
-  private buildHtmlForm(url: string, parameters: Record<string, string>): string {
+  private buildHtmlForm(
+    url: string,
+    parameters: Record<string, string>,
+  ): string {
     const inputs = Object.entries(parameters)
-      .map(([name, value]) => `<input type="hidden" name="${name}" value="${value}">`)
+      .map(
+        ([name, value]) =>
+          `<input type="hidden" name="${name}" value="${value}">`,
+      )
       .join('\n        ');
 
     return `<!DOCTYPE html>

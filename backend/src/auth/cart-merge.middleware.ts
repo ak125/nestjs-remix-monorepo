@@ -16,7 +16,8 @@ export class CartMergeMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     // Vérifier si c'est une requête d'authentification réussie
-    const isAuthRoute = req.path === '/authenticate' || req.path === '/register-and-login';
+    const isAuthRoute =
+      req.path === '/authenticate' || req.path === '/register-and-login';
     const isAuthenticated = !!(req as any).user;
 
     if (isAuthRoute && isAuthenticated) {
@@ -24,7 +25,9 @@ export class CartMergeMiddleware implements NestMiddleware {
       const oldSessionId = (req as any).session?.__oldSessionId;
       const newSessionId = (req as any).session?.id;
 
-      this.logger.log(`🔍 Auth détectée - Old: ${oldSessionId}, New: ${newSessionId}`);
+      this.logger.log(
+        `🔍 Auth détectée - Old: ${oldSessionId}, New: ${newSessionId}`,
+      );
 
       if (oldSessionId && newSessionId && oldSessionId !== newSessionId) {
         try {
@@ -32,7 +35,7 @@ export class CartMergeMiddleware implements NestMiddleware {
             oldSessionId,
             newSessionId,
           );
-          
+
           if (mergedCount > 0) {
             this.logger.log(
               `✅ [Middleware] Panier fusionné: ${mergedCount} articles transférés`,

@@ -3,7 +3,7 @@ import { CatalogDataIntegrityService } from '../services/catalog-data-integrity.
 
 /**
  * 🛡️ Contrôleur pour la validation de l'intégrité des données du catalogue
- * 
+ *
  * Endpoints :
  * - GET /api/catalog/integrity/validate/:typeId/:gammeId - Valide une combinaison
  * - GET /api/catalog/integrity/health - Rapport de santé global
@@ -11,19 +11,17 @@ import { CatalogDataIntegrityService } from '../services/catalog-data-integrity.
  */
 @Controller('api/catalog/integrity')
 export class CatalogIntegrityController {
-  constructor(
-    private readonly integrityService: CatalogDataIntegrityService,
-  ) {}
+  constructor(private readonly integrityService: CatalogDataIntegrityService) {}
 
   /**
    * 🔍 Valide une combinaison type_id + gamme_id
    * GET /api/catalog/integrity/validate/:typeId/:gammeId
-   * 
+   *
    * Retourne :
    * - http_status: 200 (OK), 404 (Not Found), 410 (Gone)
    * - data_quality: qualité des données (% avec marque, prix, image)
    * - recommendation: action recommandée
-   * 
+   *
    * Exemples :
    * - /api/catalog/integrity/validate/18784/854 → 404 (type_id inexistant)
    * - /api/catalog/integrity/validate/14820/854 → 200 ou 410 (selon qualité)
@@ -59,7 +57,7 @@ export class CatalogIntegrityController {
   /**
    * 📊 Génère un rapport de santé complet du catalogue
    * GET /api/catalog/integrity/health
-   * 
+   *
    * Retourne :
    * - Compteurs globaux (types, gammes, relations)
    * - Liste des problèmes critiques
@@ -87,7 +85,7 @@ export class CatalogIntegrityController {
   /**
    * 🧹 Liste toutes les relations orphelines
    * GET /api/catalog/integrity/orphans?limit=100
-   * 
+   *
    * Retourne :
    * - total_orphans: nombre total de type_id orphelins
    * - orphan_type_ids: liste des type_id inexistants
@@ -98,9 +96,8 @@ export class CatalogIntegrityController {
     try {
       const limitNum = limit ? parseInt(limit) : 100;
 
-      const orphans = await this.integrityService.findOrphanTypeRelations(
-        limitNum,
-      );
+      const orphans =
+        await this.integrityService.findOrphanTypeRelations(limitNum);
 
       return {
         success: true,

@@ -344,8 +344,8 @@ export class CartController {
    */
   @Patch('items/:itemId')
   @ApiOperation({
-    summary: "Mettre à jour partiellement un article (alias de PUT)",
-    description: "Modifie la quantité via PATCH HTTP method",
+    summary: 'Mettre à jour partiellement un article (alias de PUT)',
+    description: 'Modifie la quantité via PATCH HTTP method',
   })
   @ApiParam({
     name: 'itemId',
@@ -851,7 +851,8 @@ export class CartController {
   @Get('recommendations')
   @ApiOperation({
     summary: 'Obtenir des recommandations produits basées sur le panier',
-    description: 'Retourne 3-5 produits complémentaires selon le contenu du panier',
+    description:
+      'Retourne 3-5 produits complémentaires selon le contenu du panier',
   })
   @ApiResponse({
     status: 200,
@@ -868,9 +869,8 @@ export class CartController {
       );
 
       // Récupérer le panier actuel
-      const cart = await this.cartDataService.getCartWithMetadata(
-        userIdForCart,
-      );
+      const cart =
+        await this.cartDataService.getCartWithMetadata(userIdForCart);
 
       // Logique simple de recommandations basée sur les catégories
       // TODO: Améliorer avec un vrai système de recommandations ML
@@ -888,7 +888,7 @@ export class CartController {
         {
           id: '99902',
           name: 'Filtre à huile premium',
-          price: 8.50,
+          price: 8.5,
           imageUrl: '/images/products/oil-filter.jpg',
           category: 'Filtration',
           stock: 'in-stock',

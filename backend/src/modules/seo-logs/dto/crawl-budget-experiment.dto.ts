@@ -75,4 +75,3 @@ export interface CrawlBudgetMetrics {
   organicSessions?: number;
   organicConversions?: number;
 }
-
