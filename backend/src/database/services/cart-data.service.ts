@@ -144,6 +144,26 @@ export class CartDataService extends SupabaseBaseService {
             const product = await this.getProductWithAllData(
               parseInt(item.product_id),
             );
+
+            // Si le produit n'existe pas, utiliser les données stockées dans l'item
+            if (!product) {
+              this.logger.warn(
+                `⚠️ Produit ${item.product_id} introuvable, utilisation des données du panier`,
+              );
+              const fallbackBrand =
+                item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
+                  ? item.product_brand
+                  : 'Non spécifiée';
+
+              return {
+                ...item,
+                product_brand: fallbackBrand,
+                consigne_unit: 0,
+                has_consigne: false,
+                consigne_total: 0,
+              };
+            }
+
             // S'assurer que la marque est bien transmise
             const brandName =
               product.piece_marque && product.piece_marque !== 'MARQUE INCONNUE'
@@ -183,6 +203,9 @@ export class CartDataService extends SupabaseBaseService {
             return {
               ...item,
               product_brand: fallbackBrand,
+              consigne_unit: 0,
+              has_consigne: false,
+              consigne_total: 0,
             };
           }
         }),
@@ -368,8 +391,8 @@ export class CartDataService extends SupabaseBaseService {
         .single();
 
       if (pieceError || !pieceData) {
-        this.logger.error(`❌ Pièce ${productId} introuvable:`, pieceError);
-        throw new Error(`Produit ${productId} introuvable`);
+        this.logger.warn(`⚠️ Pièce ${productId} introuvable`);
+        return null;
       }
 
       // LOG DEBUG pour voir les vraies valeurs de marque

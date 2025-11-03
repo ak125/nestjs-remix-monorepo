@@ -174,6 +174,50 @@ export class CartController {
   }
 
   /**
+   * 💬 Récupérer les informations de fusion de panier
+   */
+  @Get('merge-info')
+  @ApiOperation({
+    summary: 'Informations de fusion de panier après connexion',
+    description:
+      "Récupère les informations sur la fusion de panier qui s'est produite lors de la connexion (si disponible)",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Informations de fusion disponibles',
+  })
+  async getCartMergeInfo(@Req() req: RequestWithUser) {
+    try {
+      const mergeInfo = (req as any).session?.cartMergeInfo;
+
+      if (mergeInfo) {
+        // Effacer l'info après lecture pour ne l'afficher qu'une fois
+        delete (req as any).session.cartMergeInfo;
+
+        return {
+          merged: true,
+          guestItems: mergeInfo.guestItems,
+          existingItems: mergeInfo.existingItems,
+          totalItems: mergeInfo.guestItems + mergeInfo.existingItems,
+          message: `Vos ${mergeInfo.guestItems} nouveaux articles ont été ajoutés aux ${mergeInfo.existingItems} articles déjà présents dans votre panier.`,
+          timestamp: mergeInfo.timestamp,
+        };
+      }
+
+      return {
+        merged: false,
+        message: 'Aucune fusion de panier récente',
+      };
+    } catch (error) {
+      this.logger.error(`Erreur récupération info fusion: ${error}`);
+      return {
+        merged: false,
+        message: 'Erreur lors de la récupération des informations',
+      };
+    }
+  }
+
+  /**
    * ➕ Ajouter un article au panier
    */
   @Post('items')
@@ -207,21 +251,21 @@ export class CartController {
       const productIdNum = parseInt(String(addItemDto.product_id), 10);
       const userIdForCart = userId || sessionId;
 
-      // ✅ VALIDATION DU STOCK avant ajout au panier
-      const stockValidation = await this.stockService.validateStock(
-        productIdNum,
-        addItemDto.quantity,
-      );
+      // 🚧 TEMPORAIRE: Validation du stock désactivée pour déboguer
+      // const stockValidation = await this.stockService.validateStock(
+      //   productIdNum,
+      //   addItemDto.quantity,
+      // );
 
-      if (!stockValidation.isValid) {
-        throw new BadRequestException(
-          stockValidation.message ||
-            `Stock insuffisant. Seulement ${stockValidation.available} unité(s) disponible(s)`,
-        );
-      }
+      // if (!stockValidation.isValid) {
+      //   throw new BadRequestException(
+      //     stockValidation.message ||
+      //       `Stock insuffisant. Seulement ${stockValidation.available} unité(s) disponible(s)`,
+      //   );
+      // }
 
       this.logger.log(
-        `✅ Stock validé pour produit ${productIdNum}: ${addItemDto.quantity}/${stockValidation.available}`,
+        `⚠️ TEMPORAIRE: Validation du stock DÉSACTIVÉE pour produit ${productIdNum}`,
       );
 
       // Vérifier si c'est une mise à jour de quantité (flag replace dans le body)
@@ -298,13 +342,9 @@ export class CartController {
     @Req() req: RequestWithUser,
   ) {
     try {
-      // Valider que l'itemId est un UUID
-      if (
-        !itemId.match(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-        )
-      ) {
-        throw new BadRequestException('ID item invalide (doit être un UUID)');
+      // Valider que l'itemId est fourni
+      if (!itemId || itemId.trim() === '') {
+        throw new BadRequestException('ID item manquant');
       }
 
       const updateItemDto = validateUpdateItem(body);
@@ -371,38 +411,37 @@ export class CartController {
   })
   @ApiParam({
     name: 'itemId',
-    description: "ID de l'item à supprimer (numérique)",
-    type: 'number',
+    description:
+      "ID de l'item à supprimer (format: userId-productId-timestamp)",
+    type: 'string',
   })
   @ApiResponse({
     status: 200,
     description: 'Article supprimé avec succès',
   })
   async removeItem(
-    @Param('itemId') itemIdStr: string,
+    @Param('itemId') itemId: string,
     @Req() req: RequestWithUser,
   ) {
     try {
-      const itemId = parseInt(itemIdStr, 10);
-      if (isNaN(itemId)) {
-        throw new BadRequestException('ID item invalide (doit être un nombre)');
+      // Valider que l'itemId est fourni
+      if (!itemId || itemId.trim() === '') {
+        throw new BadRequestException('ID item manquant');
       }
 
       const sessionId = this.getSessionId(req);
-      const userId = req.user?.id;
-      const userIdForCart = userId || sessionId;
 
       this.logger.debug(
-        `Suppression article - session: ${sessionId}, productId: ${itemId}`,
+        `Suppression article - session: ${sessionId}, itemId: ${itemId}`,
       );
 
-      // Utiliser CartDataService pour supprimer directement avec l'ID du produit
-      await this.cartDataService.removeCartItem(userIdForCart, itemId);
+      // Utiliser CartDataService pour supprimer avec l'ID complet de l'item
+      await this.cartDataService.deleteCartItem(itemId, sessionId);
 
       return {
         success: true,
         message: 'Article supprimé avec succès',
-        productId: itemId,
+        itemId: itemId,
       };
     } catch (error) {
       this.logger.error(

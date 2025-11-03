@@ -31,10 +31,19 @@ export default function LoginPage() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation(); // 🔧 EMPÊCHER LA PROPAGATION à Remix
     setIsLoading(true);
     
     const form = e.currentTarget;
     const formData = new FormData(form);
+    
+    // ✅ Récupérer le redirectTo pour rediriger après connexion
+    const redirectTo = searchParams.get('redirectTo');
+    
+    console.log('� [Login] Connexion en cours...');
+    if (redirectTo) {
+      console.log('� [Login] Redirection après connexion:', redirectTo);
+    }
     
     // Soumettre directement au backend via navigation native
     const tempForm = document.createElement('form');
@@ -52,6 +61,39 @@ export default function LoginPage() {
     passwordInput.value = formData.get('password') as string;
     tempForm.appendChild(passwordInput);
     
+    // ✅ Ajouter le redirectTo au formulaire si présent
+    if (redirectTo) {
+      const redirectInput = document.createElement('input');
+      redirectInput.name = 'redirectTo';
+      redirectInput.value = redirectTo;
+      tempForm.appendChild(redirectInput);
+      console.log('✅ [Login] RedirectTo ajouté:', redirectTo);
+    }
+    
+    // 🔑 Capturer et envoyer la session invité pour fusion de panier
+    const cookieHeader = document.cookie;
+    const sessionCookie = cookieHeader.split(';').find(c => c.trim().startsWith('connect.sid='));
+    
+    if (sessionCookie) {
+      try {
+        const cookieValue = sessionCookie.split('=')[1];
+        const decoded = decodeURIComponent(cookieValue);
+        // Format: s:<sessionId>.<signature>
+        const match = decoded.match(/^s:([^.]+)\./);
+        if (match) {
+          const guestSessionId = match[1];
+          const sessionInput = document.createElement('input');
+          sessionInput.name = 'guestSessionId';
+          sessionInput.value = guestSessionId;
+          tempForm.appendChild(sessionInput);
+          console.log('✅ [Login] Session invité envoyée:', guestSessionId);
+        }
+      } catch (err) {
+        console.warn('⚠️ [Login] Erreur parsing cookie:', err);
+      }
+    }
+    
+    console.log('📤 [Login] Soumission du formulaire vers /authenticate');
     document.body.appendChild(tempForm);
     tempForm.submit();
   };
