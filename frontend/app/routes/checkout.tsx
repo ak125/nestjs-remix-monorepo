@@ -5,52 +5,92 @@
 
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
-import { Alert } from '~/components/ui/alert';
+import { useEffect } from "react";
+import toast, { Toaster } from 'react-hot-toast';
+import { requireUser } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  // Vérifier si l'utilisateur est connecté en vérifiant le panier
-  // (qui nécessite une session active)
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  // ✅ Authentification requise - redirige vers /login?redirectTo=/checkout
+  const user = await requireUser({ context, request });
+  const userId = user.id;
+  
+  console.log('🔍 Checkout loader - User:', userId);
   
   try {
-    const cartData = await getCart(request);
+    const cart = await getCart(request, context);
+    console.log('🔍 Checkout loader - Cart data received:', {
+      hasCart: !!cart,
+      itemsLength: cart?.items?.length,
+      itemsIsArray: Array.isArray(cart?.items),
+      summaryItems: cart?.summary?.total_items,
+      keys: cart ? Object.keys(cart) : []
+    });
     
-    // Si panier vide, rediriger vers le panier
-    if (!cartData.items || cartData.items.length === 0) {
-      return redirect('/cart');
+    // ✅ Vérification plus robuste du panier
+    if (!cart || !cart.items) {
+      console.warn('⚠️ Checkout loader - Structure panier invalide');
+      return json({ cart: null, error: 'Erreur de structure du panier. Veuillez recharger.' });
     }
     
-    return json({ 
-      cart: cartData,
-      success: true 
-    });
+    // Vérifier que le panier contient des articles
+    const itemsCount = Array.isArray(cart.items) ? cart.items.length : 0;
+    const totalItems = cart?.summary?.total_items || 0;
+    
+    console.log('🔍 Checkout loader - Items check:', { itemsCount, totalItems });
+    
+    if (itemsCount === 0 && totalItems === 0) {
+      console.warn('⚠️ Checkout loader - Panier vide');
+      return json({ cart: null, error: 'Votre panier est vide. Ajoutez des articles avant de passer commande.' });
+    }
+
+    console.log('✅ Checkout loader - Panier OK:', itemsCount, 'lignes,', totalItems, 'articles total');
+    return json({ cart });
   } catch (error) {
-    console.error("Erreur chargement checkout:", error);
-    return json({ 
-      cart: null, 
-      success: false,
-      error: "Erreur lors du chargement"
-    }, { status: 500 });
+    console.error('❌ Erreur chargement panier checkout:', error);
+    console.error('❌ Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('❌ Message:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Stack:', error instanceof Error ? error.stack : 'N/A');
+    return json({ cart: null, error: 'Erreur lors du chargement du panier. Veuillez réessayer.' });
   }
-}
+};
 
 export async function action({ request }: ActionFunctionArgs) {
+  console.log('🔵 [Checkout Action] Début de l\'action');
+  console.log('🔵 [Checkout Action] Request URL:', request.url);
+  console.log('🔵 [Checkout Action] Request method:', request.method);
+  
   try {
+    // Note: On ne lit pas le formData pour éviter les timeouts
+    // Les champs guestEmail et createAccount ne sont pas utilisés dans la création de commande
+    // L'authentification est déjà gérée par le requireUser() du loader
+    
     // 1. Récupérer le panier
+    console.log('🛒 [Checkout Action] Récupération du panier...');
     const cartResponse = await fetch('http://localhost:3000/api/cart', {
       headers: {
         'Cookie': request.headers.get('Cookie') || '',
       },
     });
 
+    console.log('🛒 [Checkout Action] Statut panier:', cartResponse.status);
+    
     if (!cartResponse.ok) {
-      throw new Error('Impossible de récupérer le panier');
+      console.error('❌ [Checkout Action] Erreur récupération panier');
+      return json({ 
+        success: false,
+        error: 'Impossible de récupérer le panier. Veuillez réessayer.'
+      }, { status: 400 });
     }
 
     const cartData = await cartResponse.json();
+    console.log('🛒 [Checkout Action] Panier récupéré:', cartData.items?.length || 0, 'articles');
     
     if (!cartData.items || cartData.items.length === 0) {
-      throw new Error('Le panier est vide');
+      return json({ 
+        success: false,
+        error: 'Votre panier est vide. Veuillez ajouter des articles avant de passer commande.'
+      }, { status: 400 });
     }
 
     // 2. Transformer les items du panier en lignes de commande
@@ -93,21 +133,42 @@ export async function action({ request }: ActionFunctionArgs) {
       shippingMethod: 'standard'
     };
 
+    console.log('📦 [Checkout Action] Payload commande:', JSON.stringify(orderPayload, null, 2));
+    
+    // Debug: Vérifier les cookies
+    const cookieHeader = request.headers.get('Cookie') || '';
+    console.log('🍪 [Checkout Action] Cookie header:', cookieHeader ? `${cookieHeader.substring(0, 50)}...` : 'VIDE');
+    console.log('🚀 [Checkout Action] Envoi requête création commande...');
+    
     const response = await fetch('http://localhost:3000/api/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': request.headers.get('Cookie') || '',
+        'Cookie': cookieHeader,
       },
       body: JSON.stringify(orderPayload)
     });
 
+    console.log('📦 [Checkout Action] Statut création commande:', response.status);
+
     if (!response.ok) {
+      console.error('❌ [Checkout Action] Erreur création commande, statut:', response.status);
+      // ✅ Détecter si l'erreur est due à un manque d'authentification
+      if (response.status === 403 || response.status === 401) {
+        // Rediriger vers la page de connexion avec un message
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('message', 'Vous devez être connecté pour passer commande');
+        loginUrl.searchParams.set('redirectTo', '/checkout');
+        return redirect(loginUrl.toString());
+      }
+      
       const error = await response.json().catch(() => ({ message: 'Erreur serveur' }));
+      console.error('❌ [Checkout Action] Détails erreur:', error);
       throw new Error(error.message || 'Erreur lors de la création de la commande');
     }
 
     const order = await response.json();
+    console.log('✅ [Checkout Action] Commande créée:', order);
     
     // ✅ Phase 7: Retourner l'orderId à l'action data pour redirection côté client
     // L'API retourne un objet avec ord_id (format BDD)
@@ -119,24 +180,18 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!orderId || orderId === 'créé') {
       // Fallback si on n'a pas l'ID
       console.log('✅ Commande créée sans ID, redirection vers la liste des commandes');
-      return json({ 
-        success: true,
-        redirectTo: '/account/orders?created=true'
-      });
+      return redirect('/account/orders?created=true');
     }
     
     const redirectUrl = `/checkout-payment?orderId=${orderId}`;
-    console.log(`✅ Commande ${orderId} créée, préparation redirection vers: ${redirectUrl}`);
-    // ✅ Retourner l'orderId pour redirection côté client (workaround pour monorepo)
-    return json({ 
-      success: true,
-      orderId,
-      redirectTo: redirectUrl
-    });
+    console.log(`✅ [Checkout Action] Commande ${orderId} créée, redirection vers: ${redirectUrl}`);
+    
+    // ✅ SOLUTION: Utiliser redirect() au lieu de json() pour une vraie redirection
+    return redirect(redirectUrl);
     
   } catch (error) {
-    console.error("❌ Erreur création commande:", error);
-    console.error("❌ Stack:", error instanceof Error ? error.stack : 'No stack');
+    console.error("❌ [Checkout Action] Erreur création commande:", error);
+    console.error("❌ [Checkout Action] Stack:", error instanceof Error ? error.stack : 'No stack');
     return json({ 
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue"
@@ -146,7 +201,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, success } = data;
+  const { cart } = data;
   const loaderError = 'error' in data ? data.error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -157,45 +212,27 @@ export default function CheckoutPage() {
   // Erreur peut venir du loader ou de l'action
   const error = loaderError || (actionData && 'error' in actionData ? actionData.error : undefined);
   
-  // ✅ Redirection immédiate après succès - AVANT tout rendu
-  if (actionData && 'redirectTo' in actionData && actionData.redirectTo) {
-    const redirectUrl = actionData.redirectTo;
-    const orderId = 'orderId' in actionData ? String(actionData.orderId) : null;
-    
-    // Afficher un loader avec redirection automatique via meta refresh
-    return (
-      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
-        <head>
-          <meta httpEquiv="refresh" content={`0;url=${redirectUrl}`} />
-        </head>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl font-semibold text-gray-700">Redirection vers le paiement...</p>
-          {orderId && (
-            <p className="text-sm text-gray-500 mt-2">Commande #{orderId} créée</p>
-          )}
-          <p className="text-xs text-gray-400 mt-4">
-            Si vous n'êtes pas redirigé automatiquement,{' '}
-            <a href={redirectUrl} className="text-blue-600 hover:underline">
-              cliquez ici
-            </a>
-          </p>
-        </div>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.location.replace('${redirectUrl}');`,
-          }}
-        />
-      </div>
-    );
-  }
+  // ✅ Afficher un toast d'erreur si présent
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        duration: 5000,
+        position: 'top-center',
+        style: {
+          background: '#FEE2E2',
+          color: '#991B1B',
+          fontWeight: '500',
+        },
+      });
+    }
+  }, [error]);
 
-  if (!success || !cart) {
+  if (!cart || loaderError) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-3xl mx-auto px-4">
           <div className="bg-destructive/15 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p>{error || "Erreur lors du chargement"}</p>
+            <p>{loaderError || "Erreur lors du chargement"}</p>
           </div>
           <Link to="/cart" className="mt-4 inline-block text-blue-600 hover:underline">
             ← Retour au panier
@@ -210,7 +247,8 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
-      <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <Toaster />
+      <Form method="post" className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header avec breadcrumb */}
         <div className="mb-8">
@@ -251,6 +289,58 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">{/* Informations client */}
           <div className="lg:col-span-2 space-y-6">
+            {/* ✅ Email invité - Seulement si non connecté */}
+            {!cart.metadata?.user_id && !cart.metadata?.session_id?.includes('usr_') && (
+              <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">Votre email</h2>
+                    <p className="text-sm text-slate-500">Pour recevoir la confirmation de commande</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="guestEmail" className="block text-sm font-medium text-slate-700 mb-2">
+                      Adresse email *
+                    </label>
+                    <input
+                      type="email"
+                      id="guestEmail"
+                      name="guestEmail"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="votre.email@exemple.com"
+                    />
+                  </div>
+                  
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="createAccount"
+                        defaultChecked
+                        className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-blue-900">
+                          ✨ Créer un compte pour suivre mes commandes
+                        </p>
+                        <p className="text-xs text-blue-700 mt-1">
+                          Recommandé : Un mot de passe vous sera envoyé par email. Vous pourrez consulter l'historique de vos commandes et gérer vos informations.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
@@ -261,12 +351,17 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900">Informations de livraison</h2>
-                  <p className="text-sm text-slate-500">Récupérées automatiquement</p>
+                  <p className="text-sm text-slate-500">
+                    {cart.metadata?.user_id ? 'Récupérées automatiquement' : 'À compléter à l\'étape suivante'}
+                  </p>
                 </div>
               </div>
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p className="text-slate-600 text-sm">
-                  ✓ Vos informations de livraison et de facturation seront récupérées automatiquement depuis votre profil lors de la validation de la commande.
+                  {cart.metadata?.user_id 
+                    ? '✓ Vos informations de livraison et de facturation seront récupérées automatiquement depuis votre profil.'
+                    : '✓ Vous pourrez compléter vos informations de livraison à l\'étape suivante, juste avant le paiement.'
+                  }
                 </p>
               </div>
             </div>
@@ -378,7 +473,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <Form method="post" className="mt-6 space-y-4">
+              <div className="mt-6 space-y-4">
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -411,9 +506,9 @@ export default function CheckoutPage() {
                   </svg>
                   <span>Retour au panier</span>
                 </Link>
-              </Form>
+              </div>
 
-<Alert className="mt-6 p-4  rounded-xl" variant="info">
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -422,11 +517,11 @@ export default function CheckoutPage() {
                     En confirmant votre commande, vous serez redirigé vers la page de paiement sécurisé. Aucun paiement ne sera effectué à cette étape.
                   </p>
                 </div>
-              </Alert>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Form>
     </div>
   );
 }
