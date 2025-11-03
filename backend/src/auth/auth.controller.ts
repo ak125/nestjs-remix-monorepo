@@ -187,9 +187,37 @@ export class AuthController {
       return response.redirect('/');
     }
 
-    // 🔄 FUSION DE PANIER: Sauvegarder l'ancienne session AVANT régénération
-    const oldSessionId = (request as any).session?.id;
-    console.log(`🔑 Session AVANT login: ${oldSessionId}`);
+    // FUSION DE PANIER: Extraire la session du cookie AVANT toute modification
+    let guestSessionId: string | undefined;
+    
+    const cookieHeader = (request as any).headers?.cookie || '';
+    console.log('[CART-FUSION] Cookie header:', cookieHeader.substring(0, 150));
+    
+    const sessionCookie = cookieHeader
+      .split(';')
+      .find((c: string) => c.trim().startsWith('connect.sid='));
+    
+    if (sessionCookie) {
+      try {
+        const cookieValue = sessionCookie.split('=')[1];
+        const decoded = decodeURIComponent(cookieValue);
+        console.log('[CART-FUSION] Cookie decoded:', decoded);
+        const match = decoded.match(/^s:([^.]+)\./);
+        if (match) {
+          guestSessionId = match[1];
+          console.log(
+            '[CART-FUSION] Guest session ID extracted:',
+            guestSessionId,
+          );
+        } else {
+          console.log('[CART-FUSION] Regex failed on:', decoded);
+        }
+      } catch (err) {
+        console.log('[CART-FUSION] Error extracting session:', err);
+      }
+    } else {
+      console.log('[CART-FUSION] No connect.sid cookie found');
+    }
 
     const user = request.user as any;
 
@@ -213,20 +241,34 @@ export class AuthController {
             return resolve();
           }
 
-          // 🔄 FUSION DE PANIER: Nouvelle session créée
+          // FUSION DE PANIER: Fusionner vers userId (pas sessionId)
+          const userId = user.id;
           const newSessionId = (request as any).session?.id;
           console.log(`🔑 Session APRÈS login: ${newSessionId}`);
+          console.log(`👤 User ID: ${userId}`);
 
-          // Fusionner les paniers si les sessions sont différentes
-          if (oldSessionId && newSessionId && oldSessionId !== newSessionId) {
+          console.log(
+            '[CART-FUSION] Verification: guest=',
+            guestSessionId,
+            'userId=',
+            userId,
+          );
+
+          if (guestSessionId && userId && guestSessionId !== userId) {
             try {
+              console.log(
+                '[CART-FUSION] Merging cart from',
+                guestSessionId,
+                'to userId',
+                userId,
+              );
               const mergedCount = await this.cartDataService.mergeCart(
-                oldSessionId,
-                newSessionId,
+                guestSessionId,
+                userId,
               );
               if (mergedCount > 0) {
                 console.log(
-                  `✅ Panier fusionné: ${mergedCount} articles transférés`,
+                  `✅ Panier fusionné: ${mergedCount} articles transférés vers userId`,
                 );
               }
             } catch (mergeError) {
