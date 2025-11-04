@@ -101,9 +101,8 @@ export class PayboxService {
       PBX_TIME: dateTime,
     };
 
-    // ⭐ STRATÉGIE INTELLIGENTE : Ajouter les URLs SEULEMENT en PRODUCTION
-    // Le compte TEST (1999888) ne supporte pas correctement ces paramètres
-    const isProduction = this.mode === 'PRODUCTION' || this.site === '5259250';
+    // ⭐ STRATÉGIE : Ajouter les URLs selon PAYBOX_MODE uniquement
+    const isProduction = this.mode === 'PRODUCTION';
 
     if (isProduction) {
       this.logger.log('✅ Mode PRODUCTION: ajout des URLs de retour');
