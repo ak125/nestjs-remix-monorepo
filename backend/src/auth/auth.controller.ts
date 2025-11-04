@@ -189,14 +189,14 @@ export class AuthController {
 
     // FUSION DE PANIER: Extraire la session du cookie AVANT toute modification
     let guestSessionId: string | undefined;
-    
+
     const cookieHeader = (request as any).headers?.cookie || '';
     console.log('[CART-FUSION] Cookie header:', cookieHeader.substring(0, 150));
-    
+
     const sessionCookie = cookieHeader
       .split(';')
       .find((c: string) => c.trim().startsWith('connect.sid='));
-    
+
     if (sessionCookie) {
       try {
         const cookieValue = sessionCookie.split('=')[1];

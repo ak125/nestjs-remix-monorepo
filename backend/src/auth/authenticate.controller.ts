@@ -28,14 +28,14 @@ export class AuthenticateController {
 
     // FUSION DE PANIER: Extraire DIRECTEMENT du cookie header
     let guestSessionId: string | undefined;
-    
+
     const cookieHeader = (request as any).headers?.cookie || '';
     console.log('[CART-FUSION] Cookie header:', cookieHeader.substring(0, 150));
-    
+
     const sessionCookie = cookieHeader
       .split(';')
       .find((c: string) => c.trim().startsWith('connect.sid='));
-    
+
     if (sessionCookie) {
       try {
         const cookieValue = sessionCookie.split('=')[1];
@@ -116,18 +116,18 @@ export class AuthenticateController {
                 `📦 État avant fusion: Panier invité=${guestItemCount} articles, Panier utilisateur=${userItemCount} articles`,
               );
 
-              // �🛒 Fusionner le panier invité vers l'utilisateur
+              // 🛒 Fusionner le panier invité vers l'utilisateur
               // La méthode mergeCart gère déjà l'addition des quantités et le nettoyage de la source
               const mergedCount = await this.cartDataService.mergeCart(
                 guestSessionId,
                 newSessionId,
               );
-              
+
               if (mergedCount > 0) {
                 this.logger.log(
                   `✅ Panier fusionné: ${mergedCount} articles transférés depuis le panier invité`,
                 );
-                
+
                 // 💡 Stocker l'info de fusion dans la session pour afficher une notification
                 if (userItemCount > 0) {
                   (request as any).session.cartMergeInfo = {
