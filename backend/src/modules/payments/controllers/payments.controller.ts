@@ -169,6 +169,31 @@ export class PaymentsController {
           '✅ Form parameters:',
           JSON.stringify(redirectData.parameters, null, 2),
         );
+      } else if (
+        methodLower === 'paybox' ||
+        createPaymentDto.method === PaymentMethod.PAYBOX
+      ) {
+        this.logger.log('🔵 Generating Paybox payment form...');
+        redirectData = this.payboxService.generatePaymentForm({
+          amount: payment.amount,
+          currency: payment.currency,
+          orderId: payment.orderId || payment.id,
+          customerEmail: createPaymentDto.customerEmail || '',
+          returnUrl:
+            createPaymentDto.returnUrl ||
+            `${process.env.BASE_URL}/payment/success`,
+          cancelUrl:
+            createPaymentDto.cancelUrl ||
+            `${process.env.BASE_URL}/payment/cancel`,
+          notifyUrl:
+            createPaymentDto.notifyUrl ||
+            `${process.env.BASE_URL}/api/payments/callback/paybox`,
+        });
+        this.logger.log('✅ Paybox form generated with URL:', redirectData.url);
+        this.logger.log(
+          '✅ Form parameters:',
+          JSON.stringify(redirectData.parameters, null, 2),
+        );
       }
 
       this.logger.log(`✅ Payment created: ${payment.id}`);
