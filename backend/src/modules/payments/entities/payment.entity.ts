@@ -14,6 +14,7 @@ export enum PaymentMethod {
   PAYPAL = 'paypal',
   BANK_TRANSFER = 'bank_transfer',
   CYBERPLUS = 'cyberplus',
+  PAYBOX = 'paybox',
 }
 
 export interface Payment {
