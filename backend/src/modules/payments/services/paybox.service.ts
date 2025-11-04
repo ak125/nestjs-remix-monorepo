@@ -124,9 +124,20 @@ export class PayboxService {
     this.logger.log(`🔐 HMAC-SHA512 signature: ${signature}`);
     this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-    // ⚠️ PAS D'URLS DE RETOUR ! Le PHP n'en envoie pas, nous non plus !
-    // Les URLs de retour sont configurées dans le back-office Paybox
-    this.logger.log('⚠️  URLs de retour NON envoyées (comme le PHP)');
+    // ⚠️ APRÈS la signature : ajouter les URLs SEULEMENT en PRODUCTION
+    // En mode TEST local, le PHP n'envoie pas d'URLs (compte test limité)
+    // En mode PRODUCTION VPS, il faut les URLs pour les callbacks
+    if (this.mode === 'PRODUCTION') {
+      this.logger.log('🔴 Mode PRODUCTION: ajout des URLs de retour');
+      payboxParams.PBX_EFFECTUE = params.returnUrl;
+      payboxParams.PBX_REFUSE = params.cancelUrl;
+      payboxParams.PBX_ANNULE = params.cancelUrl;
+      if (params.notifyUrl) {
+        payboxParams.PBX_REPONDRE_A = params.notifyUrl;
+      }
+    } else {
+      this.logger.log('🧪 Mode TEST: URLs NON envoyées (comme le PHP local)');
+    }
 
     this.logger.log('Formulaire Paybox genere');
     this.logger.log(`URL: ${this.paymentUrl}`);
