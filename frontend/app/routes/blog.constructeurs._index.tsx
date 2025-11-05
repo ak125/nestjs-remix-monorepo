@@ -3,6 +3,7 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000';
 
@@ -654,13 +655,10 @@ export default function ConstructeursHomePage() {
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
-          <nav className="flex text-sm text-gray-600">
-            <Link to="/" className="hover:text-blue-600">Automecanik</Link>
-            <span className="mx-2">›</span>
-            <Link to="/blog" className="hover:text-blue-600">Blog automobile</Link>
-            <span className="mx-2">›</span>
-            <span className="text-gray-900 font-medium">Constructeurs automobile</span>
-          </nav>
+          <PublicBreadcrumb items={[
+            { label: "Blog", href: "/blog" },
+            { label: "Constructeurs" }
+          ]} />
         </div>
       </div>
 

@@ -15,6 +15,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { NoResults } from "../components/search/NoResults";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { SearchBar } from "../components/search/SearchBar";
 import { SearchFilters } from "../components/search/SearchFilters";
 import { SearchPagination } from "../components/search/SearchPagination";
@@ -193,6 +194,9 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
+        
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[{ label: "Recherche" }]} />
         
         {/* En-tête avec sélecteur de version */}
         <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

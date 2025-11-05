@@ -9,6 +9,7 @@ import { ArrowLeft, Package, MapPin, CreditCard, FileText, User, Phone, Mail } f
 import { OrderLineActions } from "~/components/admin/OrderLineActions";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 /**
  * 🎯 FORMAT BDD SUPABASE - Format legacy consolidé
@@ -213,6 +214,12 @@ export default function OrderDetailsReal() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
       <div className="max-w-[1400px] mx-auto space-y-6 p-4 sm:p-6 lg:p-8">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Mes Commandes", href: "/orders" },
+        { label: `Commande #${order.ord_id}` }
+      ]} />
+      
       {/* Header moderne */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">

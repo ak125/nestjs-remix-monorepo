@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function PaymentRedirect() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -75,7 +76,10 @@ export default function PaymentRedirect() {
             console.log('  ✅ submit() called');
           } catch (err) {
             console.error('  ❌ submit() error:', err);
-            alert('Erreur: ' + err);
+            toast.error('Erreur de redirection', {
+              description: String(err),
+              duration: 5000,
+            });
           }
         } else {
           console.error('  ❌ formRef.current is null');

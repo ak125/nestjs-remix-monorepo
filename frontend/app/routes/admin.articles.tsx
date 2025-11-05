@@ -7,6 +7,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useFetcher, useNavigation } from "@remix-run/react";
 import { useState } from "react";
+import { toast } from 'sonner';
 import { Alert } from '~/components/ui/alert';
 
 // Icons
@@ -341,13 +342,28 @@ export default function AdminArticlesPage() {
                         <input type="hidden" name="action" value="delete" />
                         <input type="hidden" name="articleId" value={article.id} />
                         <button
-                          type="submit"
+                          type="button"
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                           title="Supprimer l'article"
                           onClick={(e) => {
-                            if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) {
-                              e.preventDefault();
-                            }
+                            const form = e.currentTarget.closest('form');
+                            if (!form) return;
+                            
+                            e.preventDefault();
+                            toast.error('Supprimer cet article ?', {
+                              duration: 5000,
+                              description: 'Cette action est irréversible',
+                              action: {
+                                label: 'Confirmer',
+                                onClick: () => {
+                                  form.requestSubmit();
+                                },
+                              },
+                              cancel: {
+                                label: 'Annuler',
+                                onClick: () => {},
+                              },
+                            });
                           }}
                         >
                           <TrashIcon className="w-5 h-5" />

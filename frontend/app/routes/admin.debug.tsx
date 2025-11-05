@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { getOptionalUser } from "../auth/unified.server";
 
 export async function loader({ context }: LoaderFunctionArgs) {
@@ -20,6 +21,7 @@ export default function AdminDebug() {
 
   return (
     <div className="container mx-auto py-6">
+      <AdminBreadcrumb currentPage="Debug" />
       <h1 className="text-2xl font-bold mb-6">🔍 Debug Admin Access</h1>
       
       <div className="space-y-4">

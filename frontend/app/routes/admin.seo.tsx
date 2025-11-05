@@ -4,10 +4,12 @@ import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-r
 import { Form, Link, useLoaderData, useActionData, useNavigation } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { Separator } from "../components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Textarea } from "../components/ui/textarea";
 
@@ -173,6 +175,9 @@ export default function SeoAdmin() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="SEO & Référencement" />
+
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Administration SEO</h1>
         <div className="flex gap-2">

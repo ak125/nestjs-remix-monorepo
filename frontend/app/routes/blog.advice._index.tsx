@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link, useSearchParams, useNavigation } from "@remix-run/react";
 import React, { useState, useMemo } from 'react';
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 interface AdviceArticle {
   id: string;
@@ -454,6 +455,14 @@ export default function AdviceIndex() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Blog */}
       <BlogNavigation />
+      
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 pt-6">
+        <PublicBreadcrumb items={[
+          { label: "Blog", href: "/blog" },
+          { label: "Conseils" }
+        ]} />
+      </div>
       
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">

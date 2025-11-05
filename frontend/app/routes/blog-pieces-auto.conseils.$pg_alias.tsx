@@ -27,8 +27,9 @@ import {
   Tag
 } from 'lucide-react';
 import { useState, useEffect } from "react";
+import { toast } from 'sonner';
 
-// UI Components
+// Components internes
 import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -300,7 +301,10 @@ export default function LegacyBlogArticle() {
     } else {
       navigator.clipboard.writeText(window.location.href);
       trackShareArticle('copy', article.id, article.title);
-      alert('Lien copié dans le presse-papier !');
+      toast.success('Lien copié !', {
+        description: 'Le lien de l\'article a été copié',
+        duration: 2000,
+      });
     }
   };
 

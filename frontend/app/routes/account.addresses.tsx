@@ -7,6 +7,7 @@ import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 type Address = {
   id: string;
@@ -126,6 +127,12 @@ export default function AccountAddresses() {
   return (
     <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
       <div className="space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Mon Compte", href: "/account" },
+        { label: "Mes Adresses" }
+      ]} />
+      
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>

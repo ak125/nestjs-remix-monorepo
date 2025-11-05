@@ -20,11 +20,13 @@ import {
   Tag
 } from 'lucide-react';
 import { useState } from "react";
+import { toast } from 'sonner';
 
 // UI Components
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
 // Types
 interface BlogArticle {
@@ -241,7 +243,10 @@ export default function BlogArticle() {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Lien copié dans le presse-papier !');
+      toast.success('Lien copié !', {
+        description: 'Le lien de l\'article a été copié',
+        duration: 2000,
+      });
     }
   };
 
@@ -250,15 +255,10 @@ export default function BlogArticle() {
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Link to="/" className="hover:text-blue-600">Accueil</Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link to="/blog" className="hover:text-blue-600">Blog</Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium truncate">
-              {article.title}
-            </span>
-          </div>
+          <PublicBreadcrumb items={[
+            { label: "Blog", href: "/blog" },
+            { label: article.title }
+          ]} />
         </div>
       </div>
 

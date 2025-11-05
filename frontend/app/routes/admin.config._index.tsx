@@ -21,8 +21,10 @@ import {
   Search
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { requireAdmin } from "~/auth/unified.server";
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 
 // Types simplifiés pour les configurations
 interface ConfigItem {
@@ -299,6 +301,9 @@ export default function AdminConfigIndexPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Navigation Breadcrumb */}
+        <AdminBreadcrumb currentPage="Configuration" />
+
         {/* Header avec statistiques */}
         <div className="bg-white rounded-lg shadow-sm border mb-6">
           <div className="px-6 py-4 border-b border-gray-200">

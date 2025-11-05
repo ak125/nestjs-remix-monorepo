@@ -12,6 +12,7 @@ import { ArrowLeft, Car, Settings, Search } from "lucide-react";
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 interface Model {
   modele_id: number;
@@ -101,15 +102,12 @@ export default function CommercialVehiclesBrandModels() {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                <Link to="/dashboard" className="hover:text-gray-900">Commercial</Link>
-                <span>/</span>
-                <Link to="/commercial/vehicles" className="hover:text-gray-900">Véhicules</Link>
-                <span>/</span>
-                <Link to="/commercial/products/brands" className="hover:text-gray-900">Marques</Link>
-                <span>/</span>
-                <span className="text-gray-900">Modèles</span>
-              </div>
+              <PublicBreadcrumb items={[
+                { label: "Commercial", href: "/commercial" },
+                { label: "Véhicules", href: "/commercial/vehicles" },
+                { label: "Marques", href: "/commercial/vehicles/brands" },
+                { label: brand?.marque_name || `Marque #${params.brandId}` }
+              ]} />
               <h1 className="text-2xl font-bold text-gray-900">
                 Modèles {brand?.marque_name || `#${params.brandId}`}
               </h1>

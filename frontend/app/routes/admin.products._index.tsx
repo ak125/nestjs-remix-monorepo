@@ -34,9 +34,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link, Form } from '@remix-run/react';
 import { useState } from 'react';
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 
 interface Product {
   piece_id: number;
@@ -130,6 +132,9 @@ export default function AdminProducts() {
 
   return (
     <div className="space-y-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Gestion des produits" />
+
       {/* Header */}
       <div className="border-b border-gray-200 pb-5">
         <div className="flex items-center justify-between">

@@ -13,7 +13,9 @@ import { Alert, Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
+import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
+import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { getCart } from "../services/cart.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -541,6 +543,9 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[{ label: "Panier" }]} />
+        
         {/* Notification de succès après vidage */}
         {cleared && (
           <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>}>
@@ -556,18 +561,29 @@ export default function CartPage() {
           <button
             type="button"
             onClick={async () => {
-              if (!confirm('Êtes-vous sûr de vouloir vider le panier ?')) {
-                return;
-              }
-              
-              const result = await clearCartAPI();
-              
-              if (result.success) {
-                // Recharger la page avec le paramètre cleared pour afficher le message de succès
-                window.location.href = '/cart?cleared=true';
-              } else {
-                alert(result.error || 'Erreur lors du vidage du panier');
-              }
+              toast.warning('Vider le panier ?', {
+                duration: 5000,
+                description: `${cart.summary.total_items} article(s) seront supprimés`,
+                action: {
+                  label: 'Confirmer',
+                  onClick: async () => {
+                    const result = await clearCartAPI();
+                    
+                    if (result.success) {
+                      toast.success('Panier vidé !');
+                      setTimeout(() => {
+                        window.location.href = '/cart?cleared=true';
+                      }, 1000);
+                    } else {
+                      toast.error(result.error || 'Erreur lors du vidage du panier');
+                    }
+                  },
+                },
+                cancel: {
+                  label: 'Annuler',
+                  onClick: () => {},
+                },
+              });
             }}
             className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-destructive/5 transition-colors"
             title="Supprimer tous les articles du panier"

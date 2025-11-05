@@ -2,8 +2,10 @@ import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useActionData, Form, useNavigation } from '@remix-run/react';
 import { useState, useEffect } from 'react';
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {
@@ -237,6 +239,9 @@ export default function AdminStock() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Gestion des Stocks" />
+
       {/* En-tête */}
       <div className="flex justify-between items-center">
         <div>

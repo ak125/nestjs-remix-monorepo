@@ -13,6 +13,7 @@ import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 interface VehicleType {
   type_id: number;
@@ -171,15 +172,12 @@ export default function ManufacturerModelTypes() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-        <Link to="/manufacturers" className="hover:text-gray-900">Marques</Link>
-        <span>/</span>
-        <Link to={`/manufacturers/${params.brandId}`} className="hover:text-gray-900">
-          {brand?.marque_name || `Marque #${params.brandId}`}
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900">Motorisations</span>
-      </div>
+      <PublicBreadcrumb items={[
+        { label: "Marques", href: "/manufacturers" },
+        { label: brand?.marque_name || `Marque #${params.brandId}`, href: `/manufacturers/${params.brandId}` },
+        { label: model?.modele_name || "Modèle", href: `/manufacturers/${params.brandId}` },
+        { label: "Motorisations" }
+      ]} />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">

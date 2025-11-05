@@ -4,7 +4,9 @@
 
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -62,6 +64,9 @@ export default function AdminMenu() {
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto py-8 px-4">
+        {/* Navigation Breadcrumb */}
+        <AdminBreadcrumb currentPage="Menu" />
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{menu.title}</h1>
