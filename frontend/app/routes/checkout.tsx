@@ -6,7 +6,7 @@
 import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
 import { useEffect } from "react";
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
 
@@ -217,12 +217,6 @@ export default function CheckoutPage() {
     if (error) {
       toast.error(error, {
         duration: 5000,
-        position: 'top-center',
-        style: {
-          background: '#FEE2E2',
-          color: '#991B1B',
-          fontWeight: '500',
-        },
       });
     }
   }, [error]);
@@ -247,7 +241,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
-      <Toaster />
       <Form method="post" className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         
         {/* Header avec breadcrumb */}
