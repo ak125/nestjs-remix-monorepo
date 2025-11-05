@@ -1,9 +1,10 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Bell, BookOpen, Shield, ShoppingCart } from 'lucide-react';
+import { Bell, BookOpen, Search, Shield, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from "react";
 
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
+import { GlobalSearch } from "./layout/GlobalSearch";
 import { CartSidebar } from "./navbar/CartSidebar";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
@@ -14,6 +15,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
   const location = useLocation();
   const { summary, isOpen, toggleCart, closeCart } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   // 🆕 PHASE 7: Role-based permissions
   const isAdmin = user && (user.level ?? 0) >= 7;
@@ -26,6 +28,19 @@ export const Navbar = ({ logo }: { logo: string }) => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 🆕 Raccourci clavier global Cmd+K / Ctrl+K pour ouvrir la recherche
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // 🆕 Smooth scroll vers les sections
@@ -118,6 +133,30 @@ export const Navbar = ({ logo }: { logo: string }) => {
       
       {/* DROITE : Actions Utilisateur */}
       <div className='flex gap-3 items-center'>
+        {/* 🆕 Bouton Recherche Globale (Cmd+K) - Version Desktop */}
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 text-white transition-all duration-200 group"
+          aria-label="Recherche globale"
+          title="Recherche (Cmd+K)"
+        >
+          <Search className="w-4 h-4" />
+          <span className="text-sm font-medium">Rechercher</span>
+          <kbd className="hidden lg:inline-flex ml-1 px-2 py-0.5 text-[11px] font-semibold text-blue-800 bg-white rounded border border-white/40 shadow-sm group-hover:shadow">
+            ⌘K
+          </kbd>
+        </button>
+
+        {/* Version mobile: icône simple */}
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="md:hidden hover:text-blue-200 transition-colors p-1.5 hover:bg-white/10 rounded-md"
+          aria-label="Recherche"
+          title="Recherche (Cmd+K)"
+        >
+          <Search size={20} />
+        </button>
+
         {/* 🆕 PHASE 1: Panier avec badge */}
         <button
           onClick={toggleCart}
@@ -166,6 +205,13 @@ export const Navbar = ({ logo }: { logo: string }) => {
 
       {/* 🆕 PHASE 1 POC: CartSidebar Component */}
       <CartSidebar isOpen={isOpen} onClose={closeCart} />
+
+      {/* 🆕 GlobalSearch Modal avec Cmd+K */}
+      <GlobalSearch 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)}
+        placeholder="Rechercher produits, commandes, utilisateurs..."
+      />
     </nav>
   );
 };
