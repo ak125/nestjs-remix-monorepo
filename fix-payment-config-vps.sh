@@ -1,0 +1,180 @@
+#!/bin/bash
+
+echo "═══════════════════════════════════════════════════════════════"
+echo "   CORRECTION CONFIGURATION PAIEMENT - VPS PRODUCTION"
+echo "═══════════════════════════════════════════════════════════════"
+echo "Date: $(date)"
+echo ""
+
+# Vérification que nous sommes dans le bon répertoire
+if [ ! -f .env ]; then
+    echo "❌ ERREUR: Fichier .env introuvable dans le répertoire actuel!"
+    echo "   Assurez-vous d'être dans ~/production/"
+    exit 1
+fi
+
+# Backup automatique
+BACKUP_FILE=".env.backup.$(date +%Y%m%d_%H%M%S)"
+cp .env "$BACKUP_FILE"
+echo "✅ Backup créé : $BACKUP_FILE"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔧 CORRECTIONS AUTOMATIQUES"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# 1. Supprimer la première définition de APP_URL (la ligne https://automecanik.fr)
+echo "1️⃣  Suppression de la duplication APP_URL..."
+sed -i '/^APP_URL=https:\/\/automecanik\.fr$/d' .env
+echo "   ✅ Première définition de APP_URL supprimée"
+
+# 2. Corriger APP_URL pour utiliser HTTPS et le bon domaine
+echo ""
+echo "2️⃣  Correction de APP_URL..."
+if grep -q "^APP_URL=" .env; then
+    sed -i 's|^APP_URL=.*|APP_URL=https://www.automecanik.com|' .env
+    echo "   ✅ APP_URL = https://www.automecanik.com"
+else
+    echo "APP_URL=https://www.automecanik.com" >> .env
+    echo "   ✅ APP_URL ajoutée"
+fi
+
+# 3. Corriger BASE_URL
+echo ""
+echo "3️⃣  Correction de BASE_URL..."
+if grep -q "^BASE_URL=" .env; then
+    sed -i 's|^BASE_URL=.*|BASE_URL=https://www.automecanik.com|' .env
+    echo "   ✅ BASE_URL = https://www.automecanik.com"
+else
+    echo "BASE_URL=https://www.automecanik.com" >> .env
+    echo "   ✅ BASE_URL ajoutée"
+fi
+
+# 4. Ajouter FRONTEND_URL si elle n'existe pas
+echo ""
+echo "4️⃣  Configuration de FRONTEND_URL..."
+if grep -q "^FRONTEND_URL=" .env; then
+    sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://www.automecanik.com|' .env
+    echo "   ✅ FRONTEND_URL mise à jour"
+else
+    echo "FRONTEND_URL=https://www.automecanik.com" >> .env
+    echo "   ✅ FRONTEND_URL ajoutée"
+fi
+
+# 5. Vérifier que SystemPay est en PRODUCTION
+echo ""
+echo "5️⃣  Vérification SystemPay..."
+if grep -q "^SYSTEMPAY_MODE=PRODUCTION" .env; then
+    echo "   ✅ SYSTEMPAY_MODE = PRODUCTION (déjà correct)"
+else
+    sed -i 's/^SYSTEMPAY_MODE=.*/SYSTEMPAY_MODE=PRODUCTION/' .env
+    echo "   ✅ SYSTEMPAY_MODE mis à PRODUCTION"
+fi
+
+# 6. Vérifier que Paybox est en PRODUCTION
+echo ""
+echo "6️⃣  Vérification Paybox..."
+if grep -q "^PAYBOX_MODE=PRODUCTION" .env; then
+    echo "   ✅ PAYBOX_MODE = PRODUCTION (déjà correct)"
+else
+    sed -i 's/^PAYBOX_MODE=.*/PAYBOX_MODE=PRODUCTION/' .env
+    echo "   ✅ PAYBOX_MODE mis à PRODUCTION"
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📊 RÉSUMÉ DES CHANGEMENTS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "✅ URLs corrigées vers HTTPS :"
+echo "   APP_URL = https://www.automecanik.com"
+echo "   BASE_URL = https://www.automecanik.com"
+echo "   FRONTEND_URL = https://www.automecanik.com"
+echo ""
+echo "✅ Modes de paiement vérifiés :"
+echo "   SYSTEMPAY_MODE = PRODUCTION"
+echo "   PAYBOX_MODE = PRODUCTION"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "⚠️  ACTIONS MANUELLES REQUISES"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "🔐 IMPORTANT - CLÉS HMAC"
+echo ""
+echo "Les clés HMAC actuelles sont identiques pour :"
+echo "  - PAYBOX_HMAC_KEY"
+echo "  - SYSTEMPAY_HMAC_KEY_TEST"
+echo "  - SYSTEMPAY_HMAC_KEY_PROD"
+echo ""
+echo "📞 CONTACTEZ LES FOURNISSEURS :"
+echo ""
+echo "1️⃣  PAYBOX - Obtenir la clé HMAC de PRODUCTION"
+echo "   📧 Email : support@paybox.com"
+echo "   📞 Tél : +33 (0)5 56 49 39 00"
+echo ""
+echo "   Informations à fournir :"
+echo "   - SITE : 5259250"
+echo "   - RANG : 001"
+echo "   - IDENTIFIANT : 822188223"
+echo "   - Domaine : https://www.automecanik.com"
+echo ""
+echo "2️⃣  SYSTEMPAY - Vérifier la clé HMAC de PRODUCTION"
+echo "   Confirmer que la clé PROD actuelle est bien différente de TEST"
+echo ""
+echo "Une fois les clés reçues, modifiez manuellement le .env :"
+echo "  nano .env"
+echo ""
+echo "Puis mettez à jour :"
+echo "  PAYBOX_HMAC_KEY=<nouvelle_cle_paybox_prod>"
+echo "  SYSTEMPAY_HMAC_KEY_PROD=<nouvelle_cle_systempay_prod>"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔄 REDÉMARRAGE DES SERVICES"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+read -p "Voulez-vous redémarrer les conteneurs Docker maintenant ? (y/N) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "🔄 Redémarrage en cours..."
+    
+    if command -v docker-compose &> /dev/null; then
+        docker-compose restart
+        echo "✅ Services redémarrés avec docker-compose"
+    elif command -v docker &> /dev/null && docker compose version &> /dev/null; then
+        docker compose restart
+        echo "✅ Services redémarrés avec docker compose"
+    else
+        echo "⚠️  Docker Compose introuvable. Redémarrez manuellement :"
+        echo "   docker-compose restart"
+        echo "   OU"
+        echo "   docker compose restart"
+    fi
+else
+    echo ""
+    echo "⚠️  N'oubliez pas de redémarrer les services après avoir mis à jour les clés HMAC :"
+    echo "   docker-compose restart"
+    echo "   OU"
+    echo "   docker compose restart"
+fi
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "✅ CORRECTION TERMINÉE"
+echo "═══════════════════════════════════════════════════════════════"
+echo ""
+echo "📋 Récapitulatif :"
+echo "  ✅ URLs corrigées (HTTP → HTTPS)"
+echo "  ✅ Duplication APP_URL supprimée"
+echo "  ✅ Modes PRODUCTION vérifiés"
+echo "  ⚠️  Clés HMAC à obtenir auprès des fournisseurs"
+echo ""
+echo "💾 Backup sauvegardé : $BACKUP_FILE"
+echo ""
+echo "📝 Pour vérifier les changements :"
+echo "   diff $BACKUP_FILE .env"
+echo ""

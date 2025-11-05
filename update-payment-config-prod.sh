@@ -1,0 +1,184 @@
+#!/bin/bash
+
+echo "═══════════════════════════════════════════════════════════════"
+echo "   MISE À JOUR CONFIGURATION PAIEMENT - PRODUCTION VPS"
+echo "═══════════════════════════════════════════════════════════════"
+echo "Date: $(date)"
+echo ""
+
+# Vérification de l'existence du fichier .env
+if [ ! -f .env ]; then
+    echo "❌ ERREUR: Fichier .env introuvable!"
+    exit 1
+fi
+
+# Backup du fichier .env
+BACKUP_FILE=".env.backup.$(date +%Y%m%d_%H%M%S)"
+cp .env "$BACKUP_FILE"
+echo "✅ Backup créé: $BACKUP_FILE"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "📝 MISE À JOUR DES CONFIGURATIONS"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# Configuration SystemPay/Cyberplus (celle qui fonctionne actuellement)
+echo "1️⃣  Configuration SystemPay (ACTIF EN PRODUCTION)"
+
+# Mise à jour SYSTEMPAY_MODE
+if grep -q "^SYSTEMPAY_MODE=" .env; then
+    sed -i 's/^SYSTEMPAY_MODE=.*/SYSTEMPAY_MODE=PRODUCTION/' .env
+    echo "  ✅ SYSTEMPAY_MODE = PRODUCTION"
+else
+    echo "SYSTEMPAY_MODE=PRODUCTION" >> .env
+    echo "  ✅ SYSTEMPAY_MODE = PRODUCTION (ajouté)"
+fi
+
+# Mise à jour SYSTEMPAY_CERTIFICATE_TEST
+if grep -q "^SYSTEMPAY_CERTIFICATE_TEST=" .env; then
+    sed -i 's/^SYSTEMPAY_CERTIFICATE_TEST=.*/SYSTEMPAY_CERTIFICATE_TEST=9300172162563656/' .env
+    echo "  ✅ SYSTEMPAY_CERTIFICATE_TEST = 9300172162563656"
+else
+    echo "SYSTEMPAY_CERTIFICATE_TEST=9300172162563656" >> .env
+    echo "  ✅ SYSTEMPAY_CERTIFICATE_TEST = 9300172162563656 (ajouté)"
+fi
+
+# Mise à jour SYSTEMPAY_CERTIFICATE_PROD
+if grep -q "^SYSTEMPAY_CERTIFICATE_PROD=" .env; then
+    sed -i 's/^SYSTEMPAY_CERTIFICATE_PROD=.*/SYSTEMPAY_CERTIFICATE_PROD=9816635272016068/' .env
+    echo "  ✅ SYSTEMPAY_CERTIFICATE_PROD = 9816635272016068"
+else
+    echo "SYSTEMPAY_CERTIFICATE_PROD=9816635272016068" >> .env
+    echo "  ✅ SYSTEMPAY_CERTIFICATE_PROD = 9816635272016068 (ajouté)"
+fi
+
+# Mise à jour SYSTEMPAY_SITE_ID
+if grep -q "^SYSTEMPAY_SITE_ID=" .env; then
+    sed -i 's/^SYSTEMPAY_SITE_ID=.*/SYSTEMPAY_SITE_ID=43962882/' .env
+    echo "  ✅ SYSTEMPAY_SITE_ID = 43962882"
+else
+    echo "SYSTEMPAY_SITE_ID=43962882" >> .env
+    echo "  ✅ SYSTEMPAY_SITE_ID = 43962882 (ajouté)"
+fi
+
+# Mise à jour SYSTEMPAY_API_URL
+if grep -q "^SYSTEMPAY_API_URL=" .env; then
+    sed -i 's|^SYSTEMPAY_API_URL=.*|SYSTEMPAY_API_URL=https://paiement.systempay.fr/vads-payment/|' .env
+    echo "  ✅ SYSTEMPAY_API_URL = https://paiement.systempay.fr/vads-payment/"
+else
+    echo "SYSTEMPAY_API_URL=https://paiement.systempay.fr/vads-payment/" >> .env
+    echo "  ✅ SYSTEMPAY_API_URL = https://paiement.systempay.fr/vads-payment/ (ajouté)"
+fi
+
+echo ""
+echo "2️⃣  Configuration Paybox (PRODUCTION)"
+
+# Configuration Paybox - Mode PRODUCTION
+if grep -q "^PAYBOX_MODE=" .env; then
+    sed -i 's/^PAYBOX_MODE=.*/PAYBOX_MODE=PRODUCTION/' .env
+    echo "  ✅ PAYBOX_MODE = PRODUCTION"
+else
+    echo "PAYBOX_MODE=PRODUCTION" >> .env
+    echo "  ✅ PAYBOX_MODE = PRODUCTION (ajouté)"
+fi
+
+# Mise à jour PAYBOX_SITE
+if grep -q "^PAYBOX_SITE=" .env; then
+    sed -i 's/^PAYBOX_SITE=.*/PAYBOX_SITE=5259250/' .env
+    echo "  ✅ PAYBOX_SITE = 5259250"
+else
+    echo "PAYBOX_SITE=5259250" >> .env
+    echo "  ✅ PAYBOX_SITE = 5259250 (ajouté)"
+fi
+
+# Mise à jour PAYBOX_PAYMENT_URL
+if grep -q "^PAYBOX_PAYMENT_URL=" .env; then
+    sed -i 's|^PAYBOX_PAYMENT_URL=.*|PAYBOX_PAYMENT_URL=https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi|' .env
+    echo "  ✅ PAYBOX_PAYMENT_URL = https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi"
+else
+    echo "PAYBOX_PAYMENT_URL=https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi" >> .env
+    echo "  ✅ PAYBOX_PAYMENT_URL = https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi (ajouté)"
+fi
+
+# Mise à jour PAYBOX_URL (alias)
+if grep -q "^PAYBOX_URL=" .env; then
+    sed -i 's|^PAYBOX_URL=.*|PAYBOX_URL=https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi|' .env
+    echo "  ✅ PAYBOX_URL = https://tpeweb.paybox.com/cgi/MYchoix_pagepaiement.cgi"
+fi
+
+echo ""
+echo "3️⃣  Configuration URLs"
+
+# Mise à jour BASE_URL
+if grep -q "^BASE_URL=" .env; then
+    sed -i 's|^BASE_URL=.*|BASE_URL=https://www.automecanik.com|' .env
+    echo "  ✅ BASE_URL = https://www.automecanik.com"
+else
+    echo "BASE_URL=https://www.automecanik.com" >> .env
+    echo "  ✅ BASE_URL = https://www.automecanik.com (ajouté)"
+fi
+
+# Mise à jour FRONTEND_URL
+if grep -q "^FRONTEND_URL=" .env; then
+    sed -i 's|^FRONTEND_URL=.*|FRONTEND_URL=https://www.automecanik.com|' .env
+    echo "  ✅ FRONTEND_URL = https://www.automecanik.com"
+else
+    echo "FRONTEND_URL=https://www.automecanik.com" >> .env
+    echo "  ✅ FRONTEND_URL = https://www.automecanik.com (ajouté)"
+fi
+
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "⚠️  ATTENTION - CLÉS HMAC"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "Les clés HMAC n'ont PAS été modifiées automatiquement pour des raisons de sécurité."
+echo ""
+echo "🔐 Actions requises :"
+echo ""
+echo "1. Contactez Paybox pour obtenir votre clé HMAC de PRODUCTION :"
+echo "   📧 Email: support@paybox.com"
+echo "   📞 Tél: +33 (0)5 56 49 39 00"
+echo ""
+echo "2. Informations à fournir à Paybox :"
+echo "   - SITE: 5259250"
+echo "   - RANG: 001"
+echo "   - IDENTIFIANT: 822188223"
+echo "   - Domaine: https://www.automecanik.com"
+echo ""
+echo "3. Une fois reçue, mettez à jour manuellement dans le .env :"
+echo "   PAYBOX_HMAC_KEY=<votre_clé_production>"
+echo ""
+echo "4. Pour SystemPay, si vous avez une clé PROD différente de TEST :"
+echo "   SYSTEMPAY_HMAC_KEY_PROD=<votre_clé_systempay_production>"
+echo ""
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "🔄 REDÉMARRAGE DES SERVICES"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+read -p "Voulez-vous redémarrer les conteneurs Docker maintenant ? (y/N) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "🔄 Redémarrage des conteneurs..."
+    docker-compose restart backend
+    echo "✅ Backend redémarré"
+else
+    echo "⚠️  N'oubliez pas de redémarrer manuellement : docker-compose restart backend"
+fi
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "✅ CONFIGURATION MISE À JOUR"
+echo "═══════════════════════════════════════════════════════════════"
+echo ""
+echo "📋 Résumé :"
+echo "  ✅ SystemPay configuré en mode PRODUCTION"
+echo "  ✅ Paybox configuré en mode PRODUCTION"
+echo "  ✅ URLs mises à jour vers HTTPS"
+echo "  ⚠️  Clés HMAC à obtenir auprès des fournisseurs"
+echo ""
+echo "💾 Backup disponible : $BACKUP_FILE"
+echo ""

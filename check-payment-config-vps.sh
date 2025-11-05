@@ -1,0 +1,155 @@
+#!/bin/bash
+
+echo "═══════════════════════════════════════════════════════════════"
+echo "   VÉRIFICATION CONFIGURATION PAIEMENT - PRODUCTION VPS"
+echo "═══════════════════════════════════════════════════════════════"
+echo "Date: $(date)"
+echo ""
+
+# Vérification de l'existence du fichier .env
+if [ ! -f .env ]; then
+    echo "❌ ERREUR: Fichier .env introuvable!"
+    exit 1
+fi
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "1️⃣  CONFIGURATION PAYBOX"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+grep "^PAYBOX_" .env | while read line; do
+    key=$(echo "$line" | cut -d'=' -f1)
+    value=$(echo "$line" | cut -d'=' -f2-)
+    
+    # Masquer partiellement les clés sensibles
+    if [[ $key == *"KEY"* ]] || [[ $key == *"SECRET"* ]]; then
+        if [ ${#value} -gt 16 ]; then
+            masked="${value:0:8}...${value: -8}"
+            echo "  $key = $masked"
+        else
+            echo "  $key = ****"
+        fi
+    else
+        echo "  $key = $value"
+    fi
+done
+echo ""
+
+# Vérification des variables SystemPay
+echo "📋 CONFIGURATION SYSTEMPAY:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+grep "^SYSTEMPAY_" .env | while read line; do
+    key=$(echo "$line" | cut -d'=' -f1)
+    value=$(echo "$line" | cut -d'=' -f2-)
+    
+    if [[ $key == *"KEY"* ]] || [[ $key == *"SECRET"* ]]; then
+        if [ ${#value} -gt 16 ]; then
+            masked="${value:0:8}...${value: -8}"
+            echo "  $key = $masked"
+        else
+            echo "  $key = ****"
+        fi
+    else
+        echo "  $key = $value"
+    fi
+done
+echo ""
+
+# Vérification BASE_URL
+echo "🌐 CONFIGURATION URLs:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+grep "^BASE_URL" .env
+grep "^FRONTEND_URL" .env 2>/dev/null || echo "  FRONTEND_URL = (non définie)"
+echo ""
+
+# Analyse du mode de paiement
+echo "🔍 ANALYSE DE LA CONFIGURATION:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+PAYBOX_MODE=$(grep "^PAYBOX_MODE=" .env | cut -d'=' -f2)
+PAYBOX_URL=$(grep "^PAYBOX_PAYMENT_URL=" .env | cut -d'=' -f2)
+PAYBOX_SITE=$(grep "^PAYBOX_SITE=" .env | cut -d'=' -f2)
+
+echo "  Mode actuel: $PAYBOX_MODE"
+
+if [ "$PAYBOX_MODE" = "PRODUCTION" ]; then
+    echo "  ✅ Mode PRODUCTION activé"
+    
+    if [[ "$PAYBOX_URL" == *"preprod"* ]]; then
+        echo "  ⚠️  ATTENTION: URL de PREPROD détectée en mode PRODUCTION!"
+    elif [[ "$PAYBOX_URL" == *"tpeweb.paybox.com"* ]]; then
+        echo "  ✅ URL de production correcte"
+    fi
+    
+    if [ "$PAYBOX_SITE" = "1999888" ]; then
+        echo "  ⚠️  ATTENTION: Site de TEST (1999888) en mode PRODUCTION!"
+    elif [ "$PAYBOX_SITE" = "5259250" ]; then
+        echo "  ✅ Site de production (5259250)"
+    fi
+else
+    echo "  ℹ️  Mode TEST activé"
+fi
+
+echo ""
+
+# Comparaison des clés HMAC
+echo "🔐 COMPARAISON DES CLÉS HMAC:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+PAYBOX_KEY=$(grep "^PAYBOX_HMAC_KEY=" .env | cut -d'=' -f2)
+SYSTEMPAY_TEST_KEY=$(grep "^SYSTEMPAY_HMAC_KEY_TEST=" .env | cut -d'=' -f2)
+SYSTEMPAY_PROD_KEY=$(grep "^SYSTEMPAY_HMAC_KEY_PROD=" .env | cut -d'=' -f2)
+
+echo "  Longueur clé Paybox: ${#PAYBOX_KEY} caractères"
+echo "  Longueur clé SystemPay TEST: ${#SYSTEMPAY_TEST_KEY} caractères"
+echo "  Longueur clé SystemPay PROD: ${#SYSTEMPAY_PROD_KEY} caractères"
+echo ""
+
+if [ "$PAYBOX_KEY" = "$SYSTEMPAY_TEST_KEY" ]; then
+    echo "  ⚠️  PAYBOX_HMAC_KEY = SYSTEMPAY_HMAC_KEY_TEST"
+    echo "      → Vous utilisez la clé de TEST SystemPay pour Paybox!"
+fi
+
+if [ "$PAYBOX_KEY" = "$SYSTEMPAY_PROD_KEY" ]; then
+    echo "  ✅ PAYBOX_HMAC_KEY = SYSTEMPAY_HMAC_KEY_PROD"
+    echo "      → Configuration cohérente pour la production"
+fi
+
+if [ "$SYSTEMPAY_TEST_KEY" = "$SYSTEMPAY_PROD_KEY" ]; then
+    echo "  ⚠️  Les clés TEST et PROD de SystemPay sont identiques!"
+fi
+
+echo ""
+
+# Vérification du conteneur Docker
+echo "🐳 ÉTAT DU CONTENEUR DOCKER:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+docker ps --filter "name=backend" --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "  ⚠️  Docker non accessible ou conteneur non trouvé"
+echo ""
+
+# Résumé et recommandations
+echo "📊 RÉSUMÉ ET RECOMMANDATIONS:"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+if [ "$PAYBOX_MODE" = "PRODUCTION" ] && [ "$PAYBOX_KEY" = "$SYSTEMPAY_TEST_KEY" ]; then
+    echo "  🚨 PROBLÈME DÉTECTÉ:"
+    echo "     Vous êtes en mode PRODUCTION avec une clé de TEST!"
+    echo ""
+    echo "  💡 SOLUTION:"
+    echo "     Contactez Paybox pour obtenir votre clé HMAC de PRODUCTION"
+    echo "     Email: support@paybox.com"
+    echo "     Tél: +33 (0)5 56 49 39 00"
+    echo ""
+    echo "  📝 Informations à fournir à Paybox:"
+    echo "     - SITE: $PAYBOX_SITE"
+    echo "     - RANG: $(grep '^PAYBOX_RANG=' .env | cut -d'=' -f2)"
+    echo "     - IDENTIFIANT: $(grep '^PAYBOX_IDENTIFIANT=' .env | cut -d'=' -f2)"
+    echo "     - Domaine: https://www.automecanik.com"
+elif [ "$PAYBOX_MODE" = "PRODUCTION" ] && [ "$PAYBOX_KEY" = "$SYSTEMPAY_PROD_KEY" ]; then
+    echo "  ✅ Configuration correcte pour la PRODUCTION"
+    echo "     Vous utilisez une clé de production cohérente"
+else
+    echo "  ℹ️  Mode TEST - Configuration normale"
+fi
+
+echo ""
+echo "════════════════════════════════════════════════════════════════"
