@@ -9,7 +9,6 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 
 // Types pour la gestion des factures (utilisé dans le loader/action)

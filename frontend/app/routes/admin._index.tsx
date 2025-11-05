@@ -5,7 +5,6 @@
 import { Alert, Badge } from "@fafa/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { toast } from 'sonner';
 import { 
   Users, 
   ShoppingCart, 
@@ -34,10 +33,10 @@ import {
   Eye
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from 'sonner';
 import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [

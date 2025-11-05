@@ -12,10 +12,9 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { requireAdmin } from "../auth/unified.server";
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { getAdminPayments, getPaymentStats } from "../services/payment-admin.server";
-import { Separator } from "../components/ui/separator";
 import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment";
 
 interface PayboxMonitoring {

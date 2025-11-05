@@ -8,9 +8,9 @@
  * - Animations et accessibilité
  */
 
+import { Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
 
-import { Plus, Trash2, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { AdminBreadcrumb } from '../components/admin/AdminBreadcrumb';

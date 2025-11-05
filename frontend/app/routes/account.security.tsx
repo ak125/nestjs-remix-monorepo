@@ -4,10 +4,10 @@ import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from
 
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
-import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 type SecurityData = {
   password: {

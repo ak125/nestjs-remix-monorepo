@@ -21,10 +21,9 @@ import {
   Search
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
-import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { requireAdmin } from "~/auth/unified.server";
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
 
 // Types simplifiés pour les configurations
 interface ConfigItem {

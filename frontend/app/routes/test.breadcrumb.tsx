@@ -4,6 +4,7 @@
  */
 
 import { Link } from "@remix-run/react";
+import { Home, ChevronRight, Slash } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -13,7 +14,6 @@ import {
   BreadcrumbPage,
   BreadcrumbEllipsis,
 } from "~/components/ui/breadcrumb";
-import { Home, ChevronRight, Slash } from "lucide-react";
 
 export default function BreadcrumbDemo() {
   return (

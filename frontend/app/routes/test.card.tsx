@@ -4,6 +4,8 @@
  */
 
 import { Link } from "@remix-run/react";
+import { Package, ShoppingCart, CreditCard, Truck, Star } from "lucide-react";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardHeader,
@@ -13,8 +15,6 @@ import {
   CardFooter,
 } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { Button } from "~/components/ui/button";
-import { Package, ShoppingCart, CreditCard, Truck, Star } from "lucide-react";
 
 export default function CardSeparatorDemo() {
   return (
