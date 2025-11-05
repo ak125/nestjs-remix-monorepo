@@ -15,6 +15,7 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 export const loader: LoaderFunction = async ({ context }) => {
   const user = await requireUser({ context });
@@ -88,6 +89,12 @@ export default function AccountSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Mon Compte", href: "/account" },
+        { label: "Paramètres" }
+      ]} />
+      
       <div>
         <h1 className="text-2xl font-bold">Paramètres du compte</h1>
         <p className="text-gray-600">Gérez vos préférences et votre confidentialité</p>

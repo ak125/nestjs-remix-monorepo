@@ -8,6 +8,7 @@ import { OrderSummaryWidget } from "../components/orders/OrderSummaryWidget";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
 import { getOrderStatusLabel, formatPrice } from "../utils/orders";
 
@@ -126,6 +127,12 @@ export default function OrdersListPage() {
   return (
     <AccountLayout user={user} stats={{ orders: { pending: stats.pendingOrders }, messages: { unread: 0 } }}>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[
+          { label: "Mon Compte", href: "/account" },
+          { label: "Mes Commandes" }
+        ]} />
+        
         {/* Widget de résumé */}
         <OrderSummaryWidget 
         totalOrders={stats.totalOrders}

@@ -6,6 +6,7 @@ import { Badge } from "@fafa/ui";
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useNavigation } from '@remix-run/react';
 import { Button } from '~/components/ui/button';
+import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 import { SearchBar } from '../components/search/SearchBar';
 
 interface SearchResult {
@@ -96,6 +97,16 @@ export default function SearchResults() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b pt-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <PublicBreadcrumb items={[
+            { label: "Recherche", href: "/search" },
+            { label: query || "Résultats" }
+          ]} />
+        </div>
+      </div>
+      
       {/* Header avec barre de recherche */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
