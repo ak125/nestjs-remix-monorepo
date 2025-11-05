@@ -110,6 +110,9 @@ export default function SimpleDesignSystem() {
       {/* UI Components Demos */}
       <UIComponentsSection />
 
+      {/* Test Pages Section */}
+      <TestPagesSection />
+
       {/* Resources */}
       <section className="bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-2">
         <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -997,6 +1000,146 @@ function UIComponentsSection() {
         <p className="text-xs text-gray-600 mt-1">
           Tous les composants sont accessibles (WCAG AA), responsive et personnalisables
         </p>
+      </div>
+    </section>
+  );
+}
+
+function TestPagesSection() {
+  const testPages = [
+    {
+      name: "🔍 Command / Global Search",
+      description: "Recherche globale avec Cmd+K, filtres par catégories",
+      link: "/test/command",
+      features: ["⚡ Raccourci clavier Cmd+K", "📁 Filtres multi-catégories", "🔎 Recherche en temps réel"],
+      icon: "⌘",
+    },
+    {
+      name: "🪟 Dialog (Modales)",
+      description: "Modales OrderDetails + QuickNote avec gestion focus",
+      link: "/test/dialog",
+      features: ["📦 Détails commande", "📝 Notes rapides", "♿ Accessible (Escape, focus trap)"],
+      icon: "□",
+    },
+    {
+      name: "📋 Dropdown Menu",
+      description: "Menus déroulants UserDropdown + AdminActions",
+      link: "/test/dropdown-menu",
+      features: ["👤 Actions utilisateur", "⚙️ Actions admin", "⌨️ Navigation clavier"],
+      icon: "⋮",
+    },
+    {
+      name: "📑 Tabs",
+      description: "Onglets ProductTabs (Détails, Spécifications, Avis)",
+      link: "/test/tabs",
+      features: ["🔧 Spécifications techniques", "⭐ Système d'avis", "📊 3 layouts différents"],
+      icon: "⎯",
+    },
+    {
+      name: "🎠 Carousel",
+      description: "Carrousel ProductGallery avec 5 exemples interactifs",
+      link: "/test/carousel",
+      features: ["🖼️ Galerie produit", "🎬 Autoplay configurable", "📱 Responsive & swipe"],
+      icon: "⟲",
+    },
+    {
+      name: "📄 Sheet (Drawer)",
+      description: "Panneau coulissant 4 directions (panier, menu, filtres)",
+      link: "/test/sheet",
+      features: ["🛒 Panier e-commerce", "📱 Menu mobile", "🚚 Options livraison"],
+      icon: "⊟",
+    },
+    {
+      name: "🎴 Hover Card",
+      description: "Cartes au survol User/Product/Order avec infos riches",
+      link: "/test/hover-card",
+      features: ["👤 Profil utilisateur", "📦 Aperçu produit", "📋 Détails commande"],
+      icon: "🎴",
+    },
+    {
+      name: "📂 Accordion",
+      description: "Accordéons FAQ/Filters/Settings avec recherche",
+      link: "/test/accordion",
+      features: ["❓ FAQ avec catégories", "🔍 Filtres catalogue", "⚙️ Paramètres admin"],
+      icon: "⌄",
+    },
+    {
+      name: "💬 Popover",
+      description: "Popovers UserActions/QuickView/DatePicker",
+      link: "/test/popover",
+      features: ["👤 Actions utilisateur", "🛍️ Aperçu produit", "📅 Sélecteur date"],
+      icon: "💬",
+    },
+  ];
+
+  return (
+    <section className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-200 rounded-xl p-8 space-y-6">
+      <div className="flex items-center gap-3">
+        <span className="text-4xl">🧪</span>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Pages de test des composants
+          </h2>
+          <p className="text-gray-700">
+            9 pages de démonstration complètes — Exemples interactifs + Documentation
+          </p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {testPages.map((page) => (
+          <Link
+            key={page.name}
+            to={page.link}
+            className="bg-white rounded-lg p-5 border-2 border-gray-200 hover:border-green-400 hover:shadow-lg transition-all group"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{page.icon}</span>
+                <h3 className="text-base font-bold text-gray-900 group-hover:text-green-600 transition-colors">
+                  {page.name}
+                </h3>
+              </div>
+              <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-green-600 transition-colors flex-shrink-0" />
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-3">
+              {page.description}
+            </p>
+
+            <div className="space-y-1.5">
+              {page.features.map((feature, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-gray-600">
+                  <span className="text-green-600 mt-0.5">✓</span>
+                  <span className="flex-1">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <span className="text-xs text-green-600 font-medium group-hover:underline">
+                Voir la démo →
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-lg p-5 border border-green-200">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p className="text-sm font-semibold text-gray-900">
+              Toutes les pages incluent :
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1">
+              <li>• <strong>Exemples interactifs</strong> avec données de test réalistes</li>
+              <li>• <strong>Documentation</strong> des props et configurations</li>
+              <li>• <strong>Code source</strong> commenté et prêt à copier</li>
+              <li>• <strong>Meilleures pratiques</strong> d&apos;accessibilité (ARIA, clavier)</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   );
