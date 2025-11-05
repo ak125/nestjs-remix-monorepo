@@ -2,6 +2,7 @@ import { Alert } from '@fafa/ui';
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
+import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { requireAuth } from "../auth/unified.server";
 
@@ -377,14 +378,21 @@ export default function OrderInvoice() {
                       const result = await response.json();
                       // Rediriger vers la passerelle de paiement
                       if (result.data?.redirectUrl) {
+                        toast.loading('Redirection vers le paiement...', { duration: 2000 });
                         window.location.href = result.data.redirectUrl;
                       }
                     } else {
-                      alert('Erreur lors de l\'initialisation du paiement');
+                      toast.error('Erreur d\'initialisation du paiement', {
+                        description: 'Veuillez réessayer plus tard',
+                        duration: 4000,
+                      });
                     }
                   } catch (error) {
                     console.error('Payment error:', error);
-                    alert('Erreur lors de l\'initialisation du paiement');
+                    toast.error('Erreur de paiement', {
+                      description: 'Une erreur est survenue lors de l\'initialisation',
+                      duration: 4000,
+                    });
                   }
                 }}
               >

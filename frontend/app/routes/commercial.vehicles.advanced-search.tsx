@@ -3,6 +3,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, useSubmit } from '@remix-run/react';
 import { Search, Download, Users, Heart, Save, RotateCcw, Package, Star, ShoppingCart, Eye } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
+import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { ModelSelector, type Model } from '../components/forms/ModelSelector';
 import { TypeSelector, type VehicleType } from '../components/forms/TypeSelector';
@@ -227,7 +228,10 @@ export default function AdvancedVehicleSearch() {
       
       // Simuler une petite attente pour l'UX
       await new Promise(resolve => setTimeout(resolve, 800));
-      alert('Recherche sauvegardée !');
+      toast.success('Recherche sauvegardée !', {
+        description: 'Vos critères ont été enregistrés',
+        duration: 3000,
+      });
     } finally {
       setIsSaving(false);
     }

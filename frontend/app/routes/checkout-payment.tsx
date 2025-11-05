@@ -1,6 +1,7 @@
 import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
 import { useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useRef, useState } from "react";
+import { toast } from 'sonner';
 import { requireAuth } from "../auth/unified.server";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
@@ -364,7 +365,10 @@ export default function PaymentPage() {
     
     if (!acceptedTerms) {
       console.log('❌ Terms not accepted');
-      alert('Vous devez accepter les conditions générales');
+      toast.error('Conditions générales requises', {
+        description: 'Vous devez accepter les CGV pour continuer',
+        duration: 4000,
+      });
       return;
     }
     
@@ -382,7 +386,10 @@ export default function PaymentPage() {
       
       if (!customerEmail) {
         console.error('❌ No customer email available');
-        alert('Erreur: Aucun email client disponible');
+        toast.error('Email requis', {
+          description: 'Aucun email client disponible',
+          duration: 4000,
+        });
         setIsProcessing(false);
         return;
       }
@@ -391,11 +398,16 @@ export default function PaymentPage() {
       
       console.log('🚀 Redirect URL:', redirectUrl);
       console.log('📧 Customer email:', customerEmail);
+      
+      toast.loading('Redirection vers le paiement...', { duration: 2000 });
       window.location.href = redirectUrl;
       
     } catch (error) {
       console.error('❌ ERROR:', error);
-      alert('Erreur lors du traitement du paiement: ' + error);
+      toast.error('Erreur de paiement', {
+        description: String(error),
+        duration: 5000,
+      });
       setIsProcessing(false);
     }
   };

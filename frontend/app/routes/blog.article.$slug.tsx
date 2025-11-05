@@ -20,6 +20,7 @@ import {
   Tag
 } from 'lucide-react';
 import { useState } from "react";
+import { toast } from 'sonner';
 
 // UI Components
 import { Badge } from "~/components/ui/badge";
@@ -242,7 +243,10 @@ export default function BlogArticle() {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Lien copié dans le presse-papier !');
+      toast.success('Lien copié !', {
+        description: 'Le lien de l\'article a été copié',
+        duration: 2000,
+      });
     }
   };
 
