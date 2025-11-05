@@ -26,6 +26,9 @@ const buttonVariants = cva(
         purple: "bg-purple-600 text-white hover:bg-purple-700",
         primary: "bg-primary text-primary-foreground hover:bg-primary/90",
         greenOutline: "border-2 border-green-600 bg-white text-green-600 hover:bg-green-50",
+        blueOutline: "border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50",
+        redOutline: "border-2 border-red-600 bg-white text-red-600 hover:bg-red-50",
+        oauth: "bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold",
       },
       size: {
         default: "h-10 px-4 py-2",
