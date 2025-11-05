@@ -346,6 +346,9 @@ export default function AdminArticlesPage() {
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                           title="Supprimer l'article"
                           onClick={(e) => {
+                            const form = e.currentTarget.closest('form');
+                            if (!form) return;
+                            
                             e.preventDefault();
                             toast.error('Supprimer cet article ?', {
                               duration: 5000,
@@ -353,8 +356,7 @@ export default function AdminArticlesPage() {
                               action: {
                                 label: 'Confirmer',
                                 onClick: () => {
-                                  const form = e.currentTarget.closest('form');
-                                  if (form) form.requestSubmit();
+                                  form.requestSubmit();
                                 },
                               },
                               cancel: {

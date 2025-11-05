@@ -632,6 +632,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                   size="sm" 
                   variant="destructive"
                   onClick={(e) => {
+                    const form = e.currentTarget.closest('form');
+                    if (!form) return;
+                    
                     e.preventDefault();
                     toast.error(`Supprimer ${selectedUsers.length} utilisateur(s) ?`, {
                       duration: 5000,
@@ -639,8 +642,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                       action: {
                         label: 'Confirmer',
                         onClick: () => {
-                          const form = e.currentTarget.closest('form');
-                          if (form) form.requestSubmit();
+                          form.requestSubmit();
                         },
                       },
                       cancel: {

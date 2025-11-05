@@ -50,7 +50,7 @@ export function CartIcon({ className = "" }: CartIconProps) {
   return (
     <Link 
       to="/cart" 
-      className={`hover:text-blue-200 transition-colors relative ${className}`}
+      className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >
       <ShoppingCart className="flex-shrink-0" size={20} />
