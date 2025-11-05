@@ -7,6 +7,7 @@
 
 import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+import { toast } from 'sonner';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { requireUser } from "../auth/unified.server";
@@ -156,12 +157,23 @@ export default function SupplierDetail() {
   };
 
   const handleDelete = () => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le fournisseur "${supplier.name}" ?`)) {
-      fetcher.submit(
-        { intent: 'delete' },
-        { method: 'POST' }
-      );
-    }
+    toast.error(`Supprimer le fournisseur "${supplier.name}" ?`, {
+      duration: 5000,
+      description: 'Cette action est irréversible',
+      action: {
+        label: 'Confirmer',
+        onClick: () => {
+          fetcher.submit(
+            { intent: 'delete' },
+            { method: 'POST' }
+          );
+        },
+      },
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
+    });
   };
 
   return (

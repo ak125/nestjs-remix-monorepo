@@ -11,6 +11,7 @@ import {
   UserCheck, UserX, Star
 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -627,13 +628,26 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 <input type="hidden" name="_action" value="bulkDelete" />
                 <input type="hidden" name="userIds" value={selectedUsers.join(',')} />
                 <Button 
-                  type="submit" 
+                  type="button"
                   size="sm" 
                   variant="destructive"
                   onClick={(e) => {
-                    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedUsers.length} utilisateur(s) ?`)) {
-                      e.preventDefault();
-                    }
+                    e.preventDefault();
+                    toast.error(`Supprimer ${selectedUsers.length} utilisateur(s) ?`, {
+                      duration: 5000,
+                      description: 'Cette action est irréversible',
+                      action: {
+                        label: 'Confirmer',
+                        onClick: () => {
+                          const form = e.currentTarget.closest('form');
+                          if (form) form.requestSubmit();
+                        },
+                      },
+                      cancel: {
+                        label: 'Annuler',
+                        onClick: () => {},
+                      },
+                    });
                   }}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />

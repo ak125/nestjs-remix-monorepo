@@ -12,6 +12,7 @@ import {
   Link
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
+import { toast } from 'sonner';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
@@ -220,7 +221,11 @@ export default function ContactPage() {
     });
     
     if (validFiles.length !== files.length) {
-      alert("Certains fichiers ont été ignorés (type non supporté ou taille > 10MB)");
+      const rejected = files.length - validFiles.length;
+      toast.warning(`${rejected} fichier(s) ignoré(s)`, {
+        description: 'Type non supporté ou taille > 10MB',
+        duration: 4000,
+      });
     }
     
     setAttachments(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 fichiers

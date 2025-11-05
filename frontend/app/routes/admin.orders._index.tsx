@@ -464,75 +464,91 @@ export default function OrdersRoute() {
   };
   
   const handleMarkPaid = async (orderId: string) => {
-    if (!confirm('Marquer cette commande comme payée ?')) {
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
-      method: 'POST',
-      credentials: 'include',
-    }).then(async (response) => {
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Enregistrement échoué');
-      }
-      return response.json();
-    });
-    
-    toast.promise(promise, {
-      loading: 'Enregistrement du paiement...',
-      success: () => {
-        setTimeout(() => window.location.reload(), 1500);
-        return '💰 Paiement enregistré avec succès !';
+    toast.warning('Marquer cette commande comme payée ?', {
+      duration: 5000,
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          setIsLoading(true);
+          
+          const promise = fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
+            method: 'POST',
+            credentials: 'include',
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'Enregistrement échoué');
+            }
+            return response.json();
+          });
+          
+          toast.promise(promise, {
+            loading: 'Enregistrement du paiement...',
+            success: () => {
+              setTimeout(() => window.location.reload(), 1500);
+              return '💰 Paiement enregistré avec succès !';
+            },
+            error: (err) => `❌ Erreur: ${err.message}`,
+          });
+          
+          try {
+            await promise;
+          } catch (error) {
+            console.error('Erreur paiement:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
       },
-      error: (err) => `❌ Erreur: ${err.message}`,
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
     });
-    
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Erreur paiement:', error);
-    } finally {
-      setIsLoading(false);
-    }
   };
   
   const handleValidateOrder = async (orderId: string) => {
-    if (!confirm('Valider cette commande et envoyer un email de confirmation au client ?')) {
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
-      method: 'POST',
-      credentials: 'include',
-    }).then(async (response) => {
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Validation échouée');
-      }
-      return response.json();
-    });
-    
-    toast.promise(promise, {
-      loading: 'Validation en cours...',
-      success: () => {
-        setTimeout(() => window.location.reload(), 1500);
-        return '✅ Commande validée et client notifié par email !';
+    toast.warning('Valider cette commande et envoyer un email de confirmation au client ?', {
+      duration: 5000,
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          setIsLoading(true);
+          
+          const promise = fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
+            method: 'POST',
+            credentials: 'include',
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'Validation échouée');
+            }
+            return response.json();
+          });
+          
+          toast.promise(promise, {
+            loading: 'Validation en cours...',
+            success: () => {
+              setTimeout(() => window.location.reload(), 1500);
+              return '✅ Commande validée et client notifié par email !';
+            },
+            error: (err) => `❌ Erreur: ${err.message}`,
+          });
+          
+          try {
+            await promise;
+          } catch (error) {
+            console.error('Erreur validation:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
       },
-      error: (err) => `❌ Erreur: ${err.message}`,
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
     });
-    
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Erreur validation:', error);
-    } finally {
-      setIsLoading(false);
-    }
   };
   
   const handleShipOrder = async () => {
@@ -628,115 +644,139 @@ export default function OrdersRoute() {
   };
   
   const handleStartProcessing = async (orderId: string) => {
-    if (!confirm('Démarrer la préparation de cette commande ?')) {
-      return;
-    }
-    
-    setIsLoading(true);
+    toast.info('Démarrer la préparation de cette commande ?', {
+      duration: 5000,
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          setIsLoading(true);
 
-    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ statusId: '3' }), // En préparation
-    }).then(async (response) => {
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Mise à jour échouée');
-      }
-      return response.json();
-    });
-    
-    toast.promise(promise, {
-      loading: 'Mise à jour en cours...',
-      success: () => {
-        setTimeout(() => window.location.reload(), 1500);
-        return '🔧 Commande en préparation !';
+          const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ statusId: '3' }), // En préparation
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'Mise à jour échouée');
+            }
+            return response.json();
+          });
+          
+          toast.promise(promise, {
+            loading: 'Mise à jour en cours...',
+            success: () => {
+              setTimeout(() => window.location.reload(), 1500);
+              return '🔧 Commande en préparation !';
+            },
+            error: (err) => `❌ Erreur: ${err.message}`,
+          });
+          
+          try {
+            await promise;
+          } catch (error) {
+            console.error('Erreur startProcessing:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
       },
-      error: (err) => `❌ Erreur: ${err.message}`,
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
     });
-    
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Erreur startProcessing:', error);
-    } finally {
-      setIsLoading(false);
-    }
   };
   
   const handleMarkReady = async (orderId: string) => {
-    if (!confirm('Marquer cette commande comme prête à expédier ?')) {
-      return;
-    }
-    
-    setIsLoading(true);
+    toast.info('Marquer cette commande comme prête à expédier ?', {
+      duration: 5000,
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          setIsLoading(true);
 
-    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ statusId: '4' }), // Prête
-    }).then(async (response) => {
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Mise à jour échouée');
-      }
-      return response.json();
-    });
-    
-    toast.promise(promise, {
-      loading: 'Mise à jour en cours...',
-      success: () => {
-        setTimeout(() => window.location.reload(), 1500);
-        return '📦 Commande prête à expédier !';
+          const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ statusId: '4' }), // Prête
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'Mise à jour échouée');
+            }
+            return response.json();
+          });
+          
+          toast.promise(promise, {
+            loading: 'Mise à jour en cours...',
+            success: () => {
+              setTimeout(() => window.location.reload(), 1500);
+              return '📦 Commande prête à expédier !';
+            },
+            error: (err) => `❌ Erreur: ${err.message}`,
+          });
+          
+          try {
+            await promise;
+          } catch (error) {
+            console.error('Erreur markReady:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
       },
-      error: (err) => `❌ Erreur: ${err.message}`,
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
     });
-    
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Erreur markReady:', error);
-    } finally {
-      setIsLoading(false);
-    }
   };
   
   const handleDeliver = async (orderId: string) => {
-    if (!confirm('Marquer cette commande comme livrée ?')) {
-      return;
-    }
-    
-    setIsLoading(true);
+    toast.success('Marquer cette commande comme livrée ?', {
+      duration: 5000,
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          setIsLoading(true);
 
-    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
-      method: 'POST',
-      credentials: 'include',
-    }).then(async (response) => {
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Mise à jour échouée');
-      }
-      return response.json();
-    });
-    
-    toast.promise(promise, {
-      loading: 'Mise à jour en cours...',
-      success: () => {
-        setTimeout(() => window.location.reload(), 1500);
-        return '✅ Commande livrée et client notifié !';
+          const promise = fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
+            method: 'POST',
+            credentials: 'include',
+          }).then(async (response) => {
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.message || 'Mise à jour échouée');
+            }
+            return response.json();
+          });
+          
+          toast.promise(promise, {
+            loading: 'Mise à jour en cours...',
+            success: () => {
+              setTimeout(() => window.location.reload(), 1500);
+              return '✅ Commande livrée et client notifié !';
+            },
+            error: (err) => `❌ Erreur: ${err.message}`,
+          });
+          
+          try {
+            await promise;
+          } catch (error) {
+            console.error('Erreur deliver:', error);
+          } finally {
+            setIsLoading(false);
+          }
+        },
       },
-      error: (err) => `❌ Erreur: ${err.message}`,
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
     });
-    
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Erreur deliver:', error);
-    } finally {
-      setIsLoading(false);
-    }
   };
   
   const handlePageChange = (page: number) => {
