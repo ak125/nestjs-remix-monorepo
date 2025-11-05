@@ -324,6 +324,9 @@ export default function ReviewDetailPage() {
               <Form 
                 method="post" 
                 onSubmit={(e) => {
+                  const form = e.currentTarget;
+                  if (!form) return;
+                  
                   e.preventDefault();
                   toast.error("Supprimer cet avis ?", {
                     duration: 5000,
@@ -331,8 +334,7 @@ export default function ReviewDetailPage() {
                     action: {
                       label: 'Confirmer',
                       onClick: () => {
-                        const form = e.currentTarget;
-                        if (form) form.requestSubmit();
+                        form.requestSubmit();
                       },
                     },
                     cancel: {
