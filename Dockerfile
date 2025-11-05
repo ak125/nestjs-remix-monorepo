@@ -1,15 +1,13 @@
 FROM node:20-alpine AS base
 
 FROM base AS builder
-
-
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat && apk update
-# Set working directory
 WORKDIR /app
 RUN npm install --global turbo
 COPY --chown=node:node . .
-RUN turbo prune @fafa/backend --docker
+
+# Prune pour backend ET frontend (le backend sert le frontend en SSR)
+RUN turbo prune @fafa/backend @fafa/frontend --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -33,6 +31,7 @@ ARG TURBO_TOKEN
 ENV TURBO_TOKEN=$TURBO_TOKEN
 ENV TZ=Europe/Paris
 ENV NODE_ENV="production"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Build monorepo (backend + frontend)
 RUN npm run build
@@ -55,6 +54,15 @@ COPY --chown=remix-api:nodejs --from=installer /app/node_modules ./node_modules
 COPY --chown=remix-api:nodejs --from=installer /app/node_modules/@fafa/frontend ./node_modules/@fafa/frontend
 COPY --chown=remix-api:nodejs --from=installer /app/node_modules/@fafa/typescript-config ./node_modules/@fafa/typescript-config
 COPY --chown=remix-api:nodejs --from=installer /app/node_modules/@fafa/eslint-config ./node_modules/@fafa/eslint-config
+
+# Copier le frontend build (Remix SSR)
+COPY --chown=remix-api:nodejs --from=installer /app/frontend/build ./frontend/build
+COPY --chown=remix-api:nodejs --from=installer /app/frontend/public ./frontend/public
+COPY --chown=remix-api:nodejs --from=installer /app/frontend/package.json ./frontend/package.json
+
+# Copier les packages internes nécessaires
+COPY --chown=remix-api:nodejs --from=installer /app/packages/ui ./packages/ui
+COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./packages/design-tokens
 
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 
