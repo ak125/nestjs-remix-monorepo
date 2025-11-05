@@ -9,6 +9,8 @@ import {
   useRouteError,
   isRouteErrorResponse 
 } from "@remix-run/react";
+import { Toaster } from "sonner";
+
 import { getOptionalUser } from "./auth/unified.server";
 import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors";
 import { Footer } from "./components/Footer";
@@ -88,6 +90,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Footer />
           <NotificationContainer />
         </NotificationProvider>
+        {/* 🎉 Sonner Toaster - Notifications modernes */}
+        <Toaster 
+          position="top-right"
+          expand={true}
+          richColors
+          closeButton
+        />
         <ScrollRestoration />
         <Scripts />
       </body>
