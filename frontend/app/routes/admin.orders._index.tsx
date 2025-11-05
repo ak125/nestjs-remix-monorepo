@@ -21,7 +21,7 @@ import { Alert } from '@fafa/ui';
 import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { requireUser } from '../auth/unified.server';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
@@ -468,24 +468,31 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Enregistrement du paiement...', { id: 'markPaid' });
+    
+    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Enregistrement échoué');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Enregistrement du paiement...',
+      success: () => {
+        setTimeout(() => window.location.reload(), 1500);
+        return '💰 Paiement enregistré avec succès !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/mark-paid`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        toast.success('💰 Paiement enregistré avec succès !', { id: 'markPaid' });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Enregistrement échoué'}`, { id: 'markPaid' });
-      }
+      await promise;
     } catch (error) {
       console.error('Erreur paiement:', error);
-      toast.error('❌ Erreur réseau lors de l\'enregistrement', { id: 'markPaid' });
     } finally {
       setIsLoading(false);
     }
@@ -497,24 +504,31 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Validation en cours...', { id: 'validate' });
+    
+    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Validation échouée');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Validation en cours...',
+      success: () => {
+        setTimeout(() => window.location.reload(), 1500);
+        return '✅ Commande validée et client notifié par email !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/validate`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        toast.success('✅ Commande validée et client notifié par email !', { id: 'validate' });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Validation échouée'}`, { id: 'validate' });
-      }
+      await promise;
     } catch (error) {
       console.error('Erreur validation:', error);
-      toast.error('❌ Erreur réseau lors de la validation', { id: 'validate' });
     } finally {
       setIsLoading(false);
     }
@@ -527,28 +541,35 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Expédition en cours...', { id: 'ship' });
     
-    try {
-      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/ship`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
-      });
-      
-      if (response.ok) {
-        toast.success('📦 Commande expédiée et client notifié par email !', { id: 'ship' });
+    const promise = fetch(`http://localhost:3000/api/orders/${actionOrderId}/ship`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Expédition échouée');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Expédition en cours...',
+      success: () => {
         setShipModalOpen(false);
         setTrackingNumber('');
         setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Expédition échouée'}`, { id: 'ship' });
-      }
+        return '📦 Commande expédiée et client notifié par email !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
+    
+    try {
+      await promise;
     } catch (error) {
       console.error('Erreur expédition:', error);
-      toast.error('❌ Erreur réseau lors de l\'expédition', { id: 'ship' });
     } finally {
       setIsLoading(false);
     }
@@ -561,28 +582,35 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Annulation en cours...', { id: 'cancel' });
+
+    const promise = fetch(`http://localhost:3000/api/orders/${actionOrderId}/cancel`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ reason: cancelReason.trim() }),
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Annulation échouée');
+      }
+      return response.json();
+    });
     
-    try {
-      const response = await fetch(`http://localhost:3000/api/orders/${actionOrderId}/cancel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ reason: cancelReason.trim() }),
-      });
-      
-      if (response.ok) {
-        toast.success('❌ Commande annulée et client notifié par email', { id: 'cancel' });
+    toast.promise(promise, {
+      loading: 'Annulation en cours...',
+      success: () => {
         setCancelModalOpen(false);
         setCancelReason('');
         setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Annulation échouée'}`, { id: 'cancel' });
-      }
+        return '❌ Commande annulée et client notifié par email';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
+    
+    try {
+      await promise;
     } catch (error) {
       console.error('Erreur annulation:', error);
-      toast.error('❌ Erreur réseau lors de l\'annulation', { id: 'cancel' });
     } finally {
       setIsLoading(false);
     }
@@ -604,26 +632,33 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Mise à jour en cours...', { id: 'startProcessing' });
+
+    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ statusId: '3' }), // En préparation
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Mise à jour échouée');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Mise à jour en cours...',
+      success: () => {
+        setTimeout(() => window.location.reload(), 1500);
+        return '🔧 Commande en préparation !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ statusId: '3' }), // En préparation
-      });
-      
-      if (response.ok) {
-        toast.success('🔧 Commande en préparation !', { id: 'startProcessing' });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'startProcessing' });
-      }
+      await promise;
     } catch (error) {
       console.error('Erreur startProcessing:', error);
-      toast.error('❌ Erreur réseau', { id: 'startProcessing' });
     } finally {
       setIsLoading(false);
     }
@@ -635,26 +670,33 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Mise à jour en cours...', { id: 'markReady' });
+
+    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ statusId: '4' }), // Prête
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Mise à jour échouée');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Mise à jour en cours...',
+      success: () => {
+        setTimeout(() => window.location.reload(), 1500);
+        return '📦 Commande prête à expédier !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ statusId: '4' }), // Prête
-      });
-      
-      if (response.ok) {
-        toast.success('📦 Commande prête à expédier !', { id: 'markReady' });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'markReady' });
-      }
+      await promise;
     } catch (error) {
       console.error('Erreur markReady:', error);
-      toast.error('❌ Erreur réseau', { id: 'markReady' });
     } finally {
       setIsLoading(false);
     }
@@ -666,24 +708,31 @@ export default function OrdersRoute() {
     }
     
     setIsLoading(true);
-    toast.loading('Mise à jour en cours...', { id: 'deliver' });
+
+    const promise = fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then(async (response) => {
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Mise à jour échouée');
+      }
+      return response.json();
+    });
+    
+    toast.promise(promise, {
+      loading: 'Mise à jour en cours...',
+      success: () => {
+        setTimeout(() => window.location.reload(), 1500);
+        return '✅ Commande livrée et client notifié !';
+      },
+      error: (err) => `❌ Erreur: ${err.message}`,
+    });
     
     try {
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/deliver`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        toast.success('✅ Commande livrée et client notifié !', { id: 'deliver' });
-        setTimeout(() => window.location.reload(), 1500);
-      } else {
-        const error = await response.json();
-        toast.error(`❌ Erreur: ${error.message || 'Mise à jour échouée'}`, { id: 'deliver' });
-      }
+      await promise;
     } catch (error) {
       console.error('Erreur deliver:', error);
-      toast.error('❌ Erreur réseau', { id: 'deliver' });
     } finally {
       setIsLoading(false);
     }
@@ -707,8 +756,6 @@ export default function OrdersRoute() {
   
   return (
     <div className="min-h-screen bg-gray-50">
-      <Toaster position="top-right" />
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <OrdersHeader
