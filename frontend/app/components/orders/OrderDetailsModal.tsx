@@ -6,9 +6,7 @@ import {
   Package,
   Phone,
   User,
-  X,
 } from 'lucide-react';
-import { type MouseEvent, useEffect } from 'react';
 import { type Order } from '../../types/orders.types';
 import {
   formatDate,
@@ -20,6 +18,15 @@ import {
   getStatusBadgeColor,
 } from '../../utils/orders.utils';
 import { type UserPermissions } from '../../utils/permissions';
+import { Button } from '../ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog';
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -38,64 +45,24 @@ export function OrderDetailsModal({
   onMarkPaid,
   onCancel,
 }: OrderDetailsModalProps) {
-  // Fermer avec Escape
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose();
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
-  // Prevent scroll when modal open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  if (!isOpen || !order) return null;
-
-  const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  if (!order) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={handleBackdropClick}
-    >
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-muted rounded-lg">
-              <Package className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">
-                Commande {formatOrderId(order.ord_id)}
-              </h2>
-              <p className="text-sm text-gray-500">
-                {formatDateTime(order.ord_date)}
-              </p>
-            </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="flex-row items-center gap-3 space-y-0">
+          <div className="p-2 bg-muted rounded-lg">
+            <Package className="w-6 h-6 text-blue-600" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Fermer"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
+          <div className="flex-1">
+            <DialogTitle className="text-xl">
+              Commande {formatOrderId(order.ord_id)}
+            </DialogTitle>
+            <DialogDescription>
+              {formatDateTime(order.ord_date)}
+            </DialogDescription>
+          </div>
+        </DialogHeader>
 
         {/* Content */}
         <div className="p-6 space-y-6">
@@ -210,32 +177,32 @@ export function OrderDetailsModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-gray-50 border-t px-6 py-4 flex items-center justify-end gap-3">
+        <DialogFooter className="flex-row justify-end gap-3">
           {!order.ord_is_pay && permissions.canMarkPaid && onMarkPaid && (
-            <button
+            <Button
               onClick={() => onMarkPaid(order.ord_id)}
-              className="flex items-center gap-2 px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg transition-colors"
+              className="bg-success hover:bg-success/90 text-success-foreground"
             >
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="w-4 h-4 mr-2" />
               Marquer comme payé
-            </button>
+            </Button>
           )}
           {order.ord_ords_id !== '7' && permissions.canCancel && onCancel && (
-            <button
+            <Button
               onClick={() => onCancel(order.ord_id)}
-              className="px-4 py-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg transition-colors"
+              variant="destructive"
             >
               Annuler la commande
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-muted/50 transition-colors"
+            variant="outline"
           >
             Fermer
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
