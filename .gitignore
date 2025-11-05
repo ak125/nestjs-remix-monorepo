@@ -70,6 +70,8 @@ out/
 # Redis snapshots (ne jamais versionner)
 dump.rdb
 cache/dump.rdb
+cache/*.rdb
+cache/temp-*.rdb
 
 # Vite timestamped config artifacts (ne jamais versionner)
 frontend/vite.config.ts.timestamp-*
