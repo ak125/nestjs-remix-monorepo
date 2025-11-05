@@ -13,9 +13,6 @@ interface LoaderData {
 
 interface ActionData {
   error?: string;
-  cyberplus?: boolean;
-  formData?: Record<string, string>;
-  gatewayUrl?: string;
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -332,17 +329,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     console.log('✅ Payment initialized:', paymentData);
 
-    if (paymentMethod.toLowerCase() === "cyberplus" && paymentData.formData && paymentData.gatewayUrl) {
-      // Retourner les données pour le formulaire Cyberplus
-      console.log('🔵 Returning Cyberplus form data to frontend');
-      return json<ActionData>({
-        cyberplus: true,
-        formData: paymentData.formData,
-        gatewayUrl: paymentData.gatewayUrl,
-      });
-    }
-
-    // Autres méthodes de paiement - redirection directe
+    // Redirection vers la page de traitement du paiement
     if (paymentData.redirectUrl) {
       return redirect(paymentData.redirectUrl);
     }
@@ -363,14 +350,12 @@ export default function PaymentPage() {
   const { order, user, paymentMethods } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const formRef = useRef<HTMLFormElement>(null);
-  const cyberplusFormRef = useRef<HTMLFormElement>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   console.log('💳 PaymentPage render, order:', order.id, 'items:', order.items.length);
   console.log('👤 User:', user?.email || 'unknown');
-  console.log('🔍 actionData:', actionData);
   
   // Handler pour soumettre avec fetch + header X-Fetch-Body
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -712,29 +697,6 @@ export default function PaymentPage() {
             </div>
           </div>
         </div>
-
-      {/* Formulaire Cyberplus auto-submit (caché) */}
-      {(() => {
-        if (actionData && actionData.cyberplus && actionData.formData && actionData.gatewayUrl) {
-          console.log('🔵 Rendering Cyberplus form with', Object.keys(actionData.formData).length, 'fields');
-          return (
-            <form
-              ref={cyberplusFormRef}
-              method="POST"
-              action={actionData.gatewayUrl}
-              style={{ display: 'none' }}
-            >
-              {Object.entries(actionData.formData).map(([key, value]) => {
-                console.log(`  📝 Field: ${key} = ${value}`);
-                return <input key={key} type="hidden" name={key} value={value} />;
-              })}
-            </form>
-          );
-        } else {
-          console.log('⚠️ Cyberplus form NOT rendered - conditions not met');
-          return null;
-        }
-      })()}
     </div>
   );
 }

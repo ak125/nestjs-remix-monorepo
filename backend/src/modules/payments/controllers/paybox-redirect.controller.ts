@@ -49,20 +49,15 @@ export class PayboxRedirectController {
         `);
       }
 
-      const baseUrl = this.configService.get<string>(
-        'BASE_URL',
-        'http://localhost:5173',
-      );
-
-      // Paramètres du paiement
+      // Paramètres du paiement (comme l'ancien PHP - AUCUNE URL)
       const paymentParams = {
         amount: parseFloat(amount),
         currency: 'EUR',
         orderId,
         customerEmail: email,
-        returnUrl: `${baseUrl}/paybox-payment-success`,
-        cancelUrl: `${baseUrl}/paybox-payment-cancel`,
-        notifyUrl: `${baseUrl}/api/paybox/callback`, // IPN
+        returnUrl: '', // Non utilisé (comme l'ancien PHP)
+        cancelUrl: '', // Non utilisé (comme l'ancien PHP)
+        notifyUrl: '', // Non utilisé - gestion manuelle comme l'ancien PHP
         description: `Commande ${orderId}`,
       };
 

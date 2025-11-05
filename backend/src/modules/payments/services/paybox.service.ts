@@ -84,13 +84,13 @@ export class PayboxService {
     // Convertir le montant en centimes (ex: 100.50 EUR → 10050)
     const amountInCents = Math.round(params.amount * 100);
 
-    // Date/heure au format ISO8601 RFC3339 (comme date("c") en PHP)
-    // PHP date("c") : 2025-11-04T18:07:45+00:00
-    // JS toISOString(): 2025-11-04T18:07:45.725Z
-    // On doit convertir pour matcher le format PHP EXACTEMENT
-    const dateTime = new Date().toISOString().replace(/\.\d{3}Z$/, '+00:00');
+    // Date/heure au format ISO8601 (comme date("c") en PHP)
+    const dateTime = new Date().toISOString();
 
     // Paramètres Paybox de base (toujours présents)
+    // ⚠️ IMPORTANT : Configuration EXACTE de l'ancien site PHP
+    // AUCUNE URL (ni retour utilisateur, ni IPN callback)
+    // → L'URL IPN doit être configurée dans le back-office Paybox
     const payboxParams: Record<string, string> = {
       PBX_SITE: this.site,
       PBX_RANG: this.rang,
@@ -104,14 +104,16 @@ export class PayboxService {
       PBX_TIME: dateTime,
     };
 
-    // ⚠️ IMPORTANT : Calculer la signature AVANT d'ajouter les URLs de retour
-    // Le PHP n'inclut PAS les URLs dans la signature !
+    this.logger.log(
+      "📋 Configuration Paybox EXACTE comme l'ancien PHP (aucune URL)",
+    );
+
+    // Construire la chaîne de signature avec les paramètres présents
     const signatureString = this.buildSignatureString(payboxParams);
 
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    this.logger.log('🔍 DEBUG SIGNATURE PAYBOX:');
-    this.logger.log(`📝 Signature string COMPLETE: ${signatureString}`);
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    this.logger.log(
+      `Signature string: ${signatureString.substring(0, 100)}...`,
+    );
 
     // Calculer HMAC-SHA512 comme le PHP: hash_hmac('sha512', $string, pack("H*", $key))
     const keyBuffer = Buffer.from(this.hmacKey, 'hex'); // pack("H*", $key)
@@ -121,24 +123,9 @@ export class PayboxService {
 
     payboxParams.PBX_HMAC = signature;
 
-    this.logger.log(`🔐 HMAC-SHA512 signature: ${signature}`);
-    this.logger.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-    // ⚠️ APRÈS la signature : ajouter les URLs SEULEMENT en PRODUCTION
-    // En mode TEST local, le PHP n'envoie pas d'URLs (compte test limité)
-    // En mode PRODUCTION VPS, il faut les URLs pour les callbacks
-    if (this.mode === 'PRODUCTION') {
-      this.logger.log('🔴 Mode PRODUCTION: ajout des URLs de retour');
-      payboxParams.PBX_EFFECTUE = params.returnUrl;
-      payboxParams.PBX_REFUSE = params.cancelUrl;
-      payboxParams.PBX_ANNULE = params.cancelUrl;
-      if (params.notifyUrl) {
-        payboxParams.PBX_REPONDRE_A = params.notifyUrl;
-      }
-    } else {
-      this.logger.log('🧪 Mode TEST: URLs NON envoyées (comme le PHP local)');
-    }
-
+    this.logger.log(
+      `HMAC signature (20 premiers chars): ${signature.substring(0, 20)}...`,
+    );
     this.logger.log('Formulaire Paybox genere');
     this.logger.log(`URL: ${this.paymentUrl}`);
 
@@ -150,9 +137,11 @@ export class PayboxService {
 
   /**
    * Construit la chaîne de signature dans l'ordre EXACT requis par Paybox
+   * ⚠️ IMPORTANT : Ordre IDENTIQUE à l'ancien site PHP (sans aucune URL)
    */
   private buildSignatureString(params: Record<string, string>): string {
-    // Ordre EXACT des paramètres pour la signature
+    // Ordre EXACT des paramètres pour la signature (100% identique au PHP)
+    // AUCUNE URL (ni retour utilisateur ni IPN)
     const orderedKeys = [
       'PBX_SITE',
       'PBX_RANG',
@@ -162,10 +151,6 @@ export class PayboxService {
       'PBX_CMD',
       'PBX_PORTEUR',
       'PBX_RETOUR',
-      'PBX_EFFECTUE',
-      'PBX_REFUSE',
-      'PBX_ANNULE',
-      'PBX_REPONDRE_A',
       'PBX_HASH',
       'PBX_TIME',
     ];
