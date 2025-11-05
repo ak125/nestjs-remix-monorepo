@@ -22,7 +22,8 @@ import { json, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-r
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button } from '~/components/ui/button';
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
+import { Separator } from '~/components/ui/separator';
 import { requireUser } from '../auth/unified.server';
 import { OrderDetailsModal } from '../components/orders/OrderDetailsModal';
 import { OrderEditForm } from '../components/orders/OrderEditForm';
@@ -757,6 +758,9 @@ export default function OrdersRoute() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb Navigation */}
+        <AdminBreadcrumb currentPage="Gestion des commandes" />
+
         {/* Header */}
         <OrdersHeader
           permissions={data.permissions}
@@ -772,10 +776,14 @@ export default function OrdersRoute() {
           <Alert intent="error"><p>{actionData.error}</p></Alert>
         )}
         
+        <Separator className="my-6" />
+        
         {/* Statistiques */}
         <div className="mt-6">
           <OrdersStats stats={data.stats} />
         </div>
+        
+        <Separator className="my-6" />
         
         {/* Filtres */}
         <div className="mt-6">
@@ -794,6 +802,8 @@ export default function OrdersRoute() {
             allOrders={data.orders}
           />
         </div>
+        
+        <Separator className="my-6" />
         
         {/* Tableau des commandes */}
         <div className="mt-6 bg-white rounded-lg shadow overflow-hidden">

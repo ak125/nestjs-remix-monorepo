@@ -21,8 +21,10 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 
 // Interfaces pour les messages
@@ -235,6 +237,9 @@ export default function AdminMessages() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Messagerie" />
+
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">

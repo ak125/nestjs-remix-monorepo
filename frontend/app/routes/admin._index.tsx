@@ -33,8 +33,10 @@ import {
   Eye
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [
@@ -318,6 +320,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Dashboard" />
+
       {/* Header principal avec indicateur de santé */}
       <div className="flex justify-between items-center">
         <div>
