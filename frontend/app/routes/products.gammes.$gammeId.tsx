@@ -33,6 +33,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 interface Product {
@@ -284,6 +285,13 @@ export default function ProductsGammeDetail() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Produits", href: "/products" },
+        { label: "Gammes", href: "/products/ranges" },
+        { label: gamme?.pg_name || "Gamme" }
+      ]} />
+      
       {/* Header avec navigation */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
