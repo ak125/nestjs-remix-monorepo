@@ -111,6 +111,9 @@ export default function SimpleDesignSystem() {
       {/* Component Examples – petite vitrine globale */}
       <ComponentExamples />
 
+      {/* UI Components Demos */}
+      <UIComponentsSection />
+
       {/* Resources */}
       <section className="bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-2">
         <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -906,11 +909,108 @@ function PatternsTab({
   );
 }
 
+function UIComponentsSection() {
+  const components = [
+    {
+      name: "🔔 Sonner (Notifications)",
+      description: "Système de notifications moderne avec toast.promise()",
+      link: "/test/sonner",
+      features: ["9 exemples interactifs", "Loading → Success/Error", "Actions personnalisées"],
+      status: "✅ Intégré (react-hot-toast retiré)",
+    },
+    {
+      name: "🍞 Breadcrumb",
+      description: "Navigation fil d'Ariane pour contexte utilisateur",
+      link: "/test/breadcrumb",
+      features: ["6 exemples de navigation", "Séparateurs personnalisables", "Icônes & ellipsis"],
+      status: "✅ Prêt à l'emploi",
+    },
+    {
+      name: "🃏 Card & Separator",
+      description: "Composants structurels pour organiser le contenu",
+      link: "/test/card",
+      features: ["Cards avec header/footer", "Separators H/V", "Exemples e-commerce"],
+      status: "✅ Prêt à l'emploi",
+    },
+    {
+      name: "📄 Sheet (Drawer)",
+      description: "Panneau coulissant 4 directions pour cart, menu, filters",
+      link: "/test/sheet",
+      features: ["Panier e-commerce complet", "Menu mobile", "Options de livraison"],
+      status: "✅ Prêt à l'emploi",
+    },
+  ];
+
+  return (
+    <section className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-8 space-y-6">
+      <div className="flex items-center gap-3">
+        <span className="text-4xl">🧩</span>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Composants UI Shadcn intégrés
+          </h2>
+          <p className="text-gray-700">
+            Composants modernes avec démos interactives — Prêts pour production
+          </p>
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        {components.map((component) => (
+          <Link
+            key={component.name}
+            to={component.link}
+            className="bg-white rounded-lg p-6 border-2 border-gray-200 hover:border-indigo-400 hover:shadow-lg transition-all group"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                {component.name}
+              </h3>
+              <ExternalLink className="h-5 w-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-3">
+              {component.description}
+            </p>
+
+            <div className="space-y-2 mb-3">
+              {component.features.map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-xs text-gray-600">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+              <span className="text-xs font-medium text-green-600">
+                {component.status}
+              </span>
+              <span className="text-xs text-indigo-600 font-medium group-hover:underline">
+                Voir la démo →
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-lg p-4 border border-indigo-200">
+        <p className="text-sm text-gray-700">
+          <strong>📦 Stack technique :</strong> Shadcn UI (Radix + Tailwind) + Sonner + Lucide Icons
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          Tous les composants sont accessibles (WCAG AA), responsive et personnalisables
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function ComponentExamples() {
   return (
     <section className="space-y-6">
       <h2 className="text-xl font-semibold text-gray-900">
-        🧩 Exemples de composants
+        🎨 Exemples de styles de base
       </h2>
       <div className="grid gap-6 md:grid-cols-2">
         {/* Boutons */}
