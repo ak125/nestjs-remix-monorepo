@@ -1,10 +1,11 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Bell, BookOpen, Search, Shield, ShoppingCart } from 'lucide-react';
+import { Bell, BookOpen, Shield, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from "react";
 
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
-import { GlobalSearch } from "./layout/GlobalSearch";
+// TODO: Réactiver GlobalSearch quand le design sera amélioré
+// import { GlobalSearch } from "./layout/GlobalSearch";
 import { CartSidebar } from "./navbar/CartSidebar";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
@@ -15,7 +16,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
   const location = useLocation();
   const { summary, isOpen, toggleCart, closeCart } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // TODO: Réactiver quand le design du bouton search sera amélioré
+  // const [isSearchOpen, setIsSearchOpen] = useState(false);
   
   // 🆕 PHASE 7: Role-based permissions
   const isAdmin = user && (user.level ?? 0) >= 7;
@@ -30,7 +32,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🆕 Raccourci clavier global Cmd+K / Ctrl+K pour ouvrir la recherche
+  // TODO: Réactiver le raccourci Cmd+K quand le design sera amélioré
+  /*
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -42,6 +45,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
+  */
 
   // 🆕 Smooth scroll vers les sections
   const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -133,7 +137,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
       
       {/* DROITE : Actions Utilisateur */}
       <div className='flex gap-3 items-center'>
-        {/* 🆕 Bouton Recherche Globale (Cmd+K) - Version Desktop */}
+        {/* TODO: Bouton Recherche Globale (Cmd+K) - À améliorer design */}
+        {/* 
         <button
           onClick={() => setIsSearchOpen(true)}
           className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 text-white transition-all duration-200 group"
@@ -147,7 +152,6 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </kbd>
         </button>
 
-        {/* Version mobile: icône simple */}
         <button
           onClick={() => setIsSearchOpen(true)}
           className="md:hidden hover:text-blue-200 transition-colors p-1.5 hover:bg-white/10 rounded-md"
@@ -156,6 +160,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
         >
           <Search size={20} />
         </button>
+        */}
 
         {/* 🆕 PHASE 1: Panier avec badge */}
         <button
@@ -206,12 +211,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
       {/* 🆕 PHASE 1 POC: CartSidebar Component */}
       <CartSidebar isOpen={isOpen} onClose={closeCart} />
 
-      {/* 🆕 GlobalSearch Modal avec Cmd+K */}
+      {/* TODO: GlobalSearch Modal - Réactiver quand le design sera amélioré */}
+      {/* 
       <GlobalSearch 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)}
         placeholder="Rechercher produits, commandes, utilisateurs..."
       />
+      */}
     </nav>
   );
 };
