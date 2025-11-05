@@ -1,11 +1,12 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Bell, BookOpen, Package, Shield, ShoppingCart, UserRound } from 'lucide-react';
+import { Bell, BookOpen, Shield, ShoppingCart } from 'lucide-react';
 import { useEffect, useState } from "react";
 
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
 import { CartSidebar } from "./navbar/CartSidebar";
 import { NavbarMobile } from "./navbar/NavbarMobile";
+import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
 export const Navbar = ({ logo }: { logo: string }) => {
@@ -117,13 +118,6 @@ export const Navbar = ({ logo }: { logo: string }) => {
       
       {/* DROITE : Actions Utilisateur */}
       <div className='flex gap-3 items-center'>
-        {/* Nom utilisateur (desktop only) */}
-        {user && (
-          <span className="text-sm hidden lg:block">
-            {user.firstName} {user.lastName}
-          </span>
-        )}
-
         {/* 🆕 PHASE 1: Panier avec badge */}
         <button
           onClick={toggleCart}
@@ -142,16 +136,6 @@ export const Navbar = ({ logo }: { logo: string }) => {
           )}
         </button>
 
-        {/* Commandes - Toujours visible (redirige vers login si non connecté) */}
-        <Link 
-          to='/orders' 
-          className="hover:text-blue-200 transition-colors p-1 hidden md:block"
-          aria-label="Mes commandes"
-          title="Mes commandes"
-        >
-          <Package size={20} />
-        </Link>
-
         {/* Notifications - Seulement si connecté */}
         {user && (
           <Link 
@@ -164,33 +148,16 @@ export const Navbar = ({ logo }: { logo: string }) => {
           </Link>
         )}
 
-        {/* Compte utilisateur */}
-        <Link 
-          to={user ? '/account/dashboard' : '/login'} 
-          className="hover:text-blue-200 transition-colors p-1"
-          aria-label={user ? "Mon compte" : "Connexion"}
-          title={user ? "Mon compte" : "Connexion"}
-        >
-          <UserRound size={20} />
-        </Link>
-
-        {/* Login/Logout (desktop text) */}
+        {/* Menu utilisateur avec Dropdown (si connecté) */}
         {user ? (
-          <form method='POST' action='/auth/logout' className="hidden md:block">
-            <button 
-              type='submit' 
-              className="hover:text-blue-200 transition-colors text-sm px-3 py-1.5 rounded hover:bg-primary/90"
-            >
-              Déconnexion
-            </button>
-          </form>
+          <UserDropdownMenu user={user} showName={false} />
         ) : (
-          <div className="hidden md:flex gap-2 text-sm">
+          <div className="flex gap-2 text-sm">
             <Link className='hover:text-blue-200 transition-colors px-2' to='/login'>
               Connexion
             </Link>
-            <span>|</span>
-            <Link className='hover:text-blue-200 transition-colors px-2' to='/register'>
+            <span className="hidden md:inline">|</span>
+            <Link className='hover:text-blue-200 transition-colors px-2 hidden md:inline' to='/register'>
               Inscription
             </Link>
           </div>

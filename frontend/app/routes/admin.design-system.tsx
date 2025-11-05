@@ -7,15 +7,14 @@
 import { type MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import {
-  ArrowLeft,
   Copy,
   ExternalLink,
   Info,
   CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
-import { Separator } from "~/components/ui/separator";
+
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 
 export const meta: MetaFunction = () => {
   return [
