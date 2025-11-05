@@ -14,6 +14,7 @@ import { ActivityTimeline } from "../components/dashboard/ActivityTimeline";
 import { AuthErrorState } from "../components/dashboard/AuthErrorState";
 import { QuickActions } from "../components/dashboard/QuickActions";
 import { StatCard } from "../components/dashboard/StatCard";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 type User = {
   id: string;
@@ -175,6 +176,9 @@ export default function UnifiedAccountDashboard() {
   return (
     <AccountLayout user={user} stats={stats}>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[{ label: "Mon Compte" }]} />
+        
         {/* Debug info */}
         {mode.debug && sessionInfo && (
 <Alert className="rounded-lg p-4 text-sm" variant="warning">

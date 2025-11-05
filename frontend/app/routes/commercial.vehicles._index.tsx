@@ -12,6 +12,7 @@ import { Alert } from '~/components/ui/alert';
 import { requireUser } from "../auth/unified.server";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 interface VehicleStats {
   totalBrands: number;
@@ -80,6 +81,12 @@ export default function VehiclesIndex() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Commercial", href: "/commercial" },
+        { label: "Véhicules" }
+      ]} />
+      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

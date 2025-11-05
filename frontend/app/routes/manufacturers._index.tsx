@@ -18,6 +18,7 @@ import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedMode
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 interface Brand {
   marque_id: number;
@@ -144,6 +145,9 @@ export default function ManufacturersIndex() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[{ label: "Marques" }]} />
+      
       {/* Header */}
       <div className="text-center mb-12">
         <div className="flex justify-center mb-4">

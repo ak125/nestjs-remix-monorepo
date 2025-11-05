@@ -4,6 +4,7 @@ import { Shield, Key, Smartphone, AlertTriangle, CheckCircle, Clock, Lock } from
 
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -203,6 +204,12 @@ export default function AccountSecurity() {
   return (
     <AccountLayout user={user} stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}>
       <div className="space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Mon Compte", href: "/account" },
+        { label: "Sécurité" }
+      ]} />
+      
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
