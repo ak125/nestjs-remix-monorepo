@@ -38,7 +38,6 @@ import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
 
 interface Product {
   piece_id: number;

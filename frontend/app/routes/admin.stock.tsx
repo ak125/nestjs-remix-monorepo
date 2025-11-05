@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
 
 // Types pour le stock - adapté aux données working-stock
 interface StockItem {

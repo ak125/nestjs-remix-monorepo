@@ -12,7 +12,6 @@ import { useState } from "react";
 import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => {

@@ -4,7 +4,6 @@ import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
-import { Separator } from "~/components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [

@@ -16,8 +16,8 @@ import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import { Separator } from '~/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
+import { Separator } from '~/components/ui/separator';
 
 interface User {
   id: string;

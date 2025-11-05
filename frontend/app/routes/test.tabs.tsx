@@ -8,8 +8,6 @@
  * - Vertical Tabs
  */
 
-import { useState } from 'react';
-
 import {
   Bell,
   CreditCard,
@@ -17,6 +15,8 @@ import {
   Settings,
   User,
 } from 'lucide-react';
+import { useState } from 'react';
+
 
 import { AdminBreadcrumb } from '../components/admin/AdminBreadcrumb';
 import { ProductTabs } from '../components/products/ProductTabs';

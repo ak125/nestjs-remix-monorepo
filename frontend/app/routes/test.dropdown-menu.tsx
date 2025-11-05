@@ -8,16 +8,16 @@
  * - Personnalisation et variantes
  */
 
+import { Eye, Plus } from 'lucide-react';
 import { useState } from 'react';
 
-import { Eye, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { AdminBreadcrumb } from '../components/admin/AdminBreadcrumb';
 import {
   AdminActionsDropdown,
   adminActionPresets,
 } from '../components/admin/AdminActionsDropdown';
+import { AdminBreadcrumb } from '../components/admin/AdminBreadcrumb';
 import { UserDropdownMenu } from '../components/navbar/UserDropdownMenu';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';

@@ -289,7 +289,7 @@ export default function ProductsGammeDetail() {
       <PublicBreadcrumb items={[
         { label: "Produits", href: "/products" },
         { label: "Gammes", href: "/products/ranges" },
-        { label: gamme?.pg_name || "Gamme" }
+        { label: gamme?.name || "Gamme" }
       ]} />
       
       {/* Header avec navigation */}

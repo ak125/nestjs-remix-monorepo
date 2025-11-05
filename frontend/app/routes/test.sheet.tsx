@@ -4,20 +4,7 @@
  * Parfait pour panier, menu mobile, panneau de configuration
  */
 
-import { useState } from "react";
 import { Link } from "@remix-run/react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose,
-} from "~/components/ui/sheet";
-import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import { 
   ShoppingCart, 
   Menu, 
@@ -31,7 +18,20 @@ import {
   Truck,
   Info,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from "~/components/ui/sheet";
 
 export default function SheetDemo() {
   const [cartItems, setCartItems] = useState([

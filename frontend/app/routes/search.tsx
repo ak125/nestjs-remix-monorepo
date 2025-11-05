@@ -15,11 +15,11 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import { NoResults } from "../components/search/NoResults";
-import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { SearchBar } from "../components/search/SearchBar";
 import { SearchFilters } from "../components/search/SearchFilters";
 import { SearchPagination } from "../components/search/SearchPagination";
 import { SearchResultsEnhanced } from "../components/search/SearchResultsEnhanced";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 // ===============================
 // TYPES ET INTERFACES
