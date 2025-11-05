@@ -14,6 +14,7 @@ import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, useNavigation } from "@remix-run/react";
 import React from 'react';
 import { Button } from '~/components/ui/button';
+import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { getCart } from "../services/cart.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -541,6 +542,9 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[{ label: "Panier" }]} />
+        
         {/* Notification de succès après vidage */}
         {cleared && (
           <Alert intent="success" variant="solid" icon={<span className="text-lg">✅</span>}>

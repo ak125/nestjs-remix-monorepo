@@ -8,6 +8,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { formatRelativeTime } from "../utils/date";
 
 // Interface pour les messages (basée sur l'API backend)
@@ -190,6 +191,14 @@ export default function AccountMessages() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="absolute top-4 left-4 z-10">
+        <PublicBreadcrumb items={[
+          { label: "Mon Compte", href: "/account" },
+          { label: "Messagerie" }
+        ]} />
+      </div>
+      
       {/* Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 p-4">
         <div className="mb-6">

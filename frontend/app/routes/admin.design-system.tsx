@@ -14,6 +14,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useState } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Separator } from "~/components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [
@@ -52,16 +54,11 @@ export default function SimpleDesignSystem() {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Design System" />
+
       {/* Header */}
       <header className="space-y-4">
-        <Link
-          to="/admin"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Retour au dashboard
-        </Link>
-
         <div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
             🎨 Design Tokens

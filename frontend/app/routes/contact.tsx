@@ -14,6 +14,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
+import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { getSession } from "../server/session.server";
 
 // Interface de contact temporaire pour éviter les erreurs d'import
@@ -234,6 +235,9 @@ export default function ContactPage() {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
+          {/* Breadcrumb */}
+          <PublicBreadcrumb items={[{ label: "Contact" }]} />
+          
           <div className="bg-white rounded-lg shadow-lg p-8 text-center border-t-4 border-green-500">
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,13 +280,10 @@ export default function ContactPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header avec breadcrumb */}
         <div className="mb-8">
-          <nav className="flex items-center text-sm text-gray-500 mb-4">
-            <Link to="/" className="hover:text-gray-700">Accueil</Link>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Support</span>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Contact</span>
-          </nav>
+          <PublicBreadcrumb items={[
+            { label: "Support", href: "/support" },
+            { label: "Contact" }
+          ]} />
           
           <h1 className="text-3xl font-bold text-gray-900">Contactez notre support</h1>
           <p className="mt-2 text-lg text-gray-600">
