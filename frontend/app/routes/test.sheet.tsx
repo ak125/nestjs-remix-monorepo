@@ -13,7 +13,6 @@ import {
   Trash2, 
   Plus, 
   Minus,
-  X,
   CreditCard,
   Truck,
   Info,
