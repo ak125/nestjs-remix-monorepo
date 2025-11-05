@@ -44,6 +44,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 // Types améliorés
@@ -320,6 +321,11 @@ export default function BlogIndex() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Navigation Blog */}
       <BlogNavigation />
+      
+      {/* Breadcrumb */}
+      <div className="container mx-auto px-4 pt-6">
+        <PublicBreadcrumb items={[{ label: "Blog" }]} />
+      </div>
       
       {/* Hero Compact */}
       <CompactBlogHeader

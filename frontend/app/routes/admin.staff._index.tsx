@@ -8,9 +8,11 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Alert } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 import { getRemixApiService } from "../server/remix-api.server";
 
@@ -182,14 +184,11 @@ export default function AdminStaff() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Gestion du Staff" />
+
       {/* En-tête avec navigation */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-          <Link to="/admin" className="hover:text-blue-600">Admin</Link>
-          <span>›</span>
-          <span className="font-medium">Gestion du Staff</span>
-        </div>
-        
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gestion du Staff</h1>

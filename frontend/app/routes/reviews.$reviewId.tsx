@@ -17,6 +17,7 @@ import {
   Package,
   MessageSquare
 } from "lucide-react";
+import { toast } from 'sonner';
 import { Alert } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { getReviewById, updateReviewStatus, deleteReview } from "../services/api/review.api";
@@ -323,16 +324,38 @@ export default function ReviewDetailPage() {
               <Form 
                 method="post" 
                 onSubmit={(e) => {
-                  if (!confirm("Êtes-vous sûr de vouloir supprimer cet avis ? Cette action est irréversible.")) {
-                    e.preventDefault();
-                  }
+                  const form = e.currentTarget;
+                  if (!form) return;
+                  
+                  e.preventDefault();
+                  toast.error("Supprimer cet avis ?", {
+                    duration: 5000,
+                    description: "Cette action est irréversible",
+                    action: {
+                      label: 'Confirmer',
+                      onClick: () => {
+                        form.requestSubmit();
+                      },
+                    },
+                    cancel: {
+                      label: 'Annuler',
+                      onClick: () => {},
+                    },
+                  });
                 }}
               >
                 <input type="hidden" name="intent" value="delete" />
                 <button
-                  type="submit"
+                  type="button"
                   disabled={isSubmitting}
                   className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-destructive/5 disabled:opacity-50"
+                  onClick={(e) => {
+                    const form = e.currentTarget.closest('form');
+                    if (form) {
+                      const event = new Event('submit', { bubbles: true, cancelable: true });
+                      form.dispatchEvent(event);
+                    }
+                  }}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Supprimer définitivement

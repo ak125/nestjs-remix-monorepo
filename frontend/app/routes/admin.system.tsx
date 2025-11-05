@@ -3,6 +3,8 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
+import { Separator } from "~/components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [
@@ -129,6 +131,9 @@ export default function AdminSystem() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Monitoring Système" />
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Monitoring Système</h1>

@@ -14,9 +14,11 @@ import {
   AlertTriangle,
   CheckCircle
 } from "lucide-react";
+import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [
@@ -131,6 +133,9 @@ export default function AdminReports() {
 
   return (
     <div className="space-y-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Rapports & Analyses" />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

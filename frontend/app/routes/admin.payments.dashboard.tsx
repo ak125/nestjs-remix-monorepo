@@ -12,8 +12,10 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useState } from "react";
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { requireAdmin } from "../auth/unified.server";
 import { getAdminPayments, getPaymentStats } from "../services/payment-admin.server";
+import { Separator } from "../components/ui/separator";
 import { type Payment, type PaymentStats, PaymentStatus } from "../types/payment";
 
 interface PayboxMonitoring {
@@ -254,6 +256,10 @@ export default function AdminPaymentsDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <AdminBreadcrumb currentPage="Paiements" />
+      </div>
+
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

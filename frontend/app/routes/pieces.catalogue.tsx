@@ -4,6 +4,7 @@
 import { json, type LoaderFunctionArgs , type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { default as ProductCatalog, type ProductCategory, type Product } from "../components/catalog/ProductCatalog";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 export const meta: MetaFunction = () => {
   return [
@@ -250,15 +251,22 @@ export default function PiecesCatalogue() {
   }
 
   return (
-    <ProductCatalog
-      categories={categories}
-      products={products}
-      searchTerm={searchTerm}
-      onSearch={handleSearch}
-      onCategorySelect={handleCategorySelect}
-      onProductClick={handleProductClick}
-      showCategories={true}
-      showStats={true}
-    />
+    <div>
+      {/* Breadcrumb */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <PublicBreadcrumb items={[{ label: "Catalogue Pièces" }]} />
+      </div>
+      
+      <ProductCatalog
+        categories={categories}
+        products={products}
+        searchTerm={searchTerm}
+        onSearch={handleSearch}
+        onCategorySelect={handleCategorySelect}
+        onProductClick={handleProductClick}
+        showCategories={true}
+        showStats={true}
+      />
+    </div>
   );
 }

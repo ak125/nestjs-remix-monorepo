@@ -7,7 +7,9 @@
 
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Button } from '~/components/ui/button';
+import { Separator } from '~/components/ui/separator';
 import { requireAdmin } from "../auth/unified.server";
 
 // Types pour la gestion des factures (utilisé dans le loader/action)
@@ -186,6 +188,9 @@ export default function InvoicesIndex() {
 
   return (
     <div className="p-6">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Gestion des factures" />
+
       {/* En-tête */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">🧾 Gestion des Factures</h1>

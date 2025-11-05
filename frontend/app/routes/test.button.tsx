@@ -9,6 +9,7 @@ import {
 import { type MetaFunction } from '@remix-run/node';
 import { ShoppingCart, Heart, Package, ArrowRight, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export const meta: MetaFunction = () => {
   return [
@@ -28,7 +29,7 @@ export default function TestButtonPage() {
 
   const handleCheckout = async () => {
     await new Promise(resolve => setTimeout(resolve, 1500));
-    alert(`Commande de ${cart.length} articles confirmée !`);
+    toast.success(`Commande de ${cart.length} articles confirmée !`);
   };
 
   return (
@@ -178,7 +179,7 @@ export default function TestButtonPage() {
                 intent="primary"
                 onClick={async () => {
                   await new Promise(resolve => setTimeout(resolve, 2000));
-                  alert('Action complétée !');
+                  toast.success('Action complétée !');
                 }}
               >
                 Action async (2s loading)
@@ -329,7 +330,7 @@ export default function TestButtonPage() {
                 <Button
                   intent="secondary"
                   iconLeft={<Heart />}
-                  onClick={() => alert('Ajouté aux favoris')}
+                  onClick={() => toast.success('Ajouté aux favoris')}
                 >
                   Favoris
                 </Button>

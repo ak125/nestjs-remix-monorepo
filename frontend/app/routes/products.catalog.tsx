@@ -25,6 +25,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
+import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 
 interface Product {
   piece_id: string;
@@ -226,6 +227,12 @@ export default function ProductsCatalog() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Produits", href: "/products" },
+        { label: "Catalogue" }
+      ]} />
+      
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">

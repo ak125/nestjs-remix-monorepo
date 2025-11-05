@@ -23,6 +23,7 @@ import { ProductsQuickActions } from '../components/products/ProductsQuickAction
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
 
 interface ProductDetail {
   piece_id: string;
@@ -204,6 +205,13 @@ export default function ProductDetail() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Produits", href: "/products" },
+        { label: "Catalogue", href: "/products/catalog" },
+        { label: product.piece_name }
+      ]} />
+      
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">

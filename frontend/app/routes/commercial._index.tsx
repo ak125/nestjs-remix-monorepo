@@ -15,6 +15,7 @@ import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 // Types pour les données du dashboard
 interface DashboardData {
@@ -215,6 +216,9 @@ export default function CommercialDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[{ label: "Commercial" }]} />
         
         {/* Header */}
         <div className="flex justify-between items-center">

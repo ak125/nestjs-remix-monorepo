@@ -16,6 +16,7 @@ import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getOrderDetails } from "../services/orders.server";
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
@@ -58,6 +59,13 @@ export default function OrderDetailPage() {
   return (
     <AccountLayout user={user}>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <PublicBreadcrumb items={[
+          { label: "Mon Compte", href: "/account" },
+          { label: "Mes Commandes", href: "/account/orders" },
+          { label: `Commande #${order.orderNumber}` }
+        ]} />
+        
         {/* Header avec bouton retour */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">

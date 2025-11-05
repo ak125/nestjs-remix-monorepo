@@ -12,6 +12,7 @@ import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
 interface Model {
   modele_id: number;
@@ -92,6 +93,12 @@ export default function ManufacturerPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Breadcrumb */}
+      <PublicBreadcrumb items={[
+        { label: "Marques", href: "/manufacturers" },
+        { label: brand?.marque_name || `Marque #${params.brandId}` }
+      ]} />
+      
       {/* Header avec logo de marque */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center space-x-4">

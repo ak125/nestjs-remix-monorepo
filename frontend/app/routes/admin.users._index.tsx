@@ -11,9 +11,12 @@ import {
   UserCheck, UserX, Star
 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { AdminBreadcrumb } from '~/components/admin/AdminBreadcrumb';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
+import { Separator } from '~/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 
 interface User {
@@ -335,6 +338,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
       <div className="max-w-[1600px] mx-auto space-y-6 p-4 sm:p-6 lg:p-8">
+        {/* Navigation Breadcrumb */}
+        <AdminBreadcrumb currentPage="Gestion des utilisateurs" />
+
         {/* Notification Toast */}
       {notification && (
         <div className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
@@ -410,6 +416,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           </div>
         </div>
       </div>
+
+      <Separator className="my-6" />
 
       {/* Statistiques étendues */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -512,6 +520,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         </div>
       </div>
       </div>
+
+      <Separator className="my-6" />
 
       {/* Filtres avancés */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -618,13 +628,28 @@ export const action = async ({ request }: ActionFunctionArgs) => {
                 <input type="hidden" name="_action" value="bulkDelete" />
                 <input type="hidden" name="userIds" value={selectedUsers.join(',')} />
                 <Button 
-                  type="submit" 
+                  type="button"
                   size="sm" 
                   variant="destructive"
                   onClick={(e) => {
-                    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedUsers.length} utilisateur(s) ?`)) {
-                      e.preventDefault();
-                    }
+                    const form = e.currentTarget.closest('form');
+                    if (!form) return;
+                    
+                    e.preventDefault();
+                    toast.error(`Supprimer ${selectedUsers.length} utilisateur(s) ?`, {
+                      duration: 5000,
+                      description: 'Cette action est irréversible',
+                      action: {
+                        label: 'Confirmer',
+                        onClick: () => {
+                          form.requestSubmit();
+                        },
+                      },
+                      cancel: {
+                        label: 'Annuler',
+                        onClick: () => {},
+                      },
+                    });
                   }}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -635,6 +660,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           </div>
         </div>
       )}
+
+      <Separator className="my-6" />
 
       {/* Table des utilisateurs améliorée */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

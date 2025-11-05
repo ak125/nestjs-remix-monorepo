@@ -5,6 +5,7 @@
 import { Alert, Badge } from "@fafa/ui";
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { toast } from 'sonner';
 import { 
   Users, 
   ShoppingCart, 
@@ -33,8 +34,10 @@ import {
   Eye
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Separator } from "../components/ui/separator";
 
 export const meta: MetaFunction = () => {
   return [
@@ -318,6 +321,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* Navigation Breadcrumb */}
+      <AdminBreadcrumb currentPage="Dashboard" />
+
       {/* Header principal avec indicateur de santé */}
       <div className="flex justify-between items-center">
         <div>
@@ -880,7 +886,10 @@ export default function AdminDashboard() {
                       onClick={() => {
                         const command = 'cd packages/design-tokens && npm run build';
                         navigator.clipboard.writeText(command);
-                        alert('✅ Commande copiée !\n\n' + command + '\n\nExécutez cette commande dans votre terminal.');
+                        toast.success('Commande copiée !', {
+                          description: command,
+                          duration: 3000,
+                        });
                       }}
                       className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 rounded-lg transition-all group"
                     >
@@ -921,7 +930,9 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText('cd packages/design-tokens && npm run build');
-                        alert('Commande copiée dans le presse-papiers !');
+                        toast.success('Commande copiée !', {
+                          duration: 2000,
+                        });
                       }}
                       className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 rounded-lg transition-all group"
                     >
