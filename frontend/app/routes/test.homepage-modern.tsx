@@ -68,8 +68,28 @@ export const meta: MetaFunction = () => {
     { title: "Catalogue de pièces détachées auto – Toutes marques & modèles | Automecanik" },
     { name: "description", content: "Découvrez le catalogue de pièces détachées auto Automecanik : pièces neuves pour toutes marques et modèles, adaptées au parc roulant français. Filtrez par constructeur, modèle, motorisation ou gamme de pièces pour trouver rapidement la référence compatible avec votre véhicule." },
     { name: "keywords", content: "catalogue pièces auto, catalogue de pièces détachées auto, pièces auto en ligne, catalogue pièces détachées, pièces auto toutes marques, catalogue professionnel pièces auto" },
+    // Open Graph / Facebook
+    { property: "og:type", content: "website" },
+    { property: "og:title", content: "Catalogue de pièces détachées auto | Automecanik" },
+    { property: "og:description", content: "50 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie." },
+    { property: "og:image", content: "/images/og-image-catalog.jpg" },
+    // Twitter
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: "Catalogue pièces auto | Automecanik" },
+    { name: "twitter:description", content: "50 000+ pièces auto en stock pour toutes marques. Livraison 24-48h." },
+    // Robots
+    { name: "robots", content: "index, follow" },
+    { name: "googlebot", content: "index, follow" },
   ];
 };
+
+// Preload critical resources
+export function links() {
+  return [
+    { rel: "preconnect", href: "http://localhost:3000" },
+    { rel: "dns-prefetch", href: "http://localhost:3000" },
+  ];
+}
 
 /**
  * Loader - Charge les données nécessaires côté serveur
@@ -204,6 +224,14 @@ export default function TestHomepageModern() {
   const [email, setEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Smooth scroll behavior
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth';
+    return () => {
+      document.documentElement.style.scrollBehavior = 'auto';
+    };
+  }, []);
+
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Newsletter subscription:", email);
@@ -221,7 +249,53 @@ export default function TestHomepageModern() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* 📞 TopBar + Navbar pour cette page de test */}
+      {/* Schema.org JSON-LD pour SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "AutoPartsStore",
+            "name": "Automecanik",
+            "description": "Catalogue de pièces détachées auto pour toutes marques et modèles",
+            "url": "https://www.automecanik.com",
+            "logo": "https://www.automecanik.com/logo.svg",
+            "image": "https://www.automecanik.com/images/og-image-catalog.jpg",
+            "telephone": "+33-1-23-45-67-89",
+            "priceRange": "€€",
+            "address": {
+              "@type": "PostalAddress",
+              "addressCountry": "FR"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.8",
+              "reviewCount": "2500",
+              "bestRating": "5",
+              "worstRating": "1"
+            },
+            "offers": {
+              "@type": "AggregateOffer",
+              "priceCurrency": "EUR",
+              "availability": "https://schema.org/InStock",
+              "itemOffered": {
+                "@type": "Product",
+                "name": "Pièces détachées automobiles"
+              }
+            }
+          })
+        }}
+      />
+
+      {/* � Skip to main content - Accessibilité */}
+      <a 
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
+      >
+        Passer au contenu principal
+      </a>
+
+      {/* �📞 TopBar + Navbar pour cette page de test */}
       <TopBar 
         config={{
           tagline: "Pièces auto à prix pas cher",
@@ -233,8 +307,13 @@ export default function TestHomepageModern() {
       <NavbarModern logo="/logo.svg" />
       
       {/* 🎯 HERO SECTION - Complet avec VehicleSelector */}
-      <section className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white py-20">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <section 
+        id="main-content"
+        className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white py-20"
+        aria-label="Section principale"
+        role="banner"
+      >
+        <div className="absolute inset-0 bg-black/20" aria-hidden="true"></div>
         
         <div className="relative container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto mb-12">
@@ -246,21 +325,59 @@ export default function TestHomepageModern() {
             </p>
             
             {/* Barre de recherche produits (comme ProductSearch) */}
-            <form onSubmit={handleSearch} className="bg-white rounded-xl shadow-2xl p-2 flex flex-col sm:flex-row gap-2 mb-8">
+            <form 
+              onSubmit={handleSearch} 
+              className="bg-white rounded-xl shadow-2xl p-2 flex flex-col sm:flex-row gap-2 mb-8"
+              role="search"
+              aria-label="Recherche de pièces automobiles"
+            >
               <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
                 <input
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Rechercher par référence OEM, mot-clé ou nom de pièce..."
                   className="w-full pl-12 pr-6 py-4 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Champ de recherche de pièces"
                 />
               </div>
-              <Button type="submit" size="lg" className="bg-blue-600 hover:bg-blue-700 px-8">
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="bg-blue-600 hover:bg-blue-700 px-8"
+                aria-label="Lancer la recherche"
+              >
+                <Search className="w-5 h-5 mr-2" aria-hidden="true" />
                 Rechercher
               </Button>
             </form>
+            
+            {/* Trust badges */}
+            <div 
+              className="flex flex-wrap justify-center gap-6 text-sm text-blue-100"
+              role="list"
+              aria-label="Avantages du service"
+            >
+              <div className="flex items-center gap-2" role="listitem">
+                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center" aria-hidden="true">
+                  <span className="text-green-300 text-xl">✓</span>
+                </div>
+                <span>Pièces certifiées</span>
+              </div>
+              <div className="flex items-center gap-2" role="listitem">
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center" aria-hidden="true">
+                  <span className="text-blue-300 text-xl">🚚</span>
+                </div>
+                <span>Livraison 24-48h</span>
+              </div>
+              <div className="flex items-center gap-2" role="listitem">
+                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center" aria-hidden="true">
+                  <span className="text-yellow-300 text-xl">★</span>
+                </div>
+                <span>4.8/5 • 2500 avis</span>
+              </div>
+            </div>
           </div>
 
           {/* 🚗 SÉLECTEUR DE VÉHICULE - Composant VehicleSelectorTest intégré */}
@@ -269,21 +386,25 @@ export default function TestHomepageModern() {
           </div>
 
           {/* Statistiques en temps réel (de _index.tsx) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div 
+            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
+            role="region"
+            aria-label="Statistiques clés"
+          >
             <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-400">50K</div>
+              <div className="text-3xl font-bold text-yellow-400" aria-label="50 000 pièces en stock">50K</div>
               <div className="text-blue-100">Pièces en stock</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-400">120+</div>
+              <div className="text-3xl font-bold text-green-400" aria-label="Plus de 120 marques référencées">120+</div>
               <div className="text-blue-100">Marques référencées</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-400">25K</div>
+              <div className="text-3xl font-bold text-purple-400" aria-label="25 000 commandes livrées">25K</div>
               <div className="text-blue-100">Commandes livrées</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-400">4.8/5</div>
+              <div className="text-3xl font-bold text-orange-400" aria-label="Note moyenne de 4.8 sur 5">4.8/5</div>
               <div className="text-blue-100">Satisfaction client</div>
             </div>
           </div>
@@ -291,11 +412,15 @@ export default function TestHomepageModern() {
       </section>
 
       {/* 🎨 MARQUES & CONSTRUCTEURS AUTOMOBILES - Section SEO optimisée */}
-      <section id="nos-marques-partenaires" className="py-16 bg-white scroll-mt-24">
+      <section 
+        id="nos-marques-partenaires" 
+        className="py-16 bg-white scroll-mt-24"
+        aria-labelledby="marques-title"
+      >
         <div className="container mx-auto px-4">
           {/* En-tête SEO optimisé - Version compacte */}
           <div className="max-w-5xl mx-auto mb-12">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+            <h1 id="marques-title" className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
               Toutes les marques de voitures par constructeur
             </h1>
             
@@ -381,6 +506,9 @@ export default function TestHomepageModern() {
                               alt={`Logo ${brand.name}`}
                               className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                               loading="lazy"
+                              decoding="async"
+                              width="200"
+                              height="200"
                               onError={(e) => {
                                 console.error('❌ Erreur chargement logo:', brand.name, brand.logo);
                                 e.currentTarget.style.display = 'none';
@@ -421,9 +549,13 @@ export default function TestHomepageModern() {
           </div>
 
           {/* FAQ SEO - Accordion amélioré */}
-          <div className="max-w-4xl mx-auto mt-16 pt-12 border-t-2 border-blue-100">
+          <div 
+            className="max-w-4xl mx-auto mt-16 pt-12 border-t-2 border-blue-100"
+            role="region"
+            aria-labelledby="faq-title"
+          >
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+              <h2 id="faq-title" className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
                 Questions fréquemment posées
               </h2>
               <p className="text-gray-600">
@@ -435,7 +567,7 @@ export default function TestHomepageModern() {
               <AccordionItem value="item-1" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
                 <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
                   <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold" aria-hidden="true">1</span>
                     Combien de marques automobiles proposez-vous ?
                   </span>
                 </AccordionTrigger>
@@ -754,6 +886,9 @@ export default function TestHomepageModern() {
                           alt={family.mf_name_system || family.mf_name}
                           className="w-full h-full object-contain transition-transform duration-slower group-hover:scale-105"
                           loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="300"
                           onError={(e) => {
                             e.currentTarget.src = '/images/categories/default.svg';
                           }}
