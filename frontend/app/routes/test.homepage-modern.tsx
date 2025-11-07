@@ -21,7 +21,7 @@
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
   Award,
   CheckCircle2,
@@ -32,6 +32,7 @@ import {
   Shield,
   Star,
   Users,
+  AlertCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -223,6 +224,9 @@ export default function TestHomepageModern() {
   };
   const [email, setEmail] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmittingNewsletter, setIsSubmittingNewsletter] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Smooth scroll behavior
   useEffect(() => {
@@ -232,15 +236,27 @@ export default function TestHomepageModern() {
     };
   }, []);
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmittingNewsletter(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     console.log("Newsletter subscription:", email);
+    setIsSubmittingNewsletter(false);
+    setNewsletterSuccess(true);
     setEmail("");
-    alert("Merci pour votre inscription !");
+    
+    // Reset success message after 3 seconds
+    setTimeout(() => setNewsletterSuccess(false), 3000);
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
     console.log("Search query:", searchQuery);
     // Redirect vers /search?q=...
     window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
@@ -338,18 +354,29 @@ export default function TestHomepageModern() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Rechercher par référence OEM, mot-clé ou nom de pièce..."
-                  className="w-full pl-12 pr-6 py-4 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-12 pr-6 py-4 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                   aria-label="Champ de recherche de pièces"
+                  disabled={isSearching}
                 />
               </div>
               <Button 
                 type="submit" 
                 size="lg" 
-                className="bg-blue-600 hover:bg-blue-700 px-8"
+                className="bg-blue-600 hover:bg-blue-700 px-8 transition-all hover:scale-105 disabled:opacity-50"
                 aria-label="Lancer la recherche"
+                disabled={isSearching || !searchQuery.trim()}
               >
-                <Search className="w-5 h-5 mr-2" aria-hidden="true" />
-                Rechercher
+                {isSearching ? (
+                  <>
+                    <span className="inline-block animate-spin mr-2">⏳</span>
+                    Recherche...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-5 h-5 mr-2" aria-hidden="true" />
+                    Rechercher
+                  </>
+                )}
               </Button>
             </form>
             
@@ -453,12 +480,15 @@ export default function TestHomepageModern() {
           <nav className="flex mb-6 text-xs max-w-5xl mx-auto" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1">
               <li className="inline-flex items-center">
-                <Link to="/" className="text-gray-500 hover:text-blue-600 transition-colors">
+                <Link 
+                  to="/" 
+                  className="text-gray-500 hover:text-blue-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded-sm"
+                >
                   Accueil
                 </Link>
               </li>
               <li className="flex items-center">
-                <ChevronRight className="w-3 h-3 text-gray-400 mx-1" />
+                <ChevronRight className="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" />
                 <span className="text-gray-700 font-medium">Marques & Constructeurs</span>
               </li>
             </ol>
@@ -490,11 +520,12 @@ export default function TestHomepageModern() {
                     <Link
                       key={brand.id}
                       to={`/constructeurs/${brand.slug}-${brand.id}.html`}
-                      className="group animate-in fade-in duration-300"
+                      className="group animate-in fade-in duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-4 rounded-lg"
                       style={{
                         animationDelay: `${index * 20}ms`,
                         animationFillMode: 'both',
                       }}
+                      aria-label={`Voir les pièces ${brand.name}`}
                     >
                       {/* Card optimale - Équilibre parfait */}
                       <div className="relative overflow-hidden bg-white rounded-lg border border-gray-100 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 aspect-square">
@@ -1210,20 +1241,37 @@ export default function TestHomepageModern() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Votre email professionnel"
-                className="flex-1 px-6 py-4 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-lg"
+                className="flex-1 px-6 py-4 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-lg transition-all"
                 required
+                disabled={isSubmittingNewsletter}
+                aria-label="Adresse email pour la newsletter"
               />
               <Button
                 type="submit"
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg px-8"
+                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg px-8 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isSubmittingNewsletter}
               >
-                S'abonner
+                {isSubmittingNewsletter ? (
+                  <>
+                    <span className="inline-block animate-spin mr-2">⏳</span>
+                    Envoi...
+                  </>
+                ) : (
+                  "S'abonner"
+                )}
               </Button>
             </form>
 
+            {newsletterSuccess && (
+              <div className="mt-4 bg-green-500/20 border border-green-400/50 rounded-lg px-4 py-3 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <CheckCircle2 className="w-5 h-5 text-green-300" />
+                <span className="text-green-100 font-medium">Merci ! Vous êtes inscrit à notre newsletter.</span>
+              </div>
+            )}
+
             <p className="text-sm text-blue-200 mt-4 flex items-center justify-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
               Désinscription possible à tout moment
             </p>
           </div>
@@ -1341,6 +1389,67 @@ export default function TestHomepageModern() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+/**
+ * 🚨 Error Boundary
+ * Gère les erreurs gracieusement avec un message utilisateur convivial
+ */
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {error.status}
+          </h1>
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+            {error.statusText}
+          </h2>
+          <p className="text-gray-600 mb-6">
+            {error.data?.message || "Une erreur s'est produite lors du chargement de la page."}
+          </p>
+          <Button asChild className="w-full">
+            <Link to="/">
+              Retour à l'accueil
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8 text-center">
+        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Oups !
+        </h1>
+        <h2 className="text-xl font-semibold text-gray-700 mb-4">
+          Une erreur inattendue s'est produite
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Nous sommes désolés pour la gêne occasionnée. Notre équipe a été notifiée.
+        </p>
+        <div className="space-y-3">
+          <Button asChild className="w-full">
+            <Link to="/">
+              Retour à l'accueil
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/contact">
+              Contacter le support
+            </Link>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
