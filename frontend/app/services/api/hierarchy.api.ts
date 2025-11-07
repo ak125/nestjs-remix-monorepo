@@ -4,7 +4,7 @@
 import { type CatalogGamme } from '../../types/catalog.types';
 
 export interface FamilyWithGammes {
-  mf_id: string;
+  mf_id: string | number; // Peut être string ou number selon la source
   mf_name: string;
   mf_name_meta: string;
   mf_name_system: string;
@@ -152,20 +152,79 @@ class HierarchyApiService {
    * 🎨 Récupère l'icône d'une famille
    */
   getFamilyIcon(family: FamilyWithGammes): string {
-    const iconMap: { [id: string]: string } = {
+    // Mapping par ID numérique
+    const iconMapById: { [id: string]: string } = {
       '1': '🔧', // Système de filtration
       '2': '🛠️', // Système de freinage
-      '3': '⚙️', // Système d'échappement
-      '4': '🔌', // Système électrique
-      '5': '🏁', // Performance
-      '6': '🛡️', // Protection
+      '3': '⚙️', // Système de distribution
+      '4': '🔌', // Système électrique / Allumage préchauffage
+      '5': '🏁', // Train avant
+      '6': '🛡️', // Amortisseur suspension
       '7': '💡', // Éclairage
       '8': '🌡️', // Refroidissement
       '9': '🚗', // Carrosserie
-      '10': '🔩', // Visserie
+      '10': '🔩', // Moteur
+      '11': '🔊', // Échappement
+      '12': '⚙️', // Transmission
+      '13': '🔌', // Capteurs
+      '14': '⛽', // Alimentation
+      '15': '🏭', // Support moteur
+      '16': '💨', // Turbo
+      '17': '❄️', // Climatisation
+      '18': '🎨', // Accessoires
+      '19': '🔄', // Embrayage
+    };
+    
+    // Mapping par nom de famille (fallback)
+    const iconMapByName: { [key: string]: string } = {
+      'filtration': '🔧',
+      'freinage': '🛠️',
+      'distribution': '⚙️',
+      'électrique': '🔌',
+      'allumage': '🔌',
+      'préchauffage': '🔌',
+      'train': '🏁',
+      'direction': '🏁',
+      'amortisseur': '🛡️',
+      'suspension': '🛡️',
+      'éclairage': '💡',
+      'eclairage': '💡',
+      'refroidissement': '🌡️',
+      'carrosserie': '🚗',
+      'moteur': '🔩',
+      'échappement': '🔊',
+      'echappement': '🔊',
+      'transmission': '⚙️',
+      'capteur': '🔌',
+      'alimentation': '⛽',
+      'support': '🏭',
+      'turbo': '💨',
+      'climatisation': '❄️',
+      'clim': '❄️',
+      'accessoire': '🎨',
+      'embrayage': '🔄',
     };
 
-    return iconMap[family.mf_id] || '🔧';
+    // Essayer d'abord par ID
+    const idStr = family.mf_id?.toString();
+    if (idStr && iconMapById[idStr]) {
+      return iconMapById[idStr];
+    }
+
+    // Fallback: chercher par nom (normaliser sans accents)
+    const familyName = (family.mf_name_system || family.mf_name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, ''); // Enlever les accents
+    
+    for (const [keyword, icon] of Object.entries(iconMapByName)) {
+      if (familyName.includes(keyword)) {
+        return icon;
+      }
+    }
+
+    // Fallback final
+    return '🔧';
   }
 
   /**
@@ -177,34 +236,88 @@ class HierarchyApiService {
       return '/images/categories/default.svg';
     }
     
-    // 🚀 NOUVELLE VERSION: Transformation WebP automatique via Supabase
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
-    const STORAGE_BUCKET = 'uploads';
-    const path = `articles/familles-produits/${family.mf_pic}`;
-    
-    // Utilise render/image pour la transformation automatique en WebP
-    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=800&quality=90`;
+    // ✅ URL DIRECTE comme dans FamilyGammeHierarchy (fonctionne en prod)
+    const supabaseStorageUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/';
+    return `${supabaseStorageUrl}${family.mf_pic}`;
   }
 
   /**
    * 🎨 Récupère la couleur d'une famille
    */
   getFamilyColor(family: FamilyWithGammes): string {
-    const colors = [
-      'from-blue-500 to-blue-600',    // Filtration
-      'from-red-500 to-red-600',      // Freinage
-      'from-gray-500 to-gray-600',    // Échappement
-      'from-yellow-500 to-yellow-600', // Électrique
-      'from-green-500 to-green-600',  // Performance
-      'from-purple-500 to-purple-600', // Protection
-      'from-indigo-500 to-indigo-600', // Éclairage
-      'from-cyan-500 to-cyan-600',    // Refroidissement
-      'from-pink-500 to-pink-600',    // Carrosserie
-      'from-orange-500 to-orange-600', // Visserie
-    ];
+    // Mapping par ID
+    const colorMapById: { [id: string]: string } = {
+      '1': 'from-blue-500 to-blue-600',      // Filtration
+      '2': 'from-red-500 to-red-600',        // Freinage
+      '3': 'from-slate-500 to-slate-600',    // Distribution
+      '4': 'from-yellow-500 to-yellow-600',  // Électrique/Allumage
+      '5': 'from-green-500 to-green-600',    // Train avant
+      '6': 'from-purple-500 to-purple-600',  // Amortisseur
+      '7': 'from-indigo-500 to-indigo-600',  // Éclairage
+      '8': 'from-cyan-500 to-cyan-600',      // Refroidissement
+      '9': 'from-pink-500 to-pink-600',      // Carrosserie
+      '10': 'from-orange-500 to-orange-600', // Moteur
+      '11': 'from-gray-500 to-gray-600',     // Échappement
+      '12': 'from-teal-500 to-teal-600',     // Transmission
+      '13': 'from-amber-500 to-amber-600',   // Capteurs
+      '14': 'from-lime-500 to-lime-600',     // Alimentation
+      '15': 'from-violet-500 to-violet-600', // Support moteur
+      '16': 'from-rose-500 to-rose-600',     // Turbo
+      '17': 'from-sky-500 to-sky-600',       // Climatisation
+      '18': 'from-fuchsia-500 to-fuchsia-600', // Accessoires
+      '19': 'from-emerald-500 to-emerald-600', // Embrayage
+    };
+    
+    // Mapping par nom (fallback)
+    const colorMapByName: { [key: string]: string } = {
+      'filtration': 'from-blue-500 to-blue-600',
+      'freinage': 'from-red-500 to-red-600',
+      'distribution': 'from-slate-500 to-slate-600',
+      'électrique': 'from-yellow-500 to-yellow-600',
+      'electrique': 'from-yellow-500 to-yellow-600',
+      'allumage': 'from-yellow-500 to-yellow-600',
+      'train': 'from-green-500 to-green-600',
+      'direction': 'from-green-500 to-green-600',
+      'amortisseur': 'from-purple-500 to-purple-600',
+      'suspension': 'from-purple-500 to-purple-600',
+      'éclairage': 'from-indigo-500 to-indigo-600',
+      'eclairage': 'from-indigo-500 to-indigo-600',
+      'refroidissement': 'from-cyan-500 to-cyan-600',
+      'carrosserie': 'from-pink-500 to-pink-600',
+      'moteur': 'from-orange-500 to-orange-600',
+      'échappement': 'from-gray-500 to-gray-600',
+      'echappement': 'from-gray-500 to-gray-600',
+      'transmission': 'from-teal-500 to-teal-600',
+      'capteur': 'from-amber-500 to-amber-600',
+      'alimentation': 'from-lime-500 to-lime-600',
+      'support': 'from-violet-500 to-violet-600',
+      'turbo': 'from-rose-500 to-rose-600',
+      'climatisation': 'from-sky-500 to-sky-600',
+      'clim': 'from-sky-500 to-sky-600',
+      'accessoire': 'from-fuchsia-500 to-fuchsia-600',
+      'embrayage': 'from-emerald-500 to-emerald-600',
+    };
 
-    const index = parseInt(family.mf_id) - 1;
-    return colors[index] || 'from-gray-500 to-gray-600';
+    // Essayer d'abord par ID
+    const idStr = family.mf_id?.toString();
+    if (idStr && colorMapById[idStr]) {
+      return colorMapById[idStr];
+    }
+
+    // Fallback: chercher par nom (normaliser sans accents)
+    const familyName = (family.mf_name_system || family.mf_name || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    
+    for (const [keyword, color] of Object.entries(colorMapByName)) {
+      if (familyName.includes(keyword)) {
+        return color;
+      }
+    }
+
+    // Fallback final
+    return 'from-slate-500 to-slate-600';
   }
 }
 
