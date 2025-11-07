@@ -23,9 +23,19 @@ import {
 } from '../../types/brand.types';
 
 // Configuration de l'API
-const API_BASE_URL = typeof window !== 'undefined' && window.ENV?.API_BASE_URL 
-  ? window.ENV.API_BASE_URL 
-  : "http://localhost:3000";
+// Les deux tournent sur le port 3000 (Remix proxifie vers NestJS)
+// Utiliser des chemins relatifs pour que ça fonctionne automatiquement
+const getApiBaseUrl = () => {
+  // Côté serveur (SSR) - appeler directement le backend
+  if (typeof window === 'undefined') {
+    return process.env.API_BASE_URL || 'http://localhost:3000';
+  }
+  
+  // Côté client - utiliser chemin relatif (même port via proxy)
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Configuration des variables globales (reproduction PHP)
 const PHP_LEGACY_CONFIG: PhpLegacyVariables = {
@@ -591,6 +601,66 @@ class BrandApiService {
         data: {} as any,
         error: error instanceof Error ? error.message : 'Erreur inconnue'
       };
+    }
+  }
+
+  /**
+   * Récupère toutes les marques avec leurs logos (pour navbar, footer, etc.)
+   */
+  async getAllBrandsWithLogos(limit: number = 100): Promise<Array<{
+    id: number;
+    name: string;
+    slug: string;
+    logo: string | undefined;
+    display: boolean;
+  }>> {
+    const cacheKey = `brands:all:${limit}`;
+    const cached = this.cache.get(cacheKey);
+
+    if (cached && this.isValidCache(cached)) {
+      console.log('[CACHE HIT] All brands with logos');
+      return cached.data;
+    }
+
+    try {
+      const apiUrl = `${API_BASE_URL}/api/manufacturers/brands-logos?limit=${limit}`;
+      console.log('[Brand API] Fetching from:', apiUrl);
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Brands API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('[Brand API] Raw result:', result);
+      console.log('[Brand API] Sample brand:', result.data?.[0]);
+      let brands = result.data || [];
+
+      // La nouvelle API retourne déjà le bon format avec id, name, alias, logo, slug
+      brands = brands.map((brand: any) => ({
+        id: brand.id,
+        name: brand.name,
+        slug: brand.slug || brand.alias,
+        logo: brand.logo, // L'URL complète est déjà générée par le backend
+        display: true // Tous les brands retournés sont actifs
+      }));
+
+      console.log('[Brand API] Formatted brands sample:', brands.slice(0, 2));
+
+      // Mise en cache (longue durée car données stables)
+      const ttl = 60 * 60 * 1000; // 1 heure
+      this.cache.set(cacheKey, { 
+        data: brands, 
+        timestamp: Date.now(), 
+        ttl 
+      });
+
+      console.log('[API CALL] All brands with logos:', brands.length);
+      return brands;
+
+    } catch (error) {
+      console.error('[ERROR] All brands with logos:', error);
+      return [];
     }
   }
 
