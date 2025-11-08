@@ -103,14 +103,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     // Charger les données en parallèle : gammes, équipementiers, articles de blog, catalogue et marques
     const [topGammesResult, equipementiersResult, blogArticlesResult, catalogResult, brandsResult] = await Promise.allSettled([
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/top`).then(res => res.json()),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/featured?limit=26`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json()),
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/blog/advice?limit=6`).then(res => res.json()),
       hierarchyApi.getHomepageData().catch(() => ({ families: [] })),
       brandApi.getAllBrandsWithLogos().catch(() => [])
     ]);
 
-    const topGammesData = topGammesResult.status === 'fulfilled' ? topGammesResult.value : null;
+    // Mapper les données de la nouvelle API vers l'ancien format
+    const rawTopGammes = topGammesResult.status === 'fulfilled' ? topGammesResult.value : [];
+    const topGammesData = {
+      data: Array.isArray(rawTopGammes) 
+        ? rawTopGammes.map((gamme: any) => ({
+            pg_id: gamme.id,
+            pg_name: gamme.name,
+            pg_alias: gamme.alias || gamme.name.toLowerCase().replace(/\s+/g, '-'),
+            pg_img: gamme.image,
+          }))
+        : [],
+      stats: { total_top_gammes: Array.isArray(rawTopGammes) ? rawTopGammes.length : 0 },
+      success: true,
+    };
+    
     const equipementiersData = equipementiersResult.status === 'fulfilled' ? equipementiersResult.value : null;
     const blogArticlesData = blogArticlesResult.status === 'fulfilled' ? blogArticlesResult.value : null;
     const catalogData = catalogResult.status === 'fulfilled' ? catalogResult.value : { families: [] };
@@ -128,7 +142,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   } catch (error) {
     console.error('Loader error:', error);
     return json({
-      topGammesData: null,
+      topGammesData: { data: [], stats: { total_top_gammes: 0 }, success: false },
       equipementiersData: null,
       blogArticlesData: null,
       catalogData: { families: [] },

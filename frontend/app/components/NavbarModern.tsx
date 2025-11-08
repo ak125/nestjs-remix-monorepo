@@ -14,8 +14,9 @@
 
 import { Link, useLocation, useNavigate } from "@remix-run/react";
 import { Bell, BookOpen, ChevronRight, Search, Shield, ShoppingCart, X } from 'lucide-react';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { SITE_CONFIG, isFeatureNew } from "../config/site";
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
 import { CartSidebar } from "./navbar/CartSidebar";
@@ -34,11 +35,15 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   
+  // Ref pour la progress bar - optimisation performance
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number>();
+  
   // Role-based permissions
   const isAdmin = user && (user.level ?? 0) >= 7;
   const isSuperAdmin = user && (user.level ?? 0) >= 9;
   
-  // Détection du scroll pour effet intelligent
+  // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -49,9 +54,34 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
       setIsCompact(currentScrollY > 100);
       
       setLastScrollY(currentScrollY);
+      
+      // Optimisation progress bar avec requestAnimationFrame
+      if (progressBarRef.current && currentScrollY > 10) {
+        // Annuler l'animation précédente si elle existe
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
+        
+        // Planifier la mise à jour de la progress bar
+        rafIdRef.current = requestAnimationFrame(() => {
+          if (progressBarRef.current) {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = Math.min((currentScrollY / scrollHeight) * 100, 100);
+            progressBarRef.current.style.width = `${scrollPercentage}%`;
+          }
+        });
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      // Nettoyer le requestAnimationFrame au démontage
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
   }, [lastScrollY]);
 
   // Gestion de la recherche
@@ -190,18 +220,22 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
               label="Avantages" 
               onClick={(e) => scrollToSection(e, 'advantages')} 
             />
-            <Link 
+            <Link
               to="/blog"
               className="relative group px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition-all duration-300 rounded-lg hover:bg-blue-50/50 flex items-center gap-1.5"
             >
               <BookOpen className="w-4 h-4 transition-transform group-hover:scale-110" />
               <span>Blog</span>
-              <Badge 
-                variant="secondary" 
-                className="ml-1 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200/50 text-xs px-1.5 py-0.5 shadow-sm animate-pulse"
-              >
-                Nouveau
-              </Badge>
+              {/* Badge "Nouveau" conditionnel - affiché uniquement pendant 30 jours après le lancement */}
+              {SITE_CONFIG.features.blog.showNewBadge && 
+               isFeatureNew(SITE_CONFIG.features.blog.launchDate) && (
+                <Badge 
+                  variant="secondary" 
+                  className="ml-1 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200/50 text-xs px-1.5 py-0.5 shadow-sm animate-pulse"
+                >
+                  Nouveau
+                </Badge>
+              )}
               {/* Hover underline effect */}
               <span className="absolute bottom-1 left-3 right-3 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" />
             </Link>
@@ -354,13 +388,12 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
         </div>
       )}
       
-      {/* Progress bar au scroll avec classes simplifiées */}
+      {/* Progress bar au scroll optimisée avec useRef + requestAnimationFrame */}
       {isScrolled && (
-        <div className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-blue-500/20 animate-in slide-in-from-top duration-500" 
-             style={{ 
-               width: `${Math.min((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100, 100)}%`,
-               transition: 'width 0.1s ease-out'
-             }} 
+        <div 
+          ref={progressBarRef}
+          className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-blue-500/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out" 
+          style={{ width: '0%' }}
         />
       )}
     </>
