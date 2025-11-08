@@ -7,7 +7,7 @@ import { CacheModule } from '../../cache/cache.module';
 // ========================================
 import { CatalogController } from './catalog.controller';
 import { EnhancedVehicleCatalogController } from './controllers/enhanced-vehicle-catalog.controller';
-import { CatalogGammeController } from './controllers/catalog-gamme.controller';
+// import { CatalogGammeController } from './controllers/catalog-gamme.controller'; // ❌ DÉSACTIVÉ - Conflit avec GammeUnifiedController
 import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
 import { GammeUnifiedController } from './controllers/gamme-unified.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
@@ -70,9 +70,9 @@ import { PricingService } from '../products/services/pricing.service';
   controllers: [
     CatalogController,
     EnhancedVehicleCatalogController,
-    CatalogGammeController,
+    // CatalogGammeController, // ❌ DÉSACTIVÉ - Conflit avec GammeUnifiedController sur /api/catalog/gammes/hierarchy
     FamilyGammeHierarchyController,
-    GammeUnifiedController,
+    GammeUnifiedController, // ✅ Controller unifié actif
     EquipementiersController,
     VehicleFilteredCatalogV4Controller,
     PiecesCleanController,

@@ -15,9 +15,8 @@
  * 4. Marques Carousel - Shadcn UI
  * 5. FamilyGammeHierarchy - depuis _index.tsx (logique métier existante)
  * 6. Avantages (4 cards uniques) - fusionné
- * 7. Témoignages Carousel - Shadcn UI
- * 8. Newsletter moderne
- * 9. CTA Contact compact
+ * 7. Newsletter moderne
+ * 8. CTA Contact compact
  */
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
@@ -27,6 +26,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  Headphones,
   Package,
   Phone,
   Search,
@@ -66,6 +66,7 @@ import {
 import VehicleSelectorTest from "../components/vehicle/VehicleSelectorTest";
 import { brandApi } from "../services/api/brand.api";
 import { hierarchyApi, type FamilyWithGammes } from "../services/api/hierarchy.api";
+import { SITE_CONFIG } from "../config/site";
 
 export const meta: MetaFunction = () => {
   return [
@@ -100,18 +101,27 @@ export function links() {
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
-    // Charger les données en parallèle comme dans _index.tsx
-    const [topGammesResult, equipementiersResult] = await Promise.allSettled([
+    // Charger les données en parallèle : gammes, équipementiers, articles de blog, catalogue et marques
+    const [topGammesResult, equipementiersResult, blogArticlesResult, catalogResult, brandsResult] = await Promise.allSettled([
       fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/gammes/top`).then(res => res.json()),
-      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json())
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/catalog/equipementiers`).then(res => res.json()),
+      fetch(`${process.env.API_URL || 'http://localhost:3000'}/api/blog/advice?limit=6`).then(res => res.json()),
+      hierarchyApi.getHomepageData().catch(() => ({ families: [] })),
+      brandApi.getAllBrandsWithLogos().catch(() => [])
     ]);
 
     const topGammesData = topGammesResult.status === 'fulfilled' ? topGammesResult.value : null;
     const equipementiersData = equipementiersResult.status === 'fulfilled' ? equipementiersResult.value : null;
+    const blogArticlesData = blogArticlesResult.status === 'fulfilled' ? blogArticlesResult.value : null;
+    const catalogData = catalogResult.status === 'fulfilled' ? catalogResult.value : { families: [] };
+    const brandsData = brandsResult.status === 'fulfilled' ? brandsResult.value : [];
 
     return json({
       topGammesData,
       equipementiersData,
+      blogArticlesData,
+      catalogData,
+      brandsData,
       success: true,
       timestamp: new Date().toISOString()
     });
@@ -120,94 +130,43 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json({
       topGammesData: null,
       equipementiersData: null,
+      blogArticlesData: null,
+      catalogData: { families: [] },
+      brandsData: [],
       success: false,
       timestamp: new Date().toISOString()
     });
   }
 }
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Jean Dupont",
-    role: "Gérant",
-    company: "Garage Auto Plus, Paris",
-    avatar: "JD",
-    rating: 5,
-    text: "Service irréprochable ! Nous avons trouvé toutes les pièces dont nous avions besoin. La livraison est rapide et les prix sont très compétitifs.",
-    color: "from-blue-400 to-blue-600",
-  },
-  {
-    id: 2,
-    name: "Marie Lambert",
-    role: "Responsable achats",
-    company: "Atelier Mécanique Pro, Lyon",
-    avatar: "ML",
-    rating: 5,
-    text: "Une plateforme professionnelle et efficace. Le catalogue est complet et le support client est toujours disponible pour nous conseiller.",
-    color: "from-green-400 to-green-600",
-  },
-  {
-    id: 3,
-    name: "Pierre Martin",
-    role: "Directeur technique",
-    company: "Centre Auto Service, Marseille",
-    avatar: "PM",
-    rating: 5,
-    text: "Excellent rapport qualité/prix et disponibilité impressionnante. Nous avons réduit nos délais de réparation grâce à leur stock permanent.",
-    color: "from-purple-400 to-purple-600",
-  },
-];
-
 export default function TestHomepageModern() {
-  // Charger les données depuis le loader
-  const { topGammesData, equipementiersData } = useLoaderData<typeof loader>();
+  // Charger les données depuis le loader (SSR)
+  const { topGammesData, equipementiersData, blogArticlesData, catalogData, brandsData } = useLoaderData<typeof loader>();
   
-  // État pour les données du catalogue
-  const [families, setFamilies] = useState<FamilyWithGammes[]>([]);
-  const [loadingCatalog, setLoadingCatalog] = useState(true);
+  // État pour les données du catalogue (maintenant initialisé depuis SSR)
+  const [families, setFamilies] = useState<FamilyWithGammes[]>(catalogData?.families || []);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
   const [expandedFamilies, setExpandedFamilies] = useState<Set<string | number>>(new Set());
   
-  // État pour les marques
-  const [brands, setBrands] = useState<Array<{ id: number; name: string; slug: string; logo: string | undefined }>>([]);
-  const [loadingBrands, setLoadingBrands] = useState(true);
+  // État pour les marques (maintenant initialisé depuis SSR)
+  const [brands, setBrands] = useState<Array<{ id: number; name: string; slug: string; logo: string | undefined }>>(brandsData || []);
+  const [loadingBrands, setLoadingBrands] = useState(false);
 
-  // Charger les données du catalogue
+  // Charger les données du catalogue (maintenant uniquement pour refresh si nécessaire)
   useEffect(() => {
-    const loadCatalogData = async () => {
-      try {
-        const data = await hierarchyApi.getHomepageData();
-        setFamilies(data.families);
-      } catch (error) {
-        console.error('Erreur chargement catalogue:', error);
-        setFamilies([]);
-      } finally {
-        setLoadingCatalog(false);
-      }
-    };
+    if (catalogData?.families && catalogData.families.length > 0) {
+      setFamilies(catalogData.families);
+      setLoadingCatalog(false);
+    }
+  }, [catalogData]);
 
-    loadCatalogData();
-  }, []);
-
-  // Charger toutes les marques depuis l'API
+  // Charger les marques (maintenant uniquement pour refresh si nécessaire)
   useEffect(() => {
-    const loadBrandsData = async () => {
-      try {
-        const brandsData = await brandApi.getAllBrandsWithLogos();
-        console.log('🔍 [DEBUG] Brands loaded:', brandsData.length);
-        console.log('🔍 [DEBUG] First 3 brands:', brandsData.slice(0, 3));
-        console.log('🔍 [DEBUG] Sample logo URL:', brandsData[0]?.logo);
-        setBrands(brandsData);
-      } catch (error) {
-        console.error('Erreur chargement marques:', error);
-        setBrands([]);
-      } finally {
-        setLoadingBrands(false);
-      }
-    };
-
-    loadBrandsData();
-  }, []);
+    if (brandsData && brandsData.length > 0) {
+      setBrands(brandsData);
+      setLoadingBrands(false);
+    }
+  }, [brandsData]);
 
   // Fonction pour toggle l'expansion d'une famille
   const toggleFamilyExpansion = (familyId: string | number) => {
@@ -230,6 +189,9 @@ export default function TestHomepageModern() {
   const [isSubmittingNewsletter, setIsSubmittingNewsletter] = useState(false);
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showSearchBar, setShowSearchBar] = useState(false);
+  const [searchReference, setSearchReference] = useState("");
 
   // Smooth scroll behavior
   useEffect(() => {
@@ -237,6 +199,16 @@ export default function TestHomepageModern() {
     return () => {
       document.documentElement.style.scrollBehavior = 'auto';
     };
+  }, []);
+
+  // Show/hide scroll to top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -265,6 +237,9 @@ export default function TestHomepageModern() {
     window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`;
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -314,136 +289,629 @@ export default function TestHomepageModern() {
         Passer au contenu principal
       </a>
 
-      {/* �📞 TopBar + Navbar pour cette page de test */}
+      {/* 📞 TopBar + Navbar pour cette page de test */}
       <TopBar 
         config={{
-          tagline: "Pièces auto à prix pas cher",
-          phone: "01 23 45 67 89",
+          tagline: SITE_CONFIG.tagline,
+          phone: SITE_CONFIG.contact.phone.display,
+          email: SITE_CONFIG.contact.email,
           showQuickLinks: true,
         }}
         user={null}
       />
       <NavbarModern logo="/logo.svg" />
       
-      {/* 🎯 HERO SECTION - Complet avec VehicleSelector */}
+      {/* 🎯 HERO SECTION - Version radicale focalisée conversion */}
       <section 
         id="main-content"
-        className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white py-20"
+        className="relative overflow-hidden bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 text-white py-16 md:py-24"
         aria-label="Section principale"
         role="banner"
       >
-        <div className="absolute inset-0 bg-black/20" aria-hidden="true"></div>
+        {/* Effet mesh gradient animé en arrière-plan - simplifié */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-purple-600/20" aria-hidden="true"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f46e510_1px,transparent_1px),linear-gradient(to_bottom,#4f46e510_1px,transparent_1px)] bg-[size:4rem_4rem]" aria-hidden="true"></div>
         
-        <div className="relative container mx-auto px-4">
-          <div className="text-center max-w-4xl mx-auto mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-              Trouvez vos pièces auto parfaites
+        {/* Formes décoratives - réduites */}
+        <div className="absolute top-10 right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
+        <div className="absolute bottom-10 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" aria-hidden="true"></div>
+        
+        <div className="relative container mx-auto px-4 max-w-5xl">
+          
+          {/* Titre ultra-simple et direct */}
+          <div className="text-center mb-10 animate-in fade-in duration-700">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">
+              <span className="bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                Pièces auto{" "}
+              </span>
+              <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
+                pas cher
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8">
-              Plus de 50 000 pièces en stock - Livraison express
+            <p className="text-base md:text-lg text-blue-100/80 max-w-2xl mx-auto">
+              50 000 pièces en stock • 120 marques • Livraison 24-48h
             </p>
-            
-            {/* Barre de recherche produits (comme ProductSearch) */}
-            <form 
-              onSubmit={handleSearch} 
-              className="bg-white rounded-xl shadow-2xl p-2 flex flex-col sm:flex-row gap-2 mb-8"
-              role="search"
-              aria-label="Recherche de pièces automobiles"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
-                <input
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher par référence OEM, mot-clé ou nom de pièce..."
-                  className="w-full pl-12 pr-6 py-4 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  aria-label="Champ de recherche de pièces"
-                  disabled={isSearching}
-                />
-              </div>
-              <Button 
-                type="submit" 
-                size="lg" 
-                className="bg-blue-600 hover:bg-blue-700 px-8 transition-all hover:scale-105 disabled:opacity-50"
-                aria-label="Lancer la recherche"
-                disabled={isSearching || !searchQuery.trim()}
-              >
-                {isSearching ? (
-                  <>
-                    <span className="inline-block animate-spin mr-2">⏳</span>
-                    Recherche...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-5 h-5 mr-2" aria-hidden="true" />
-                    Rechercher
-                  </>
-                )}
-              </Button>
-            </form>
-            
-            {/* Trust badges */}
-            <div 
-              className="flex flex-wrap justify-center gap-6 text-sm text-blue-100"
-              role="list"
-              aria-label="Avantages du service"
-            >
-              <div className="flex items-center gap-2" role="listitem">
-                <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center" aria-hidden="true">
-                  <span className="text-green-300 text-xl">✓</span>
-                </div>
-                <span>Pièces certifiées</span>
-              </div>
-              <div className="flex items-center gap-2" role="listitem">
-                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center" aria-hidden="true">
-                  <span className="text-blue-300 text-xl">🚚</span>
-                </div>
-                <span>Livraison 24-48h</span>
-              </div>
-              <div className="flex items-center gap-2" role="listitem">
-                <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center" aria-hidden="true">
-                  <span className="text-yellow-300 text-xl">★</span>
-                </div>
-                <span>4.8/5 • 2500 avis</span>
-              </div>
-            </div>
           </div>
 
-          {/* 🚗 SÉLECTEUR DE VÉHICULE - Composant VehicleSelectorTest intégré */}
-          <div className="max-w-4xl mx-auto mb-8">
+          {/* 🚗 SÉLECTEUR DE VÉHICULE GÉANT - FOCUS ABSOLU */}
+          <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
             <VehicleSelectorTest />
           </div>
 
-          {/* Statistiques en temps réel (de _index.tsx) */}
-          <div 
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
-            role="region"
-            aria-label="Statistiques clés"
-          >
-            <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-400" aria-label="50 000 pièces en stock">50K</div>
-              <div className="text-blue-100">Pièces en stock</div>
+          {/* Section Recherche Alternative */}
+          <div className="text-center space-y-6 animate-in fade-in duration-1000 delay-500 mt-12">
+            {/* Titre de section élégant */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="h-px w-20 bg-gradient-to-r from-transparent to-white/20"></div>
+              <h2 className="text-lg font-semibold text-white tracking-wide">
+                Recherche alternative
+              </h2>
+              <div className="h-px w-20 bg-gradient-to-l from-transparent to-white/20"></div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-400" aria-label="Plus de 120 marques référencées">120+</div>
-              <div className="text-blue-100">Marques référencées</div>
+            
+            <div className="flex flex-wrap items-center justify-center gap-3 max-w-4xl mx-auto">
+              {/* Badge 1 : Type de pièce (Vert) */}
+              <button
+                onClick={() => {
+                  const catalogueSection = document.querySelector('#catalogue');
+                  if (catalogueSection) {
+                    catalogueSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="group relative inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full text-sm font-semibold text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all duration-300 hover:scale-105 border border-green-400/30"
+              >
+                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Package className="w-5 h-5" />
+                </div>
+                <span className="tracking-wide">Type de pièce</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-colors"></div>
+              </button>
+              
+              {/* Badge 2 : Constructeur (Bleu) */}
+              <button
+                onClick={() => {
+                  const marquesSection = document.querySelector('#toutes-les-marques');
+                  if (marquesSection) {
+                    marquesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="group relative inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105 border border-blue-400/30"
+              >
+                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Award className="w-5 h-5" />
+                </div>
+                <span className="tracking-wide">Constructeur</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-colors"></div>
+              </button>
+              
+              {/* Badge 3 : Référence (Orange) */}
+              <button
+                onClick={() => setShowSearchBar(true)}
+                className="group relative inline-flex items-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full text-sm font-semibold text-white shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 hover:scale-105 border border-orange-400/30"
+              >
+                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Search className="w-5 h-5" />
+                </div>
+                <span className="tracking-wide">Référence</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-colors"></div>
+              </button>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-400" aria-label="25 000 commandes livrées">25K</div>
-              <div className="text-blue-100">Commandes livrées</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-orange-400" aria-label="Note moyenne de 4.8 sur 5">4.8/5</div>
-              <div className="text-blue-100">Satisfaction client</div>
+            
+            {/* Trust minimal - ultra-discret */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-blue-200/60 pt-4">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                Pièces neuves certifiées
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Truck className="w-4 h-4 text-blue-400" />
+                Livraison express 24-48h
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Shield className="w-4 h-4 text-purple-400" />
+                Aide d'experts gratuite
+              </span>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Modal de recherche par référence */}
+      {showSearchBar && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 animate-in slide-in-from-top-4 duration-300">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
+                  <Search className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Recherche par référence</h3>
+                  <p className="text-sm text-gray-600">Entrez une référence OEM ou commerciale</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSearchBar(false);
+                  setSearchReference("");
+                }}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ChevronRight className="w-5 h-5 text-gray-500 rotate-90" />
+              </button>
+            </div>
+
+            {/* Formulaire */}
+            <div className="p-6">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchReference.trim()) {
+                    window.location.href = `/search?q=${encodeURIComponent(searchReference)}`;
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchReference}
+                    onChange={(e) => setSearchReference(e.target.value)}
+                    placeholder="Ex: 7701208265, KTBWP8841, 04C115561H..."
+                    className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:outline-none transition-colors"
+                    autoFocus
+                  />
+                  {searchReference && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchReference("")}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-400 rotate-45" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    disabled={!searchReference.trim()}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Rechercher
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSearchBar(false);
+                      setSearchReference("");
+                    }}
+                    className="px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+
+              {/* Aide */}
+              <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                <p className="text-sm text-orange-900 font-medium mb-2">💡 Exemples de références :</p>
+                <ul className="text-sm text-orange-800 space-y-1">
+                  <li>• Référence OEM constructeur : <code className="font-mono bg-white px-2 py-0.5 rounded">7701208265</code></li>
+                  <li>• Référence commerciale : <code className="font-mono bg-white px-2 py-0.5 rounded">KTBWP8841</code></li>
+                  <li>• Référence VAG : <code className="font-mono bg-white px-2 py-0.5 rounded">04C115561H</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <section 
+        id="pourquoi-automecanik" 
+        className="py-20 bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30"
+        aria-label="Nos engagements"
+      >
+        <div className="container mx-auto px-4 max-w-7xl">
+          {/* En-tête */}
+          <div className="text-center mb-16 animate-in fade-in duration-700">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+              Pourquoi choisir <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Automecanik</span> ?
+            </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Des services et garanties pour votre équipement automobile
+            </p>
+          </div>
+
+          {/* Métriques clés en vedette */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+            {[
+              { value: "50 000", label: "Pièces en stock", icon: Package, color: "blue" },
+              { value: "120", label: "Marques disponibles", icon: Award, color: "indigo" },
+              { value: "24-48h", label: "Livraison express", icon: Truck, color: "purple" },
+              { value: "100%", label: "Paiement sécurisé", icon: Shield, color: "green" },
+            ].map((metric, idx) => (
+              <Card 
+                key={idx}
+                className="text-center p-6 border-2 border-gray-200/50 hover:border-blue-300 hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <metric.icon className={`w-10 h-10 mx-auto mb-3 text-${metric.color}-600`} />
+                <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
+                <div className="text-sm text-gray-600">{metric.label}</div>
+              </Card>
+            ))}
+          </div>
+
+          {/* USPs + Engagements en grille hybride */}
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* Colonne gauche - 4 USPs */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Nos engagements</h3>
+              
+              {[
+                {
+                  icon: CheckCircle2,
+                  title: "Pièces neuves certifiées",
+                  description: "Toutes nos pièces sont neuves, d'origine ou équivalentes, avec garantie constructeur.",
+                  color: "green",
+                },
+                {
+                  icon: Truck,
+                  title: "Livraison express 24-48h",
+                  description: "Expédition rapide partout en France avec suivi en temps réel de votre commande.",
+                  color: "blue",
+                },
+                {
+                  icon: Shield,
+                  title: "Paiement 100% sécurisé",
+                  description: "Transactions protégées par cryptage SSL et certification Paybox.",
+                  color: "purple",
+                },
+                {
+                  icon: Users,
+                  title: "Support expert gratuit",
+                  description: "Notre équipe de spécialistes vous conseille pour choisir la bonne pièce.",
+                  color: "indigo",
+                },
+              ].map((usp, idx) => (
+                <Card 
+                  key={idx}
+                  className="p-6 border-l-4 hover:shadow-lg transition-all duration-300 bg-white/80 backdrop-blur-sm animate-in fade-in slide-in-from-left"
+                  style={{ 
+                    borderLeftColor: `rgb(var(--${usp.color}-600))`,
+                    animationDelay: `${idx * 100}ms` 
+                  }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl bg-${usp.color}-100 flex-shrink-0`}>
+                      <usp.icon className={`w-6 h-6 text-${usp.color}-600`} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-lg mb-2">{usp.title}</h4>
+                      <p className="text-gray-600 text-sm leading-relaxed">{usp.description}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {/* Colonne droite - Nos engagements */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Nos engagements</h3>
+              
+              {[
+                {
+                  icon: Truck,
+                  title: "Livraison rapide",
+                  description: "Expédition sous 24h pour les pièces en stock. Livraison en France métropolitaine.",
+                  color: "from-blue-500 to-blue-600",
+                  iconColor: "text-blue-600",
+                },
+                {
+                  icon: Shield,
+                  title: "Pièces garanties",
+                  description: "Toutes nos pièces sont garanties constructeur. Conformité et qualité assurées.",
+                  color: "from-green-500 to-green-600",
+                  iconColor: "text-green-600",
+                },
+                {
+                  icon: Headphones,
+                  title: "Support technique",
+                  description: "Notre équipe vous accompagne pour identifier la bonne référence pour votre véhicule.",
+                  color: "from-purple-500 to-purple-600",
+                  iconColor: "text-purple-600",
+                },
+              ].map((engagement, idx) => {
+                const IconComponent = engagement.icon;
+                return (
+                  <Card 
+                    key={idx}
+                    className="p-6 border-2 border-gray-200/50 hover:border-blue-300 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-blue-50/20 backdrop-blur-sm animate-in fade-in slide-in-from-right"
+                    style={{ animationDelay: `${idx * 150}ms` }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${engagement.color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-900 mb-2">{engagement.title}</h4>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          {engagement.description}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CTA final */}
+          <div className="text-center pt-8 animate-in fade-in duration-700 delay-500">
+            <p className="text-gray-600 mb-4">Trouvez la pièce qu'il vous faut</p>
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 px-8"
+            >
+              Trouver ma pièce maintenant
+              <ChevronRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* �📂 CATALOGUE COMPLET - Version compacte SEO optimisée */}
+      <section id="catalogue" className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          {/* En-tête SEO optimisé et compact */}
+          <div className="text-center mb-12 max-w-4xl mx-auto">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Catalogue de pièces détachées auto pour toutes marques
+            </h1>
+            <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-4"></div>
+            
+            {/* Texte SEO optimisé compact */}
+            <p className="text-base text-gray-700 leading-relaxed mb-6">
+              Le <strong>catalogue de pièces détachées auto Automecanik</strong> vous permet de trouver rapidement la pièce adaptée à votre véhicule.
+              Nous proposons des <strong>pièces neuves</strong> pour la majorité des marques et modèles présents sur le <strong>marché français</strong>.
+              Recherchez par immatriculation, constructeur, modèle ou gamme et accédez aux <strong>références compatibles</strong> en quelques clics.
+            </p>
+
+            {/* Méthodes de recherche compactes */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
+                <div className="flex items-center gap-2 justify-center">
+                  <Search className="w-4 h-4 text-blue-600" />
+                  <strong className="text-sm text-gray-900">Par immatriculation</strong>
+                </div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-indigo-200 hover:border-indigo-400 transition-colors">
+                <div className="flex items-center gap-2 justify-center">
+                  <Shield className="w-4 h-4 text-indigo-600" />
+                  <strong className="text-sm text-gray-900">Par constructeur</strong>
+                </div>
+              </div>
+              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-purple-200 hover:border-purple-400 transition-colors">
+                <div className="flex items-center gap-2 justify-center">
+                  <Award className="w-4 h-4 text-purple-600" />
+                  <strong className="text-sm text-gray-900">Par numéro VIN</strong>
+                </div>
+              </div>
+            </div>
+
+            <Link 
+              to="/"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
+            >
+              <Search className="w-4 h-4" />
+              Rechercher par véhicule
+            </Link>
+          </div>
+
+          {/* H2 SEO : Parcourez par gamme - Version compacte */}
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">
+              Parcourez le catalogue par gamme de pièces détachées
+            </h2>
+            <p className="text-center text-gray-600 text-sm max-w-2xl mx-auto mb-8">
+              Explorez notre catalogue organisé par familles techniques
+            </p>
+          </div>
+
+          {/* Loading state */}
+          {loadingCatalog && (
+            <div className="text-center py-12">
+              <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">Chargement du catalogue...</p>
+            </div>
+          )}
+
+          {/* Grid des familles */}
+          {!loadingCatalog && families.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {families.map((family, index) => {
+                  const familyImage = hierarchyApi.getFamilyImage(family);
+                  const familyColor = hierarchyApi.getFamilyColor(family);
+                  const isExpanded = expandedFamilies.has(family.mf_id);
+                  const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 4);
+                  // Générer un ID basé sur le nom de la famille pour le scroll navigation
+                  const familySlug = (family.mf_name_system || family.mf_name || '')
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+
+                  return (
+                    <Card 
+                      key={family.mf_id} 
+                      id={`famille-${familySlug}`}
+                      className="group hover:shadow-xl hover:-translate-y-2 transition-all duration-slower overflow-hidden scroll-mt-24"
+                      style={{
+                        animationDelay: `${index * 50}ms`,
+                      }}
+                    >
+                      {/* Image header avec couleur en fond */}
+                      <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${familyColor}`}>
+                        <img
+                          src={familyImage}
+                          alt={family.mf_name_system || family.mf_name}
+                          className="w-full h-full object-contain transition-transform duration-slower group-hover:scale-105"
+                          loading="lazy"
+                          decoding="async"
+                          width="400"
+                          height="300"
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/categories/default.svg';
+                          }}
+                        />
+
+                        {/* Titre - overlay qui s'intensifie au hover */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-slower">
+                          <h3 className="text-white font-bold text-lg line-clamp-2">
+                            {family.mf_name_system || family.mf_name}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Contenu avec sous-catégories */}
+                      <CardContent className="pt-4">
+                        {/* Description */}
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                          {family.mf_description || 'Découvrez notre sélection complète'}
+                        </p>
+
+                        {/* Liste des sous-catégories (4 ou toutes selon isExpanded) */}
+                        <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
+                          {displayedGammes.map((gamme, idx) => (
+                            <Link
+                              key={idx}
+                              to={`/pieces/${gamme.pg_alias}.html`}
+                              className="text-sm text-slate-600 hover:text-blue-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
+                            >
+                              <span className="w-1.5 h-1.5 bg-slate-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
+                              <span className="line-clamp-1 font-medium">{gamme.pg_name}</span>
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Bouton voir tout/moins */}
+                        {family.gammes_count > 4 && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleFamilyExpansion(family.mf_id);
+                            }}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors flex items-center justify-center gap-2"
+                          >
+                            {isExpanded ? (
+                              <>
+                                Voir moins
+                                <ChevronRight className="h-4 w-4 rotate-90" />
+                              </>
+                            ) : (
+                              <>
+                                Pièces de {(family.mf_name_system || family.mf_name || '').toLowerCase()}
+                                <ChevronRight className="h-4 w-4" />
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {/* H2 SEO : Toutes nos pièces pour le marché français - Version compacte */}
+              <div className="mt-12 mb-12 max-w-4xl mx-auto">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 text-center">
+                  Toutes nos pièces auto pour le marché français
+                </h2>
+                <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
+                  <p className="text-sm text-gray-700 leading-relaxed mb-4 text-center">
+                    Notre <strong>catalogue de pièces auto</strong> couvre l'ensemble des <strong>constructeurs européens et internationaux</strong> présents 
+                    sur le marché français. <strong>Pièces neuves</strong> et certifiées de <strong>grands équipementiers</strong>, conformes aux <strong>normes européennes</strong>.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <CheckCircle2 className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+                      <p className="text-xs font-semibold text-gray-900">Pièces d'origine</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-100">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 mx-auto mb-1" />
+                      <p className="text-xs font-semibold text-gray-900">Qualité certifiée</p>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-100">
+                      <CheckCircle2 className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+                      <p className="text-xs font-semibold text-gray-900">Garantie fabricant</p>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-100">
+                      <Clock className="w-5 h-5 text-orange-600 mx-auto mb-1" />
+                      <p className="text-xs font-semibold text-gray-900">Livraison 24-48h</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA global optimisé SEO - Version compacte */}
+              <div className="mt-12 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 md:p-8 text-center text-white shadow-xl">
+                <h2 className="text-xl md:text-2xl font-bold mb-3">
+                  Pourquoi choisir Automecanik pour vos pièces détachées ?
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-6">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <Shield className="w-8 h-8 mx-auto mb-2 text-blue-100" />
+                    <p className="text-sm font-semibold">Pièces certifiées</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-100" />
+                    <p className="text-sm font-semibold">100% compatible</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                    <Clock className="w-8 h-8 mx-auto mb-2 text-orange-100" />
+                    <p className="text-sm font-semibold">Livraison 24-48h</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Button asChild size="default" variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50">
+                    <Link to="/contact">
+                      <Phone className="mr-2 h-4 w-4" />
+                      Contact
+                    </Link>
+                  </Button>
+                  <Button asChild size="default" variant="outline" className="border-white text-white hover:bg-white/10">
+                    <Link to="/">
+                      Rechercher
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Message si pas de données */}
+          {!loadingCatalog && families.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-xl">
+              <p className="text-gray-600">Aucune famille de produits disponible pour le moment.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* 🎨 MARQUES & CONSTRUCTEURS AUTOMOBILES - Section SEO optimisée */}
       <section 
-        id="nos-marques-partenaires" 
+        id="toutes-les-marques" 
         className="py-16 bg-white scroll-mt-24"
         aria-labelledby="marques-title"
       >
@@ -562,12 +1030,57 @@ export default function TestHomepageModern() {
             </>
           )}
 
-          {/* FAQ MODERNE - Version compacte */}
+          {/* FAQ MODERNE - Version compacte avec Schema.org */}
           <div 
             className="max-w-4xl mx-auto mt-12 pt-8 border-t border-gray-200"
             role="region"
             aria-labelledby="faq-title"
           >
+            {/* Schema.org FAQPage structured data */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": [
+                    {
+                      "@type": "Question",
+                      "name": "Comment trouver les pièces compatibles avec mon véhicule ?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Utilisez notre sélecteur de véhicule en renseignant votre immatriculation, marque et modèle, ou recherchez par numéro VIN. Notre système affiche automatiquement uniquement les pièces 100% compatibles avec votre véhicule."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Quelle est la différence entre une pièce d'origine et une pièce équivalente ?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Les pièces d'origine sont fabriquées par le constructeur automobile avec garantie constructeur officielle, qualité OEM certifiée et compatibilité parfaite. Les pièces équivalentes premium offrent une qualité équivalente certifiée, respectent les normes constructeurs, sont proposées à des prix plus avantageux (-30% en moyenne) et incluent une garantie fabricant."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Quels sont vos délais de livraison ?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Expédition sous 24h ouvrées pour les pièces en stock. Livraison express 24-48h disponible en France métropolitaine. Suivi en temps réel de votre colis avec numéro de tracking. Livraison gratuite pour toute commande supérieure à 150€ HT avec emballage sécurisé et assurance incluse."
+                      }
+                    },
+                    {
+                      "@type": "Question",
+                      "name": "Couvrez-vous toutes les marques automobiles ?",
+                      "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Nous proposons plus de 50 marques et 50 000 références de pièces dans notre catalogue, incluant les marques françaises (Renault, Peugeot, Citroën, DS, Dacia, Alpine), allemandes (VW, BMW, Mercedes, Audi, Opel, Porsche, Smart), asiatiques (Toyota, Honda, Nissan, Mazda, Hyundai, Kia, Suzuki) et bien d'autres. Notre catalogue couvre les marques premium, généralistes, utilitaires et véhicules électriques."
+                      }
+                    }
+                  ]
+                })
+              }}
+            />
+
             <div className="mb-6">
               <h2 id="faq-title" className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                 Questions fréquentes
@@ -879,254 +1392,97 @@ export default function TestHomepageModern() {
         </div>
       </section>
 
-      {/* 📂 CATALOGUE COMPLET - Version compacte SEO optimisée */}
-      <section id="catalogue" className="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
-        <div className="container mx-auto px-4">
-          {/* En-tête SEO optimisé et compact */}
-          <div className="text-center mb-12 max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Catalogue de pièces détachées auto pour toutes marques
-            </h1>
-            <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-4"></div>
-            
-            {/* Texte SEO optimisé compact */}
-            <p className="text-base text-gray-700 leading-relaxed mb-6">
-              Le <strong>catalogue de pièces détachées auto Automecanik</strong> vous permet de trouver rapidement la pièce adaptée à votre véhicule.
-              Nous proposons des <strong>pièces neuves</strong> pour la majorité des marques et modèles présents sur le <strong>marché français</strong>.
-              Recherchez par immatriculation, constructeur, modèle ou gamme et accédez aux <strong>références compatibles</strong> en quelques clics.
-            </p>
-
-            {/* Méthodes de recherche compactes */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-blue-200 hover:border-blue-400 transition-colors">
-                <div className="flex items-center gap-2 justify-center">
-                  <Search className="w-4 h-4 text-blue-600" />
-                  <strong className="text-sm text-gray-900">Par immatriculation</strong>
-                </div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-indigo-200 hover:border-indigo-400 transition-colors">
-                <div className="flex items-center gap-2 justify-center">
-                  <Shield className="w-4 h-4 text-indigo-600" />
-                  <strong className="text-sm text-gray-900">Par constructeur</strong>
-                </div>
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-purple-200 hover:border-purple-400 transition-colors">
-                <div className="flex items-center gap-2 justify-center">
-                  <Award className="w-4 h-4 text-purple-600" />
-                  <strong className="text-sm text-gray-900">Par numéro VIN</strong>
-                </div>
-              </div>
-            </div>
-
-            <Link 
-              to="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg hover:scale-105"
-            >
-              <Search className="w-4 h-4" />
-              Rechercher par véhicule
-            </Link>
-          </div>
-
-          {/* H2 SEO : Parcourez par gamme - Version compacte */}
-          <div className="mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 text-center">
-              Parcourez le catalogue par gamme de pièces détachées
-            </h2>
-            <p className="text-center text-gray-600 text-sm max-w-2xl mx-auto mb-8">
-              Explorez notre catalogue organisé par familles techniques
-            </p>
-          </div>
-
-          {/* Loading state */}
-          {loadingCatalog && (
-            <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement du catalogue...</p>
-            </div>
-          )}
-
-          {/* Grid des familles */}
-          {!loadingCatalog && families.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {families.map((family, index) => {
-                  const familyImage = hierarchyApi.getFamilyImage(family);
-                  const familyColor = hierarchyApi.getFamilyColor(family);
-                  const isExpanded = expandedFamilies.has(family.mf_id);
-                  const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 4);
-                  // Générer un ID basé sur le nom de la famille pour le scroll navigation
-                  const familySlug = (family.mf_name_system || family.mf_name || '')
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-+|-+$/g, '');
-
-                  return (
-                    <Card 
-                      key={family.mf_id} 
-                      id={`famille-${familySlug}`}
-                      className="group hover:shadow-xl hover:-translate-y-2 transition-all duration-slower overflow-hidden scroll-mt-24"
-                      style={{
-                        animationDelay: `${index * 50}ms`,
-                      }}
-                    >
-                      {/* Image header avec couleur en fond */}
-                      <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${familyColor}`}>
-                        <img
-                          src={familyImage}
-                          alt={family.mf_name_system || family.mf_name}
-                          className="w-full h-full object-contain transition-transform duration-slower group-hover:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                          width="400"
-                          height="300"
-                          onError={(e) => {
-                            e.currentTarget.src = '/images/categories/default.svg';
-                          }}
-                        />
-
-                        {/* Titre - overlay qui s'intensifie au hover */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-slower">
-                          <h3 className="text-white font-bold text-lg line-clamp-2">
-                            {family.mf_name_system || family.mf_name}
-                          </h3>
-                        </div>
-                      </div>
-
-                      {/* Contenu avec sous-catégories */}
-                      <CardContent className="pt-4">
-                        {/* Description */}
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                          {family.mf_description || 'Découvrez notre sélection complète'}
-                        </p>
-
-                        {/* Liste des sous-catégories (4 ou toutes selon isExpanded) */}
-                        <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
-                          {displayedGammes.map((gamme, idx) => (
-                            <Link
-                              key={idx}
-                              to={`/pieces/${gamme.pg_alias}.html`}
-                              className="text-sm text-slate-600 hover:text-blue-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
-                            >
-                              <span className="w-1.5 h-1.5 bg-slate-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
-                              <span className="line-clamp-1 font-medium">{gamme.pg_name}</span>
-                            </Link>
-                          ))}
-                        </div>
-
-                        {/* Bouton voir tout/moins */}
-                        {family.gammes_count > 4 && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toggleFamilyExpansion(family.mf_id);
-                            }}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors flex items-center justify-center gap-2"
-                          >
-                            {isExpanded ? (
-                              <>
-                                Voir moins
-                                <ChevronRight className="h-4 w-4 rotate-90" />
-                              </>
-                            ) : (
-                              <>
-                                Pièces de {(family.mf_name_system || family.mf_name || '').toLowerCase()}
-                                <ChevronRight className="h-4 w-4" />
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-
-              {/* H2 SEO : Toutes nos pièces pour le marché français - Version compacte */}
-              <div className="mt-12 mb-12 max-w-4xl mx-auto">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 text-center">
-                  Toutes nos pièces auto pour le marché français
-                </h2>
-                <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
-                  <p className="text-sm text-gray-700 leading-relaxed mb-4 text-center">
-                    Notre <strong>catalogue de pièces auto</strong> couvre l'ensemble des <strong>constructeurs européens et internationaux</strong> présents 
-                    sur le marché français. <strong>Pièces neuves</strong> et certifiées de <strong>grands équipementiers</strong>, conformes aux <strong>normes européennes</strong>.
-                  </p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
-                      <CheckCircle2 className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                      <p className="text-xs font-semibold text-gray-900">Pièces d'origine</p>
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-100">
-                      <CheckCircle2 className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                      <p className="text-xs font-semibold text-gray-900">Qualité certifiée</p>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-100">
-                      <CheckCircle2 className="w-5 h-5 text-purple-600 mx-auto mb-1" />
-                      <p className="text-xs font-semibold text-gray-900">Garantie fabricant</p>
-                    </div>
-                    <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-100">
-                      <Clock className="w-5 h-5 text-orange-600 mx-auto mb-1" />
-                      <p className="text-xs font-semibold text-gray-900">Livraison 24-48h</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA global optimisé SEO - Version compacte */}
-              <div className="mt-12 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-6 md:p-8 text-center text-white shadow-xl">
-                <h2 className="text-xl md:text-2xl font-bold mb-3">
-                  Pourquoi choisir Automecanik pour vos pièces détachées ?
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-6">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Shield className="w-8 h-8 mx-auto mb-2 text-blue-100" />
-                    <p className="text-sm font-semibold">Pièces certifiées</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <CheckCircle2 className="w-8 h-8 mx-auto mb-2 text-green-100" />
-                    <p className="text-sm font-semibold">100% compatible</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
-                    <Clock className="w-8 h-8 mx-auto mb-2 text-orange-100" />
-                    <p className="text-sm font-semibold">Livraison 24-48h</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap justify-center gap-3">
-                  <Button asChild size="default" variant="secondary" className="bg-white text-blue-600 hover:bg-blue-50">
-                    <Link to="/contact">
-                      <Phone className="mr-2 h-4 w-4" />
-                      Contact
-                    </Link>
-                  </Button>
-                  <Button asChild size="default" variant="outline" className="border-white text-white hover:bg-white/10">
-                    <Link to="/">
-                      Rechercher
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Message si pas de données */}
-          {!loadingCatalog && families.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-xl">
-              <p className="text-gray-600">Aucune famille de produits disponible pour le moment.</p>
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* ⭐ GAMMES TOP - Composant réel intégré */}
       <TopGammes topGammesData={topGammesData} />
 
       {/* 🏭 ÉQUIPEMENTIERS - Composant réel intégré */}
       <EquipementiersCarousel equipementiersData={equipementiersData} />
+
+      {/* 🤝 PARTENAIRES & CERTIFICATIONS - Position 7 */}
+      <section 
+        id="partenaires-certifications" 
+        className="py-20 bg-gradient-to-br from-white via-slate-50 to-gray-100"
+        aria-label="Nos partenaires et certifications"
+      >
+        <div className="container mx-auto px-4 max-w-7xl">
+          {/* En-tête */}
+          <div className="text-center mb-16 animate-in fade-in duration-700">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+              Partenaires & <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Certifications</span>
+            </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Des partenariats de confiance avec les leaders du secteur automobile
+            </p>
+          </div>
+
+          {/* Certifications principales */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 max-w-5xl mx-auto">
+            {[
+              {
+                icon: Shield,
+                title: "Paiement sécurisé",
+                subtitle: "Paybox certifié",
+                color: "blue",
+                badge: "🔒",
+              },
+              {
+                icon: Award,
+                title: "Qualité ISO",
+                subtitle: "Normes ISO 9001",
+                color: "green",
+                badge: "✓",
+              },
+              {
+                icon: CheckCircle2,
+                title: "SSL Premium",
+                subtitle: "Données cryptées",
+                color: "purple",
+                badge: "🔐",
+              },
+              {
+                icon: Star,
+                title: "Service client",
+                subtitle: "Support expert 6j/7",
+                color: "amber",
+                badge: "⭐",
+              },
+            ].map((cert, idx) => (
+              <Card 
+                key={idx}
+                className="text-center p-6 border-2 border-gray-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 bg-white animate-in fade-in zoom-in"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                <div className="text-3xl mb-3">{cert.badge}</div>
+                <cert.icon className={`w-10 h-10 mx-auto mb-3 text-${cert.color}-600`} />
+                <h3 className="font-bold text-gray-900 text-base mb-1">{cert.title}</h3>
+                <p className="text-xs text-gray-500">{cert.subtitle}</p>
+              </Card>
+            ))}
+          </div>
+
+          {/* Trust badges finaux */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-500" />
+              <span>Paiement sécurisé Paybox</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-blue-500" />
+              <span>Données SSL cryptées</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="w-5 h-5 text-purple-500" />
+              <span>Certifié ISO 9001</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500" />
+              <span>Note 4.8/5 (1,234 avis)</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ✨ AVANTAGES - Grid 4 colonnes unique (fusionné) */}
       <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-50">
@@ -1198,88 +1554,119 @@ export default function TestHomepageModern() {
         </div>
       </section>
 
-      {/* 💬 TÉMOIGNAGES - Carousel */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Ils nous font confiance
+      {/* � BLOG - Position 10 - Derniers articles */}
+      <section 
+        id="blog-articles" 
+        className="py-20 bg-white"
+        aria-label="Derniers articles du blog"
+      >
+        <div className="container mx-auto px-4 max-w-7xl">
+          {/* En-tête */}
+          <div className="text-center mb-16 animate-in fade-in duration-700">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+              Conseils & <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Actualités</span>
             </h2>
-            <div className="h-1 w-20 bg-gradient-to-r from-green-500 to-teal-600 mx-auto rounded mb-4"></div>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Découvrez les avis de nos clients professionnels
+            <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Retrouvez nos guides, tutoriels et actualités pour entretenir votre véhicule
             </p>
           </div>
 
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full max-w-5xl mx-auto"
-          >
-            <CarouselContent className="-ml-4">
-              {testimonials.map((testimonial) => (
-                <CarouselItem key={testimonial.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                  <Card className="h-full border-t-4 border-green-500">
-                    <CardContent className="pt-6">
-                      {/* Rating */}
-                      <div className="flex text-yellow-400 mb-4">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-5 h-5 fill-current" />
-                        ))}
-                      </div>
+          {/* Grid d'articles - Données réelles depuis l'API */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {blogArticlesData?.data?.articles?.slice(0, 3).map((article: any, idx: number) => (
+              <Card 
+                key={article.id}
+                className="group overflow-hidden border-2 border-gray-200 hover:border-blue-400 hover:shadow-2xl transition-all duration-300 bg-white animate-in fade-in slide-in-from-bottom-4"
+                style={{ animationDelay: `${idx * 100}ms` }}
+              >
+                {/* Image réelle de l'article */}
+                <div className="relative w-full h-56 overflow-hidden">
+                  {article.featuredImage ? (
+                    <>
+                      <img 
+                        src={article.featuredImage}
+                        alt={article.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      {/* Overlay gradient sur hover */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </>
+                  ) : (
+                    /* Fallback si pas d'image */
+                    <div className="w-full h-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 flex items-center justify-center">
+                      <div className="text-6xl opacity-20">📰</div>
+                    </div>
+                  )}
+                  
+                  {/* Badge lecture */}
+                  <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10">
+                    {article.readingTime || 5} min de lecture
+                  </div>
+                </div>
 
-                      {/* Text */}
-                      <p className="text-gray-700 italic mb-6 leading-relaxed">
-                        "{testimonial.text}"
-                      </p>
+                <CardContent className="p-6">
+                  {/* Titre */}
+                  <h3 className="font-bold text-gray-900 text-xl mb-3 line-clamp-2 min-h-[3.5rem] group-hover:text-blue-600 transition-colors">
+                    {article.title}
+                  </h3>
 
-                      {/* Author */}
-                      <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${testimonial.color} rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}>
-                          {testimonial.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800">{testimonial.name}</p>
-                          <p className="text-sm text-gray-500">{testimonial.role}</p>
-                          <p className="text-xs text-gray-400">{testimonial.company}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="-left-4" />
-            <CarouselNext className="-right-4" />
-          </Carousel>
+                  {/* Extrait */}
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+                    {article.excerpt || "Découvrez nos conseils d'experts pour l'entretien de votre véhicule."}
+                  </p>
 
-          {/* Stats témoignages */}
-          <div className="mt-12 bg-gradient-to-r from-green-50 to-teal-50 rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div>
-                <div className="text-4xl font-bold text-green-600 mb-2">98%</div>
-                <div className="text-sm text-gray-600">Clients satisfaits</div>
+                  {/* Meta info */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-4 pt-4 border-t border-gray-100">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-4 h-4" />
+                      {article.readingTime || 5} min
+                    </span>
+                    {article.viewsCount && (
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {article.viewsCount} vues
+                      </span>
+                    )}
+                  </div>
+
+                  {/* CTA */}
+                  <Link 
+                    to={`/blog/conseils/${article.slug}`}
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm group/link"
+                  >
+                    <span>Lire l'article</span>
+                    <ChevronRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                  </Link>
+                </CardContent>
+              </Card>
+            )) || (
+              // Fallback si pas d'articles
+              <div className="col-span-3 text-center py-12">
+                <p className="text-gray-500">Chargement des articles...</p>
               </div>
-              <div>
-                <div className="text-4xl font-bold text-blue-600 mb-2">4.8/5</div>
-                <div className="text-sm text-gray-600">Note moyenne</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-purple-600 mb-2">2 500+</div>
-                <div className="text-sm text-gray-600">Avis vérifiés</div>
-              </div>
-              <div>
-                <div className="text-4xl font-bold text-orange-600 mb-2">24h</div>
-                <div className="text-sm text-gray-600">Livraison moyenne</div>
-              </div>
-            </div>
+            )}
+          </div>
+
+          {/* CTA voir tous les articles */}
+          <div className="text-center animate-in fade-in duration-700 delay-300">
+            <Button 
+              asChild
+              size="lg" 
+              variant="outline"
+              className="border-2 border-blue-300 text-blue-700 hover:bg-blue-50 px-8"
+            >
+              <Link to="/blog">
+                Voir tous les articles
+                <ChevronRight className="w-5 h-5 ml-2" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* 📧 NEWSLETTER - Moderne et épuré */}
+      {/* 📧 NEWSLETTER - Moderne et épuré avec RGPD */}
       <section className="py-16 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0 opacity-20">
@@ -1296,44 +1683,64 @@ export default function TestHomepageModern() {
               Recevez nos offres exclusives et nouveautés
             </p>
 
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Votre email professionnel"
-                className="flex-1 px-6 py-4 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-lg transition-all"
-                required
-                disabled={isSubmittingNewsletter}
-                aria-label="Adresse email pour la newsletter"
-              />
-              <Button
-                type="submit"
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg px-8 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmittingNewsletter}
-              >
-                {isSubmittingNewsletter ? (
-                  <>
-                    <span className="inline-block animate-spin mr-2">⏳</span>
-                    Envoi...
-                  </>
-                ) : (
-                  "S'abonner"
-                )}
-              </Button>
+            <form onSubmit={handleNewsletterSubmit} className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Votre adresse email"
+                  className="flex-1 px-6 py-4 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-white/30 shadow-lg transition-all"
+                  required
+                  disabled={isSubmittingNewsletter}
+                  aria-label="Adresse email pour la newsletter"
+                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                />
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 font-semibold shadow-lg px-8 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmittingNewsletter}
+                >
+                  {isSubmittingNewsletter ? (
+                    <>
+                      <span className="inline-block animate-spin mr-2">⏳</span>
+                      Envoi...
+                    </>
+                  ) : (
+                    "S'abonner"
+                  )}
+                </Button>
+              </div>
+
+              {/* Checkbox RGPD */}
+              <label className="flex items-start gap-3 text-left text-sm text-blue-100 cursor-pointer hover:text-white transition-colors max-w-xl mx-auto">
+                <input 
+                  type="checkbox" 
+                  required 
+                  className="mt-0.5 w-4 h-4 rounded border-2 border-white/30 bg-white/10 checked:bg-white checked:border-white focus:ring-2 focus:ring-white/50 cursor-pointer"
+                  aria-label="Consentement RGPD"
+                />
+                <span>
+                  J'accepte de recevoir les offres et actualités d'Automecanik par email. 
+                  Vous pouvez vous désinscrire à tout moment. 
+                  <Link to="/politique-confidentialite" className="underline hover:text-white font-medium ml-1">
+                    Politique de confidentialité
+                  </Link>
+                </span>
+              </label>
             </form>
 
             {newsletterSuccess && (
-              <div className="mt-4 bg-green-500/20 border border-green-400/50 rounded-lg px-4 py-3 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="mt-6 bg-green-500/20 border border-green-400/50 rounded-lg px-4 py-3 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <CheckCircle2 className="w-5 h-5 text-green-300" />
-                <span className="text-green-100 font-medium">Merci ! Vous êtes inscrit à notre newsletter.</span>
+                <span className="text-green-100 font-medium">Merci ! Vous êtes inscrit à notre newsletter. Vérifiez votre boîte de réception.</span>
               </div>
             )}
 
-            <p className="text-sm text-blue-200 mt-4 flex items-center justify-center gap-2">
-              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
-              Désinscription possible à tout moment
+            <p className="text-sm text-blue-200 mt-6 flex items-center justify-center gap-2">
+              <Shield className="w-4 h-4" aria-hidden="true" />
+              Vos données sont protégées et ne seront jamais partagées
             </p>
           </div>
         </div>
@@ -1392,7 +1799,7 @@ export default function TestHomepageModern() {
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                        <span><strong>Carousel Shadcn UI</strong> vrai carousel (pas fake scroll) pour marques et témoignages</span>
+                        <span><strong>Carousel Shadcn UI</strong> vrai carousel (pas fake scroll) pour les marques</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1450,6 +1857,32 @@ export default function TestHomepageModern() {
           </div>
         </div>
       </section>
+
+      {/* 🔝 SCROLL TO TOP BUTTON */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white p-4 rounded-full shadow-2xl hover:shadow-blue-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
+          aria-label="Retour en haut de page"
+        >
+          <ChevronRight className="w-6 h-6 -rotate-90" />
+        </button>
+      )}
+
+      {/* ====================================
+       * 🔧 MODAL COMPARATEUR - COMMENTÉ
+       * Code complet conservé pour développement futur
+       * Décommenter et réactiver les états + handlers ci-dessus
+       * ==================================== 
+      {showComparator && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={closeComparator}
+        >
+          ... Modal content ...
+        </div>
+      )}
+      */}
     </div>
   );
 }

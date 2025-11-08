@@ -36,140 +36,56 @@ export function EquipementiersCarousel({
   }
 
   return (
-    <div className={`bg-gradient-to-br from-gray-50 to-blue-50 py-16 ${className}`}>
+    <div className={`bg-white py-12 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* En-tête de section */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
-          <div className="mt-2 h-1 w-20 bg-gradient-to-r from-purple-500 to-pink-600 mx-auto rounded"></div>
-          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-            Nous travaillons avec les meilleurs fabricants et fournisseurs du marché pour vous garantir 
-            des pièces de qualité OE et équivalent.
-          </p>
+        {/* En-tête de section - Compact */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            Nos partenaires <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">équipementiers</span>
+          </h2>
+          <div className="h-0.5 w-16 bg-gradient-to-r from-purple-500 to-pink-600 mx-auto rounded mb-3"></div>
         </div>
 
         {/* Carousel des équipementiers */}
         <div className="relative">
           {/* Container avec scroll horizontal pour mobile */}
-          <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide lg:grid lg:grid-cols-6 lg:gap-8 lg:overflow-visible lg:pb-0">
-            {equipementiers.slice(0, 12).map((equipementier) => {
-              // URL du logo équipementier (logique adaptée)
-              const logoUrl = equipementier.pm_logo 
-                ? `/upload/logos/equipementiers/${equipementier.pm_logo}`
-                : '/upload/logo-placeholder.svg';
+          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide lg:grid lg:grid-cols-8 lg:gap-4 lg:overflow-visible lg:pb-0">
+            {equipementiers.slice(0, 24).map((equipementier) => {
+              // Construire le nom du fichier logo depuis pm_name
+              // Ex: "BOSCH" → "bosch.webp", "MANN FILTER" → "mann-filter.webp"
+              const logoFileName = equipementier.pm_name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '') + '.webp';
+              
+              // URL du logo depuis Supabase Storage
+              const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
 
               return (
                 <div 
                   key={equipementier.pm_id} 
-                  className="flex-shrink-0 w-40 lg:w-auto bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 group"
+                  className="flex-shrink-0 w-24 lg:w-auto bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 group border border-gray-200 hover:border-purple-300"
                 >
-                  {/* Logo et nom */}
-                  <div className="p-6 text-center">
-                    {/* Logo équipementier */}
-                    <div className="aspect-square bg-gray-50 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                  {/* Logo équipementier */}
+                  <div className="p-3">
+                    <div className="aspect-square bg-gradient-to-br from-gray-50 to-slate-100 rounded-md flex items-center justify-center overflow-hidden">
                       <img 
                         src={logoUrl}
                         alt={`Logo ${equipementier.pm_name}`} 
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          // Fallback SVG avec le nom de la marque
+                          target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f1f5f9' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-size='10' font-weight='bold' fill='%2364748b'%3E${encodeURIComponent(equipementier.pm_name)}%3C/text%3E%3C/svg%3E`;
+                        }}
                       />
                     </div>
-                    
-                    {/* Nom de l'équipementier */}
-                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-2">
-                      {equipementier.pm_name}
-                    </h3>
-                    
-                    {/* Description courte si disponible */}
-                    {equipementier.pm_description && (
-                      <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                        {equipementier.pm_description}
-                      </p>
-                    )}
-                    
-                    {/* Lien vers site web si disponible */}
-                    {equipementier.pm_website && (
-                      <div className="mt-3">
-                        <a 
-                          href={equipementier.pm_website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center text-xs text-purple-600 hover:text-purple-700 font-medium"
-                        >
-                          <span>Site web</span>
-                          <ExternalLink className="ml-1 h-3 w-3" />
-                        </a>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
             })}
-          </div>
-
-          {/* Indicateur "voir plus" si plus de 12 équipementiers */}
-          {equipementiers.length > 12 && (
-            <div className="text-center mt-8">
-              <Link 
-                to="/equipementiers"
-                className="inline-flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
-              >
-                <span>Voir tous nos partenaires</span>
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Section confiance et partenariat */}
-        <div className="mt-16 bg-white rounded-2xl shadow-lg p-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            
-            {/* Stat 1 */}
-            <div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {equipementiersData?.stats?.total_equipementiers || equipementiers.length}+
-              </div>
-              <div className="text-gray-600 font-medium">Partenaires équipementiers</div>
-            </div>
-            
-            {/* Stat 2 */}
-            <div>
-              <div className="text-3xl font-bold text-blue-600 mb-2">20+</div>
-              <div className="text-gray-600 font-medium">Années d'expérience</div>
-            </div>
-            
-            {/* Stat 3 */}
-            <div>
-              <div className="text-3xl font-bold text-green-600 mb-2">100%</div>
-              <div className="text-gray-600 font-medium">Pièces certifiées</div>
-            </div>
-            
-            {/* Stat 4 */}
-            <div>
-              <div className="text-3xl font-bold text-orange-600 mb-2">24h</div>
-              <div className="text-gray-600 font-medium">Livraison express</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Call to action */}
-        <div className="text-center mt-12">
-          <div className="max-w-2xl mx-auto">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Vous êtes un équipementier ?
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Rejoignez notre réseau de partenaires de confiance et développez votre activité 
-              avec notre plateforme de distribution.
-            </p>
-            <Link 
-              to="/contact/partenaires"
-              className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-lg"
-            >
-              Devenir partenaire
-            </Link>
           </div>
         </div>
       </div>

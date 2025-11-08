@@ -55,30 +55,58 @@ async function fetcher(url: string): Promise<any> {
  * 🏗️ Service API pour la hiérarchie des familles et gammes
  */
 class HierarchyApiService {
-  private baseUrl = '/api/catalog/hierarchy';
+  private getBaseUrl(): string {
+    // Côté serveur (SSR) : utiliser l'URL complète
+    // Côté client : utiliser l'URL relative
+    return typeof window === 'undefined' 
+      ? (process.env.API_URL || 'http://localhost:3000')
+      : '';
+  }
 
   /**
-   * 🏗️ Récupère la hiérarchie complète
+   * 🏗️ Récupère la hiérarchie complète via la nouvelle API unifiée
    */
   async getFullHierarchy(): Promise<HomepageHierarchyData> {
     try {
       console.log('🏗️ Récupération hiérarchie complète...');
 
-      const response: HierarchyApiResponse = await fetcher(`${this.baseUrl}/full`);
+      const baseUrl = this.getBaseUrl();
+      const response = await fetcher(`${baseUrl}/api/catalog/gammes/hierarchy`);
 
-      if (!response.success) {
-        throw new Error(response.error || 'Erreur lors de la récupération de la hiérarchie');
-      }
+      // L'API retourne { families: [...], stats: {...} } avec le nouveau format
+      // On doit mapper vers l'ancien format attendu par le frontend
+      const mappedFamilies: FamilyWithGammes[] = (response.families || []).map((family: any) => ({
+        mf_id: family.id,
+        mf_name: family.name,
+        mf_name_meta: family.name,
+        mf_name_system: family.system_name,
+        mf_description: family.description || '',
+        mf_pic: family.image || '',
+        mf_display: '1',
+        mf_sort: '0',
+        // Mapper les gammes du format nouveau vers l'ancien
+        gammes: (family.gammes || []).map((gamme: any) => ({
+          pg_id: parseInt(gamme.id),
+          pg_alias: gamme.alias || gamme.name,
+          pg_name: gamme.name,
+          pg_name_url: gamme.alias || gamme.name.toLowerCase().replace(/\s+/g, '-'),
+          pg_name_meta: gamme.name,
+          pg_pic: gamme.image || '',
+          pg_img: gamme.image || '',
+          mc_sort: gamme.sort_order || 0,
+        })),
+        gammes_count: family.gammes?.length || 0,
+      }));
 
       const data: HomepageHierarchyData = {
-        families: response.families || [],
+        families: mappedFamilies,
         stats: response.stats || {
           total_families: 0,
           total_gammes: 0,
           total_manufacturers: 0,
           families_with_gammes: 0,
         },
-        display_count: response.families?.length || 0,
+        display_count: mappedFamilies.length,
         total_available: response.stats?.total_families || 0,
       };
 
@@ -86,40 +114,82 @@ class HierarchyApiService {
       return data;
     } catch (error) {
       console.error('❌ Erreur hiérarchie complète:', error);
-      throw error;
+      return {
+        families: [],
+        stats: {
+          total_families: 0,
+          total_gammes: 0,
+          total_manufacturers: 0,
+          families_with_gammes: 0,
+        },
+        display_count: 0,
+        total_available: 0,
+      };
     }
   }
 
   /**
-   * 🏠 Récupère les données optimisées pour la homepage
+   * 🏠 Récupère les données optimisées pour la homepage via la nouvelle API unifiée
    */
   async getHomepageData(): Promise<HomepageHierarchyData> {
     try {
       console.log('🏠 Récupération données homepage...');
 
-      const response: HierarchyApiResponse = await fetcher(`${this.baseUrl}/homepage`);
+      const baseUrl = this.getBaseUrl();
+      const response = await fetcher(`${baseUrl}/api/catalog/gammes/hierarchy`);
 
-      if (!response.success) {
-        throw new Error(response.error || 'Erreur lors de la récupération des données homepage');
-      }
+      // L'API retourne { families: [...], stats: {...} } avec le nouveau format
+      // On doit mapper vers l'ancien format attendu par le frontend
+      const mappedFamilies: FamilyWithGammes[] = (response.families || []).map((family: any) => ({
+        mf_id: family.id,
+        mf_name: family.name,
+        mf_name_meta: family.name,
+        mf_name_system: family.system_name,
+        mf_description: family.description || '',
+        mf_pic: family.image || '',
+        mf_display: '1',
+        mf_sort: '0',
+        // Mapper les gammes du format nouveau vers l'ancien
+        gammes: (family.gammes || []).map((gamme: any) => ({
+          pg_id: parseInt(gamme.id),
+          pg_alias: gamme.alias || gamme.name,
+          pg_name: gamme.name,
+          pg_name_url: gamme.alias || gamme.name.toLowerCase().replace(/\s+/g, '-'),
+          pg_name_meta: gamme.name,
+          pg_pic: gamme.image || '',
+          pg_img: gamme.image || '',
+          mc_sort: gamme.sort_order || 0,
+        })),
+        gammes_count: family.gammes?.length || 0,
+      }));
 
       const data: HomepageHierarchyData = {
-        families: response.families || [],
+        families: mappedFamilies,
         stats: response.stats || {
           total_families: 0,
           total_gammes: 0,
           total_manufacturers: 0,
           families_with_gammes: 0,
         },
-        display_count: response.display_count || response.families?.length || 0,
-        total_available: response.total_available || response.stats?.total_families || 0,
+        display_count: mappedFamilies.length,
+        total_available: response.stats?.total_families || 0,
       };
 
       console.log(`✅ Homepage: ${data.display_count}/${data.total_available} familles, ${data.stats.total_gammes} gammes`);
       return data;
     } catch (error) {
       console.error('❌ Erreur données homepage:', error);
-      throw error;
+      return {
+        families: [],
+        stats: {
+          total_families: 0,
+          total_gammes: 0,
+          total_manufacturers: 0,
+          families_with_gammes: 0,
+        },
+        display_count: 0,
+        total_available: 0,
+      };
     }
   }
 
@@ -130,8 +200,9 @@ class HierarchyApiService {
     try {
       console.log(`🏗️ Récupération famille ${familyId} avec gammes...`);
 
+      const baseUrl = this.getBaseUrl();
       const response: HierarchyApiResponse = await fetcher(
-        `${this.baseUrl}/family/${familyId}`
+        `${baseUrl}/api/catalog/hierarchy/family/${familyId}`
       );
 
       if (!response.success) {

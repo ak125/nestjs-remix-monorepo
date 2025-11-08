@@ -15,9 +15,39 @@ export interface Equipementier {
 
 @Injectable()
 export class EquipementiersService extends SupabaseBaseService {
+  // Liste de marques premium pour optimisation SEO (classées par notoriété)
+  private readonly PREMIUM_BRANDS = [
+    'BOSCH',
+    'VALEO',
+    'MANN FILTER',
+    'GATES',
+    'DELPHI',
+    'DENSO',
+    'BREMBO',
+    'ATE',
+    'BILSTEIN',
+    'SACHS',
+    'TRW',
+    'FERODO',
+    'TEXTAR',
+    'SKF',
+    'FAG',
+    'LUK',
+    'INA',
+    'LEMFORDER',
+    'NRF',
+    'PIERBURG',
+    'FEBI',
+    'CORTECO',
+    'ELRING',
+    'LUCAS',
+    'ZIMMERMANN',
+  ];
+
   /**
-   * 🏭 Récupère tous les équipementiers - LOGIQUE PHP REPRODUITE avec filtrage display et tri optimisé
-   * Équivalent PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque WHERE pm_display = 1 ORDER BY pm_top DESC, pm_sort ASC, pm_name ASC
+   * 🏭 Récupère tous les équipementiers - LOGIQUE PHP REPRODUITE avec filtrage display et tri optimisé SEO
+   * Équivalent PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque WHERE pm_display = 1
+   * + Tri par notoriété de marque pour SEO
    */
   async getEquipementiers(): Promise<{
     data: Equipementier[];
@@ -29,14 +59,11 @@ export class EquipementiersService extends SupabaseBaseService {
         '🏭 Récupération des équipementiers (pieces_marque avec pm_display=1)...',
       );
 
-      // Requête optimisée avec filtrage pm_display = 1 et tri par priorité
+      // Requête optimisée avec filtrage pm_display = 1
       const { data: equipementiers, error } = await this.supabase
         .from('pieces_marque')
         .select('pm_id, pm_name, pm_top, pm_sort')
-        .eq('pm_display', '1') // Filtrer seulement les équipementiers à afficher (string car text field)
-        .order('pm_top', { ascending: false }) // TOP en premier
-        .order('pm_sort', { ascending: true }) // Puis par ordre de tri
-        .order('pm_name', { ascending: true }); // Puis alphabétique
+        .eq('pm_display', '1'); // Filtrer seulement les équipementiers à afficher (string car text field)
 
       if (error) {
         this.logger.error('❌ Erreur récupération équipementiers:', error);
@@ -59,6 +86,26 @@ export class EquipementiersService extends SupabaseBaseService {
           return acc;
         }, [] as Equipementier[]);
 
+      // Tri par notoriété de marque pour optimisation SEO
+      uniqueEquipementiers.sort((a, b) => {
+        const indexA = this.PREMIUM_BRANDS.indexOf(a.pm_name);
+        const indexB = this.PREMIUM_BRANDS.indexOf(b.pm_name);
+
+        // Si les deux sont premium, trier par index dans la liste
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+
+        // Si seulement A est premium, A vient en premier
+        if (indexA !== -1) return -1;
+
+        // Si seulement B est premium, B vient en premier
+        if (indexB !== -1) return 1;
+
+        // Si aucun n'est premium, tri alphabétique
+        return a.pm_name.localeCompare(b.pm_name);
+      });
+
       const result = {
         data: uniqueEquipementiers,
         stats: {
@@ -68,7 +115,7 @@ export class EquipementiersService extends SupabaseBaseService {
       };
 
       this.logger.log(
-        `✅ ${result.stats.total_equipementiers} équipementiers récupérés (avec pm_display=1, triés par priorité)`,
+        `✅ ${result.stats.total_equipementiers} équipementiers récupérés (triés par notoriété SEO)`,
       );
       return result;
     } catch (error) {

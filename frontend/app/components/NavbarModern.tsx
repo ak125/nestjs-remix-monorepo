@@ -134,9 +134,11 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
           
           {/* Navigation Desktop avec effets premium */}
           <div className="hidden lg:flex items-center gap-1 border-l border-slate-200/60 ml-2 pl-6">
-            {/* Catalogue pièces auto - Scroll direct vers section */}
-            <button
-              onClick={() => {
+            {/* Catalogue pièces auto - Link avec scroll intelligent pour SEO */}
+            <Link
+              to="/#catalogue"
+              onClick={(e) => {
+                e.preventDefault();
                 const catalogueSection = document.getElementById('catalogue');
                 if (catalogueSection) {
                   const offset = 100;
@@ -153,12 +155,14 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
               <span className="relative z-10">Catalogue pièces auto</span>
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               <span className="absolute bottom-1 left-3 right-3 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" />
-            </button>
+            </Link>
 
-            {/* Marques & Constructeurs - Scroll direct vers section */}
-            <button
-              onClick={() => {
-                const marquesSection = document.getElementById('nos-marques-partenaires');
+            {/* Marques & Constructeurs - Link avec scroll intelligent pour SEO */}
+            <Link
+              to="/#toutes-les-marques"
+              onClick={(e) => {
+                e.preventDefault();
+                const marquesSection = document.getElementById('toutes-les-marques');
                 if (marquesSection) {
                   const offset = 100;
                   const elementPosition = marquesSection.getBoundingClientRect().top;
@@ -174,7 +178,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
               <span className="relative z-10">Marques & Constructeurs</span>
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               <span className="absolute bottom-1 left-3 right-3 h-0.5 bg-blue-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full" />
-            </button>
+            </Link>
 
             <NavAnchor 
               href="#about" 

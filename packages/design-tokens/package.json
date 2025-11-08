@@ -54,5 +54,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@jridgewell/sourcemap-codec": "^1.5.5"
   }
 }

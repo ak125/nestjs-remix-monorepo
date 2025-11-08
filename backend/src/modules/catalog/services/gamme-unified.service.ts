@@ -109,7 +109,10 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // 3. Récupérer les noms des gammes
       const allGammes = await this.getAllGammes();
-      const gammeNameMap = new Map(allGammes.map((g) => [g.id, g]));
+      // Créer une Map avec des clés en string pour éviter les problèmes de type
+      const gammeNameMap = new Map(
+        allGammes.map((g) => [String(g.id), g]),
+      );
 
       // 4. Construire la hiérarchie
       const familiesWithGammes: FamilyWithGammes[] = (families || [])
@@ -118,7 +121,12 @@ export class GammeUnifiedService extends SupabaseBaseService {
           const familyGammes = (catalogGammes || [])
             .filter((cg) => cg.mc_mf_prime === family.mf_id)
             .map((cg) => {
-              const baseGamme = gammeNameMap.get(cg.mc_pg_id);
+              const baseGamme = gammeNameMap.get(String(cg.mc_pg_id));
+              if (!baseGamme) {
+                this.logger.warn(
+                  `⚠️ Gamme ${cg.mc_pg_id} non trouvée dans pieces_gamme`,
+                );
+              }
               return {
                 id: cg.mc_pg_id,
                 alias: baseGamme?.alias,

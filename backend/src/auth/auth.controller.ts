@@ -450,8 +450,11 @@ export class AuthController {
     try {
       // Créer un utilisateur de test
       const testUser = {
+        id_utilisateur: 123, // ✅ Propriété requise par Express.User
         id: 'test-user-123',
         email: 'test@example.com',
+        nom: 'User', // ✅ Correspondance avec Express.User
+        prenom: 'Test', // ✅ Correspondance avec Express.User
         firstName: 'Test',
         lastName: 'User',
         name: 'Test User',

@@ -49,8 +49,11 @@ import { OptionalAuthGuard } from '../../auth/guards/optional-auth.guard';
 
 // 🏷️ Types et interfaces
 interface AuthenticatedUser {
+  id_utilisateur: number; // ✅ Propriété requise par Express.User
   id: string;
   email: string;
+  nom?: string;
+  prenom?: string;
   role?: string;
 }
 
