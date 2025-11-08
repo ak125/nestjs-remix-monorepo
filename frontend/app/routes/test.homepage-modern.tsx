@@ -27,11 +27,14 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
+  Package,
   Phone,
   Search,
   Shield,
   Star,
+  Truck,
   Users,
+  Zap,
   AlertCircle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -559,261 +562,319 @@ export default function TestHomepageModern() {
             </>
           )}
 
-          {/* CTA simple et discret */}
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <p className="text-gray-600 mb-6">
-              Vous ne trouvez pas votre marque ?
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-                <Link to="/contact">
-                  <Phone className="mr-2 h-5 w-5" />
-                  Nous contacter
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/pieces/">
-                  Voir le catalogue
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* FAQ SEO - Accordion amélioré */}
+          {/* FAQ MODERNE - Version compacte */}
           <div 
-            className="max-w-4xl mx-auto mt-16 pt-12 border-t-2 border-blue-100"
+            className="max-w-4xl mx-auto mt-12 pt-8 border-t border-gray-200"
             role="region"
             aria-labelledby="faq-title"
           >
-            <div className="text-center mb-8">
-              <h2 id="faq-title" className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                Questions fréquemment posées
+            <div className="mb-6">
+              <h2 id="faq-title" className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Questions fréquentes
               </h2>
-              <p className="text-gray-600">
-                Tout ce que vous devez savoir sur nos marques et pièces automobiles
+              <p className="text-sm text-gray-600">
+                Tout ce que vous devez savoir sur nos pièces et services
               </p>
             </div>
             
-            <Accordion type="single" collapsible className="w-full space-y-3">
-              <AccordionItem value="item-1" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              {/* Question 1 - Recherche pièces avec icône 🔍 */}
+              <AccordionItem value="q1" className="group bg-gradient-to-br from-white to-blue-50/30 border-2 border-gray-200 rounded-2xl px-6 py-2 hover:border-blue-400 hover:shadow-lg transition-all duration-300">
                 <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold" aria-hidden="true">1</span>
-                    Combien de marques automobiles proposez-vous ?
+                  <span className="flex items-center gap-4">
+                    <span className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                      <Search className="w-6 h-6" />
+                    </span>
+                    <span className="flex-1">Comment trouver les pièces compatibles avec mon véhicule ?</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-3">
-                    Nous référençons actuellement <strong className="text-blue-600">{loadingBrands ? '...' : brands.length} marques de constructeurs automobiles</strong>, 
-                    couvrant l'ensemble du marché européen, asiatique et américain.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-blue-50 p-4 rounded-lg">
-                    <div>
-                      <strong className="text-gray-900 block mb-1">🇫🇷 Marques françaises</strong>
-                      <span className="text-xs text-gray-600">Renault, Peugeot, Citroën, DS, Dacia</span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-900 block mb-1">🇩🇪 Marques allemandes</strong>
-                      <span className="text-xs text-gray-600">VW, BMW, Mercedes, Audi, Opel, Porsche</span>
-                    </div>
-                    <div>
-                      <strong className="text-gray-900 block mb-1">🌏 Marques asiatiques</strong>
-                      <span className="text-xs text-gray-600">Toyota, Honda, Nissan, Mazda, Hyundai, Kia</span>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-2" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
-                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">2</span>
-                    Quelles sont les marques les plus consultées par nos clients ?
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-3">
-                    Les marques les plus populaires auprès de nos clients professionnels et particuliers :
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-transparent p-3 rounded-lg">
-                      <span className="text-2xl">🥇</span>
-                      <div>
-                        <strong className="text-gray-900 block">Top 3 Françaises</strong>
-                        <span className="text-xs text-gray-600">Renault • Peugeot • Citroën</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-purple-50 to-transparent p-3 rounded-lg">
-                      <span className="text-2xl">🥈</span>
-                      <div>
-                        <strong className="text-gray-900 block">Top 4 Allemandes Premium</strong>
-                        <span className="text-xs text-gray-600">Volkswagen • BMW • Mercedes-Benz • Audi</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-transparent p-3 rounded-lg">
-                      <span className="text-2xl">🥉</span>
-                      <div>
-                        <strong className="text-gray-900 block">Top 3 Asiatiques</strong>
-                        <span className="text-xs text-gray-600">Toyota • Nissan • Honda</span>
-                      </div>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-3" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
-                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
-                    Proposez-vous des pièces détachées pour toutes les marques ?
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-3">
-                    <strong className="text-blue-600">Oui, absolument !</strong> Nous proposons plus de <strong>50 000 références de pièces détachées</strong> compatibles 
-                    avec l'ensemble des marques présentes dans notre catalogue.
-                  </p>
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                    <p className="font-semibold text-gray-900 mb-2">📦 Nos catégories de pièces :</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Moteur & distribution</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Freinage</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Suspension & amortisseurs</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Carrosserie & optique</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Système électrique</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Filtration & entretien</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Embrayage & transmission</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Échappement</span>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-600" /> Climatisation</span>
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="item-4" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
-                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">4</span>
-                    Comment trouver les pièces compatibles avec mon véhicule ?
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-4">
-                    <strong className="text-blue-600">Plusieurs méthodes simples et rapides</strong> pour trouver les bonnes pièces :
+                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-5 pl-16 pr-4">
+                  <p className="mb-4 text-gray-800">
+                    <strong className="text-blue-600">3 méthodes simples et rapides</strong> pour garantir la compatibilité :
                   </p>
                   <div className="space-y-3">
-                    <div className="flex gap-3 items-start bg-blue-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <div className="flex gap-3 items-start bg-white p-4 rounded-xl border border-gray-200 hover:border-blue-300 transition-colors">
+                      <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center font-bold">1</span>
                       <div>
-                        <strong className="text-gray-900 block mb-1">Par logo de marque</strong>
-                        <p className="text-xs text-gray-600">Cliquez sur le logo de votre constructeur → Sélectionnez le modèle → Choisissez l'année et la motorisation</p>
+                        <strong className="text-gray-900 block mb-1.5">🎯 Par logo de marque</strong>
+                        <p className="text-xs text-gray-600 leading-relaxed">Cliquez sur le logo → Sélectionnez modèle, année et motorisation. Simple et intuitif pour tous types de véhicules.</p>
                       </div>
                     </div>
-                    <div className="flex gap-3 items-start bg-green-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <div className="flex gap-3 items-start bg-white p-4 rounded-xl border border-gray-200 hover:border-green-300 transition-colors">
+                      <span className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center font-bold">2</span>
                       <div>
-                        <strong className="text-gray-900 block mb-1">Par numéro VIN (recommandé)</strong>
-                        <p className="text-xs text-gray-600">Saisissez votre numéro de châssis pour une <strong>compatibilité garantie à 100%</strong></p>
+                        <strong className="text-gray-900 block mb-1.5">✅ Par numéro VIN (recommandé)</strong>
+                        <p className="text-xs text-gray-600 leading-relaxed">Saisissez votre numéro de châssis pour une <strong className="text-green-600">compatibilité garantie à 100%</strong>. La méthode la plus fiable.</p>
                       </div>
                     </div>
-                    <div className="flex gap-3 items-start bg-purple-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <div className="flex gap-3 items-start bg-white p-4 rounded-xl border border-gray-200 hover:border-purple-300 transition-colors">
+                      <span className="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center font-bold">3</span>
                       <div>
-                        <strong className="text-gray-900 block mb-1">Par référence OEM</strong>
-                        <p className="text-xs text-gray-600">Utilisez la référence constructeur de votre pièce actuelle dans notre barre de recherche</p>
+                        <strong className="text-gray-900 block mb-1.5">🔍 Par référence OEM</strong>
+                        <p className="text-xs text-gray-600 leading-relaxed">Entrez la référence constructeur de votre pièce actuelle. Idéal pour remplacer une pièce existante.</p>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-xs text-yellow-800 flex items-start gap-2">
-                      <span className="text-lg">💡</span>
-                      <span><strong>Conseil :</strong> Besoin d'aide ? Notre équipe d'experts est disponible pour vous accompagner dans votre recherche et vous garantir la pièce adaptée.</span>
+                  <div className="mt-4 p-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
+                    <p className="text-xs text-amber-900 flex items-start gap-2.5 leading-relaxed">
+                      <span className="text-xl flex-shrink-0">💡</span>
+                      <span><strong>Besoin d'aide ?</strong> Notre équipe d'experts vous accompagne dans votre recherche pour vous garantir la pièce parfaitement adaptée.</span>
                     </p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-5" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
-                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">5</span>
-                    Proposez-vous des pièces d'origine ou des pièces équivalentes ?
+              {/* Question 2 - Qualité pièces avec icône 🛡️ */}
+              <AccordionItem value="q2" className="group bg-gradient-to-br from-white to-green-50/30 border-2 border-gray-200 rounded-2xl px-6 py-2 hover:border-green-400 hover:shadow-lg transition-all duration-300">
+                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-green-600 py-4">
+                  <span className="flex items-center gap-4">
+                    <span className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                      <Shield className="w-6 h-6" />
+                    </span>
+                    <span className="flex-1">Quelle est la qualité des pièces proposées ?</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-4">
-                    Nous proposons <strong className="text-blue-600">les deux options</strong> pour vous offrir le meilleur rapport qualité/prix :
+                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-5 pl-16 pr-4">
+                  <p className="mb-4 text-gray-800">
+                    Nous proposons <strong className="text-green-600">2 gammes de qualité premium</strong> selon vos besoins et budget :
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border-2 border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-5 h-5 text-blue-600" />
-                        <strong className="text-gray-900">Pièces d'origine constructeur</strong>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                          <Award className="w-6 h-6 text-white" />
+                        </div>
+                        <strong className="text-gray-900 text-base">Pièces d'origine</strong>
                       </div>
-                      <ul className="space-y-1 text-xs text-gray-700">
-                        <li>• Garantie constructeur</li>
-                        <li>• Qualité OEM certifiée</li>
-                        <li>• Compatibilité parfaite</li>
-                        <li>• Traçabilité complète</li>
+                      <ul className="space-y-2 text-xs text-gray-700">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span>Garantie constructeur officielle</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span>Qualité OEM certifiée à 100%</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span>Compatibilité parfaite garantie</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                          <span>Traçabilité complète des pièces</span>
+                        </li>
                       </ul>
                     </div>
-                    <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border-2 border-green-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Award className="w-5 h-5 text-green-600" />
-                        <strong className="text-gray-900">Pièces équivalentes premium</strong>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-5 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                          <Star className="w-6 h-6 text-white" />
+                        </div>
+                        <strong className="text-gray-900 text-base">Équivalents premium</strong>
                       </div>
-                      <ul className="space-y-1 text-xs text-gray-700">
-                        <li>• Qualité équivalente certifiée</li>
-                        <li>• Normes constructeurs respectées</li>
-                        <li>• Prix plus avantageux</li>
-                        <li>• Garantie fabricant</li>
+                      <ul className="space-y-2 text-xs text-gray-700">
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Qualité équivalente certifiée</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Respect normes constructeurs</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Prix plus avantageux (-30% moy.)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span>Garantie fabricant incluse</span>
+                        </li>
                       </ul>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-                    <p className="text-xs text-gray-800 font-medium">
-                      <CheckCircle2 className="w-4 h-4 text-green-600 inline mr-1" />
-                      <strong>Notre engagement :</strong> Toutes nos pièces, qu'elles soient d'origine ou équivalentes, sont rigoureusement 
-                      sélectionnées et testées pour garantir fiabilité, sécurité et conformité aux standards européens.
+                  <div className="p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                    <p className="text-xs text-gray-800 font-medium flex items-start gap-2 leading-relaxed">
+                      <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Notre engagement qualité :</strong> Toutes nos pièces sont rigoureusement sélectionnées et testées pour garantir 
+                        <strong className="text-blue-600"> fiabilité, sécurité et conformité aux standards européens</strong>.
+                      </span>
                     </p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="item-6" className="bg-white border-2 border-gray-200 rounded-xl px-6 py-1 hover:border-blue-300 transition-colors">
-                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-blue-600 py-4">
-                  <span className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-bold">6</span>
-                    Quels sont vos délais de livraison ?
+              {/* Question 3 - Délais livraison avec icône ⏱️ */}
+              <AccordionItem value="q3" className="group bg-gradient-to-br from-white to-orange-50/30 border-2 border-gray-200 rounded-2xl px-6 py-2 hover:border-orange-400 hover:shadow-lg transition-all duration-300">
+                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-orange-600 py-4">
+                  <span className="flex items-center gap-4">
+                    <span className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                      <Clock className="w-6 h-6" />
+                    </span>
+                    <span className="flex-1">Quels sont vos délais de livraison ?</span>
                   </span>
                 </AccordionTrigger>
-                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-4 pl-11">
-                  <p className="mb-3">
-                    <strong className="text-blue-600">Livraison rapide partout en France</strong> pour réduire vos temps d'immobilisation :
+                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-5 pl-16 pr-4">
+                  <p className="mb-4 text-gray-800">
+                    <strong className="text-orange-600">Livraison rapide partout en France</strong> pour minimiser vos temps d'immobilisation :
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Clock className="w-5 h-5 text-green-600" />
-                        <strong className="text-gray-900">Standard</strong>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-white p-5 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                          <Package className="w-6 h-6 text-white" />
+                        </div>
+                        <strong className="text-gray-900 text-base">Livraison Standard</strong>
                       </div>
-                      <p className="text-xs text-gray-600">
-                        <strong className="text-green-600">24-48h</strong> pour les pièces en stock
+                      <p className="text-gray-700 mb-2">
+                        <strong className="text-green-600 text-lg">24-48h</strong> pour les pièces en stock
+                      </p>
+                      <p className="text-xs text-gray-600">Idéal pour les commandes non urgentes. Suivi colis inclus.</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-xl border-2 border-orange-300 hover:border-orange-500 transition-colors">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                          <Zap className="w-6 h-6 text-white" />
+                        </div>
+                        <strong className="text-gray-900 text-base">Livraison Express</strong>
+                      </div>
+                      <p className="text-gray-700 mb-2">
+                        <strong className="text-orange-600 text-lg">Livraison J+1</strong> avant 12h
+                      </p>
+                      <p className="text-xs text-gray-600">Pour les urgences. Commande avant 15h = livraison le lendemain.</p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <Truck className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-gray-700 leading-relaxed">
+                        <p className="font-semibold text-gray-900 mb-1">📍 Livraison gratuite</p>
+                        <p>Pour toute commande supérieure à <strong className="text-blue-600">150€ HT</strong>. Emballage sécurisé et assurance incluse.</p>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Question 4 - Couverture marques avec icône 👥 */}
+              <AccordionItem value="q4" className="group bg-gradient-to-br from-white to-purple-50/30 border-2 border-gray-200 rounded-2xl px-6 py-2 hover:border-purple-400 hover:shadow-lg transition-all duration-300">
+                <AccordionTrigger className="text-left text-base font-semibold text-gray-900 hover:text-purple-600 py-4">
+                  <span className="flex items-center gap-4">
+                    <span className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                      <Users className="w-6 h-6" />
+                    </span>
+                    <span className="flex-1">Couvrez-vous toutes les marques automobiles ?</span>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="text-gray-700 text-sm leading-relaxed pb-5 pl-16 pr-4">
+                  <p className="mb-4 text-gray-800">
+                    <strong className="text-purple-600">Plus de 50 marques</strong> et <strong className="text-purple-600">50 000 références</strong> de pièces disponibles dans notre catalogue :
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div className="bg-white p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors">
+                      <div className="text-center mb-3">
+                        <div className="inline-flex w-12 h-12 bg-blue-100 rounded-xl items-center justify-center text-2xl mb-2">
+                          🇫🇷
+                        </div>
+                        <strong className="text-gray-900 block text-sm">Marques françaises</strong>
+                      </div>
+                      <p className="text-xs text-gray-600 text-center leading-relaxed">
+                        Renault • Peugeot • Citroën • DS Automobiles • Dacia • Alpine
                       </p>
                     </div>
-                    <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Star className="w-5 h-5 text-orange-600" />
-                        <strong className="text-gray-900">Express</strong>
+                    <div className="bg-white p-4 rounded-xl border-2 border-red-200 hover:border-red-400 transition-colors">
+                      <div className="text-center mb-3">
+                        <div className="inline-flex w-12 h-12 bg-red-100 rounded-xl items-center justify-center text-2xl mb-2">
+                          🇩🇪
+                        </div>
+                        <strong className="text-gray-900 block text-sm">Marques allemandes</strong>
                       </div>
-                      <p className="text-xs text-gray-600">
-                        <strong className="text-orange-600">Livraison J+1</strong> disponible
+                      <p className="text-xs text-gray-600 text-center leading-relaxed">
+                        VW • BMW • Mercedes • Audi • Opel • Porsche • Smart
                       </p>
                     </div>
+                    <div className="bg-white p-4 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors">
+                      <div className="text-center mb-3">
+                        <div className="inline-flex w-12 h-12 bg-green-100 rounded-xl items-center justify-center text-2xl mb-2">
+                          🌏
+                        </div>
+                        <strong className="text-gray-900 block text-sm">Marques asiatiques</strong>
+                      </div>
+                      <p className="text-xs text-gray-600 text-center leading-relaxed">
+                        Toyota • Honda • Nissan • Mazda • Hyundai • Kia • Suzuki
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
+                    <p className="text-xs text-purple-900 flex items-start gap-2 leading-relaxed font-medium">
+                      <span className="text-xl flex-shrink-0">🔧</span>
+                      <span>
+                        <strong>Catalogue exhaustif :</strong> Marques premium, généralistes, utilitaires et véhicules électriques. 
+                        Du City car au SUV, toutes motorisations confondues.
+                      </span>
+                    </p>
                   </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+
+            {/* CTA STRATÉGIQUE - Après FAQ */}
+            <div className="mt-16 pt-12 border-t border-gray-200">
+              <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-8 md:p-12 text-center text-white shadow-2xl relative overflow-hidden">
+                {/* Pattern de fond décoratif */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
+                </div>
+                
+                <div className="relative z-10">
+                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
+                    <span className="text-xl">💬</span>
+                    <span className="text-sm font-medium">Besoin d'assistance personnalisée</span>
+                  </div>
+                  
+                  <h3 className="text-3xl md:text-4xl font-bold mb-4">
+                    Vous ne trouvez pas votre réponse ?
+                  </h3>
+                  <p className="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+                    Notre équipe d'experts est là pour vous accompagner dans votre recherche de pièces et répondre à toutes vos questions.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <Link 
+                      to="/contact" 
+                      className="group inline-flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                    >
+                      <Phone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                      <span>Contacter un expert</span>
+                    </Link>
+                    
+                    <Link 
+                      to="/catalogue" 
+                      className="group inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 hover:scale-105 transition-all duration-300"
+                    >
+                      <span>Explorer le catalogue</span>
+                      <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </div>
+                  
+                  <div className="mt-8 flex items-center justify-center gap-8 text-sm text-blue-100">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-300" />
+                      <span>Réponse sous 24h</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-300" />
+                      <span>Conseil gratuit</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-300" />
+                      <span>Experts disponibles</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
