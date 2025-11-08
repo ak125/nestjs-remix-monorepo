@@ -286,13 +286,14 @@ export class CatalogGammeService extends SupabaseBaseService {
     try {
       this.logger.log('🌟 Récupération des gammes TOP (pg_top = 1)...');
 
-      // Requête EXACTE de la logique PHP
+      // Requête avec tri par pertinence (pg_id croissant = gammes les plus importantes)
+      // Les IDs les plus bas correspondent aux gammes historiquement les plus demandées
       const { data: topGammes, error } = await this.supabase
         .from('pieces_gamme')
         .select('pg_id, pg_name, pg_alias, pg_img')
         .eq('pg_top', '1') // Équivalent WHERE pg_top = 1
         .eq('pg_display', '1') // Bonus: seulement les gammes affichables
-        .order('pg_name', { ascending: true });
+        .order('pg_id', { ascending: true }); // Tri par pertinence (ID croissant)
 
       if (error) {
         this.logger.error('❌ Erreur récupération TOP gammes:', error);

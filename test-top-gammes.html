@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Top Gammes - Supabase Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">🔥 Top Gammes - Données Réelles Supabase</h1>
+        <p class="text-gray-600 mb-8">Connexion à: <code class="bg-gray-200 px-2 py-1 rounded">https://cxpojprgwgubzjyqzmoq.supabase.co</code></p>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">📊 Statistiques</h2>
+            <div id="stats" class="text-gray-600">Chargement...</div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6">🎯 Gammes Populaires (pg_top = 1)</h2>
+            <div id="gammes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center text-gray-500">Chargement des données...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadTopGammes() {
+            try {
+                const response = await fetch('http://localhost:3000/api/catalog/gammes/top');
+                const result = await response.json();
+                
+                // Afficher les stats
+                document.getElementById('stats').innerHTML = `
+                    <div class="flex gap-8">
+                        <div>
+                            <span class="text-3xl font-bold text-green-600">${result.stats.total_top_gammes}</span>
+                            <p class="text-sm">Gammes TOP dans la BDD</p>
+                        </div>
+                        <div>
+                            <span class="text-3xl font-bold text-blue-600">${result.success ? '✅' : '❌'}</span>
+                            <p class="text-sm">Statut: ${result.message}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Afficher les gammes
+                const gammesHTML = result.data.map(gamme => `
+                    <div class="border-2 border-gray-200 rounded-lg p-4 hover:border-orange-500 transition-all hover:shadow-lg">
+                        <div class="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 overflow-hidden">
+                            <img 
+                                src="/upload/articles/gammes/${gamme.pg_img}" 
+                                alt="${gamme.pg_name}"
+                                class="w-full h-full object-cover"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23e5e7eb%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%239ca3af%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3E📦%3C/text%3E%3C/svg%3E'"
+                            />
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-1">${gamme.pg_name}</h3>
+                        <p class="text-xs text-gray-500 mb-2">ID: ${gamme.pg_id} • ${gamme.pg_alias}</p>
+                        <a href="/pieces/${gamme.pg_alias}-${gamme.pg_id}.html" 
+                           class="inline-block text-sm text-orange-600 hover:text-orange-700 font-medium">
+                            Voir les produits →
+                        </a>
+                    </div>
+                `).join('');
+
+                document.getElementById('gammes').innerHTML = gammesHTML;
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('stats').innerHTML = `
+                    <div class="text-red-600">
+                        ❌ Erreur de connexion: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Charger les données au démarrage
+        loadTopGammes();
+    </script>
+</body>
+</html>

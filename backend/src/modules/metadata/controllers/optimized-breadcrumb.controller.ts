@@ -38,7 +38,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Statistiques breadcrumb (workaround admin)
    * GET /api/breadcrumb/statistics
-   * NOTE: Doit être AVANT @Get(':path(*)') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Get('statistics')
   async getStatistics(): Promise<{ success: boolean; data: any }> {
@@ -67,7 +67,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Récupérer la configuration breadcrumb
    * GET /api/breadcrumb/config
-   * NOTE: Doit être AVANT @Get(':path(*)') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Get('config')
   async getConfig(@Query('lang') lang: string = 'fr') {
@@ -90,7 +90,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Nettoyage cache breadcrumb
    * POST /api/breadcrumb/cache/clear
-   * NOTE: Doit être AVANT @Get(':path(*)') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Post('cache/clear')
   async clearCache(@Body() body?: { path?: string }) {
@@ -117,7 +117,7 @@ export class OptimizedBreadcrumbController {
    * GET /api/breadcrumb/:path
    * NOTE: Route générique - DOIT être après les routes spécifiques
    */
-  @Get(':path(*)')
+  @Get(':path(.*)')
   async getBreadcrumb(
     @Param('path') path: string,
     @Query('lang') lang: string = 'fr',
@@ -153,7 +153,7 @@ export class OptimizedBreadcrumbController {
    * Mettre à jour le breadcrumb pour un chemin
    * POST /api/breadcrumb/:path
    */
-  @Post(':path(*)')
+  @Post(':path(.*)')
   async updateBreadcrumb(
     @Param('path') path: string,
     @Body() breadcrumbData: any,
@@ -196,7 +196,7 @@ export class OptimizedBreadcrumbController {
    * Récupérer le schema.org pour un breadcrumb
    * GET /api/breadcrumb/schema/:path
    */
-  @Get('schema/:path(*)')
+  @Get('schema/:path(.*)')
   async getBreadcrumbSchema(
     @Param('path') path: string,
     @Query('lang') lang: string = 'fr',

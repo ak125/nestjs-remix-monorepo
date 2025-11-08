@@ -50,7 +50,7 @@ export class SeoController {
   /**
    * GET /seo/metadata/:url - Récupère les métadonnées SEO d'une page
    */
-  @Get('metadata/:url(*)')
+  @Get('metadata/:url(.*)')
   async getMetadata(@Param('url') url: string) {
     try {
       const decodedUrl = decodeURIComponent(url);
@@ -115,7 +115,7 @@ export class SeoController {
   /**
    * GET /seo/redirect/:url - Vérifie les redirections pour une URL
    */
-  @Get('redirect/:url(*)')
+  @Get('redirect/:url(.*)')
   async getRedirect(@Param('url') url: string) {
     try {
       const decodedUrl = decodeURIComponent(url);

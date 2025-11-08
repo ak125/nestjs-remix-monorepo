@@ -12,7 +12,7 @@ export class RemixController {
     private remixApiService: RemixApiService,
   ) {}
 
-  @All('*')
+  @All(':path*')
   async handler(
     @Req() request: Request,
     @Res() response: Response,

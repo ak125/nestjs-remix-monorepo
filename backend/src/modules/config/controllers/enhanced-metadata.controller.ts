@@ -171,7 +171,7 @@ export class EnhancedMetadataController {
    * Récupérer les métadonnées d'une page
    * GET /api/metadata/:path
    */
-  @Get(':path(*)')
+  @Get(':path(.*)')
   async getMetadata(
     @Param('path') path: string,
   ): Promise<{ success: boolean; data: PageMetadata }> {
@@ -198,7 +198,7 @@ export class EnhancedMetadataController {
    * Mettre à jour les métadonnées d'une page
    * PUT /api/metadata/:path
    */
-  @Put(':path(*)')
+  @Put(':path(.*)')
   async updateMetadata(
     @Param('path') path: string,
     @Body() updateData: UpdateMetadataDto,
@@ -229,7 +229,7 @@ export class EnhancedMetadataController {
    * Supprimer les métadonnées d'une page
    * DELETE /api/metadata/:path
    */
-  @Delete(':path(*)')
+  @Delete(':path(.*)')
   async deleteMetadata(
     @Param('path') path: string,
   ): Promise<{ success: boolean; message: string }> {

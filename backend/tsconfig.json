@@ -11,5 +11,5 @@
     "noEmit": false,
     "lib": ["DOM", "ES2023"]
   },
-  "include": ["src/**/*.ts", "src/exports.js"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/exports.js"]
 }

@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo } from "react";
+import { ChevronRight, Package, Star } from "lucide-react";
+import { useMemo, useState } from "react";
 import { type TopGamme } from "../../types/catalog.types";
 
 interface TopGammesProps {
@@ -36,86 +36,84 @@ export function TopGammes({
   }
 
   return (
-    <div className={`bg-white py-16 ${className}`}>
+    <section className={`py-12 bg-gradient-to-br from-slate-50 via-white to-orange-50 ${className}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* En-tête de section */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
-          <div className="mt-2 h-1 w-20 bg-gradient-to-r from-orange-500 to-red-600 mx-auto rounded"></div>
-          <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-            Découvrez notre sélection des {topGammes.length} gammes de pièces les plus demandées par nos clients
-          </p>
+        {/* En-tête de section - Plus compact */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            Nos gammes les plus <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">populaires</span>
+          </h2>
+          <div className="h-0.5 w-16 bg-gradient-to-r from-orange-500 to-red-600 mx-auto rounded mb-3"></div>
         </div>
 
-        {/* Carousel des gammes TOP */}
-        <div className="relative">
-          {/* Container avec scroll horizontal pour mobile */}
-          <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide lg:grid lg:grid-cols-4 lg:gap-8 lg:overflow-visible lg:pb-0">
-            {topGammes.map((gamme) => {
-              // URL vers la page gamme (logique PHP reproduite)
-              const gammeUrl = `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
-              
-              // Image de gamme (logique PHP)
-              const gammeImageUrl = gamme.pg_img 
-                ? `/upload/articles/gammes/${gamme.pg_img}`
-                : '/upload/loading-min.gif';
+        {/* Grid compacte des gammes TOP - Toutes les 26 gammes pour SEO */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-5">
+          {topGammes.map((gamme, index) => {
+            // URL vers la page gamme
+            const gammeUrl = `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
+            
+            // Image de gamme depuis Supabase Storage
+            const imageFileName = gamme.pg_img || 'default.webp';
+            const gammeImageUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/upload/upload/articles/gammes-produits/catalogue/${imageFileName}`;
 
-              return (
-                <div 
-                  key={gamme.pg_id} 
-                  className="flex-shrink-0 w-64 lg:w-auto bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-                >
-                  <Link to={gammeUrl} className="block">
-                    {/* Image de gamme */}
-                    <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-xl overflow-hidden">
-                      <img 
-                        src={gammeImageUrl}
-                        alt={gamme.pg_name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    </div>
-                    
-                    {/* Contenu */}
-                    <div className="p-6">
-                      <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                        {gamme.pg_name}
-                      </h3>
-                      <div className="mt-3 flex items-center text-orange-600 font-medium group-hover:text-orange-700">
-                        <span className="text-sm">Voir les produits</span>
-                        <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </Link>
+            return (
+              <Link
+                key={gamme.pg_id}
+                to={gammeUrl}
+                className="group relative bg-white rounded-xl border-2 border-gray-100 hover:border-orange-400 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              >
+                {/* Badge top position */}
+                {index < 3 && (
+                  <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white px-2 py-1 rounded-lg text-[10px] font-bold shadow-lg flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-current" />
+                    Top {index + 1}
+                  </div>
+                )}
+                
+                {/* Image avec fond dégradé élégant */}
+                <div className="relative aspect-square bg-gradient-to-br from-slate-50 via-white to-orange-50 overflow-hidden">
+                  <img 
+                    src={gammeImageUrl}
+                    alt={gamme.pg_name}
+                    className="w-full h-full object-contain p-3 group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Crect fill="%23f8fafc" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" font-size="48" fill="%23cbd5e1"%3E📦%3C/text%3E%3C/svg%3E';
+                    }}
+                  />
+                  {/* Overlay subtil au survol */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-orange-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
-              );
-            })}
-          </div>
-
-          {/* Boutons de navigation pour desktop (optionnel) */}
-          <div className="hidden lg:flex justify-center mt-8 gap-4">
-            <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-              <ChevronLeft className="h-5 w-5 text-gray-600" />
-            </button>
-            <button className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-              <ChevronRight className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
+                
+                {/* Titre avec fond léger */}
+                <div className="p-3 bg-gradient-to-b from-white to-slate-50">
+                  <h3 className="text-xs font-semibold text-gray-800 group-hover:text-orange-600 transition-colors line-clamp-2 leading-snug text-center">
+                    {gamme.pg_name}
+                  </h3>
+                </div>
+              </Link>
+            );
+          })}
         </div>
 
-        {/* Statistiques */}
-        {topGammesData?.stats && (
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center px-6 py-3 bg-orange-50 rounded-full">
-              <span className="text-orange-800 font-medium">
-                {topGammesData.stats.total_top_gammes} gammes sélectionnées pour leur qualité exceptionnelle
-              </span>
-            </div>
-          </div>
-        )}
+        {/* CTA vers catalogue complet - avec scroll */}
+        <div className="text-center mt-6">
+          <a 
+            href="#catalogue" 
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('catalogue')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            Voir tout le catalogue
+            <ChevronRight className="w-4 h-4" />
+          </a>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 

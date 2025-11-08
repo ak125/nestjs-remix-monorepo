@@ -2,7 +2,7 @@
 // 🚗 VehicleSelector simplifié pour page de test
 
 import { useNavigate } from '@remix-run/react';
-import { Search, Car, Calendar, Settings, RotateCcw } from 'lucide-react';
+import { Search, Car, Calendar, Settings, RotateCcw, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
@@ -19,7 +19,10 @@ export default function VehicleSelectorTest({
 }: VehicleSelectorTestProps) {
   const navigate = useNavigate();
   
-  // États
+  // Mode de recherche : 'vehicle' ou 'mine'
+  const [searchMode, setSearchMode] = useState<'vehicle' | 'mine'>('vehicle');
+  
+  // États pour recherche par véhicule
   const [brands, setBrands] = useState<any[]>([]);
   const [years, setYears] = useState<number[]>([]);
   const [models, setModels] = useState<any[]>([]);
@@ -29,6 +32,9 @@ export default function VehicleSelectorTest({
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  
+  // État pour recherche par type mine
+  const [mineCode, setMineCode] = useState('');
   
   const [loading, setLoading] = useState(false);
 
@@ -197,16 +203,53 @@ export default function VehicleSelectorTest({
     setTypes([]);
   };
 
+  // Handler recherche par Type Mine
+  const handleMineSearch = () => {
+    if (!mineCode || mineCode.length < 5) {
+      return;
+    }
+    navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
+  };
+
   return (
     <Card className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}>
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3">
         <CardTitle className="text-gray-900 text-center flex items-center justify-center gap-2">
           <Car className="w-5 h-5 text-blue-600" />
           Sélectionnez votre véhicule
         </CardTitle>
+        
+        {/* Onglets de sélection du mode */}
+        <div className="flex gap-2 mt-4 p-1 bg-gray-100 rounded-lg">
+          <button
+            onClick={() => setSearchMode('vehicle')}
+            className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              searchMode === 'vehicle'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Car className="w-4 h-4 inline mr-2" />
+            Par véhicule
+          </button>
+          <button
+            onClick={() => setSearchMode('mine')}
+            className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              searchMode === 'mine'
+                ? 'bg-white text-purple-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <FileText className="w-4 h-4 inline mr-2" />
+            Type Mine
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Mode: Recherche par véhicule */}
+          {searchMode === 'vehicle' && (
+            <>
           {/* Grid des sélecteurs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {/* Constructeur */}
@@ -326,6 +369,54 @@ export default function VehicleSelectorTest({
                 <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                 Chargement...
               </div>
+            </div>
+          )}
+            </>
+          )}
+
+          {/* Mode: Recherche par Type Mine */}
+          {searchMode === 'mine' && (
+            <div className="space-y-4">
+              {/* Aide */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-purple-900">
+                    <p className="font-medium mb-1">Le Type Mine se trouve sur votre carte grise</p>
+                    <p className="text-purple-700">Champ D.2 • Format : 10 à 15 caractères alphanumériques</p>
+                    <p className="text-purple-600 mt-2 font-mono text-xs">Exemple : M10RENAAG0D001</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Input Type Mine */}
+              <div>
+                <label htmlFor="mineCode" className="block text-sm font-medium text-gray-700 mb-2">
+                  Code Type Mine
+                </label>
+                <input
+                  id="mineCode"
+                  type="text"
+                  value={mineCode}
+                  onChange={(e) => setMineCode(e.target.value.toUpperCase())}
+                  placeholder="Ex: M10RENAAG0D001"
+                  maxLength={20}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white font-mono uppercase"
+                />
+                {mineCode && mineCode.length < 5 && (
+                  <p className="text-xs text-red-600 mt-1">Minimum 5 caractères requis</p>
+                )}
+              </div>
+
+              {/* Bouton recherche */}
+              <Button
+                onClick={handleMineSearch}
+                disabled={!mineCode || mineCode.length < 5}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-6 text-lg font-semibold disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Rechercher par Type Mine
+              </Button>
             </div>
           )}
         </div>
