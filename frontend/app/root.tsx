@@ -15,7 +15,6 @@ import { getOptionalUser } from "./auth/unified.server";
 import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors";
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
-import { TopBar } from "./components/navbar/TopBar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
@@ -27,12 +26,23 @@ import animationsStylesheet from "./styles/animations.css?url";
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: animationsStylesheet },
+  { rel: "manifest", href: "/manifest.json" },
+  { rel: "icon", type: "image/webp", sizes: "192x192", href: "/icon-192.webp" },
+  { rel: "icon", type: "image/webp", sizes: "512x512", href: "/icon-512.webp" },
+  { rel: "apple-touch-icon", sizes: "192x192", href: "/icon-192.webp" },
 ];
 
 export const meta: MetaFunction = () => [
   { charset: "utf-8" },
-  { title: "E-Commerce Platform" },
+  { title: "Automecanik - Pièces auto à prix pas cher" },
+  { name: "description", content: "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie." },
   { viewport: "width=device-width,initial-scale=1" },
+  { name: "theme-color", content: "#2563eb" },
+  { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
+  { property: "og:image:width", content: "1200" },
+  { property: "og:image:height", content: "630" },
+  { name: "twitter:card", content: "summary_large_image" },
+  { name: "twitter:image", content: "https://www.automecanik.com/logo-og.webp" },
 ];
 
 export const loader = async ({ context }: LoaderFunctionArgs) => {
@@ -77,9 +87,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="h-full bg-gray-100">
         <NotificationProvider>
           <div className="min-h-screen flex flex-col">
-              {/* 🆕 PHASE 3: TopBar au-dessus de la Navbar */}
-              <TopBar user={user} />
-              
               <Navbar logo={logo} />
               <main className="flex-grow flex flex-col">
                 <div className="flex-grow">

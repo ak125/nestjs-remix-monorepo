@@ -3,10 +3,11 @@
 
 import  { type VehicleBrand, type VehicleModel, type VehicleType } from "@monorepo/shared-types";
 import { Form, useNavigate } from '@remix-run/react';
-import { Search, Car, Calendar, Fuel, Settings, RotateCcw } from 'lucide-react';
+import { Search, Car, Calendar, Fuel, Settings, RotateCcw, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface VehicleSelectorV2Props {
   // 🎨 Mode d'affichage
@@ -15,6 +16,7 @@ interface VehicleSelectorV2Props {
   // 🔧 Fonctionnalités
   showVinSearch?: boolean;
   showRecommendation?: boolean;
+  enableTypeMineSearch?: boolean;
   
   // 📞 Callbacks
   onVehicleSelect?: (vehicle: {
@@ -49,6 +51,7 @@ export default function VehicleSelectorV2({
   mode = 'full',
   showVinSearch = false,
   showRecommendation: _showRecommendation = false,
+  enableTypeMineSearch = false,
   onVehicleSelect,
   redirectOnSelect = true,
   redirectTo = 'vehicle-page',
@@ -75,6 +78,8 @@ export default function VehicleSelectorV2({
   const [loadingTypes, setLoadingTypes] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<'vehicle' | 'mine'>('vehicle');
+  const [mineCode, setMineCode] = useState('');
   
   const navigate = useNavigate();
 
@@ -315,6 +320,14 @@ export default function VehicleSelectorV2({
     setSearchQuery('');
   };
 
+  // 🔍 Handler recherche par Type Mine
+  const handleMineSearch = () => {
+    if (!mineCode || mineCode.length < 5) {
+      return;
+    }
+    navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
+  };
+
   // 🎨 Styles adaptatifs selon variant
   const containerClass = `
     ${variant === 'card' ? 'bg-white rounded-xl shadow-lg p-6' : ''}
@@ -395,37 +408,68 @@ export default function VehicleSelectorV2({
     );
   }
 
-  // 🎨 Mode full (vertical) - reprendre la logique de VehicleSelectorUnified
+  // 🎨 Mode full (vertical) - Design moderne avec Card + onglets
   return (
-    <div className={`vehicle-selector-full ${containerClass}`}>
-      <div className="space-y-6">
-        {/* Header adaptatif selon contexte */}
-        <div className="text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            {context === 'homepage' && '🚗 Sélectionnez votre véhicule'}
-            {context === 'pieces' && '🔧 Trouvez les pièces compatibles'}
-            {context === 'detail' && '🚗 Changer de véhicule'}
-            {context === 'search' && '🔍 Recherche par véhicule'}
-          </h3>
-          <p className="text-gray-600">
-            Sélecteur véhicule intelligent pour une compatibilité parfaite
-          </p>
-        </div>
-
-        {/* Grid des sélecteurs */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Marque */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
+    <Card className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-gray-900 text-center flex items-center justify-center gap-2">
+          <Car className="w-5 h-5 text-blue-600" />
+          {context === 'homepage' && 'Sélectionnez votre véhicule'}
+          {context === 'pieces' && 'Trouvez les pièces compatibles'}
+          {context === 'detail' && 'Changer de véhicule'}
+          {context === 'search' && 'Recherche par véhicule'}
+          {!context && 'Sélectionnez votre véhicule'}
+        </CardTitle>
+        
+        {/* Onglets de sélection du mode */}
+        {enableTypeMineSearch && (
+          <div className="flex gap-2 mt-4 p-1 bg-gray-100 rounded-lg">
+            <button
+              onClick={() => setSearchMode('vehicle')}
+              className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                searchMode === 'vehicle'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
               <Car className="w-4 h-4 inline mr-2" />
-              Marque automobile
+              Par véhicule
+            </button>
+            <button
+              onClick={() => setSearchMode('mine')}
+              className={`flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                searchMode === 'mine'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <FileText className="w-4 h-4 inline mr-2" />
+              Type Mine
+            </button>
+          </div>
+        )}
+      </CardHeader>
+      
+      <CardContent>
+        <div className="space-y-4">
+          {/* Mode: Recherche par véhicule */}
+          {searchMode === 'vehicle' && (
+            <>
+        {/* Grid des sélecteurs - 4 colonnes responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Constructeur */}
+          <div>
+            <label htmlFor="brand-v2" className="block text-sm font-medium text-gray-700 mb-2">
+              <Car className="w-4 h-4 inline mr-1" />
+              Constructeur
             </label>
-            <select 
+            <select
+              id="brand-v2"
               value={selectedBrand?.marque_id || ''} 
               onChange={(e) => handleBrandChange(Number(e.target.value))}
-              className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
             >
-              <option value="">Sélectionnez une marque</option>
+              <option value="">Choisir...</option>
               {brands.map(brand => (
                 <option key={brand.marque_id} value={brand.marque_id}>
                   {brand.marque_name} {brand.is_featured ? '⭐' : ''}
@@ -435,19 +479,20 @@ export default function VehicleSelectorV2({
           </div>
 
           {/* Année */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
-              <Calendar className="w-4 h-4 inline mr-2" />
-              Année de fabrication
+          <div>
+            <label htmlFor="year-v2" className="block text-sm font-medium text-gray-700 mb-2">
+              <Calendar className="w-4 h-4 inline mr-1" />
+              Année
             </label>
-            <select 
+            <select
+              id="year-v2"
               value={selectedYear || ''} 
               onChange={(e) => handleYearChange(Number(e.target.value))}
               disabled={!selectedBrand || loadingYears}
-              className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
               <option value="">
-                {loadingYears ? 'Chargement...' : 'Sélectionnez une année'}
+                {loadingYears ? 'Chargement...' : 'Année'}
               </option>
               {years.map(year => (
                 <option key={year} value={year}>{year}</option>
@@ -456,19 +501,20 @@ export default function VehicleSelectorV2({
           </div>
 
           {/* Modèle */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
-              <Settings className="w-4 h-4 inline mr-2" />
-              Modèle {selectedBrand?.marque_name}
+          <div>
+            <label htmlFor="model-v2" className="block text-sm font-medium text-gray-700 mb-2">
+              <Search className="w-4 h-4 inline mr-1" />
+              Modèle
             </label>
-            <select 
+            <select
+              id="model-v2"
               value={selectedModel?.modele_id || ''} 
               onChange={(e) => handleModelChange(Number(e.target.value))}
               disabled={!selectedYear || loadingModels}
-              className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
               <option value="">
-                {loadingModels ? 'Chargement...' : 'Sélectionnez un modèle'}
+                {loadingModels ? 'Chargement...' : 'Modèle'}
               </option>
               {models.map(model => (
                 <option key={model.modele_id} value={model.modele_id}>
@@ -479,22 +525,23 @@ export default function VehicleSelectorV2({
           </div>
 
           {/* Motorisation */}
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-700">
-              <Fuel className="w-4 h-4 inline mr-2" />
+          <div>
+            <label htmlFor="type-v2" className="block text-sm font-medium text-gray-700 mb-2">
+              <Settings className="w-4 h-4 inline mr-1" />
               Motorisation
             </label>
-            <select 
+            <select
+              id="type-v2"
               value={selectedType?.type_id || ''} 
               onChange={(e) => {
                 const selectedType = types.find(t => t.type_id.toString() === e.target.value);
                 if (selectedType) handleTypeSelect(selectedType);
               }}
               disabled={!selectedModel || loadingTypes}
-              className="w-full p-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
               <option value="">
-                {loadingTypes ? 'Chargement...' : 'Sélectionnez une motorisation'}
+                {loadingTypes ? 'Chargement...' : 'Motorisation'}
               </option>
               {types.map(type => (
                 <option key={type.type_id} value={type.type_id}>
@@ -505,50 +552,65 @@ export default function VehicleSelectorV2({
           </div>
         </div>
 
-        {/* Reset button */}
-        <div className="text-center">
-          <Button onClick={handleReset} variant="outline">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Recommencer
-          </Button>
-        </div>
-
-        {/* Recherche VIN (optionnelle) */}
-        {showVinSearch && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">
-              <Search className="w-4 h-4 inline mr-2" />
-              Recherche par VIN ou nom de véhicule
-            </h4>
-            <Form method="post" action="/search/vehicle" className="flex gap-2">
-              <input
-                type="text"
-                name="query"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Saisissez votre VIN ou le nom du véhicule..."
-                className="flex-1 p-3 border border-gray-300 rounded-xl text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
-              <Button type="submit" className="px-6">
-                <Search className="w-4 h-4" />
-              </Button>
-            </Form>
-          </div>
-        )}
-
-        {/* Résultat sélection */}
-        {selectedType && (
-          <div className="mt-6 p-4 rounded-xl bg-green-50 border border-green-200">
-            <h4 className="text-green-800 font-medium mb-2">✅ Véhicule sélectionné</h4>
-            <div className="text-sm text-green-700">
-              <p>• Marque : {selectedBrand?.marque_name}</p>
-              <p>• Année : {selectedYear}</p>
-              <p>• Modèle : {selectedModel?.modele_name}</p>
-              <p>• Motorisation : {selectedType.type_name}</p>
+        {/* Indicateur de chargement */}
+        {(loadingYears || loadingModels || loadingTypes) && (
+          <div className="text-center py-2">
+            <div className="inline-flex items-center gap-2 text-sm text-blue-600">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              Chargement...
             </div>
           </div>
         )}
-      </div>
-    </div>
+            </>
+          )}
+          
+          {/* Mode: Recherche par Type Mine */}
+          {searchMode === 'mine' && enableTypeMineSearch && (
+            <div className="space-y-4">
+              {/* Aide */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-purple-900">
+                    <p className="font-medium mb-1">Le Type Mine se trouve sur votre carte grise</p>
+                    <p className="text-purple-700">Champ D.2 • Format : 10 à 15 caractères alphanumériques</p>
+                    <p className="text-purple-600 mt-2 font-mono text-xs">Exemple : M10RENAAG0D001</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Input Type Mine */}
+              <div>
+                <label htmlFor="mineCode" className="block text-sm font-medium text-gray-700 mb-2">
+                  Code Type Mine
+                </label>
+                <input
+                  id="mineCode"
+                  type="text"
+                  value={mineCode}
+                  onChange={(e) => setMineCode(e.target.value.toUpperCase())}
+                  placeholder="Ex: M10RENAAG0D001"
+                  maxLength={20}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white font-mono uppercase"
+                />
+                {mineCode && mineCode.length < 5 && (
+                  <p className="text-xs text-red-600 mt-1">Minimum 5 caractères requis</p>
+                )}
+              </div>
+
+              {/* Bouton recherche */}
+              <Button
+                onClick={handleMineSearch}
+                disabled={!mineCode || mineCode.length < 5}
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-6 text-lg font-semibold disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Rechercher par Type Mine
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

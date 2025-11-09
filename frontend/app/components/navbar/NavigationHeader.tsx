@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { NavbarModern } from "../NavbarModern";
+import { Navbar } from "../Navbar";
 import { TopBar } from "./TopBar";
 
 interface NavigationHeaderProps {
@@ -75,7 +75,7 @@ export function NavigationHeader({
           isScrolled ? 'shadow-xl' : 'shadow-sm'
         }`}
       >
-        <NavbarModern logo={logo} />
+        <Navbar logo={logo} />
       </div>
     </div>
   );

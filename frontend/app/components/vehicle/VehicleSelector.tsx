@@ -1,5 +1,5 @@
-// 📁 frontend/app/components/vehicle/VehicleSelectorTest.tsx
-// 🚗 VehicleSelector simplifié pour page de test
+// 📁 frontend/app/components/vehicle/VehicleSelector.tsx
+// 🚗 VehicleSelector simplifié pour page principale
 
 import { useNavigate } from '@remix-run/react';
 import { Search, Car, Calendar, Settings, RotateCcw, FileText } from 'lucide-react';
@@ -8,15 +8,15 @@ import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
-interface VehicleSelectorTestProps {
+interface VehicleSelectorProps {
   className?: string;
   onVehicleSelect?: (vehicle: any) => void;
 }
 
-export default function VehicleSelectorTest({ 
+export default function VehicleSelector({ 
   className = '',
   onVehicleSelect 
-}: VehicleSelectorTestProps) {
+}: VehicleSelectorProps) {
   const navigate = useNavigate();
   
   // Mode de recherche : 'vehicle' ou 'mine'

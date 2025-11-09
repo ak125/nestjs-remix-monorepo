@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" fill="none">
+  <!-- Full premium logo with tagline -->
+  
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#dc2626;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="strongGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feFlood flood-color="#3b82f6" flood-opacity="0.3"/>
+      <feComposite in2="coloredBlur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon: Professional Gear + Wrench with strong presence -->
+  <g transform="translate(15, 15)">
+    <!-- Multi-layer outer glow for depth -->
+    <circle cx="35" cy="35" r="36" fill="url(#mainGradient)" opacity="0.2" filter="url(#strongGlow)"/>
+    <circle cx="35" cy="35" r="32" fill="url(#mainGradient)" opacity="0.12"/>
+    
+    <!-- Main circle with enhanced border (transparent background) -->
+    <circle cx="35" cy="35" r="30" fill="none" stroke="url(#mainGradient)" stroke-width="4"/>
+    
+    <!-- Gear teeth - 8 directional -->
+    <g fill="url(#mainGradient)" filter="url(#glow)">
+      <rect x="32" y="8" width="6" height="12" rx="2"/>
+      <rect x="32" y="50" width="6" height="12" rx="2"/>
+      <rect x="8" y="32" width="12" height="6" ry="2"/>
+      <rect x="50" y="32" width="12" height="6" ry="2"/>
+      <rect x="16" y="16" width="8" height="8" rx="2" transform="rotate(45 20 20)"/>
+      <rect x="46" y="16" width="8" height="8" rx="2" transform="rotate(-45 50 20)"/>
+      <rect x="16" y="46" width="8" height="8" rx="2" transform="rotate(-45 20 50)"/>
+      <rect x="46" y="46" width="8" height="8" rx="2" transform="rotate(45 50 50)"/>
+    </g>
+    
+    <!-- Center hub with depth (no white background) -->
+    <circle cx="35" cy="35" r="14" fill="url(#mainGradient)" filter="url(#glow)"/>
+    <circle cx="35" cy="35" r="5" fill="url(#mainGradient)"/>
+    <circle cx="33" cy="33" r="2" fill="rgba(255,255,255,0.6)"/>
+    
+    <!-- Dynamic wrench (no white fill) -->
+    <g fill="url(#accentGrad)" opacity="0.95" filter="url(#glow)">
+      <path d="M45 42 L58 55 L55 58 L42 45 L39 48 L36 45 Z"/>
+      <circle cx="37" cy="46" r="3" fill="rgba(255,255,255,0.8)"/>
+      <circle cx="37" cy="46" r="1.5" fill="url(#accentGrad)"/>
+    </g>
+  </g>
+  
+  <!-- Brand text -->
+  <g transform="translate(95, 0)">
+    <!-- Main title - AUTOMECANK (no space) -->
+    <text x="0" y="48" font-family="'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif" font-size="42" font-weight="900" letter-spacing="-1.2">
+      <tspan fill="#0f172a">AUTO</tspan><tspan fill="url(#mainGradient)">MECANK</tspan>
+    </text>
+    
+    <!-- Tagline with strong emphasis -->
+    <text x="0" y="72" font-family="'Inter', 'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#64748b" letter-spacing="2.5">
+      PIÈCES AUTO À PRIX PAS CHER
+    </text>
+    
+    <!-- Strong premium underline -->
+    <line x1="0" y1="56" x2="140" y2="56" stroke="url(#accentGrad)" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    
+    <!-- Multiple accent dots for rhythm -->
+    <circle cx="-8" cy="48" r="4" fill="url(#accentGrad)" opacity="0.5"/>
+    <circle cx="280" cy="48" r="5" fill="url(#accentGrad)" opacity="0.8"/>
+    <circle cx="290" cy="48" r="3" fill="url(#accentGrad)" opacity="0.6"/>
+  </g>
+</svg>

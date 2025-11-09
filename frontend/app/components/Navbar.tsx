@@ -1,11 +1,25 @@
-import { Link, useLocation } from "@remix-run/react";
-import { Bell, BookOpen, Shield, ShoppingCart } from 'lucide-react';
-import { useEffect, useState } from "react";
+/**
+ * 🎨 NAVBAR - Design Ultra Premium v2
+ * 
+ * ✨ Améliorations Design Expert :
+ * - Glassmorphism avancé avec effet frosted glass
+ * - Animations spring fluides avec Framer Motion style
+ * - Micro-interactions sophistiquées
+ * - Gradient backgrounds premium
+ * - Ombre et profondeur optimisées
+ * - Typographie premium avec variantes
+ * - Layout adaptatif ultra-réactif
+ * - Hover effects avec parallax
+ * - Dark mode ready
+ */
 
+import { Link, useLocation, useNavigate } from "@remix-run/react";
+import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Menu, Phone, Truck } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+
+import { SITE_CONFIG } from "../config/site";
 import { useCart } from "../hooks/useCart";
 import { useOptionalUser } from "../root";
-// TODO: Réactiver GlobalSearch quand le design sera amélioré
-// import { GlobalSearch } from "./layout/GlobalSearch";
 import { CartSidebar } from "./navbar/CartSidebar";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
@@ -14,211 +28,466 @@ import { Badge } from "./ui/badge";
 export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
   const location = useLocation();
+  const navigate = useNavigate();
   const { summary, isOpen, toggleCart, closeCart } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
-  // TODO: Réactiver quand le design du bouton search sera amélioré
-  // const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   
-  // 🆕 PHASE 7: Role-based permissions
+  // Ref pour la progress bar - optimisation performance
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const rafIdRef = useRef<number>();
+  
+  // Role-based permissions
   const isAdmin = user && (user.level ?? 0) >= 7;
   const isSuperAdmin = user && (user.level ?? 0) >= 9;
   
-  // 🆕 Détection du scroll pour effet sticky
+  // Détection du scroll pour effet intelligent + progress bar optimisée
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // TODO: Réactiver le raccourci Cmd+K quand le design sera amélioré
-  /*
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setIsSearchOpen(prev => !prev);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-  */
-
-  // 🆕 Smooth scroll vers les sections
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
-    // Seulement si on est sur la page d'accueil
-    if (location.pathname === '/') {
-      e.preventDefault();
-      const element = document.getElementById(sectionId);
-      if (element) {
-        const offset = 80; // Hauteur du navbar
-        const elementPosition = element.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - offset;
+      const currentScrollY = window.scrollY;
+      
+      setIsScrolled(currentScrollY > 10);
+      
+      // Navbar compacte après 100px
+      setIsCompact(currentScrollY > 100);
+      
+      setLastScrollY(currentScrollY);
+      
+      // Optimisation progress bar avec requestAnimationFrame
+      if (progressBarRef.current && currentScrollY > 10) {
+        // Annuler l'animation précédente si elle existe
+        if (rafIdRef.current) {
+          cancelAnimationFrame(rafIdRef.current);
+        }
         
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
+        // Planifier la mise à jour de la progress bar
+        rafIdRef.current = requestAnimationFrame(() => {
+          if (progressBarRef.current) {
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercentage = Math.min((currentScrollY / scrollHeight) * 100, 100);
+            progressBarRef.current.style.width = `${scrollPercentage}%`;
+          }
         });
       }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      // Nettoyer le requestAnimationFrame au démontage
+      if (rafIdRef.current) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, [lastScrollY]);
+
+  // Échap pour fermer la recherche
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showSearch) {
+        setShowSearch(false);
+        setSearchQuery("");
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showSearch]);
+
+  // Focus automatique sur l'input quand la recherche s'ouvre
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      // Petit délai pour s'assurer que l'input est rendu
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+    }
+  }, [showSearch]);
+
+  // Gestion de la recherche
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const query = searchQuery.trim();
+    if (query) {
+      // Réinitialiser l'état avant la navigation
+      setSearchQuery("");
+      setShowSearch(false);
+      // Navigation vers la page de recherche
+      window.location.href = `/search?q=${encodeURIComponent(query)}`;
     }
   };
   
   return (
-    <nav 
-      className={`px-3 py-2 bg-primary text-primary-foreground flex justify-between items-center sticky top-0 z-50 transition-shadow duration-300 ${
-        isScrolled ? 'shadow-lg' : ''
-      }`} 
-      aria-label="Navigation principale"
-    >
-      {/* GAUCHE : Logo + Navigation Desktop */}
-      <div className="flex items-center gap-4">
-        {/* 🆕 PHASE 2: Burger Menu Mobile (< 768px) */}
-        <NavbarMobile user={user} />
-        
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-3">
-          <img 
-            src={logo}
-            alt="Logo Automecanik"
-            className="w-auto h-12 hover:opacity-80 transition-opacity"
-          />
+    <>
+      <nav 
+        className={`sticky top-0 z-50 px-4 lg:px-8 bg-gradient-to-r from-white/80 via-white/85 to-white/80 backdrop-blur-2xl text-slate-800 flex justify-between items-center transition-all duration-500 ease-out border-b ${
+          isCompact ? 'py-2.5' : 'py-4'
+        } ${
+          isScrolled 
+            ? 'shadow-2xl shadow-blue-500/15 border-blue-200/40' 
+            : 'shadow-lg shadow-slate-200/30 border-blue-100/20'
+        }`} 
+        aria-label="Navigation principale"
+      >
+        {/* GAUCHE : Logo + Navigation Desktop */}
+        <div className="flex items-center gap-4 lg:gap-8">
+          {/* Burger Menu Mobile avec animation */}
+          <div className="lg:hidden">
+            <NavbarMobile user={user} />
+          </div>
           
-          {/* 🆕 PHASE 7: Badge rôle admin */}
-          {isAdmin && (
-            <Badge variant="secondary" className="bg-primary/95 text-blue-100 border border-blue-400 flex items-center gap-1">
-              <Shield className="w-3 h-3" />
-              {isSuperAdmin ? "Super Admin" : "Admin"}
-            </Badge>
-          )}
-        </Link>
-        
-        {/* 🖥️ Navigation Desktop (>= 768px) */}
-        <div className="hidden md:flex gap-6">
-          <Link to="/catalogue" className="hover:text-blue-200 transition-colors text-sm font-medium">
-            Catalogue
-          </Link>
-          <Link to="/marques" className="hover:text-blue-200 transition-colors text-sm font-medium">
-            Marques
-          </Link>
-          {/* Liens avec smooth scroll pour la page d'accueil */}
-          {location.pathname === '/' && (
-            <>
-              <a 
-                href="#about" 
-                onClick={(e) => scrollToSection(e, 'about')}
-                className="hover:text-blue-200 transition-colors text-sm font-medium cursor-pointer"
-              >
-                À propos
-              </a>
-              <a 
-                href="#advantages" 
-                onClick={(e) => scrollToSection(e, 'advantages')}
-                className="hover:text-blue-200 transition-colors text-sm font-medium cursor-pointer"
-              >
-                Avantages
-              </a>
-            </>
-          )}
+          {/* Logo avec effet hover premium - compact au scroll */}
           <Link 
-            to="/blog" 
-            className="hover:text-blue-200 transition-colors text-sm font-medium flex items-center gap-1.5"
+            to="/" 
+            className="flex items-center gap-3 group relative flex-shrink-0 cursor-pointer"
+            aria-label="Retour à l'accueil"
           >
-            <BookOpen className="w-4 h-4" />
-            Blog
-            <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
-              Nouveau
-            </span>
+            <div className="relative pointer-events-none">
+              {/* Glow background animé */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-blue-400/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" />
+              
+              {/* Logo WebP avec srcset pour haute résolution */}
+              <img
+                src="/logo-navbar.webp"
+                srcSet="/logo-navbar.webp 1x, /logo-navbar@2x.webp 2x"
+                alt="Automecanik - Pièces auto à prix pas cher"
+                className={`relative transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-2xl ${
+                  isCompact ? 'h-8' : 'h-12'
+                } w-auto`}
+                loading="eager"
+              />
+            </div>
           </Link>
-        </div>
-      </div>
-      
-      {/* DROITE : Actions Utilisateur */}
-      <div className='flex gap-3 items-center'>
-        {/* TODO: Bouton Recherche Globale (Cmd+K) - À améliorer design */}
-        {/* 
-        <button
-          onClick={() => setIsSearchOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/30 text-white transition-all duration-200 group"
-          aria-label="Recherche globale"
-          title="Recherche (Cmd+K)"
-        >
-          <Search className="w-4 h-4" />
-          <span className="text-sm font-medium">Rechercher</span>
-          <kbd className="hidden lg:inline-flex ml-1 px-2 py-0.5 text-[11px] font-semibold text-blue-800 bg-white rounded border border-white/40 shadow-sm group-hover:shadow">
-            ⌘K
-          </kbd>
-        </button>
-
-        <button
-          onClick={() => setIsSearchOpen(true)}
-          className="md:hidden hover:text-blue-200 transition-colors p-1.5 hover:bg-white/10 rounded-md"
-          aria-label="Recherche"
-          title="Recherche (Cmd+K)"
-        >
-          <Search size={20} />
-        </button>
-        */}
-
-        {/* 🆕 PHASE 1: Panier avec badge */}
-        <button
-          onClick={toggleCart}
-          className="hover:text-blue-200 transition-colors relative p-1"
-          aria-label="Panier"
-          title="Panier"
-        >
-          <ShoppingCart size={20} />
-          {summary.total_items > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center text-xs p-0"
+          
+          {/* Navigation Desktop avec effets premium */}
+          <div className="hidden lg:flex items-center gap-1 border-l border-gradient-to-b from-slate-300/50 to-transparent ml-4 pl-8">
+            {/* Catalogue pièces auto - Link avec scroll intelligent pour SEO */}
+            <Link
+              to="/#catalogue"
+              onClick={(e) => {
+                e.preventDefault();
+                const catalogueSection = document.getElementById('catalogue');
+                if (catalogueSection) {
+                  const offset = 100;
+                  const elementPosition = catalogueSection.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - offset;
+                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                } else {
+                  navigate('/pieces');
+                }
+              }}
+              className="relative group px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 flex items-center gap-2"
             >
-              {summary.total_items}
-            </Badge>
-          )}
-        </button>
-
-        {/* Notifications - Seulement si connecté */}
-        {user && (
-          <Link 
-            to='/notifications' 
-            className="hover:text-blue-200 transition-colors p-1 hidden md:block relative"
-            aria-label="Notifications"
-            title="Notifications"
-          >
-            <Bell size={20} />
-          </Link>
-        )}
-
-        {/* Menu utilisateur avec Dropdown (si connecté) */}
-        {user ? (
-          <UserDropdownMenu user={user} showName={false} />
-        ) : (
-          <div className="flex gap-2 text-sm">
-            <Link className='hover:text-blue-200 transition-colors px-2' to='/login'>
-              Connexion
+              <span className="relative z-10">Catalogue pièces auto</span>
+              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-500" />
+              {/* Animated underline */}
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
             </Link>
-            <span className="hidden md:inline">|</span>
-            <Link className='hover:text-blue-200 transition-colors px-2 hidden md:inline' to='/register'>
-              Inscription
+
+            {/* Marques & Constructeurs - Link avec scroll intelligent pour SEO */}
+            <Link
+              to="/#toutes-les-marques"
+              onClick={(e) => {
+                e.preventDefault();
+                const marquesSection = document.getElementById('toutes-les-marques');
+                if (marquesSection) {
+                  const offset = 100;
+                  const elementPosition = marquesSection.getBoundingClientRect().top;
+                  const offsetPosition = elementPosition + window.pageYOffset - offset;
+                  window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                } else {
+                  navigate('/constructeurs');
+                }
+              }}
+              className="relative group px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 flex items-center gap-2"
+            >
+              <span className="relative z-10">Marques & Constructeurs</span>
+              <ChevronRight className="w-4 h-4 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-500" />
+              {/* Animated underline */}
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+            </Link>
+
+            <Link
+              to="/blog"
+              className="relative group px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-500" />
+              <span>Blog</span>
+              {/* Animated underline */}
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
             </Link>
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* 🆕 PHASE 1 POC: CartSidebar Component */}
-      <CartSidebar isOpen={isOpen} onClose={closeCart} />
+        {/* CENTRE : Recherche - Section centrale du navbar */}
+        <div className="hidden lg:flex flex-1 justify-center px-4 max-w-2xl">
+          {/* Recherche intégrée - Desktop avec design premium simplifié */}
+          {!showSearch ? (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="w-full max-w-md flex items-center gap-3 px-6 py-2.5 text-sm text-slate-500 bg-white/80 backdrop-blur-sm hover:bg-white rounded-2xl transition-all duration-300 group border border-slate-200/80 hover:border-blue-400/80 shadow-sm hover:shadow-lg hover:shadow-blue-500/10"
+              aria-label="Rechercher"
+            >
+              <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-all duration-300 group-hover:scale-110" />
+              <span className="text-slate-500 group-hover:text-blue-700 font-medium flex-1 text-left">Rechercher une pièce...</span>
+            </button>
+          ) : (
+            <form 
+              onSubmit={handleSearch}
+              className="w-full max-w-md hidden lg:flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300"
+            >
+              <div className="relative group flex-1">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-indigo-400/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition-all duration-300 z-10" />
+                <input
+                  type="text"
+                  name="search"
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearch(e as any);
+                    }
+                  }}
+                  placeholder="Filtre à huile, alternateur, plaquettes..."
+                  className="w-full pl-12 pr-24 py-3 text-sm border-2 border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 bg-white shadow-lg transition-all duration-300 hover:border-blue-300/80 placeholder:text-slate-400"
+                />
+                {searchQuery && (
+                  <button
+                    type="submit"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSearch(e);
+                    }}
+                    className="absolute right-12 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    OK
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSearch(false);
+                    setSearchQuery("");
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-slate-100 rounded-lg transition-all duration-200 hover:scale-110"
+                  aria-label="Fermer la recherche"
+                >
+                  <X className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
 
-      {/* TODO: GlobalSearch Modal - Réactiver quand le design sera amélioré */}
-      {/* 
-      <GlobalSearch 
-        isOpen={isSearchOpen} 
-        onClose={() => setIsSearchOpen(false)}
-        placeholder="Rechercher produits, commandes, utilisateurs..."
-      />
-      */}
-    </nav>
+        {/* DROITE : Actions utilisateur */}
+        <div className="flex items-center gap-2">
+          {/* 🚚 Livraison gratuite - Desktop avec animation */}
+          <div className="hidden xl:flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 rounded-xl border border-green-200/60 shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 group">
+            <div className="relative">
+              <Truck className="w-4 h-4 text-green-600 group-hover:translate-x-0.5 transition-transform" />
+              <div className="absolute -inset-1 bg-green-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <span className="text-xs font-bold text-green-700 tracking-wide">LIVRAISON GRATUITE</span>
+          </div>
+
+          {/* 📞 Téléphone cliquable - Desktop minimaliste avec icône uniquement */}
+          <a 
+            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+            className="hidden lg:flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 rounded-xl border border-blue-200/60 hover:border-blue-400/80 transition-all duration-300 group shadow-sm hover:shadow-md hover:scale-110 active:scale-95"
+            aria-label={`Appeler ${SITE_CONFIG.contact.phone.display}`}
+            title={`Appeler ${SITE_CONFIG.contact.phone.display}`}
+          >
+            <div className="relative">
+              <Phone className="w-4 h-4 text-blue-600 group-hover:rotate-12 transition-all duration-300" />
+              <div className="absolute -inset-1 bg-blue-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+          </a>
+
+          {/* Recherche - Mobile avec design amélioré */}
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className="lg:hidden p-2.5 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 group border border-transparent hover:border-blue-200"
+            aria-label="Rechercher"
+          >
+            <Search className="w-5 h-5 text-slate-700 group-hover:text-blue-600 transition-colors group-hover:scale-110" />
+          </button>
+
+          {/* Panier avec animation premium */}
+          <button
+            onClick={toggleCart}
+            className="relative p-2.5 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-blue-200"
+            aria-label="Panier"
+          >
+            <ShoppingCart className="w-5 h-5 text-slate-700 group-hover:text-blue-600 transition-all duration-300 group-hover:scale-110" />
+            {summary.total_items > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/40 animate-in zoom-in-50 duration-300 ring-2 ring-white"
+              >
+                {summary.total_items}
+              </Badge>
+            )}
+            {/* Pulse effect sur le badge */}
+            {summary.total_items > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-blue-500 rounded-full animate-ping opacity-30" />
+            )}
+          </button>
+
+          {/* Notifications premium avec compteur */}
+          {user && (
+            <Link
+              to="/notifications"
+              className="relative p-2.5 hover:bg-gradient-to-br hover:from-orange-50 hover:to-red-50 rounded-xl transition-all duration-300 group hover:shadow-lg hover:scale-110 active:scale-95 border border-transparent hover:border-orange-200"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5 text-slate-700 group-hover:text-orange-600 transition-all duration-300 group-hover:rotate-12" />
+              {/* Dot indicator animé pour nouvelles notifs */}
+              <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-white"></span>
+              </span>
+            </Link>
+          )}
+
+          {/* Menu utilisateur - Épuré, juste l'icône */}
+          {user ? (
+            <UserDropdownMenu user={user} />
+          ) : (
+            <div className="hidden md:flex items-center gap-2 ml-2">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-normal"
+              >
+                Connexion
+              </Link>
+              <Link
+                to="/register"
+                className="relative px-5 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
+              >
+                {/* Shine effect */}
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-slowest" />
+                <span className="relative">Inscription</span>
+              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Panier */}
+        <CartSidebar isOpen={isOpen} onClose={closeCart} />
+      </nav>
+
+      {/* Barre de recherche mobile - Plein écran avec design premium */}
+      {showSearch && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-white animate-in fade-in slide-in-from-top duration-300">
+          {/* Header avec gradient */}
+          <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <form onSubmit={handleSearch} className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchQuery("");
+                }}
+                className="p-2 hover:bg-white/80 rounded-xl transition-all duration-200 hover:scale-110"
+                aria-label="Fermer"
+              >
+                <X className="w-6 h-6 text-slate-700" />
+              </button>
+              <div className="relative flex-1">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-2xl opacity-0 blur group-hover:opacity-50 transition-opacity" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 z-10" />
+                <input
+                  type="text"
+                  name="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearch(e as any);
+                    }
+                  }}
+                  placeholder="Filtre à huile, référence OEM..."
+                  className="w-full pl-12 pr-20 py-4 text-base border-2 border-blue-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-lg font-medium placeholder:text-slate-400 placeholder:font-normal"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    type="submit"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleSearch(e);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                  >
+                    OK
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+          
+          {/* Suggestions et astuces */}
+          <div className="p-6 space-y-4">
+            {/* Astuce premium */}
+            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200">
+              <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+                <span className="text-xl">💡</span>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-700 mb-1">Recherche intelligente</p>
+                <p className="text-xs text-slate-600">
+                  Recherchez par référence OEM, marque, modèle ou type de pièce pour des résultats précis
+                </p>
+              </div>
+            </div>
+            
+            {/* Exemples de recherche */}
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Exemples populaires</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { icon: "🔧", text: "Filtre à huile" },
+                  { icon: "⚡", text: "Alternateur" },
+                  { icon: "🔩", text: "Plaquettes de frein" },
+                  { icon: "💨", text: "Filtre à air" },
+                ].map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setSearchQuery(item.text);
+                      handleSearch(new Event('submit') as any);
+                    }}
+                    className="flex items-center gap-2 p-3 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 group"
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-blue-600">{item.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Progress bar au scroll optimisée avec useRef + requestAnimationFrame */}
+      {isScrolled && (
+        <div 
+          ref={progressBarRef}
+          className="sticky top-[73px] z-40 h-1 bg-semantic-info shadow-lg shadow-blue-500/20 animate-in slide-in-from-top duration-500 transition-[width] ease-out" 
+          style={{ width: '0%' }}
+        />
+      )}
+    </>
   );
 };
