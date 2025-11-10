@@ -1,24 +1,3 @@
-/**
- * 🎨 TEST HOMEPAGE MODERNE V2
- * 
- * Page d'accueil moderne combinant :
- * ✅ Logique métier de _index.tsx (VehicleSelector, FamilyGammeHierarchy, loaders)
- * ✅ Design patterns de index-v2.html (topbar, mega menu, lazy loading, accessibility)
- * ✅ Composants Shadcn UI (Carousel, Card, Button, Badge)
- * ✅ Design tokens du design system
- * ✅ Suppression des duplications
- * 
- * Structure finale :
- * 1. TopBar (téléphone + auth) - depuis index-v2.html
- * 2. Hero simplifié (recherche + 4 stats)
- * 3. VehicleSelector compacté - depuis _index.tsx
- * 4. Marques Carousel - Shadcn UI
- * 5. FamilyGammeHierarchy - depuis _index.tsx (logique métier existante)
- * 6. Avantages (4 cards uniques) - fusionné
- * 7. Newsletter moderne
- * 8. CTA Contact compact
- */
-
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import {
@@ -133,7 +112,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return json({
       equipementiersData: null,
       blogArticlesData: null,
-      catalogData: { families: [] },
+      catalogData: { families: [], stats: { total_families: 0, total_gammes: 0, total_manufacturers: 0 } },
       brandsData: [],
       success: false,
       timestamp: new Date().toISOString()
@@ -385,16 +364,23 @@ export default function TestHomepageModern() {
 
                         {/* Liste des sous-catégories (4 ou toutes selon isExpanded) */}
                         <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
-                          {displayedGammes.map((gamme, idx) => (
-                            <Link
-                              key={idx}
-                              to={`/pieces/${gamme.pg_alias}.html`}
-                              className="text-sm text-slate-600 hover:text-blue-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
-                            >
-                              <span className="w-1.5 h-1.5 bg-slate-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
-                              <span className="line-clamp-1 font-medium">{gamme.pg_name}</span>
-                            </Link>
-                          ))}
+                          {displayedGammes.map((gamme, idx) => {
+                            // Générer l'URL avec fallback si pg_alias manquant
+                            const categoryUrl = gamme.pg_id && gamme.pg_alias
+                              ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
+                              : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || '')}&gamme=${gamme.pg_id}`;
+                            
+                            return (
+                              <Link
+                                key={idx}
+                                to={categoryUrl}
+                                className="text-sm text-slate-600 hover:text-blue-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
+                              >
+                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
+                                <span className="line-clamp-1 font-medium">{gamme.pg_name}</span>
+                              </Link>
+                            );
+                          })}
                         </div>
 
                         {/* Bouton voir tout/moins */}
