@@ -243,8 +243,8 @@ export default function PiecesDetailPage() {
   if (!data || data.status !== 200) {
     return <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Page non trouvée</h1>
-        <p className="text-gray-600">Désolé, cette page n'existe pas.</p>
+        <h1 className="text-2xl font-bold text-neutral-900 mb-4">Page non trouvée</h1>
+        <p className="text-neutral-600">Désolé, cette page n'existe pas.</p>
       </div>
     </div>;
   }
@@ -261,7 +261,7 @@ export default function PiecesDetailPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       
       {/* SEO avec schemas JSON-LD enrichis */}
       <SEOHelmet
@@ -309,8 +309,8 @@ export default function PiecesDetailPage() {
         <PerformanceIndicator performance={data.performance} />
 
         {/* Vehicle Selector pour trouver des pièces compatibles */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">
+        <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8">
+          <h2 className="text-lg md:text-xl font-bold mb-4 text-neutral-800">
             {data.selectedVehicle ? 'Changer de véhicule' : 'Sélectionnez votre véhicule pour cette gamme'}
           </h2>
           <VehicleSelectorV2
@@ -363,13 +363,13 @@ export default function PiecesDetailPage() {
                 // }
               }
             }}
-            className="bg-gray-50 p-4 rounded-md"
+            className="bg-neutral-50 p-4 rounded-md"
           />
         </div>        {/* Hero Section */}
-        <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
+        <section className="bg-white rounded-xl shadow-lg mb-6 md:mb-8 overflow-hidden">
           <div className="relative">
             {data.content?.pg_wall && (
-              <div className="h-64 bg-gradient-to-r from-blue-600 to-blue-800 relative overflow-hidden">
+              <div className="h-48 md:h-64 bg-gradient-to-r from-semantic-info to-semantic-info/90 relative overflow-hidden">
                 <img
                   src={`/upload/articles/gammes-produits/wall/${data.content.pg_wall}`}
                   alt={data.content.h1}
@@ -395,9 +395,9 @@ export default function PiecesDetailPage() {
           
           {/* Contenu principal */}
           {data.content?.content && (
-            <div className="p-8">
+            <div className="p-4 md:p-6 lg:p-8">
               <div 
-                className="prose prose-lg max-w-none text-gray-700 leading-relaxed"
+                className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: data.content.content }} 
               />
             </div>
@@ -436,11 +436,11 @@ export default function PiecesDetailPage() {
           threshold={0.05}
           rootMargin="300px"
           fallback={
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8 animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
+              <div className="h-8 bg-neutral-200 rounded w-1/3 mb-6"></div>
               <div className="space-y-3">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-24 bg-gray-100 rounded"></div>
+                  <div key={i} className="h-24 bg-neutral-100 rounded"></div>
                 ))}
               </div>
             </div>
@@ -455,11 +455,11 @@ export default function PiecesDetailPage() {
           threshold={0}
           rootMargin="400px"
           fallback={
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8 animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
+              <div className="h-8 bg-neutral-200 rounded w-1/4 mb-4"></div>
               <div className="space-y-2">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-4 bg-gray-100 rounded"></div>
+                  <div key={i} className="h-4 bg-neutral-100 rounded"></div>
                 ))}
               </div>
             </div>
