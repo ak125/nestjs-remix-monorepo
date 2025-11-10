@@ -41,6 +41,7 @@ export interface CatalogFamily {
   mf_name_system?: string;
   mf_description?: string;
   mf_pic?: string;
+  mf_image?: string; // Alias pour mf_pic
   mf_display?: number;
   mf_sort?: number;
 }

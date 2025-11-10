@@ -36,7 +36,7 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
   }
 
   /**
-   * 🏗️ Récupère la hiérarchie complète Familles → Gammes
+   * 🏗️ Récupère la hiérarchie complète Familles → Gammes (OPTIMISÉ - 1 seule requête SQL)
    */
   async getFamilyGammeHierarchy(): Promise<{
     hierarchy: FamilyGammeHierarchy;
@@ -45,69 +45,84 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
     try {
       this.logger.log('🏗️ Construction hiérarchie Familles → Gammes...');
 
-      // 1. Récupérer toutes les familles actives
-      const { data: families, error: familiesError } = await this.supabase
-        .from('catalog_family')
-        .select('*')
-        .eq('mf_display', '1')
-        .order('mf_sort', { ascending: true });
+      // 🚀 OPTIMISATION: Une seule requête avec jointure SQL native
+      const { data: results, error } = await this.supabase.rpc(
+        'get_catalog_hierarchy_optimized',
+      );
 
-      if (familiesError) {
-        throw new BadRequestException(
-          `Erreur familles: ${familiesError.message}`,
+      if (error) {
+        this.logger.error(
+          '❌ Erreur requête optimisée, fallback vers méthode classique:',
+          error,
         );
+        // Fallback vers l'ancienne méthode
+        return this.getFamilyGammeHierarchyFallback();
       }
 
-      // 2. Récupérer toutes les gammes avec noms enrichis
-      const gammes = await this.catalogGammeService.getAllGammes();
-
-      // 3. Créer le mapping famille → gammes
-      // Note: il faut identifier comment lier catalog_family à catalog_gamme
-      // Pour l'instant, nous utilisons une logique simple de regroupement
+      // 3. Construire la hiérarchie depuis les résultats
       const hierarchy: FamilyGammeHierarchy = {};
+      const statsMap = new Map<string, Set<string>>();
 
-      // Initialiser toutes les familles
-      for (const family of families || []) {
-        hierarchy[family.mf_id] = {
-          family,
-          gammes: [],
-          stats: {
-            total_gammes: 0,
-            manufacturers_count: 0,
-          },
-        };
-      }
+      for (const row of results || []) {
+        const familyId = row.mf_id;
 
-      // 4. Distribuer les gammes dans les familles
-      // CORRECTION: Utiliser mc_mf_prime qui est l'ID de la famille réelle
+        // Initialiser la famille si elle n'existe pas encore
+        if (!hierarchy[familyId]) {
+          hierarchy[familyId] = {
+            family: {
+              mf_id: row.mf_id,
+              mf_name: row.mf_name,
+              mf_sort: row.mf_sort,
+              mf_display: row.mf_display,
+              mf_image: row.mf_image,
+            },
+            gammes: [],
+            stats: {
+              total_gammes: 0,
+              manufacturers_count: 0,
+            },
+          };
+          statsMap.set(familyId, new Set());
+        }
 
-      for (const gamme of gammes || []) {
-        // mc_mf_prime correspond à l'ID de la famille (mf_id)
-        const familyId = gamme.mc_mf_prime;
+        // Ajouter la gamme si elle existe
+        if (row.pg_id) {
+          hierarchy[familyId].gammes.push({
+            mc_id: row.mc_id,
+            mc_mf_id: row.mc_mf_id,
+            mc_mf_prime: row.mc_mf_prime,
+            mc_pg_id: row.mc_pg_id,
+            mc_sort: row.mc_sort,
+            pg_id: row.pg_id,
+            pg_name: row.pg_name,
+            pg_alias: row.pg_alias,
+            pg_image: row.pg_img,
+          });
 
-        if (familyId && hierarchy[familyId]) {
-          hierarchy[familyId].gammes.push(gamme);
-          hierarchy[familyId].stats.total_gammes++;
-
-          // Compter les fabricants uniques pour cette famille
-          const uniqueManufacturers = new Set(
-            hierarchy[familyId].gammes.map((g) => g.mc_mf_id),
-          );
-          hierarchy[familyId].stats.manufacturers_count =
-            uniqueManufacturers.size;
+          // Compter les fabricants uniques
+          statsMap.get(familyId)?.add(row.mc_mf_id);
         }
       }
 
-      // 5. Trier les gammes au sein de chaque famille par mc_sort
-      Object.values(hierarchy).forEach((family) => {
-        family.gammes.sort((a, b) => parseInt(a.mc_sort) - parseInt(b.mc_sort));
+      // 4. Mettre à jour les stats et trier les gammes
+      Object.keys(hierarchy).forEach((familyId) => {
+        hierarchy[familyId].stats.total_gammes =
+          hierarchy[familyId].gammes.length;
+        hierarchy[familyId].stats.manufacturers_count =
+          statsMap.get(familyId)?.size || 0;
+
+        // Trier les gammes par mc_sort
+        hierarchy[familyId].gammes.sort(
+          (a, b) => parseInt(a.mc_sort) - parseInt(b.mc_sort),
+        );
       });
 
-      // 6. Calculer les statistiques globales
-      const stats = this.calculateHierarchyStats(hierarchy, gammes || []);
+      // 5. Calculer les statistiques globales
+      const gammes = Object.values(hierarchy).flatMap((h) => h.gammes);
+      const stats = this.calculateHierarchyStats(hierarchy, gammes);
 
       this.logger.log(
-        `✅ Hiérarchie construite: ${stats.total_families} familles, ${stats.total_gammes} gammes`,
+        `✅ Hiérarchie construite (optimisée): ${stats.total_families} familles, ${stats.total_gammes} gammes`,
       );
 
       return { hierarchy, stats };
@@ -117,6 +132,76 @@ export class FamilyGammeHierarchyService extends SupabaseBaseService {
         'Erreur lors de la construction de la hiérarchie',
       );
     }
+  }
+
+  /**
+   * 🔄 Fallback: Ancienne méthode en cas d'erreur avec la fonction SQL
+   */
+  private async getFamilyGammeHierarchyFallback(): Promise<{
+    hierarchy: FamilyGammeHierarchy;
+    stats: HierarchyStats;
+  }> {
+    // 1. Récupérer toutes les familles actives
+    const { data: families, error: familiesError } = await this.supabase
+      .from('catalog_family')
+      .select('*')
+      .eq('mf_display', '1')
+      .order('mf_sort', { ascending: true });
+
+    if (familiesError) {
+      throw new BadRequestException(
+        `Erreur familles: ${familiesError.message}`,
+      );
+    }
+
+    // 2. Récupérer toutes les gammes avec noms enrichis
+    const gammes = await this.catalogGammeService.getAllGammes();
+
+    // 3. Créer le mapping famille → gammes
+    const hierarchy: FamilyGammeHierarchy = {};
+
+    // Initialiser toutes les familles
+    for (const family of families || []) {
+      hierarchy[family.mf_id] = {
+        family,
+        gammes: [],
+        stats: {
+          total_gammes: 0,
+          manufacturers_count: 0,
+        },
+      };
+    }
+
+    // 4. Distribuer les gammes dans les familles
+    for (const gamme of gammes || []) {
+      const familyId = gamme.mc_mf_prime;
+
+      if (familyId && hierarchy[familyId]) {
+        hierarchy[familyId].gammes.push(gamme);
+        hierarchy[familyId].stats.total_gammes++;
+
+        // Compter les fabricants uniques
+        const uniqueManufacturers = new Set(
+          hierarchy[familyId].gammes.map((g) => g.mc_mf_id),
+        );
+        hierarchy[familyId].stats.manufacturers_count =
+          uniqueManufacturers.size;
+      }
+    }
+
+    // 5. Trier les gammes par mc_sort
+    Object.values(hierarchy).forEach((family) => {
+      family.gammes.sort((a, b) => parseInt(a.mc_sort) - parseInt(b.mc_sort));
+    });
+
+    // 6. Calculer les statistiques globales
+    const stats = this.calculateHierarchyStats(hierarchy, gammes || []);
+
+    this.logger.log(
+      `✅ Hiérarchie construite (fallback): ${stats.total_families} familles, ${stats.total_gammes} gammes`,
+    );
+
+    return { hierarchy, stats };
   }
 
   /**

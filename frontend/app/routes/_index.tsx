@@ -167,12 +167,13 @@ export default function TestHomepageModern() {
         }}
       />
 
-      {/* � Skip to main content - Accessibilité */}
+      {/* 📊 Skip to main content - Accessibilité */}
+            {/* Lien d'accessibilité - Sauter au contenu principal */}
       <a 
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
+        href="#catalogue"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-semantic-action focus:text-semantic-action-contrast focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
       >
-        Passer au contenu principal
+        Aller au contenu principal
       </a>
 
       {/* 🎯 HERO SECTION - Version radicale focalisée conversion */}
@@ -187,7 +188,8 @@ export default function TestHomepageModern() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f46e510_1px,transparent_1px),linear-gradient(to_bottom,#4f46e510_1px,transparent_1px)] bg-[size:4rem_4rem]" aria-hidden="true"></div>
         
         {/* Formes décoratives - réduites */}
-        <div className="absolute top-10 right-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
+                {/* Effet de fond flou décoratif */}
+        <div className="absolute top-10 right-10 w-64 h-64 bg-semantic-info/10 rounded-full blur-3xl animate-pulse" aria-hidden="true"></div>
         <div className="absolute bottom-10 left-10 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000" aria-hidden="true"></div>
         
         <div className="relative container mx-auto px-4 max-w-5xl">
@@ -210,17 +212,17 @@ export default function TestHomepageModern() {
           </div>
 
           {/* ✨ Trust badges - Micro-format inline */}
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-xs md:text-sm text-blue-100/80 animate-in fade-in duration-1000 delay-500">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-xs md:text-sm text-white/80 animate-in fade-in duration-1000 delay-500">
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <CheckCircle2 className="w-4 h-4 text-green-400" />
+              <CheckCircle2 className="w-4 h-4 text-semantic-success" />
               <span>50 000+ pièces</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Truck className="w-4 h-4 text-blue-400" />
+              <Truck className="w-4 h-4 text-semantic-info" />
               <span>Livraison 24-48h</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Shield className="w-4 h-4 text-purple-400" />
+              <Shield className="w-4 h-4 text-secondary-400" />
               <span>Paiement sécurisé</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
@@ -239,8 +241,8 @@ export default function TestHomepageModern() {
         
         {/* Motif décoratif */}
         <div className="absolute top-0 left-0 w-full h-full opacity-[0.02]">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-600 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-indigo-600 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-semantic-info rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-72 h-72 bg-secondary-600 rounded-full blur-3xl"></div>
         </div>
 
         <div className="relative container mx-auto px-4 max-w-7xl">
@@ -374,9 +376,9 @@ export default function TestHomepageModern() {
                               <Link
                                 key={idx}
                                 to={categoryUrl}
-                                className="text-sm text-slate-600 hover:text-blue-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
+                                className="text-sm text-neutral-600 hover:text-semantic-info hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
                               >
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
+                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-semantic-info group-hover/item:scale-125 transition-all" />
                                 <span className="line-clamp-1 font-medium">{gamme.pg_name}</span>
                               </Link>
                             );
@@ -385,14 +387,10 @@ export default function TestHomepageModern() {
 
                         {/* Bouton voir tout/moins */}
                         {family.gammes_count > 4 && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              homeData.toggleFamilyExpansion(family.mf_id);
-                            }}
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors flex items-center justify-center gap-2"
+                          <Button
+                            variant="ghost"
+                            onClick={() => homeData.toggleFamilyExpansion(family.mf_id)}
+                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-semantic-info hover:text-semantic-info-contrast hover:border-semantic-info transition-colors flex items-center justify-center gap-2"
                           >
                             {isExpanded ? (
                               <>
@@ -405,7 +403,7 @@ export default function TestHomepageModern() {
                                 <ChevronRight className="h-4 w-4" />
                               </>
                             )}
-                          </button>
+                          </Button>
                         )}
                       </CardContent>
                     </Card>
@@ -470,7 +468,7 @@ export default function TestHomepageModern() {
                       aria-label={`Voir les pièces ${brand.name}`}
                     >
                       {/* Card optimale - Équilibre parfait */}
-                      <div className="relative overflow-hidden bg-white rounded-lg border border-gray-100 hover:border-blue-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 aspect-square">
+                      <div className="relative overflow-hidden bg-white rounded-lg border border-neutral-100 hover:border-semantic-info hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 aspect-square">
                         {/* Logo avec fallback simple */}
                         <div className="w-full h-full p-3 flex items-center justify-center bg-gray-50">
                           {brand.logo ? (
