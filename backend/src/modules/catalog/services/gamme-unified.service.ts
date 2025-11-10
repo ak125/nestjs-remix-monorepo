@@ -110,9 +110,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
       // 3. Récupérer les noms des gammes
       const allGammes = await this.getAllGammes();
       // Créer une Map avec des clés en string pour éviter les problèmes de type
-      const gammeNameMap = new Map(
-        allGammes.map((g) => [String(g.id), g]),
-      );
+      const gammeNameMap = new Map(allGammes.map((g) => [String(g.id), g]));
 
       // 4. Construire la hiérarchie
       const familiesWithGammes: FamilyWithGammes[] = (families || [])
@@ -150,6 +148,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
             system_name: family.mf_name_system,
             description: family.mf_description,
             image: family.mf_pic,
+            sort_order: parseInt(family.mf_sort) || 0,
             gammes: familyGammes,
             stats: {
               total_gammes: familyGammes.length,
@@ -161,7 +160,8 @@ export class GammeUnifiedService extends SupabaseBaseService {
             },
           };
         })
-        .filter((family) => family.gammes.length > 0);
+        .filter((family) => family.gammes.length > 0)
+        .sort((a, b) => a.sort_order - b.sort_order);
 
       // 5. Calculer les statistiques globales
       const totalGammes = familiesWithGammes.reduce(
