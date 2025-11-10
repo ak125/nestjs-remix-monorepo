@@ -302,7 +302,7 @@ export default function ContactPage() {
             {/* Coordonnées */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="font-semibold text-lg mb-4 flex items-center">
-                <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-semantic-info mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
                 Nos coordonnées
@@ -345,7 +345,7 @@ export default function ContactPage() {
 
             {/* Actions rapides */}
 <Alert className="rounded-lg p-4" variant="info">
-              <h4 className="font-medium text-blue-900 mb-3 flex items-center">
+              <h4 className="font-medium text-semantic-info mb-3 flex items-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
@@ -354,19 +354,19 @@ export default function ContactPage() {
               <div className="space-y-3">
                 <Link 
                   to="/support/faq" 
-                  className="block text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
                 >
                   📋 Consulter la FAQ →
                 </Link>
                 <Link 
                   to="/support/status" 
-                  className="block text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
                 >
                   🔍 Suivre une commande →
                 </Link>
                 <Link 
                   to="/support/returns" 
-                  className="block text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
                 >
                   ↩️ Politique de retour →
                 </Link>
@@ -413,8 +413,8 @@ export default function ContactPage() {
                       name="name"
                       required
                       defaultValue={userName || ""}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                        actionData?.fieldErrors?.name ? 'border-red-300' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-semantic-info focus:border-semantic-info ${
+                        actionData?.fieldErrors?.name ? 'border-red-300' : 'border-neutral-300'
                       }`}
                       placeholder="Votre nom complet"
                     />
@@ -433,8 +433,8 @@ export default function ContactPage() {
                       name="email"
                       required
                       defaultValue={userEmail || ""}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                        actionData?.fieldErrors?.email ? 'border-red-300' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-semantic-info focus:border-semantic-info ${
+                        actionData?.fieldErrors?.email ? 'border-red-300' : 'border-neutral-300'
                       }`}
                       placeholder="votre@email.com"
                     />
@@ -454,7 +454,7 @@ export default function ContactPage() {
                       type="tel"
                       id="phone"
                       name="phone"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                       placeholder="06 12 34 56 78"
                     />
                     <p className="mt-1 text-xs text-gray-500">Optionnel - pour un contact plus rapide</p>
@@ -468,8 +468,8 @@ export default function ContactPage() {
                       id="category"
                       name="category"
                       required
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                        actionData?.fieldErrors?.category ? 'border-red-300' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-semantic-info focus:border-semantic-info ${
+                        actionData?.fieldErrors?.category ? 'border-red-300' : 'border-neutral-300'
                       }`}
                     >
                       <option value="">Sélectionnez une catégorie</option>
@@ -498,7 +498,7 @@ export default function ContactPage() {
                     <select
                       id="priority"
                       name="priority"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                     >
                       <option value="normal">Normale</option>
                       <option value="high">Haute</option>
@@ -515,7 +515,7 @@ export default function ContactPage() {
                       type="text"
                       id="orderNumber"
                       name="orderNumber"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                       placeholder="CMD-2024-001234"
                     />
                     <p className="mt-1 text-xs text-gray-500">Si votre demande concerne une commande</p>
@@ -532,8 +532,8 @@ export default function ContactPage() {
                     id="subject"
                     name="subject"
                     required
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      actionData?.fieldErrors?.subject ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-semantic-info focus:border-semantic-info ${
+                      actionData?.fieldErrors?.subject ? 'border-red-300' : 'border-neutral-300'
                     }`}
                     placeholder="Résumez votre demande en quelques mots"
                   />
@@ -552,8 +552,8 @@ export default function ContactPage() {
                     name="message"
                     rows={6}
                     required
-                    className={`w-full px-3 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 ${
-                      actionData?.fieldErrors?.message ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md focus:ring-semantic-info focus:border-semantic-info ${
+                      actionData?.fieldErrors?.message ? 'border-red-300' : 'border-neutral-300'
                     }`}
                     placeholder="Décrivez votre demande de manière détaillée. Plus vous donnerez d'informations, plus nous pourrons vous aider efficacement."
                   />
@@ -591,7 +591,7 @@ export default function ContactPage() {
                             id="showVehicleInfo"
                             checked={showVehicleInfo}
                             onChange={(e) => setShowVehicleInfo(e.target.checked)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-neutral-300 text-semantic-info focus:ring-semantic-info"
                           />
                           <label htmlFor="showVehicleInfo" className="ml-2 text-sm font-medium text-gray-700">
                             Ma demande concerne un véhicule spécifique
@@ -608,7 +608,7 @@ export default function ContactPage() {
                                 type="text"
                                 id="vehicleBrand"
                                 name="vehicleBrand"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                                 placeholder="Peugeot, Renault, etc."
                               />
                             </div>
@@ -621,7 +621,7 @@ export default function ContactPage() {
                                 type="text"
                                 id="vehicleModel"
                                 name="vehicleModel"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                                 placeholder="308, Clio, etc."
                               />
                             </div>
@@ -636,7 +636,7 @@ export default function ContactPage() {
                                 name="vehicleYear"
                                 min="1900"
                                 max="2030"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                                 placeholder="2020"
                               />
                             </div>
@@ -649,7 +649,7 @@ export default function ContactPage() {
                                 type="text"
                                 id="licensePlate"
                                 name="licensePlate"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:ring-semantic-info focus:border-semantic-info"
                                 placeholder="AB-123-CD"
                               />
                             </div>
@@ -662,13 +662,13 @@ export default function ContactPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Pièces jointes
                         </label>
-                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
                           <div className="space-y-1 text-center">
                             <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                               <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             <div className="flex text-sm text-gray-600">
-                              <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                              <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-semantic-info hover:text-semantic-info/80 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-semantic-info">
                                 <span>Cliquez pour ajouter des fichiers</span>
                                 <input
                                   id="file-upload"
@@ -730,11 +730,11 @@ export default function ContactPage() {
                       type="checkbox"
                       id="gdpr"
                       required
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-1"
+                      className="rounded border-neutral-300 text-semantic-info focus:ring-semantic-info mt-1"
                     />
                     <label htmlFor="gdpr" className="ml-2 text-sm text-gray-600">
                       J'accepte que mes données personnelles soient utilisées pour traiter ma demande conformément à notre{" "}
-                      <Link to="/legal/privacy" className="text-blue-600 hover:underline">
+                      <Link to="/legal/privacy" className="text-semantic-info hover:underline">
                         politique de confidentialité
                       </Link>
                       . *
