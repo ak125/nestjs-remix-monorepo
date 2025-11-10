@@ -83,7 +83,7 @@ class HierarchyApiService {
         mf_description: family.description || '',
         mf_pic: family.image || '',
         mf_display: '1',
-        mf_sort: '0',
+        mf_sort: family.sort_order?.toString() || '0',
         // Mapper les gammes du format nouveau vers l'ancien
         gammes: (family.gammes || []).map((gamme: any) => ({
           pg_id: parseInt(gamme.id),
@@ -148,7 +148,7 @@ class HierarchyApiService {
         mf_description: family.description || '',
         mf_pic: family.image || '',
         mf_display: '1',
-        mf_sort: '0',
+        mf_sort: family.sort_order?.toString() || '0',
         // Mapper les gammes du format nouveau vers l'ancien
         gammes: (family.gammes || []).map((gamme: any) => ({
           pg_id: parseInt(gamme.id),

@@ -42,6 +42,7 @@ export interface FamilyWithGammes {
   system_name: string;
   description?: string;
   image?: string;
+  sort_order: number; // Ordre de tri de la famille
 
   // Gammes associées
   gammes: Gamme[];
