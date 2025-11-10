@@ -244,7 +244,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
               className="w-full max-w-md hidden lg:flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300"
             >
               <div className="relative group flex-1">
-                <div className="absolute inset-0 bg-gradient-to-r from-semantic-info/20 to-secondary-400/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-r from-semantic-info/20 to-secondary-400/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500 pointer-events-none" />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-semantic-info transition-all duration-300 z-10" />
                 <input
                   type="text"
@@ -258,7 +258,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
                     }
                   }}
                   placeholder="Filtre à huile, alternateur, plaquettes..."
-                  className="w-full pl-12 pr-24 py-3 text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info/50 focus:border-semantic-info bg-white shadow-lg transition-all duration-300 hover:border-semantic-info/80 placeholder:text-neutral-400"
+                  className="relative z-20 w-full pl-12 pr-24 py-3 text-sm border-2 border-neutral-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-semantic-info/50 focus:border-semantic-info bg-white shadow-lg transition-all duration-300 hover:border-semantic-info/80 placeholder:text-neutral-400"
                 />
                 {searchQuery && (
                   <button
@@ -267,7 +267,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
                       e.preventDefault();
                       handleSearch(e);
                     }}
-                    className="absolute right-12 top-1/2 -translate-y-1/2 px-3 py-1 bg-semantic-info hover:bg-semantic-info/90 text-semantic-info-contrast text-xs font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
+                    className="absolute right-12 top-1/2 -translate-y-1/2 px-3 py-1 bg-semantic-info hover:bg-semantic-info/90 text-semantic-info-contrast text-xs font-semibold rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 z-30"
                   >
                     OK
                   </button>
@@ -278,7 +278,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
                     setShowSearch(false);
                     setSearchQuery("");
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-neutral-100 rounded-lg transition-all duration-200 hover:scale-110"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-neutral-100 rounded-lg transition-all duration-200 hover:scale-110 z-30"
                   aria-label="Fermer la recherche"
                 >
                   <X className="w-4 h-4 text-neutral-400 hover:text-neutral-600" />

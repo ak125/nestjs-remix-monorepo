@@ -267,9 +267,9 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     }
 
     // ========================================
-    // MOTORISATIONS - OPTIMISÉ AVEC JOINTURES
+    // MOTORISATIONS - ULTRA-OPTIMISÉ AVEC BULK QUERIES
     // ========================================
-    console.log('🚗 Récupération motorisations optimisée...');
+    console.log('🚗 Récupération motorisations ultra-optimisée...');
     const motorisations = [];
 
     if (crossGammeData?.length > 0) {
@@ -277,93 +277,85 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         `✅ Trouvé ${crossGammeData.length} lignes cross_gamme_car_new`,
       );
 
-      // GROUP BY comme PHP mais optimisé
-      const processedModeles = new Set();
-      const typePromises = [];
+      const startMotor = performance.now();
 
-      for (const cross of crossGammeData) {
-        if (processedModeles.has(cross.cgc_modele_id)) continue;
-        processedModeles.add(cross.cgc_modele_id);
+      // 🚀 OPTIMISATION: Récupérer TOUTES les données en 3 requêtes parallèles au lieu de N*3 requêtes
+      const uniqueTypeIds = [...new Set(crossGammeData.map(c => c.cgc_type_id))];
+      
+      // Requête 1: Tous les types en une seule fois
+      const { data: allTypes } = await this.client
+        .from('auto_type')
+        .select('type_id, type_name, type_power_ps, type_month_from, type_year_from, type_year_to, type_modele_id')
+        .in('type_id', uniqueTypeIds)
+        .eq('type_display', '1');
 
-        // Jointure complète en une seule requête - CORRIGÉE
-        const typePromise = this.client
-          .from('auto_type')
-          .select(
-            `
-            type_id, 
-            type_name, 
-            type_power_ps, 
-            type_month_from, 
-            type_year_from, 
-            type_year_to,
-            type_modele_id
-          `,
-          )
-          .eq('type_id', cross.cgc_type_id)
-          .eq('type_display', '1')
-          .single()
-          .then(async ({ data: typeData, error: typeError }) => {
-            if (typeError || !typeData) return null;
+      if (!allTypes || allTypes.length === 0) {
+        console.log('⚠️ Aucun type trouvé');
+      } else {
+        // Créer des Maps pour accès O(1)
+        const typesMap = new Map(allTypes.map(t => [t.type_id, t]));
+        const uniqueModeleIds = [...new Set(allTypes.map(t => t.type_modele_id))];
 
-            // Récupération du modèle séparément
-            const { data: modeleData } = await this.client
-              .from('auto_modele')
-              .select('modele_id, modele_name, modele_marque_id')
-              .eq('modele_id', typeData.type_modele_id)
-              .eq('modele_display', '1')
-              .single();
+        // Requête 2: Tous les modèles en une seule fois
+        const { data: allModeles } = await this.client
+          .from('auto_modele')
+          .select('modele_id, modele_name, modele_marque_id')
+          .in('modele_id', uniqueModeleIds)
+          .eq('modele_display', '1');
 
-            if (!modeleData) return null;
+        if (!allModeles || allModeles.length === 0) {
+          console.log('⚠️ Aucun modèle trouvé');
+        } else {
+          const modelesMap = new Map(allModeles.map(m => [m.modele_id, m]));
+          const uniqueMarqueIds = [...new Set(allModeles.map(m => m.modele_marque_id))];
 
-            // Récupération de la marque séparément
-            const { data: marqueData } = await this.client
-              .from('auto_marque')
-              .select('marque_id, marque_name')
-              .eq('marque_id', modeleData.modele_marque_id)
-              .eq('marque_display', '1')
-              .single();
+          // Requête 3: Toutes les marques en une seule fois
+          const { data: allMarques } = await this.client
+            .from('auto_marque')
+            .select('marque_id, marque_name')
+            .in('marque_id', uniqueMarqueIds)
+            .eq('marque_display', '1');
 
-            if (!marqueData) return null;
+          const marquesMap = new Map(allMarques?.map(m => [m.marque_id, m]) || []);
 
-            return {
-              type: typeData,
-              modele: modeleData,
-              marque: marqueData,
-            };
-          });
+          const motorTime = performance.now();
+          console.log(`⚡ Motorisations bulk queries: ${(motorTime - startMotor).toFixed(1)}ms`);
 
-        typePromises.push(typePromise);
-      }
+          // Maintenant construire les motorisations en mémoire (ultra rapide)
+          const processedModeles = new Set();
+          
+          for (const cross of crossGammeData) {
+            const typeData = typesMap.get(cross.cgc_type_id);
+            if (!typeData) continue;
 
-      // Exécution parallèle des requêtes de motorisations
-      const typeResults = await Promise.all(typePromises);
+            if (processedModeles.has(typeData.type_modele_id)) continue;
+            processedModeles.add(typeData.type_modele_id);
 
-      typeResults.forEach((result) => {
-        if (result && result.type && result.modele && result.marque) {
-          const {
-            type: typeData,
-            modele: modeleData,
-            marque: marqueData,
-          } = result;
+            const modeleData = modelesMap.get(typeData.type_modele_id);
+            if (!modeleData) continue;
 
-          let typeDate = '';
-          if (!typeData.type_year_to) {
-            typeDate = `du ${typeData.type_month_from}/${typeData.type_year_from}`;
-          } else {
-            typeDate = `de ${typeData.type_year_from} à ${typeData.type_year_to}`;
+            const marqueData = marquesMap.get(modeleData.modele_marque_id);
+            if (!marqueData) continue;
+
+            let typeDate = '';
+            if (!typeData.type_year_to) {
+              typeDate = `du ${typeData.type_month_from}/${typeData.type_year_from}`;
+            } else {
+              typeDate = `de ${typeData.type_year_from} à ${typeData.type_year_to}`;
+            }
+
+            motorisations.push({
+              title: `${marqueData.marque_name} ${modeleData.modele_name} ${typeData.type_name}`,
+              motorisation: typeData.type_name,
+              puissance: `${typeData.type_power_ps} ch`,
+              description: typeDate,
+              advice: `Pièces compatibles ${pgNameSite}`,
+              marque_name: marqueData.marque_name,
+              modele_name: modeleData.modele_name,
+            });
           }
-
-          motorisations.push({
-            title: `${marqueData.marque_name} ${modeleData.modele_name} ${typeData.type_name}`,
-            motorisation: typeData.type_name,
-            puissance: `${typeData.type_power_ps} ch`,
-            description: typeDate,
-            advice: `Pièces compatibles ${pgNameSite}`,
-            marque_name: marqueData.marque_name,
-            modele_name: modeleData.modele_name,
-          });
         }
-      });
+      }
     }
 
     console.log(`✅ Motorisations finales optimisées: ${motorisations.length}`);

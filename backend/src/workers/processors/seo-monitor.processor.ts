@@ -69,19 +69,19 @@ export class SeoMonitorProcessor {
   private readonly CRITICAL_URLS = [
     // Filtres à huile populaires
     {
-      url: '/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html',
+      url: '/pieces/filtre-a-huile-75/renault-140/clio-iii-140004/1-5-dci-19052.html',
       typeId: 19052,
-      gammeId: 7,
+      gammeId: 75,
     },
     {
-      url: '/pieces/filtre-a-huile-7/peugeot-118/208-118001/1-6-bluehdi-75-18781.html',
+      url: '/pieces/filtre-a-huile-75/peugeot-118/208-118001/1-6-bluehdi-75-18781.html',
       typeId: 18781,
-      gammeId: 7,
+      gammeId: 75,
     },
     {
-      url: '/pieces/filtre-a-huile-7/citroen-46/c4-picasso-46012/2-0-hdi-19053.html',
+      url: '/pieces/filtre-a-huile-75/citroen-46/c4-picasso-46012/2-0-hdi-19053.html',
       typeId: 19053,
-      gammeId: 7,
+      gammeId: 75,
     },
 
     // Plaquettes de frein populaires
