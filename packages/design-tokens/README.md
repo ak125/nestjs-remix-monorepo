@@ -2,6 +2,26 @@
 
 **Single source of truth** pour tous les design tokens du Design System.
 
+---
+
+## 🚀 Navigation Rapide
+
+### 📚 Documentation
+
+| Document | Durée | Pour qui | Description |
+|----------|-------|----------|-------------|
+| [`README-QUICK.md`](./README-QUICK.md) | 2 min | Décideurs | Résumé exécutif - Migration ou pas ? |
+| [`CHEAT-SHEET.md`](./CHEAT-SHEET.md) | 5 min | Développeurs | Référence rapide des tokens |
+| [`MIGRATION-GUIDE.md`](./MIGRATION-GUIDE.md) | 10 min | Développeurs | Guide complet de migration |
+| [`VALIDATION-CHECKLIST.md`](./VALIDATION-CHECKLIST.md) | 5 min | QA/Dev | Checklist validation sans régression |
+| [`AUDIT-DESIGN-SYSTEM.md`](./AUDIT-DESIGN-SYSTEM.md) | 15 min | Tech Lead | Audit complet + recommandations |
+
+### 🛠️ Outils
+
+- **Script validation** : [`/scripts/validate-migration.sh`](../../scripts/validate-migration.sh)
+
+---
+
 ## 📦 Contenu
 
 - `design-tokens.json` : 140+ tokens (colors, spacing, typography, shadows, etc.)
