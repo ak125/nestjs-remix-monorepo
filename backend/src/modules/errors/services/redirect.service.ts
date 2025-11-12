@@ -77,7 +77,8 @@ export class RedirectService extends SupabaseBaseService {
       // Recherche exacte d'abord
       if (this.redirectCache.has(path)) {
         const rule = this.redirectCache.get(path)!;
-        await this.incrementHitCount(rule.id || rule.msg_id!);
+        // Fire and forget pour le compteur
+        this.incrementHitCount(rule.id || rule.msg_id!).catch(() => {});
         return this.convertToRedirectEntry(rule);
       }
 
@@ -90,7 +91,8 @@ export class RedirectService extends SupabaseBaseService {
         try {
           const regex = new RegExp(rule.source_path);
           if (regex.test(path)) {
-            await this.incrementHitCount(rule.id || rule.msg_id!);
+            // Fire and forget pour le compteur
+            this.incrementHitCount(rule.id || rule.msg_id!).catch(() => {});
             const processedRule = {
               ...rule,
               destination_path: path.replace(regex, rule.destination_path),
@@ -98,7 +100,7 @@ export class RedirectService extends SupabaseBaseService {
             return this.convertToRedirectEntry(processedRule);
           }
         } catch (error) {
-          this.logger.error(
+          this.logger.debug(
             `Erreur regex pour la règle ${rule.id || rule.msg_id}: ${error}`,
           );
         }
@@ -107,7 +109,7 @@ export class RedirectService extends SupabaseBaseService {
       // Recherche par patterns wildcards (compatibilité avec l'ancien système)
       return this.findPatternRedirect(path);
     } catch (error) {
-      this.logger.error('Erreur dans findRedirect:', error);
+      this.logger.warn('Erreur dans findRedirect:', error);
       return null;
     }
   }
@@ -119,58 +121,67 @@ export class RedirectService extends SupabaseBaseService {
   private async findPatternRedirect(
     url: string,
   ): Promise<RedirectEntry | null> {
-    return this.executeWithRetry(
-      async () => {
-        const { data: redirects, error } = await this.supabase
-          .from('___xtr_msg')
-          .select('*')
-          .eq('msg_subject', 'REDIRECT_RULE')
-          .eq('msg_open', '1') // Actif
-          .like('msg_content', '%*%'); // Contient des wildcards
+    try {
+      const result = await this.executeWithRetry(
+        async () => {
+          const { data: redirects, error } = await this.supabase
+            .from('___xtr_msg')
+            .select('*')
+            .eq('msg_subject', 'REDIRECT_RULE')
+            .eq('msg_open', '1') // Actif
+            .like('msg_content', '%*%'); // Contient des wildcards
 
-        if (error) {
-          this.logger.error('Erreur lors de la recherche pattern:', error);
-          throw error; // Lancer l'erreur pour déclencher le retry
-        }
-
-        for (const redirect of redirects || []) {
-          try {
-            const metadata = JSON.parse(redirect.msg_content || '{}');
-            const pattern = metadata.source_path?.replace(/\*/g, '.*');
-
-            if (!pattern) continue;
-
-            const regex = new RegExp(`^${pattern}$`);
-
-            if (regex.test(url)) {
-              await this.incrementHitCount(redirect.msg_id);
-
-              // Remplacer les wildcards dans destination_path
-              const newPath = metadata.destination_path?.replace(
-                /\$(\d+)/g,
-                (match: string, index: string) => {
-                  const captures = url.match(regex);
-                  return captures?.[parseInt(index)] || match;
-                },
-              );
-
-              return {
-                old_path: metadata.source_path,
-                new_path: newPath || metadata.destination_path,
-                redirect_type: metadata.status_code || 301,
-                reason: metadata.description,
-              };
-            }
-          } catch (parseError) {
-            this.logger.error('Erreur parsing metadata:', parseError);
+          if (error) {
+            this.logger.warn('Erreur lors de la recherche pattern:', error);
+            throw error; // Lancer l'erreur pour déclencher le retry
           }
-        }
 
-        return null;
-      },
-      'findPatternRedirect',
-      2, // Seulement 2 tentatives pour les recherches
-    );
+          for (const redirect of redirects || []) {
+            try {
+              const metadata = JSON.parse(redirect.msg_content || '{}');
+              const pattern = metadata.source_path?.replace(/\*/g, '.*');
+
+              if (!pattern) continue;
+
+              const regex = new RegExp(`^${pattern}$`);
+
+              if (regex.test(url)) {
+                // Ne pas attendre l'incrément du compteur (fire and forget)
+                this.incrementHitCount(redirect.msg_id).catch(() => {});
+
+                // Remplacer les wildcards dans destination_path
+                const newPath = metadata.destination_path?.replace(
+                  /\$(\d+)/g,
+                  (match: string, index: string) => {
+                    const captures = url.match(regex);
+                    return captures?.[parseInt(index)] || match;
+                  },
+                );
+
+                return {
+                  old_path: metadata.source_path,
+                  new_path: newPath || metadata.destination_path,
+                  redirect_type: metadata.status_code || 301,
+                  reason: metadata.description,
+                };
+              }
+            } catch (parseError) {
+              this.logger.debug('Erreur parsing metadata:', parseError);
+            }
+          }
+
+          return null;
+        },
+        'findPatternRedirect',
+        2, // Seulement 2 tentatives pour les recherches
+      );
+
+      return result;
+    } catch {
+      // En cas d'erreur totale, retourner null sans bloquer
+      this.logger.debug(`Aucune redirection pattern trouvée pour: ${url}`);
+      return null;
+    }
   }
 
   /**
@@ -496,7 +507,11 @@ export class RedirectService extends SupabaseBaseService {
       this.lastCacheUpdate = Date.now();
       this.logger.log(`Cache rechargé avec ${rules.length} règles`);
     } catch (error) {
-      this.logger.error('Erreur lors du chargement du cache:', error);
+      this.logger.warn(
+        `Erreur lors du chargement du cache (service de redirection non disponible): ${error?.message || 'Erreur inconnue'}`,
+      );
+      // Ne pas lancer l'erreur, juste logger
+      // L'application peut continuer sans redirections
     }
   }
 

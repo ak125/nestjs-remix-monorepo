@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { RedisCacheService } from '../../../database/services/redis-cache.service';
 import {
   CatalogFamily,
   CatalogFamilyWithGammes,
@@ -9,10 +10,27 @@ import {
 
 @Injectable()
 export class CatalogFamilyService extends SupabaseBaseService {
+  constructor(private readonly cacheService: RedisCacheService) {
+    super();
+  }
+
   /**
    * Reproduction exacte de la logique PHP index.php
+   * 🚀 AVEC CACHE REDIS pour éviter timeouts
    */
   async getCatalogFamiliesPhpLogic(): Promise<CatalogFamiliesResponse> {
+    return this.cacheService.cached(
+      'families:php-logic',
+      () => this.fetchCatalogFamiliesPhpLogic(),
+      3600, // TTL: 1 heure
+      'catalog',
+    );
+  }
+
+  /**
+   * Récupère les données depuis Supabase (logique interne)
+   */
+  private async fetchCatalogFamiliesPhpLogic(): Promise<CatalogFamiliesResponse> {
     try {
       this.logger.log(
         'Récupération des familles de catalogue (logique PHP)...',

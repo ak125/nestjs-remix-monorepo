@@ -1,0 +1,339 @@
+{
+  "guide": {
+    "title": "Comment choisir vos pièces auto ?",
+    "subtitle": "Guide Expert - Suivez nos 3 étapes simples pour choisir vos équipements en toute confiance",
+    "steps": [
+      {
+        "step": 1,
+        "title": "Vérifiez la compatibilité",
+        "icon": "check-circle",
+        "bullets": [
+          "Utilisez notre sélecteur pour garantir la compatibilité",
+          "Vérifiez votre type mine sur la carte grise",
+          "Toutes nos pièces sont certifiées (R90, ISO, etc.)"
+        ],
+        "description": "La compatibilité est essentielle pour votre sécurité. Notre sélecteur intelligent vérifie automatiquement que la pièce correspond parfaitement à votre véhicule. Consultez votre carte grise pour le type mine et soyez assuré que toutes nos pièces respectent les certifications en vigueur."
+      },
+      {
+        "step": 2,
+        "title": "Choisissez votre gamme",
+        "icon": "layers",
+        "ranges": [
+          {
+            "name": "Économique",
+            "icon": "🥉",
+            "usage": "Usage urbain modéré",
+            "description": "Parfait pour une utilisation en ville avec des trajets quotidiens modérés. Cette gamme offre un excellent rapport qualité-prix tout en garantissant fiabilité et sécurité. Idéal pour les petits budgets sans compromis sur l'essentiel.",
+            "features": [
+              "Prix attractif",
+              "Fiabilité prouvée",
+              "Parfait pour trajets urbains"
+            ],
+            "recommendation": "Recommandé pour : Trajets courts, conduite en ville, budget maîtrisé"
+          },
+          {
+            "name": "Qualité+",
+            "icon": "🥈",
+            "usage": "Usage mixte recommandé",
+            "description": "Le choix le plus populaire auprès de nos clients ! Cette gamme offre l'équilibre optimal entre performance, durabilité et prix. Polyvalente, elle convient parfaitement aux trajets mixtes ville-route avec une excellente longévité.",
+            "features": [
+              "Équilibre performance/durabilité",
+              "Choix le plus populaire",
+              "Polyvalent ville et route"
+            ],
+            "recommendation": "Recommandé pour : Usage quotidien, trajets variés, meilleur compromis"
+          },
+          {
+            "name": "Premium",
+            "icon": "🥇",
+            "usage": "Performances maximales",
+            "description": "Technologies de pointe pour les conducteurs exigeants. Cette gamme haut de gamme intègre les dernières innovations pour des performances exceptionnelles et une durée de vie maximale. Le meilleur de la technologie automobile.",
+            "features": [
+              "Technologies avancées",
+              "Durée de vie maximale",
+              "Performances optimales"
+            ],
+            "recommendation": "Recommandé pour : Conduite dynamique, longs trajets, exigences élevées"
+          }
+        ]
+      },
+      {
+        "step": 3,
+        "title": "Sécurité essentielle",
+        "icon": "shield-check",
+        "bullets": [
+          "Changez toujours les deux côtés (avant ou arrière)",
+          "Remplacez si moins de 3mm d'épaisseur",
+          "Contrôle tous les 20 000 km recommandé"
+        ],
+        "description": "Votre sécurité avant tout ! Pour un freinage optimal et équilibré, remplacez toujours les pièces par paire. Un contrôle régulier tous les 20 000 km permet de détecter l'usure à temps. N'attendez jamais d'atteindre le seuil critique de 3mm d'épaisseur."
+      }
+    ]
+  },
+  "categories": {
+    "plaquettes_frein": {
+      "name": "Plaquettes de frein",
+      "title": "Comment choisir vos plaquettes de frein ?",
+      "step1": {
+        "title": "Vérifiez la compatibilité",
+        "content": "Nos plaquettes de frein sont certifiées R90, garantissant des performances de freinage conformes aux normes européennes. Utilisez notre sélecteur en indiquant votre type mine (visible sur la carte grise) pour obtenir uniquement les références compatibles avec votre véhicule.",
+        "highlight": "Certification R90 obligatoire pour votre sécurité"
+      },
+      "step2_ranges": {
+        "economique": {
+          "title": "🥉 Gamme Économique",
+          "subtitle": "Usage urbain modéré",
+          "description": "Idéales pour une conduite en ville avec des freinages fréquents mais modérés. Ces plaquettes offrent un excellent rapport qualité-prix avec une composition organique garantissant silence et douceur de freinage.",
+          "specs": [
+            "Composition : Organique",
+            "Température max : 300°C",
+            "Durée de vie : 30 000 - 40 000 km",
+            "Bruit : Très faible"
+          ],
+          "price_range": "À partir de 19€"
+        },
+        "qualite_plus": {
+          "title": "🥈 Gamme Qualité+",
+          "subtitle": "Usage mixte recommandé",
+          "description": "Notre best-seller ! Ces plaquettes semi-métalliques offrent le meilleur compromis entre performances, longévité et prix. Parfaites pour une utilisation quotidienne mixte ville-route avec des performances constantes.",
+          "specs": [
+            "Composition : Semi-métallique",
+            "Température max : 450°C",
+            "Durée de vie : 50 000 - 60 000 km",
+            "Performances : Excellentes"
+          ],
+          "price_range": "À partir de 39€",
+          "badge": "Le plus choisi"
+        },
+        "premium": {
+          "title": "🥇 Gamme Premium",
+          "subtitle": "Performances maximales",
+          "description": "Technologie céramique haut de gamme pour des performances exceptionnelles. Conçues pour les conducteurs exigeants, elles offrent un freinage puissant, constant et silencieux avec une durée de vie record.",
+          "specs": [
+            "Composition : Céramique",
+            "Température max : 650°C",
+            "Durée de vie : 70 000 - 80 000 km",
+            "Poussière : Minimale"
+          ],
+          "price_range": "À partir de 69€"
+        }
+      },
+      "step3": {
+        "title": "Sécurité et conseils de remplacement",
+        "content": "Les plaquettes de frein s'usent progressivement. Pour votre sécurité, remplacez-les toujours par paire (train avant ou arrière) afin de conserver un freinage équilibré. Un contrôle visuel tous les 20 000 km est recommandé.",
+        "alerts": [
+          {
+            "type": "danger",
+            "text": "Remplacez immédiatement si épaisseur < 3mm"
+          },
+          {
+            "type": "warning",
+            "text": "Signes d'usure : grincements, vibrations, freinage moins efficace"
+          },
+          {
+            "type": "info",
+            "text": "Pensez à vérifier l'état des disques de frein simultanément"
+          }
+        ]
+      }
+    },
+    "disques_frein": {
+      "name": "Disques de frein",
+      "title": "Comment choisir vos disques de frein ?",
+      "step1": {
+        "title": "Vérifiez la compatibilité",
+        "content": "Les disques de frein doivent correspondre précisément aux spécifications de votre véhicule (diamètre, épaisseur, type de fixation). Notre sélecteur intelligent garantit une compatibilité parfaite en se basant sur votre type mine.",
+        "highlight": "Diamètre et épaisseur critiques pour la sécurité"
+      },
+      "step2_ranges": {
+        "economique": {
+          "title": "🥉 Gamme Économique",
+          "subtitle": "Usage urbain modéré",
+          "description": "Disques pleins en fonte de qualité standard, parfaits pour une utilisation urbaine avec freinages modérés. Excellent rapport qualité-prix pour remplacer vos disques usagés sans compromis sur la sécurité.",
+          "specs": [
+            "Type : Disque plein",
+            "Matériau : Fonte G3000",
+            "Traitement : Standard",
+            "Durée de vie : 60 000 - 80 000 km"
+          ],
+          "price_range": "À partir de 29€"
+        },
+        "qualite_plus": {
+          "title": "🥈 Gamme Qualité+",
+          "subtitle": "Usage mixte recommandé",
+          "description": "Disques ventilés avec traitement anticorrosion pour des performances optimales en toutes conditions. La ventilation interne améliore la dissipation thermique et réduit le risque de fading lors de freinages répétés.",
+          "specs": [
+            "Type : Disque ventilé",
+            "Matériau : Fonte G3000 renforcée",
+            "Traitement : Anticorrosion",
+            "Durée de vie : 80 000 - 100 000 km"
+          ],
+          "price_range": "À partir de 59€",
+          "badge": "Le plus choisi"
+        },
+        "premium": {
+          "title": "🥇 Gamme Premium",
+          "subtitle": "Performances maximales",
+          "description": "Disques haute performance ventilés et percés, avec traitement carbone-céramique. Conçus pour une dissipation thermique maximale et des performances de freinage exceptionnelles, même en conduite sportive.",
+          "specs": [
+            "Type : Ventilé + percé",
+            "Matériau : Fonte haute performance",
+            "Traitement : Carbone-céramique",
+            "Durée de vie : 100 000+ km"
+          ],
+          "price_range": "À partir de 99€"
+        }
+      },
+      "step3": {
+        "title": "Sécurité et conseils de remplacement",
+        "content": "Les disques de frein doivent être remplacés dès que leur épaisseur atteint la limite minimale gravée sur le disque. Un remplacement par paire (avant ou arrière) garantit un freinage équilibré et sécurisé.",
+        "alerts": [
+          {
+            "type": "danger",
+            "text": "Remplacez si épaisseur = épaisseur minimale gravée"
+          },
+          {
+            "type": "warning",
+            "text": "Signes d'usure : rainures profondes, vibrations, voile"
+          },
+          {
+            "type": "info",
+            "text": "Remplacez les plaquettes lors du changement de disques"
+          }
+        ]
+      }
+    },
+    "amortisseurs": {
+      "name": "Amortisseurs",
+      "title": "Comment choisir vos amortisseurs ?",
+      "step1": {
+        "title": "Vérifiez la compatibilité",
+        "content": "Les amortisseurs doivent correspondre précisément à votre véhicule (longueur, diamètre, type de fixation, charge). Notre système de sélection garantit une compatibilité parfaite avec votre modèle et motorisation.",
+        "highlight": "Longueur et charge adaptées à votre véhicule"
+      },
+      "step2_ranges": {
+        "economique": {
+          "title": "🥉 Gamme Économique",
+          "subtitle": "Usage urbain modéré",
+          "description": "Amortisseurs hydrauliques standard offrant un confort correct et une tenue de route sûre pour un usage quotidien modéré. Solution économique pour remplacer vos amortisseurs usagés.",
+          "specs": [
+            "Type : Hydraulique bitube",
+            "Technologie : Standard",
+            "Confort : Bon",
+            "Durée de vie : 60 000 - 80 000 km"
+          ],
+          "price_range": "À partir de 39€"
+        },
+        "qualite_plus": {
+          "title": "🥈 Gamme Qualité+",
+          "subtitle": "Usage mixte recommandé",
+          "description": "Amortisseurs à gaz haute pression offrant un excellent compromis entre confort et tenue de route. La technologie gaz améliore la réactivité et réduit les phénomènes de pompage en conduite dynamique.",
+          "specs": [
+            "Type : Gaz haute pression",
+            "Technologie : Monotube",
+            "Confort : Excellent",
+            "Durée de vie : 80 000 - 100 000 km"
+          ],
+          "price_range": "À partir de 79€",
+          "badge": "Le plus choisi"
+        },
+        "premium": {
+          "title": "🥇 Gamme Premium",
+          "subtitle": "Performances maximales",
+          "description": "Amortisseurs sport ou adaptatifs avec technologie de pointe. Offrent une tenue de route exceptionnelle et un confort optimal grâce à un réglage précis de la compression et détente. Pour conducteurs exigeants.",
+          "specs": [
+            "Type : Sport/Adaptatif",
+            "Technologie : Électronique",
+            "Confort : Exceptionnel",
+            "Durée de vie : 100 000+ km"
+          ],
+          "price_range": "À partir de 149€"
+        }
+      },
+      "step3": {
+        "title": "Sécurité et conseils de remplacement",
+        "content": "Les amortisseurs s'usent progressivement. Pour préserver la tenue de route et le confort, remplacez-les toujours par essieu (avant ou arrière). Un contrôle tous les 20 000 km permet de détecter l'usure prématurée.",
+        "alerts": [
+          {
+            "type": "danger",
+            "text": "Remplacez par paire (même essieu) obligatoirement"
+          },
+          {
+            "type": "warning",
+            "text": "Signes d'usure : fuite d'huile, tenue de route dégradée, usure irrégulière des pneus"
+          },
+          {
+            "type": "info",
+            "text": "Vérifiez les silent-blocs et coupelles simultanément"
+          }
+        ]
+      }
+    },
+    "filtres_air": {
+      "name": "Filtres à air",
+      "title": "Comment choisir vos filtres à air ?",
+      "step1": {
+        "title": "Vérifiez la compatibilité",
+        "content": "Le filtre à air doit correspondre exactement aux dimensions et au type de boîtier de votre véhicule. Notre sélecteur vous garantit un filtre parfaitement adapté à votre motorisation pour une filtration optimale.",
+        "highlight": "Dimensions et débit d'air adaptés au moteur"
+      },
+      "step2_ranges": {
+        "economique": {
+          "title": "🥉 Gamme Économique",
+          "subtitle": "Usage urbain modéré",
+          "description": "Filtres papier standard offrant une filtration efficace des particules pour protéger votre moteur. Solution économique avec un bon rapport qualité-prix pour un entretien régulier.",
+          "specs": [
+            "Type : Papier plissé",
+            "Filtration : 95%",
+            "Durée de vie : 15 000 - 20 000 km",
+            "Entretien : Non lavable"
+          ],
+          "price_range": "À partir de 9€"
+        },
+        "qualite_plus": {
+          "title": "🥈 Gamme Qualité+",
+          "subtitle": "Usage mixte recommandé",
+          "description": "Filtres multicouches haute performance offrant une filtration supérieure et un meilleur débit d'air. Améliore légèrement les performances du moteur tout en assurant une protection optimale.",
+          "specs": [
+            "Type : Multicouche",
+            "Filtration : 98%",
+            "Durée de vie : 30 000 km",
+            "Entretien : Non lavable"
+          ],
+          "price_range": "À partir de 19€",
+          "badge": "Le plus choisi"
+        },
+        "premium": {
+          "title": "🥇 Gamme Premium",
+          "subtitle": "Performances maximales",
+          "description": "Filtres sport réutilisables en coton huilé. Offrent la meilleure filtration avec un débit d'air maximal pour des performances optimales. Lavables et réutilisables à vie, investissement durable.",
+          "specs": [
+            "Type : Coton huilé sport",
+            "Filtration : 99%",
+            "Durée de vie : Illimitée (lavable)",
+            "Entretien : Lavable et réutilisable"
+          ],
+          "price_range": "À partir de 49€"
+        }
+      },
+      "step3": {
+        "title": "Sécurité et conseils de remplacement",
+        "content": "Un filtre à air encrassé réduit les performances et augmente la consommation. Remplacez-le selon les préconisations du constructeur ou tous les 20 000 km en conditions normales, tous les 10 000 km en conditions difficiles (poussière, pollution).",
+        "alerts": [
+          {
+            "type": "warning",
+            "text": "Remplacez tous les 20 000 km ou selon constructeur"
+          },
+          {
+            "type": "info",
+            "text": "Contrôle visuel simple : filtre noir ou colmaté = remplacement"
+          },
+          {
+            "type": "info",
+            "text": "Un filtre propre améliore performances et économies de carburant"
+          }
+        ]
+      }
+    }
+  }
+}

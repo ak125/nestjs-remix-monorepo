@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Service Ollama avec support GPU optionnel
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-ai
+    restart: unless-stopped
+    
+    # Ports
+    ports:
+      - "11434:11434"
+    
+    # Volumes pour persistance des modèles
+    volumes:
+      - ollama-data:/root/.ollama
+    
+    # Variables d'environnement
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+    
+    # Limites de ressources (ajustables selon vos besoins)
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4'
+        reservations:
+          memory: 4G
+          cpus: '2'
+    
+    # Support GPU NVIDIA (décommentez si vous avez un GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - ai-network
+
+volumes:
+  ollama-data:
+    driver: local
+
+networks:
+  ai-network:
+    driver: bridge

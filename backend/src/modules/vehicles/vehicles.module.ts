@@ -37,13 +37,12 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
   imports: [
     ConfigModule,
     CacheModule.registerAsync({
-      imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         // TTL défaut 300s, max 100 éléments — surchargés via ENV
         ttl: Number(config.get('VEHICLES_CACHE_TTL', 300)),
         max: Number(config.get('VEHICLES_CACHE_MAX', 100)),
-        // keyPrefix: 'vehicles:', // 👉 active si besoin d’isoler les clés
+        // keyPrefix: 'vehicles:', // 👉 active si besoin d'isoler les clés
         // store: await redisStore({ url: config.get('REDIS_URL') }), // 👉 switch Redis en prod
       }),
     }),

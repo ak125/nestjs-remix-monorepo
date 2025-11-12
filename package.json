@@ -30,6 +30,8 @@
   ],
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
+    "@nestjs/common": "^10.4.20",
+    "@nestjs/core": "^10.4.20",
     "@types/bcrypt": "^6.0.0",
     "@types/file-type": "^10.9.3",
     "@types/multer": "^2.0.0",
@@ -38,12 +40,12 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.4.1",
+    "reflect-metadata": "^0.1.14",
+    "rxjs": "^7.8.2",
     "turbo": "^2.2.3",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@nestjs/platform-express": "^11.1.5",
-    "@nestjs/swagger": "^11.2.0",
     "@remix-run/dev": "^2.15.0",
     "@remix-run/express": "^2.15.0",
     "@remix-run/node": "^2.15.0",
@@ -54,6 +56,7 @@
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
+    "minimatch": "^5.1.6",
     "nestjs-zod": "^4.3.1",
     "postcss": "^8.4.24",
     "react": "^18.3.1",
@@ -63,6 +66,7 @@
     "swagger-ui-express": "^5.0.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.15",
+    "uid": "^2.0.2",
     "vite": "^5.4.11",
     "zod": "^3.24.1"
   },

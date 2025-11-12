@@ -30,7 +30,8 @@ import {
   Palette,
   Code,
   Play,
-  Eye
+  Eye,
+  Sparkles
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from 'sonner';
@@ -1523,6 +1524,22 @@ export default function AdminDashboard() {
         
         {/* Ligne 2 : Fonctionnalités avancées */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Link to="/admin/ai-content" className="block p-4 rounded-lg border-2 border-gradient-to-r from-purple-200 to-pink-200 hover:border-purple-400 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all group relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="flex items-center gap-3 relative z-10">
+              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-lg">
+                <Sparkles className="h-6 w-6 text-white group-hover:animate-pulse" />
+              </div>
+              <div>
+                <p className="font-medium text-gray-900 flex items-center gap-2">
+                  Générateur IA
+                  <Badge variant="success" size="sm">NOUVEAU</Badge>
+                </p>
+                <p className="text-sm text-gray-500">Contenu intelligent gratuit</p>
+              </div>
+            </div>
+          </Link>
+          
           <button 
             onClick={() => setActiveTab('design')}
             className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group text-left"

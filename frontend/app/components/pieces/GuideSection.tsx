@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import React from 'react';
+import { BookOpen, Calendar, ArrowRight, Sparkles } from 'lucide-react';
 
 interface GuideItem {
   id: number;
@@ -15,9 +16,11 @@ interface GuideItem {
 
 interface GuideSectionProps {
   guide?: GuideItem;
+  familleColor?: string;
+  familleName?: string;
 }
 
-export default function GuideSection({ guide }: GuideSectionProps) {
+export default function GuideSection({ guide, familleColor = 'from-emerald-600 to-emerald-700', familleName }: GuideSectionProps) {
   if (!guide) {
     return null;
   }
@@ -36,71 +39,123 @@ export default function GuideSection({ guide }: GuideSectionProps) {
   };
 
   return (
-    <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          📖 Guide Expert
-          <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
-            Conseils Pro
-          </span>
-        </h2>
-      </div>
-      
-      <div className="p-6">
-        <Link
-          to={guide.link}
-          className="group block"
-        >
-          <div className="relative overflow-hidden rounded-lg mb-4">
-            <img
-              src={guide.wall || guide.image}
-              alt={guide.title}
-              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.currentTarget.src = '/images/default-guide.jpg';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-            <div className="absolute bottom-4 left-4 right-4">
-              <h3 className="text-xl font-bold text-white group-hover:text-emerald-200 transition-colors">
-                {guide.title}
-              </h3>
+    <section className="mb-8">
+      {/* Conteneur principal avec bordure gradient */}
+      <div className="relative rounded-xl overflow-hidden shadow-xl">
+        {/* Bordure avec gradient de la famille */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${familleColor} rounded-xl`}></div>
+        
+        {/* Contenu avec fond blanc */}
+        <div className="relative bg-white rounded-lg m-0.5">
+          
+          {/* Header avec gradient de la famille */}
+          <div className={`relative bg-gradient-to-br ${familleColor} p-6 overflow-hidden`}>
+            {/* Effet de brillance */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+            
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                    Guide Expert
+                  </h2>
+                  <p className="text-white/80 text-sm mt-1">
+                    {familleName ? `Spécial ${familleName}` : 'Conseils Pro'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Sparkles className="w-4 h-4 text-white" />
+                <span className="text-white text-sm font-medium">Conseils Pro</span>
+              </div>
             </div>
           </div>
           
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Mis à jour le {formatDate(guide.date)}
-            </div>
-            
-            <p className="text-gray-700 leading-relaxed group-hover:text-gray-800 transition-colors">
-              {guide.preview}
-            </p>
-            
-            {guide.h2_content && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-2">Aperçu du contenu :</h4>
-                <p className="text-sm text-gray-600">{guide.h2_content}</p>
-              </div>
-            )}
-            
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-              <div className="flex items-center text-emerald-600 font-medium group-hover:text-emerald-700 transition-colors">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-                Lire le guide complet
+          {/* Contenu du guide */}
+          <div className="p-6 md:p-8">
+            <Link
+              to={guide.link}
+              className="group block"
+            >
+              {/* Image avec overlay amélioré */}
+              <div className="relative overflow-hidden rounded-xl mb-6 shadow-lg">
+                <img
+                  src={guide.wall || guide.image}
+                  alt={guide.title}
+                  className="w-full h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    e.currentTarget.src = '/images/default-guide.jpg';
+                  }}
+                />
+                <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90 transition-all duration-300`}></div>
+                
+                {/* Titre sur l'image */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg group-hover:text-white/90 transition-colors leading-tight">
+                    {guide.title}
+                  </h3>
+                </div>
+                
+                {/* Badge "Nouveau" si récent */}
+                {(() => {
+                  const daysAgo = Math.floor((Date.now() - new Date(guide.date).getTime()) / (1000 * 60 * 60 * 24));
+                  return daysAgo < 30 ? (
+                    <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Nouveau
+                    </div>
+                  ) : null;
+                })()}
               </div>
               
-              <svg className="w-5 h-5 text-emerald-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
+              {/* Informations et contenu */}
+              <div className="space-y-4">
+                {/* Date */}
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${familleColor} flex items-center justify-center`}>
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <span>Mis à jour le {formatDate(guide.date)}</span>
+                </div>
+                
+                {/* Preview */}
+                <p className="text-gray-700 text-base md:text-lg leading-relaxed">
+                  {guide.preview}
+                </p>
+                
+                {/* Aperçu du contenu */}
+                {guide.h2_content && (
+                  <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-5">
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${familleColor} flex items-center justify-center`}>
+                        <BookOpen className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      Aperçu du contenu :
+                    </h4>
+                    <div 
+                      className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: guide.h2_content }}
+                    />
+                  </div>
+                )}
+                
+                {/* CTA */}
+                <div className="pt-4 border-t border-gray-200">
+                  <div className={`inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r ${familleColor} text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105`}>
+                    <BookOpen className="w-5 h-5" />
+                    <span>Lire le guide complet</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
-        </Link>
+          
+        </div>
       </div>
     </section>
   );

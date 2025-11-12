@@ -222,22 +222,60 @@ export class RedisCacheService extends SupabaseBaseService {
   }
 
   /**
-   * Statistiques du cache
+   * 📊 Statistiques du cache enrichies
    */
   async getCacheStats(): Promise<any> {
     try {
       const info = await this.redis.info('memory');
+      const statsInfo = await this.redis.info('stats');
       const keyCount = await this.redis.dbsize();
+
+      // Parser les statistiques Redis
+      const memoryMatch = info.match(/used_memory_human:(\S+)/);
+      const memoryUsed = memoryMatch ? memoryMatch[1] : 'N/A';
+
+      const hitsMatch = statsInfo.match(/keyspace_hits:(\d+)/);
+      const missesMatch = statsInfo.match(/keyspace_misses:(\d+)/);
+      const hits = hitsMatch ? parseInt(hitsMatch[1]) : 0;
+      const misses = missesMatch ? parseInt(missesMatch[1]) : 0;
+      const hitRate = hits + misses > 0 ? (hits / (hits + misses)) * 100 : 0;
 
       return {
         connected: this.redis.status === 'ready',
         keyCount,
-        memoryInfo: info,
+        memory: memoryUsed,
+        hits,
+        misses,
+        hitRate: Math.round(hitRate * 100) / 100,
         timestamp: new Date().toISOString(),
       };
     } catch (error: any) {
       this.logger.error(`❌ Erreur stats cache:`, error);
       return { error: error?.message || 'Erreur inconnue' };
+    }
+  }
+
+  /**
+   * 🗑️ Invalidation par namespace
+   */
+  async invalidateNamespace(namespace: string): Promise<number> {
+    try {
+      const pattern = `${namespace}:*`;
+      const keys = await this.redis.keys(pattern);
+      if (keys.length > 0) {
+        await this.redis.del(...keys);
+        this.logger.log(
+          `🗑️ ${keys.length} clés supprimées pour namespace: ${namespace}`,
+        );
+        return keys.length;
+      }
+      return 0;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur invalidation namespace ${namespace}:`,
+        error,
+      );
+      return 0;
     }
   }
 
@@ -265,6 +303,53 @@ export class RedisCacheService extends SupabaseBaseService {
         return isValid;
       })
       .slice(0, 1000); // Limite le nombre d'IDs pour éviter les URL trop longues
+  }
+
+  /**
+   * 🎯 Méthode principale : Cache wrapper générique avec retry Supabase
+   * Utiliser pour wrapper n'importe quelle fonction async
+   */
+  async cached<T>(
+    cacheKey: string,
+    fetchFn: () => Promise<T>,
+    ttl: number = 3600,
+    namespace: string = 'app',
+  ): Promise<T> {
+    const fullKey = `${namespace}:${cacheKey}`;
+    const startTime = Date.now();
+
+    try {
+      // 1️⃣ Vérifier cache
+      const cached = await this.get(fullKey);
+      if (cached !== null) {
+        const duration = Date.now() - startTime;
+        this.logger.log(`✅ Cache HIT: ${fullKey} (${duration}ms)`);
+        return cached as T;
+      }
+
+      // 2️⃣ Cache MISS - Fetch data avec retry Supabase
+      this.logger.log(`🔍 Cache MISS: ${fullKey}`);
+
+      const data = await fetchFn();
+
+      // 3️⃣ Stocker en cache
+      await this.set(fullKey, data, ttl);
+
+      const duration = Date.now() - startTime;
+      this.logger.log(
+        `💾 Cached: ${fullKey} (fetch: ${duration}ms, TTL: ${ttl}s)`,
+      );
+
+      return data;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      this.logger.error(
+        `❌ Cache error for ${fullKey} after ${duration}ms:`,
+        error,
+      );
+      // En cas d'erreur cache, on exécute quand même la fonction
+      return fetchFn();
+    }
   }
 
   /**
