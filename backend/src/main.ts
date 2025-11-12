@@ -97,12 +97,12 @@ async function bootstrap() {
 
     app.useGlobalFilters(new HttpExceptionFilter());
 
+    // ⚠️ CRITIQUE: body-parser DOIT être avant passport pour éviter "stream is not readable"
+    app.use(json({ limit: '10mb' }));
+    app.use(urlencoded({ extended: true, limit: '10mb' }));
+
     app.use(passport.initialize());
     app.use(passport.session());
-
-    // Middleware body-parser global
-    app.use(urlencoded({ extended: true }));
-    app.use(json());
 
     console.log('Passport initialisé.');
 

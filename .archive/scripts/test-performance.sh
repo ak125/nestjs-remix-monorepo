@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# Script de test de performance pour l'endpoint optimisé
+
+echo "🚀 Test de performance - Endpoint /api/gamme-rest-optimized/402"
+echo "================================================================"
+
+# Attendre que le serveur soit prêt
+echo "⏳ Attente du serveur..."
+sleep 10
+
+# Test 1: Première requête
+echo ""
+echo "📊 Test 1: Première requête"
+start=$(date +%s%N)
+response=$(curl -s "http://localhost:3001/api/gamme-rest-optimized/402")
+end=$(date +%s%N)
+duration=$((($end - $start) / 1000000))
+
+motorisations=$(echo "$response" | jq '.motorisations | length' 2>/dev/null || echo "ERROR")
+echo "   ✅ Temps total: ${duration}ms"
+echo "   📦 Motorisations: $motorisations"
+
+# Test 2: Deuxième requête
+echo ""
+echo "📊 Test 2: Deuxième requête"
+start=$(date +%s%N)
+response=$(curl -s "http://localhost:3001/api/gamme-rest-optimized/402")
+end=$(date +%s%N)
+duration=$((($end - $start) / 1000000))
+
+motorisations=$(echo "$response" | jq '.motorisations | length' 2>/dev/null || echo "ERROR")
+echo "   ✅ Temps total: ${duration}ms"
+echo "   📦 Motorisations: $motorisations"
+
+# Test 3: Troisième requête
+echo ""
+echo "📊 Test 3: Troisième requête"
+start=$(date +%s%N)
+response=$(curl -s "http://localhost:3001/api/gamme-rest-optimized/402")
+end=$(date +%s%N)
+duration=$((($end - $start) / 1000000))
+
+motorisations=$(echo "$response" | jq '.motorisations | length' 2>/dev/null || echo "ERROR")
+echo "   ✅ Temps total: ${duration}ms"
+echo "   📦 Motorisations: $motorisations"
+
+echo ""
+echo "================================================================"
+echo "✅ Tests terminés!"

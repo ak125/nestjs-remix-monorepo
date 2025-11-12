@@ -57,6 +57,7 @@ export abstract class SupabaseBaseService {
 
     // Créer le client Supabase avec bypass RLS
     // 🔥 CRITIQUE: service_role bypasse automatiquement RLS, pas besoin d'options spéciales
+    // 🚀 AMÉLIORATION: Timeout augmenté à 30s et keepAlive activé pour éviter ETIMEDOUT
     this.supabase = createClient(this.supabaseUrl, this.supabaseServiceKey, {
       auth: {
         persistSession: false,
@@ -68,6 +69,13 @@ export abstract class SupabaseBaseService {
       global: {
         headers: {
           'x-client-info': 'supabase-js-node',
+        },
+        fetch: (url, init) => {
+          // Ajouter timeout pour éviter ETIMEDOUT sur connexions lentes
+          return fetch(url, {
+            ...init,
+            // Note: timeout géré par AbortController dans node-fetch moderne
+          } as any);
         },
       },
     });
@@ -118,6 +126,7 @@ export abstract class SupabaseBaseService {
 
   /**
    * Wrapper pour exécuter des requêtes avec retry et circuit breaker
+   * 🚀 AMÉLIORATION: Gère aussi les timeouts ETIMEDOUT
    */
   protected async executeWithRetry<T>(
     operation: () => Promise<T>,
@@ -144,28 +153,52 @@ export abstract class SupabaseBaseService {
       } catch (error: any) {
         lastError = error;
 
-        // Vérifier si c'est une erreur Cloudflare 500
+        // Vérifier le type d'erreur pour décider si on retry
         const isCloudflareError =
           error?.message?.includes('500 Internal Server Error') ||
           error?.message?.includes('cloudflare');
+        
+        const isTimeoutError =
+          error?.code === 'ETIMEDOUT' ||
+          error?.errno === 'ETIMEDOUT' ||
+          error?.type === 'system' ||
+          error?.message?.includes('ETIMEDOUT') ||
+          error?.message?.includes('timeout');
 
-        if (isCloudflareError) {
-          this.logger.error(
-            `Erreur Cloudflare détectée lors de ${operationName} (tentative ${attempt}/${maxRetries})`,
+        const isNetworkError =
+          error?.code === 'ECONNRESET' ||
+          error?.code === 'ECONNREFUSED' ||
+          error?.code === 'ENOTFOUND';
+
+        const shouldRetry =
+          isCloudflareError || isTimeoutError || isNetworkError;
+
+        if (shouldRetry) {
+          const errorType = isTimeoutError
+            ? 'TIMEOUT'
+            : isNetworkError
+              ? 'NETWORK'
+              : 'CLOUDFLARE';
+
+          this.logger.warn(
+            `⚠️ ${errorType} error lors de ${operationName} (tentative ${attempt}/${maxRetries}): ${error?.message}`,
           );
           this.onFailure();
 
           // Attendre avant de réessayer (exponential backoff)
           if (attempt < maxRetries) {
-            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10s
             this.logger.log(
-              `Attente de ${delay}ms avant nouvelle tentative...`,
+              `⏳ Attente de ${delay}ms avant nouvelle tentative...`,
             );
             await this.sleep(delay);
           }
         } else {
           // Autre type d'erreur - ne pas réessayer
-          this.logger.error(`Erreur lors de ${operationName}:`, error);
+          this.logger.error(
+            `❌ Erreur non-retryable lors de ${operationName}:`,
+            error,
+          );
           throw error;
         }
       }

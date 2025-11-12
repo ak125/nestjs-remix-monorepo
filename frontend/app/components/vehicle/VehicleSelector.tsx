@@ -259,19 +259,19 @@ export default function VehicleSelector({
           {/* Mode: Recherche par véhicule */}
           {searchMode === 'vehicle' && (
             <>
-          {/* Grid des sélecteurs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Sélecteurs en ligne horizontale (grid 4 colonnes) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Constructeur */}
             <div>
-              <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-2">
-                <Car className="w-4 h-4 inline mr-1" />
+              <label htmlFor="brand" className="block text-xs font-medium text-gray-700 mb-1.5">
+                <Car className="w-3.5 h-3.5 inline mr-1" />
                 Constructeur
               </label>
               <select
                 id="brand"
                 value={selectedBrand?.marque_id || ''}
                 onChange={(e) => handleBrandChange(Number(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-sm"
               >
                 <option value="">Marque</option>
                 {brands.map(brand => (
@@ -284,8 +284,8 @@ export default function VehicleSelector({
 
             {/* Année */}
             <div>
-              <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-1" />
+              <label htmlFor="year" className="block text-xs font-medium text-gray-700 mb-1.5">
+                <Calendar className="w-3.5 h-3.5 inline mr-1" />
                 Année
               </label>
               <select
@@ -293,7 +293,7 @@ export default function VehicleSelector({
                 value={selectedYear || ''}
                 onChange={(e) => handleYearChange(Number(e.target.value))}
                 disabled={!selectedBrand || loadingYears}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500 text-sm"
               >
                 <option value="">
                   {loadingYears ? 'Chargement...' : 'Année'}
@@ -308,8 +308,8 @@ export default function VehicleSelector({
 
             {/* Modèle */}
             <div>
-              <label htmlFor="model" className="block text-sm font-medium text-gray-700 mb-2">
-                <Search className="w-4 h-4 inline mr-1" />
+              <label htmlFor="model" className="block text-xs font-medium text-gray-700 mb-1.5">
+                <Search className="w-3.5 h-3.5 inline mr-1" />
                 Modèle
               </label>
               <select
@@ -317,7 +317,7 @@ export default function VehicleSelector({
                 value={selectedModel?.modele_id || ''}
                 onChange={(e) => handleModelChange(Number(e.target.value))}
                 disabled={!selectedYear || loadingModels}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500 text-sm"
               >
                 <option value="">
                   {loadingModels ? 'Chargement...' : 'Modèle'}
@@ -332,8 +332,8 @@ export default function VehicleSelector({
 
             {/* Motorisation */}
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
-                <Settings className="w-4 h-4 inline mr-1" />
+              <label htmlFor="type" className="block text-xs font-medium text-gray-700 mb-1.5">
+                <Settings className="w-3.5 h-3.5 inline mr-1" />
                 Motorisation
               </label>
               <select
@@ -344,7 +344,7 @@ export default function VehicleSelector({
                   if (selectedType) handleTypeSelect(selectedType);
                 }}
                 disabled={!selectedModel || loadingTypes}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500 text-sm"
               >
                 <option value="">
                   {loadingTypes ? 'Chargement...' : 'Motorisation'}

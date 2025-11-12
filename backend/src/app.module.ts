@@ -44,6 +44,7 @@ import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ
 // import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
+import { AiContentModule } from './modules/ai-content/ai-content.module'; // 🤖 NOUVEAU - Module IA pour génération de contenu intelligent !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -119,6 +120,9 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 
     // 🔄 WORKERS & BACKGROUND JOBS
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
+
+    // 🤖 AI & CONTENT GENERATION
+    AiContentModule, // 🤖 ACTIVÉ - Module IA pour génération de contenu intelligent !
   ],
   controllers: [
     AnalyticsController, // 📊 Analytics avancées
