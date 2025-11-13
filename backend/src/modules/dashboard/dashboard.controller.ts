@@ -1,9 +1,15 @@
-import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
+import { Controller, Get, Logger, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ModulePermissionGuard,
   RequireModule,
 } from '../../auth/guards/module-permission.guard';
 import { DashboardService } from './dashboard.service';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+
+/**
+ * 📊 DASHBOARD CONTROLLER
+ * Fournit les statistiques et métriques du dashboard
+ */
 
 // Interfaces pour les réponses typées
 interface DashboardStats {
@@ -31,6 +37,7 @@ interface ModuleStats {
 }
 
 @Controller('api/dashboard')
+@UseInterceptors(CacheInterceptor)
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);
 

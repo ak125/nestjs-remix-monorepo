@@ -9,7 +9,6 @@ import {
 } from './dto/generate-content.dto';
 import { buildPrompt } from './templates/content-templates';
 import { createHash } from 'crypto';
-import { OllamaProvider } from './providers/ollama.provider';
 import { HuggingFaceProvider } from './providers/huggingface.provider';
 import { GroqProvider } from './providers/groq.provider';
 
@@ -42,15 +41,7 @@ export class AiContentService {
 
     // Auto-detect: Try providers in order of preference
     if (provider === 'auto') {
-      // 1. Try Ollama (local, gratuit, illimité)
-      const ollamaProvider = new OllamaProvider(this.configService);
-      if (await ollamaProvider.checkHealth()) {
-        this.aiProvider = ollamaProvider;
-        this.logger.log('✅ Using Ollama (local, FREE, unlimited)');
-        return;
-      }
-
-      // 2. Try Groq (gratuit, ultra rapide, quota généreux)
+      // 1. Try Groq (gratuit, ultra rapide, quota généreux)
       const groqKey = this.configService.get<string>('GROQ_API_KEY');
       if (groqKey) {
         const groqProvider = new GroqProvider(this.configService);
@@ -88,11 +79,6 @@ export class AiContentService {
 
     // Manuel provider selection
     switch (provider) {
-      case 'ollama':
-        this.aiProvider = new OllamaProvider(this.configService);
-        this.logger.log('✅ Using Ollama (local)');
-        break;
-
       case 'groq':
         this.aiProvider = new GroqProvider(this.configService);
         this.logger.log('✅ Using Groq');
@@ -154,8 +140,8 @@ export class AiContentService {
       async generateContent() {
         throw new Error(
           'Aucun provider IA disponible. ' +
-          'Installez Ollama (gratuit) : curl -fsSL https://ollama.com/install.sh | sh && ollama pull llama3.1:8b ' +
-          'OU obtenez une clé API Groq gratuite sur https://console.groq.com',
+          'Obtenez une clé API Groq gratuite sur https://console.groq.com ' +
+          'ou configurez une clé HuggingFace sur https://huggingface.co/settings/tokens',
         );
       },
     };
@@ -314,10 +300,6 @@ export class AiContentService {
     
     if (provider === 'groq' || (provider === 'auto' && this.aiProvider instanceof GroqProvider)) {
       return this.configService.get<string>('GROQ_MODEL', 'llama-3.3-70b-versatile');
-    }
-    
-    if (provider === 'ollama' || (provider === 'auto' && this.aiProvider instanceof OllamaProvider)) {
-      return this.configService.get<string>('OLLAMA_MODEL', 'llama3.1:8b');
     }
     
     if (provider === 'huggingface' || (provider === 'auto' && this.aiProvider instanceof HuggingFaceProvider)) {

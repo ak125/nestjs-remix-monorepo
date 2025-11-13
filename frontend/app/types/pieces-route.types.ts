@@ -107,6 +107,26 @@ export interface SEOInfo {
   description: string;
 }
 
+export interface CatalogueItem {
+  name: string;
+  link: string;
+  image: string;
+  description: string;
+  meta_description: string;
+  sort?: number;
+}
+
+export interface CatalogueMameFamille {
+  title: string;
+  items: CatalogueItem[];
+}
+
+export interface FamilleData {
+  mf_id: number;
+  mf_name: string;
+  mf_pic: string;
+}
+
 export interface LoaderData {
   vehicle: VehicleData;
   gamme: GammeData;
@@ -125,6 +145,10 @@ export interface LoaderData {
   // Sections cross-selling et blog
   crossSellingGammes: CrossSellingGamme[];
   blogArticle?: BlogArticle;
+  
+  // Catalogue famille
+  catalogueMameFamille?: CatalogueMameFamille;
+  famille?: FamilleData;
   
   seo: SEOInfo;
   performance: PerformanceInfo;

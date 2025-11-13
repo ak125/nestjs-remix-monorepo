@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigation } from "@remix-run/react";
+import { useEffect } from "react";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
@@ -8,14 +9,17 @@ import EquipementiersSection from "../components/pieces/EquipementiersSection";
 import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
-import PerformanceIndicator from "../components/pieces/PerformanceIndicator";
 import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
-import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { buildCanonicalUrl } from "../utils/seo/canonical";
+import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
+import { hierarchyApi } from "../services/api/hierarchy.api";
+import { TrustBadgeGroup } from "../components/trust/TrustBadge";
+import { PurchaseGuide } from "../components/catalog/PurchaseGuide";
 
 interface LoaderData {
   status: number;
@@ -34,6 +38,11 @@ interface LoaderData {
       href: string;
       current?: boolean;
     }>;
+  };
+  famille?: {
+    mf_id: number;
+    mf_name: string;
+    mf_pic: string;
   };
   performance?: {
     total_time_ms: number;
@@ -87,6 +96,7 @@ interface LoaderData {
       image: string;
       description: string;
       meta_description: string;
+      sort?: number;
     }>;
   };
   equipementiers?: {
@@ -141,13 +151,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   );
 
   try {
-    const response = await fetch(`http://localhost:3000/api/gamme-rest-optimized/${gammeId}/page-data`);
+    // 🚀 Configuration API depuis variables d'environnement
+    const API_URL = typeof window === 'undefined' 
+      ? (process.env.VITE_API_URL || 'http://localhost:3000')
+      : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
     
-    if (!response.ok) {
-      throw new Response("API Error", { status: response.status });
+    // 🚀 Timeout de 180 secondes pour l'endpoint RPC qui peut être lent
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
+    
+    const pageDataResponse = await fetch(
+      `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
+      { 
+        headers: {
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      }
+    ).finally(() => clearTimeout(timeoutId));
+    
+    if (!pageDataResponse.ok) {
+      throw new Response("API Error", { status: pageDataResponse.status });
     }
 
-    const data: LoaderData = await response.json();
+    const data: LoaderData = await pageDataResponse.json();
     
     // 🍞 Construire breadcrumb de base
     const baseBreadcrumb = [
@@ -169,6 +196,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       ...data,
       breadcrumbs: { items: breadcrumbItems },
       selectedVehicle
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      }
     });
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);
@@ -237,8 +268,24 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   return result;
 };
 
+export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
+  return {
+    'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+  };
+}
+
 export default function PiecesDetailPage() {
   const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  
+  // Afficher un indicateur de chargement si les données sont en cours de chargement
+  const isLoading = navigation.state === "loading";
+
+  useEffect(() => {
+    if (isLoading) {
+      console.log('⏳ Chargement des données en cours...');
+    }
+  }, [isLoading]);
 
   if (!data || data.status !== 200) {
     return <div className="min-h-screen flex items-center justify-center">
@@ -260,8 +307,22 @@ export default function PiecesDetailPage() {
     { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
   ];
 
+  // 🎨 Récupérer la couleur de la famille pour le hero
+  const familleColor = data.famille ? hierarchyApi.getFamilyColor({
+    mf_id: data.famille.mf_id,
+    mf_name: data.famille.mf_name,
+    mf_pic: data.famille.mf_pic,
+  } as any) : 'from-primary-950 via-primary-900 to-secondary-900'; // Fallback avec design tokens
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      
+      {/* ⏳ Indicateur de chargement global */}
+      {isLoading && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-semantic-info animate-pulse">
+          <div className="h-full bg-gradient-to-r from-semantic-info via-secondary-500 to-semantic-info bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite]"></div>
+        </div>
+      )}
       
       {/* SEO avec schemas JSON-LD enrichis */}
       <SEOHelmet
@@ -293,6 +354,208 @@ export default function PiecesDetailPage() {
         <Breadcrumbs items={breadcrumbs} enableSchema={false} />
       </div>
 
+      {/* 🎯 HERO SECTION - Avec couleur de la famille */}
+      <section 
+        className={`relative overflow-hidden bg-gradient-to-br ${familleColor} text-white py-12 md:py-16 lg:py-20`}
+        aria-label="Sélection véhicule"
+      >
+        {/* Image wallpaper en arrière-plan (si disponible) */}
+        {data.content?.pg_wall && (
+          <div className="absolute inset-0 z-0">
+            <img
+              src={`/upload/articles/gammes-produits/wall/${data.content.pg_wall}`}
+              alt={data.content.pg_name || ""}
+              className="w-full h-full object-cover opacity-25"
+              loading="eager"
+              onError={(e) => {
+                e.currentTarget.src = '/images/placeholder-hero.webp';
+                e.currentTarget.onerror = null;
+              }}
+            />
+            {/* Overlay gradient pour assurer la lisibilité du texte */}
+            <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-transparent"></div>
+          </div>
+        )}
+        
+        {/* Effet mesh gradient adaptatif */}
+        <div 
+          className="absolute inset-0 z-[1] opacity-20"
+          style={{
+            backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                             radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`
+          }}
+          aria-hidden="true"
+        />
+        <div 
+          className="absolute inset-0 z-[1] opacity-[0.07]" 
+          style={{
+            backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px),
+                             linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)`,
+            backgroundSize: '3rem 3rem'
+          }}
+          aria-hidden="true"
+        />
+        
+        {/* Formes décoratives organiques */}
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl animate-[pulse_8s_ease-in-out_infinite] z-[1]" aria-hidden="true"></div>
+        <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl animate-[pulse_12s_ease-in-out_infinite] z-[1]" aria-hidden="true"></div>
+        
+        <div className="relative z-10 container mx-auto px-4 max-w-7xl">
+          
+          {/* Badges contextuels en haut */}
+          <div className="flex flex-wrap justify-center items-center gap-3 mb-6 md:mb-8 animate-in fade-in duration-700">
+            {data.famille && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
+                <div className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}></div>
+                <span className="text-white/95 font-semibold text-sm tracking-wide">{data.famille.mf_name}</span>
+              </div>
+            )}
+            {data.famille?.mf_name.toLowerCase().includes('frein') && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
+                <Shield className="w-4 h-4 text-red-300" />
+                <span className="text-white/95 text-sm font-semibold">Votre sécurité est notre priorité</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Titre H1 dynamique optimisé SEO */}
+          <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
+                {data.content?.h1 || `${data.content?.pg_name || "Pièces auto"} pas cher`}
+              </span>
+            </h1>
+          </div>
+          
+          {/* Cadre glassmorphism contenant Image + VehicleSelector */}
+          <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
+            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
+              
+              {/* Sous-titre dynamique en haut du cadre */}
+              <div className="text-center mb-6">
+                <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
+                  {data.content?.pg_name 
+                    ? `Trouvez ${data.content.pg_name.toLowerCase().includes('plaquette') || data.content.pg_name.toLowerCase().includes('disque') ? 'vos' : 'votre'} ${data.content.pg_name.toLowerCase()} compatible${data.content.pg_name.toLowerCase().includes('plaquette') || data.content.pg_name.toLowerCase().includes('disque') ? 's' : ''} avec votre voiture`
+                    : "Trouvez la référence compatible avec votre véhicule"
+                  }
+                </p>
+              </div>
+              
+              {/* Layout horizontal : Image + VehicleSelector côte à côte */}
+              <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                
+                {/* Image produit à gauche */}
+                <div className="flex-shrink-0 w-full lg:w-80">
+                  <div className="relative group">
+                    {/* Cercle décoratif arrière-plan */}
+                    <div className="absolute inset-0 -z-10">
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
+                    </div>
+                    
+                    {/* Container image */}
+                    <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
+                      <div className="w-full aspect-square flex items-center justify-center">
+                        <img
+                          src={data.content?.pg_pic 
+                            ? `/upload/articles/gammes-produits/catalogue/${data.content.pg_pic}` 
+                            : data.content?.pg_alias
+                            ? `/upload/articles/gammes-produits/catalogue/${data.content.pg_alias}.webp`
+                            : 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.webp'
+                          }
+                          alt={data.content?.pg_name || "Pièce auto"}
+                          className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
+                          loading="eager"
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/placeholder-product.webp';
+                            e.currentTarget.onerror = null;
+                          }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Particule décorative */}
+                    <div className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl animate-[float_8s_ease-in-out_infinite]" aria-hidden="true"></div>
+                  </div>
+                </div>
+                
+                {/* VehicleSelector à droite */}
+                <div className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
+                  <VehicleSelector />
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+          {/* Trust badges premium - Grid responsive pour mobile - Design Tokens */}
+          <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-space-3 md:gap-space-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
+            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+              <CheckCircle2 className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">50 000+ pièces</span>
+            </div>
+            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+              <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Livraison 24-48h</span>
+            </div>
+            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+              <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Paiement sécurisé</span>
+            </div>
+            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+              <Users className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">Experts gratuits</span>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      {/* 💡 Guide d'achat personnalisé par famille - Sous le hero */}
+      {data.famille && (
+        <PurchaseGuide
+          familleId={data.famille.mf_id}
+          familleName={data.famille.mf_name}
+          productName={data.content?.pg_name}
+          familleColor={familleColor}
+          className="-mt-space-3 mb-space-6"
+        />
+      )}
+
+      {/* 🛡️ Conseil Automecanik - Card blanche avec Design Tokens */}
+      {data.famille?.mf_name.toLowerCase().includes('frein') && (
+        <section className="container mx-auto px-space-4 -mt-space-6 mb-space-6 relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-space-6 border border-neutral-200 hover:shadow-2xl transition-shadow duration-300">
+              <div className="flex items-start gap-space-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading text-neutral-900 font-bold text-base mb-space-2">Conseil Automecanik</p>
+                  <p className="font-sans text-neutral-700 text-sm md:text-base leading-relaxed mb-space-3">
+                    Contrôlez et changez vos plaquettes de frein régulièrement pour votre sécurité et le bon fonctionnement du système de freinage.
+                  </p>
+                  <a 
+                    href="#guide" 
+                    className="inline-flex items-center gap-space-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors group"
+                  >
+                    <span>En savoir plus sur l'entretien</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 📊 Sections lazy-loaded */}
+
+      {/* �🛡️ Conseil Automecanik - Card blanche améliorée */}
+            {/* 🚗 Badge véhicule actif (si présent) */}
+
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
         <div className="container mx-auto px-4 mt-4">
@@ -305,95 +568,9 @@ export default function PiecesDetailPage() {
 
       <div className="container mx-auto px-4 py-8">
         
-        {/* Indicateur de performance */}
-        <PerformanceIndicator performance={data.performance} />
-
-        {/* Vehicle Selector pour trouver des pièces compatibles */}
-        <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8">
-          <h2 className="text-lg md:text-xl font-bold mb-4 text-neutral-800">
-            {data.selectedVehicle ? 'Changer de véhicule' : 'Sélectionnez votre véhicule pour cette gamme'}
-          </h2>
-          <VehicleSelectorV2
-            mode="full"
-            variant="card"
-            context="homepage"
-            redirectOnSelect={false}
-            currentVehicle={data.selectedVehicle ? {
-              brand: { 
-                id: data.selectedVehicle.marque_id, 
-                name: data.selectedVehicle.marque_name 
-              },
-              model: { 
-                id: data.selectedVehicle.modele_id, 
-                name: data.selectedVehicle.modele_name 
-              },
-              type: { 
-                id: data.selectedVehicle.type_id, 
-                name: data.selectedVehicle.type_name 
-              }
-            } : undefined}
-            onVehicleSelect={(selection) => {
-              // 🍪 Stocker véhicule dans cookie
-              if (selection.brand && selection.model && selection.type) {
-                storeVehicleClient({
-                  marque_id: selection.brand.marque_id,
-                  marque_name: selection.brand.marque_name,
-                  marque_alias: selection.brand.marque_alias || selection.brand.marque_name.toLowerCase().replace(/\s+/g, '-'),
-                  modele_id: selection.model.modele_id,
-                  modele_name: selection.model.modele_name,
-                  modele_alias: selection.model.modele_alias || selection.model.modele_name.toLowerCase().replace(/\s+/g, '-'),
-                  type_id: selection.type.type_id,
-                  type_name: selection.type.type_name,
-                  type_alias: selection.type.type_alias || 'type'
-                });
-
-                console.log('🍪 Véhicule stocké dans cookie:', 
-                  `${selection.brand.marque_name} ${selection.model.modele_name}`
-                );
-
-                // Option 1: Recharger la page pour afficher le breadcrumb mis à jour
-                window.location.reload();
-
-                // Option 2 (alternative): Rediriger vers page pièces avec véhicule
-                // if (data?.content) {
-                //   const brandSlug = `${selection.brand.marque_alias}-${selection.brand.marque_id}`;
-                //   const modelSlug = `${selection.model.modele_alias}-${selection.model.modele_id}`;
-                //   const typeSlug = `${selection.type.type_alias || 'type'}-${selection.type.type_id}.html`;
-                //   window.location.href = `/pieces/${data.content.pg_alias}/${brandSlug}/${modelSlug}/${typeSlug}`;
-                // }
-              }
-            }}
-            className="bg-neutral-50 p-4 rounded-md"
-          />
-        </div>        {/* Hero Section */}
+        {/* Contenu principal de la gamme */}
         <section className="bg-white rounded-xl shadow-lg mb-6 md:mb-8 overflow-hidden">
-          <div className="relative">
-            {data.content?.pg_wall && (
-              <div className="h-48 md:h-64 bg-gradient-to-r from-semantic-info to-semantic-info/90 relative overflow-hidden">
-                <img
-                  src={`/upload/articles/gammes-produits/wall/${data.content.pg_wall}`}
-                  alt={data.content.h1}
-                  className="w-full h-full object-cover opacity-30"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-              </div>
-            )}
-            <div className="absolute inset-0 flex items-center justify-center text-center p-6">
-              <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
-                  {data.content?.h1}
-                </h1>
-                <p className="text-xl text-white/90 max-w-2xl mx-auto drop-shadow">
-                  Découvrez notre sélection de {data.content?.pg_name} de qualité professionnelle
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Contenu principal */}
+          {/* Contenu SEO */}
           {data.content?.content && (
             <div className="p-4 md:p-6 lg:p-8">
               <div 
@@ -405,10 +582,16 @@ export default function PiecesDetailPage() {
         </section>
 
         {/* Guide Expert */}
-        <GuideSection guide={data.guide} />
+        <div id="guide-expert" className="scroll-mt-20">
+          <GuideSection guide={data.guide} familleColor={familleColor} familleName={data.famille?.mf_name} />
+        </div>
 
         {/* Motorisations - Section critique, chargée immédiatement */}
-        <MotorisationsSection motorisations={data.motorisations} />
+        <MotorisationsSection 
+          motorisations={data.motorisations}
+          familleColor={familleColor}
+          familleName={data.famille?.mf_name || 'pièces'}
+        />
 
         {/* Catalogue Même Famille - Lazy load avec skeleton */}
         <LazySection
