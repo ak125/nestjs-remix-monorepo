@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { GammeRestCompleteController } from './gamme-rest-complete.controller';
 import { GammeRestOptimizedController } from './gamme-rest-optimized.controller';
 import { GammeRestRpcV2Controller } from './gamme-rest-rpc-v2.controller';
 import { CacheModule } from '../../cache/cache.module';
@@ -19,7 +18,6 @@ import {
 @Module({
   imports: [CacheModule],
   controllers: [
-    GammeRestCompleteController,
     GammeRestOptimizedController, // Fallback automatique
     GammeRestRpcV2Controller, // RPC V2 ultra-optimisé
   ],
