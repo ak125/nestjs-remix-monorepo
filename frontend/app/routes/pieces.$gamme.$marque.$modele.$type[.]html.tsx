@@ -4,6 +4,7 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
@@ -304,10 +305,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const [crossSellingGammes, blogArticle, pageData, hierarchyData] = await Promise.all([
     fetchCrossSellingGammes(vehicle.typeId, gamme.id),
     fetchBlogArticle(gamme, vehicle),
-    // Charger les données de la page gamme pour récupérer catalogueMameFamille
-    fetch(`http://localhost:3000/api/gamme-rest-optimized/${gammeId}/page-data`, {
-      headers: { 'Accept': 'application/json' }
-    }).then(res => res.ok ? res.json() : null).catch(() => null),
+    // 🚀 Charger les données de la page gamme avec fallback automatique RPC V2
+    fetchGammePageData(gammeId).catch(() => null),
     // Charger la hiérarchie pour avoir l'ordre correct
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { 'Accept': 'application/json' }

@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
 import { useEffect } from "react";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
@@ -154,21 +155,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       ? (process.env.VITE_API_URL || 'http://localhost:3000')
       : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
     
-    // 🚀 Ajouter un timeout de 30 secondes pour éviter les 504
+    // 🚀 Timeout de 30 secondes pour éviter les 504
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
     
-    const [pageDataResponse, hierarchyResponse] = await Promise.all([
-      fetch(
-        `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
-        { 
-          headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache'
-          },
-          signal: controller.signal
-        }
-      ).finally(() => clearTimeout(timeoutId)),
+    const [pageData, hierarchyResponse] = await Promise.all([
+      // 🚀 RPC V2 avec fallback automatique
+      fetchGammePageData(gammeId, { signal: controller.signal })
+        .finally(() => clearTimeout(timeoutId)),
       fetch(
         `${API_URL}/api/catalog/gammes/hierarchy`,
         { 
@@ -180,11 +174,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       ).finally(() => clearTimeout(timeoutId))
     ]);
     
-    if (!pageDataResponse.ok) {
-      throw new Response("API Error", { status: pageDataResponse.status });
-    }
-
-    const data: LoaderData = await pageDataResponse.json();
+    // pageData est déjà un objet (pas besoin de .json())
+    const data: LoaderData = pageData;
     
     // 🔄 Si on a la hiérarchie et une famille, remplacer catalogueMameFamille par les données de la hiérarchie
     if (hierarchyResponse.ok && data.famille?.mf_id) {
