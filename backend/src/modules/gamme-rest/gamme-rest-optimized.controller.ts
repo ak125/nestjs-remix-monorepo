@@ -1,6 +1,7 @@
-import { Controller, Get, Param, Query, Injectable } from '@nestjs/common';
+import { Controller, Get, Param, Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { CacheService } from '../cache/cache.service';
+import { GammeResponseBuilderService } from './services';
 
 /**
  * 🚀 GAMME REST CONTROLLER OPTIMISÉ - REPRODUCTION EXACTE DU FICHIER PHP ORIGINAL
@@ -19,7 +20,10 @@ import { CacheService } from '../cache/cache.service';
 @Controller('api/gamme-rest-optimized')
 export class GammeRestOptimizedController extends SupabaseBaseService {
   
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly responseBuilder: GammeResponseBuilderService,
+  ) {
     super();
   }
   
@@ -33,217 +37,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     const pgIdNum = parseInt(pgId, 10);
     console.log(`⚡ RPC V2 ULTRA-OPTIMISÉ - PG_ID=${pgIdNum}`);
 
-    const startTime = performance.now();
-
-    // ========================================
-    // 1. REDIRECTION (exactement comme PHP)
-    // ========================================
-    if (pgIdNum === 3940) {
-      return {
-        redirect: '/pieces/corps-papillon-158.html',
-      };
-    }
-
     try {
-      // ========================================
-      // 2. UN SEUL APPEL RPC POUR TOUT 🚀
-      // ========================================
-      const { data: aggregatedData, error: rpcError } = await this.client
-        .rpc('get_gamme_page_data_optimized', { p_pg_id: pgId });
-      
-      if (rpcError) {
-        console.error('❌ Erreur RPC:', rpcError);
-        throw rpcError;
-      }
-
-      const rpcTime = performance.now();
-      console.log(`✅ RPC exécuté en ${(rpcTime - startTime).toFixed(1)}ms`);
-
-      // ========================================
-      // 3. RÉCUPÉRATION PAGE DATA (inchangé)
-      // ========================================
-      const { data: pageData, error: pageError } = await this.client
-        .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_name_meta, pg_alias, pg_relfollow, pg_img, pg_wall')
-        .eq('pg_id', pgId)
-        .eq('pg_display', 1)
-        .single();
-
-      if (pageError || !pageData) {
-        console.error('❌ Gamme non trouvée:', pageError);
-        return {
-          error: 'Gamme non trouvée',
-          message: pageError?.message,
-        };
-      }
-
-      // Variables principales
-      const pgNameSite = pageData.pg_name;
-      const pgNameMeta = pageData.pg_name_meta;
-      const pgAlias = pageData.pg_alias;
-      const pgRelfollow = pageData.pg_relfollow;
-      const pgPic = pageData.pg_img;
-      const pgWall = pageData.pg_wall;
-
-      // ========================================
-      // 4. TRAITEMENT DES DONNÉES RPC
-      // ========================================
-      const catalogData = aggregatedData?.catalog;
-      const seoData = aggregatedData?.seo;
-      const conseilsRaw = aggregatedData?.conseils || [];
-      const informationsRaw = aggregatedData?.informations || [];
-      const equipementiersRaw = aggregatedData?.equipementiers || [];
-      const blogData = aggregatedData?.blog;
-      const catalogueFamilleRaw = aggregatedData?.catalogue_famille || [];
-      const familleInfo = aggregatedData?.famille_info;
-      const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
-      const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
-      const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
-
-      // ========================================
-      // 5. TRAITEMENT SEO & CONTENT
-      // ========================================
-      let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
-
-      if (seoData) {
-        pageTitle = this.contentCleaner(seoData.sg_title || '');
-        pageDescription = this.contentCleaner(seoData.sg_descrip || '');
-        pageKeywords = this.contentCleaner(seoData.sg_keywords || '');
-        pageH1 = this.contentCleaner(seoData.sg_h1 || '');
-        pageContent = this.contentCleaner(seoData.sg_content || '');
-      } else {
-        pageTitle = pgNameMeta + ' neuf & à prix bas';
-        pageDescription = `Votre ${pgNameMeta} au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.`;
-        pageKeywords = pgNameMeta;
-        pageH1 = `Choisissez ${pgNameSite} pas cher pour votre véhicule`;
-        pageContent = `Le(s) <b>${pgNameSite}</b> commercialisés sur Automecanik sont disponibles pour tous les modèles de véhicules.`;
-      }
-
-      const relfollow = pgRelfollow === 1 ? 1 : 0;
-      const pageRobots = relfollow === 1 ? 'index, follow' : 'noindex, nofollow';
-      const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
-
-      // ========================================
-      // 6. TRAITEMENT CONSEILS
-      // ========================================
-      const conseils = conseilsRaw.map((conseil: any) => ({
-        id: conseil.sgc_id,
-        title: this.contentCleaner(conseil.sgc_title || ''),
-        content: this.contentCleaner(conseil.sgc_content || ''),
-      }));
-
-      // ========================================
-      // 7. TRAITEMENT INFORMATIONS
-      // ========================================
-      const informations = informationsRaw.map((info: any) => info.sgi_content);
-
-      // ========================================
-      // 8. TRAITEMENT MOTORISATIONS (déjà enrichies par RPC!)
-      // ========================================
-      const getSeoFragmentsByTypeId = (typeId: number) => {
-        const fragment1 = seoFragments1.length > 0 
-          ? seoFragments1[(typeId + 1) % seoFragments1.length]?.sis_content || ''
-          : '';
-        const fragment2 = seoFragments2.length > 0
-          ? seoFragments2[typeId % seoFragments2.length]?.sis_content || ''
-          : '';
-        return { fragment1, fragment2 };
-      };
-
-      const motorisations = motorisationsEnriched.map((item: any) => {
-        const { fragment1, fragment2 } = getSeoFragmentsByTypeId(item.type_id);
-        
-        return {
-          cgc_type_id: item.type_id,
-          type_name: item.type_name,
-          type_power_ps: item.type_power_ps,
-          type_year_from: item.type_year_from,
-          type_year_to: item.type_year_to,
-          modele_id: item.modele_id,
-          modele_name: item.modele_name,
-          marque_id: item.marque_id,
-          marque_name: item.marque_name,
-          title: this.contentCleaner(fragment2),
-          content: this.contentCleaner(fragment1),
-        };
-      });
-
-      // ========================================
-      // 9. TRAITEMENT CATALOGUE FAMILLE
-      // ========================================
-      const catalogueFiltres = catalogueFamilleRaw.map((piece: any) => ({
-        id: piece.pg_id,
-        name: piece.pg_name,
-        alias: piece.pg_alias,
-        image: piece.pg_pic,
-        description: this.contentCleaner(piece.description || ''),
-        meta_description: this.contentCleaner(piece.meta_description || ''),
-      }));
-
-      // ========================================
-      // 10. TRAITEMENT ÉQUIPEMENTIERS
-      // ========================================
-      const equipementiers = equipementiersRaw.map((equip: any) => ({
-        pm_id: equip.seg_pm_id,
-        content: this.contentCleaner(equip.seg_content || ''),
-      }));
-
-      // ========================================
-      // 11. GUIDE D'ACHAT
-      // ========================================
-      const guideAchat = blogData ? {
-        id: blogData.ba_id,
-        title: this.contentCleaner(blogData.ba_h1 || ''),
-        alias: blogData.ba_alias,
-        preview: this.contentCleaner(blogData.ba_preview || ''),
-        image: blogData.ba_wall,
-        updated: blogData.ba_update,
-      } : null;
-
-      const totalTime = performance.now();
-      
-      return {
-        meta: {
-          title: pageTitle,
-          description: pageDescription,
-          keywords: pageKeywords,
-          robots: pageRobots,
-          canonical: canonicalLink,
-        },
-        hero: {
-          h1: pageH1,
-          content: pageContent,
-          image: pgPic,
-          wall: pgWall,
-          famille_info: familleInfo || null,
-        },
-        motorisations,
-        catalogueFiltres: catalogueFiltres.length > 0 ? {
-          title: familleInfo ? `Autres pièces de la famille ${familleInfo.mf_name}` : 'Pièces similaires',
-          items: catalogueFiltres,
-        } : null,
-        equipementiers: equipementiers.length > 0 ? {
-          title: 'Nos équipementiers',
-          items: equipementiers,
-        } : null,
-        conseils: conseils.length > 0 ? {
-          title: `Conseils d'entretien`,
-          items: conseils,
-        } : null,
-        informations: informations.length > 0 ? informations : null,
-        guideAchat,
-        performance: {
-          total_time_ms: totalTime - startTime,
-          rpc_time_ms: rpcTime - startTime,
-          motorisations_count: motorisations.length,
-          catalogue_famille_count: catalogueFiltres.length,
-          equipementiers_count: equipementiers.length,
-          conseils_count: conseils.length,
-          informations_count: informations.length,
-          guide_available: guideAchat ? 1 : 0,
-        },
-      };
-
+      return await this.responseBuilder.buildRpcV2Response(pgId);
     } catch (error) {
       console.error('❌ Erreur dans getPageDataRpcV2:', error);
       return {
