@@ -32,18 +32,28 @@ export class CacheService implements OnModuleInit {
         return;
       }
 
+      // Vérifier si Redis est déjà connecté
+      if (this.redisClient.status === 'ready' || this.redisClient.status === 'connect') {
+        this.redisReady = true;
+        console.log('✅ Redis déjà connecté (status:', this.redisClient.status, ')');
+        resolve();
+        return;
+      }
+
       this.redisClient.once('ready', () => {
         this.redisReady = true;
         console.log('✅ Redis prêt et disponible');
         resolve();
       });
 
-      // Timeout 5s
+      // Timeout augmenté à 10s
       setTimeout(() => {
-        console.warn('⚠️ Redis non prêt après 5s, continue quand même');
-        this.redisReady = true; // Force ready pour ne pas bloquer
+        if (!this.redisReady) {
+          console.warn('⚠️ Redis non prêt après 10s, continue quand même');
+          this.redisReady = true; // Force ready pour ne pas bloquer
+        }
         resolve();
-      }, 5000);
+      }, 10000);
     });
   }
 
@@ -81,8 +91,16 @@ export class CacheService implements OnModuleInit {
 
       this.redisClient.on('ready', () => {
         this.redisReady = true;
-        console.log('✅ Cache Redis prêt');
+        console.log('✅ Cache Redis prêt (via event ready)');
       });
+
+      // Vérifier la connexion après un court délai
+      setTimeout(() => {
+        if (this.redisClient && (this.redisClient.status === 'ready' || this.redisClient.status === 'connect')) {
+          this.redisReady = true;
+          console.log('✅ Cache Redis connecté (status check)');
+        }
+      }, 100);
     } catch (error) {
       console.error('❌ Erreur de connexion Redis Cache:', error);
     }

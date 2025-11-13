@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Param, Logger, UseInterceptors } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -6,11 +6,13 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CatalogService, HomeCatalogData } from './catalog.service';
 import { CatalogFamilyService } from './services/catalog-family.service';
 
 @ApiTags('Catalog - API Complète')
 @Controller('api/catalog')
+@UseInterceptors(CacheInterceptor)
 export class CatalogController {
   private readonly logger = new Logger(CatalogController.name);
 

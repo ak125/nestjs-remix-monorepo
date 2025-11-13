@@ -1,10 +1,25 @@
-import { Controller, Get, Query, Logger, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Logger,
+  Delete,
+  HttpException,
+  HttpStatus,
+  UseInterceptors,
+} from '@nestjs/common';
 import { NavigationService } from './navigation.service';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CommercialMenuService } from './services/commercial-menu.service';
 import { ExpeditionMenuService } from './services/expedition-menu.service';
 import { SeoMenuService } from './services/seo-menu.service';
 
+/**
+ * 🧭 NAVIGATION CONTROLLER
+ * Gère tous les menus de l'application
+ */
 @Controller('navigation')
+@UseInterceptors(CacheInterceptor)
 export class NavigationController {
   private readonly logger = new Logger(NavigationController.name);
 

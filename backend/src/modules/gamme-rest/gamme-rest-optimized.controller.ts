@@ -24,6 +24,237 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
   }
   
   /**
+   * ⚡ VERSION NOUVELLE GÉNÉRATION - PostgreSQL RPC ultra-optimisé
+   * 1 SEULE requête HTTP au lieu de 15+
+   * Objectif : 138s → <5s
+   */
+  @Get(':pgId/page-data-rpc-v2')
+  async getPageDataRpcV2(@Param('pgId') pgId: string) {
+    const pgIdNum = parseInt(pgId, 10);
+    console.log(`⚡ RPC V2 ULTRA-OPTIMISÉ - PG_ID=${pgIdNum}`);
+
+    const startTime = performance.now();
+
+    // ========================================
+    // 1. REDIRECTION (exactement comme PHP)
+    // ========================================
+    if (pgIdNum === 3940) {
+      return {
+        redirect: '/pieces/corps-papillon-158.html',
+      };
+    }
+
+    try {
+      // ========================================
+      // 2. UN SEUL APPEL RPC POUR TOUT 🚀
+      // ========================================
+      const { data: aggregatedData, error: rpcError } = await this.client
+        .rpc('get_gamme_page_data_optimized', { p_pg_id: pgId });
+      
+      if (rpcError) {
+        console.error('❌ Erreur RPC:', rpcError);
+        throw rpcError;
+      }
+
+      const rpcTime = performance.now();
+      console.log(`✅ RPC exécuté en ${(rpcTime - startTime).toFixed(1)}ms`);
+
+      // ========================================
+      // 3. RÉCUPÉRATION PAGE DATA (inchangé)
+      // ========================================
+      const { data: pageData, error: pageError } = await this.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_name_meta, pg_alias, pg_relfollow, pg_img, pg_wall')
+        .eq('pg_id', pgId)
+        .eq('pg_display', 1)
+        .single();
+
+      if (pageError || !pageData) {
+        console.error('❌ Gamme non trouvée:', pageError);
+        return {
+          error: 'Gamme non trouvée',
+          message: pageError?.message,
+        };
+      }
+
+      // Variables principales
+      const pgNameSite = pageData.pg_name;
+      const pgNameMeta = pageData.pg_name_meta;
+      const pgAlias = pageData.pg_alias;
+      const pgRelfollow = pageData.pg_relfollow;
+      const pgPic = pageData.pg_img;
+      const pgWall = pageData.pg_wall;
+
+      // ========================================
+      // 4. TRAITEMENT DES DONNÉES RPC
+      // ========================================
+      const catalogData = aggregatedData?.catalog;
+      const seoData = aggregatedData?.seo;
+      const conseilsRaw = aggregatedData?.conseils || [];
+      const informationsRaw = aggregatedData?.informations || [];
+      const equipementiersRaw = aggregatedData?.equipementiers || [];
+      const blogData = aggregatedData?.blog;
+      const catalogueFamilleRaw = aggregatedData?.catalogue_famille || [];
+      const familleInfo = aggregatedData?.famille_info;
+      const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
+      const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
+      const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
+
+      // ========================================
+      // 5. TRAITEMENT SEO & CONTENT
+      // ========================================
+      let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
+
+      if (seoData) {
+        pageTitle = this.contentCleaner(seoData.sg_title || '');
+        pageDescription = this.contentCleaner(seoData.sg_descrip || '');
+        pageKeywords = this.contentCleaner(seoData.sg_keywords || '');
+        pageH1 = this.contentCleaner(seoData.sg_h1 || '');
+        pageContent = this.contentCleaner(seoData.sg_content || '');
+      } else {
+        pageTitle = pgNameMeta + ' neuf & à prix bas';
+        pageDescription = `Votre ${pgNameMeta} au meilleur tarif, de qualité & à prix pas cher pour toutes marques et modèles de voitures.`;
+        pageKeywords = pgNameMeta;
+        pageH1 = `Choisissez ${pgNameSite} pas cher pour votre véhicule`;
+        pageContent = `Le(s) <b>${pgNameSite}</b> commercialisés sur Automecanik sont disponibles pour tous les modèles de véhicules.`;
+      }
+
+      const relfollow = pgRelfollow === 1 ? 1 : 0;
+      const pageRobots = relfollow === 1 ? 'index, follow' : 'noindex, nofollow';
+      const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
+
+      // ========================================
+      // 6. TRAITEMENT CONSEILS
+      // ========================================
+      const conseils = conseilsRaw.map((conseil: any) => ({
+        id: conseil.sgc_id,
+        title: this.contentCleaner(conseil.sgc_title || ''),
+        content: this.contentCleaner(conseil.sgc_content || ''),
+      }));
+
+      // ========================================
+      // 7. TRAITEMENT INFORMATIONS
+      // ========================================
+      const informations = informationsRaw.map((info: any) => info.sgi_content);
+
+      // ========================================
+      // 8. TRAITEMENT MOTORISATIONS (déjà enrichies par RPC!)
+      // ========================================
+      const getSeoFragmentsByTypeId = (typeId: number) => {
+        const fragment1 = seoFragments1.length > 0 
+          ? seoFragments1[(typeId + 1) % seoFragments1.length]?.sis_content || ''
+          : '';
+        const fragment2 = seoFragments2.length > 0
+          ? seoFragments2[typeId % seoFragments2.length]?.sis_content || ''
+          : '';
+        return { fragment1, fragment2 };
+      };
+
+      const motorisations = motorisationsEnriched.map((item: any) => {
+        const { fragment1, fragment2 } = getSeoFragmentsByTypeId(item.type_id);
+        
+        return {
+          cgc_type_id: item.type_id,
+          type_name: item.type_name,
+          type_power_ps: item.type_power_ps,
+          type_year_from: item.type_year_from,
+          type_year_to: item.type_year_to,
+          modele_id: item.modele_id,
+          modele_name: item.modele_name,
+          marque_id: item.marque_id,
+          marque_name: item.marque_name,
+          title: this.contentCleaner(fragment2),
+          content: this.contentCleaner(fragment1),
+        };
+      });
+
+      // ========================================
+      // 9. TRAITEMENT CATALOGUE FAMILLE
+      // ========================================
+      const catalogueFiltres = catalogueFamilleRaw.map((piece: any) => ({
+        id: piece.pg_id,
+        name: piece.pg_name,
+        alias: piece.pg_alias,
+        image: piece.pg_pic,
+        description: this.contentCleaner(piece.description || ''),
+        meta_description: this.contentCleaner(piece.meta_description || ''),
+      }));
+
+      // ========================================
+      // 10. TRAITEMENT ÉQUIPEMENTIERS
+      // ========================================
+      const equipementiers = equipementiersRaw.map((equip: any) => ({
+        pm_id: equip.seg_pm_id,
+        content: this.contentCleaner(equip.seg_content || ''),
+      }));
+
+      // ========================================
+      // 11. GUIDE D'ACHAT
+      // ========================================
+      const guideAchat = blogData ? {
+        id: blogData.ba_id,
+        title: this.contentCleaner(blogData.ba_h1 || ''),
+        alias: blogData.ba_alias,
+        preview: this.contentCleaner(blogData.ba_preview || ''),
+        image: blogData.ba_wall,
+        updated: blogData.ba_update,
+      } : null;
+
+      const totalTime = performance.now();
+      
+      return {
+        meta: {
+          title: pageTitle,
+          description: pageDescription,
+          keywords: pageKeywords,
+          robots: pageRobots,
+          canonical: canonicalLink,
+        },
+        hero: {
+          h1: pageH1,
+          content: pageContent,
+          image: pgPic,
+          wall: pgWall,
+          famille_info: familleInfo || null,
+        },
+        motorisations,
+        catalogueFiltres: catalogueFiltres.length > 0 ? {
+          title: familleInfo ? `Autres pièces de la famille ${familleInfo.mf_name}` : 'Pièces similaires',
+          items: catalogueFiltres,
+        } : null,
+        equipementiers: equipementiers.length > 0 ? {
+          title: 'Nos équipementiers',
+          items: equipementiers,
+        } : null,
+        conseils: conseils.length > 0 ? {
+          title: `Conseils d'entretien`,
+          items: conseils,
+        } : null,
+        informations: informations.length > 0 ? informations : null,
+        guideAchat,
+        performance: {
+          total_time_ms: totalTime - startTime,
+          rpc_time_ms: rpcTime - startTime,
+          motorisations_count: motorisations.length,
+          catalogue_famille_count: catalogueFiltres.length,
+          equipementiers_count: equipementiers.length,
+          conseils_count: conseils.length,
+          informations_count: informations.length,
+          guide_available: guideAchat ? 1 : 0,
+        },
+      };
+
+    } catch (error) {
+      console.error('❌ Erreur dans getPageDataRpcV2:', error);
+      return {
+        error: 'Erreur serveur',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      };
+    }
+  }
+
+  /**
    * 🚀 VERSION ULTRA-OPTIMISÉE avec PostgreSQL Function (1 seul RPC au lieu de 7 requêtes)
    * Réduit 23s → <500ms en agrégeant toutes les données côté DB
    */
@@ -453,31 +684,14 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     // + CACHE REDIS PAR SOUS-REQUÊTE (TTL 1h)
     // ========================================
     
-    // ⚡ Fonction helper pour cache ou fetch
+    // ⚡ Fonction helper pour requêtes SANS cache (plus rapide)
     const cachedQuery = async <T>(
       subKey: string,
-      queryFn: () => Promise<T>,
+      queryFn: () => Promise<{ data: T | null; error: any }>,
       ttl = 3600,
-    ): Promise<T> => {
-      const key = `${cacheKey}:${subKey}`;
-      try {
-        const cached = await this.cacheService.get(key);
-        if (cached) {
-          console.log(`  ✅ Sub-cache HIT: ${subKey}`);
-          return typeof cached === 'string' ? JSON.parse(cached) : (cached as T);
-        }
-      } catch (e) {
-        console.warn(`  ⚠️ Cache read error for ${subKey}`);
-      }
-      
-      const fresh = await queryFn();
-      try {
-        await this.cacheService.set(key, JSON.stringify(fresh), ttl);
-        console.log(`  📦 Sub-cache SET: ${subKey} (TTL: ${ttl}s)`);
-      } catch (e) {
-        console.warn(`  ⚠️ Cache write error for ${subKey}`);
-      }
-      return fresh;
+    ): Promise<{ data: T | null; error: any }> => {
+      // Exécuter directement la requête DB sans cache
+      return await queryFn();
     };
 
     const [
@@ -654,6 +868,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
     const catalogueFiltres = [];
     let familleInfo = null; // 🎨 Nouvelle info famille avec couleur
     
+    console.log(`🔍 [DEBUG] mfId=${mfId}, catalogData=${!!catalogData}`);
+    
     if (mfId && catalogData) {
       console.log(
         `🔍 Recherche catalogue pour mfId=${mfId}, pgIdNum=${pgIdNum}`,
@@ -678,8 +894,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
       // Première étape : récupérer tous les pg_id de la même famille
       const { data: catalogItems } = await this.client
         .from('catalog_gamme')
-        .select('mc_pg_id, mc_sort')
-        .eq('mc_mf_prime', mfId) // 🎯 Utiliser mc_mf_prime au lieu de mc_mf_id pour cohérence avec homepage
+        .select('mc_pg_id, mc_sort, mc_description, mc_meta_description')
+        .eq('mc_mf_prime', mfId)
         .neq('mc_pg_id', pgIdNum);
 
       console.log(`📊 Catalogue items trouvés: ${catalogItems?.length || 0}`);
@@ -697,12 +913,45 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
         console.log(`📋 Pièces trouvées: ${piecesItems?.length || 0}`);
 
         if (piecesItems && piecesItems.length > 0) {
-          // Créer un map pour les sorts
+          // Troisième étape : récupérer les descriptions SEO depuis __seo_gamme
+          const pgIdsAsString = pgIds.map(id => String(id));
+          const { data: seoDescriptions } = await this.client
+            .from('__seo_gamme')
+            .select('sg_pg_id, sg_title, sg_descrip')
+            .in('sg_pg_id', pgIdsAsString);
+
+          console.log(`📝 Descriptions SEO: ${seoDescriptions?.length || 0}`);
+
+          // Maps pour stocker les données
           const sortMap = new Map();
+          const descriptionMap = new Map();
+          const titleMap = new Map();
+          
+          // Remplir depuis catalog_gamme
           catalogItems.forEach((item) => {
             sortMap.set(item.mc_pg_id, item.mc_sort || 0);
+            if (item.mc_description?.trim()) {
+              descriptionMap.set(item.mc_pg_id, item.mc_description);
+            }
+            if (item.mc_meta_description?.trim()) {
+              titleMap.set(item.mc_pg_id, item.mc_meta_description);
+            }
           });
 
+          // Écraser avec __seo_gamme si disponible (priorité plus haute)
+          if (seoDescriptions && seoDescriptions.length > 0) {
+            seoDescriptions.forEach((seo) => {
+              const pgId = parseInt(seo.sg_pg_id, 10);
+              if (seo.sg_descrip?.trim()) {
+                descriptionMap.set(pgId, seo.sg_descrip);
+              }
+              if (seo.sg_title?.trim()) {
+                titleMap.set(pgId, seo.sg_title);
+              }
+            });
+          }
+
+          // Construire catalogueFiltres
           piecesItems.forEach((piece) => {
             catalogueFiltres.push({
               id: piece.pg_id,
@@ -711,6 +960,8 @@ export class GammeRestOptimizedController extends SupabaseBaseService {
               image: piece.pg_img,
               link: `/pieces/${piece.pg_alias}-${piece.pg_id}.html`,
               sort: sortMap.get(piece.pg_id) || 0,
+              description: descriptionMap.get(piece.pg_id) || `Automecanik vous conseils de contrôlez l'état du ${piece.pg_name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
+              meta_description: titleMap.get(piece.pg_id) || `${piece.pg_name} pas cher à contrôler régulièrement`,
             });
           });
 

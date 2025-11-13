@@ -10,6 +10,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { NavigationController } from './navigation.controller';
 import { NavigationService } from './navigation.service';
 import { CommercialMenuService } from './services/commercial-menu.service';
@@ -22,6 +23,7 @@ import { CacheModule } from '../../cache/cache.module';
   imports: [
     DatabaseModule, // Utilise le module database existant du projet
     CacheModule, // Utilise le module cache personnalisé (cohérent avec admin.module)
+    NestCacheModule.register({ ttl: 300, max: 100 }), // Cache pour CacheInterceptor
   ],
   controllers: [NavigationController],
   providers: [

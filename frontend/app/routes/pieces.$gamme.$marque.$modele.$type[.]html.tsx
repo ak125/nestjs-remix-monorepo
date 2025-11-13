@@ -30,6 +30,7 @@ import { usePiecesFilters } from '../hooks/use-pieces-filters';
 
 // Services API
 import { fetchBlogArticle, fetchCrossSellingGammes } from '../services/pieces/pieces-route.service';
+import { hierarchyApi } from '../services/api/hierarchy.api';
 
 // Types centralisés
 import { 
@@ -299,11 +300,49 @@ export async function loader({ params }: LoaderFunctionArgs) {
     ]
   };
 
-  // 9. Cross-selling et blog (parallèle)
-  const [crossSellingGammes, blogArticle] = await Promise.all([
+  // 9. Cross-selling, blog et catalogue (parallèle)
+  const [crossSellingGammes, blogArticle, pageData, hierarchyData] = await Promise.all([
     fetchCrossSellingGammes(vehicle.typeId, gamme.id),
-    fetchBlogArticle(gamme, vehicle)
+    fetchBlogArticle(gamme, vehicle),
+    // Charger les données de la page gamme pour récupérer catalogueMameFamille
+    fetch(`http://localhost:3000/api/gamme-rest-optimized/${gammeId}/page-data`, {
+      headers: { 'Accept': 'application/json' }
+    }).then(res => res.ok ? res.json() : null).catch(() => null),
+    // Charger la hiérarchie pour avoir l'ordre correct
+    fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
+      headers: { 'Accept': 'application/json' }
+    }).then(res => res.ok ? res.json() : null).catch(() => null)
   ]);
+
+  // Construire catalogueMameFamille depuis la hiérarchie si disponible
+  let catalogueMameFamille = pageData?.catalogueMameFamille;
+  let famille = pageData?.famille;
+  
+  if (hierarchyData && famille?.mf_id) {
+    const family = hierarchyData.families?.find((f: any) => f.id === famille.mf_id);
+    
+    if (family && family.gammes) {
+      // Exclure la gamme actuelle
+      const otherGammes = family.gammes.filter((g: any) => {
+        const gammeIdNum = typeof g.id === 'string' ? parseInt(g.id) : g.id;
+        return gammeIdNum !== gammeId;
+      });
+      
+      catalogueMameFamille = {
+        title: `Catalogue ${famille.mf_name}`,
+        items: otherGammes.map((g: any) => ({
+          name: g.name,
+          link: `/pieces/${g.alias}-${g.id}.html`,
+          image: g.image 
+            ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.image}`
+            : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp`,
+          description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
+          meta_description: `${g.name} pas cher à contrôler régulièrement, changer si encrassé`,
+          sort: g.sort_order,
+        }))
+      };
+    }
+  }
 
   // 10. Construction réponse finale
   const loadTime = Date.now() - startTime;
@@ -322,6 +361,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     compatibilityInfo,
     crossSellingGammes,
     blogArticle: blogArticle || undefined,
+    catalogueMameFamille,
+    famille,
     seo: {
       title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
       h1: seoContent.h1,
@@ -461,8 +502,9 @@ export default function PiecesVehicleRoute() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* Sidebar filtres */}
-          <aside className="lg:w-80 flex-shrink-0">
+          {/* Sidebar filtres et catalogue */}
+          <aside className="lg:w-80 flex-shrink-0 space-y-6">
+            {/* Filtres */}
             <PiecesFilterSidebar
               activeFilters={activeFilters}
               setActiveFilters={setActiveFilters}
@@ -473,6 +515,76 @@ export default function PiecesVehicleRoute() {
                 data.pieces.filter(p => p.brand === brand).length
               }
             />
+
+            {/* Catalogue inline - même présentation que test-catalogue-optimized */}
+            {data.catalogueMameFamille && data.catalogueMameFamille.items.length > 0 && (() => {
+              // Calculer la couleur de la famille
+              const familleColor = data.famille ? hierarchyApi.getFamilyColor({
+                mf_id: data.famille.mf_id,
+                mf_name: data.famille.mf_name,
+                mf_pic: data.famille.mf_pic,
+              } as any) : 'from-blue-950 via-indigo-900 to-purple-900';
+
+              return (
+                <div>
+                  <div className={`relative rounded-lg overflow-hidden shadow-lg bg-gradient-to-br ${familleColor}`}>
+                    {/* Overlay pour améliorer le contraste du titre */}
+                    <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/20 to-transparent"></div>
+                    
+                    <div className="relative p-3">
+                      <h2 className="text-sm font-bold text-white mb-3 text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                        Catalogue {data.famille?.mf_name || "Système de freinage"}
+                      </h2>
+                      <div className="grid grid-cols-4 gap-1.5 auto-rows-max">
+                        {data.catalogueMameFamille.items.slice(0, 32).map((item, index) => (
+                          <a
+                            key={index}
+                            href={item.link}
+                            className="group relative aspect-square rounded-md overflow-hidden bg-white border border-white/20 hover:border-white hover:shadow-2xl hover:scale-110 hover:z-10 transition-all duration-300 cursor-pointer"
+                            title={item.name}
+                          >
+                            {/* Image du produit */}
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-contain p-1 group-hover:p-0.5 transition-all duration-300"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/placeholder-product.png';
+                              }}
+                            />
+                            
+                            {/* Nom du produit - toujours visible en bas */}
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent text-white text-[6px] p-1 group-hover:from-black/95 group-hover:via-black/85 transition-all duration-300">
+                              <p className="line-clamp-2 font-medium text-center leading-tight">{item.name}</p>
+                            </div>
+                            
+                            {/* Badge "Voir" au hover - apparaît en haut à droite */}
+                            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                              <div className="bg-white/90 backdrop-blur-sm text-gray-900 text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
+                                <svg className="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <span>Voir</span>
+                              </div>
+                            </div>
+                            
+                            {/* Effet de brillance au hover */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 to-transparent group-hover:via-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                          </a>
+                        ))}
+                        {data.catalogueMameFamille.items.length > 32 && (
+                          <div className="flex items-center justify-center aspect-square rounded-md bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold text-[9px] shadow-sm">
+                            +{data.catalogueMameFamille.items.length - 32}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </aside>
 
           {/* Contenu principal */}
