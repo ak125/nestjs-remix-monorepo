@@ -9,12 +9,19 @@ import {
   GammeResponseBuilderService,
 } from './services';
 
+/**
+ * 🚀 Module Gamme REST - Architecture modulaire
+ *
+ * - GammeRestRpcV2Controller: Endpoint ultra-optimisé (~75ms)
+ * - GammeRestOptimizedController: Fallback classique (~680ms)
+ * - Services réutilisables pour transformation de données
+ */
 @Module({
   imports: [CacheModule],
   controllers: [
     GammeRestCompleteController,
-    GammeRestOptimizedController,
-    GammeRestRpcV2Controller, // Nouveau contrôleur léger pour RPC V2
+    GammeRestOptimizedController, // Fallback automatique
+    GammeRestRpcV2Controller, // RPC V2 ultra-optimisé
   ],
   providers: [
     GammeDataTransformerService,
