@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
 import { useEffect } from "react";
+import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
@@ -152,29 +153,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     // 🚀 Configuration API depuis variables d'environnement
-    const API_URL = typeof window === 'undefined' 
-      ? (process.env.VITE_API_URL || 'http://localhost:3000')
-      : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
-    
-    // 🚀 Timeout de 180 secondes pour l'endpoint RPC qui peut être lent
+    // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
     
-    const pageDataResponse = await fetch(
-      `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
-      { 
-        headers: {
-          'Accept': 'application/json'
-        },
-        signal: controller.signal
-      }
-    ).finally(() => clearTimeout(timeoutId));
-    
-    if (!pageDataResponse.ok) {
-      throw new Response("API Error", { status: pageDataResponse.status });
-    }
-
-    const data: LoaderData = await pageDataResponse.json();
+    const data: LoaderData = await fetchGammePageData(gammeId, {
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeoutId));
     
     // 🍞 Construire breadcrumb de base
     const baseBreadcrumb = [
