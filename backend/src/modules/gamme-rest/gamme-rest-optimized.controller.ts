@@ -16,7 +16,7 @@ export class GammeRestOptimizedController {
   /**
    * ⚡ MÉTHODE CLASSIQUE - Fallback automatique
    * Endpoint: GET /api/gamme-rest-optimized/:pgId/page-data
-   * 
+   *
    * Toute la logique est déléguée au service pour la maintenabilité
    */
   @Get(':pgId/page-data')
