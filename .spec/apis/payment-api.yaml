@@ -1,0 +1,1381 @@
+openapi: 3.0.3
+info:
+  title: Payment API
+  version: 1.0.0
+  description: |
+    API de gestion des paiements pour la plateforme e-commerce.
+    
+    ## 🎯 Fonctionnalités principales
+    
+    - **Création de paiements** : Initialisation avec Cyberplus ou Paybox
+    - **Gestion du cycle de vie** : Suivi du statut (PENDING → SUCCESS/FAILED)
+    - **Callbacks bancaires** : Webhooks IPN pour notifications asynchrones
+    - **Remboursements** : Gestion des remboursements totaux/partiels (admin)
+    - **Statistiques** : Analyse des paiements par période/statut (admin)
+    - **Audit complet** : Logs transactions et callbacks dans `ic_postback`
+    
+    ## 🔐 Sécurité
+    
+    - **Authentification** : JWT Bearer token (15min access + 7 days refresh)
+    - **Autorisations** : 
+      - Client : Ses propres paiements uniquement
+      - Admin (role ≥ 9) : Tous les paiements + remboursements
+    - **Callbacks** : Validation HMAC signature pour Cyberplus/Paybox
+    
+    ## 💳 Méthodes de paiement
+    
+    - **CYBERPLUS** : BNP Paribas (production)
+    - **PAYBOX** : Verifone (production)
+    - **CREDIT_CARD** : Cartes bancaires (Visa, Mastercard, Amex)
+    - **PAYPAL** : Désactivé (intégration future)
+    - **BANK_TRANSFER** : Désactivé (virement SEPA)
+    
+    ## 📊 Volumétrie
+    
+    - **Commandes** : 1,440 commandes
+    - **CA total** : €51,509
+    - **Panier moyen** : €35.77
+    - **Temps de réponse** : < 300ms (p95)
+    
+    ## 🔗 Liens utiles
+    
+    - [Spec complète Payment & Cart](/spec/features/payment-cart-system.md)
+    - [Types Zod](/spec/types/payment.schema.md)
+    - [ADR Supabase](/spec/architecture/001-supabase-direct.md)
+
+  contact:
+    name: API Support
+    email: dev@example.com
+
+servers:
+  - url: http://localhost:3000
+    description: Développement local
+  - url: https://api.production.com
+    description: Production
+
+tags:
+  - name: payments
+    description: Opérations client (création, consultation, annulation)
+  - name: admin
+    description: Opérations administrateur (liste, stats, remboursements)
+  - name: callbacks
+    description: Webhooks bancaires (IPN Cyberplus, Paybox)
+  - name: utilities
+    description: Méthodes disponibles, transactions
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/payments:
+    post:
+      tags:
+        - payments
+      summary: Créer un nouveau paiement
+      description: |
+        Initialise un paiement pour une commande. Génère automatiquement le formulaire
+        de redirection vers la passerelle bancaire (Cyberplus ou Paybox).
+        
+        **Flux :**
+        1. Validation du montant (min €0.50, max €10,000)
+        2. Création de l'enregistrement paiement (statut `PENDING`)
+        3. Génération du formulaire bancaire avec signature HMAC
+        4. Retour des données de redirection (URL + paramètres)
+        
+        **Méthodes supportées :**
+        - `CYBERPLUS` : BNP Paribas Mercanet
+        - `PAYBOX` : Verifone Paybox System
+        
+        **Sécurité :**
+        - Authentification JWT requise
+        - userId extrait du token
+        - HMAC signature générée côté serveur
+      operationId: createPayment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentDto'
+            examples:
+              cyberplusPayment:
+                summary: Paiement Cyberplus
+                value:
+                  orderId: "12345"
+                  amount: 99.99
+                  currency: "EUR"
+                  method: "CYBERPLUS"
+                  customerEmail: "client@example.com"
+                  description: "Commande #12345 - 3 articles"
+                  returnUrl: "https://app.com/payment/success"
+                  cancelUrl: "https://app.com/payment/cancel"
+                  notifyUrl: "https://api.app.com/api/payments/callback/cyberplus"
+              payboxPayment:
+                summary: Paiement Paybox
+                value:
+                  orderId: "12346"
+                  amount: 149.50
+                  currency: "EUR"
+                  method: "PAYBOX"
+                  customerEmail: "client@example.com"
+                  returnUrl: "https://app.com/payment/success"
+      responses:
+        '201':
+          description: Paiement créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+              examples:
+                success:
+                  value:
+                    success: true
+                    data:
+                      id: "pay_1234567890"
+                      paymentReference: "PAY_1696502400_ABC123"
+                      status: "PENDING"
+                      amount: 99.99
+                      currency: "EUR"
+                      method: "CYBERPLUS"
+                      orderId: "12345"
+                      userId: "usr_123"
+                      redirectData:
+                        url: "https://secure-paypage.lyra.com/vads-payment/"
+                        method: "POST"
+                        parameters:
+                          vads_action_mode: "INTERACTIVE"
+                          vads_amount: "9999"
+                          vads_ctx_mode: "PRODUCTION"
+                          vads_currency: "978"
+                          vads_order_id: "12345"
+                          vads_payment_config: "SINGLE"
+                          vads_site_id: "12345678"
+                          vads_trans_date: "20231005120000"
+                          vads_trans_id: "123456"
+                          vads_version: "V2"
+                          signature: "abc123def456..."
+                    message: "Paiement créé avec succès"
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidAmount:
+                  value:
+                    success: false
+                    error: "Amount must be between €0.50 and €10,000"
+                missingOrder:
+                  value:
+                    success: false
+                    error: "Order ID is required"
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: "Unauthorized - JWT token required"
+    
+    get:
+      tags:
+        - admin
+      summary: Liste tous les paiements (admin)
+      description: |
+        Récupère la liste complète des paiements (tous utilisateurs).
+        
+        **Restrictions :**
+        - Réservé aux administrateurs (role ≥ 9)
+        - Pagination recommandée pour volumétrie élevée
+        
+        **Note :** Endpoint en cours d'implémentation.
+      operationId: listAllPayments
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des paiements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+              example:
+                success: true
+                data: []
+                message: "Method to be implemented: findAllPayments"
+        '403':
+          description: Accès refusé (non admin)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/stats:
+    get:
+      tags:
+        - admin
+      summary: Statistiques des paiements (admin)
+      description: |
+        Analyse globale des paiements avec filtres par statut et période.
+        
+        **Métriques calculées :**
+        - Total paiements par statut (SUCCESS, PENDING, FAILED, REFUNDED)
+        - Montant total encaissé
+        - Montant moyen par transaction
+        - Taux de succès/échec
+        - Évolution temporelle
+        
+        **Filtres disponibles :**
+        - `status` : SUCCESS, PENDING, FAILED, REFUNDED
+        - `startDate` / `endDate` : ISO 8601 format
+      operationId: getPaymentStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED]
+          description: Filtrer par statut
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Date de début (ISO 8601)
+          example: "2024-01-01T00:00:00Z"
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Date de fin (ISO 8601)
+          example: "2024-12-31T23:59:59Z"
+      responses:
+        '200':
+          description: Statistiques calculées
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalCount:
+                        type: integer
+                      successCount:
+                        type: integer
+                      failedCount:
+                        type: integer
+                      refundedCount:
+                        type: integer
+                      totalAmount:
+                        type: number
+                        format: float
+                      averageAmount:
+                        type: number
+                        format: float
+                      successRate:
+                        type: number
+                        format: float
+                        description: Taux de succès (0-1)
+              example:
+                success: true
+                data:
+                  totalCount: 1440
+                  successCount: 1380
+                  failedCount: 45
+                  refundedCount: 15
+                  totalAmount: 51509.00
+                  averageAmount: 35.77
+                  successRate: 0.958
+
+  /api/payments/stats/global:
+    get:
+      tags:
+        - admin
+      summary: Alias pour /stats (compatibilité)
+      description: Identique à `GET /api/payments/stats`
+      operationId: getGlobalStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED]
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Statistiques globales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /api/payments/{id}:
+    get:
+      tags:
+        - payments
+      summary: Obtenir les détails d'un paiement
+      description: |
+        Récupère les informations complètes d'un paiement par son ID.
+        
+        **Règles d'accès :**
+        - Client : Uniquement ses propres paiements
+        - Admin : Tous les paiements
+        
+        **Vérification propriété :**
+        - Compare `payment.userId` avec `req.user.id` du JWT
+      operationId: getPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du paiement
+          example: "pay_1234567890"
+      responses:
+        '200':
+          description: Détails du paiement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+        '404':
+          description: Paiement non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès non autorisé (pas propriétaire)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/user/{userId}:
+    get:
+      tags:
+        - payments
+      summary: Liste des paiements d'un utilisateur
+      description: |
+        Récupère l'historique des paiements d'un utilisateur spécifique.
+        
+        **Règles d'accès :**
+        - Client : Uniquement ses propres paiements (`userId === req.user.id`)
+        - Admin : Tous les utilisateurs
+        
+        **Pagination :**
+        - Par défaut : 20 derniers paiements
+        - Maximum recommandé : 100
+      operationId: getUserPayments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de l'utilisateur
+          example: "usr_123"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Nombre de résultats
+      responses:
+        '200':
+          description: Liste des paiements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Payment'
+                  count:
+                    type: integer
+              example:
+                success: true
+                count: 5
+                data:
+                  - id: "pay_001"
+                    status: "SUCCESS"
+                    amount: 99.99
+                    orderId: "12345"
+                  - id: "pay_002"
+                    status: "PENDING"
+                    amount: 149.50
+                    orderId: "12346"
+
+  /api/payments/order/{orderId}:
+    get:
+      tags:
+        - payments
+      summary: Paiements associés à une commande
+      description: |
+        Récupère le(s) paiement(s) liés à une commande spécifique.
+        
+        **Cas d'usage :**
+        - Vérifier le statut de paiement d'une commande
+        - Gérer les compléments de paiement (ORD_PARENT != 0)
+        - Historique des tentatives de paiement
+      operationId: getOrderPayments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la commande
+          example: "12345"
+      responses:
+        '200':
+          description: Paiement(s) de la commande
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+
+  /api/payments/reference/{reference}:
+    get:
+      tags:
+        - payments
+      summary: Paiement par référence
+      description: |
+        Récupère un paiement par sa référence unique (générée côté serveur).
+        
+        **Format référence :** `PAY_{timestamp}_{random}`
+        
+        **Exemple :** `PAY_1696502400_ABC123`
+      operationId: getPaymentByReference
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Référence du paiement
+          example: "PAY_1696502400_ABC123"
+      responses:
+        '200':
+          description: Détails du paiement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+        '404':
+          description: Paiement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/{id}/status:
+    patch:
+      tags:
+        - admin
+      summary: Mettre à jour le statut d'un paiement
+      description: |
+        Modification manuelle du statut d'un paiement (admin uniquement).
+        
+        **Transitions autorisées :**
+        - PENDING → SUCCESS | FAILED | CANCELLED
+        - FAILED → PENDING (retry)
+        - SUCCESS → REFUNDED (via endpoint `/refund`)
+        
+        **Audit :**
+        - Changement de statut enregistré dans logs
+        - Notification email si besoin
+      operationId: updatePaymentStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du paiement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED]
+                providerTransactionId:
+                  type: string
+                  description: ID transaction bancaire (optionnel)
+            example:
+              status: "SUCCESS"
+              providerTransactionId: "TXN_987654321"
+      responses:
+        '200':
+          description: Statut mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+        '404':
+          description: Paiement introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/{id}/cancel:
+    post:
+      tags:
+        - payments
+      summary: Annuler un paiement en attente
+      description: |
+        Annule un paiement en statut `PENDING`.
+        
+        **Règles :**
+        - Seuls les paiements PENDING peuvent être annulés
+        - Le propriétaire ou admin peut annuler
+        - Transition : PENDING → CANCELLED
+        
+        **Impact :**
+        - Aucune action bancaire (paiement non validé)
+        - Commande reste en attente de paiement
+      operationId: cancelPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du paiement
+      responses:
+        '200':
+          description: Paiement annulé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+              example:
+                success: true
+                data:
+                  id: "pay_123"
+                  status: "CANCELLED"
+                message: "Paiement annulé avec succès"
+        '400':
+          description: Paiement non annulable (déjà SUCCESS/FAILED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Non autorisé (pas propriétaire)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/payments/{id}/refund:
+    post:
+      tags:
+        - admin
+      summary: Rembourser un paiement (admin)
+      description: |
+        Effectue un remboursement total ou partiel sur un paiement SUCCESS.
+        
+        **Règles de validation :**
+        - Paiement doit être en statut SUCCESS
+        - Montant ≤ montant original
+        - Délai remboursement : 7-14 jours bancaires
+        
+        **Types de remboursement :**
+        - **Total** : Omit `amount` ou égal au montant original
+        - **Partiel** : Spécifier `amount` < montant original
+        
+        **Audit :**
+        - Enregistrement dans `ic_refunds`
+        - Email client automatique
+        - Log admin avec raison
+      operationId: refundPayment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du paiement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  description: Montant à rembourser (optionnel = total)
+                  minimum: 0.01
+                reason:
+                  type: string
+                  description: Raison du remboursement
+                  maxLength: 255
+            examples:
+              totalRefund:
+                summary: Remboursement total
+                value:
+                  reason: "Article défectueux"
+              partialRefund:
+                summary: Remboursement partiel
+                value:
+                  amount: 50.00
+                  reason: "Compensation service client"
+      responses:
+        '200':
+          description: Remboursement effectué
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Payment'
+                  message:
+                    type: string
+              example:
+                success: true
+                data:
+                  id: "pay_123"
+                  status: "REFUNDED"
+                  amount: 99.99
+                  refundedAmount: 99.99
+                message: "Remboursement effectué avec succès"
+        '400':
+          description: Remboursement impossible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                alreadyRefunded:
+                  value:
+                    success: false
+                    error: "Payment already refunded"
+                invalidAmount:
+                  value:
+                    success: false
+                    error: "Refund amount exceeds original payment"
+
+  /api/payments/callback/cyberplus:
+    post:
+      tags:
+        - callbacks
+      summary: Callback Cyberplus pour notifications de paiement
+      description: |
+        Webhook IPN (Instant Payment Notification) appelé par Cyberplus/BNP Paribas.
+        
+        **Flux de traitement :**
+        1. Réception du callback POST de Cyberplus
+        2. Enregistrement dans `ic_postback` (audit complet)
+        3. Validation de la signature HMAC-SHA256
+        4. Mise à jour du statut du paiement
+        5. Notification commande si SUCCESS
+        6. Retour 200 OK (obligatoire pour Cyberplus)
+        
+        **Sécurité :**
+        - Signature HMAC-SHA256 obligatoire
+        - IP whitelisting recommandé
+        - Idempotence gérée (replay protection)
+        
+        **Codes statut Cyberplus :**
+        - `00` : SUCCESS
+        - `05` : Refusé
+        - `30` : Fraude détectée
+        - Voir `.spec/types/payment.schema.md` pour liste complète
+        
+        **Note :** Endpoint public mais sécurisé par signature.
+      operationId: handleCyberplusCallback
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - transaction_id
+                - order_id
+                - status
+                - amount
+                - signature
+              properties:
+                transaction_id:
+                  type: string
+                  description: ID transaction Cyberplus
+                order_id:
+                  type: string
+                  description: ID commande (notre référence)
+                status:
+                  type: string
+                  description: Code statut Cyberplus
+                amount:
+                  type: string
+                  description: Montant en centimes
+                signature:
+                  type: string
+                  description: Signature HMAC-SHA256
+                currency:
+                  type: string
+                  description: Code devise ISO (978 = EUR)
+                payment_method:
+                  type: string
+                  description: Méthode utilisée (CB, VISA, MASTERCARD)
+            example:
+              transaction_id: "TXN_987654321"
+              order_id: "12345"
+              status: "00"
+              amount: "9999"
+              signature: "abc123def456..."
+              currency: "978"
+              payment_method: "CB"
+      responses:
+        '200':
+          description: Callback traité avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  paymentId:
+                    type: string
+              example:
+                success: true
+                message: "Callback processed successfully"
+                paymentId: "pay_1234567890"
+        '400':
+          description: Signature invalide ou données manquantes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  paymentId:
+                    type: string
+              example:
+                success: false
+                message: "Invalid signature"
+                paymentId: "12345"
+
+  /api/payments/callback/success:
+    post:
+      tags:
+        - callbacks
+      summary: Page de retour après paiement réussi
+      description: |
+        URL de retour appelée par la passerelle bancaire après paiement réussi.
+        
+        **Flux :**
+        1. Client redirigé par Cyberplus/Paybox après paiement
+        2. Paramètres GET/POST reçus
+        3. Récupération du paiement par orderId
+        4. Affichage confirmation client
+        
+        **Note :** Ceci est le retour client, le callback IPN reste la source de vérité.
+      operationId: handleSuccessReturn
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                orderid:
+                  type: string
+            example:
+              order_id: "12345"
+      responses:
+        '200':
+          description: Paiement validé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      paymentId:
+                        type: string
+                      status:
+                        type: string
+                      amount:
+                        type: number
+                      orderId:
+                        type: string
+                  message:
+                    type: string
+              example:
+                success: true
+                data:
+                  paymentId: "pay_123"
+                  status: "SUCCESS"
+                  amount: 99.99
+                  orderId: "12345"
+                message: "Payment completed successfully"
+
+  /api/payments/callback/error:
+    post:
+      tags:
+        - callbacks
+      summary: Page de retour après erreur de paiement
+      description: |
+        URL de retour appelée par la passerelle bancaire en cas d'erreur.
+        
+        **Actions :**
+        - Mise à jour statut : PENDING → FAILED
+        - Log de l'erreur
+        - Redirection client vers page erreur
+      operationId: handleErrorReturn
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                order_id:
+                  type: string
+                error:
+                  type: string
+                error_message:
+                  type: string
+            example:
+              order_id: "12345"
+              error: "05"
+              error_message: "Carte refusée"
+      responses:
+        '200':
+          description: Erreur enregistrée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  error:
+                    type: string
+              example:
+                success: false
+                message: "Payment failed"
+                error: "Carte refusée"
+
+  /api/payments/methods/available:
+    get:
+      tags:
+        - utilities
+      summary: Liste des méthodes de paiement disponibles
+      description: |
+        Retourne les méthodes de paiement actives et configurées.
+        
+        **Statuts :**
+        - `enabled: true` : Méthode active en production
+        - `enabled: false` : Méthode désactivée (future intégration)
+      operationId: getAvailablePaymentMethods
+      responses:
+        '200':
+          description: Méthodes disponibles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        enabled:
+                          type: boolean
+                        description:
+                          type: string
+                        logo:
+                          type: string
+                  allMethods:
+                    type: array
+                    items:
+                      type: object
+              example:
+                success: true
+                data:
+                  - id: "CYBERPLUS"
+                    name: "Cyberplus (BNP Paribas)"
+                    enabled: true
+                    description: "Paiement sécurisé par carte bancaire"
+                    logo: "/assets/cyberplus-logo.png"
+                  - id: "CREDIT_CARD"
+                    name: "Carte de crédit"
+                    enabled: true
+                    description: "Visa, Mastercard, American Express"
+                    logo: "/assets/credit-card-logo.png"
+                allMethods:
+                  - id: "PAYPAL"
+                    name: "PayPal"
+                    enabled: false
+
+  /api/payments/{id}/transactions:
+    get:
+      tags:
+        - utilities
+      summary: Historique des transactions d'un paiement
+      description: |
+        Liste chronologique de toutes les transactions liées à un paiement.
+        
+        **Inclut :**
+        - Tentatives de paiement
+        - Callbacks reçus
+        - Remboursements effectués
+        - Changements de statut
+        
+        **Source :** Table `ic_postback` + logs internes
+      operationId: getPaymentTransactions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID du paiement
+      responses:
+        '200':
+          description: Liste des transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        type:
+                          type: string
+                        status:
+                          type: string
+                        amount:
+                          type: number
+                        metadata:
+                          type: object
+                  count:
+                    type: integer
+              example:
+                success: true
+                count: 3
+                data:
+                  - id: "txn_001"
+                    timestamp: "2024-11-14T10:00:00Z"
+                    type: "PAYMENT_CREATED"
+                    status: "PENDING"
+                    amount: 99.99
+                  - id: "txn_002"
+                    timestamp: "2024-11-14T10:05:00Z"
+                    type: "CALLBACK_RECEIVED"
+                    status: "SUCCESS"
+                    amount: 99.99
+                  - id: "txn_003"
+                    timestamp: "2024-11-15T14:30:00Z"
+                    type: "REFUND_PROCESSED"
+                    status: "REFUNDED"
+                    amount: 99.99
+
+  /api/payments/proceed-supplement:
+    post:
+      tags:
+        - payments
+      summary: Initialiser le paiement d'un supplément de commande
+      description: |
+        Génère le formulaire de paiement pour un complément de commande (ORD_PARENT != 0).
+        
+        **Cas d'usage :**
+        - Ajout d'articles après commande initiale
+        - Supplément frais de port modifiés
+        - Consignes supplémentaires
+        
+        **Validations :**
+        - Commande doit avoir `ORD_PARENT != 0`
+        - Commande non déjà payée (`ORD_IS_PAY = 0`)
+        - Utilisateur doit être propriétaire de la commande
+      operationId: proceedSupplementPayment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+                - paymentMethod
+              properties:
+                orderId:
+                  type: string
+                  description: ID de la commande supplément
+                paymentMethod:
+                  type: string
+                  enum: [PAYBOX, PAYPAL]
+                  description: Méthode de paiement
+            example:
+              orderId: "12347"
+              paymentMethod: "PAYBOX"
+      responses:
+        '200':
+          description: Redirection vers passerelle de paiement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      redirectData:
+                        type: object
+        '400':
+          description: Commande invalide ou déjà payée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notSupplement:
+                  value:
+                    success: false
+                    error: "This is not a supplement order"
+                alreadyPaid:
+                  value:
+                    success: false
+                    error: "Order already paid"
+        '403':
+          description: Accès non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtenu via `/api/auth/login`.
+        
+        **Format :** `Authorization: Bearer <token>`
+        
+        **Durée de vie :**
+        - Access token : 15 minutes
+        - Refresh token : 7 jours
+
+  schemas:
+    CreatePaymentDto:
+      type: object
+      required:
+        - orderId
+        - amount
+        - currency
+        - method
+      properties:
+        orderId:
+          type: string
+          description: ID de la commande à payer
+          example: "12345"
+        userId:
+          type: string
+          description: ID utilisateur (optionnel si extrait du JWT)
+          example: "usr_123"
+        amount:
+          type: number
+          format: float
+          minimum: 0.5
+          maximum: 10000
+          description: Montant en EUR (min €0.50, max €10,000)
+          example: 99.99
+        currency:
+          type: string
+          enum: [EUR, USD, GBP]
+          default: EUR
+          description: Devise ISO 4217
+        method:
+          type: string
+          enum: [CYBERPLUS, PAYBOX, CREDIT_CARD, DEBIT_CARD, PAYPAL, BANK_TRANSFER]
+          description: Méthode de paiement
+          example: CYBERPLUS
+        customerEmail:
+          type: string
+          format: email
+          description: Email client (pour notifications)
+          example: "client@example.com"
+        description:
+          type: string
+          maxLength: 255
+          description: Description du paiement
+          example: "Commande #12345 - 3 articles"
+        returnUrl:
+          type: string
+          format: uri
+          description: URL de retour après paiement réussi
+          example: "https://app.com/payment/success"
+        cancelUrl:
+          type: string
+          format: uri
+          description: URL de retour en cas d'annulation
+          example: "https://app.com/payment/cancel"
+        notifyUrl:
+          type: string
+          format: uri
+          description: URL webhook IPN (callback asynchrone)
+          example: "https://api.app.com/api/payments/callback/cyberplus"
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unique du paiement
+          example: "pay_1234567890"
+        paymentReference:
+          type: string
+          description: Référence unique générée
+          example: "PAY_1696502400_ABC123"
+        orderId:
+          type: string
+          description: ID de la commande associée
+          example: "12345"
+        userId:
+          type: string
+          description: ID de l'utilisateur
+          example: "usr_123"
+        amount:
+          type: number
+          format: float
+          description: Montant du paiement
+          example: 99.99
+        currency:
+          type: string
+          description: Devise ISO 4217
+          example: "EUR"
+        method:
+          type: string
+          enum: [CYBERPLUS, PAYBOX, CREDIT_CARD, DEBIT_CARD, PAYPAL, BANK_TRANSFER]
+          description: Méthode de paiement utilisée
+        status:
+          type: string
+          enum: [PENDING, SUCCESS, FAILED, REFUNDED, CANCELLED]
+          description: Statut actuel du paiement
+          example: "SUCCESS"
+        providerTransactionId:
+          type: string
+          description: ID transaction bancaire
+          example: "TXN_987654321"
+        refundedAmount:
+          type: number
+          format: float
+          description: Montant remboursé (si applicable)
+          example: 0
+        description:
+          type: string
+          description: Description du paiement
+        metadata:
+          type: object
+          description: Métadonnées additionnelles
+        createdAt:
+          type: string
+          format: date-time
+          description: Date de création
+          example: "2024-11-14T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Dernière mise à jour
+          example: "2024-11-14T10:05:00Z"
+
+    PaymentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicateur de succès
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            paymentReference:
+              type: string
+            status:
+              type: string
+            amount:
+              type: number
+            currency:
+              type: string
+            method:
+              type: string
+            orderId:
+              type: string
+            userId:
+              type: string
+            redirectData:
+              type: object
+              description: Données pour redirection bancaire
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL de la passerelle bancaire
+                method:
+                  type: string
+                  enum: [GET, POST]
+                  description: Méthode HTTP
+                parameters:
+                  type: object
+                  description: Paramètres du formulaire (inclut signature HMAC)
+        message:
+          type: string
+          description: Message de succès
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Message d'erreur
+          example: "Invalid request"
+        details:
+          type: object
+          description: Détails additionnels (optionnel)
