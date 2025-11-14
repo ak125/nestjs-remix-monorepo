@@ -189,15 +189,27 @@ export default function VehicleSelector({
     
     const url = `/constructeurs/${brandSlug}/${modelSlug}/${typeSlug}.html`;
     
+    console.log('🌐 ========================================');
+    console.log('🔍 Détails de construction URL:', {
+      brand: { alias: brandAlias, id: selectedBrand.marque_id, slug: brandSlug },
+      model: { alias: modelAlias, id: selectedModel.modele_id, slug: modelSlug },
+      type: { alias: typeAlias, id: type.type_id, slug: typeSlug },
+      finalUrl: url
+    });
+    console.log('🌐 URL finale générée:', url);
+    console.log('🌐 ========================================');
+    
     if (url && !url.includes('undefined') && !url.includes('--')) {
-      console.log('🌐 Navigation vers:', url);
-      console.log('🔍 Slugs générés:', { brand: brandSlug, model: modelSlug, type: typeSlug });
+      console.log('✅ Validation URL réussie');
+      console.log('🔄 Navigation vers:', url);
+      console.log('🔄 Rechargement complet via window.location.href');
       
       // 🔄 Forcer un rechargement complet via window.location.href
-      console.log('🔄 Rechargement complet de la page via window.location.href');
       window.location.href = url;
     } else {
-      console.error('🚫 Navigation annulée - URL invalide:', url);
+      console.error('🚫 ❌ Navigation annulée - URL invalide:', url);
+      console.error('   Contient undefined?', url.includes('undefined'));
+      console.error('   Contient --?', url.includes('--'));
     }
   };
 
