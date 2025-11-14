@@ -102,7 +102,7 @@ export class GammeResponseBuilderService {
         // Image par défaut
         carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
       }
-      
+
       // Slugify pour les URLs
       const slugify = (text: string): string => {
         return text
@@ -112,51 +112,93 @@ export class GammeResponseBuilderService {
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-+|-+$/g, '');
       };
-      
+
       // Construire la période
       const yearFrom = item.type_year_from || '';
-      const yearTo = item.type_year_to || 'aujourd\'hui';
+      const yearTo = item.type_year_to || "aujourd'hui";
       const periode = `${yearFrom} - ${yearTo}`;
-      
+
       // Construire le lien vers la page gamme avec véhicule
       // Format: /pieces/gamme-alias-ID/marque-ID/modele-ID/type-ID.html
       const marqueSlug = slugify(item.marque_name);
       const modeleSlug = slugify(item.modele_name);
       const typeSlug = slugify(item.type_name);
       const link = `/pieces/${pgAlias}-${pgIdNum}/${marqueSlug}-${item.marque_id}/${modeleSlug}-${item.modele_id}/${typeSlug}-${item.type_id}.html`;
-      
-      // Nettoyer et enrichir les fragments SEO
-      const cleanedFragment1 = this.transformer.cleanSeoText(fragment1 || '', item.marque_name);
-      const cleanedFragment2 = this.transformer.cleanSeoText(fragment2 || '', item.marque_name);
-      
+
+      // Valider et nettoyer les fragments SEO
+      const validateFragment = (frag: string, marqueName: string): string => {
+        const cleaned = this.transformer.cleanSeoText(frag || '', marqueName);
+        // Éviter fragments trop courts ou invalides
+        if (
+          cleaned.length < 10 ||
+          cleaned.includes('undefined') ||
+          cleaned.includes('null')
+        ) {
+          return '';
+        }
+        // Éviter duplications de mots consécutifs (ex: "contrôler contrôler")
+        const words = cleaned.split(' ');
+        const deduped = words.filter(
+          (word, idx) => idx === 0 || word !== words[idx - 1],
+        );
+        return deduped.join(' ');
+      };
+
+      const cleanedFragment1 = validateFragment(
+        fragment1 || '',
+        item.marque_name,
+      );
+      const cleanedFragment2 = validateFragment(
+        fragment2 || '',
+        item.marque_name,
+      );
+
       // Construire le titre complet : "[Gamme] [marque] [modèle] [type], [fragment1]"
       const buildTitle = () => {
-        const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
+        const hasFragment1 =
+          cleanedFragment1 && cleanedFragment1.trim().length > 3;
         if (hasFragment1) {
           return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}, ${cleanedFragment1}`;
         }
         return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
       };
-      
-      // Construire la description complète selon la logique PHP exacte
+
+      // Construire la description avec templates variés pour contenu plus naturel
       const buildDescription = () => {
-        const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
-        const hasFragment2 = cleanedFragment2 && cleanedFragment2.trim().length > 3;
-        
-        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1]"
+        const hasFragment1 =
+          cleanedFragment1 && cleanedFragment1.trim().length > 3;
+        const hasFragment2 =
+          cleanedFragment2 && cleanedFragment2.trim().length > 3;
+
+        // Templates variés basés sur type_id pour éviter répétitions
         if (hasFragment1 && hasFragment2) {
-          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}.`;
+          const templateIndex = item.type_id % 4;
+
+          switch (templateIndex) {
+            case 0:
+              // Template original
+              return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}.`;
+            case 1:
+              // Template inversé avec conseil
+              return `${cleanedFragment1.charAt(0).toUpperCase() + cleanedFragment1.slice(1)} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch. ${cleanedFragment2.charAt(0).toUpperCase() + cleanedFragment2.slice(1)} la pièce avant installation.`;
+            case 2:
+              // Template descriptif avec double point
+              return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${cleanedFragment1}. Pensez à ${cleanedFragment2.toLowerCase()} avant montage.`;
+            case 3:
+              // Template conversationnel
+              return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${cleanedFragment1}. N'oubliez pas de ${cleanedFragment2.toLowerCase()}.`;
+          }
         }
-        
+
         // Si seulement fragment1 : "[fragment1] pour votre [marque] [modèle] [type] [ch] ch [période]"
         if (hasFragment1) {
-          return `${cleanedFragment1} pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}. Qualité d'origine à prix bas.`;
+          return `${cleanedFragment1.charAt(0).toUpperCase() + cleanedFragment1.slice(1)} pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}. Qualité d'origine à prix bas.`;
         }
-        
+
         // Sinon, description par défaut
         return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, d'origine à prix bas.`;
       };
-      
+
       return {
         cgc_type_id: item.type_id,
         type_name: item.type_name,
@@ -179,21 +221,29 @@ export class GammeResponseBuilderService {
     });
 
     // Guide d'achat
-    const guideAchat = blogData ? {
-      id: blogData.ba_id,
-      title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
-      alias: blogData.ba_alias,
-      preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
-      image: blogData.ba_wall ? `${SUPABASE_URL}/blog/${blogData.ba_wall}` : null,
-      updated: blogData.ba_update,
-    } : null;
+    const guideAchat = blogData
+      ? {
+          id: blogData.ba_id,
+          title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
+          alias: blogData.ba_alias,
+          preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
+          image: blogData.ba_wall
+            ? `${SUPABASE_URL}/blog/${blogData.ba_wall}`
+            : null,
+          updated: blogData.ba_update,
+        }
+      : null;
 
     const totalTime = performance.now() - startTime;
-    
+
     // URLs Supabase pour les images hero
-    const imageUrl = pgPic ? `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgPic}` : null;
-    const wallUrl = pgWall ? `${SUPABASE_URL}/articles/gammes-produits/wall/${pgWall}` : null;
-    
+    const imageUrl = pgPic
+      ? `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgPic}`
+      : null;
+    const wallUrl = pgWall
+      ? `${SUPABASE_URL}/articles/gammes-produits/wall/${pgWall}`
+      : null;
+
     return {
       status: 200,
       meta: {
@@ -212,22 +262,36 @@ export class GammeResponseBuilderService {
         wall: wallUrl,
         famille_info: familleInfo || null,
       },
-      motorisations: motorisations.length > 0 ? {
-        title: `Motorisations compatibles`,
-        items: motorisations,
-      } : null,
-      catalogueFiltres: catalogueFiltres.length > 0 ? {
-        title: familleInfo ? `Autres pièces de la famille ${familleInfo.mf_name}` : 'Pièces similaires',
-        items: catalogueFiltres,
-      } : null,
-      equipementiers: equipementiers.length > 0 ? {
-        title: 'Nos équipementiers',
-        items: equipementiers,
-      } : null,
-      conseils: conseils.length > 0 ? {
-        title: `Conseils d'entretien`,
-        items: conseils,
-      } : null,
+      motorisations:
+        motorisations.length > 0
+          ? {
+              title: `Motorisations compatibles`,
+              items: motorisations,
+            }
+          : null,
+      catalogueFiltres:
+        catalogueFiltres.length > 0
+          ? {
+              title: familleInfo
+                ? `Autres pièces de la famille ${familleInfo.mf_name}`
+                : 'Pièces similaires',
+              items: catalogueFiltres,
+            }
+          : null,
+      equipementiers:
+        equipementiers.length > 0
+          ? {
+              title: 'Nos équipementiers',
+              items: equipementiers,
+            }
+          : null,
+      conseils:
+        conseils.length > 0
+          ? {
+              title: `Conseils d'entretien`,
+              items: conseils,
+            }
+          : null,
       informations: informations.length > 0 ? informations : null,
       guideAchat,
       performance: {

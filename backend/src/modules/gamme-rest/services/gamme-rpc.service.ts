@@ -24,9 +24,11 @@ export class GammeRpcService extends SupabaseBaseService {
     }
 
     // Appel RPC unique
-    const { data: aggregatedData, error: rpcError } = await this.client
-      .rpc('get_gamme_page_data_optimized', { p_pg_id: pgId });
-    
+    const { data: aggregatedData, error: rpcError } = await this.client.rpc(
+      'get_gamme_page_data_optimized',
+      { p_pg_id: pgId },
+    );
+
     if (rpcError) {
       throw rpcError;
     }
@@ -51,19 +53,31 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
-   * Obtient des fragments SEO par type_id
+   * Obtient des fragments SEO par type_id avec meilleure distribution
    */
   getSeoFragmentsByTypeId(
     typeId: number,
     seoFragments1: any[],
-    seoFragments2: any[]
+    seoFragments2: any[],
   ): { fragment1: string; fragment2: string } {
-    const fragment1 = seoFragments1.length > 0 
-      ? seoFragments1[(typeId + 1) % seoFragments1.length]?.sis_content || ''
-      : '';
-    const fragment2 = seoFragments2.length > 0
-      ? seoFragments2[typeId % seoFragments2.length]?.sis_content || ''
-      : '';
+    // Hash pour meilleure distribution des fragments (évite répétitions avec typeId consécutifs)
+    const hashTypeId = (id: number): number => {
+      let hash = id;
+      hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+      hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+      hash = (hash >> 16) ^ hash;
+      return Math.abs(hash);
+    };
+
+    const hash = hashTypeId(typeId);
+    const fragment1 =
+      seoFragments1.length > 0
+        ? seoFragments1[hash % seoFragments1.length]?.sis_content || ''
+        : '';
+    const fragment2 =
+      seoFragments2.length > 0
+        ? seoFragments2[(hash + 1) % seoFragments2.length]?.sis_content || ''
+        : '';
     return { fragment1, fragment2 };
   }
 }
