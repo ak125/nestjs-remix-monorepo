@@ -1,16 +1,19 @@
 ---
 title: "Payment & Cart System"
 status: implemented
-version: 1.0.0
+version: 1.0.1
 authors: [Backend Team]
 created: 2025-11-14
 updated: 2025-11-14
 relates-to:
-  - ../api/payment-api.yaml
-  - ../api/cart-api.yaml
-  - ../types/payment.schema.ts
-  - ../types/cart.schema.ts
-tags: [e-commerce, payments, cart, checkout]
+  - ../ANALYSE-APPROFONDIE.md
+  - ../architecture/001-supabase-direct.md (à créer)
+  - ../architecture/002-monorepo-structure.md (à créer)
+tags: [e-commerce, payments, cart, checkout, critical]
+priority: high
+coverage:
+  modules: [cart, payments, orders, promo]
+  routes: [/api/cart/*, /api/payments/*, /api/paybox/*]
 ---
 
 # Payment & Cart System
@@ -235,9 +238,9 @@ Système complet de gestion de panier et de paiements pour la plateforme e-comme
 
 ## 🎨 API Endpoints
 
-Voir spécifications détaillées:
-- [Payment API Spec](../api/payment-api.yaml)
-- [Cart API Spec](../api/cart-api.yaml)
+> **Note:** Spécifications OpenAPI détaillées seront créées en Phase 1:
+> - `../api/payment-api.yaml` (à créer)
+> - `../api/cart-api.yaml` (à créer)
 
 ### Cart Endpoints
 
@@ -269,9 +272,9 @@ GET    /api/paybox/monitoring            # Monitoring (admin)
 
 ## 📊 Data Requirements
 
-Voir schémas détaillés:
-- [Payment Type Schema](../types/payment.schema.ts)
-- [Cart Type Schema](../types/cart.schema.ts)
+> **Note:** Schémas Zod détaillés seront créés en Phase 1:
+> - `../types/payment.schema.ts` (à créer)
+> - `../types/cart.schema.ts` (à créer)
 
 ### Entity: Payment
 
@@ -367,7 +370,7 @@ interface CartItem {
 
 ### Internal
 
-- `DatabaseModule`: accès Supabase pour persistence
+- `DatabaseModule`: accès Supabase pour persistence (via SupabaseBaseService pattern - **PAS de Prisma**)
 - `CacheModule`: Redis pour sessions et optimisations
 - `AuthModule`: JWT validation et user context
 - `ProductsModule`: données produits, stock
@@ -506,13 +509,16 @@ N/A - Nouveau système, pas de migration existante
 
 ## 🔗 Related Documents
 
-- **Architecture Decision:** [ADR-001: Paybox vs SystemPay](../architecture/001-payment-provider-choice.md)
-- **API Specifications:**
-  - [Payment API OpenAPI](../api/payment-api.yaml)
-  - [Cart API OpenAPI](../api/cart-api.yaml)
-- **Type Schemas:**
-  - [Payment Types](../types/payment.schema.ts)
-  - [Cart Types](../types/cart.schema.ts)
+- **Analyse Projet:** [Analyse Approfondie](../ANALYSE-APPROFONDIE.md)
+- **Architecture Decisions (à créer):**
+  - ADR-001: Supabase Direct Access
+  - ADR-002: Monorepo Architecture
+- **API Specifications (à créer Phase 1):**
+  - Payment API OpenAPI
+  - Cart API OpenAPI
+- **Type Schemas (à créer Phase 1):**
+  - Payment Types
+  - Cart Types
 - **Configuration:** `backend/src/config/payment.config.ts`
 - **Documentation existante:**
   - `backend/SYSTEME-PAIEMENT-ACTUEL.md`
@@ -549,6 +555,13 @@ N/A - Nouveau système, pas de migration existante
 - **Post-launch Monitoring:** 2024-12-01 → 2025-01-01
 
 ## 🔄 Change Log
+
+### v1.0.1 (2025-11-14)
+
+- **Fixed:** Corrected relates-to references (removed non-existent files)
+- **Added:** Priority and coverage metadata
+- **Clarified:** Architecture uses Supabase direct (not Prisma)
+- **Updated:** Related Documents section with accurate references
 
 ### v1.0.0 (2025-11-14)
 

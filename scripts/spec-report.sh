@@ -135,16 +135,33 @@ cat >> "$REPORT_FILE" << 'EOF'
 
 ## Code Coverage Analysis
 
-*This section will be enhanced with automated code-to-spec mapping*
-
 ### Backend Modules
 
 EOF
 
-# Count backend modules
+# Count backend modules and calculate coverage
 BACKEND_MODULES=$(find backend/src/modules -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l || echo "0")
-echo "**Total Backend Modules:** $BACKEND_MODULES" >> "$REPORT_FILE"
-echo "" >> "$REPORT_FILE"
+BACKEND_COVERED=0
+
+# Try to identify covered modules from feature specs
+if [ "$FEATURE_COUNT" -gt 0 ]; then
+    while IFS= read -r file; do
+        COVERED_MODULES=$(grep -oP "modules:\s*\[\K[^\]]*" "$file" 2>/dev/null | tr ',' '\n' | wc -l || echo "0")
+        BACKEND_COVERED=$((BACKEND_COVERED + COVERED_MODULES))
+    done < <(find .spec/features -name "*.md" 2>/dev/null)
+fi
+
+BACKEND_PERCENT=0
+if [ "$BACKEND_MODULES" -gt 0 ]; then
+    BACKEND_PERCENT=$((BACKEND_COVERED * 100 / BACKEND_MODULES))
+fi
+
+cat >> "$REPORT_FILE" << EOF
+**Total Backend Modules:** $BACKEND_MODULES  
+**Modules Documented:** $BACKEND_COVERED  
+**Coverage:** $BACKEND_PERCENT%
+
+EOF
 
 cat >> "$REPORT_FILE" << 'EOF'
 
@@ -152,10 +169,29 @@ cat >> "$REPORT_FILE" << 'EOF'
 
 EOF
 
-# Count frontend routes
+# Count frontend routes and calculate coverage
 FRONTEND_ROUTES=$(find frontend/app/routes -name "*.tsx" 2>/dev/null | wc -l || echo "0")
-echo "**Total Frontend Routes:** $FRONTEND_ROUTES" >> "$REPORT_FILE"
-echo "" >> "$REPORT_FILE"
+FRONTEND_COVERED=0
+
+# Try to identify covered routes from feature specs
+if [ "$FEATURE_COUNT" -gt 0 ]; then
+    while IFS= read -r file; do
+        COVERED_ROUTES=$(grep -oP "routes:\s*\[\K[^\]]*" "$file" 2>/dev/null | tr ',' '\n' | wc -l || echo "0")
+        FRONTEND_COVERED=$((FRONTEND_COVERED + COVERED_ROUTES))
+    done < <(find .spec/features -name "*.md" 2>/dev/null)
+fi
+
+FRONTEND_PERCENT=0
+if [ "$FRONTEND_ROUTES" -gt 0 ]; then
+    FRONTEND_PERCENT=$((FRONTEND_COVERED * 100 / FRONTEND_ROUTES))
+fi
+
+cat >> "$REPORT_FILE" << EOF
+**Total Frontend Routes:** $FRONTEND_ROUTES  
+**Routes Documented:** $FRONTEND_COVERED  
+**Coverage:** $FRONTEND_PERCENT%
+
+EOF
 
 cat >> "$REPORT_FILE" << 'EOF'
 
@@ -167,6 +203,49 @@ EOF
 PACKAGES=$(find packages -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l || echo "0")
 echo "**Total Packages:** $PACKAGES" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
+
+cat >> "$REPORT_FILE" << 'EOF'
+
+### Overall Coverage
+
+EOF
+
+# Calculate overall coverage
+TOTAL_CODE_UNITS=$((BACKEND_MODULES + FRONTEND_ROUTES))
+TOTAL_DOCUMENTED=$((BACKEND_COVERED + FRONTEND_COVERED))
+OVERALL_PERCENT=0
+
+if [ "$TOTAL_CODE_UNITS" -gt 0 ]; then
+    OVERALL_PERCENT=$((TOTAL_DOCUMENTED * 100 / TOTAL_CODE_UNITS))
+fi
+
+cat >> "$REPORT_FILE" << EOF
+**Total Code Units:** $TOTAL_CODE_UNITS (modules + routes)  
+**Units Documented:** $TOTAL_DOCUMENTED  
+**Overall Coverage:** $OVERALL_PERCENT%
+
+EOF
+
+# Add coverage chart
+cat >> "$REPORT_FILE" << 'EOF'
+
+#### Coverage by Type
+
+EOF
+
+# ASCII bar chart
+BACKEND_BAR=$(printf '█%.0s' $(seq 1 $((BACKEND_PERCENT / 5))))
+FRONTEND_BAR=$(printf '█%.0s' $(seq 1 $((FRONTEND_PERCENT / 5))))
+OVERALL_BAR=$(printf '█%.0s' $(seq 1 $((OVERALL_PERCENT / 5))))
+
+cat >> "$REPORT_FILE" << EOF
+\`\`\`
+Backend:  [$BACKEND_BAR] $BACKEND_PERCENT%
+Frontend: [$FRONTEND_BAR] $FRONTEND_PERCENT%
+Overall:  [$OVERALL_BAR] $OVERALL_PERCENT%
+\`\`\`
+
+EOF
 
 cat >> "$REPORT_FILE" << 'EOF'
 
