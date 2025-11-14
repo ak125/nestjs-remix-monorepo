@@ -3,6 +3,7 @@
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { CacheService } from '../../cache/cache.service';
 import {
   Gamme,
   FamilyWithGammes,
@@ -13,7 +14,7 @@ import {
 export class GammeUnifiedService extends SupabaseBaseService {
   protected readonly logger = new Logger(GammeUnifiedService.name);
 
-  constructor() {
+  constructor(private readonly cacheService: CacheService) {
     super();
   }
 
@@ -77,10 +78,20 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
   /**
    * 🏗️ Récupère la hiérarchie familles → gammes unifiée
+   * ⚡ Cache Redis: TTL 1h pour optimiser la homepage
    */
   async getHierarchy(): Promise<GammeHierarchyResponse> {
+    const cacheKey = 'catalog:hierarchy:full';
+    
     try {
-      this.logger.log('🏗️ Construction hiérarchie unifiée...');
+      // 1. Tentative de lecture cache
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && typeof cached === 'string') {
+        this.logger.log('✅ Cache HIT - Hiérarchie depuis Redis (<10ms)');
+        return JSON.parse(cached);
+      }
+      
+      this.logger.log('🔍 Cache MISS - Construction hiérarchie unifiée...');
 
       // 1. Récupérer les familles
       const { data: families, error: familiesError } = await this.supabase
@@ -184,6 +195,15 @@ export class GammeUnifiedService extends SupabaseBaseService {
       this.logger.log(
         `✅ Hiérarchie: ${response.stats.total_families} familles, ${response.stats.total_gammes} gammes`,
       );
+      
+      // 2. Mise en cache Redis (TTL: 1h)
+      try {
+        await this.cacheService.set(cacheKey, JSON.stringify(response), 3600);
+        this.logger.log('💾 Hiérarchie mise en cache (TTL: 1h)');
+      } catch (cacheError) {
+        this.logger.warn('⚠️ Erreur mise en cache:', cacheError);
+      }
+      
       return response;
     } catch (error) {
       this.logger.error('❌ Erreur getHierarchy:', error);

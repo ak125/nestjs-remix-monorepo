@@ -1,13 +1,22 @@
 -- =========================================
--- SOLUTION SIMPLE : p_pg_id en TEXT directement
+-- NETTOYAGE COMPLET - Suppression de TOUTES les versions
 -- =========================================
-DROP FUNCTION IF EXISTS get_gamme_page_data_optimized(INTEGER);
-DROP FUNCTION IF EXISTS get_gamme_page_data_optimized(TEXT);
-DROP FUNCTION IF EXISTS get_gamme_page_data_optimized;
 
--- ⚡ FONCTION RPC ULTRA-OPTIMISÉE : Récupère TOUTES les données d'une page gamme en 1 SEULE requête
--- SOLUTION: Accepter directement TEXT au lieu d'INTEGER pour éviter les conversions
-CREATE FUNCTION get_gamme_page_data_optimized(p_pg_id TEXT)
+-- Supprimer toutes les signatures possibles
+DROP FUNCTION IF EXISTS get_gamme_page_data_optimized(INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS get_gamme_page_data_optimized(TEXT) CASCADE;
+DROP FUNCTION IF EXISTS get_gamme_page_data_optimized() CASCADE;
+DROP FUNCTION IF EXISTS public.get_gamme_page_data_optimized(INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS public.get_gamme_page_data_optimized(TEXT) CASCADE;
+
+-- Vérification : cette requête devrait retourner 0 lignes
+-- SELECT proname, proargtypes FROM pg_proc WHERE proname = 'get_gamme_page_data_optimized';
+
+-- =========================================
+-- CRÉATION DE LA NOUVELLE FONCTION
+-- =========================================
+
+CREATE OR REPLACE FUNCTION get_gamme_page_data_optimized(p_pg_id TEXT)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -16,7 +25,10 @@ AS $$
 DECLARE
   v_result JSONB;
   v_mf_id TEXT;
+  v_pg_id_int INTEGER;
 BEGIN
+  -- Convertir p_pg_id en INTEGER pour pieces_gamme (seule table avec pg_id INTEGER)
+  v_pg_id_int := p_pg_id::INTEGER;
   -- ========================================
   -- RÉCUPÉRATION DONNÉES DE BASE (1 requête composite)
   -- ========================================
@@ -32,7 +44,7 @@ BEGIN
         'pg_wall', pg_wall
       )
       FROM pieces_gamme
-      WHERE pg_id = p_pg_id::INTEGER AND pg_display = 1
+      WHERE pg_id = v_pg_id_int AND pg_display = '1'
       LIMIT 1
     ),
     'catalog', (
@@ -84,11 +96,14 @@ BEGIN
     'equipementiers', (
       SELECT json_agg(json_build_object(
         'seg_pm_id', seg_pm_id,
-        'seg_content', seg_content
+        'seg_content', seg_content,
+        'pm_name', pm.pm_name,
+        'pm_logo', pm.pm_logo
       ))
-      FROM __seo_equip_gamme
-      WHERE seg_pg_id = p_pg_id
-        AND seg_content IS NOT NULL
+      FROM __seo_equip_gamme seg
+      LEFT JOIN pieces_marque pm ON pm.pm_id::TEXT = seg.seg_pm_id::TEXT
+      WHERE seg.seg_pg_id = p_pg_id
+        AND seg.seg_content IS NOT NULL
       LIMIT 4
     ),
     'blog', (
@@ -114,7 +129,7 @@ BEGIN
   LIMIT 1;
 
   -- ========================================
-  -- CATALOGUE MÊME FAMILLE (TEMPORAIREMENT DÉSACTIVÉ)
+  -- CATALOGUE MÊME FAMILLE
   -- ========================================
   IF v_mf_id IS NOT NULL THEN
     v_result := v_result || jsonb_build_object(
@@ -133,7 +148,7 @@ BEGIN
   END IF;
 
   -- ========================================
-  -- MOTORISATIONS ENRICHIES (avec marque/modèle/type en une seule query)
+  -- MOTORISATIONS ENRICHIES
   -- ========================================
   v_result := v_result || jsonb_build_object(
     'motorisations_enriched', (
@@ -148,8 +163,10 @@ BEGIN
             'type_year_to', at.type_year_to,
             'modele_id', am.modele_id,
             'modele_name', am.modele_name,
+            'modele_pic', am.modele_pic,
             'marque_id', amarq.marque_id,
-            'marque_name', amarq.marque_name
+            'marque_name', amarq.marque_name,
+            'marque_alias', amarq.marque_alias
           ) as motorisation_data,
           amarq.marque_name,
           am.modele_name,
@@ -203,4 +220,9 @@ GRANT EXECUTE ON FUNCTION get_gamme_page_data_optimized(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_gamme_page_data_optimized(TEXT) TO anon;
 GRANT EXECUTE ON FUNCTION get_gamme_page_data_optimized(TEXT) TO service_role;
 
-COMMENT ON FUNCTION get_gamme_page_data_optimized IS '⚡ Fonction RPC optimisée : récupère toutes les données d''une page gamme en 1 seule requête HTTP au lieu de 15+';
+COMMENT ON FUNCTION get_gamme_page_data_optimized(TEXT) IS '⚡ RPC optimisé avec page_info - pg_id INTEGER, tous les *_pg_id TEXT';
+
+-- =========================================
+-- TEST
+-- =========================================
+-- SELECT get_gamme_page_data_optimized('7') -> 'page_info';

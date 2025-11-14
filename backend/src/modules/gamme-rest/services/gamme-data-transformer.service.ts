@@ -123,10 +123,37 @@ export class GammeDataTransformerService {
    * Traite les équipementiers
    */
   processEquipementiers(equipementiersRaw: any[]): any[] {
-    return equipementiersRaw.map((equip: any) => ({
-      pm_id: equip.seg_pm_id,
-      content: this.contentCleaner(equip.seg_content || ''),
-    }));
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+    
+    // Mapping des IDs vers les noms d'équipementiers connus
+    const equipementierNames: Record<string, { name: string; logo: string }> = {
+      '730': { name: 'Bosch', logo: 'bosch.webp' },
+      '1780': { name: 'FEBI', logo: 'febi.webp' },
+      '1090': { name: 'CHAMPION', logo: 'champion.webp' },
+      '1070': { name: 'MANN-FILTER', logo: 'mann-filter.webp' },
+      '1120': { name: 'VALEO', logo: 'valeo.webp' },
+      '1450': { name: 'MAHLE', logo: 'mahle.webp' },
+      '1670': { name: 'HENGST', logo: 'hengst.webp' },
+    };
+    
+    return equipementiersRaw.map((equip: any) => {
+      const pmId = String(equip.seg_pm_id || equip.pm_id);
+      const equipInfo = equipementierNames[pmId] || {
+        name: equip.pm_name || 'Équipementier',
+        logo: equip.pm_logo || 'default.webp'
+      };
+      
+      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${equipInfo.logo}`;
+      
+      return {
+        pm_id: pmId,
+        pm_name: equipInfo.name,
+        pm_logo: logoUrl,
+        title: equipInfo.name,
+        image: logoUrl,
+        description: this.contentCleaner(equip.seg_content || equip.content || ''),
+      };
+    });
   }
 
   /**

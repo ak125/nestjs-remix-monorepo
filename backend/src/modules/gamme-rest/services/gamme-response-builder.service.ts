@@ -67,6 +67,9 @@ export class GammeResponseBuilderService {
     const catalogueFiltres = this.transformer.processCatalogueFamille(catalogueFamilleRaw);
     const equipementiers = this.transformer.processEquipementiers(equipementiersRaw);
 
+    // URL de base Supabase Storage
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+
     // Traitement motorisations
     const motorisations = motorisationsEnriched.map((item: any) => {
       const { fragment1, fragment2 } = this.rpcService.getSeoFragmentsByTypeId(
@@ -75,18 +78,55 @@ export class GammeResponseBuilderService {
         seoFragments2
       );
       
+      // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
+      let carImage = null;
+      if (item.modele_pic && item.modele_pic !== 'no.webp' && item.modele_pic !== '') {
+        // Utiliser marque_alias (slug déjà stocké en DB) et modele_pic (nom exact du fichier)
+        const marqueAlias = item.marque_alias || item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`;
+      } else {
+        // Image par défaut
+        carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
+      }
+      
+      // Slugify pour les URLs
+      const slugify = (text: string): string => {
+        return text
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '');
+      };
+      
+      // Construire la période
+      const yearFrom = item.type_year_from || '';
+      const yearTo = item.type_year_to || 'aujourd\'hui';
+      const periode = `${yearFrom} - ${yearTo}`;
+      
+      // Construire le lien vers la page type
+      const marqueSlugUrl = slugify(item.marque_name);
+      const modeleSlugUrl = slugify(item.modele_name);
+      const link = `/pieces/constructeurs-automobiles/${marqueSlugUrl}/${item.marque_id}/modeles/${modeleSlugUrl}/${item.modele_id}/types/${item.type_id}`;
+      
       return {
         cgc_type_id: item.type_id,
         type_name: item.type_name,
         type_power_ps: item.type_power_ps,
+        puissance: `${item.type_power_ps} ch`,
         type_year_from: item.type_year_from,
         type_year_to: item.type_year_to,
+        periode: periode,
         modele_id: item.modele_id,
         modele_name: item.modele_name,
         marque_id: item.marque_id,
         marque_name: item.marque_name,
+        image: carImage,
+        link: link,
         title: this.transformer.contentCleaner(fragment2),
         content: this.transformer.contentCleaner(fragment1),
+        description: this.transformer.contentCleaner(fragment1),
+        advice: this.transformer.contentCleaner(fragment2),
       };
     });
 
@@ -96,13 +136,18 @@ export class GammeResponseBuilderService {
       title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
       alias: blogData.ba_alias,
       preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
-      image: blogData.ba_wall,
+      image: blogData.ba_wall ? `${SUPABASE_URL}/blog/${blogData.ba_wall}` : null,
       updated: blogData.ba_update,
     } : null;
 
     const totalTime = performance.now() - startTime;
     
+    // URLs Supabase pour les images hero
+    const imageUrl = pgPic ? `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgPic}` : null;
+    const wallUrl = pgWall ? `${SUPABASE_URL}/articles/gammes-produits/wall/${pgWall}` : null;
+    
     return {
+      status: 200,
       meta: {
         title: pageTitle,
         description: pageDescription,
@@ -113,11 +158,16 @@ export class GammeResponseBuilderService {
       hero: {
         h1: pageH1,
         content: pageContent,
-        image: pgPic,
-        wall: pgWall,
+        pg_name: pgNameSite,
+        pg_alias: pgAlias,
+        image: imageUrl,
+        wall: wallUrl,
         famille_info: familleInfo || null,
       },
-      motorisations,
+      motorisations: motorisations.length > 0 ? {
+        title: `Motorisations compatibles`,
+        items: motorisations,
+      } : null,
       catalogueFiltres: catalogueFiltres.length > 0 ? {
         title: familleInfo ? `Autres pièces de la famille ${familleInfo.mf_name}` : 'Pièces similaires',
         items: catalogueFiltres,

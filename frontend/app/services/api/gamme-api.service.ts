@@ -59,7 +59,7 @@ export async function fetchGammePageData(
       console.log(`⚡ Tentative RPC V2 pour gamme ${gammeId}...`);
       
       const rpcResponse = await fetch(
-        `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data-rpc-v2`,
+        `${API_URL}/api/gamme-rest/${gammeId}/page-data-rpc-v2`,
         {
           headers: { 'Accept': 'application/json' },
           signal,
@@ -92,7 +92,7 @@ export async function fetchGammePageData(
   console.log(`🔄 Fallback méthode classique pour gamme ${gammeId}...`);
   
   const classicResponse = await fetch(
-    `${API_URL}/api/gamme-rest-optimized/${gammeId}/page-data`,
+    `${API_URL}/api/gamme-rest/${gammeId}/page-data`,
     {
       headers: { 'Accept': 'application/json' },
       signal,

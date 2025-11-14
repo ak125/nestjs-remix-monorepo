@@ -157,9 +157,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 180000);
     
-    const data: LoaderData = await fetchGammePageData(gammeId, {
+    const apiData = await fetchGammePageData(gammeId, {
       signal: controller.signal,
     }).finally(() => clearTimeout(timeoutId));
+    
+    // 🔄 Mapper les données de l'API RPC V2 vers le format attendu par le frontend
+    const data: LoaderData = {
+      ...apiData,
+      content: apiData.hero ? {
+        h1: apiData.hero.h1,
+        content: apiData.hero.content,
+        pg_name: apiData.hero.pg_name || apiData.hero.famille_info?.mf_name || '',
+        pg_alias: apiData.hero.pg_alias || '',
+        pg_pic: apiData.hero.image,
+        pg_wall: apiData.hero.wall,
+      } : undefined,
+      famille: apiData.hero?.famille_info,
+      guide: apiData.guideAchat,
+    };
     
     // 🍞 Construire breadcrumb de base
     const baseBreadcrumb = [
@@ -348,7 +363,7 @@ export default function PiecesDetailPage() {
         {data.content?.pg_wall && (
           <div className="absolute inset-0 z-0">
             <img
-              src={`/upload/articles/gammes-produits/wall/${data.content.pg_wall}`}
+              src={data.content.pg_wall}
               alt={data.content.pg_name || ""}
               className="w-full h-full object-cover opacity-25"
               loading="eager"
@@ -441,12 +456,7 @@ export default function PiecesDetailPage() {
                     <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
                       <div className="w-full aspect-square flex items-center justify-center">
                         <img
-                          src={data.content?.pg_pic 
-                            ? `/upload/articles/gammes-produits/catalogue/${data.content.pg_pic}` 
-                            : data.content?.pg_alias
-                            ? `/upload/articles/gammes-produits/catalogue/${data.content.pg_alias}.webp`
-                            : 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.webp'
-                          }
+                          src={data.content?.pg_pic || '/images/placeholder-product.webp'}
                           alt={data.content?.pg_name || "Pièce auto"}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
