@@ -1,24 +1,26 @@
 name: Spec Validation
 
 on:
-  pull_request:
-    branches:
-      - main
-      - develop
-    paths:
-      - '.spec/**'
-      - 'backend/src/**'
-      - 'frontend/app/**'
-      - 'packages/**'
+  # Désactivé par défaut - À activer manuellement via workflow_dispatch
+  # ou après confirmation de l'équipe
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
+  #   paths:
+  #     - '.spec/**'
+  #     - 'backend/src/**'
+  #     - 'frontend/app/**'
+  #     - 'packages/**'
 
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - '.spec/**'
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #   paths:
+  #     - '.spec/**'
 
-  workflow_dispatch:
+  workflow_dispatch:  # Permet déclenchement manuel uniquement
 
 jobs:
   validate-specs:
