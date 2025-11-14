@@ -70,8 +70,14 @@ export class GammeResponseBuilderService {
     // URL de base Supabase Storage
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
 
+    // Prix rotatifs (comme dans PHP $PrixPasCher)
+    const prixPasCher = [
+      'bon tarif', 'petit tarif', 'prix bas', 'mini prix', 'tarif réduit',
+      'pas cher', 'tarif compétitif', 'meilleur prix', 'prix discount', 'coût réduit'
+    ];
+
     // Traitement motorisations
-    const motorisations = motorisationsEnriched.map((item: any) => {
+    const motorisations = motorisationsEnriched.map((item: any, index: number) => {
       const { fragment1, fragment2 } = this.rpcService.getSeoFragmentsByTypeId(
         item.type_id,
         seoFragments1,
@@ -115,14 +121,38 @@ export class GammeResponseBuilderService {
       const cleanedFragment1 = this.transformer.cleanSeoText(fragment1 || '', item.marque_name);
       const cleanedFragment2 = this.transformer.cleanSeoText(fragment2 || '', item.marque_name);
       
-      // Construire une description complète selon la logique PHP exacte
+      // Calculer l'index du prix rotatif (logique PHP)
+      const prixIndex = ((pgIdNum % 100) + item.type_id) % prixPasCher.length;
+      const prixText = prixPasCher[prixIndex];
+      
+      // Construire le titre complet : "[Gamme] [prix] [marque] [modèle] [type], [fragment1]"
+      const buildTitle = () => {
+        const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
+        if (hasFragment1) {
+          return `${pgNameSite} ${prixText} ${item.marque_name} ${item.modele_name} ${item.type_name}, ${cleanedFragment1}`;
+        }
+        return `${pgNameSite} ${prixText} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
+      };
+      
+      // Explication technique variable selon le type (simulé pour l'instant)
+      const explications = [
+        'pour bien transmettre le mouvement de rotation du vilebrequin aux autres poulies du moteur',
+        'pour ne pas créer l\'usure de l\'alternateur, de la pompe de direction assistée, du compresseur de climatisation',
+        'pour assurer l\'actionnement des différents équipement du véhicule',
+        'pour garantir le bon fonctionnement des accessoires moteur',
+        'pour éviter la panne et préserver les équipements auxiliaires'
+      ];
+      const explicationIndex = item.type_id % explications.length;
+      const explicationTechnique = explications[explicationIndex];
+      
+      // Construire la description complète selon la logique PHP exacte
       const buildDescription = () => {
         const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
         const hasFragment2 = cleanedFragment2 && cleanedFragment2.trim().length > 3;
         
-        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1], pour..."
+        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1], [explication]."
         if (hasFragment1 && hasFragment2) {
-          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}, pour garantir la fiabilité et la performance de votre véhicule.`;
+          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}, ${explicationTechnique}.`;
         }
         
         // Si seulement fragment1 : "[fragment1] pour votre [marque] [modèle] [type] [ch] ch [période]"
@@ -132,14 +162,6 @@ export class GammeResponseBuilderService {
         
         // Sinon, description par défaut
         return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, d'origine à prix bas.`;
-      };
-      
-      // Construire un titre enrichi (comme l'ancien système)
-      const buildTitle = () => {
-        if (cleanedFragment2 && cleanedFragment2.trim().length > 3) {
-          return `${cleanedFragment2}`;
-        }
-        return `${item.type_power_ps} ch ${periode}`;
       };
       
       return {
