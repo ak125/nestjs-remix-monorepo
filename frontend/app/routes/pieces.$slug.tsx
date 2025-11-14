@@ -13,7 +13,7 @@ import MotorisationsSection from "../components/pieces/MotorisationsSection";
 import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { buildCanonicalUrl } from "../utils/seo/canonical";
 import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { generateGammeMeta } from "../utils/seo/meta-generators";
