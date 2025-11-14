@@ -104,10 +104,12 @@ export class GammeResponseBuilderService {
       const yearTo = item.type_year_to || 'aujourd\'hui';
       const periode = `${yearFrom} - ${yearTo}`;
       
-      // Construire le lien vers la page type
-      const marqueSlugUrl = slugify(item.marque_name);
-      const modeleSlugUrl = slugify(item.modele_name);
-      const link = `/pieces/constructeurs-automobiles/${marqueSlugUrl}/${item.marque_id}/modeles/${modeleSlugUrl}/${item.modele_id}/types/${item.type_id}`;
+      // Construire le lien vers la page gamme avec véhicule
+      // Format: /pieces/gamme-alias-ID/marque-ID/modele-ID/type-ID.html
+      const marqueSlug = slugify(item.marque_name);
+      const modeleSlug = slugify(item.modele_name);
+      const typeSlug = slugify(item.type_name);
+      const link = `/pieces/${pgAlias}-${pgIdNum}/${marqueSlug}-${item.marque_id}/${modeleSlug}-${item.modele_id}/${typeSlug}-${item.type_id}.html`;
       
       return {
         cgc_type_id: item.type_id,
@@ -123,10 +125,10 @@ export class GammeResponseBuilderService {
         marque_name: item.marque_name,
         image: carImage,
         link: link,
-        title: this.transformer.contentCleaner(fragment2),
-        content: this.transformer.contentCleaner(fragment1),
-        description: this.transformer.contentCleaner(fragment1),
-        advice: this.transformer.contentCleaner(fragment2),
+        title: this.transformer.cleanSeoText(fragment2, item.marque_name),
+        content: this.transformer.cleanSeoText(fragment1, item.marque_name),
+        description: this.transformer.cleanSeoText(fragment1, item.marque_name),
+        advice: this.transformer.cleanSeoText(fragment2, item.marque_name),
       };
     });
 
