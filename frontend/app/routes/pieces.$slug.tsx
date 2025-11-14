@@ -475,7 +475,7 @@ export default function PiecesDetailPage() {
                 
                 {/* VehicleSelector à droite */}
                 <div className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
-                  <VehicleSelector />
+                  <VehicleSelectorV2 enableTypeMineSearch={true} />
                 </div>
               </div>
               
