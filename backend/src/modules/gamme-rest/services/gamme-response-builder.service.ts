@@ -111,6 +111,29 @@ export class GammeResponseBuilderService {
       const typeSlug = slugify(item.type_name);
       const link = `/pieces/${pgAlias}-${pgIdNum}/${marqueSlug}-${item.marque_id}/${modeleSlug}-${item.modele_id}/${typeSlug}-${item.type_id}.html`;
       
+      // Nettoyer et enrichir les fragments SEO
+      const cleanedFragment1 = this.transformer.cleanSeoText(fragment1 || '', item.marque_name);
+      const cleanedFragment2 = this.transformer.cleanSeoText(fragment2 || '', item.marque_name);
+      
+      // Construire une description complète et contextuelle (comme l'ancien PHP)
+      const buildDescription = () => {
+        // Si fragment1 existe (ex: "remplacer si cassé", "changer si bloqué")
+        if (cleanedFragment1 && cleanedFragment1.trim().length > 3) {
+          // Construire une phrase complète comme l'ancien système
+          return `${cleanedFragment1} pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}. Qualité d'origine à prix bas.`;
+        }
+        // Sinon, générer une description par défaut
+        return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, d'origine à prix bas.`;
+      };
+      
+      // Construire un titre enrichi (comme l'ancien système)
+      const buildTitle = () => {
+        if (cleanedFragment2 && cleanedFragment2.trim().length > 3) {
+          return `${cleanedFragment2}`;
+        }
+        return `${item.type_power_ps} ch ${periode}`;
+      };
+      
       return {
         cgc_type_id: item.type_id,
         type_name: item.type_name,
@@ -125,10 +148,10 @@ export class GammeResponseBuilderService {
         marque_name: item.marque_name,
         image: carImage,
         link: link,
-        title: this.transformer.cleanSeoText(fragment2, item.marque_name),
-        content: this.transformer.cleanSeoText(fragment1, item.marque_name),
-        description: this.transformer.cleanSeoText(fragment1, item.marque_name),
-        advice: this.transformer.cleanSeoText(fragment2, item.marque_name),
+        title: buildTitle(),
+        content: buildDescription(),
+        description: buildDescription(),
+        advice: cleanedFragment2 || buildTitle(),
       };
     });
 
