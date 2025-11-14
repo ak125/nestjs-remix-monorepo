@@ -16,7 +16,10 @@
     "audit:full": "node ../audit-migration-exhaustif.js",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:publish": "changeset publish"
+    "changeset:publish": "changeset publish",
+    "spec:validate": "turbo spec:validate && bash scripts/validate-specs.sh",
+    "spec:generate": "turbo spec:generate && bash scripts/generate-specs.sh",
+    "spec:report": "turbo spec:report && bash scripts/spec-report.sh"
   },
   "keywords": [],
   "author": "",
