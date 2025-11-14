@@ -70,14 +70,6 @@ export class GammeResponseBuilderService {
     // URL de base Supabase Storage
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
 
-    // Prix rotatifs (comme dans PHP $PrixPasCher) - 20 variantes
-    const prixPasCher = [
-      'bon tarif', 'petit tarif', 'prix bas', 'mini prix', 'tarif réduit',
-      'pas cher', 'tarif compétitif', 'meilleur prix', 'prix discount', 'coût réduit',
-      'juste prix', 'super prix', 'coût mini', 'bon prix', 'bas coût',
-      'tarif mini', 'meilleur tarif', 'qualité prix', 'prix attractif', 'tarif avantageux'
-    ];
-
     // Traitement motorisations
     const motorisations = motorisationsEnriched.map((item: any, index: number) => {
       const { fragment1, fragment2 } = this.rpcService.getSeoFragmentsByTypeId(
@@ -123,41 +115,23 @@ export class GammeResponseBuilderService {
       const cleanedFragment1 = this.transformer.cleanSeoText(fragment1 || '', item.marque_name);
       const cleanedFragment2 = this.transformer.cleanSeoText(fragment2 || '', item.marque_name);
       
-      // Calculer l'index du prix rotatif (logique PHP)
-      const prixIndex = ((pgIdNum % 100) + item.type_id) % prixPasCher.length;
-      const prixText = prixPasCher[prixIndex];
-      
-      // Construire le titre complet : "[Gamme] [prix] [marque] [modèle] [type], [fragment1]"
+      // Construire le titre complet : "[Gamme] [marque] [modèle] [type], [fragment1]"
       const buildTitle = () => {
         const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
         if (hasFragment1) {
-          return `${pgNameSite} ${prixText} ${item.marque_name} ${item.modele_name} ${item.type_name}, ${cleanedFragment1}`;
+          return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}, ${cleanedFragment1}`;
         }
-        return `${pgNameSite} ${prixText} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
+        return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
       };
-      
-      // Explication technique variable selon le type (8 variantes principales)
-      const explications = [
-        'pour bien transmettre le mouvement de rotation du vilebrequin aux autres poulies du moteur',
-        'pour ne pas créer l\'usure de l\'alternateur, de la pompe de direction assistée, du compresseur de climatisation',
-        'pour assurer l\'actionnement des différents équipement du véhicule',
-        'pour une bonne transmission du mouvement de rotation aux poulies des accessoires du moteur',
-        'pour que les différents poulies des accessoires du moteur tourne correctement afin d\'assurer le fonctionnement des différents système',
-        'pour assurer une transmission optimal du mouvement du vilebrequin aux différents poulies des organes du moteur',
-        'pour garantir que les différents systèmes du véhicule fonctionne correctement',
-        'pour éviter la panne et préserver les équipements auxiliaires du moteur'
-      ];
-      const explicationIndex = item.type_id % explications.length;
-      const explicationTechnique = explications[explicationIndex];
       
       // Construire la description complète selon la logique PHP exacte
       const buildDescription = () => {
         const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
         const hasFragment2 = cleanedFragment2 && cleanedFragment2.trim().length > 3;
         
-        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1], [explication]."
+        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1]"
         if (hasFragment1 && hasFragment2) {
-          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}, ${explicationTechnique}.`;
+          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}.`;
         }
         
         // Si seulement fragment1 : "[fragment1] pour votre [marque] [modèle] [type] [ch] ch [période]"
