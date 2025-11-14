@@ -83,38 +83,43 @@ export default function VehicleSelectorV2({
   
   const navigate = useNavigate();
 
-  // 🚀 Chargement initial des marques
+  // 🚀 Chargement initial des marques (lazy pour performance)
   useEffect(() => {
-    const loadBrands = async () => {
-      try {
-        const brandsData = await enhancedVehicleApi.getBrands();
-        setBrands(brandsData);
-        console.log(`🏭 ${brandsData.length} marques chargées pour contexte: ${context}`);
-        
-        // 🎯 Pré-sélectionner la marque si fournie dans currentVehicle
-        if (_currentVehicle?.brand?.id && brandsData.length > 0) {
-          const preselectedBrand = brandsData.find(b => b.marque_id === _currentVehicle.brand!.id);
-          if (preselectedBrand) {
-            console.log(`🎯 Marque pré-sélectionnée: ${preselectedBrand.marque_name}`);
-            setSelectedBrand(preselectedBrand);
-            
-            // Charger les années pour cette marque
-            try {
-              const yearsData = await enhancedVehicleApi.getYearsByBrand(preselectedBrand.marque_id);
-              setYears(yearsData.sort((a, b) => b - a));
-            } catch (error) {
-              console.warn('❌ Erreur chargement années pour marque pré-sélectionnée:', error);
-            }
+    // ⚡ Chargement différé pour éviter de bloquer le rendu initial
+    const timer = setTimeout(() => {
+      loadBrands();
+    }, 100); // Laisse le temps au composant de se rendre
+    
+    return () => clearTimeout(timer);
+  }, [context, _currentVehicle]);
+
+  const loadBrands = async () => {
+    try {
+      const brandsData = await enhancedVehicleApi.getBrands();
+      setBrands(brandsData);
+      console.log(`🏭 ${brandsData.length} marques chargées pour contexte: ${context}`);
+      
+      // 🎯 Pré-sélectionner la marque si fournie dans currentVehicle
+      if (_currentVehicle?.brand?.id && brandsData.length > 0) {
+        const preselectedBrand = brandsData.find(b => b.marque_id === _currentVehicle.brand!.id);
+        if (preselectedBrand) {
+          console.log(`🎯 Marque pré-sélectionnée: ${preselectedBrand.marque_name}`);
+          setSelectedBrand(preselectedBrand);
+          
+          // Charger les années pour cette marque
+          try {
+            const yearsData = await enhancedVehicleApi.getYearsByBrand(preselectedBrand.marque_id);
+            setYears(yearsData.sort((a, b) => b - a));
+          } catch (error) {
+            console.warn('❌ Erreur chargement années pour marque pré-sélectionnée:', error);
           }
         }
-      } catch (error) {
-        console.error('❌ Erreur chargement marques:', error);
-        setBrands([]);
       }
-    };
-
-    loadBrands();
-  }, [context, _currentVehicle]);
+    } catch (error) {
+      console.error('❌ Erreur chargement marques:', error);
+      setBrands([]);
+    }
+  };
 
   // 🏷️ Gestion sélection marque
   const handleBrandChange = async (brandId: number) => {
