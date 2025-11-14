@@ -40,7 +40,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "../components/ui/carousel";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
+import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { brandApi } from "../services/api/brand.api";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { SITE_CONFIG } from "../config/site";
@@ -208,7 +208,7 @@ export default function TestHomepageModern() {
 
           {/* 🚗 SÉLECTEUR DE VÉHICULE GÉANT - FOCUS ABSOLU */}
           <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-            <VehicleSelector />
+            <VehicleSelectorV2 enableTypeMineSearch={true} />
           </div>
 
           {/* ✨ Trust badges - Micro-format inline */}

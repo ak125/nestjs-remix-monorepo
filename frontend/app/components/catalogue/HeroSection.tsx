@@ -3,7 +3,7 @@
 
 import { Shield } from 'lucide-react';
 import type { ReactNode } from 'react';
-import VehicleSelector from '../vehicle/VehicleSelector';
+import VehicleSelectorV2 from '../vehicle/VehicleSelectorV2';
 
 export interface HeroSectionProps {
   // 🎨 Apparence
@@ -177,7 +177,7 @@ export function HeroSection({
               
               {/* 🚗 VehicleSelector à droite */}
               <div className="flex-1 w-full">
-                <VehicleSelector 
+                <VehicleSelectorV2 
                   className="w-full"
                   onVehicleSelect={onVehicleSelect}
                 />
