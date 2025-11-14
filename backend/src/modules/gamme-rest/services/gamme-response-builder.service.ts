@@ -115,14 +115,22 @@ export class GammeResponseBuilderService {
       const cleanedFragment1 = this.transformer.cleanSeoText(fragment1 || '', item.marque_name);
       const cleanedFragment2 = this.transformer.cleanSeoText(fragment2 || '', item.marque_name);
       
-      // Construire une description complète et contextuelle (comme l'ancien PHP)
+      // Construire une description complète selon la logique PHP exacte
       const buildDescription = () => {
-        // Si fragment1 existe (ex: "remplacer si cassé", "changer si bloqué")
-        if (cleanedFragment1 && cleanedFragment1.trim().length > 3) {
-          // Construire une phrase complète comme l'ancien système
+        const hasFragment1 = cleanedFragment1 && cleanedFragment1.trim().length > 3;
+        const hasFragment2 = cleanedFragment2 && cleanedFragment2.trim().length > 3;
+        
+        // Logique PHP complète : "[fragment2] les [gamme] [marque] [modèle] [type] [ch] ch et [fragment1], pour..."
+        if (hasFragment1 && hasFragment2) {
+          return `${cleanedFragment2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch et ${cleanedFragment1}, pour garantir la fiabilité et la performance de votre véhicule.`;
+        }
+        
+        // Si seulement fragment1 : "[fragment1] pour votre [marque] [modèle] [type] [ch] ch [période]"
+        if (hasFragment1) {
           return `${cleanedFragment1} pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}. Qualité d'origine à prix bas.`;
         }
-        // Sinon, générer une description par défaut
+        
+        // Sinon, description par défaut
         return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, d'origine à prix bas.`;
       };
       
