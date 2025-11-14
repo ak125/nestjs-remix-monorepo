@@ -17,7 +17,8 @@ export class GammeResponseBuilderService {
    */
   async buildRpcV2Response(pgId: string) {
     const startTime = performance.now();
-    const { aggregatedData, pageData, timings } = await this.rpcService.getPageDataRpcV2(pgId);
+    const { aggregatedData, pageData, timings } =
+      await this.rpcService.getPageDataRpcV2(pgId);
 
     const pgIdNum = parseInt(pgId, 10);
     const pgNameSite = pageData.pg_name;
@@ -28,7 +29,6 @@ export class GammeResponseBuilderService {
     const pgWall = pageData.pg_wall;
 
     // Extraction données agrégées
-    const catalogData = aggregatedData?.catalog;
     const seoData = aggregatedData?.seo;
     const conseilsRaw = aggregatedData?.conseils || [];
     const informationsRaw = aggregatedData?.informations || [];
@@ -44,12 +44,17 @@ export class GammeResponseBuilderService {
     let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
     if (seoData) {
       pageTitle = this.transformer.contentCleaner(seoData.sg_title || '');
-      pageDescription = this.transformer.contentCleaner(seoData.sg_descrip || '');
+      pageDescription = this.transformer.contentCleaner(
+        seoData.sg_descrip || '',
+      );
       pageKeywords = this.transformer.contentCleaner(seoData.sg_keywords || '');
       pageH1 = this.transformer.contentCleaner(seoData.sg_h1 || '');
       pageContent = this.transformer.contentCleaner(seoData.sg_content || '');
     } else {
-      const defaultSeo = this.transformer.generateDefaultSeo(pgNameSite, pgNameMeta);
+      const defaultSeo = this.transformer.generateDefaultSeo(
+        pgNameSite,
+        pgNameMeta,
+      );
       pageTitle = defaultSeo.title;
       pageDescription = defaultSeo.description;
       pageKeywords = defaultSeo.keywords;
@@ -64,25 +69,34 @@ export class GammeResponseBuilderService {
     // Traitement données
     const conseils = this.transformer.processConseils(conseilsRaw);
     const informations = this.transformer.processInformations(informationsRaw);
-    const catalogueFiltres = this.transformer.processCatalogueFamille(catalogueFamilleRaw);
-    const equipementiers = this.transformer.processEquipementiers(equipementiersRaw);
+    const catalogueFiltres =
+      this.transformer.processCatalogueFamille(catalogueFamilleRaw);
+    const equipementiers =
+      this.transformer.processEquipementiers(equipementiersRaw);
 
     // URL de base Supabase Storage
-    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+    const SUPABASE_URL =
+      'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
 
     // Traitement motorisations
-    const motorisations = motorisationsEnriched.map((item: any, index: number) => {
+    const motorisations = motorisationsEnriched.map((item: any) => {
       const { fragment1, fragment2 } = this.rpcService.getSeoFragmentsByTypeId(
         item.type_id,
         seoFragments1,
-        seoFragments2
+        seoFragments2,
       );
-      
+
       // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
       let carImage = null;
-      if (item.modele_pic && item.modele_pic !== 'no.webp' && item.modele_pic !== '') {
+      if (
+        item.modele_pic &&
+        item.modele_pic !== 'no.webp' &&
+        item.modele_pic !== ''
+      ) {
         // Utiliser marque_alias (slug déjà stocké en DB) et modele_pic (nom exact du fichier)
-        const marqueAlias = item.marque_alias || item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const marqueAlias =
+          item.marque_alias ||
+          item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         carImage = `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`;
       } else {
         // Image par défaut

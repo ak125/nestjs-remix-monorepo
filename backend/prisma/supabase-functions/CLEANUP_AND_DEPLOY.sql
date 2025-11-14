@@ -191,7 +191,7 @@ BEGIN
         ORDER BY sis_id
       )
       FROM __seo_item_switch
-      WHERE sis_pg_id = p_pg_id
+      WHERE sis_pg_id = v_pg_id_text
         AND sis_alias = '1'
     ),
     'seo_fragments_2', (
@@ -203,9 +203,21 @@ BEGIN
         ORDER BY sis_id
       )
       FROM __seo_item_switch
-      WHERE sis_pg_id = p_pg_id
+      WHERE sis_pg_id = v_pg_id_text
         AND sis_alias = '2'
       LIMIT 50
+    ),
+    'seo_fragments_3', (
+      SELECT json_agg(
+        json_build_object(
+          'sis_id', sis_id,
+          'sis_content', sis_content
+        )
+        ORDER BY sis_id
+      )
+      FROM __seo_item_switch
+      WHERE sis_pg_id = '0'
+        AND sis_alias = '3'
     )
   );
 

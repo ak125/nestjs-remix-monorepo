@@ -130,7 +130,7 @@ BEGIN
         INNER JOIN pieces_gamme pg ON cg.mc_pg_id = pg.pg_id::TEXT
         WHERE cg.mc_mf_prime = v_mf_id
           AND cg.mc_pg_id != v_pg_id_text
-          AND pg.pg_display = 1
+          AND pg.pg_display::TEXT = '1'
         ORDER BY pg.pg_name ASC
         LIMIT 20
       ),
@@ -144,7 +144,7 @@ BEGIN
         )
         FROM catalog_family
         WHERE mf_id = v_mf_id
-          AND mf_display = 1
+          AND mf_display::TEXT = '1'
         LIMIT 1
       )
     );
