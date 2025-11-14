@@ -100,7 +100,9 @@ export default function MotorisationsSection({
                         alt={`${motorisation.marque_name} ${motorisation.modele_name}`}
                         className="relative w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-gray-100 group-hover:border-gray-200 group-hover:scale-110 transition-all duration-300 shadow-md"
                         onError={(e) => {
-                          e.currentTarget.src = '/images/default-car.jpg';
+                          // Fallback vers une image placeholder
+                          e.currentTarget.src = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/default.webp';
+                          e.currentTarget.onerror = null; // Éviter les boucles infinies
                         }}
                       />
                     </div>

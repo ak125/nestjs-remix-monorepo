@@ -34,21 +34,15 @@ export class GammeRpcService extends SupabaseBaseService {
     const rpcTime = performance.now();
     console.log(`✅ RPC exécuté en ${(rpcTime - startTime).toFixed(1)}ms`);
 
-    // Récupération page data
-    const { data: pageData, error: pageError } = await this.client
-      .from('pieces_gamme')
-      .select('pg_id, pg_name, pg_name_meta, pg_alias, pg_relfollow, pg_img, pg_wall')
-      .eq('pg_id', pgId)
-      .eq('pg_display', 1)
-      .single();
-
-    if (pageError || !pageData) {
+    // Extraction page_info depuis le RPC
+    const pageInfo = aggregatedData?.page_info;
+    if (!pageInfo) {
       throw new Error('Gamme non trouvée');
     }
 
     return {
       aggregatedData,
-      pageData,
+      pageData: pageInfo,
       timings: {
         rpcTime: rpcTime - startTime,
         totalTime: performance.now() - startTime,
