@@ -141,9 +141,8 @@ Documentation technique complète du backend NestJS : **~30K lignes** réparties
 
 ## Modules Non-Documentés (8/37)
 
-### ⏳ Priorité Haute (4 modules)
-1. **Taxes Module**: Calcul TVA multi-pays, exonérations, rapports fiscaux
-2. **Coupons Module**: Codes uniques générés, règles cumul, statistiques utilisation
+### ⏳ Priorité Haute (3 modules)
+1. **Coupons Module**: Codes uniques générés, règles cumul, statistiques utilisation
 3. **Suppliers Module**: Fournisseurs externes, API intégration, sync stocks
 4. **Returns Module**: Retours produits, remboursements, RMA workflow
 

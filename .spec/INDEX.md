@@ -213,9 +213,8 @@
 
 ## Modules Non-Documentés
 
-### ⏳ Priorité Haute (4 modules)
-1. **Taxes Module** - Calcul TVA multi-pays, exonérations, rapports fiscaux
-2. **Coupons Module** - Codes uniques générés, règles cumul, stats
+### ⏳ Priorité Haute (3 modules)
+1. **Coupons Module** - Codes uniques générés, règles cumul, stats
 3. **Suppliers Module** - Fournisseurs externes, API intégration, sync stocks
 4. **Returns Module** - Retours produits, remboursements, RMA workflow
 
@@ -239,6 +238,7 @@
 - [Phase 1 Complete](PHASE-1-COMPLETE.md) - 12 modules, 32% coverage
 - [Phase 2 Complete](PHASE-2-COMPLETE.md) - 9 modules, 57% coverage
 - [Phase 3 Extended Complete](PHASE-3-EXTENDED-COMPLETE.md) - 8 modules, 79% coverage
+- [**Phase 4 Complete**](PHASE-4-COMPLETE.md) - **1 module, 80% coverage** ✅ **MILESTONE**
 
 ### 📈 Rapport Global
 - [Global Coverage Report](GLOBAL-COVERAGE-REPORT.md) - Vue d'ensemble complète
