@@ -1,0 +1,107 @@
+#!/bin/bash
+
+echo "🔍 Diagnostic Bestsellers - Page BMW"
+echo "===================================="
+echo ""
+
+# 1. Test backend API
+echo "1️⃣  Test Backend API..."
+RESPONSE=$(curl -s 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=2&limitParts=2')
+
+VEHICLES_COUNT=$(echo "$RESPONSE" | jq '.data.vehicles | length')
+PARTS_COUNT=$(echo "$RESPONSE" | jq '.data.parts | length')
+
+if [ "$VEHICLES_COUNT" -gt 0 ]; then
+    echo "   ✅ Backend: $VEHICLES_COUNT véhicules retournés"
+else
+    echo "   ❌ Backend: Aucun véhicule"
+fi
+
+if [ "$PARTS_COUNT" -gt 0 ]; then
+    echo "   ✅ Backend: $PARTS_COUNT pièces retournées"
+else
+    echo "   ❌ Backend: Aucune pièce"
+fi
+
+echo ""
+
+# 2. Vérifier les champs des véhicules
+echo "2️⃣  Vérification données véhicule..."
+VEHICLE=$(echo "$RESPONSE" | jq '.data.vehicles[0]')
+
+echo "   Marque: $(echo "$VEHICLE" | jq -r '.marque_name')"
+echo "   Modèle: $(echo "$VEHICLE" | jq -r '.modele_name')"
+echo "   Type: $(echo "$VEHICLE" | jq -r '.type_name')"
+echo "   Puissance: $(echo "$VEHICLE" | jq -r '.type_power_ps') ch"
+echo "   Image: $(echo "$VEHICLE" | jq -r '.modele_pic')"
+
+echo ""
+
+# 3. Construire URLs attendues
+echo "3️⃣  URLs générées (frontend)..."
+MARQUE_ALIAS=$(echo "$VEHICLE" | jq -r '.marque_alias')
+MARQUE_ID=$(echo "$VEHICLE" | jq -r '.marque_id')
+MODELE_ALIAS=$(echo "$VEHICLE" | jq -r '.modele_alias')
+MODELE_ID=$(echo "$VEHICLE" | jq -r '.modele_id')
+TYPE_ALIAS=$(echo "$VEHICLE" | jq -r '.type_alias')
+CGC_TYPE_ID=$(echo "$VEHICLE" | jq -r '.cgc_type_id')
+MODELE_PIC=$(echo "$VEHICLE" | jq -r '.modele_pic')
+
+VEHICLE_URL="/constructeurs/$MARQUE_ALIAS-$MARQUE_ID/$MODELE_ALIAS-$MODELE_ID/$TYPE_ALIAS-$CGC_TYPE_ID.html"
+IMAGE_URL="/upload/constructeurs-automobiles/modeles/$MODELE_PIC"
+
+echo "   Vehicle URL: $VEHICLE_URL"
+echo "   Image URL: $IMAGE_URL"
+
+echo ""
+
+# 4. Vérifier les pièces
+echo "4️⃣  Vérification données pièce..."
+PART=$(echo "$RESPONSE" | jq '.data.parts[0]')
+
+PG_NAME=$(echo "$PART" | jq -r '.pg_name')
+PG_ALIAS=$(echo "$PART" | jq -r '.pg_alias')
+PG_PIC=$(echo "$PART" | jq -r '.pg_pic')
+PART_MARQUE=$(echo "$PART" | jq -r '.marque_alias')
+
+PART_URL="/pieces/$PART_MARQUE/$PG_ALIAS"
+PART_IMAGE="/upload/pieces-auto/$PG_PIC"
+
+echo "   Nom: $PG_NAME"
+echo "   Part URL: $PART_URL"
+echo "   Image URL: $PART_IMAGE"
+
+echo ""
+
+# 5. Test cache
+echo "5️⃣  Test Cache Redis..."
+echo "   Requête 1..."
+TIME1=$(curl -s -w "%{time_total}" -o /dev/null 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=5&limitParts=5')
+echo "   Temps: ${TIME1}s"
+
+sleep 1
+
+echo "   Requête 2 (cachée)..."
+TIME2=$(curl -s -w "%{time_total}" -o /dev/null 'http://localhost:3000/api/manufacturers/brand/bmw/bestsellers?limitVehicles=5&limitParts=5')
+echo "   Temps: ${TIME2}s"
+
+# Calcul ratio
+if (( $(echo "$TIME1 > $TIME2" | bc -l) )); then
+    echo "   ✅ Cache actif ($(echo "scale=1; $TIME1 / $TIME2" | bc)× plus rapide)"
+else
+    echo "   ⚠️  Cache non détecté"
+fi
+
+echo ""
+echo "════════════════════════════════════════════════════════════"
+echo "✅ Diagnostic terminé!"
+echo ""
+echo "📋 Prochaines étapes:"
+echo "   1. Frontend doit être lancé: cd frontend && npm run dev"
+echo "   2. Ouvrir: http://localhost:5173/constructeurs/bmw-33.html"
+echo "   3. Vérifier que les sections apparaissent:"
+echo "      - 🚗 Véhicules BMW les plus recherchés (6 cartes)"
+echo "      - 📦 Pièces BMW populaires (8 cartes)"
+echo "   4. Vérifier que les images chargent"
+echo "   5. Vérifier que les liens fonctionnent"
+echo "════════════════════════════════════════════════════════════"
