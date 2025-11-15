@@ -489,7 +489,7 @@ export default function VehicleSelectorV2({
           <div>
             <label htmlFor="brand-v2" className="block text-sm font-medium text-gray-700 mb-2">
               <Car className="w-4 h-4 inline mr-1" />
-              Marque
+              Constructeur
             </label>
             <select
               id="brand-v2"
@@ -499,7 +499,7 @@ export default function VehicleSelectorV2({
               disabled={loadingBrands}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
-              <option value="">{loadingBrands ? 'Chargement...' : 'Marque'}</option>
+              <option value="">{loadingBrands ? 'Chargement...' : 'Constructeur'}</option>
               {brands.map(brand => (
                 <option key={brand.marque_id} value={brand.marque_id}>
                   {brand.marque_name} {brand.is_featured ? '⭐' : ''}
