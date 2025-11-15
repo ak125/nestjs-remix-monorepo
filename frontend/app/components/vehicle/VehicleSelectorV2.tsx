@@ -499,7 +499,7 @@ export default function VehicleSelectorV2({
               disabled={loadingBrands}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
-              <option value="">{loadingBrands ? 'Chargement...' : 'Choisir...'}</option>
+              <option value="">{loadingBrands ? 'Chargement...' : 'Sélectionner un constructeur'}</option>
               {brands.map(brand => (
                 <option key={brand.marque_id} value={brand.marque_id}>
                   {brand.marque_name} {brand.is_featured ? '⭐' : ''}
