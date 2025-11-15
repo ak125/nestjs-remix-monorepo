@@ -305,17 +305,17 @@ class BrandApiService {
   /**
    * Récupère les véhicules populaires d'une marque
    */
-  async getPopularVehicles(brandId: number, limit: number = 12): Promise<PopularVehicle[]> {
-    const cacheKey = `vehicles:${brandId}:${limit}`;
+  async getPopularVehicles(brandAlias: string, limit: number = 12): Promise<PopularVehicle[]> {
+    const cacheKey = `vehicles:${brandAlias}:${limit}`;
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log('[CACHE HIT] Popular vehicles:', brandId);
+      console.log('[CACHE HIT] Popular vehicles:', brandAlias);
       return cached.data;
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/blog/constructeurs/brand/${brandId}/popular-models?limit=${limit}`);
+      const response = await fetch(`${API_BASE_URL}/api/manufacturers/brand/${brandAlias}/bestsellers?limitVehicles=${limit}&limitParts=0`);
       
       if (!response.ok) {
         console.warn(`Popular vehicles API error: ${response.status}`);
@@ -323,7 +323,13 @@ class BrandApiService {
       }
 
       const result = await response.json();
-      let vehicles: PopularVehicle[] = result.data || [];
+      
+      if (!result.success || !result.data?.vehicles) {
+        console.warn('No vehicles data in response:', result);
+        return [];
+      }
+
+      let vehicles: PopularVehicle[] = result.data.vehicles;
 
       // Enrichir les données (reproduction logique PHP)
       vehicles = vehicles.map(vehicle => ({
@@ -348,7 +354,7 @@ class BrandApiService {
         ttl 
       });
 
-      console.log('[API CALL] Popular vehicles:', brandId, vehicles.length);
+      console.log('[API CALL] Popular vehicles:', brandAlias, vehicles.length);
       return vehicles;
 
     } catch (error) {
@@ -360,79 +366,56 @@ class BrandApiService {
   /**
    * Récupère les pièces populaires d'une marque
    */
-  async getPopularParts(brandId: number, limit: number = 12): Promise<PopularPart[]> {
-    const cacheKey = `parts:${brandId}:${limit}`;
+  async getPopularParts(brandAlias: string, limit: number = 12): Promise<PopularPart[]> {
+    const cacheKey = `parts:${brandAlias}:${limit}`;
     const cached = this.cache.get(cacheKey);
 
     if (cached && this.isValidCache(cached)) {
-      console.log('[CACHE HIT] Popular parts:', brandId);
+      console.log('[CACHE HIT] Popular parts:', brandAlias);
       return cached.data;
     }
 
     try {
-      // TEMPORAIRE: Données mockées car l'endpoint n'existe pas encore
-      const mockParts: PopularPart[] = [
-        {
-          cgc_pg_id: 1,
-          pg_alias: 'plaquettes-frein',
-          pg_name: `Plaquettes de frein pour ${brandId}`,
-          pg_name_meta: `Plaquettes de frein ${brandId}`,
-          pg_pic: 'brake-pads.webp',
-          pg_img: 'brake-pads.webp',
-          cgc_type_id: 101,
-          type_alias: 'diesel',
-          type_name: '2.0 TDI',
-          type_power_ps: 150,
-          type_month_from: 1,
-          type_year_from: 2015,
-          type_month_to: 12,
-          type_year_to: 2020,
-          modele_id: 201,
-          modele_alias: 'golf',
-          modele_name: 'Golf',
-          modele_name_meta: 'Golf',
-          marque_id: parseInt(String(brandId).split('-').pop() || '1'),
-          marque_alias: String(brandId).split('-')[0] || 'default',
-          marque_name: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT',
-          marque_name_meta: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT',
-          marque_name_meta_title: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT'
-        },
-        {
-          cgc_pg_id: 2,
-          pg_alias: 'filtre-huile',
-          pg_name: `Filtre à huile pour ${brandId}`,
-          pg_name_meta: `Filtre à huile ${brandId}`,
-          pg_pic: 'oil-filter.webp',
-          pg_img: 'oil-filter.webp',
-          cgc_type_id: 102,
-          type_alias: 'essence',
-          type_name: '1.6 TSI',
-          type_power_ps: 110,
-          type_month_from: 3,
-          type_year_from: 2016,
-          type_month_to: 8,
-          type_year_to: 2021,
-          modele_id: 202,
-          modele_alias: 'polo',
-          modele_name: 'Polo',
-          modele_name_meta: 'Polo',
-          marque_id: parseInt(String(brandId).split('-').pop() || '1'),
-          marque_alias: String(brandId).split('-')[0] || 'default',
-          marque_name: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT',
-          marque_name_meta: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT',
-          marque_name_meta_title: String(brandId).split('-')[0]?.toUpperCase() || 'DEFAULT'
-        }
-      ].slice(0, limit);
+      const response = await fetch(`${API_BASE_URL}/api/manufacturers/brand/${brandAlias}/bestsellers?limitVehicles=0&limitParts=${limit}`);
+      
+      if (!response.ok) {
+        console.warn(`Popular parts API error: ${response.status}`);
+        return [];
+      }
+
+      const result = await response.json();
+      
+      if (!result.success || !result.data?.parts) {
+        console.warn('No parts data in response:', result);
+        return [];
+      }
+
+      let parts: PopularPart[] = result.data.parts;
+
+      // Enrichir les données
+      parts = parts.map(part => ({
+        ...part,
+        formatted_date_range: this.formatDateRange(
+          part.type_month_from,
+          part.type_year_from,
+          part.type_month_to,
+          part.type_year_to
+        ),
+        part_url: `/${PHP_LEGACY_CONFIG.piece}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.type_alias}-${part.cgc_type_id}/${part.pg_alias}-${part.pg_id}.html`,
+        image_url: part.pg_pic ? `/images/parts/${part.pg_pic}` : '/images/parts/default.webp',
+        seo_title: `${part.pg_name_meta} ${part.marque_name_meta} ${part.modele_name_meta}`,
+        seo_description: `Achetez ${part.pg_name_meta} pour ${part.marque_name_meta} ${part.modele_name_meta} ${part.type_name} - Pièces de qualité à prix réduit.`
+      }));
 
       // Mettre en cache
       this.cache.set(cacheKey, {
-        data: mockParts,
+        data: parts,
         timestamp: Date.now(),
         ttl: this.calculateTTL('parts')
       });
 
-      console.log('[API CALL] Popular parts (mocked):', brandId, mockParts.length);
-      return mockParts;
+      console.log('[API CALL] Popular parts:', brandAlias, parts.length);
+      return parts;
 
     } catch (error) {
       console.error('Erreur lors de la récupération des pièces populaires:', error);
@@ -540,12 +523,15 @@ class BrandApiService {
     try {
       console.log('[API] Fetching complete brand page data for:', brandId);
 
-      // Récupération parallèle des données principales
-      const [brandData, seoData, popularVehicles, popularParts, blogContent] = await Promise.all([
-        this.getBrandData(brandId),
+      // D'abord récupérer les données de marque pour obtenir l'alias
+      const brandData = await this.getBrandData(brandId);
+      const brandAlias = brandData.marque_alias || brandData.marque_name.toLowerCase();
+
+      // Récupération parallèle des autres données
+      const [seoData, popularVehicles, popularParts, blogContent] = await Promise.all([
         this.getSeoData(brandId),
-        this.getPopularVehicles(brandId, 12),
-        this.getPopularParts(brandId, 12),
+        this.getPopularVehicles(brandAlias, 12),
+        this.getPopularParts(brandAlias, 12),
         this.getBlogContent(brandId)
       ]);
 
