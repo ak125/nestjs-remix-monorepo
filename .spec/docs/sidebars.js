@@ -16,6 +16,7 @@ const sidebars = {
       items: [
         'guides/authentication',
         'guides/webhooks',
+        'guides/database-schema',
       ],
     },
     {
