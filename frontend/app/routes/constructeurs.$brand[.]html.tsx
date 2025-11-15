@@ -103,6 +103,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
       getPopularVehicles(marque_alias, 6),
       getApiPopularParts(marque_alias, 8)
     ]);
+    
+    // Enrichir les URLs si elles ne sont pas déjà présentes (SSR)
+    apiVehicles = apiVehicles.map(v => ({
+      ...v,
+      vehicle_url: v.vehicle_url || `/constructeurs/${v.marque_alias}-${v.marque_id}/${v.modele_alias}-${v.modele_id}/${v.type_alias}-${v.cgc_type_id}.html`,
+      image_url: v.image_url || `/upload/constructeurs-automobiles/modeles/${v.modele_pic || 'default.webp'}`
+    }));
+    
+    apiParts = apiParts.map(p => ({
+      ...p,
+      part_url: p.part_url || `/pieces/${p.marque_alias}/${p.pg_alias}`,
+      image_url: p.image_url || `/upload/pieces-auto/${p.pg_pic || 'default.webp'}`
+    }));
   } catch (error) {
     console.error('Error fetching bestsellers:', error);
   }
@@ -310,18 +323,15 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
     ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
     : `depuis ${vehicle.type_year_from}`;
 
-  const vehicleUrl = vehicle.vehicle_url || `/voiture/${vehicle.modele_alias}/${vehicle.type_alias}`;
-  const imageUrl = vehicle.image_url || `/upload/constructeurs-automobiles/modeles/${vehicle.modele_pic || 'default.webp'}`;
-
   return (
     <Link
-      to={vehicleUrl}
+      to={vehicle.vehicle_url || '#'}
       className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden group border border-gray-200"
     >
       <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
         <img 
-          src={imageUrl}
-          alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
+          src={vehicle.image_url || '/images/default-vehicle.png'}
+          alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
             e.currentTarget.src = '/images/default-vehicle.png';
@@ -360,17 +370,14 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
 
 // 📦 Composant Carte de pièce API
 function ApiPartCard({ part, brandAlias }: { part: ApiPopularPart; brandAlias: string }) {
-  const partUrl = part.part_url || `/pieces/${brandAlias}/${part.pg_alias}`;
-  const imageUrl = part.image_url || `/upload/pieces-auto/${part.pg_pic || 'default.webp'}`;
-
   return (
     <Link
-      to={partUrl}
+      to={part.part_url || '#'}
       className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-200 group"
     >
       <div className="flex items-center justify-center h-24 mb-3 bg-gray-50 rounded-lg overflow-hidden">
         <img 
-          src={imageUrl}
+          src={part.image_url || '/images/default-part.png'}
           alt={part.pg_name}
           className="h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300"
           onError={(e) => {
