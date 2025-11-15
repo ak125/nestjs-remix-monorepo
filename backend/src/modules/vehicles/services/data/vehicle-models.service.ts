@@ -148,11 +148,15 @@ export class VehicleModelsService extends SupabaseBaseService {
   ): Promise<VehicleResponse<VehicleModel>> {
     const cacheKey = `models_by_brand:${marqueId}:${JSON.stringify(options)}`;
 
-    return await this.cacheService.getOrSet(
-      CacheType.MODELS,
-      cacheKey,
-      async () => {
-        try {
+    // 🔧 TEMPORAIRE: Désactiver le cache pour tester le filtrage des motorisations
+    const skipCache = options.year !== undefined;
+    
+    if (skipCache) {
+      this.logger.log(`⚠️ Cache désactivé pour test filtrage année ${options.year}`);
+    }
+
+    const executeQuery = async () => {
+      try {
           this.logger.debug(
             `🚗 Récupération des modèles pour marque: ${marqueId}, options: ${JSON.stringify(options)}`,
           );
@@ -160,6 +164,80 @@ export class VehicleModelsService extends SupabaseBaseService {
           const { page = 0, limit = 50, search, year } = options;
           const offset = page * limit;
 
+          // 🔧 Étape 1: Récupérer TOUS les modèles de la marque
+          const { data: allModels, error: modelsError } = await this.client
+            .from('auto_modele')
+            .select('modele_id')
+            .eq('modele_marque_id', marqueId);
+
+          if (modelsError || !allModels) {
+            this.logger.error('Erreur récupération modèles:', modelsError);
+            throw modelsError;
+          }
+
+          const allModelIds = allModels.map(m => m.modele_id);
+          this.logger.log(`🔍 DEBUG: ${allModelIds.length} modèles totaux pour marque ${marqueId}`);
+
+          // 🔧 Étape 2: Récupérer les types pour ces modèles
+          const { data: allTypes, error: typesError } = await this.client
+            .from('auto_type')
+            .select('type_id, modele_id, type_year_from, type_year_to')
+            .in('modele_id', allModelIds);
+
+          if (typesError) {
+            this.logger.error('Erreur récupération types:', typesError);
+            throw typesError;
+          }
+
+          // 🔧 Étape 3: Grouper les types par modèle
+          const modelIdsByType = new Map<number, any[]>();
+          
+          allTypes?.forEach((type: any) => {
+            if (!modelIdsByType.has(type.modele_id)) {
+              modelIdsByType.set(type.modele_id, []);
+            }
+            modelIdsByType.get(type.modele_id)!.push(type);
+          });
+
+          // 🔧 Étape 4: Filtrer les modèles selon disponibilité des motorisations
+          let modelIdsWithTypes: number[];
+
+          if (year) {
+            this.logger.debug(`🗓️ Filtrage par année: ${year}`);
+            
+            // Garder uniquement les modèles ayant au moins une motorisation pour cette année
+            modelIdsWithTypes = Array.from(modelIdsByType.entries())
+              .filter(([_, types]) => {
+                return types.some((type: any) => {
+                  const yearFrom = type.type_year_from || 0;
+                  const yearTo = type.type_year_to || 9999;
+                  return yearFrom <= year && year <= yearTo;
+                });
+              })
+              .map(([modelId, _]) => modelId);
+            
+            this.logger.debug(
+              `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations pour ${year}`,
+            );
+            this.logger.log(`🔍 DEBUG année ${year}: IDs filtrés = [${modelIdsWithTypes.slice(0, 5).join(', ')}...]`);
+          } else {
+            // Sans année, prendre tous les modèles qui ont au moins une motorisation
+            modelIdsWithTypes = Array.from(modelIdsByType.keys());
+            
+            this.logger.debug(
+              `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations`,
+            );
+          }
+
+          // 🚫 Si aucun modèle avec motorisations, retourner vide
+          if (modelIdsWithTypes.length === 0) {
+            this.logger.debug(
+              `❌ Aucun modèle avec motorisations disponibles`,
+            );
+            return { success: true, data: [], total: 0, page, limit };
+          }
+
+          // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
           let query = this.client
             .from('auto_modele')
             .select(
@@ -170,58 +248,10 @@ export class VehicleModelsService extends SupabaseBaseService {
                 marque_name
               )
             `,
+              { count: 'exact' }
             )
-            .eq('auto_marque.marque_id', marqueId);
-          // .eq('modele_display', 1); // 🔧 TEMPORAIREMENT DÉSACTIVÉ - tous les modèles ont display=0
-
-          // 📅 Filtrage par année si spécifiée
-          if (year) {
-            this.logger.debug(`🗓️ Filtrage par année: ${year}`);
-
-            // Requête pour obtenir les modèles qui ont des motorisations compatibles avec l'année
-            const { data: compatibleModels, error: yearError } =
-              await this.client
-                .from('auto_modele')
-                .select(
-                  `
-                modele_id,
-                auto_type!inner(
-                  type_year_from,
-                  type_year_to
-                )
-              `,
-                )
-                .eq('auto_marque.marque_id', marqueId)
-                .eq('modele_display', 1)
-                .lte('auto_type.type_year_from', year)
-                .or(`type_year_to.gte.${year},type_year_to.is.null`, {
-                  foreignTable: 'auto_type',
-                });
-
-            if (yearError) {
-              this.logger.error('Erreur filtrage par année:', yearError);
-              throw yearError;
-            }
-
-            // Extraire les IDs des modèles compatibles
-            const compatibleIds = [
-              ...new Set(compatibleModels?.map((m) => m.modele_id) || []),
-            ];
-
-            if (compatibleIds.length === 0) {
-              this.logger.debug(
-                `❌ Aucun modèle compatible avec l'année ${year}`,
-              );
-              return { success: true, data: [], total: 0, page, limit };
-            }
-
-            this.logger.debug(
-              `✅ ${compatibleIds.length} modèles compatibles avec l'année ${year}`,
-            );
-
-            // Ajouter le filtre sur les IDs compatibles
-            query = query.in('modele_id', compatibleIds);
-          }
+            .eq('auto_marque.marque_id', marqueId)
+            .in('modele_id', modelIdsWithTypes);
 
           if (search?.trim()) {
             query = query.ilike('modele_name', `%${search}%`);
@@ -250,8 +280,18 @@ export class VehicleModelsService extends SupabaseBaseService {
           this.logger.error(`Erreur getModelsByBrand ${marqueId}:`, error);
           throw error;
         }
-      },
-    );
+    };
+
+    // Exécuter avec ou sans cache selon le besoin
+    if (skipCache) {
+      return await executeQuery();
+    } else {
+      return await this.cacheService.getOrSet(
+        CacheType.MODELS,
+        cacheKey,
+        executeQuery
+      );
+    }
   }
 
   /**

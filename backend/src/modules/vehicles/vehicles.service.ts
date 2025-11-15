@@ -347,19 +347,24 @@ export class VehiclesService extends SupabaseBaseService {
     filters?: VehiclePaginationDto,
   ): Promise<VehicleResponseDto> {
     try {
+      const brandIdNum = parseInt(brandId, 10);
+      
       // 🎯 FILTRAGE OPTIMISÉ : Requête unique pour modèles avec motorisations
       if (filters?.year) {
         this.logger.debug(
           `📅 Filtrage optimisé des modèles avec motorisations pour l'année ${filters.year}`,
         );
 
-        // Requête optimisée : récupérer les modele_id qui ont des motorisations pour l'année
+        // Requête optimisée : récupérer les modele_id qui ont des motorisations pour l'année EXACTE
+        // ✅ FILTRAGE STRICT : Une motorisation doit être disponible pour l'année demandée
         const { data: modelIdsWithTypes, error: typeError } = await this.client
           .from('auto_type')
-          .select('type_modele_id')
-          .eq('type_marque_id', brandId)
-          .lte('type_year_from', filters.year.toString())
+          .select('type_modele_id, type_year_from, type_year_to')
+          .eq('type_marque_id', brandIdNum)
+          .lte('type_year_from', filters.year)
           .or(`type_year_to.is.null,type_year_to.gte.${filters.year}`);
+
+        this.logger.log(`🔍 Requête types: marque=${brandIdNum}, année=${filters.year}, résultats=${modelIdsWithTypes?.length || 0}`);
 
         if (typeError) {
           this.logger.error(
@@ -383,7 +388,21 @@ export class VehiclesService extends SupabaseBaseService {
           ...new Set(modelIdsWithTypes.map((t) => t.type_modele_id)),
         ];
 
-        // Récupérer les modèles correspondants avec filtrage par année de production
+        this.logger.log(`🔍 ${uniqueModelIds.length} modèles avec motorisations pour marque ${brandId} année ${filters.year}`);
+        this.logger.log(`🔍 K2500 (88031) dans la liste: ${uniqueModelIds.includes(88031) ? 'OUI ❌' : 'NON ✅'}`);
+
+        // 🚫 Si aucun modèle avec motorisations, retourner vide
+        if (uniqueModelIds.length === 0) {
+          this.logger.log(`❌ Aucun modèle KIA avec motorisations pour l'année ${filters.year}`);
+          return {
+            data: [],
+            total: 0,
+            page: filters?.page || 0,
+            limit: filters?.limit || 50,
+          };
+        }
+
+        // Récupérer les modèles correspondants (déjà filtrés par année via motorisations)
         let query = this.client
           .from('auto_modele')
           .select(
@@ -411,14 +430,15 @@ export class VehiclesService extends SupabaseBaseService {
             modele_is_new
           `,
           )
-          .eq('modele_marque_id', brandId)
-          .lte('modele_year_from', filters.year)
-          .or(`modele_year_to.gte.${filters.year},modele_year_to.is.null`)
+          .eq('modele_marque_id', brandIdNum)
+          .eq('modele_display', 1)  // ✅ Filtrer uniquement les modèles destinés à l'affichage
           .in('modele_id', uniqueModelIds);
 
         if (filters?.search) {
           query = query.ilike('modele_name', `%${filters.search}%`);
         }
+
+        this.logger.log(`🔍 DEBUG: ${uniqueModelIds.length} modèles avec motorisations pour KIA ${filters.year}`);
 
         const offset = (filters?.page || 0) * (filters?.limit || 50);
         const { data, error } = await query
@@ -434,9 +454,8 @@ export class VehiclesService extends SupabaseBaseService {
         const { count } = await this.client
           .from('auto_modele')
           .select('modele_id', { count: 'exact' })
-          .eq('modele_marque_id', brandId)
-          .lte('modele_year_from', filters.year)
-          .or(`modele_year_to.gte.${filters.year},modele_year_to.is.null`)
+          .eq('modele_marque_id', brandIdNum)
+          .eq('modele_display', 1)  // ✅ Même filtre pour le comptage
           .in('modele_id', uniqueModelIds);
 
         this.logger.debug(

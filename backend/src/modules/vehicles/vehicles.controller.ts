@@ -1,4 +1,5 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Get, Query, Param, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
 
@@ -38,9 +39,15 @@ export class VehiclesController {
   async getModelsByBrand(
     @Param('brandId') brandId: string,
     @Query() query: any,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const params = this.parseQueryParams(query);
     params.brandId = brandId;
+    
+    // 🔍 Header pour traçabilité du cache (debugging)
+    res.setHeader('X-Cache-Source', 'vehicles.service.findModelsByBrand');
+    res.setHeader('X-Filter-Year', query.year || 'none');
+    
     return this.vehiclesService.findModelsByBrand(brandId, params);
   }
 
