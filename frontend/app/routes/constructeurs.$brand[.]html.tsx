@@ -4,8 +4,10 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { Car, Filter, Disc, Wrench, Droplet, Zap, Settings, ChevronRight } from "lucide-react";
+import { Car, Filter, Disc, Wrench, Droplet, Zap, Settings, ChevronRight, TrendingUp, Package } from "lucide-react";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+import { getPopularVehicles, getPopularParts as getApiPopularParts } from "../services/api/brand.api";
+import type { PopularVehicle, PopularPart as ApiPopularPart } from "../types/brand.types";
 
 interface PopularPart {
   category: string;
@@ -33,6 +35,8 @@ interface LoaderData {
   };
   popularParts: PopularPart[];
   brandDescription: BrandDescription;
+  apiVehicles: PopularVehicle[];
+  apiParts: ApiPopularPart[];
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -90,6 +94,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const popularParts = getPopularParts(marque_alias);
   const brandDescription = getBrandDescription(marque_alias);
 
+  // Récupération des bestsellers depuis l'API
+  let apiVehicles: PopularVehicle[] = [];
+  let apiParts: ApiPopularPart[] = [];
+  
+  try {
+    [apiVehicles, apiParts] = await Promise.all([
+      getPopularVehicles(marque_alias, 6),
+      getApiPopularParts(marque_alias, 8)
+    ]);
+  } catch (error) {
+    console.error('Error fetching bestsellers:', error);
+  }
+
   return json<LoaderData>({
     manufacturer: {
       marque_id,
@@ -98,11 +115,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     },
     popularParts,
     brandDescription,
+    apiVehicles,
+    apiParts,
   });
 }
 
 export default function BrandCatalogPage() {
-  const { manufacturer, popularParts, brandDescription } = useLoaderData<typeof loader>();
+  const { manufacturer, popularParts, brandDescription, apiVehicles, apiParts } = useLoaderData<typeof loader>();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -171,6 +190,44 @@ export default function BrandCatalogPage() {
           />
         </div>
       </div>
+
+      {/* 🚗 Véhicules les plus recherchés */}
+      {apiVehicles.length > 0 && (
+        <div className="bg-white py-12 border-b border-gray-200">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+              <TrendingUp className="w-8 h-8 text-blue-600" />
+              Véhicules {manufacturer.marque_name} les plus recherchés
+            </h2>
+            <div className="h-1 w-24 bg-blue-600 mb-8"></div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {apiVehicles.map((vehicle) => (
+                <VehicleCard key={vehicle.type_id} vehicle={vehicle} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 📦 Pièces populaires depuis l'API */}
+      {apiParts.length > 0 && (
+        <div className="bg-gray-50 py-12 border-b border-gray-200">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+              <Package className="w-8 h-8 text-blue-600" />
+              Pièces {manufacturer.marque_name} populaires
+            </h2>
+            <div className="h-1 w-24 bg-blue-600 mb-8"></div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {apiParts.map((part) => (
+                <ApiPartCard key={part.pg_id} part={part} brandAlias={manufacturer.marque_alias} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ⭐ Pièces les plus vendues */}
       <div className="bg-gray-50 py-12">
@@ -244,6 +301,96 @@ export default function BrandCatalogPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 🚗 Composant Carte de véhicule API
+function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
+  const yearRange = vehicle.type_year_to 
+    ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
+    : `depuis ${vehicle.type_year_from}`;
+
+  const vehicleUrl = vehicle.vehicle_url || `/voiture/${vehicle.modele_alias}/${vehicle.type_alias}`;
+  const imageUrl = vehicle.image_url || `/upload/constructeurs-automobiles/modeles/${vehicle.modele_pic || 'default.webp'}`;
+
+  return (
+    <Link
+      to={vehicleUrl}
+      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden group border border-gray-200"
+    >
+      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+        <img 
+          src={imageUrl}
+          alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          onError={(e) => {
+            e.currentTarget.src = '/images/default-vehicle.png';
+          }}
+        />
+        <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold">
+          {vehicle.type_power_ps} ch
+        </div>
+      </div>
+      
+      <div className="p-4">
+        <h3 className="font-bold text-lg text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+          {vehicle.modele_name}
+        </h3>
+        <p className="text-blue-600 font-semibold text-base mb-2">
+          {vehicle.type_name}
+        </p>
+        
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+          <span className="flex items-center gap-1">
+            <Zap className="w-4 h-4" />
+            {vehicle.type_power_ps} ch
+          </span>
+          <span>{yearRange}</span>
+        </div>
+        
+        <div className="pt-3 border-t border-gray-200">
+          <span className="text-blue-600 text-sm font-medium group-hover:underline">
+            Voir les pièces →
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// 📦 Composant Carte de pièce API
+function ApiPartCard({ part, brandAlias }: { part: ApiPopularPart; brandAlias: string }) {
+  const partUrl = part.part_url || `/pieces/${brandAlias}/${part.pg_alias}`;
+  const imageUrl = part.image_url || `/upload/pieces-auto/${part.pg_pic || 'default.webp'}`;
+
+  return (
+    <Link
+      to={partUrl}
+      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-4 border border-gray-200 group"
+    >
+      <div className="flex items-center justify-center h-24 mb-3 bg-gray-50 rounded-lg overflow-hidden">
+        <img 
+          src={imageUrl}
+          alt={part.pg_name}
+          className="h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300"
+          onError={(e) => {
+            e.currentTarget.src = '/images/default-part.png';
+          }}
+        />
+      </div>
+      
+      <h4 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+        {part.pg_name}
+      </h4>
+      
+      <p className="text-xs text-gray-500 mb-2">
+        {part.modele_name} • {part.type_name}
+      </p>
+      
+      <span className="text-blue-600 text-xs font-medium group-hover:underline">
+        Voir →
+      </span>
+    </Link>
   );
 }
 

@@ -712,3 +712,10 @@ class BrandApiService {
 // Export de l'instance singleton
 export const brandApi = new BrandApiService();
 export default brandApi;
+
+// Export des méthodes populaires comme fonctions pour faciliter l'import
+export const getPopularVehicles = (brandAlias: string, limit: number = 12) => 
+  brandApi.getPopularVehicles(brandAlias, limit);
+
+export const getPopularParts = (brandAlias: string, limit: number = 12) => 
+  brandApi.getPopularParts(brandAlias, limit);
