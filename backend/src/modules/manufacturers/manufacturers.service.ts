@@ -887,18 +887,30 @@ export class ManufacturersService extends SupabaseBaseService {
       }
 
       // 3️⃣ Transformer et enrichir les données
+      const vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
+        ...vehicle,
+        vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
+        image_url: `/upload/constructeurs-automobiles/modeles/${vehicle.modele_pic || 'default.webp'}`,
+      }));
+
+      const parts = (bestsellers?.parts || []).map((part: any) => ({
+        ...part,
+        part_url: `/pieces/${part.marque_alias}/${part.pg_alias}`,
+        image_url: `/upload/pieces-auto/${part.pg_pic || 'default.webp'}`,
+      }));
+
       const result = {
         success: true,
         data: {
-          vehicles: bestsellers?.vehicles || [],
-          parts: bestsellers?.parts || [],
+          vehicles,
+          parts,
         },
         meta: {
           brand_id: brand.marque_id,
           brand_name: brand.marque_name,
           brand_alias: brand.marque_alias,
-          total_vehicles: bestsellers?.vehicles?.length || 0,
-          total_parts: bestsellers?.parts?.length || 0,
+          total_vehicles: vehicles.length,
+          total_parts: parts.length,
           generated_at: new Date().toISOString(),
         },
       };
