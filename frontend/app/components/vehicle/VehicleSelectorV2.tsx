@@ -73,6 +73,7 @@ export default function VehicleSelectorV2({
   const [selectedModel, setSelectedModel] = useState<VehicleModel | null>(null);
   const [selectedType, setSelectedType] = useState<VehicleType | null>(null);
   
+  const [loadingBrands, setLoadingBrands] = useState(false);
   const [loadingYears, setLoadingYears] = useState(false);
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(false);
@@ -83,17 +84,33 @@ export default function VehicleSelectorV2({
   
   const navigate = useNavigate();
 
-  // 🚀 Chargement initial des marques (lazy pour performance)
+  // 🚀 Chargement lazy des marques au premier focus (optimisation performance)
   useEffect(() => {
-    // ⚡ Chargement différé pour éviter de bloquer le rendu initial
-    const timer = setTimeout(() => {
-      loadBrands();
-    }, 100); // Laisse le temps au composant de se rendre
+    // Ne charge pas au montage, attendre interaction utilisateur
+    const handleFocus = () => {
+      if (brands.length === 0 && !loadingBrands) {
+        loadBrands();
+      }
+    };
     
-    return () => clearTimeout(timer);
-  }, [context, _currentVehicle]);
+    // Pré-charger si currentVehicle fourni
+    if (_currentVehicle?.brand?.id) {
+      loadBrands();
+    }
+    
+    // Écouter focus sur le select marque pour lazy load
+    const brandSelect = document.getElementById('brand-v2') || document.getElementById('brand');
+    brandSelect?.addEventListener('focus', handleFocus, { once: true });
+    
+    return () => {
+      brandSelect?.removeEventListener('focus', handleFocus);
+    };
+  }, [_currentVehicle]);
 
   const loadBrands = async () => {
+    if (loadingBrands || brands.length > 0) return;
+    
+    setLoadingBrands(true);
     try {
       const brandsData = await enhancedVehicleApi.getBrands();
       setBrands(brandsData);
@@ -118,6 +135,8 @@ export default function VehicleSelectorV2({
     } catch (error) {
       console.error('❌ Erreur chargement marques:', error);
       setBrands([]);
+    } finally {
+      setLoadingBrands(false);
     }
   };
 
@@ -468,9 +487,11 @@ export default function VehicleSelectorV2({
               id="brand-v2"
               value={selectedBrand?.marque_id || ''} 
               onChange={(e) => handleBrandChange(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white"
+              onFocus={() => !brands.length && !loadingBrands && loadBrands()}
+              disabled={loadingBrands}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
             >
-              <option value="">Choisir...</option>
+              <option value="">{loadingBrands ? 'Chargement...' : 'Choisir...'}</option>
               {brands.map(brand => (
                 <option key={brand.marque_id} value={brand.marque_id}>
                   {brand.marque_name} {brand.is_featured ? '⭐' : ''}
@@ -554,7 +575,7 @@ export default function VehicleSelectorV2({
         </div>
 
         {/* Indicateur de chargement */}
-        {(loadingYears || loadingModels || loadingTypes) && (
+        {(loadingBrands || loadingYears || loadingModels || loadingTypes) && (
           <div className="text-center py-2">
             <div className="inline-flex items-center gap-2 text-sm text-blue-600">
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
