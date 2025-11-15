@@ -6,6 +6,11 @@ const sidebars = {
     'intro',
     'getting-started',
     {
+      type: 'doc',
+      id: 'api-reference',
+      label: '🔌 API Reference (Swagger)',
+    },
+    {
       type: 'category',
       label: 'Architecture',
       items: [
