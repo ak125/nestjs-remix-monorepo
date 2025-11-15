@@ -12,6 +12,14 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Guides',
+      items: [
+        'guides/authentication',
+        'guides/webhooks',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Architecture',
       items: [
         'architecture/overview',
