@@ -260,7 +260,7 @@ Paybox retente automatiquement les callbacks :
 @Post('api/paybox/callback')
 async handlePayboxCallback(@Query() query: Record<string, string>) {
   try {
-    // Traitement rapide (<10s idéalement)
+    // Traitement rapide (&lt;10s idéalement)
     await this.processPayment(query);
     
     // Toujours retourner 200 OK rapidement
@@ -481,7 +481,7 @@ grep PAYBOX_HMAC_KEY .env
 // Utiliser queue asynchrone
 @Post('api/paybox/callback')
 async handleCallback(@Query() query) {
-  // Validation rapide (<1s)
+  // Validation rapide (&lt;1s)
   const isValid = this.verifySignature(query);
   if (!isValid) return res.status(403);
   
@@ -712,7 +712,7 @@ curl -X POST "https://api.autoparts.com/api/paybox/callback?${PARAMS}"
 
 | Aspect | Webhook (Push) | Polling (Pull) |
 |--------|----------------|----------------|
-| **Latence** | Temps réel (<1s) | Dépend intervalle (30s-5min) |
+| **Latence** | Temps réel (&lt;1s) | Dépend intervalle (30s-5min) |
 | **Charge serveur** | Faible (événements) | Élevée (requêtes régulières) |
 | **Complexité** | Endpoint + sécurité | Simple GET endpoint |
 | **Idéal pour** | Paiements, notifications | Status checks |
