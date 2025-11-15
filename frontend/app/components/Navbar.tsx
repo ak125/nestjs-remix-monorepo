@@ -146,6 +146,7 @@ export const Navbar = ({ logo }: { logo: string }) => {
           {/* Logo avec effet hover premium - compact au scroll */}
           <Link 
             to="/" 
+            prefetch="intent"
             className="flex items-center gap-3 group relative flex-shrink-0 cursor-pointer"
             aria-label="Retour à l'accueil"
           >
