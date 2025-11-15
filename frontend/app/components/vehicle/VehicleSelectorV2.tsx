@@ -358,7 +358,11 @@ export default function VehicleSelectorV2({
   // 🎨 Mode compact (horizontal)
   if (mode === 'compact') {
     return (
-      <div className={`vehicle-selector-compact flex gap-4 items-center ${containerClass}`}>
+      <div 
+        className={`vehicle-selector-compact flex gap-4 items-center ${containerClass}`}
+        data-nosnippet
+        data-noindex
+      >
         <Car className="w-5 h-5 text-blue-600" />
         
         {/* Marque */}
@@ -430,7 +434,11 @@ export default function VehicleSelectorV2({
 
   // 🎨 Mode full (vertical) - Design moderne avec Card + onglets
   return (
-    <Card className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}>
+    <Card 
+      className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}
+      data-nosnippet
+      data-noindex
+    >
       <CardHeader className="pb-3">
         <CardTitle className="text-gray-900 text-center flex items-center justify-center gap-2">
           <Car className="w-5 h-5 text-blue-600" />
