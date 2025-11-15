@@ -830,6 +830,97 @@ export class ManufacturersService extends SupabaseBaseService {
   }
 
   /**
+   * 🆕 Récupérer les bestsellers d'une marque (véhicules + pièces)
+   * Utilise la fonction RPC get_brand_bestsellers_optimized
+   */
+  async getBrandBestsellers(
+    brandAlias: string,
+    limitVehicles = 12,
+    limitParts = 12,
+  ) {
+    try {
+      const cacheKey = `brand_bestsellers_${brandAlias}_${limitVehicles}_${limitParts}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      
+      if (cached) {
+        this.logger.log(`✅ Cache hit: ${cacheKey}`);
+        return cached as any;
+      }
+
+      this.logger.log(`🔍 Récupération bestsellers pour marque: ${brandAlias}`);
+
+      // 1️⃣ Récupérer l'ID de la marque depuis l'alias
+      const { data: brand, error: brandError } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias')
+        .eq('marque_alias', brandAlias)
+        .single();
+
+      if (brandError || !brand) {
+        this.logger.warn(`⚠️ Marque non trouvée: ${brandAlias}`);
+        return {
+          success: false,
+          data: { vehicles: [], parts: [] },
+          error: `Marque "${brandAlias}" non trouvée`,
+        };
+      }
+
+      // 2️⃣ Appeler la fonction RPC optimisée
+      const { data: bestsellers, error: rpcError } = await this.client.rpc(
+        'get_brand_bestsellers_optimized',
+        {
+          p_marque_id: brand.marque_id,
+          p_limit_vehicles: limitVehicles,
+          p_limit_parts: limitParts,
+        },
+      );
+
+      if (rpcError) {
+        this.logger.error(
+          `❌ Erreur RPC get_brand_bestsellers_optimized: ${rpcError.message}`,
+        );
+        return {
+          success: false,
+          data: { vehicles: [], parts: [] },
+          error: rpcError.message,
+        };
+      }
+
+      // 3️⃣ Transformer et enrichir les données
+      const result = {
+        success: true,
+        data: {
+          vehicles: bestsellers?.vehicles || [],
+          parts: bestsellers?.parts || [],
+        },
+        meta: {
+          brand_id: brand.marque_id,
+          brand_name: brand.marque_name,
+          brand_alias: brand.marque_alias,
+          total_vehicles: bestsellers?.vehicles?.length || 0,
+          total_parts: bestsellers?.parts?.length || 0,
+          generated_at: new Date().toISOString(),
+        },
+      };
+
+      // 4️⃣ Mettre en cache (TTL 1h)
+      await this.cacheManager.set(cacheKey, result, 3600);
+      this.logger.log(
+        `✅ Bestsellers récupérés: ${result.meta.total_vehicles} véhicules, ${result.meta.total_parts} pièces`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur getBrandBestsellers:', error.message);
+      return {
+        success: false,
+        data: { vehicles: [], parts: [] },
+        error: error.message,
+      };
+    }
+  }
+
+  /**
    * Récupérer les constructeurs en vedette
    */
   async getFeaturedManufacturers(limit = 6) {

@@ -186,6 +186,31 @@ export class ManufacturersController {
   }
 
   /**
+   * GET /api/manufacturers/brand/:brandAlias/bestsellers
+   * 🆕 Récupérer les véhicules et pièces populaires d'une marque
+   * Utilise RPC get_brand_bestsellers_optimized
+   */
+  @Get('brand/:brandAlias/bestsellers')
+  async getBrandBestsellers(
+    @Param('brandAlias') brandAlias: string,
+    @Query('limitVehicles') limitVehicles?: string,
+    @Query('limitParts') limitParts?: string,
+  ) {
+    this.logger.log(
+      `GET /api/manufacturers/brand/${brandAlias}/bestsellers?limitVehicles=${limitVehicles || 12}&limitParts=${limitParts || 12}`,
+    );
+
+    const limitVehiclesNum = limitVehicles ? parseInt(limitVehicles, 10) : 12;
+    const limitPartsNum = limitParts ? parseInt(limitParts, 10) : 12;
+
+    return this.manufacturersService.getBrandBestsellers(
+      brandAlias,
+      limitVehiclesNum,
+      limitPartsNum,
+    );
+  }
+
+  /**
    * GET /api/manufacturers/brand/:brandAlias/model/:modelAlias
    * 🔍 Récupérer un modèle et ses motorisations par alias
    * Exemple: /api/manufacturers/brand/citroen/model/berlingo-ii
