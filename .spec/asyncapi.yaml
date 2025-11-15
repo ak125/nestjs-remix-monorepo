@@ -1,0 +1,732 @@
+asyncapi: 3.0.0
+info:
+  title: Autoparts E-commerce Webhooks & Events API
+  version: 1.0.0
+  description: |
+    # 📡 Documentation AsyncAPI - Webhooks & Events
+    
+    Cette spécification documente tous les **webhooks entrants** et **événements asynchrones** 
+    de la plateforme e-commerce pièces auto.
+    
+    ## 🎯 Cas d'usage
+    
+    - **Webhooks tiers** : Paybox, TecDoc, transporteurs
+    - **Automatisations** : n8n workflows
+    - **Événements internes** : Order lifecycle, payment notifications
+    - **Intégrations externes** : ERP, CRM, analytics
+    
+    ## 🔐 Sécurité
+    
+    Tous les webhooks utilisent l'une des méthodes suivantes :
+    - **HMAC-SHA512** (Paybox) - Signature cryptographique
+    - **IP Whitelisting** (TecDoc) - Liste blanche IPs
+    - **API Keys** (n8n, internal) - Clés secrètes
+    
+    ## 📊 Statistiques
+    
+    - **5 webhooks externes** documentés
+    - **12 événements internes** (order, payment, shipping)
+    - **~500 callbacks/jour** (production)
+  
+  contact:
+    name: Webhook Support
+    email: webhooks@autoparts.com
+    url: https://autoparts.com/webhooks
+  
+  license:
+    name: Proprietary
+    url: https://autoparts.com/license
+
+servers:
+  production:
+    host: api.autoparts.com
+    protocol: https
+    description: Production webhook receiver
+    
+  staging:
+    host: staging-api.autoparts.com
+    protocol: https
+    description: Staging webhook receiver
+    
+  development:
+    host: localhost:3000
+    protocol: http
+    description: Development webhook receiver
+
+channels:
+  payboxIpnCallback:
+    address: /api/paybox/callback
+    messages:
+      payboxPaymentNotification:
+        $ref: '#/components/messages/PayboxIPN'
+    description: |
+      **Webhook Paybox IPN** (Instant Payment Notification)
+      
+      Appelé par Paybox après chaque transaction de paiement (succès ou échec).
+      
+      ### 🔐 Sécurité
+      - **Signature HMAC-SHA512** obligatoire
+      - Clé HMAC configurée dans back-office Paybox
+      - Vérification signature côté serveur
+      
+      ### 🎯 Flow
+      1. User complète paiement sur Paybox
+      2. Paybox envoie POST vers `/api/paybox/callback`
+      3. Backend valide signature HMAC
+      4. Mise à jour statut commande
+      5. Email confirmation client
+      6. Retour HTTP 200 OK
+      
+      ### ⏱️ Timeout
+      - Paybox attend réponse sous **30 secondes**
+      - Retry automatique si timeout (3x max)
+      
+      ### 📝 Logs
+      - Tous les callbacks logués dans `ic_postback`
+      - Audit complet (params, signature, timestamp)
+  
+  cyberPlusCallback:
+    address: /api/payments/callback/cyberplus
+    messages:
+      cyberPlusPaymentNotification:
+        $ref: '#/components/messages/CyberPlusIPN'
+    description: |
+      **Webhook CyberPlus/BNP Paribas** (IPN)
+      
+      Ancienne passerelle de paiement (legacy, toujours active).
+      
+      ### 🔐 Sécurité
+      - **Signature HMAC-SHA256**
+      - IP Whitelisting BNP Paribas
+      
+      ### 🎯 Statuts supportés
+      - `00` : SUCCESS
+      - `05` : Refusé (funds)
+      - `17` : Annulé user
+      - `30` : Format error
+  
+  tecDocProductUpdate:
+    address: /api/integrations/tecdoc/webhook
+    messages:
+      tecDocProductUpdate:
+        $ref: '#/components/messages/TecDocUpdate'
+    description: |
+      **Webhook TecDoc** - Mises à jour catalogue
+      
+      TecDoc envoie des notifications lors de :
+      - Mise à jour stock fournisseur
+      - Changement prix
+      - Nouveau produit disponible
+      - Produit discontinué
+      
+      ### 🔐 Sécurité
+      - **IP Whitelisting** TecDoc servers
+      - **API Key** dans header `X-TecDoc-Key`
+      
+      ### ⏱️ Fréquence
+      - Temps réel (événementiel)
+      - Batch nightly (full sync) à 02:00 UTC
+      
+      ### 📊 Volume
+      - ~50-200 webhooks/jour
+      - Batch : ~10,000 produits/nuit
+  
+  carrierTrackingUpdate:
+    address: /api/shipping/tracking/webhook
+    messages:
+      carrierTrackingUpdate:
+        $ref: '#/components/messages/CarrierTracking'
+    description: |
+      **Webhook Transporteurs** - Suivi colis
+      
+      Les transporteurs (DHL, Chronopost, Colissimo) envoient des updates :
+      - Colis en transit
+      - Arrivé au centre de tri
+      - En cours de livraison
+      - Livré (POD - Proof of Delivery)
+      - Échec livraison
+      
+      ### 🚚 Transporteurs supportés
+      - DHL Express
+      - Chronopost
+      - Colissimo
+      - UPS
+      - FedEx
+      
+      ### 🔐 Sécurité
+      - **API Key** par transporteur
+      - **Signature HMAC** (optionnel selon transporteur)
+  
+  n8nWorkflowTrigger:
+    address: /api/webhooks/n8n/{workflowId}
+    messages:
+      n8nWorkflowEvent:
+        $ref: '#/components/messages/N8nWorkflow'
+    description: |
+      **Webhook n8n** - Automatisations
+      
+      Endpoints génériques pour déclencher des workflows n8n.
+      
+      ### 🤖 Workflows actifs
+      1. **Order fulfillment** - Automatise préparation commande
+      2. **Stock alerts** - Notifications stock bas
+      3. **Customer segments** - Mise à jour segments marketing
+      4. **Invoice generation** - Génération factures auto
+      5. **Support tickets** - Création tickets Zendesk
+      
+      ### 🔐 Sécurité
+      - **Webhook secret** dans query param `?secret=xxx`
+      - IP restriction (optionnel)
+      
+      ### 📊 Format
+      - POST JSON (flexible schema)
+      - Headers custom supportés
+
+operations:
+  receivePayboxCallback:
+    action: receive
+    channel:
+      $ref: '#/channels/payboxIpnCallback'
+    summary: Recevoir notification paiement Paybox
+    description: |
+      Traite les callbacks IPN de Paybox après un paiement.
+      
+      **Étapes de traitement :**
+      1. Extraction paramètres query string
+      2. Vérification signature HMAC-SHA512
+      3. Validation montant/référence
+      4. Mise à jour statut paiement en DB
+      5. Mise à jour statut commande
+      6. Envoi email confirmation client
+      7. Log audit dans `ic_postback`
+      8. Retour HTTP 200 OK
+    messages:
+      - $ref: '#/channels/payboxIpnCallback/messages/payboxPaymentNotification'
+  
+  receiveCyberPlusCallback:
+    action: receive
+    channel:
+      $ref: '#/channels/cyberPlusCallback'
+    summary: Recevoir notification paiement CyberPlus
+    description: Traite les callbacks IPN de CyberPlus (legacy).
+    messages:
+      - $ref: '#/channels/cyberPlusCallback/messages/cyberPlusPaymentNotification'
+  
+  receiveTecDocUpdate:
+    action: receive
+    channel:
+      $ref: '#/channels/tecDocProductUpdate'
+    summary: Recevoir mise à jour produit TecDoc
+    description: |
+      Synchronise les données produits depuis TecDoc.
+      
+      **Actions selon type d'update :**
+      - `STOCK_UPDATE` : Mise à jour stock en cache Redis
+      - `PRICE_CHANGE` : Recalcul prix + marges
+      - `NEW_PRODUCT` : Ajout catalogue + indexation Meilisearch
+      - `DISCONTINUED` : Marquage produit non disponible
+    messages:
+      - $ref: '#/channels/tecDocProductUpdate/messages/tecDocProductUpdate'
+  
+  receiveCarrierTracking:
+    action: receive
+    channel:
+      $ref: '#/channels/carrierTrackingUpdate'
+    summary: Recevoir mise à jour suivi colis
+    description: |
+      Met à jour le tracking des colis en temps réel.
+      
+      **Actions :**
+      1. Insertion événement tracking en DB
+      2. Mise à jour cache Redis (last status)
+      3. Notification client si livraison
+      4. Notification admin si problème
+    messages:
+      - $ref: '#/channels/carrierTrackingUpdate/messages/carrierTrackingUpdate'
+  
+  triggerN8nWorkflow:
+    action: receive
+    channel:
+      $ref: '#/channels/n8nWorkflowTrigger'
+    summary: Déclencher workflow n8n
+    description: |
+      Endpoint générique pour déclencher des automatisations n8n.
+      
+      Le payload est transmis tel quel au workflow n8n.
+    messages:
+      - $ref: '#/channels/n8nWorkflowTrigger/messages/n8nWorkflowEvent'
+
+components:
+  messages:
+    PayboxIPN:
+      name: PayboxPaymentNotification
+      title: Notification paiement Paybox
+      summary: Callback IPN envoyé par Paybox après transaction
+      contentType: application/x-www-form-urlencoded
+      payload:
+        $ref: '#/components/schemas/PayboxCallbackPayload'
+      examples:
+        - name: Paiement réussi
+          summary: Transaction validée par la banque
+          payload:
+            Mt: "7790"
+            Ref: "ORD-2024-001"
+            Auto: "123456"
+            Erreur: "00000"
+            Date: "20240115143000"
+            Heure: "143000"
+            Pays: "FRA"
+            Carte: "VISA"
+            Sign: "ABC123DEF456..."
+            K: "ABC123DEF456..."
+        
+        - name: Paiement refusé
+          summary: Transaction rejetée (fonds insuffisants)
+          payload:
+            Mt: "7790"
+            Ref: "ORD-2024-002"
+            Auto: ""
+            Erreur: "00001"
+            Date: "20240115143100"
+            Heure: "143100"
+            Pays: "FRA"
+            Carte: "VISA"
+            Sign: "XYZ789GHI012..."
+            K: "XYZ789GHI012..."
+    
+    CyberPlusIPN:
+      name: CyberPlusPaymentNotification
+      title: Notification paiement CyberPlus
+      summary: Callback IPN CyberPlus (legacy)
+      contentType: application/x-www-form-urlencoded
+      payload:
+        $ref: '#/components/schemas/CyberPlusCallbackPayload'
+      examples:
+        - name: Paiement réussi
+          payload:
+            vads_amount: "7790"
+            vads_order_id: "ORD-2024-003"
+            vads_trans_id: "654321"
+            vads_trans_status: "AUTHORISED"
+            vads_auth_result: "00"
+            signature: "fedcba987654..."
+    
+    TecDocUpdate:
+      name: TecDocProductUpdate
+      title: Mise à jour produit TecDoc
+      summary: Notification de changement catalogue TecDoc
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TecDocUpdatePayload'
+      examples:
+        - name: Mise à jour stock
+          payload:
+            eventType: "STOCK_UPDATE"
+            productId: "TD-123456"
+            ean: "5012345678900"
+            stock: 150
+            supplier: "VALEO"
+            timestamp: "2024-01-15T14:30:00Z"
+        
+        - name: Changement prix
+          payload:
+            eventType: "PRICE_CHANGE"
+            productId: "TD-123457"
+            ean: "5012345678901"
+            priceHT: 45.90
+            priceOld: 49.90
+            currency: "EUR"
+            effectiveDate: "2024-01-20T00:00:00Z"
+            timestamp: "2024-01-15T14:35:00Z"
+    
+    CarrierTracking:
+      name: CarrierTrackingUpdate
+      title: Mise à jour suivi colis
+      summary: Événement tracking envoyé par transporteur
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CarrierTrackingPayload'
+      examples:
+        - name: Colis livré
+          payload:
+            trackingNumber: "DHL123456789"
+            carrier: "DHL"
+            status: "DELIVERED"
+            statusCode: "OK"
+            location: "Paris 75001"
+            timestamp: "2024-01-15T16:45:00Z"
+            recipient: "Jean Dupont"
+            signatureUrl: "https://dhl.com/pod/123456789.pdf"
+        
+        - name: En transit
+          payload:
+            trackingNumber: "CP987654321"
+            carrier: "CHRONOPOST"
+            status: "IN_TRANSIT"
+            statusCode: "TR"
+            location: "Centre de tri Roissy"
+            timestamp: "2024-01-15T08:20:00Z"
+            estimatedDelivery: "2024-01-16T18:00:00Z"
+    
+    N8nWorkflow:
+      name: N8nWorkflowEvent
+      title: Événement workflow n8n
+      summary: Payload flexible pour déclencher workflow
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/N8nWorkflowPayload'
+      examples:
+        - name: Order fulfillment
+          payload:
+            workflowId: "order-fulfillment-v2"
+            event: "order.validated"
+            orderId: "ORD-2024-005"
+            items: 
+              - productId: "PRD-001"
+                quantity: 2
+                location: "Warehouse-A-Shelf-12"
+            priority: "high"
+        
+        - name: Stock alert
+          payload:
+            workflowId: "stock-alerts"
+            event: "stock.low"
+            productId: "PRD-002"
+            currentStock: 5
+            threshold: 10
+            supplier: "BOSCH"
+            reorderQuantity: 50
+
+  schemas:
+    PayboxCallbackPayload:
+      type: object
+      required:
+        - Mt
+        - Ref
+        - Erreur
+        - K
+      properties:
+        Mt:
+          type: string
+          description: Montant en centimes (ex 7790 = 77.90€)
+          example: "7790"
+        
+        Ref:
+          type: string
+          description: Référence commande unique
+          example: "ORD-2024-001"
+        
+        Auto:
+          type: string
+          description: Code autorisation banque (si succès)
+          example: "123456"
+        
+        Erreur:
+          type: string
+          description: Code erreur Paybox (00000 = succès)
+          enum:
+            - "00000"
+            - "00001"
+            - "00002"
+            - "00003"
+            - "00004"
+            - "00008"
+            - "00012"
+            - "00017"
+            - "00030"
+            - "99999"
+          example: "00000"
+        
+        Date:
+          type: string
+          description: Date transaction YYYYMMDD
+          pattern: "^\\d{8}$"
+          example: "20240115"
+        
+        Heure:
+          type: string
+          description: Heure transaction HHMMSS
+          pattern: "^\\d{6}$"
+          example: "143000"
+        
+        Pays:
+          type: string
+          description: Code pays ISO 3166-1 alpha-3
+          example: "FRA"
+        
+        Carte:
+          type: string
+          description: Type de carte (VISA, MASTERCARD, etc.)
+          example: "VISA"
+        
+        Sign:
+          type: string
+          description: Signature HMAC-SHA512 (alias de K)
+          example: "ABC123DEF456..."
+        
+        K:
+          type: string
+          description: Signature HMAC-SHA512 (clé principale)
+          example: "ABC123DEF456..."
+    
+    CyberPlusCallbackPayload:
+      type: object
+      required:
+        - vads_amount
+        - vads_order_id
+        - vads_trans_status
+        - signature
+      properties:
+        vads_amount:
+          type: string
+          description: Montant en centimes
+          example: "7790"
+        
+        vads_order_id:
+          type: string
+          description: ID commande
+          example: "ORD-2024-003"
+        
+        vads_trans_id:
+          type: string
+          description: ID transaction CyberPlus
+          example: "654321"
+        
+        vads_trans_status:
+          type: string
+          enum:
+            - AUTHORISED
+            - REFUSED
+            - CANCELLED
+          example: "AUTHORISED"
+        
+        vads_auth_result:
+          type: string
+          description: Code résultat autorisation
+          example: "00"
+        
+        signature:
+          type: string
+          description: Signature HMAC-SHA256
+          example: "fedcba987654..."
+    
+    TecDocUpdatePayload:
+      type: object
+      required:
+        - eventType
+        - productId
+        - timestamp
+      properties:
+        eventType:
+          type: string
+          enum:
+            - STOCK_UPDATE
+            - PRICE_CHANGE
+            - NEW_PRODUCT
+            - DISCONTINUED
+            - ATTRIBUTE_UPDATE
+          description: Type de mise à jour
+          example: "STOCK_UPDATE"
+        
+        productId:
+          type: string
+          description: ID produit TecDoc
+          example: "TD-123456"
+        
+        ean:
+          type: string
+          description: Code-barres EAN13
+          pattern: "^\\d{13}$"
+          example: "5012345678900"
+        
+        stock:
+          type: integer
+          description: Quantité en stock (si STOCK_UPDATE)
+          minimum: 0
+          example: 150
+        
+        priceHT:
+          type: number
+          format: double
+          description: Prix HT (si PRICE_CHANGE)
+          example: 45.90
+        
+        priceOld:
+          type: number
+          format: double
+          description: Ancien prix HT
+          example: 49.90
+        
+        currency:
+          type: string
+          description: Devise ISO 4217
+          example: "EUR"
+        
+        supplier:
+          type: string
+          description: Nom fournisseur
+          example: "VALEO"
+        
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp événement
+          example: "2024-01-15T14:30:00Z"
+    
+    CarrierTrackingPayload:
+      type: object
+      required:
+        - trackingNumber
+        - carrier
+        - status
+        - timestamp
+      properties:
+        trackingNumber:
+          type: string
+          description: Numéro de suivi colis
+          example: "DHL123456789"
+        
+        carrier:
+          type: string
+          enum:
+            - DHL
+            - CHRONOPOST
+            - COLISSIMO
+            - UPS
+            - FEDEX
+          description: Code transporteur
+          example: "DHL"
+        
+        status:
+          type: string
+          enum:
+            - PICKED_UP
+            - IN_TRANSIT
+            - OUT_FOR_DELIVERY
+            - DELIVERED
+            - DELIVERY_FAILED
+            - RETURNED
+          description: Statut actuel du colis
+          example: "DELIVERED"
+        
+        statusCode:
+          type: string
+          description: Code statut interne transporteur
+          example: "OK"
+        
+        location:
+          type: string
+          description: Localisation actuelle
+          example: "Paris 75001"
+        
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp événement
+          example: "2024-01-15T16:45:00Z"
+        
+        recipient:
+          type: string
+          description: Nom du destinataire (si livré)
+          example: "Jean Dupont"
+        
+        signatureUrl:
+          type: string
+          format: uri
+          description: URL preuve de livraison (POD)
+          example: "https://dhl.com/pod/123456789.pdf"
+        
+        estimatedDelivery:
+          type: string
+          format: date-time
+          description: Date de livraison estimée
+          example: "2024-01-16T18:00:00Z"
+    
+    N8nWorkflowPayload:
+      type: object
+      required:
+        - workflowId
+        - event
+      properties:
+        workflowId:
+          type: string
+          description: ID du workflow n8n à déclencher
+          example: "order-fulfillment-v2"
+        
+        event:
+          type: string
+          description: Type d'événement déclencheur
+          example: "order.validated"
+        
+        data:
+          type: object
+          description: Payload flexible (structure libre)
+          additionalProperties: true
+          example:
+            orderId: "ORD-2024-005"
+            customerId: "CUST-12345"
+        
+        priority:
+          type: string
+          enum:
+            - low
+            - normal
+            - high
+            - urgent
+          description: Priorité d'exécution
+          default: "normal"
+          example: "high"
+        
+        metadata:
+          type: object
+          description: Métadonnées additionnelles
+          properties:
+            source:
+              type: string
+              example: "api"
+            userId:
+              type: string
+              example: "admin-123"
+            timestamp:
+              type: string
+              format: date-time
+              example: "2024-01-15T14:30:00Z"
+
+  securitySchemes:
+    HmacSignature:
+      type: httpApiKey
+      name: X-Signature
+      in: header
+      description: Signature HMAC-SHA512 (Paybox) ou HMAC-SHA256 (autres)
+    
+    ApiKeyHeader:
+      type: httpApiKey
+      name: X-API-Key
+      in: header
+      description: Clé API secrète pour webhooks
+    
+    WebhookSecret:
+      type: httpApiKey
+      name: secret
+      in: query
+      description: Secret partagé dans query parameter (n8n)
+
+tags:
+  - name: paybox
+    description: Webhooks Paybox (paiements)
+  
+  - name: cyberplus
+    description: Webhooks CyberPlus (legacy)
+  
+  - name: tecdoc
+    description: Intégration TecDoc (catalogue)
+  
+  - name: shipping
+    description: Webhooks transporteurs (tracking)
+  
+  - name: automation
+    description: Automatisations n8n
+
+externalDocs:
+  description: Documentation complète des webhooks
+  url: https://docs.autoparts.com/webhooks

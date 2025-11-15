@@ -90,8 +90,11 @@ ai-agents-python/**/*.pyc
 caddy-pieces-redirects.conf
 logs/caddy/
 *.caddy.log
-# Documentation, archives et backups (ne pas versionner)
-docs/
+
+# Documentation locale (maintenue dans .spec/docs/)
+# Note: .spec/docs/ est versionné mais .spec/docs/node_modules et .spec/docs/build sont ignorés via .spec/docs/.gitignore
+
+# Archives et backups (ne pas versionner)
 archives/
 backups/
 

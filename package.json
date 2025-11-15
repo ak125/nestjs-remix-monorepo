@@ -19,7 +19,11 @@
     "changeset:publish": "changeset publish",
     "spec:validate": "turbo spec:validate && bash scripts/validate-specs.sh",
     "spec:generate": "turbo spec:generate && bash scripts/generate-specs.sh",
-    "spec:report": "turbo spec:report && bash scripts/spec-report.sh"
+    "spec:report": "turbo spec:report && bash scripts/spec-report.sh",
+    "docs:install": "cd .spec/docs && npm install",
+    "docs:dev": "cd .spec/docs && npm start",
+    "docs:build": "cd .spec/docs && npm run build",
+    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'"
   },
   "keywords": [],
   "author": "",
