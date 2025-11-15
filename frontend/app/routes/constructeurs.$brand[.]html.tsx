@@ -103,19 +103,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
       getPopularVehicles(marque_alias, 6),
       getApiPopularParts(marque_alias, 8)
     ]);
-    
-    // Enrichir les URLs si elles ne sont pas déjà présentes (SSR)
-    apiVehicles = apiVehicles.map(v => ({
-      ...v,
-      vehicle_url: v.vehicle_url || `/constructeurs/${v.marque_alias}-${v.marque_id}/${v.modele_alias}-${v.modele_id}/${v.type_alias}-${v.cgc_type_id}.html`,
-      image_url: v.image_url || `/upload/constructeurs-automobiles/modeles/${v.modele_pic || 'default.webp'}`
-    }));
-    
-    apiParts = apiParts.map(p => ({
-      ...p,
-      part_url: p.part_url || `/pieces/${p.marque_alias}/${p.pg_alias}`,
-      image_url: p.image_url || `/upload/pieces-auto/${p.pg_pic || 'default.webp'}`
-    }));
   } catch (error) {
     console.error('Error fetching bestsellers:', error);
   }
