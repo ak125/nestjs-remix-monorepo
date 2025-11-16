@@ -1,0 +1,240 @@
+name: Spec Validation
+
+on:
+  # Désactivé par défaut - À activer manuellement via workflow_dispatch
+  # ou après confirmation de l'équipe
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop
+  #   paths:
+  #     - '.spec/**'
+  #     - 'backend/src/**'
+  #     - 'frontend/app/**'
+  #     - 'packages/**'
+
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #   paths:
+  #     - '.spec/**'
+
+  workflow_dispatch:  # Permet déclenchement manuel uniquement
+
+jobs:
+  validate-specs:
+    name: Validate Specifications
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Install specify-cli
+        run: |
+          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
+      - name: Check specify installation
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          specify check
+
+      - name: Validate spec structure
+        run: |
+          echo "Checking .spec directory structure..."
+          
+          # Check required directories exist
+          for dir in features architecture api types workflows templates; do
+            if [ ! -d ".spec/$dir" ]; then
+              echo "❌ Missing required directory: .spec/$dir"
+              exit 1
+            fi
+          done
+          
+          echo "✅ Directory structure valid"
+
+      - name: Validate spec metadata
+        run: |
+          echo "Validating spec file metadata..."
+          
+          # Find all spec markdown files (excluding templates and README)
+          SPEC_FILES=$(find .spec -name "*.md" -not -path ".spec/templates/*" -not -name "README.md" || true)
+          
+          if [ -z "$SPEC_FILES" ]; then
+            echo "ℹ️ No spec files found yet (this is OK for initial setup)"
+            exit 0
+          fi
+          
+          ERRORS=0
+          
+          for file in $SPEC_FILES; do
+            echo "Checking: $file"
+            
+            # Check for YAML frontmatter
+            if ! head -n 1 "$file" | grep -q "^---$"; then
+              echo "  ❌ Missing YAML frontmatter"
+              ERRORS=$((ERRORS + 1))
+              continue
+            fi
+            
+            # Check for required fields in frontmatter
+            for field in title status version; do
+              if ! grep -q "^$field:" "$file"; then
+                echo "  ❌ Missing required field: $field"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+            
+            if [ $ERRORS -eq 0 ]; then
+              echo "  ✅ Valid"
+            fi
+          done
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ Found $ERRORS validation error(s)"
+            exit 1
+          fi
+          
+          echo "✅ All specs have valid metadata"
+
+      - name: Validate OpenAPI specs
+        run: |
+          echo "Validating OpenAPI specifications..."
+          
+          # Find all OpenAPI spec files
+          API_SPECS=$(find .spec/api -name "*.yaml" -o -name "*.yml" || true)
+          
+          if [ -z "$API_SPECS" ]; then
+            echo "ℹ️ No OpenAPI specs found yet"
+            exit 0
+          fi
+          
+          # Install openapi-spec-validator if API specs exist
+          pip install openapi-spec-validator
+          
+          ERRORS=0
+          
+          for spec in $API_SPECS; do
+            echo "Validating: $spec"
+            if ! openapi-spec-validator "$spec"; then
+              echo "  ❌ Invalid OpenAPI spec"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "  ✅ Valid OpenAPI spec"
+            fi
+          done
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ Found $ERRORS invalid OpenAPI spec(s)"
+            exit 1
+          fi
+          
+          echo "✅ All OpenAPI specs are valid"
+
+      - name: Validate TypeScript schemas
+        run: |
+          echo "Validating TypeScript schema files..."
+          
+          # Find all TypeScript schema files
+          TS_SCHEMAS=$(find .spec/types -name "*.ts" || true)
+          
+          if [ -z "$TS_SCHEMAS" ]; then
+            echo "ℹ️ No TypeScript schemas found yet"
+            exit 0
+          fi
+          
+          # Install dependencies
+          npm ci
+          
+          ERRORS=0
+          
+          for schema in $TS_SCHEMAS; do
+            echo "Type-checking: $schema"
+            if ! npx tsc --noEmit "$schema"; then
+              echo "  ❌ TypeScript errors found"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "  ✅ Valid TypeScript"
+            fi
+          done
+          
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "❌ Found $ERRORS TypeScript schema error(s)"
+            exit 1
+          fi
+          
+          echo "✅ All TypeScript schemas are valid"
+
+      - name: Check for orphaned specs
+        run: |
+          echo "Checking for orphaned specifications..."
+          
+          # This is a placeholder for more sophisticated checks
+          # You can add logic to verify that specs reference existing code
+          
+          echo "ℹ️ Orphan check not implemented yet"
+
+      - name: Generate spec coverage report
+        if: always()
+        run: |
+          echo "# 📊 Spec Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Count specs by type
+          FEATURE_COUNT=$(find .spec/features -name "*.md" | wc -l)
+          ARCH_COUNT=$(find .spec/architecture -name "*.md" | wc -l)
+          API_COUNT=$(find .spec/api -name "*.yaml" -o -name "*.yml" | wc -l)
+          TYPE_COUNT=$(find .spec/types -name "*.ts" | wc -l)
+          WORKFLOW_COUNT=$(find .spec/workflows -name "*.md" | wc -l)
+          
+          echo "| Type | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Features | $FEATURE_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| Architecture | $ARCH_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| API Specs | $API_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Schemas | $TYPE_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflows | $WORKFLOW_COUNT |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          TOTAL=$((FEATURE_COUNT + ARCH_COUNT + API_COUNT + TYPE_COUNT + WORKFLOW_COUNT))
+          echo "**Total Specifications:** $TOTAL" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with validation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read the step summary
+            const summary = process.env.GITHUB_STEP_SUMMARY 
+              ? fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8')
+              : 'No summary available';
+            
+            // Create comment body
+            const body = `## 🔍 Spec Validation Results\n\n${summary}\n\n✅ All validation checks passed!`;
+            
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
