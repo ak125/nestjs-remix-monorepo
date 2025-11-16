@@ -1,0 +1,56 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches:
+      - feature/spec-kit-integration
+      - docs
+    paths:
+      - '.spec/docs/**'
+      - '.spec/openapi.yaml'
+      - '.spec/asyncapi.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: .spec/docs/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: .spec/docs
+        run: npm ci
+      
+      - name: Build documentation
+        working-directory: .spec/docs
+        run: npm run build
+        env:
+          NODE_ENV: production
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .spec/docs/build
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

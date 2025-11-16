@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Production build
+build/
+.docusaurus/
+
+# Generated files
+.cache/
+.temp/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store

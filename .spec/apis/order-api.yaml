@@ -1,0 +1,2179 @@
+openapi: 3.0.3
+info:
+  title: Order API
+  version: 1.0.0
+  description: |
+    API de gestion des commandes pour la plateforme e-commerce.
+    
+    ## 🎯 Fonctionnalités principales
+    
+    - **Gestion du cycle de vie** : 6 statuts (PENDING → CONFIRMED → PROCESSING → SHIPPED → DELIVERED, + CANCELLED)
+    - **Actions admin** : Validation, expédition, livraison, annulation, remboursements
+    - **Gestion des lignes** : 6 statuts normaux (1-6) + 4 statuts équivalence (91-94)
+    - **Archivage** : Export PDF, historique client, statistiques
+    - **Tickets** : Préparation, avoirs/crédits avec expiration
+    - **Données véhicule** : Immatriculation, VIN, compatibilité OEM
+    
+    ## 🔐 Sécurité
+    
+    - **Authentification** : JWT Bearer token (15min access + 7 days refresh)
+    - **Autorisations** : 
+      - Client : Ses propres commandes uniquement
+      - Admin (role ≥ 7) : Toutes commandes + actions backoffice
+    
+    ## 📊 Workflow des statuts
+    
+    ### Statuts commande (6 états)
+    
+    ```
+    PENDING (1) → CONFIRMED (2) → PROCESSING (3) → SHIPPED (4) → DELIVERED (5)
+                      ↓
+                  CANCELLED (6)
+    ```
+    
+    ### Statuts ligne de commande
+    
+    **États normaux (1-6) :**
+    - `1` : En attente (ligne créée)
+    - `2` : Validée (stock vérifié)
+    - `3` : En préparation
+    - `4` : Expédiée
+    - `5` : Livrée
+    - `6` : Commandée fournisseur (rupture stock)
+    
+    **États équivalence (91-94) :**
+    - `91` : Équivalence proposée (produit de remplacement)
+    - `92` : Équivalence acceptée (client OK)
+    - `93` : Équivalence refusée (client KO)
+    - `94` : Annulée (remboursement effectué)
+    
+    ## 🚚 Volumétrie production
+    
+    - **Commandes** : 1,440 commandes
+    - **CA total** : €51,509
+    - **Panier moyen** : €35.77
+    - **Taux livraison** : 95.8%
+    - **Temps moyen traitement** : 2.3 jours
+    
+    ## 🔗 Liens utiles
+    
+    - [Spec complète Order Management](/spec/features/order-management.md)
+    - [Types Zod](/spec/types/order.schema.md)
+    - [ADR Supabase](/spec/architecture/001-supabase-direct.md)
+
+  contact:
+    name: API Support
+    email: dev@example.com
+
+servers:
+  - url: http://localhost:3000
+    description: Développement local
+  - url: https://api.production.com
+    description: Production
+
+tags:
+  - name: orders
+    description: Opérations client (CRUD commandes)
+  - name: admin
+    description: Opérations administrateur (validation, stats, gestion globale)
+  - name: actions
+    description: Actions backoffice (expédition, livraison, annulation)
+  - name: status
+    description: Gestion des statuts (lignes, historique)
+  - name: archive
+    description: Archivage et export (PDF, historique)
+  - name: tickets
+    description: Tickets de préparation et avoirs
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/orders:
+    get:
+      tags:
+        - orders
+      summary: Lister les commandes de l'utilisateur
+      description: |
+        Récupère la liste paginée des commandes de l'utilisateur connecté.
+        
+        **Filtres disponibles :**
+        - `status` : Filtrer par statut (1-6)
+        - `year` : Filtrer par année (ex: 2024)
+        - `startDate` / `endDate` : Plage de dates personnalisée
+        
+        **Pagination :**
+        - `page` : Numéro de page (défaut: 1)
+        - `limit` : Résultats par page (défaut: 10, max: 100)
+      operationId: listMyOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+          example: 10
+        - name: status
+          in: query
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4, 5, 6]
+          description: Statut de la commande
+          example: 6
+        - name: year
+          in: query
+          schema:
+            type: integer
+          description: Année de la commande
+          example: 2025
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Date de début (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Date de fin (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Liste des commandes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      total:
+                        type: integer
+                      totalPages:
+                        type: integer
+              example:
+                success: true
+                data:
+                  - id: "12345"
+                    customerId: "usr_123"
+                    status: 5
+                    totalTTC: 99.99
+                    createdAt: "2024-11-14T10:00:00Z"
+                  - id: "12346"
+                    customerId: "usr_123"
+                    status: 3
+                    totalTTC: 149.50
+                    createdAt: "2024-11-13T15:30:00Z"
+                pagination:
+                  page: 1
+                  limit: 10
+                  total: 25
+                  totalPages: 3
+        '401':
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      tags:
+        - orders
+      summary: Créer une nouvelle commande
+      description: |
+        Initialise une nouvelle commande à partir du panier utilisateur.
+        
+        **Flux de création :**
+        1. Validation des données (montants, adresse, véhicule)
+        2. Vérification stock disponible
+        3. Création commande + lignes dans `___xtr_order` et `___xtr_order_line`
+        4. Génération référence unique
+        5. Transition paiement (si montant > 0)
+        
+        **Données requises :**
+        - Adresse de livraison complète (CP, ville, téléphone validés)
+        - Données véhicule (immatriculation OU VIN)
+        - Items avec quantités et prix
+        
+        **Calculs automatiques :**
+        - Frais de port selon poids/zone
+        - Consignes si applicable
+        - TVA 20%
+        - Total TTC
+      operationId: createOrder
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderDto'
+            example:
+              customerId: "usr_123"
+              deliveryAddress:
+                firstName: "Jean"
+                lastName: "Dupont"
+                street: "15 rue de la Paix"
+                postalCode: "75001"
+                city: "Paris"
+                country: "France"
+                phone: "+33612345678"
+              vehicleData:
+                immatriculation: "AB-123-CD"
+                brand: "Renault"
+                model: "Clio"
+                year: 2020
+              items:
+                - productId: "prod_123"
+                  quantity: 2
+                  priceHT: 45.00
+                  priceTTC: 54.00
+                - productId: "prod_456"
+                  quantity: 1
+                  priceHT: 25.00
+                  priceTTC: 30.00
+              comment: "Livraison avant 18h si possible"
+      responses:
+        '201':
+          description: Commande créée avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Order'
+                  message:
+                    type: string
+              example:
+                success: true
+                data:
+                  id: "12347"
+                  reference: "ORD-2024-12347"
+                  status: 1
+                  customerId: "usr_123"
+                  totalHT: 70.00
+                  totalTTC: 84.00
+                  shippingCost: 5.90
+                  createdAt: "2024-11-14T16:00:00Z"
+                message: "Commande créée avec succès"
+        '400':
+          description: Données invalides
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidAddress:
+                  value:
+                    success: false
+                    error: "Code postal invalide"
+                stockUnavailable:
+                  value:
+                    success: false
+                    error: "Article prod_123 en rupture de stock"
+
+  /api/orders/{id}:
+    get:
+      tags:
+        - orders
+      summary: Récupérer une commande par ID
+      description: |
+        Obtient les détails complets d'une commande spécifique.
+        
+        **Inclut :**
+        - Informations commande
+        - Lignes de commande (articles)
+        - Adresse de livraison
+        - Données véhicule
+        - Historique des statuts
+        - Paiements associés
+        
+        **Règles d'accès :**
+        - Client : Uniquement ses propres commandes
+        - Admin : Toutes commandes
+      operationId: getOrderById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la commande
+          example: "12345"
+      responses:
+        '200':
+          description: Détails de la commande
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/OrderDetails'
+                  timestamp:
+                    type: string
+                    format: date-time
+        '404':
+          description: Commande non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Accès non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    patch:
+      tags:
+        - orders
+      summary: Mettre à jour une commande
+      description: |
+        Permet au client de modifier certains champs d'une commande en statut PENDING.
+        
+        **Champs modifiables :**
+        - `comment` : Commentaire client
+        - Adresse de livraison (si non expédiée)
+        
+        **Restrictions :**
+        - Commande doit être en statut 1 (PENDING) ou 2 (CONFIRMED)
+        - Modifications interdites après expédition
+      operationId: updateOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la commande
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  maxLength: 500
+                deliveryAddress:
+                  $ref: '#/components/schemas/DeliveryAddress'
+            example:
+              comment: "Nouvelle remarque : laisser au gardien"
+      responses:
+        '200':
+          description: Commande mise à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Modification non autorisée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      tags:
+        - orders
+      summary: Annuler une commande
+      description: |
+        Annule une commande en statut PENDING.
+        
+        **Actions effectuées :**
+        1. Vérification statut (doit être PENDING)
+        2. Annulation paiement associé (si applicable)
+        3. Remise en stock des articles
+        4. Transition statut → CANCELLED (6)
+        5. Notification email client
+        
+        **Restrictions :**
+        - Seules les commandes PENDING peuvent être annulées par le client
+        - Admin peut annuler commandes CONFIRMED/PROCESSING
+      operationId: deleteOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la commande
+      responses:
+        '200':
+          description: Commande annulée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+              example:
+                success: true
+                message: "Commande annulée avec succès"
+        '400':
+          description: Annulation impossible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders/customer/stats:
+    get:
+      tags:
+        - orders
+      summary: Statistiques des commandes client
+      description: |
+        Analyse personnelle de l'historique de commandes de l'utilisateur connecté.
+        
+        **Métriques calculées :**
+        - Nombre total de commandes
+        - Montant total dépensé
+        - Panier moyen
+        - Répartition par statut
+        - Commandes par mois (12 derniers mois)
+        - Articles préférés
+      operationId: getCustomerStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Statistiques client
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalOrders:
+                        type: integer
+                      totalSpent:
+                        type: number
+                      averageBasket:
+                        type: number
+                      statusBreakdown:
+                        type: object
+                      monthlyOrders:
+                        type: array
+                        items:
+                          type: object
+
+  /api/orders/admin/all:
+    get:
+      tags:
+        - admin
+      summary: Liste toutes les commandes (admin)
+      description: |
+        Récupère la liste complète de toutes les commandes (tous clients).
+        
+        **Filtres admin :**
+        - `status` : Filtrer par statut
+        - `customerId` : Filtrer par client
+        - `startDate` / `endDate` : Plage dates
+        - `minAmount` / `maxAmount` : Plage montants
+        - `search` : Recherche par référence/email/nom
+        
+        **Tri disponible :**
+        - `createdAt` (desc par défaut)
+        - `totalTTC`
+        - `status`
+      operationId: listAllOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: status
+          in: query
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4, 5, 6]
+        - name: customerId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Recherche par référence/email/nom
+      responses:
+        '200':
+          description: Liste des commandes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  pagination:
+                    type: object
+        '403':
+          description: Accès admin requis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/orders/admin/{id}:
+    get:
+      tags:
+        - admin
+      summary: Détails complets commande (admin)
+      description: |
+        Vue administrative complète d'une commande avec toutes les métadonnées.
+        
+        **Informations supplémentaires admin :**
+        - Logs de statut complets
+        - Historique des modifications
+        - Données fournisseur (si applicable)
+        - Équivalences proposées/acceptées/refusées
+        - Tickets associés (préparation, avoirs)
+      operationId: getOrderByIdAdmin
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Détails admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/OrderAdminDetails'
+
+  /api/orders/admin/{id}/status:
+    patch:
+      tags:
+        - admin
+      summary: Mettre à jour le statut d'une commande (admin)
+      description: |
+        Modification manuelle du statut global de la commande.
+        
+        **Transitions autorisées :**
+        - 1 (PENDING) → 2 (CONFIRMED)
+        - 2 (CONFIRMED) → 3 (PROCESSING)
+        - 3 (PROCESSING) → 4 (SHIPPED)
+        - 4 (SHIPPED) → 5 (DELIVERED)
+        - Tout statut → 6 (CANCELLED)
+        
+        **Actions automatiques :**
+        - Email client à chaque changement
+        - Mise à jour statuts lignes (si applicable)
+        - Log audit admin
+      operationId: updateOrderStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: integer
+                  enum: [1, 2, 3, 4, 5, 6]
+                comment:
+                  type: string
+                  maxLength: 255
+            example:
+              status: 4
+              comment: "Expédié via Colissimo - Suivi: 6A12345678"
+      responses:
+        '200':
+          description: Statut mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Order'
+
+  /api/orders/admin/stats/global:
+    get:
+      tags:
+        - admin
+      summary: Statistiques globales (admin)
+      description: |
+        Analyse complète de toutes les commandes plateforme.
+        
+        **KPIs calculés :**
+        - CA total et par période
+        - Nombre commandes par statut
+        - Panier moyen
+        - Taux conversion (panier → commande)
+        - Taux livraison
+        - Temps moyen traitement
+        - Top clients
+        - Top produits
+      operationId: getGlobalStats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: groupBy
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month, year]
+          description: Granularité d'agrégation
+      responses:
+        '200':
+          description: Statistiques globales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      totalRevenue:
+                        type: number
+                      totalOrders:
+                        type: integer
+                      averageBasket:
+                        type: number
+                      conversionRate:
+                        type: number
+                      deliveryRate:
+                        type: number
+                      avgProcessingTime:
+                        type: number
+                        description: En jours
+                      statusBreakdown:
+                        type: object
+                      timeSeries:
+                        type: array
+                        items:
+                          type: object
+
+  /api/orders/admin/customer/{customerId}:
+    get:
+      tags:
+        - admin
+      summary: Commandes d'un client spécifique (admin)
+      description: Historique complet des commandes d'un client (vue admin)
+      operationId: getCustomerOrders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Commandes du client
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
+  /api/admin/orders/{orderId}/validate:
+    post:
+      tags:
+        - actions
+      summary: Valider une commande (admin)
+      description: |
+        Valide une commande en attente (statut 1 → 2).
+        
+        **Actions effectuées :**
+        1. Vérification paiement (si applicable)
+        2. Vérification stock pour toutes lignes
+        3. Réservation stock
+        4. Transition statut → CONFIRMED (2)
+        5. Email confirmation client
+        
+        **Prérequis :**
+        - Commande en statut PENDING (1)
+        - Paiement validé (si montant > 0)
+        - Stock disponible pour tous les articles
+      operationId: validateOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Commande validée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Order'
+              example:
+                success: true
+                message: "Commande 12345 validée avec succès"
+                data:
+                  id: "12345"
+                  status: 2
+        '400':
+          description: Validation impossible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/orders/{orderId}/ship:
+    post:
+      tags:
+        - actions
+      summary: Marquer commande comme expédiée (admin)
+      description: |
+        Marque la commande comme expédiée (statut 3 → 4).
+        
+        **Actions effectuées :**
+        1. Transition statut → SHIPPED (4)
+        2. Enregistrement numéro de suivi
+        3. Génération ticket de préparation
+        4. Email expédition client (avec tracking)
+        5. Mise à jour toutes lignes → statut 4
+        
+        **Données requises :**
+        - Transporteur (Colissimo, Chronopost, etc.)
+        - Numéro de suivi
+      operationId: shipOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - carrier
+                - trackingNumber
+              properties:
+                carrier:
+                  type: string
+                  enum: [COLISSIMO, CHRONOPOST, UPS, DHL, FEDEX]
+                trackingNumber:
+                  type: string
+                  minLength: 5
+                  maxLength: 50
+                comment:
+                  type: string
+            example:
+              carrier: "COLISSIMO"
+              trackingNumber: "6A12345678901"
+              comment: "Colis fragile"
+      responses:
+        '200':
+          description: Commande expédiée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/Order'
+
+  /api/admin/orders/{orderId}/deliver:
+    post:
+      tags:
+        - actions
+      summary: Marquer commande comme livrée (admin)
+      description: |
+        Confirme la livraison de la commande (statut 4 → 5).
+        
+        **Actions effectuées :**
+        1. Transition statut → DELIVERED (5)
+        2. Date/heure de livraison enregistrée
+        3. Email livraison client (demande avis)
+        4. Mise à jour toutes lignes → statut 5
+        5. Archivage automatique après 30 jours
+      operationId: deliverOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deliveredAt:
+                  type: string
+                  format: date-time
+                  description: Date/heure livraison (défaut = maintenant)
+                signedBy:
+                  type: string
+                  description: Nom du destinataire ayant signé
+            example:
+              deliveredAt: "2024-11-14T14:30:00Z"
+              signedBy: "Jean Dupont"
+      responses:
+        '200':
+          description: Commande livrée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/cancel:
+    post:
+      tags:
+        - actions
+      summary: Annuler une commande (admin)
+      description: |
+        Annule une commande à n'importe quel statut (transition → 6 CANCELLED).
+        
+        **Actions effectuées :**
+        1. Vérification possibilité annulation
+        2. Annulation paiement / Remboursement (si payée)
+        3. Remise en stock des articles
+        4. Transition statut → CANCELLED (6)
+        5. Annulation de toutes lignes → statut 94
+        6. Email annulation client
+        
+        **Remboursement automatique si :**
+        - Commande payée (paiement SUCCESS)
+        - Annulation avant expédition
+      operationId: cancelOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 10
+                  maxLength: 500
+                  description: Raison de l'annulation
+                refund:
+                  type: boolean
+                  default: true
+                  description: Effectuer remboursement automatique
+            example:
+              reason: "Article en rupture définitive chez fournisseur"
+              refund: true
+      responses:
+        '200':
+          description: Commande annulée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  refunded:
+                    type: boolean
+                  refundAmount:
+                    type: number
+
+  /api/admin/orders/{orderId}/payment-reminder:
+    post:
+      tags:
+        - actions
+      summary: Envoyer rappel de paiement (admin)
+      description: |
+        Envoie un email de rappel pour commande non payée.
+        
+        **Cas d'usage :**
+        - Commande créée mais paiement abandonné
+        - Paiement en erreur (carte refusée)
+        - Virement attendu (paiement différé)
+        
+        **Email contient :**
+        - Récapitulatif commande
+        - Lien paiement direct
+        - Date limite paiement
+      operationId: sendPaymentReminder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rappel envoyé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/lines/{lineId}/status/{newStatus}:
+    patch:
+      tags:
+        - actions
+      summary: Changer statut d'une ligne de commande (admin)
+      description: |
+        Modifie le statut individuel d'une ligne de commande.
+        
+        **Statuts disponibles :**
+        - 1-6 : États normaux
+        - 91-94 : États équivalence
+        
+        **Transitions courantes :**
+        - 1 → 2 : Validation stock
+        - 2 → 3 : Début préparation
+        - 2 → 6 : Commande fournisseur (rupture)
+        - 2 → 91 : Proposition équivalence
+        - 91 → 92 : Acceptation équivalence
+        - 91 → 93 : Refus équivalence
+        - Tout → 94 : Annulation
+      operationId: updateLineStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: newStatus
+          in: path
+          required: true
+          schema:
+            type: integer
+            enum: [1, 2, 3, 4, 5, 6, 91, 92, 93, 94]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  maxLength: 255
+                resetEquiv:
+                  type: boolean
+                  default: false
+                  description: Réinitialiser équivalence proposée
+            example:
+              comment: "Article en rupture, commande fournisseur lancée"
+              resetEquiv: false
+      responses:
+        '200':
+          description: Statut ligne mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/lines/{lineId}/order-from-supplier:
+    post:
+      tags:
+        - actions
+      summary: Commander ligne chez fournisseur (admin)
+      description: |
+        Marque une ligne comme "commandée fournisseur" (statut 6).
+        
+        **Données enregistrées :**
+        - ID fournisseur (splId)
+        - Nom fournisseur
+        - Prix d'achat HT
+        - Quantité commandée
+        - Date commande
+        
+        **Email automatique :**
+        - Client notifié du délai supplémentaire
+        - Estimation nouvelle date livraison
+      operationId: orderFromSupplier
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - supplierId
+                - supplierName
+                - priceHT
+                - quantity
+              properties:
+                supplierId:
+                  type: integer
+                supplierName:
+                  type: string
+                priceHT:
+                  type: number
+                  minimum: 0
+                quantity:
+                  type: integer
+                  minimum: 1
+            example:
+              supplierId: 42
+              supplierName: "Fournisseur Auto Parts SAS"
+              priceHT: 35.50
+              quantity: 2
+      responses:
+        '200':
+          description: Commande fournisseur enregistrée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/lines/{lineId}/propose-equivalent:
+    post:
+      tags:
+        - actions
+      summary: Proposer équivalence pour une ligne (admin)
+      description: |
+        Propose un produit de remplacement pour article indisponible (statut 91).
+        
+        **Règles métier :**
+        - Article original en rupture (statut 2)
+        - Équivalence compatible avec véhicule client
+        - Prix équivalent (±10%)
+        - OEM compatible si applicable
+        
+        **Email client :**
+        - Détails produit équivalent
+        - Comparatif caractéristiques
+        - Lien acceptation/refus
+      operationId: proposeEquivalent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - quantity
+              properties:
+                productId:
+                  type: integer
+                  description: ID du produit équivalent
+                quantity:
+                  type: integer
+                  minimum: 1
+            example:
+              productId: 98765
+              quantity: 2
+      responses:
+        '200':
+          description: Équivalence proposée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/lines/{lineId}/accept-equivalent:
+    patch:
+      tags:
+        - actions
+      summary: Accepter équivalence (statut 91 → 92)
+      description: |
+        Marque l'équivalence comme acceptée (client a validé).
+        
+        **Actions :**
+        1. Transition statut 91 → 92
+        2. Remplacement article dans commande
+        3. Recalcul montants si différence prix
+        4. Génération avoir/supplément si nécessaire
+      operationId: acceptEquivalent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Équivalence acceptée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/admin/orders/{orderId}/lines/{lineId}/reject-equivalent:
+    patch:
+      tags:
+        - actions
+      summary: Refuser équivalence (statut 91 → 93)
+      description: |
+        Marque l'équivalence comme refusée (client a décliné).
+        
+        **Actions :**
+        1. Transition statut 91 → 93
+        2. Annulation ligne → statut 94
+        3. Génération avoir automatique
+        4. Email confirmation client
+      operationId: rejectEquivalent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Équivalence refusée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /order-status/info/{status}:
+    get:
+      tags:
+        - status
+      summary: Obtenir informations d'un statut
+      description: |
+        Récupère les détails d'un code statut spécifique.
+        
+        **Informations retournées :**
+        - Code numérique
+        - Label français
+        - Couleur UI
+        - Description
+        - Actions disponibles
+      operationId: getStatusInfo
+      parameters:
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 3
+      responses:
+        '200':
+          description: Informations statut
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  status:
+                    type: integer
+                  label:
+                    type: string
+                  color:
+                    type: string
+                  description:
+                    type: string
+              example:
+                success: true
+                status: 3
+                label: "En préparation"
+                color: "#FFA500"
+                description: "Commande en cours de préparation dans l'entrepôt"
+
+  /order-status/all:
+    get:
+      tags:
+        - status
+      summary: Obtenir tous les statuts disponibles
+      description: Liste complète des codes statuts avec métadonnées
+      operationId: getAllStatuses
+      responses:
+        '200':
+          description: Liste des statuts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  statuses:
+                    type: array
+                    items:
+                      type: object
+                  total:
+                    type: integer
+
+  /order-status/line/{lineId}:
+    patch:
+      tags:
+        - status
+      summary: Mettre à jour statut d'une ligne
+      description: Modification directe du statut d'une ligne (sans contrôleur parent)
+      operationId: updateLineStatusDirect
+      parameters:
+        - name: lineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: integer
+                comment:
+                  type: string
+                userId:
+                  type: integer
+      responses:
+        '200':
+          description: Statut mis à jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /order-status/order/{orderId}/history:
+    get:
+      tags:
+        - status
+      summary: Historique des statuts d'une commande
+      description: |
+        Chronologie complète des changements de statuts.
+        
+        **Inclut :**
+        - Date/heure de chaque transition
+        - Ancien et nouveau statut
+        - Utilisateur ayant effectué le changement
+        - Commentaire associé
+      operationId: getOrderStatusHistory
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Historique des statuts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  orderId:
+                    type: integer
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        fromStatus:
+                          type: integer
+                        toStatus:
+                          type: integer
+                        userId:
+                          type: integer
+                        comment:
+                          type: string
+                  total:
+                    type: integer
+
+  /order-archive/{orderId}:
+    get:
+      tags:
+        - archive
+      summary: Récupérer une commande archivée
+      description: Accès aux commandes archivées (> 1 an ou livrées depuis > 30j)
+      operationId: getArchivedOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Commande archivée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Order'
+
+  /order-archive/customer/{customerId}/list:
+    get:
+      tags:
+        - archive
+      summary: Lister commandes archivées d'un client
+      description: Historique complet des commandes archivées
+      operationId: listArchivedOrders
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste archives
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
+  /order-archive/{orderId}/export:
+    get:
+      tags:
+        - archive
+      summary: Exporter commande pour PDF
+      description: |
+        Génère les données formatées pour export PDF.
+        
+        **Format de sortie :**
+        - Données commande complètes
+        - Lignes formatées pour impression
+        - Adresses formatées
+        - QR code (référence commande)
+        - Logo entreprise
+      operationId: exportOrderForPdf
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Données export PDF
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+
+  /order-archive/customer/{customerId}/stats:
+    get:
+      tags:
+        - archive
+      summary: Statistiques d'archivage client
+      description: Métriques sur commandes archivées d'un client
+      operationId: getArchiveStats
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stats archives
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /order-archive/{orderId}/archive:
+    post:
+      tags:
+        - archive
+      summary: Marquer commande comme archivée
+      description: Archivage manuel (normalement automatique après 30j)
+      operationId: archiveOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Commande archivée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /order-archive/{orderId}/restore:
+    post:
+      tags:
+        - archive
+      summary: Restaurer commande archivée
+      description: Désarchivage (admin uniquement)
+      operationId: restoreOrder
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Commande restaurée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/tickets/test:
+    get:
+      tags:
+        - tickets
+      summary: Test du service tickets
+      description: Endpoint de santé pour service tickets
+      operationId: testTicketsService
+      responses:
+        '200':
+          description: Service opérationnel
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  features:
+                    type: array
+                    items:
+                      type: string
+
+  /api/tickets/preparation/{orderLineId}:
+    post:
+      tags:
+        - tickets
+      summary: Créer ticket de préparation
+      description: |
+        Génère un ticket de préparation pour une ligne de commande.
+        
+        **Contenu ticket :**
+        - Référence unique (QR code)
+        - Informations produit
+        - Emplacement stock
+        - Quantité à préparer
+        - Notes préparation
+        
+        **Statut ligne :** 2 (validée) → 3 (en préparation)
+      operationId: createPreparationTicket
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderLineId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ticket créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      ticketId:
+                        type: string
+                      reference:
+                        type: string
+                      qrCode:
+                        type: string
+                        format: uri
+                  message:
+                    type: string
+
+  /api/tickets/credit:
+    post:
+      tags:
+        - tickets
+      summary: Créer un avoir/crédit
+      description: |
+        Génère un avoir pour remboursement client.
+        
+        **Types d'avoir :**
+        - Annulation article (remboursement total)
+        - Compensation service (remboursement partiel)
+        - Geste commercial
+        
+        **Expiration :** 12 mois par défaut
+        
+        **Utilisation :** Déductible sur prochaine commande
+      operationId: createCreditNote
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderLineId
+                - amount
+                - reason
+              properties:
+                orderLineId:
+                  type: string
+                amount:
+                  type: number
+                  minimum: 0.01
+                reason:
+                  type: string
+                  minLength: 10
+                  maxLength: 255
+            example:
+              orderLineId: "line_123"
+              amount: 25.50
+              reason: "Article endommagé lors du transport"
+      responses:
+        '200':
+          description: Avoir créé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      creditId:
+                        type: string
+                      reference:
+                        type: string
+                      amount:
+                        type: number
+                      expiresAt:
+                        type: string
+                        format: date-time
+                  message:
+                    type: string
+
+  /api/tickets/validate/{ticketReference}:
+    get:
+      tags:
+        - tickets
+      summary: Valider un ticket
+      description: |
+        Vérification de la validité d'un ticket (préparation ou avoir).
+        
+        **Vérifications :**
+        - Ticket existe
+        - Non expiré
+        - Non déjà utilisé
+        - Montant disponible (avoirs)
+      operationId: validateTicket
+      parameters:
+        - name: ticketReference
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation effectuée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                      ticketType:
+                        type: string
+                      amount:
+                        type: number
+                      expiresAt:
+                        type: string
+                        format: date-time
+                  message:
+                    type: string
+
+  /api/tickets/use:
+    post:
+      tags:
+        - tickets
+      summary: Utiliser un ticket
+      description: |
+        Consomme un ticket (marque comme utilisé).
+        
+        **Cas d'usage :**
+        - Validation préparation (ticket préparation)
+        - Application avoir sur commande (ticket crédit)
+      operationId: useTicket
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ticketReference
+              properties:
+                ticketReference:
+                  type: string
+                orderId:
+                  type: string
+                  description: ID commande (pour avoirs)
+            example:
+              ticketReference: "CREDIT-2024-001"
+              orderId: "12348"
+      responses:
+        '200':
+          description: Ticket utilisé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/tickets/order/{orderId}:
+    get:
+      tags:
+        - tickets
+      summary: Lister tickets d'une commande
+      description: Tous les tickets (préparation + avoirs) associés à une commande
+      operationId: listOrderTickets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des tickets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtenu via `/api/auth/login`.
+        
+        **Format :** `Authorization: Bearer <token>`
+
+  schemas:
+    CreateOrderDto:
+      type: object
+      required:
+        - customerId
+        - deliveryAddress
+        - items
+      properties:
+        customerId:
+          type: string
+          description: ID utilisateur (extrait du JWT si omis)
+        deliveryAddress:
+          $ref: '#/components/schemas/DeliveryAddress'
+        vehicleData:
+          $ref: '#/components/schemas/VehicleData'
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - productId
+              - quantity
+              - priceHT
+              - priceTTC
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+              priceHT:
+                type: number
+                minimum: 0
+              priceTTC:
+                type: number
+                minimum: 0
+        comment:
+          type: string
+          maxLength: 500
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unique de la commande
+        reference:
+          type: string
+          description: Référence formatée (ORD-YYYY-XXXXX)
+        customerId:
+          type: string
+        status:
+          type: integer
+          enum: [1, 2, 3, 4, 5, 6]
+          description: Statut de la commande
+        totalHT:
+          type: number
+          description: Total hors taxes
+        totalTTC:
+          type: number
+          description: Total TTC
+        shippingCost:
+          type: number
+        depositAmount:
+          type: number
+          description: Montant des consignes
+        isPaid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderDetails:
+      allOf:
+        - $ref: '#/components/schemas/Order'
+        - type: object
+          properties:
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrderLine'
+            deliveryAddress:
+              $ref: '#/components/schemas/DeliveryAddress'
+            vehicleData:
+              $ref: '#/components/schemas/VehicleData'
+            payments:
+              type: array
+              items:
+                type: object
+            statusHistory:
+              type: array
+              items:
+                type: object
+
+    OrderAdminDetails:
+      allOf:
+        - $ref: '#/components/schemas/OrderDetails'
+        - type: object
+          properties:
+            supplierOrders:
+              type: array
+              description: Commandes fournisseur associées
+            equivalences:
+              type: array
+              description: Équivalences proposées/acceptées/refusées
+            tickets:
+              type: array
+              description: Tickets préparation et avoirs
+            logs:
+              type: array
+              description: Logs admin complets
+
+    OrderLine:
+      type: object
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: string
+        productId:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: integer
+        priceHT:
+          type: number
+        priceTTC:
+          type: number
+        status:
+          type: integer
+          enum: [1, 2, 3, 4, 5, 6, 91, 92, 93, 94]
+        equivalentProductId:
+          type: string
+          nullable: true
+        supplierData:
+          type: object
+          nullable: true
+
+    DeliveryAddress:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - street
+        - postalCode
+        - city
+        - country
+        - phone
+      properties:
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        street:
+          type: string
+          minLength: 5
+          maxLength: 100
+        complement:
+          type: string
+          maxLength: 100
+        postalCode:
+          type: string
+          pattern: '^\d{5}$'
+          description: Code postal français (5 chiffres)
+        city:
+          type: string
+          minLength: 2
+          maxLength: 50
+        country:
+          type: string
+          default: France
+        phone:
+          type: string
+          pattern: '^\+?[0-9]{10,15}$'
+          description: Téléphone valide (format international accepté)
+
+    VehicleData:
+      type: object
+      properties:
+        immatriculation:
+          type: string
+          pattern: '^[A-Z]{2}-[0-9]{3}-[A-Z]{2}$'
+          description: Format français (AB-123-CD)
+        vin:
+          type: string
+          minLength: 17
+          maxLength: 17
+          description: Numéro de châssis (17 caractères)
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+          minimum: 1970
+          maximum: 2030
+        engine:
+          type: string
+        fuel:
+          type: string
+          enum: [ESSENCE, DIESEL, HYBRID, ELECTRIC, GPL]
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        details:
+          type: object
