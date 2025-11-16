@@ -461,6 +461,10 @@ Développé avec ❤️ par [@ak125](https://github.com/ak125)
 - [Supabase](https://supabase.com/) - Database & Auth
 - [TailwindCSS](https://tailwindcss.com/) - Styling
 - [Meilisearch](https://www.meilisearch.com/) - Search engine
+- [Context7 MCP](https://context7.com/) - Up-to-date documentation for AI coding
+
+**🤖 AI Development** :
+Ce projet utilise [Context7 MCP](https://context7.com/) pour obtenir de la documentation à jour directement dans GitHub Copilot. Voir [CONTEXT7-SETUP.md](./CONTEXT7-SETUP.md) pour l'utilisation.
 
 ---
 

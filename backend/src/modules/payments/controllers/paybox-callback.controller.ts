@@ -10,7 +10,6 @@ import {
 import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
-import { OrderDataService } from '../../../database/services/order-data.service';
 
 /**
  * Contrôleur pour les callbacks Paybox (IPN - Instant Payment Notification)
@@ -23,7 +22,6 @@ export class PayboxCallbackController {
   constructor(
     private readonly payboxService: PayboxService,
     private readonly paymentDataService: PaymentDataService,
-    private readonly orderDataService: OrderDataService,
   ) {}
 
   /**

@@ -2,9 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../common/cache.service';
-import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
-import { OrderStatusService } from '../../modules/orders/services/order-status.service';
-import { ShippingService } from '../../modules/shipping/shipping.service';
+import { Optional } from '@nestjs/common';
+// Services de délégation (optionnels pour compatibilité)
+// import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
+// import { OrderStatusService } from '../../modules/orders/services/order-status.service';
+// import { ShippingService } from '../../modules/shipping/shipping.service';
 
 export interface LegacyOrder {
   id: string;
@@ -66,9 +68,10 @@ export class OrdersService extends SupabaseBaseService {
 
   constructor(
     configService?: ConfigService,
-    private readonly calculationService?: OrderCalculationService,
-    private readonly statusService?: OrderStatusService,
-    private readonly shippingService?: ShippingService,
+    // Services de délégation optionnels (pour future intégration)
+    // @Optional() private readonly calculationService?: OrderCalculationService,
+    // @Optional() private readonly statusService?: OrderStatusService,
+    // @Optional() private readonly shippingService?: ShippingService,
   ) {
     super(configService);
     this.logger.log('OrdersService initialized (formerly LegacyOrderService)');
@@ -900,5 +903,66 @@ export class OrdersService extends SupabaseBaseService {
       this.logger.error('Failed to count total orders:', error);
       throw error;
     }
+  }
+
+  /**
+   * Alias pour compatibilité avec RemixApiService
+   * Utilise getAllOrders en interne avec mapping des paramètres
+   */
+  async listOrders(filters: {
+    customerId?: number;
+    status?: number;
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<{
+    data: any[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+  }> {
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const offset = (page - 1) * limit;
+
+    // Convertir customerId en userId (string)
+    const userId = filters.customerId ? String(filters.customerId) : undefined;
+
+    // Mapper le status number vers le format string attendu
+    let statusString: string | undefined;
+    if (filters.status === 1) statusString = 'pending';
+    else if (filters.status === 6) statusString = 'paid';
+
+    const orders = await this.getAllOrders({
+      limit,
+      offset,
+      status: statusString,
+      userId,
+      includeUnpaid: true,
+      excludePending: false,
+    });
+
+    const totalCount = await this.getTotalOrdersCount({
+      status: statusString,
+      userId,
+      excludePending: false,
+    });
+
+    return {
+      data: orders,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page < Math.ceil(totalCount / limit),
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 }

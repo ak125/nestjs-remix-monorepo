@@ -68,129 +68,13 @@ export interface HierarchyResponse {
 export class CatalogFamiliesApi {
   private baseUrl = API_BASE_URL;
 
-  /**
-   * 🚗 V2: Récupère les familles de catalogue filtrées par véhicule
-   */
-  async getCatalogFamiliesForVehicle(typeId: number): Promise<CatalogFamily[]> {
-    try {
-      console.log(`🚗 [API V2] Récupération catalogue filtré pour type_id: ${typeId}`);
-      
-      const response = await fetch(`${this.baseUrl}/catalog/families/vehicle/${typeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  // ❌ V2 SUPPRIMÉE - Utiliser V4 avec filtrage véhicule
 
-      if (!response.ok) {
-        throw new ApiError(`HTTP error! status: ${response.status}`, response.status);
-      }
-
-      const data = await response.json();
-      
-      if (!data.success) {
-        console.warn(`⚠️ Catalogue V2 filtré: ${data.message}`);
-        return []; // Retour vide si pas de pièces compatibles
-      }
-
-      console.log(`✅ [API V2] ${data.totalFamilies} familles filtrées récupérées`);
-      return data.families || [];
-
-    } catch (error) {
-      console.error('❌ [API V2] Erreur récupération catalogue filtré:', error);
-      throw error;
-    }
-  }
+  // ❌ V3 SUPPRIMÉE - Utiliser V4 avec filtrage véhicule optimisé
 
   /**
-   * 🚗 V3 HYBRIDE: Récupère le catalogue filtré par véhicule avec approche hybride optimisée
-   * Utilise index composite + validation FK pour performance + intégrité
-   */
-  async getCatalogFamiliesForVehicleV3(typeId: number): Promise<{
-    catalog: CatalogFamily[];
-    popularParts: PopularPart[];
-    queryType: string;
-    seoValid: boolean;
-  }> {
-    try {
-      console.log(`🚗 [API V3 HYBRIDE] Récupération catalogue avec approche hybride pour type_id: ${typeId}`);
-      
-      const response = await fetch(`${this.baseUrl}/catalog/families/vehicle-v3/${typeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        throw new ApiError(`Erreur HTTP V3 HYBRIDE: ${response.status}`, response.status);
-      }
-
-      const data = await response.json();
-      
-      if (!data.success || !data.catalog) {
-        throw new ApiError(`Réponse V3 HYBRIDE invalide: ${data.message || 'Catalogue manquant'}`, 500);
-      }
-      
-      // Transformer les familles du backend vers le format frontend
-      const transformedCatalog: CatalogFamily[] = data.catalog.families?.map((family: any) => ({
-        mf_id: family.mf_id,
-        mf_name: family.mf_name,
-        mf_description: family.mf_description || `Système ${family.mf_name.toLowerCase()}`,
-        mf_pic: family.mf_pic || `${family.mf_name.toLowerCase().replace(/\s+/g, '_')}.webp`,
-        gammes: family.gammes?.map((gamme: any) => ({
-          pg_id: gamme.pg_id,
-          pg_alias: gamme.pg_alias,
-          pg_name: gamme.pg_name,
-          pg_image: gamme.pg_img
-        })) || []
-      })) || [];
-      
-      // Transformer les pièces populaires (si disponibles)
-      const transformedPopularParts: PopularPart[] = data.popularParts?.map((part: any) => ({
-        cgc_pg_id: part.cgc_pg_id || part.pg_id,
-        pg_alias: part.pg_alias,
-        pg_name: part.pg_name,
-        pg_name_meta: part.pg_name_meta || part.pg_name.toLowerCase(),
-        pg_img: part.pg_img || 'no.png',
-        addon_content: `Trouvez ${part.pg_name} pas cher, d'origine à prix bas.`
-      })) || [];
-      
-      const queryType = data.catalog.queryType || 'UNKNOWN';
-      const seoValid = data.catalog.seoValid || false;
-      
-      console.log(`✅ [API V3 HYBRIDE] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, SEO: ${seoValid}`);
-      
-      return {
-        catalog: transformedCatalog,
-        popularParts: transformedPopularParts,
-        queryType,
-        seoValid
-      };
-      
-    } catch (error) {
-      console.error('❌ [API V3 HYBRIDE] Erreur récupération catalogue:', error);
-      
-      // En cas d'erreur, fallback vers V2
-      console.log('🔄 [API V3 HYBRIDE] Fallback vers V2...');
-      try {
-        const fallbackData = await this.getCatalogFamiliesForVehicle(typeId);
-        return {
-          catalog: fallbackData,
-          popularParts: [],
-          queryType: 'V2_FALLBACK',
-          seoValid: false
-        };
-      } catch (fallbackError) {
-        console.error('❌ [API V3 HYBRIDE] Erreur fallback V2:', fallbackError);
-        throw error; // Throw original V3 error
-      }
-    }
-  }
-
-  /**
-   * 🚀 V4 HYBRIDE ULTIME: Cache intelligent + requêtes parallèles + TTL adaptatif
-   * Performance ultime avec cache mémoire et pré-calcul background
+   * 🚀 V4 FILTRÉ: Catalogue compatible avec le véhicule spécifique
+   * Cache intelligent + requêtes optimisées + filtrage pieces_relation_type
    */
   async getCatalogFamiliesForVehicleV4(typeId: number): Promise<{
     catalog: CatalogFamily[];
@@ -205,7 +89,7 @@ export class CatalogFamiliesApi {
     };
   }> {
     try {
-      console.log(`🚀 [API V4 ULTIMATE] Récupération catalogue hybride ultime pour type_id: ${typeId}`);
+      console.log(`🚀 [API V4 FILTRÉ] Récupération catalogue compatible pour type_id: ${typeId}`);
       
       const response = await fetch(`${this.baseUrl}/catalog/families/vehicle-v4/${typeId}`, {
         method: 'GET',
@@ -215,13 +99,13 @@ export class CatalogFamiliesApi {
       });
 
       if (!response.ok) {
-        throw new ApiError(`Erreur HTTP V4 ULTIMATE: ${response.status}`, response.status);
+        throw new ApiError(`Erreur HTTP V4 FILTRÉ: ${response.status}`, response.status);
       }
 
       const data = await response.json();
       
       if (!data.success || !data.catalog) {
-        throw new ApiError(`Réponse V4 ULTIMATE invalide: ${data.error || 'Catalogue manquant'}`, 500);
+        throw new ApiError(`Réponse V4 FILTRÉ invalide: ${data.error || 'Catalogue manquant'}`, 500);
       }
       
       // Transformer les familles du backend vers le format frontend
@@ -245,10 +129,10 @@ export class CatalogFamiliesApi {
         typeId
       );
       
-      const queryType = data.catalog.queryType || 'V4_HYBRID_ULTIMATE';
-      const seoValid = true; // V4 est toujours SEO valide
+      const queryType = data.catalog.queryType || 'V4_FILTERED_BY_VEHICLE';
+      const seoValid = true; // V4 filtré = toujours SEO valide
       
-      console.log(`✅ [API V4 ULTIMATE] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, Cache: ${data.performance?.source}, ${data.performance?.responseTime}`);
+      console.log(`✅ [API V4 FILTRÉ] ${transformedCatalog.length} familles (${queryType}), ${transformedPopularParts.length} pièces populaires, Cache: ${data.performance?.source}, ${data.performance?.responseTime}`);
       
       return {
         catalog: transformedCatalog,
@@ -264,25 +148,22 @@ export class CatalogFamiliesApi {
       };
       
     } catch (error) {
-      console.error('❌ [API V4 ULTIMATE] Erreur récupération catalogue:', error);
+      console.error('❌ [API V4 FILTRÉ] Erreur récupération catalogue:', error);
       
-      // En cas d'erreur, fallback vers V3
-      console.log('🔄 [API V4 ULTIMATE] Fallback vers V3...');
-      try {
-        const fallbackData = await this.getCatalogFamiliesForVehicleV3(typeId);
-        return {
-          ...fallbackData,
-          performance: {
-            responseTime: '0ms',
-            source: 'DATABASE',
-            cacheHitRatio: 0,
-            completenessScore: 90
-          }
-        };
-      } catch (fallbackError) {
-        console.error('❌ [API V4 ULTIMATE] Erreur fallback V3:', fallbackError);
-        throw error; // Throw original V4 error
-      }
+      // En cas d'erreur, retourner catalogue vide plutôt qu'échouer
+      console.log('⚠️ [API V4 FILTRÉ] Retour catalogue vide en fallback...');
+      return {
+        catalog: [],
+        popularParts: [],
+        queryType: 'V4_ERROR_FALLBACK',
+        seoValid: false,
+        performance: {
+          responseTime: '0ms',
+          source: 'DATABASE',
+          cacheHitRatio: 0,
+          completenessScore: 0
+        }
+      };
     }
   }
 

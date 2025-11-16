@@ -426,3 +426,23 @@
     animation: none !important;
   }
 }
+
+/* ========================================
+   ✨ SHIMMER EFFECT (Gradient Headers)
+   ======================================== */
+
+/* Shimmer animation pour les en-têtes gradient */
+@keyframes shimmer {
+  0%, 100% {
+    transform: translateX(-100%);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}

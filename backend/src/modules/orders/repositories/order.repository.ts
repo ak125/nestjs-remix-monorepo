@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OrderDataService } from '../../../database/services/order-data.service';
+import { OrdersService } from '../../../database/services/orders.service';
 import { UserDataService } from '../../../database/services/user-data.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -20,7 +20,7 @@ export class OrderRepository
   protected readonly logger = new Logger(OrderRepository.name);
 
   constructor(
-    private readonly orderDataService: OrderDataService,
+    private readonly ordersService: OrdersService,
     private readonly userDataService: UserDataService,
   ) {
     super();

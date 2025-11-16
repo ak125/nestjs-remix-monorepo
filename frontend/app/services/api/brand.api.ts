@@ -315,7 +315,7 @@ class BrandApiService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/manufacturers/brand/${brandAlias}/bestsellers?limitVehicles=${limit}&limitParts=0`);
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/brand/${brandAlias}/bestsellers?limitVehicles=${limit}&limitParts=0`);
       
       if (!response.ok) {
         console.warn(`Popular vehicles API error: ${response.status}`);
@@ -331,7 +331,7 @@ class BrandApiService {
 
       let vehicles: PopularVehicle[] = result.data.vehicles;
 
-      // Enrichir les données (reproduction logique PHP)
+      // Les URLs sont déjà générées par le backend, on les garde
       vehicles = vehicles.map(vehicle => ({
         ...vehicle,
         formatted_date_range: this.formatDateRange(
@@ -340,8 +340,9 @@ class BrandApiService {
           vehicle.type_month_to,
           vehicle.type_year_to
         ),
-        vehicle_url: `/${PHP_LEGACY_CONFIG.auto}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
-        image_url: this.generateModelImageUrl(vehicle.marque_alias, vehicle.modele_pic),
+        // ✅ Garder les URLs du backend (déjà optimisées)
+        vehicle_url: vehicle.vehicle_url,
+        image_url: vehicle.image_url,
         seo_title: `Pièces auto ${vehicle.marque_name_meta_title} ${vehicle.modele_name_meta} ${vehicle.type_name_meta}`,
         seo_description: `Catalogue pièces détachées pour ${vehicle.marque_name_meta_title} ${vehicle.modele_name_meta} ${vehicle.type_name_meta} ${vehicle.type_power_ps} ch ${this.formatDateRange(vehicle.type_month_from, vehicle.type_year_from, vehicle.type_month_to, vehicle.type_year_to)} neuves.`
       }));
@@ -376,7 +377,7 @@ class BrandApiService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/manufacturers/brand/${brandAlias}/bestsellers?limitVehicles=0&limitParts=${limit}`);
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/brand/${brandAlias}/bestsellers?limitVehicles=0&limitParts=${limit}`);
       
       if (!response.ok) {
         console.warn(`Popular parts API error: ${response.status}`);
@@ -392,7 +393,7 @@ class BrandApiService {
 
       let parts: PopularPart[] = result.data.parts;
 
-      // Enrichir les données
+      // Les URLs sont déjà générées par le backend
       parts = parts.map(part => ({
         ...part,
         formatted_date_range: this.formatDateRange(
@@ -401,8 +402,9 @@ class BrandApiService {
           part.type_month_to,
           part.type_year_to
         ),
-        part_url: `/${PHP_LEGACY_CONFIG.piece}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.type_alias}-${part.cgc_type_id}/${part.pg_alias}-${part.pg_id}.html`,
-        image_url: part.pg_pic ? `/images/parts/${part.pg_pic}` : '/images/parts/default.webp',
+        // ✅ Garder les URLs du backend (déjà optimisées)
+        part_url: part.part_url,
+        image_url: part.image_url,
         seo_title: `${part.pg_name_meta} ${part.marque_name_meta} ${part.modele_name_meta}`,
         seo_description: `Achetez ${part.pg_name_meta} pour ${part.marque_name_meta} ${part.modele_name_meta} ${part.type_name} - Pièces de qualité à prix réduit.`
       }));

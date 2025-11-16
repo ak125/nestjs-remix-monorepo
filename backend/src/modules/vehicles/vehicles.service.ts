@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import {
   VehiclePaginationDto,
@@ -68,8 +70,9 @@ export interface VehicleDetailsEnhanced {
  */
 @Injectable()
 export class VehiclesService extends SupabaseBaseService {
-  // Pas de constructeur - utilise celui du parent sans ConfigService
-  // Cela évite les dépendances circulaires
+  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {
+    super();
+  }
 
   // Cache en mémoire simple pour éviter les requêtes répétitives
   private cache = new Map<string, { data: any; expires: number }>();
@@ -1228,6 +1231,196 @@ export class VehiclesService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('❌ Exception meta tags:', error);
       return { data: null, error: String(error) };
+    }
+  }
+
+  /**
+   * Récupère les véhicules et pièces bestsellers d'une marque
+   * Optimisé avec RPC Supabase et cache Redis
+   */
+  async getBrandBestsellers(
+    brandAlias: string,
+    limitVehicles = 12,
+    limitParts = 12,
+  ) {
+    try {
+      const cacheKey = `brand_bestsellers_${brandAlias}_${limitVehicles}_${limitParts}`;
+      const cached = await this.cacheManager.get(cacheKey);
+      
+      if (cached) {
+        this.logger.log(`✅ Cache hit: ${cacheKey}`);
+        return cached as any;
+      }
+
+      this.logger.log(`🔍 Récupération bestsellers pour marque: ${brandAlias}`);
+
+      // 1️⃣ Récupérer l'ID de la marque depuis l'alias
+      const { data: brand, error: brandError } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias')
+        .eq('marque_alias', brandAlias)
+        .single();
+
+      if (brandError || !brand) {
+        this.logger.warn(`⚠️ Marque non trouvée: ${brandAlias}`);
+        return {
+          success: false,
+          data: { vehicles: [], parts: [] },
+          error: `Marque "${brandAlias}" non trouvée`,
+        };
+      }
+
+      // 2️⃣ Appeler la fonction RPC optimisée
+      const { data: bestsellers, error: rpcError } = await this.client.rpc(
+        'get_brand_bestsellers_optimized',
+        {
+          p_marque_id: brand.marque_id,
+          p_limit_vehicles: limitVehicles,
+          p_limit_parts: limitParts,
+        },
+      );
+
+      if (rpcError) {
+        this.logger.error(
+          `❌ Erreur RPC get_brand_bestsellers_optimized: ${rpcError.message}`,
+        );
+        return {
+          success: false,
+          data: { vehicles: [], parts: [] },
+          error: rpcError.message,
+        };
+      }
+
+      // 3️⃣ Transformer et enrichir les données
+      const vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
+        ...vehicle,
+        vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
+        image_url: vehicle.modele_pic 
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`
+          : null,
+      }));
+
+            let parts = (bestsellers?.parts || []).map((part: any) => ({
+        ...part,
+        part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.type_alias}-${part.type_id}.html`,
+        image_url: part.pg_alias
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_alias}.webp`
+          : null,
+      }));
+
+      // 🎯 ENRICHISSEMENT SWITCHES SEO DYNAMIQUES
+      // Combine __seo_item_switch (descriptions courtes) + __seo_family_gamme_car_switch (détails)
+      if (parts.length > 0) {
+        const pgIds = parts.map(p => p.pg_id || p.cgc_pg_id);
+        
+        // Récupérer les switches courts (alias 1)
+        const { data: itemSwitches, error: itemError } = await this.client
+          .from('__seo_item_switch')
+          .select('sis_pg_id, sis_alias, sis_content')
+          .in('sis_pg_id', pgIds.map(String))
+          .eq('sis_alias', '1');
+        
+        // Récupérer les switches détaillés (alias 11 pour détails techniques)
+        const { data: familySwitches, error: familyError } = await this.client
+          .from('__seo_family_gamme_car_switch')
+          .select('sfgcs_pg_id, sfgcs_alias, sfgcs_content')
+          .in('sfgcs_pg_id', pgIds.map(String))
+          .eq('sfgcs_alias', '11');
+
+        if (!itemError && itemSwitches && itemSwitches.length > 0) {
+          this.logger.debug(`🔄 ${itemSwitches.length} switches courts + ${familySwitches?.length || 0} switches détaillés`);
+          
+          // Enrichir chaque pièce avec ses switches au format exact de l'exemple PHP
+          parts = parts.map(part => {
+            const partPgId = part.pg_id || part.cgc_pg_id;
+            const partTypeId = parseInt(part.cgc_type_id) || 0;
+            
+            // Récupérer les switches courts (alias 1)
+            const itemList = itemSwitches.filter(s => s.sis_pg_id === String(partPgId));
+            let shortDesc = '';
+            if (itemList.length > 0) {
+              const idx = (partTypeId + 1) % itemList.length;
+              shortDesc = itemList[idx]?.sis_content || '';
+            }
+            
+            // Récupérer les switches détaillés (alias 11)
+            const familyList = familySwitches?.filter(s => s.sfgcs_pg_id === String(partPgId)) || [];
+            let detailDesc = '';
+            if (familyList.length > 0) {
+              const idx = (partTypeId + partPgId + 2) % familyList.length;
+              detailDesc = familyList[idx]?.sfgcs_content || '';
+            }
+            
+            // 🎯 CONSTRUCTION DU FORMAT EXACT : 
+            // "[switch court] les [gamme] [MARQUE] [MODÈLE] [TYPE] [PUISSANCE] ch, [switch détail]"
+            const marque = (part.marque_name || '').toUpperCase();
+            const modele = part.modele_name || '';
+            const type = part.type_name || '';
+            const puissance = part.type_power_ps || '';
+            const gamme = part.pg_name || '';
+            
+            // Générer le titre enrichi : "Filtre à huile pour PEUGEOT 206 1.4 HDI"
+            const enrichedTitle = `${gamme} pour ${marque} ${modele} ${type}`;
+            
+            // Générer la description enrichie au format exact
+            let enrichedDesc = '';
+            if (shortDesc && detailDesc) {
+              // Format complet avec switch court + véhicule + switch détail
+              enrichedDesc = `${shortDesc} les ${gamme} ${marque} ${modele} ${type} ${puissance} ch, ${detailDesc}`;
+            } else if (shortDesc) {
+              // Format partiel avec switch court + véhicule uniquement
+              enrichedDesc = `${shortDesc} les ${gamme} ${marque} ${modele} ${type} ${puissance} ch`;
+            } else {
+              // Fallback simple sans switches
+              enrichedDesc = `${gamme} pour ${marque} ${modele} ${type} ${puissance} ch`;
+            }
+            
+            return {
+              ...part,
+              seo_switch_content: enrichedDesc,           // Description formatée complète
+              seo_switch_short: shortDesc,                // Switch court brut
+              seo_switch_detail: detailDesc,              // Switch détail brut
+              seo_title: enrichedTitle,                   // Titre enrichi
+              seo_description_formatted: enrichedDesc,    // Alias de seo_switch_content
+            };
+          });
+          
+          this.logger.debug(`✅ ${parts.filter(p => p.seo_switch_content).length} pièces enrichies avec format complet`);
+        } else {
+          this.logger.warn(`⚠️ Aucun switch SEO trouvé`);
+        }
+      }
+
+      const result = {
+        success: true,
+        data: {
+          vehicles,
+          parts,
+        },
+        meta: {
+          brand_id: brand.marque_id,
+          brand_name: brand.marque_name,
+          brand_alias: brand.marque_alias,
+          total_vehicles: vehicles.length,
+          total_parts: parts.length,
+          generated_at: new Date().toISOString(),
+        },
+      };
+
+      // 4️⃣ Mettre en cache (TTL 1h)
+      await this.cacheManager.set(cacheKey, result, 3600);
+      this.logger.log(
+        `✅ Bestsellers récupérés: ${result.meta.total_vehicles} véhicules, ${result.meta.total_parts} pièces`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error('❌ Erreur getBrandBestsellers:', error.message);
+      return {
+        success: false,
+        data: { vehicles: [], parts: [] },
+        error: error.message,
+      };
     }
   }
 }

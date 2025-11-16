@@ -29,6 +29,13 @@
   "github.copilot.chat.mcp.servers": {
     "supabase": {
       "url": "https://mcp.supabase.com/mcp?project_ref=cxpojprgwgubzjyqzmoq"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "CONTEXT7_API_KEY": ""
+      }
     }
   }
 }

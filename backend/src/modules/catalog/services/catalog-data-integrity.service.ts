@@ -229,14 +229,14 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       };
     }
 
-    // 3. Compter les relations dans pieces_relation_type
-    const { count: relationsCount, error: relationsError } = await this.client
-      .from('pieces_relation_type')
-      .select('rtp_piece_id', { count: 'exact', head: true })
-      .eq('rtp_type_id', String(typeId))
-      .eq('rtp_pg_id', String(gammeId));
+    // 3. Vérifier les relations dans pieces_relation_type AVEC FILTRES PHP
+    // Utilise la même RPC function que le catalogue pour garantir la cohérence
+    const { data: rpcData, error: rpcError } = await this.client.rpc(
+      'get_vehicle_compatible_gammes_php',
+      { p_type_id: typeId },
+    );
 
-    if (relationsError) {
+    if (rpcError) {
       return {
         valid: false,
         type_id: typeId,
@@ -246,9 +246,15 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
         relations_count: 0,
         http_status: 404,
         recommendation: 'Erreur lors de la vérification des relations',
-        error: relationsError.message,
+        error: rpcError.message,
       };
     }
+
+    // Vérifier si gammeId est dans les résultats RPC
+    const gammeInResults = rpcData?.find(
+      (row) => row.pg_id === parseInt(String(gammeId)),
+    );
+    const relationsCount = gammeInResults ? gammeInResults.total_pieces : 0;
 
     // Si aucune relation, retour 410 Gone
     if (!relationsCount || relationsCount === 0) {
@@ -271,8 +277,12 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       .eq('rtp_type_id', String(typeId))
       .eq('rtp_pg_id', String(gammeId))
       .limit(100);
-
-    const piecesWithBrand = relations?.filter((r) => r.rtp_pm_id).length || 0;
+    
+    // Compter les pièces avec une marque (rtp_pm_id non null et > 0)
+    const piecesWithBrand = relations?.filter(
+      (r) => r.rtp_pm_id && parseInt(String(r.rtp_pm_id)) > 0
+    ).length || 0;
+    
     const brandPercent = relations?.length
       ? (piecesWithBrand / relations.length) * 100
       : 0;

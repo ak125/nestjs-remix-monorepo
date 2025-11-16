@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, Res } from '@nestjs/common';
+import { Controller, Get, Query, Param, Res, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
@@ -7,6 +7,8 @@ import { VehiclePaginationDto } from './dto/vehicles.dto';
 // Routes: /api/vehicles
 @Controller('api/vehicles')
 export class VehiclesController {
+  private readonly logger = new Logger(VehiclesController.name);
+  
   constructor(private readonly vehiclesService: VehiclesService) {}
 
   /**
@@ -140,5 +142,30 @@ export class VehiclesController {
   @Get('meta-tags/:typeId')
   async getMetaTagsByTypeId(@Param('typeId') typeId: string) {
     return this.vehiclesService.getMetaTagsByTypeId(parseInt(typeId));
+  }
+
+  /**
+   * GET /api/vehicles/brand/:brandAlias/bestsellers
+   * 🆕 Récupérer les véhicules et pièces populaires d'une marque
+   * Utilise RPC get_brand_bestsellers_optimized
+   */
+  @Get('brand/:brandAlias/bestsellers')
+  async getBrandBestsellers(
+    @Param('brandAlias') brandAlias: string,
+    @Query('limitVehicles') limitVehicles?: string,
+    @Query('limitParts') limitParts?: string,
+  ) {
+    this.logger.log(
+      `GET /api/vehicles/brand/${brandAlias}/bestsellers?limitVehicles=${limitVehicles || 12}&limitParts=${limitParts || 12}`,
+    );
+
+    const limitVehiclesNum = limitVehicles ? parseInt(limitVehicles, 10) : 12;
+    const limitPartsNum = limitParts ? parseInt(limitParts, 10) : 12;
+
+    return this.vehiclesService.getBrandBestsellers(
+      brandAlias,
+      limitVehiclesNum,
+      limitPartsNum,
+    );
   }
 }

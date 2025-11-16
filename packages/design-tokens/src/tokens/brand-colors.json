@@ -1,0 +1,204 @@
+{
+  "brands": {
+    "bmw": {
+      "primary": "#1C69D4",
+      "gradient": { "from": "#1C69D4", "via": "#0066B1", "to": "#005A9C" }
+    },
+    "mercedes": {
+      "primary": "#00ADEF",
+      "gradient": { "from": "#00ADEF", "via": "#0093D0", "to": "#007AB8" }
+    },
+    "mercedes-benz": {
+      "primary": "#00ADEF",
+      "gradient": { "from": "#00ADEF", "via": "#0093D0", "to": "#007AB8" }
+    },
+    "audi": {
+      "primary": "#BB0A30",
+      "gradient": { "from": "#BB0A30", "via": "#9E0B23", "to": "#870B1F" }
+    },
+    "porsche": {
+      "primary": "#D5001C",
+      "gradient": { "from": "#D5001C", "via": "#B30019", "to": "#940015" }
+    },
+    "volkswagen": {
+      "primary": "#001E50",
+      "gradient": { "from": "#001E50", "via": "#00153C", "to": "#000C28" }
+    },
+    "opel": {
+      "primary": "#FFCC00",
+      "gradient": { "from": "#FFCC00", "via": "#E6B800", "to": "#CCA300" }
+    },
+    "renault": {
+      "primary": "#FFCC00",
+      "gradient": { "from": "#FFCC00", "via": "#FFD633", "to": "#FFE066" }
+    },
+    "peugeot": {
+      "primary": "#002F87",
+      "gradient": { "from": "#002F87", "via": "#002673", "to": "#001D5F" }
+    },
+    "citroen": {
+      "primary": "#CC092F",
+      "gradient": { "from": "#CC092F", "via": "#B50728", "to": "#9E0621" }
+    },
+    "ds": {
+      "primary": "#1C1C1C",
+      "gradient": { "from": "#1C1C1C", "via": "#2C2C2C", "to": "#0A0A0A" }
+    },
+    "ferrari": {
+      "primary": "#DC0300",
+      "gradient": { "from": "#DC0300", "via": "#C70300", "to": "#B00200" }
+    },
+    "lamborghini": {
+      "primary": "#EFB810",
+      "gradient": { "from": "#EFB810", "via": "#D6A30E", "to": "#BD8F0C" }
+    },
+    "alfa-romeo": {
+      "primary": "#9B0028",
+      "gradient": { "from": "#9B0028", "via": "#850021", "to": "#6F001B" }
+    },
+    "fiat": {
+      "primary": "#951B25",
+      "gradient": { "from": "#951B25", "via": "#7E1620", "to": "#67121A" }
+    },
+    "lancia": {
+      "primary": "#003D7A",
+      "gradient": { "from": "#003D7A", "via": "#003166", "to": "#002552" }
+    },
+    "maserati": {
+      "primary": "#003DA5",
+      "gradient": { "from": "#003DA5", "via": "#003187", "to": "#002569" }
+    },
+    "toyota": {
+      "primary": "#EB0A1E",
+      "gradient": { "from": "#EB0A1E", "via": "#D4091A", "to": "#BD0817" }
+    },
+    "honda": {
+      "primary": "#CC0000",
+      "gradient": { "from": "#CC0000", "via": "#B30000", "to": "#990000" }
+    },
+    "nissan": {
+      "primary": "#C3002F",
+      "gradient": { "from": "#C3002F", "via": "#A80028", "to": "#8D0021" }
+    },
+    "mazda": {
+      "primary": "#CE0E2D",
+      "gradient": { "from": "#CE0E2D", "via": "#B20C27", "to": "#960A21" }
+    },
+    "subaru": {
+      "primary": "#003B73",
+      "gradient": { "from": "#003B73", "via": "#00305E", "to": "#002549" }
+    },
+    "mitsubishi": {
+      "primary": "#E60012",
+      "gradient": { "from": "#E60012", "via": "#CC000F", "to": "#B3000D" }
+    },
+    "suzuki": {
+      "primary": "#E31E24",
+      "gradient": { "from": "#E31E24", "via": "#CA1B20", "to": "#B1181D" }
+    },
+    "lexus": {
+      "primary": "#1A1A1A",
+      "gradient": { "from": "#1A1A1A", "via": "#2B2B2B", "to": "#0D0D0D" }
+    },
+    "infiniti": {
+      "primary": "#1C1C1C",
+      "gradient": { "from": "#1C1C1C", "via": "#2C2C2C", "to": "#0A0A0A" }
+    },
+    "hyundai": {
+      "primary": "#002C5F",
+      "gradient": { "from": "#002C5F", "via": "#00234D", "to": "#001A3B" }
+    },
+    "kia": {
+      "primary": "#BB162B",
+      "gradient": { "from": "#BB162B", "via": "#A01324", "to": "#85101E" }
+    },
+    "ford": {
+      "primary": "#003478",
+      "gradient": { "from": "#003478", "via": "#002B63", "to": "#00224E" }
+    },
+    "chevrolet": {
+      "primary": "#D39F0C",
+      "gradient": { "from": "#D39F0C", "via": "#BB8E0A", "to": "#A37D09" }
+    },
+    "jeep": {
+      "primary": "#1C3F31",
+      "gradient": { "from": "#1C3F31", "via": "#163328", "to": "#10271F" }
+    },
+    "dodge": {
+      "primary": "#E2231A",
+      "gradient": { "from": "#E2231A", "via": "#C91E16", "to": "#B01A13" }
+    },
+    "tesla": {
+      "primary": "#CC0000",
+      "gradient": { "from": "#CC0000", "via": "#B30000", "to": "#990000" }
+    },
+    "chrysler": {
+      "primary": "#0066B2",
+      "gradient": { "from": "#0066B2", "via": "#00579C", "to": "#004886" }
+    },
+    "cadillac": {
+      "primary": "#000000",
+      "gradient": { "from": "#000000", "via": "#1A1A1A", "to": "#0A0A0A" }
+    },
+    "gmc": {
+      "primary": "#C8102E",
+      "gradient": { "from": "#C8102E", "via": "#AE0E28", "to": "#940C22" }
+    },
+    "jaguar": {
+      "primary": "#003B2E",
+      "gradient": { "from": "#003B2E", "via": "#003025", "to": "#00251C" }
+    },
+    "land-rover": {
+      "primary": "#005A2B",
+      "gradient": { "from": "#005A2B", "via": "#004B23", "to": "#003C1C" }
+    },
+    "range-rover": {
+      "primary": "#005A2B",
+      "gradient": { "from": "#005A2B", "via": "#004B23", "to": "#003C1C" }
+    },
+    "mini": {
+      "primary": "#000000",
+      "gradient": { "from": "#000000", "via": "#1A1A1A", "to": "#0A0A0A" }
+    },
+    "rolls-royce": {
+      "primary": "#680021",
+      "gradient": { "from": "#680021", "via": "#56001B", "to": "#440016" }
+    },
+    "bentley": {
+      "primary": "#006738",
+      "gradient": { "from": "#006738", "via": "#00552E", "to": "#004324" }
+    },
+    "aston-martin": {
+      "primary": "#006838",
+      "gradient": { "from": "#006838", "via": "#005530", "to": "#004226" }
+    },
+    "volvo": {
+      "primary": "#003057",
+      "gradient": { "from": "#003057", "via": "#002747", "to": "#001E37" }
+    },
+    "saab": {
+      "primary": "#003D7A",
+      "gradient": { "from": "#003D7A", "via": "#003166", "to": "#002552" }
+    },
+    "seat": {
+      "primary": "#E20714",
+      "gradient": { "from": "#E20714", "via": "#C80611", "to": "#AE050E" }
+    },
+    "cupra": {
+      "primary": "#9B6D49",
+      "gradient": { "from": "#9B6D49", "via": "#87603F", "to": "#735336" }
+    },
+    "skoda": {
+      "primary": "#4BA82E",
+      "gradient": { "from": "#4BA82E", "via": "#409127", "to": "#357A20" }
+    },
+    "dacia": {
+      "primary": "#648A3C",
+      "gradient": { "from": "#648A3C", "via": "#567633", "to": "#48622A" }
+    }
+  },
+  "fallback": {
+    "primary": "#64748B",
+    "gradient": { "from": "#64748B", "via": "#475569", "to": "#334155" }
+  }
+}

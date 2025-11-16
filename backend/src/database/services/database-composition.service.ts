@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
 import { UserDataService } from './user-data.service';
-import { OrderDataService } from './order-data.service';
+import { OrdersService } from './orders.service';
 
 /**
  * Service principal qui compose tous les services spécialisés
@@ -20,7 +20,7 @@ export class DatabaseCompositionService {
   constructor(
     private readonly cartDataService: CartDataService,
     private readonly userDataService: UserDataService,
-    private readonly orderDataService: OrderDataService,
+    private readonly ordersService: OrdersService,
   ) {
     this.logger.log(
       'DatabaseCompositionService initialized with modular architecture',
@@ -102,23 +102,25 @@ export class DatabaseCompositionService {
   }
 
   // ============================================
-  // ORDER OPERATIONS - Délégation vers OrderDataService
+  // ORDER OPERATIONS - Délégation vers OrdersService
   // ============================================
 
   async getUserOrders(userId: string) {
-    return this.orderDataService.getUserOrders(userId);
+    return this.ordersService.getUserOrders(userId);
   }
 
   async getOrderById(orderId: number) {
-    return this.orderDataService.getOrderById(orderId);
+    return this.ordersService.getOrderById(String(orderId));
   }
 
   async createOrder(orderData: any) {
-    return this.orderDataService.createOrder(orderData);
+    return this.ordersService.createLegacyOrder(orderData);
   }
 
   async updateOrderStatus(orderId: number, status: number) {
-    return this.orderDataService.updateOrderStatus(orderId, status);
+    // Mapper le status number vers le format string
+    const statusString = status === 1 ? 'paid' : 'pending';
+    return this.ordersService.updateOrderStatus(String(orderId), statusString);
   }
 
   // ============================================
@@ -138,12 +140,17 @@ export class DatabaseCompositionService {
       }
 
       // 2. Créer la commande
-      const order = await this.orderDataService.createOrder({
-        customer_id: userId,
-        subtotal: cartTotals.subtotal,
-        tax: cartTotals.tax,
-        shipping: cartTotals.shipping,
-        total: cartTotals.total,
+      const order = await this.ordersService.createLegacyOrder({
+        customerId: userId,
+        orderLines: cartTotals.items.map((item: any) => ({
+          productId: item.product_id,
+          productName: item.product_name || 'Produit',
+          productReference: item.product_ref || '',
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+          vatRate: 20,
+          discount: 0,
+        })),
         ...orderData,
       });
 
@@ -165,14 +172,14 @@ export class DatabaseCompositionService {
     try {
       const [cartTotals, orders] = await Promise.all([
         this.cartDataService.calculateCartTotals(userId),
-        this.orderDataService.getUserOrders(userId),
+        this.ordersService.getUserOrders(userId),
       ]);
 
       return {
         cartItemsCount: cartTotals.items.length,
         cartTotal: cartTotals.total,
         ordersCount: orders.length,
-        totalSpent: orders.reduce((sum, order) => sum + order.total, 0),
+        totalSpent: orders.reduce((sum, order) => sum + (order.totalTtc || 0), 0),
       };
     } catch (error) {
       this.logger.error(`Failed to get user stats for ${userId}:`, error);
