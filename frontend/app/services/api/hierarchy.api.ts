@@ -498,6 +498,7 @@ class HierarchyApiService {
     const hash = parseInt(idStr || '0', 10);
     return colorPalette[hash % colorPalette.length];
   }
+
 }
 
 // Instance singleton

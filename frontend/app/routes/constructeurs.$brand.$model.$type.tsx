@@ -2,7 +2,14 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { catalogFamiliesApi, type CatalogFamily as ApiCatalogFamily } from "../services/api/catalog-families.api";
+import { brandColorsService } from "../services/brand-colors.service";
+import { hierarchyApi } from "../services/api/hierarchy.api";
+
+// 🔄 Cache mémoire simple pour éviter les rechargements inutiles
+const loaderCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 60000; // 1 minute
 
 // 📝 Types de données (structure PHP)
 interface VehicleData {
@@ -94,12 +101,33 @@ interface LoaderData {
   };
 }
 
+// ⚡ Contrôle de revalidation pour éviter les rechargements inutiles
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: any) {
+  // Ne recharger que si l'URL change vraiment ou si c'est une soumission de formulaire
+  if (formMethod && formMethod !== "GET") {
+    return true;
+  }
+  
+  // Ne recharger que si les paramètres de route changent
+  return currentUrl.pathname !== nextUrl.pathname;
+}
+
 // 🔄 Loader avec logique métier PHP convertie
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  console.log('🚨🚨🚨 LOADER CONSTRUCTEURS.$BRAND.$MODEL.$TYPE APPELÉ 🚨🚨🚨');
+  // 🔍 Vérifier le cache d'abord
+  const cacheKey = `${params.brand}-${params.model}-${params.type}`;
+  const cached = loaderCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    console.log('✅ [CACHE HIT] Données véhicule en cache:', cacheKey);
+    return json(cached.data);
+  }
+  
   console.log('🔄 Vehicle detail loader appelé avec params:', params);
-  console.log('🔄 URL complète:', request.url);
-  console.log('🔄 Request method:', request.method);
   
   // Validation stricte des paramètres
   const { brand, model, type } = params;
@@ -467,9 +495,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     popularPartsCount: popularParts.length
   });
 
-  console.log('🚨🚨🚨 ABOUT TO RETURN JSON DATA 🚨🚨🚨');
-  console.log('🔍 Loader result keys:', Object.keys(loaderData));
-  console.log('🔍 Loader result vehicle:', loaderData.vehicle.marque_name);
+  console.log('✅ Données générées, mise en cache:', cacheKey);
+  
+  // Mettre en cache
+  loaderCache.set(cacheKey, {
+    data: loaderData,
+    timestamp: Date.now()
+  });
+  
+  // Nettoyer les vieux caches (garder max 50 entrées)
+  if (loaderCache.size > 50) {
+    const oldestKey = Array.from(loaderCache.keys())[0];
+    loaderCache.delete(oldestKey);
+  }
   
   return json(loaderData);
 }
@@ -539,6 +577,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
   const { vehicle, catalogFamilies, popularParts, seo, breadcrumb } = data;
+  
+  // État pour gérer l'expansion des familles (comme page index)
+  const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(new Set());
 
   console.log('🚗 Page véhicule rendue avec logique PHP:', {
     vehicle: vehicle.marque_name + ' ' + vehicle.modele_name + ' ' + vehicle.type_name,
@@ -547,68 +588,143 @@ export default function VehicleDetailPage() {
     seoTitle: seo.title
   });
 
+  // Récupérer le gradient de marque dynamique
+  const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
+  const brandPrimary = brandColorsService.getBrandPrimaryColor(vehicle.marque_alias);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header avec informations véhicule (structure PHP) */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
+      <nav className="bg-white border-b border-gray-200 py-3" aria-label="Breadcrumb">
+        <div className="container mx-auto px-4">
+          <ol className="flex items-center gap-2 text-sm" itemScope itemType="https://schema.org/BreadcrumbList">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <a href="/" itemProp="item" className="hover:underline" style={{ color: brandPrimary }}>
+                <span itemProp="name">Accueil</span>
+              </a>
+              <meta itemProp="position" content="1" />
+            </li>
+            <li><span className="text-gray-400">→</span></li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <a href="/constructeurs" itemProp="item" className="hover:underline" style={{ color: brandPrimary }}>
+                <span itemProp="name">Constructeurs</span>
+              </a>
+              <meta itemProp="position" content="2" />
+            </li>
+            <li><span className="text-gray-400">→</span></li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <a 
+                href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} 
+                itemProp="item"
+                className="hover:underline"
+                style={{ color: brandPrimary }}
+              >
+                <span itemProp="name">{breadcrumb.brand}</span>
+              </a>
+              <meta itemProp="position" content="3" />
+            </li>
+            <li><span className="text-gray-400">→</span></li>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span itemProp="name" className="font-semibold text-gray-900">{breadcrumb.model} {breadcrumb.type}</span>
+              <meta itemProp="position" content="4" />
+            </li>
+          </ol>
+        </div>
+      </nav>
+
+      {/* 🚗 Hero Section - Design UI/UX Expert Premium */}
+      <section className="relative overflow-hidden text-white py-8 md:py-10" style={brandColor}>
+        {/* Effets d'arrière-plan optimisés */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{
+          backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12) 0%, transparent 45%),
+                           radial-gradient(circle at 80% 70%, rgba(0,0,0,0.18) 0%, transparent 45%)`
+        }} aria-hidden="true" />
+        <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-white/[0.025] rounded-full blur-3xl animate-[pulse_15s_ease-in-out_infinite]" aria-hidden="true"></div>
+        
+        <div className="relative z-10 container mx-auto px-4 max-w-7xl">
+          {/* Hero Grid - Layout optimal */}
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_400px] gap-8 items-start">
             
-            {/* Informations véhicule */}
-            <div className="flex-1">
-              {/* 🍞 Fil d'ariane optimisé SEO avec 4 niveaux */}
-              <nav className="text-blue-200 text-sm mb-4" itemScope itemType="https://schema.org/BreadcrumbList">
-                {/* Niveau 1: Accueil */}
-                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-                  <a href="/" itemProp="item" className="hover:text-white transition-colors">
-                    <span itemProp="name">Accueil</span>
-                  </a>
-                  <meta itemProp="position" content="1" />
-                </span>
-                {' → '}
+            {/* Zone de contenu principale */}
+            <div className="space-y-6">
+              {/* Header typographique */}
+              <header className="animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-2 tracking-tight">
+                  <span className="bg-gradient-to-br from-white via-white to-white/85 bg-clip-text text-transparent drop-shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
+                    {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name} {vehicle.type_power_ps} ch de {vehicle.type_year_from} à {vehicle.type_year_to || "aujourd'hui"}
+                  </span>
+                </h1>
+              </header>
+
+              {/* Specs Grid - Badges horizontaux compacts */}
+              <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 ease-out">
                 
-                {/* Niveau 2: Constructeurs */}
-                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-                  <a href="/constructeurs" itemProp="item" className="mx-1 hover:text-white transition-colors">
-                    <span itemProp="name">Constructeurs</span>
-                  </a>
-                  <meta itemProp="position" content="2" />
-                </span>
-                {' → '}
-                
-                {/* Niveau 3: Marque */}
-                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-                  <a 
-                    href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} 
-                    itemProp="item"
-                    className="mx-1 hover:text-white transition-colors"
-                  >
-                    <span itemProp="name">{breadcrumb.brand}</span>
-                  </a>
-                  <meta itemProp="position" content="3" />
-                </span>
-                {' → '}
-                
-                {/* Niveau 4: Modèle + Type (page actuelle) */}
-                <span itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-                  <span itemProp="name" className="text-white font-medium">{breadcrumb.model} {breadcrumb.type}</span>
-                  <meta itemProp="position" content="4" />
-                </span>
-              </nav>
-              
-              <h1 className="text-3xl font-bold mb-2" dangerouslySetInnerHTML={{ __html: seo.h1 }} />
-              
-              <div className="flex flex-wrap gap-4 text-blue-100">
-                <span>🏭 {vehicle.marque_name}</span>
-                <span>🚗 {vehicle.modele_name}</span>
-                <span>⚡ {vehicle.type_power_ps} ch</span>
-                <span>⛽ {vehicle.type_fuel}</span>
-                <span>📅 {vehicle.type_month_from}/{vehicle.type_year_from}</span>
+                {/* Carburant */}
+                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">⛽</span>
+                    <span className="text-sm font-bold text-white">{vehicle.type_fuel}</span>
+                  </div>
+                </div>
+
+                {/* Puissance */}
+                <div className="group bg-gradient-to-br from-white/[0.22] via-white/[0.16] to-white/[0.08] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⚡</span>
+                    <div>
+                      <div className="text-2xl font-black text-white leading-none">{vehicle.type_power_ps}</div>
+                      <div className="text-white/70 text-[9px] uppercase tracking-wider font-bold">chevaux</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Période */}
+                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📅</span>
+                    <span className="text-xs font-bold text-white whitespace-nowrap">
+                      {vehicle.type_year_from}–{vehicle.type_year_to || 'Auj.'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Carrosserie */}
+                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🚗</span>
+                    <span className="text-xs font-semibold text-white/95">{vehicle.type_body}</span>
+                  </div>
+                </div>
               </div>
             </div>
+            
+            {/* Image Premium - Sidebar optimisée */}
+            <div className="lg:sticky lg:top-8 animate-in fade-in slide-in-from-right-8 duration-700 delay-150 ease-out">
+              <div className="relative group">
+                {/* Effet halo lumineux */}
+                <div className="absolute -inset-3 bg-gradient-to-br from-white/[0.22] via-white/[0.12] to-transparent rounded-2xl blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
+                
+                {/* Container carte */}
+                <div className="relative">
+                  <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
+                    <div className="relative overflow-hidden rounded-xl">
+                      <img 
+                        src="https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/bmw/serie-2.webp"
+                        alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
+                        className="w-full h-52 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
+                        loading="eager"
+                      />
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -621,80 +737,161 @@ export default function VehicleDetailPage() {
           </div>
         </div>
 
-        {/* Catalogue par familles (query catalog_family du PHP) */}
+        {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Catalogue {seo.h1}</h2>
-              <div className="flex-1 h-px bg-muted/50 ml-4"></div>
+          <div className="mb-16">
+            {/* Header impactant */}
+            <div className="text-center mb-12 animate-in fade-in duration-700">
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
+                Catalogue de pièces auto
+              </h2>
+              <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+                Trouvez la pièce exacte pour votre{" "}
+                <span className="font-bold" style={{ color: brandPrimary }}>{vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}</span>
+                {" "}• {vehicle.type_power_ps} ch • {vehicle.type_year_from}-{vehicle.type_year_to || "Auj."}
+              </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {catalogFamilies.map((family) => (
-                <div key={family.mf_id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                  <div className="text-center mb-4">
-                    <img 
-                      src={`/upload/articles/familles-produits/${family.mf_pic}`}
-                      alt={family.mf_name}
-                      className="w-32 h-24 mx-auto object-cover rounded mb-3"
-                      loading="lazy"
-                    />
-                    <h3 className="text-lg font-semibold text-gray-900">{family.mf_name}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {catalogFamilies.map((family, index) => {
+                const familyColor = hierarchyApi.getFamilyColor(family);
+                const familyImage = hierarchyApi.getFamilyImage(family);
+                const isExpanded = expandedFamilies.has(family.mf_id);
+                const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 4);
+                
+                return (
+                  <div 
+                    key={family.mf_id} 
+                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden border border-gray-100"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Image header avec gradient couleur */}
+                    <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${familyColor}`}>
+                      <img 
+                        src={familyImage}
+                        alt={family.mf_name}
+                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      
+                      {/* Titre overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-500">
+                        <h3 className="text-white font-black text-lg">{family.mf_name}</h3>
+                      </div>
+                    </div>
+                    
+                    {/* Liste des gammes - 4 premiers ou tous */}
+                    <div className="p-5">
+                      <p className="text-sm text-gray-600 mb-4">
+                        {family.mf_description || 'Découvrez notre sélection complète'}
+                      </p>
+                      
+                      <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
+                        {displayedGammes.map((gamme) => (
+                          <a 
+                            key={gamme.pg_id}
+                            href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
+                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:pl-2 transition-all duration-200 group/item py-1"
+                          >
+                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
+                            <span className="font-medium line-clamp-1">{gamme.pg_name}</span>
+                          </a>
+                        ))}
+                      </div>
+                      
+                      {/* Bouton voir plus/moins si > 4 gammes */}
+                      {family.gammes.length > 4 && (
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedFamilies);
+                            if (isExpanded) {
+                              newExpanded.delete(family.mf_id);
+                            } else {
+                              newExpanded.add(family.mf_id);
+                            }
+                            setExpandedFamilies(newExpanded);
+                          }}
+                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors flex items-center justify-center gap-2"
+                        >
+                          {isExpanded ? (
+                            <>
+                              Voir moins
+                              <svg className="h-4 w-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </>
+                          ) : (
+                            <>
+                              Voir plus de pièces
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    {family.gammes.map((gamme) => (
-                      <a 
-                        key={gamme.pg_id}
-                        href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                        className="block text-blue-600 hover:text-blue-800 hover:underline text-sm"
-                      >
-                        {gamme.pg_name}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Pièces populaires (query cross_gamme_car du PHP) */}
+        {/* 🔥 Pièces populaires - Design premium */}
         {popularParts.length > 0 && (
-          <div className="bg-gray-100 rounded-lg p-8">
-            <div className="flex items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                CATALOGUE PIÈCES AUTO {vehicle.marque_name} LES PLUS vendus
+          <div className="mb-12">
+            {/* Header avec gradient de marque */}
+            <div className="rounded-2xl p-8 mb-8 shadow-xl overflow-hidden relative" style={brandColor}>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
+              <h2 className="text-3xl font-bold text-white mb-2 relative z-10">
+                🔥 Catalogue pièces auto {vehicle.marque_name} les plus vendues
               </h2>
-              <div className="flex-1 h-px bg-muted/50 ml-4"></div>
+              <p className="text-white/80 relative z-10">
+                Pièces certifiées pour {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
+              </p>
             </div>
             
-            {/* Carousel de pièces populaires (comme en PHP avec MultiCarousel) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {popularParts.map((part) => (
-                <div key={part.cgc_pg_id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
-                  <div className="text-center mb-4">
-                    <img 
-                      src={`/upload/articles/gammes-produits/catalogue/${part.pg_img}`}
-                      alt={part.pg_name_meta}
-                      className="w-32 h-24 mx-auto object-cover rounded mb-3"
-                      loading="lazy"
-                    />
-                    <h3 className="font-semibold text-gray-900">
+                <div key={part.cgc_pg_id} className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                  {/* Badge "Populaire" */}
+                  <div className="relative">
+                    <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-md" style={{ backgroundColor: brandPrimary }}>
+                      ⭐ Populaire
+                    </div>
+                    
+                    {/* Image gamme */}
+                    <div className="p-6 bg-gray-50">
+                      <img 
+                        src={`/upload/articles/gammes-produits/catalogue/${part.pg_img}`}
+                        alt={part.pg_name_meta}
+                        className="w-full h-32 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Contenu */}
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 mb-3 text-base line-clamp-2">
                       {part.pg_name} pour {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
                     </h3>
+                    
+                    <div className="text-sm text-gray-600 mb-4 line-clamp-3">
+                      <p dangerouslySetInnerHTML={{ __html: part.addon_content }} />
+                    </div>
+                    
+                    {/* CTA avec couleur de marque */}
+                    <a 
+                      href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
+                      className="block text-center py-3 rounded-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg"
+                      style={{ backgroundColor: brandPrimary }}
+                    >
+                      Voir les pièces →
+                    </a>
                   </div>
-                  
-                  <div className="text-sm text-gray-600">
-                    <p dangerouslySetInnerHTML={{ __html: part.addon_content }} />
-                  </div>
-                  
-                  <a 
-                    href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                    className="mt-4 block bg-primary hover:bg-primary/90 text-primary-foreground text-center py-2 rounded transition-colors"
-                  >
-                    Voir les pièces
-                  </a>
                 </div>
               ))}
             </div>

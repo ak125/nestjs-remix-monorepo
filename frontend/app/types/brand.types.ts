@@ -151,6 +151,10 @@ export interface PopularPart {
   image_url?: string;
   seo_title?: string;
   seo_description?: string;
+  
+  // 🎯 Switches SEO dynamiques (depuis __seo_gamme_car_switch)
+  seo_switch_content?: string;
+  seo_switch_alias?: number;
 }
 
 // ====================================

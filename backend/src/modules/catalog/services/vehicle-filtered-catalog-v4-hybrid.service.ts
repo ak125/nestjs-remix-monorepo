@@ -126,75 +126,299 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
   }
 
   /**
-   * 🏃‍♂️ CONSTRUCTION CATALOGUE COMPLET - SANS FILTRAGE
-   * 💡 Philosophie: Afficher TOUT le catalogue, filtrage sur page produit
+   * 🔥 V4 ULTIMATE HYBRID: Stratégie progressive avec 3 niveaux de fallback
+   *
+   * Niveau 1 (optimal): Vue matérialisée mv_vehicle_compatible_gammes (5-10ms)
+   * Niveau 2 (backup): Table pieces_relation_type avec index composite (1-2s)
+   * Niveau 3 (fallback): Catalogue complet non filtré (ultime secours)
+   *
+   * 📊 Performance attendue:
+   * - Vue matérialisée: 5-10ms (données < 24h)
+   * - Index composite: 1-2s (si vue stale/indisponible)
+   * - Catalogue complet: 50-100ms (si aucune donnée compatible)
    */
   private async buildCatalogParallel(typeId: number): Promise<any> {
-    this.logger.log(
-      `🔍 [V4 SIMPLE] Catalogue complet (SANS filtrage) pour type_id ${typeId}`,
+    this.logger.log(`🔍 [V4 HYBRID] Catalogue pour type_id ${typeId}`);
+
+    // ============================================
+    // NIVEAU 1: Essayer la vue matérialisée (optimal - 5-10ms)
+    // ============================================
+    try {
+      const mvStartTime = Date.now();
+      const { data: mvData, error: mvError } = await this.supabase
+        .from('mv_vehicle_compatible_gammes')
+        .select('pg_id, pieces_count, last_updated')
+        .eq('type_id', typeId);
+
+      const mvDuration = Date.now() - mvStartTime;
+
+      if (!mvError && mvData && mvData.length > 0) {
+        // Vérifier fraîcheur des données (< 24h)
+        const lastUpdated = new Date(mvData[0].last_updated);
+        const ageHours =
+          (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60);
+
+        if (ageHours < 24) {
+          const pgIds = mvData.map((row) => row.pg_id);
+          this.logger.log(
+            `🚀 [NIVEAU 1 - VUE MATÉRIALISÉE] ${pgIds.length} gammes en ${mvDuration}ms (fraîcheur: ${ageHours.toFixed(1)}h)`,
+          );
+          return this.fetchCatalogFromGammes(pgIds, 'V4_MATERIALIZED_VIEW');
+        } else {
+          this.logger.warn(
+            `⚠️ [NIVEAU 1] Vue stale (${ageHours.toFixed(1)}h) → Fallback niveau 2`,
+          );
+        }
+      } else if (mvError) {
+        this.logger.warn(
+          `⚠️ [NIVEAU 1] Erreur vue matérialisée: ${mvError.message} → Fallback niveau 2`,
+        );
+      }
+    } catch (mvException) {
+      this.logger.warn(
+        `⚠️ [NIVEAU 1] Exception vue matérialisée: ${mvException.message} → Fallback niveau 2`,
+      );
+    }
+
+    // ============================================
+    // NIVEAU 2: RPC Function avec index composite + JOIN PHP (backup - 1-2s)
+    // ============================================
+    try {
+      const indexStartTime = Date.now();
+
+      // 🎯 LOGIQUE PHP EXACTE via RPC Function: get_vehicle_compatible_gammes_php
+      // Utilise explicit JOINs pour contourner les limitations Supabase FK
+      // SELECT DISTINCT pg_id FROM pieces_relation_type
+      // JOIN pieces ON piece_id = rtp_piece_id AND piece_pg_id = rtp_pg_id
+      // JOIN pieces_gamme ON pg_id = piece_pg_id
+      // WHERE rtp_type_id = ? AND piece_display = true AND pg_display = '1' AND pg_level IN ('1','2')
+
+      const { data: rpcData, error: rpcError } = await this.supabase.rpc(
+        'get_vehicle_compatible_gammes_php',
+        { p_type_id: typeId },
+      );
+
+      const indexDuration = Date.now() - indexStartTime;
+
+      if (rpcError) {
+        this.logger.error(
+          `❌ [NIVEAU 2] Erreur RPC: ${JSON.stringify(rpcError)} → Fallback niveau 3`,
+        );
+      } else if (!rpcData || rpcData.length === 0) {
+        this.logger.warn(
+          `⚠️ [NIVEAU 2] Aucune gamme trouvée pour type_id ${typeId} → Fallback niveau 3`,
+        );
+      } else {
+        // Extraire les IDs uniques de gammes compatibles (déjà filtrés par PHP logic)
+        const pgIds = rpcData
+          .map((row) => row.pg_id)
+          .filter((id) => id !== null);
+
+        this.logger.log(
+          `⚡ [NIVEAU 2 - RPC PHP FILTERS] ${pgIds.length} gammes en ${indexDuration}ms`,
+        );
+
+        return this.fetchCatalogFromGammes(pgIds, 'V4_RPC_PHP_LOGIC');
+      }
+    } catch (indexException) {
+      this.logger.error(
+        `❌ [NIVEAU 2] Exception: ${indexException.message} → Fallback niveau 3`,
+      );
+    }
+
+    // ============================================
+    // NIVEAU 3: Catalogue complet (fallback ultime)
+    // ============================================
+    this.logger.warn(
+      `🆘 [NIVEAU 3 - FALLBACK] Catalogue complet non filtré pour type_id ${typeId}`,
     );
+    return this.buildCompleteCatalogFallback();
+  }
 
-    // 🚀 3 requêtes parallèles ultra-simples
-    const [familiesData, catalogGammeData, gammeData] = await Promise.all([
-      // 1️⃣ Toutes les familles visibles
+  /**
+   * 🔧 Fonction utilitaire: Récupérer le catalogue à partir d'une liste de gammes
+   */
+  private async fetchCatalogFromGammes(
+    pgIds: number[],
+    queryType: string,
+  ): Promise<any> {
+    // 🔧 Conversion des IDs en strings pour compatibilité avec colonnes text
+    const pgIdsAsStrings = pgIds.map((id) => id.toString());
+
+    // 🎯 Récupérer gammes et catalogue en parallèle
+    const [gammesResult, catalogGammeResult] = await Promise.all([
       this.supabase
-        .from('catalog_family')
-        .select(
-          'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort',
-        )
-        .eq('mf_display', '1')
-        .order('mf_sort', { ascending: true }),
-
-      // 2️⃣ Toutes les liaisons famille↔gamme
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img, pg_level')
+        .in('pg_id', pgIds)
+        .eq('pg_display', '1'),
+      // ⚠️ SUPPRIMÉ: .in('pg_level', ['1', '2']) - Trop restrictif, exclut beaucoup de gammes
       this.supabase
         .from('catalog_gamme')
         .select('mc_pg_id, mc_mf_id, mc_sort')
-        .order('mc_sort', { ascending: true }),
-
-      // 3️⃣ Toutes les gammes visibles
-      this.supabase
-        .from('pieces_gamme')
-        .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img')
-        .eq('pg_display', '1')
-        .order('pg_id', { ascending: true }),
+        .in('mc_pg_id', pgIdsAsStrings),
     ]);
 
-    // 🔍 DEBUG: Vérifier les erreurs retournées
-    if (familiesData.error) {
+    if (gammesResult.error || catalogGammeResult.error) {
+      const error = gammesResult.error || catalogGammeResult.error;
       this.logger.error(
-        `❌ [catalog_family] Erreur RLS: ${JSON.stringify(familiesData.error)}`,
+        `❌ [${queryType}] Erreur gammes: ${JSON.stringify(error)}`,
       );
-      throw familiesData.error;
-    }
-    if (catalogGammeData.error) {
-      this.logger.error(
-        `❌ [catalog_gamme] Erreur RLS: ${JSON.stringify(catalogGammeData.error)}`,
-      );
-      throw catalogGammeData.error;
-    }
-    if (gammeData.error) {
-      this.logger.error(
-        `❌ [pieces_gamme] Erreur RLS: ${JSON.stringify(gammeData.error)}`,
-      );
-      throw gammeData.error;
+      throw error;
     }
 
-    this.logger.log(
-      `✅ [V4 SIMPLE] ${familiesData.data?.length || 0} familles, ` +
-        `${gammeData.data?.length || 0} gammes, ` +
-        `${catalogGammeData.data?.length || 0} liaisons`,
-    );
+    const mfIds = [
+      ...new Set(catalogGammeResult.data.map((cg) => cg.mc_mf_id)),
+    ];
 
-    // 🔗 Construction simple des familles
-    return this.buildCompleteCatalog(
-      familiesData.data || [],
-      catalogGammeData.data || [],
-      gammeData.data || [],
+    // 🎯 Récupérer les familles (mf_id déjà en string depuis catalog_gamme)
+    const { data: familiesData, error: familiesError } = await this.supabase
+      .from('catalog_family')
+      .select('mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort')
+      .in('mf_id', mfIds)
+      .eq('mf_display', '1');
+
+    if (familiesError) {
+      this.logger.error(
+        `❌ [${queryType}] Erreur familles: ${JSON.stringify(familiesError)}`,
+      );
+      throw familiesError;
+    }
+
+    // 🔗 Construction catalogue filtré avec le type de query
+    return this.buildFilteredCatalogFromParts(
+      familiesData,
+      catalogGammeResult.data,
+      gammesResult.data,
+      queryType,
     );
   }
 
   /**
-   * 🏗️ CONSTRUCTION CATALOGUE COMPLET - VERSION SIMPLIFIÉE
+   * 🏗️ CONSTRUCTION CATALOGUE FILTRÉ - DÉDUPLIQUER ET REGROUPER
+   * 💡 À partir des données déjà récupérées (familles, catalog_gamme, pieces_gamme)
+   */
+  private buildFilteredCatalogFromParts(
+    familiesData: any[],
+    catalogGammeData: any[],
+    gammesData: any[],
+    queryType: string = 'V4_FILTERED',
+  ): any {
+    // 🔧 Maps avec clés STRING (Supabase retourne pg_id=integer mais mf_id=string)
+    const gammeMap = new Map(gammesData.map((g) => [String(g.pg_id), g]));
+    const familyMap = new Map(familiesData.map((f) => [String(f.mf_id), f]));
+    const familyGammesMap = new Map<string, any[]>();
+
+    // Regrouper les gammes par famille
+    catalogGammeData.forEach((cg) => {
+      // mc_pg_id et mc_mf_id sont déjà des strings (type text en DB)
+      const gamme = gammeMap.get(cg.mc_pg_id);
+      if (!gamme) return;
+
+      const family = familyMap.get(cg.mc_mf_id);
+      if (!family) return;
+
+      if (!familyGammesMap.has(cg.mc_mf_id)) {
+        familyGammesMap.set(cg.mc_mf_id, []);
+      }
+
+      familyGammesMap.get(cg.mc_mf_id)!.push({
+        pg_id: gamme.pg_id,
+        pg_alias: gamme.pg_alias,
+        pg_name: gamme.pg_name,
+        pg_name_meta: gamme.pg_name_meta,
+        pg_img: gamme.pg_img,
+        mc_sort: parseInt(cg.mc_sort) || 0,
+      });
+    });
+
+    // Construire familles avec leurs gammes
+    const finalFamilies = familiesData
+      .map((family) => {
+        const gammes = (familyGammesMap.get(String(family.mf_id)) || []).sort(
+          (a, b) => a.mc_sort - b.mc_sort,
+        );
+
+        if (gammes.length === 0) return null;
+
+        return {
+          mf_id: family.mf_id,
+          mf_name: family.mf_name_system || family.mf_name,
+          mf_name_system: family.mf_name_system,
+          mf_description: family.mf_description || `Système ${family.mf_name}`,
+          mf_pic: family.mf_pic || `${family.mf_name.toLowerCase()}.webp`,
+          mf_sort: parseInt(family.mf_sort) || 0,
+          gammes_count: gammes.length,
+          gammes,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.mf_sort - b.mf_sort);
+
+    const totalGammes = finalFamilies.reduce(
+      (sum, f) => sum + f.gammes_count,
+      0,
+    );
+
+    this.logger.log(
+      `✅ [${queryType}] ${finalFamilies.length} familles, ${totalGammes} gammes compatibles`,
+    );
+
+    return {
+      queryType,
+      families: finalFamilies,
+      totalFamilies: finalFamilies.length,
+      totalGammes,
+    };
+  }
+
+  /**
+   * 🔄 FALLBACK: Catalogue complet sans filtrage
+   * 💡 Utilisé quand pieces_relation_type est vide
+   */
+  private async buildCompleteCatalogFallback(): Promise<any> {
+    this.logger.log(
+      '🔄 [FALLBACK] Construction catalogue complet sans filtrage...',
+    );
+
+    // Récupérer familles, gammes et liaisons en parallèle
+    const [familiesResult, gammesResult, catalogGammeResult] =
+      await Promise.all([
+        this.supabase
+          .from('catalog_family')
+          .select(
+            'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort',
+          )
+          .eq('mf_display', 1),
+        this.supabase
+          .from('pieces_gamme')
+          .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img')
+          .eq('pg_display', 1),
+        // ⚠️ SUPPRIMÉ: .in('pg_level', [1, 2]) - Trop restrictif
+        this.supabase
+          .from('catalog_gamme')
+          .select('mc_pg_id, mc_mf_id, mc_sort'),
+      ]);
+
+    if (
+      familiesResult.error ||
+      gammesResult.error ||
+      catalogGammeResult.error
+    ) {
+      throw (
+        familiesResult.error || gammesResult.error || catalogGammeResult.error
+      );
+    }
+
+    return this.buildFilteredCatalogFromParts(
+      familiesResult.data,
+      catalogGammeResult.data,
+      gammesResult.data,
+    );
+  }
+
+  /**
+   * 🏗️ CONSTRUCTION CATALOGUE COMPLET - VERSION SIMPLIFIÉE (DEPRECATED)
    * 💡 Pas de filtrage, juste assemblage des données
    */
   private buildCompleteCatalog(

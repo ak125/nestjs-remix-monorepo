@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { LegacyUserService } from '../database/services/legacy-user.service';
-import { LegacyOrderService } from '../database/services/legacy-order.service';
+import { OrdersService } from '../database/services/orders.service';
 
 @Controller('api/legacy-users')
 export class UsersController {
   constructor(
     private readonly legacyUserService: LegacyUserService,
-    private readonly legacyOrderService: LegacyOrderService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   /**
@@ -141,7 +141,7 @@ export class UsersController {
       // Stats globales (pour admin)
       const totalUsers =
         await this.legacyUserService.getTotalActiveUsersCount();
-      const totalOrders = await this.legacyOrderService.getTotalOrdersCount();
+      const totalOrders = await this.ordersService.getTotalOrdersCount();
       const activeUsers =
         await this.legacyUserService.getTotalActiveUsersCount();
 

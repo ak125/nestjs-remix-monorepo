@@ -6,11 +6,11 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
-import { LegacyOrderService } from '../database/services/legacy-order.service';
+import { OrdersService } from '../database/services/orders.service';
 
 @Controller('api/legacy-orders')
 export class OrdersController {
-  constructor(private readonly legacyOrderService: LegacyOrderService) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
   /**
    * GET /api/orders
@@ -33,7 +33,7 @@ export class OrdersController {
         excludePending,
       });
 
-      const orders = await this.legacyOrderService.getAllOrders({
+      const orders = await this.ordersService.getAllOrders({
         limit: parseInt(limit),
         offset: (parseInt(page) - 1) * parseInt(limit),
         status,
@@ -42,7 +42,7 @@ export class OrdersController {
       });
 
       // Récupérer le total de commandes (ajusté selon les filtres)
-      const totalCount = await this.legacyOrderService.getTotalOrdersCount({
+      const totalCount = await this.ordersService.getTotalOrdersCount({
         status,
         userId,
         excludePending: excludePending !== 'false',
@@ -76,7 +76,7 @@ export class OrdersController {
     try {
       console.log('📊 Calcul des statistiques des commandes...');
 
-      const stats = await this.legacyOrderService.getOrdersStats(userId);
+      const stats = await this.ordersService.getOrdersStats(userId);
 
       return {
         success: true,
@@ -101,7 +101,7 @@ export class OrdersController {
     try {
       console.log(`🔍 Récupération commande ID: ${orderId}`);
 
-      const order = await this.legacyOrderService.getOrderWithCustomer(orderId);
+      const order = await this.ordersService.getOrderWithCustomer(orderId);
 
       return {
         success: true,

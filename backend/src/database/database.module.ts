@@ -5,7 +5,7 @@ import { CacheModule } from '../modules/cache/cache.module';
 // Services métier spécialisés (architecture modulaire)
 import { CartDataService } from './services/cart-data.service';
 import { UserDataService } from './services/user-data.service';
-import { OrderDataService } from './services/order-data.service';
+import { OrdersService } from './services/orders.service';
 import { ShippingDataService } from './services/shipping-data.service';
 import { PromoDataService } from './services/promo-data.service';
 import { StaffDataService } from './services/staff-data.service';
@@ -13,7 +13,6 @@ import { DatabaseCompositionService } from './services/database-composition.serv
 
 // Services métier pour rétrocompatibilité (à migrer progressivement)
 import { UserService } from './services/user.service';
-import { OrderService } from './services/order.service';
 import { RedisCacheService } from './services/redis-cache.service';
 
 /**
@@ -22,6 +21,7 @@ import { RedisCacheService } from './services/redis-cache.service';
  * ✅ Services spécialisés par domaine métier
  * ✅ Composition modulaire via DatabaseCompositionService
  * ✅ Services critiques migré vers SupabaseBaseService
+ * ✅ OrdersService unifié (anciennement LegacyOrderService)
  */
 @Module({
   imports: [ConfigModule, CacheModule],
@@ -29,7 +29,7 @@ import { RedisCacheService } from './services/redis-cache.service';
     // Services de données spécialisés (architecture modulaire)
     CartDataService,
     UserDataService,
-    OrderDataService,
+    OrdersService, // Service unifié de commandes
     ShippingDataService,
     PromoDataService,
     StaffDataService,
@@ -37,7 +37,6 @@ import { RedisCacheService } from './services/redis-cache.service';
 
     // Services métier legacy (à migrer progressivement)
     UserService,
-    OrderService,
     RedisCacheService,
   ],
   exports: [
@@ -47,14 +46,13 @@ import { RedisCacheService } from './services/redis-cache.service';
     // Services spécialisés disponibles individuellement
     CartDataService,
     UserDataService,
-    OrderDataService,
+    OrdersService, // Service unifié de commandes
     ShippingDataService,
     PromoDataService,
     StaffDataService,
 
     // Services legacy (rétrocompatibilité)
     UserService,
-    OrderService,
     RedisCacheService,
   ],
 })

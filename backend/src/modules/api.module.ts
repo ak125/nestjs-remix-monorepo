@@ -8,7 +8,7 @@ import { SeoLogsModule } from './seo-logs/seo-logs.module';
 
 // Services
 import { LegacyUserService } from '../database/services/legacy-user.service';
-import { LegacyOrderService } from '../database/services/legacy-order.service';
+import { OrdersService } from '../database/services/orders.service';
 
 // Controllers
 import { UsersController } from '../controllers/users.controller';
@@ -23,8 +23,8 @@ import { OrdersController } from '../controllers/orders.controller';
     SystemModule, // Nouveau module system avec monitoring
     SeoLogsModule, // Module d'analyse des logs SEO via Loki
   ],
-  providers: [LegacyUserService, LegacyOrderService],
+  providers: [LegacyUserService, OrdersService],
   controllers: [UsersController, OrdersController],
-  exports: [LegacyUserService, LegacyOrderService],
+  exports: [LegacyUserService, OrdersService],
 })
 export class ApiModule {}

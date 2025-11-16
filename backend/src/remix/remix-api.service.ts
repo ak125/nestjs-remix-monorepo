@@ -7,7 +7,7 @@
  */
 
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { OrdersService } from '../modules/orders/services/orders.service';
+import { OrdersService } from '../database/services/orders.service';
 
 @Injectable()
 export class RemixApiService {
