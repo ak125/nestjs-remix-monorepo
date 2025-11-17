@@ -1,8 +1,9 @@
 // 📁 backend/src/modules/catalog/services/equipementiers.service.ts
 // 🏭 Service pour gérer les équipementiers (table pieces_marque)
 
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { CacheService } from '../../cache/cache.service';
 
 export interface Equipementier {
   pm_id: string;
@@ -15,6 +16,11 @@ export interface Equipementier {
 
 @Injectable()
 export class EquipementiersService extends SupabaseBaseService {
+  protected readonly logger = new Logger(EquipementiersService.name);
+
+  constructor(private readonly cacheService: CacheService) {
+    super();
+  }
   // Liste de marques premium pour optimisation SEO (classées par notoriété)
   private readonly PREMIUM_BRANDS = [
     'BOSCH',
@@ -46,6 +52,7 @@ export class EquipementiersService extends SupabaseBaseService {
 
   /**
    * 🏭 Récupère tous les équipementiers - LOGIQUE PHP REPRODUITE avec filtrage display et tri optimisé SEO
+   * ⚡ Cache Redis: TTL 1h pour éviter requêtes répétées homepage (6+ appels identiques)
    * Équivalent PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque WHERE pm_display = 1
    * + Tri par notoriété de marque pour SEO
    */
@@ -54,9 +61,18 @@ export class EquipementiersService extends SupabaseBaseService {
     stats: { total_equipementiers: number };
     success: boolean;
   }> {
+    const cacheKey = 'catalog:equipementiers:all:display';
+
     try {
+      // 1. Tentative lecture cache Redis
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && typeof cached === 'string') {
+        this.logger.log('⚡ Cache HIT - Équipementiers depuis Redis (<5ms)');
+        return JSON.parse(cached);
+      }
+
       this.logger.log(
-        '🏭 Récupération des équipementiers (pieces_marque avec pm_display=1)...',
+        '🔍 Cache MISS - Récupération équipementiers (pieces_marque avec pm_display=1)...',
       );
 
       // Requête optimisée avec filtrage pm_display = 1

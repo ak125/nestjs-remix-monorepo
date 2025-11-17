@@ -131,11 +131,25 @@ export class CrossSellingService extends SupabaseBaseService {
         `🎯 [CrossSellingV5] Analyse multi-sources pour pgId=${pgId}, typeId=${typeId}, mfId=${mfId}`,
       );
 
-      // 🚀 VÉRIFICATION CACHE - Pattern optimisé (TODO: implement)
-      const cachedResult = await this.getCachedResult();
-      if (cachedResult) {
-        cachedResult.performance.cache_hit = true;
-        return cachedResult;
+      // 🚀 VÉRIFICATION CACHE - Pattern optimisé avec Redis
+      const cacheKey = this.cacheKeys.result(pgId, typeId, mfId);
+      try {
+        const cached = await this.supabase
+          .from('_cache_redis')
+          .select('value')
+          .eq('key', cacheKey)
+          .gt('expires_at', new Date().toISOString())
+          .single();
+
+        if (cached.data?.value) {
+          this.logger.log(`⚡ Cache HIT cross-selling - pgId=${pgId}, typeId=${typeId}`);
+          const cachedResult = JSON.parse(cached.data.value);
+          cachedResult.performance.cache_hit = true;
+          cachedResult.performance.response_time = Date.now() - startTime;
+          return cachedResult;
+        }
+      } catch (cacheError) {
+        this.logger.debug('Cache MISS ou erreur:', cacheError.message);
       }
 
       // ✅ EXTRACTION CROSS-SELLING MULTI-SOURCES - Parallélisé
@@ -144,7 +158,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
       if (options.includeFamily !== false) {
         crossPromises.push(
-          this.getSameFamilyCrossGammesOptimized(pgId, typeId),
+          this.getSameFamilyCrossGammesOptimized(pgId, typeId, mfId),
         );
         sourcesUsed.push('family');
       }
@@ -210,8 +224,19 @@ export class CrossSellingService extends SupabaseBaseService {
           'vérifier existant avant et utiliser le meilleur et améliorer - V5 ULTIMATE',
       };
 
-      // 🎯 MISE EN CACHE INTELLIGENTE
-      // await this.setCachedResult(cacheKey, result);
+      // 🎯 MISE EN CACHE INTELLIGENTE (TTL: 5min - données dynamiques)
+      try {
+        const expiresAt = new Date(Date.now() + this.cacheTTL.result * 1000).toISOString();
+        await this.supabase.from('_cache_redis').upsert({
+          key: cacheKey,
+          value: JSON.stringify(result),
+          expires_at: expiresAt,
+          created_at: new Date().toISOString()
+        });
+        this.logger.log(`💾 Cross-selling mis en cache (TTL: ${this.cacheTTL.result}s)`);
+      } catch (cacheError) {
+        this.logger.warn('⚠️ Erreur mise en cache cross-selling:', cacheError);
+      }
 
       this.logger.log(
         `✅ [CrossSellingV5] Trouvé ${uniqueGammes.length} gammes en ${Date.now() - startTime}ms`,
@@ -245,178 +270,262 @@ export class CrossSellingService extends SupabaseBaseService {
   }
 
   /**
-   * 🚀 CROSS-SELLING MÊME FAMILLE OPTIMISÉ - Pattern gamme-rest
-   * Note: mfId removed (catalog filtering impossible without pg_mc_id column)
+   * 🚀 CROSS-SELLING MÊME FAMILLE OPTIMISÉ - Pattern PHP Legacy
+   * Réplique exacte de la logique PHP avec CATALOG_GAMME et MC_MF_PRIME
    */
   private async getSameFamilyCrossGammesOptimized(
     pgId: number,
     typeId: number,
+    mfId?: number,
   ): Promise<CrossGamme[]> {
     try {
-      // TODO: Implement cache
-      // // const cached = await this.getFromCache();
-      // // if (cached) return cached;
+      // 🚀 TIMEOUT 10s pour éviter blocage 36s
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000);
 
-      // 🎯 STRATÉGIE 2-REQUÊTES (FK non définie dans Supabase)
-      // Étape 1: Récupérer les IDs de pièces depuis pieces_relation_type
-      const { data: relationData, error: relError } = await this.supabase
-        .from('pieces_relation_type')
-        .select('rtp_piece_id')
-        .eq('rtp_type_id', typeId)
-        .limit(100); // Plus large pour filtrer ensuite
-
-      if (relError || !relationData || relationData.length === 0) {
-        if (relError) {
-          this.logger.error(
-            '❌ Erreur cross-selling famille (step 1):',
-            relError,
-          );
+      try {
+        // 🎯 ÉTAPE 1: Récupérer mc_mf_prime depuis catalog_gamme pour le pgId courant
+        let currentMfId = mfId;
+        if (!currentMfId) {
+          this.logger.debug(`🔍 Recherche mc_mf_prime pour pg_id=${pgId}`);
+          const { data: catalogData, error: catalogError } = await this.supabase
+            .from('catalog_gamme')
+            .select('mc_mf_prime, mc_pg_id, mc_mf_id')
+            .eq('mc_pg_id', pgId)
+            .single();
+          
+          if (catalogError) {
+            this.logger.warn(`⚠️ Erreur catalog_gamme pour pg_id=${pgId}:`, catalogError.message);
+          } else {
+            this.logger.debug(`📊 Catalog data trouvé:`, catalogData);
+          }
+          
+          currentMfId = catalogData?.mc_mf_prime;
         }
-        return [];
-      }
 
-      const pieceIds = relationData.map((r) => r.rtp_piece_id);
-
-      // Étape 2: Récupérer piece_pg_id depuis pieces (sans join)
-      const { data: piecesData, error: piecesError } = await this.supabase
-        .from('pieces')
-        .select('piece_id, piece_pg_id')
-        .in('piece_id', pieceIds)
-        .neq('piece_pg_id', pgId);
-
-      if (piecesError || !piecesData || piecesData.length === 0) {
-        if (piecesError) {
-          this.logger.error(
-            '❌ Erreur cross-selling famille (step 2):',
-            piecesError,
-          );
+        if (!currentMfId) {
+          this.logger.warn(`⚠️ Aucune famille primaire trouvée pour pg_id=${pgId} - vérifier table catalog_gamme`);
+          return [];
         }
-        return [];
-      }
+        
+        this.logger.log(`✅ Famille primaire trouvée: mf_id=${currentMfId} pour pg_id=${pgId}`);
 
-      // Étape 3: Récupérer détails gammes (SANS catalog join, SANS pg_mc_id)
-      const gammeIds = [...new Set(piecesData.map((p) => p.piece_pg_id))];
-      const { data: gammesData, error: gammesError } = await this.supabase
-        .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_img')
-        .in('pg_id', gammeIds);
+        // 🎯 ÉTAPE 2: Récupérer pièces compatibles avec le type_id
+        const { data: relationData, error: relError } = await this.supabase
+          .from('pieces_relation_type')
+          .select('rtp_piece_id, rtp_pg_id')
+          .eq('rtp_type_id', typeId)
+          .neq('rtp_pg_id', pgId)
+          .abortSignal(abortController.signal)
+          .limit(100);
 
-      if (gammesError || !gammesData || gammesData.length === 0) {
-        if (gammesError) {
-          this.logger.error(
-            '❌ Erreur cross-selling famille (step 3):',
-            gammesError,
-          );
+        clearTimeout(timeoutId);
+
+        if (relError || !relationData || relationData.length === 0) {
+          if (relError) {
+            this.logger.error('❌ Erreur cross-selling famille (relations):', relError);
+          }
+          return [];
         }
-        return [];
+
+        // 🎯 ÉTAPE 3: Récupérer gammes uniques depuis pieces + JOIN catalog_gamme
+        const gammeIds = [...new Set(relationData.map((r) => r.rtp_pg_id))];
+        
+        const { data: catalogGammesData, error: catalogError } = await this.supabase
+          .from('catalog_gamme')
+          .select('mc_pg_id, mc_mf_prime, mc_sort')
+          .in('mc_pg_id', gammeIds)
+          .eq('mc_mf_prime', currentMfId)
+          .order('mc_sort', { ascending: true });
+
+        if (catalogError || !catalogGammesData || catalogGammesData.length === 0) {
+          this.logger.warn(`⚠️ Aucune gamme même famille (mf_id=${currentMfId})`);
+          return [];
+        }
+
+        // 🎯 ÉTAPE 4: Récupérer détails gammes avec FILTRES PHP
+        const filteredGammeIds = catalogGammesData.map((c) => c.mc_pg_id);
+        const { data: gammesData, error: gammesError } = await this.supabase
+          .from('pieces_gamme')
+          .select('pg_id, pg_name, pg_alias, pg_img, pg_level, pg_display')
+          .in('pg_id', filteredGammeIds)
+          .in('pg_level', [1, 2])  // 🎯 FILTRE PHP ligne 909
+          .eq('pg_display', 1);     // 🎯 FILTRE PHP ligne 910
+
+        if (gammesError || !gammesData || gammesData.length === 0) {
+          return [];
+        }
+
+        // 🎯 ÉTAPE 5: Trier par MC_SORT (ordre métier)
+        const sortedGammes = gammesData
+          .map((gamme) => {
+            const catalogInfo = catalogGammesData.find((c) => c.mc_pg_id === gamme.pg_id);
+            return {
+              ...gamme,
+              mc_sort: catalogInfo?.mc_sort || 999,
+            };
+          })
+          .sort((a, b) => a.mc_sort - b.mc_sort);
+
+        // ✅ PATTERN PHP: Retourne directement les gammes (pas de validation article)
+        // Le PHP ligne 997-1010 fait confiance au JOIN PIECES_RELATION_TYPE
+        const crossGammes: CrossGamme[] = sortedGammes.map((g) => ({
+          pg_id: g.pg_id,
+          pg_name: g.pg_name,
+          pg_alias: g.pg_alias,
+          pg_img: g.pg_img,
+          cross_level: 1,
+          source: 'family' as const,
+        }));
+
+        this.logger.log(`✅ Cross-selling famille: ${crossGammes.length} gammes (mf_id=${currentMfId}, pattern PHP - pas de validation)`);
+        return crossGammes;
+      } finally {
+        clearTimeout(timeoutId);
       }
-
-      // ✅ Mapper directement au format attendu (SANS catalog_gamme car pg_mc_id n'existe pas)
-      const data = gammesData.map((gamme) => {
-        return {
-          pieces: {
-            piece_pg_id: gamme.pg_id,
-            pieces_gamme: [
-              {
-                pg_id: gamme.pg_id,
-                pg_name: gamme.pg_name,
-                pg_alias: gamme.pg_alias,
-                pg_img: gamme.pg_img,
-              },
-            ],
-          },
-        };
-      });
-
-      // 🔄 TRANSFORMATION ET VÉRIFICATION ARTICLES
-      const crossGammes = await this.processAndVerifyArticles(
-        this.uniqueGammes(data),
-        typeId,
-        'family',
-      );
-
-      // await this.setInCache(cacheKey, crossGammes, this.cacheTTL.familyCross);
-      return crossGammes;
     } catch (error) {
-      this.logger.error('❌ Erreur getSameFamilyCrossGammesOptimized:', error);
+      if (error.name === 'AbortError') {
+        this.logger.error('⏱️ Timeout 10s dépassé pour cross-selling famille');
+      } else {
+        this.logger.error('❌ Erreur getSameFamilyCrossGammesOptimized:', error);
+      }
       return [];
     }
   }
 
   /**
-   * 🎯 CROSS-SELLING PAR CONFIGURATION OPTIMISÉ
+   * 🎯 CROSS-SELLING PAR CONFIGURATION OPTIMISÉ - Pattern PHP Legacy
+   * Réplique exacte avec filtres PG_LEVEL, PG_DISPLAY, ORDER BY PGC_LEVEL + MC_SORT + PG_NAME
    */
   private async getCrossGammesByConfigOptimized(
     pgId: number,
     typeId: number,
   ): Promise<CrossGamme[]> {
     try {
-      // const cacheKey = this.cacheKeys.configCross(pgId, typeId);
+      // 🚀 TIMEOUT 10s pour éviter blocage 36s
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 10000);
 
-      // const cached = await this.getFromCache(cacheKey);
-      // if (cached) return cached;
+      try {
+        // 🎯 ÉTAPE 1: Récupérer configuration cross depuis pieces_gamme_cross
+        this.logger.debug(`🔍 Recherche pieces_gamme_cross pour pg_id=${pgId}`);
+        const { data: crossData, error } = await this.supabase
+          .from('pieces_gamme_cross')
+          .select('pgc_pg_cross, pgc_level')
+          .eq('pgc_pg_id', pgId)
+          .neq('pgc_pg_cross', pgId)
+          .order('pgc_level', { ascending: true })
+          .abortSignal(abortController.signal)
+          .limit(15);
 
-      // 🚀 REQUÊTE SANS JOIN (relation FK non définie dans Supabase)
-      const { data: crossData, error } = await this.supabase
-        .from('pieces_gamme_cross')
-        .select('pgc_pg_cross, pgc_level')
-        .eq('pgc_pg_id', pgId)
-        .neq('pgc_pg_cross', pgId)
-        .order('pgc_level', { ascending: true })
-        .limit(15);
+        clearTimeout(timeoutId);
 
-      if (error || !crossData || crossData.length === 0) {
-        if (error) {
-          this.logger.error('❌ Erreur cross-selling config:', error);
+        if (error || !crossData || crossData.length === 0) {
+          if (error) {
+            this.logger.error('❌ Erreur cross-selling config:', error);
+          } else {
+            this.logger.log(`📊 pieces_gamme_cross: ${crossData?.length || 0} résultats pour pg_id=${pgId}`);
+          }
+          return [];
         }
-        return [];
-      }
 
-      // Récupérer les détails des gammes en parallèle
-      const gammeIds = crossData.map((item) => item.pgc_pg_cross);
-      const { data: gammesData } = await this.supabase
-        .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_img')
-        .in('pg_id', gammeIds);
+        this.logger.log(`📊 pieces_gamme_cross: ${crossData.length} gammes trouvées pour pg_id=${pgId}`);
 
-      if (!gammesData) return [];
+        // 🎯 CONDITION PHP ligne 1045: minimum 2 résultats (> 1)
+        if (crossData.length < 2) {
+          this.logger.log(`⚠️ Cross-selling config: seulement ${crossData.length} résultat(s) - minimum 2 requis (PHP > 1)`);
+          return [];
+        }
 
-      // Mapper les données
-      const mappedData = crossData
-        .map((cross) => {
-          const gamme = gammesData.find((g) => g.pg_id === cross.pgc_pg_cross);
-          return {
-            pgc_pg_cross: cross.pgc_pg_cross,
-            pgc_level: cross.pgc_level,
-            pieces_gamme: gamme || null,
-          };
-        })
-        .filter((item) => item.pieces_gamme); // Supprimer les gammes introuvables
+        // 🎯 ÉTAPE 2: Récupérer détails gammes avec FILTRES PHP
+        const gammeIds = crossData.map((item) => item.pgc_pg_cross);
+        this.logger.log(`🔍 Gamme IDs à récupérer: ${gammeIds.join(', ')}`);
+        
+        const { data: gammesData, error: gammesError } = await this.supabase
+          .from('pieces_gamme')
+          .select('pg_id, pg_name, pg_alias, pg_img, pg_level, pg_display')
+          .in('pg_id', gammeIds)
+          .in('pg_level', [1, 2])  // 🎯 FILTRE PHP ligne 1054
+          .eq('pg_display', 1);     // 🎯 FILTRE PHP ligne 1055
 
-      // Tri par pg_name
-      mappedData.sort((a, b) =>
-        (a.pieces_gamme?.pg_name || '').localeCompare(
-          b.pieces_gamme?.pg_name || '',
-        ),
-      );
+        if (gammesError) {
+          this.logger.error(`❌ Erreur récupération gammes:`, gammesError);
+        }
+        
+        this.logger.log(`📊 Gammes après filtres pg_level/pg_display: ${gammesData?.length || 0}/${gammeIds.length}`);
+        
+        if (!gammesData || gammesData.length === 0) {
+          this.logger.warn(`⚠️ Aucune gamme valide trouvée après filtres (pg_level IN (1,2), pg_display=1)`);
+          return [];
+        }
 
-      // ✅ VÉRIFICATION ARTICLES PARALLÉLISÉE
-      const crossGammes = await this.processAndVerifyArticlesBatch(
-        mappedData.map((item) => ({
-          pg_id: item.pieces_gamme!.pg_id,
-          pg_name: item.pieces_gamme!.pg_name,
-          pg_alias: item.pieces_gamme!.pg_alias,
-          pg_img: item.pieces_gamme!.pg_img,
-          cross_level: item.pgc_level || 1,
+        // 🎯 ÉTAPE 3: Récupérer mc_sort depuis catalog_gamme pour tri PHP
+        const { data: catalogData } = await this.supabase
+          .from('catalog_gamme')
+          .select('mc_pg_id, mc_sort')
+          .in('mc_pg_id', gammeIds);
+
+        // 🎯 ÉTAPE 4: Mapper et trier selon ORDER BY PHP (pgc_level, mc_sort, pg_name)
+        // ⚡ PATTERN PHP: On mappe sur gammesData (gammes filtrées) au lieu de crossData
+        const mappedData = gammesData
+          .map((gamme) => {
+            // 🎯 CORRECTION TYPE: pgc_pg_cross est string, pg_id est number
+            const cross = crossData.find((c) => Number(c.pgc_pg_cross) === gamme.pg_id);
+            if (!cross) {
+              this.logger.warn(`⚠️ Config cross NON TROUVÉE pour gamme ${gamme.pg_id} (${gamme.pg_name})`);
+              return null;
+            }
+
+            const catalog = catalogData?.find((c) => c.mc_pg_id === gamme.pg_id);
+            return {
+              pgc_pg_cross: gamme.pg_id,
+              pgc_level: cross.pgc_level,
+              mc_sort: catalog?.mc_sort || 999,
+              pieces_gamme: gamme,
+            };
+          })
+          .filter((item) => item !== null);
+
+        this.logger.log(`📊 Gammes après mapping: ${mappedData.length}/${gammesData.length} (${crossData.length} configs initiales)`);
+
+        // 🎯 TRI PHP ligne 1056: ORDER BY PGC_LEVEL, MC_SORT, PG_NAME
+        mappedData.sort((a, b) => {
+          // 1. PGC_LEVEL (priorité cross-selling configurée)
+          if (a!.pgc_level !== b!.pgc_level) {
+            return a!.pgc_level - b!.pgc_level;
+          }
+          // 2. MC_SORT (ordre métier catalog)
+          if (a!.mc_sort !== b!.mc_sort) {
+            return a!.mc_sort - b!.mc_sort;
+          }
+          // 3. PG_NAME (alphabétique)
+          return (a!.pieces_gamme?.pg_name || '').localeCompare(
+            b!.pieces_gamme?.pg_name || '',
+          );
+        });
+
+        // ✅ PATTERN PHP: Retourne directement les gammes du JOIN (pas de validation article)
+        // Le PHP ligne 1243-1250 fait confiance au JOIN PIECES_RELATION_TYPE + PIECE_DISPLAY=1
+        const crossGammes: CrossGamme[] = mappedData.map((item) => ({
+          pg_id: item!.pieces_gamme!.pg_id,
+          pg_name: item!.pieces_gamme!.pg_name,
+          pg_alias: item!.pieces_gamme!.pg_alias,
+          pg_img: item!.pieces_gamme!.pg_img,
+          cross_level: item!.pgc_level || 1,
           source: 'config' as const,
-        })),
-        typeId,
-      );
+        }));
 
-      // await this.setInCache(cacheKey, crossGammes, this.cacheTTL.configCross);
-      return crossGammes;
+        this.logger.log(`✅ Cross-selling config: ${crossGammes.length} gammes retournées (pattern PHP - pas de validation)`);
+        return crossGammes;
+      } finally {
+        clearTimeout(timeoutId);
+      }
     } catch (error) {
-      this.logger.error('❌ Erreur getCrossGammesByConfigOptimized:', error);
+      if (error.name === 'AbortError') {
+        this.logger.error('⏱️ Timeout 10s dépassé pour cross-selling config');
+      } else {
+        this.logger.error('❌ Erreur getCrossGammesByConfigOptimized:', error);
+      }
       return [];
     }
   }
@@ -527,13 +636,20 @@ export class CrossSellingService extends SupabaseBaseService {
   ): Promise<CrossGamme[]> {
     const validGammes: CrossGamme[] = [];
 
+    this.logger.debug(`🔍 Vérification articles pour ${gammes.length} gammes (type_id=${typeId})`);
+
     // 🚀 BATCH PROCESSING pour optimiser
-    const verificationPromises = gammes.map(async (gamme) => {
+    const verificationPromises = gammes.map(async (gamme, index) => {
       try {
         const hasArticles = await this.checkArticlesForTypeOptimized(
           gamme.pg_id!,
           typeId,
         );
+        
+        if (index < 3) {
+          this.logger.debug(`📊 Gamme ${gamme.pg_id} (${gamme.pg_name}): hasArticles=${hasArticles}`);
+        }
+        
         if (hasArticles) {
           const productsCount = await this.getProductsCountOptimized(
             gamme.pg_id!,
@@ -563,6 +679,8 @@ export class CrossSellingService extends SupabaseBaseService {
       }
     }
 
+    this.logger.debug(`✅ ${validGammes.length}/${gammes.length} gammes validées avec articles`);
+
     return validGammes;
   }
 
@@ -574,21 +692,36 @@ export class CrossSellingService extends SupabaseBaseService {
     typeId: number,
   ): Promise<boolean> {
     try {
-      // const cacheKey = this.cacheKeys.articleCheck(pgId, typeId);
-
-      // const cached = await this.getFromCache(cacheKey);
-      // if (cached !== null) return cached;
-
-      // 🎯 REQUÊTE COUNT OPTIMISÉE
-      const { count, error } = await this.supabase
+      // 🎯 REQUÊTE COUNT OPTIMISÉE - Pattern PHP (PAS de filtre piece_display)
+      // Le PHP génère le carousel sans filtrer PIECE_DISPLAY (lignes 1043-1100)
+      const { data: pieceIds, error: pieceError } = await this.supabase
         .from('pieces_relation_type')
-        .select('rtp_piece_id', { count: 'exact', head: true })
+        .select('rtp_piece_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
+        .limit(10);
+
+      if (pieceError) {
+        this.logger.debug(`⚠️ Erreur pieces_relation_type pg_id=${pgId}, type_id=${typeId}:`, pieceError.message);
+      }
+
+      if (!pieceIds || pieceIds.length === 0) {
+        this.logger.debug(`📊 pg_id=${pgId}: 0 relations trouvées avec type_id=${typeId}`);
+        return false;
+      }
+
+      this.logger.debug(`📊 pg_id=${pgId}: ${pieceIds.length} relations trouvées (pattern PHP, pas de filtre piece_display)`);
+
+      const { count, error } = await this.supabase
+        .from('pieces')
+        .select('piece_id', { count: 'exact', head: true })
+        .in('piece_id', pieceIds.map(p => p.rtp_piece_id))
+        // ⚠️ PAS de .eq('piece_display', 1) - le PHP ne filtre pas
         .limit(1);
 
       const hasArticles = !error && (count ?? 0) > 0;
-      // await this.setInCache(cacheKey, hasArticles, this.cacheTTL.articleCheck);
+      
+      this.logger.debug(`📊 pg_id=${pgId}: ${count || 0} pièces existantes → hasArticles=${hasArticles}`);
 
       return hasArticles;
     } catch (error) {

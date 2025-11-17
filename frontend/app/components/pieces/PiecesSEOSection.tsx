@@ -30,11 +30,18 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
       </div>
 
       <div className="p-6 space-y-8">
-        {/* Description longue */}
+        {/* Description longue - Support HTML depuis API backend */}
         <div className="prose prose-gray max-w-none">
-          <p className="text-lg text-gray-700 leading-relaxed">
-            {content.longDescription}
-          </p>
+          {content.longDescription.startsWith('<') ? (
+            <div 
+              className="text-lg text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: content.longDescription }}
+            />
+          ) : (
+            <p className="text-lg text-gray-700 leading-relaxed">
+              {content.longDescription}
+            </p>
+          )}
         </div>
 
         {/* Sections H2 */}

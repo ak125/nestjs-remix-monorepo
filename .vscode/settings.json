@@ -32,10 +32,12 @@
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
-      "env": {
-        "CONTEXT7_API_KEY": ""
-      }
+      "args": ["-y", "@upstash/context7-mcp"]
     }
-  }
+  },
+  "github.copilot.chat.codeGeneration.instructions": [
+    {
+      "text": "Always use context7 MCP for up-to-date library documentation when generating code, especially for NestJS, Remix, Supabase, TypeScript, and other frameworks"
+    }
+  ]
 }

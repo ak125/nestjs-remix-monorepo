@@ -3,45 +3,55 @@
 
 import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
 import { EquipementiersService } from '../services/equipementiers.service';
+import { CacheService } from '../../cache/cache.service';
 
 @Controller('api/catalog/equipementiers')
 export class EquipementiersController {
   private readonly logger = new Logger(EquipementiersController.name);
 
-  constructor(private readonly equipementiersService: EquipementiersService) {}
+  constructor(
+    private readonly equipementiersService: EquipementiersService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   /**
    * 🏭 GET /api/catalog/equipementiers - Tous les équipementiers
    * Reproduit la logique PHP: SELECT DISTINCT pm_name, pm_id FROM pieces_marque
    */
   @Get()
-  async getEquipementiers() {
+  async getAllEquipementiers() {
     this.logger.log(
       '🏭 [GET] /api/catalog/equipementiers - Récupération équipementiers',
     );
 
-    try {
-      const equipementiersResult =
-        await this.equipementiersService.getEquipementiers();
-
-      this.logger.log(
-        `✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`,
-      );
-      return {
-        success: equipementiersResult.success,
-        data: equipementiersResult.data,
-        stats: equipementiersResult.stats,
-        message: `${equipementiersResult.stats.total_equipementiers} équipementiers récupérés avec succès`,
-      };
-    } catch (error) {
-      this.logger.error('❌ Erreur récupération équipementiers:', error);
-      return {
-        success: false,
-        data: [],
-        stats: { total_equipementiers: 0 },
-        error: error instanceof Error ? error.message : 'Erreur inconnue',
-      };
+    // 🚀 OPTIMISATION: Cache Redis TTL 1h (données quasi-statiques)
+    const cacheKey = 'catalog:equipementiers:all';
+    const cached = await this.cacheService.get(cacheKey);
+    
+    if (cached && typeof cached === 'string') {
+      this.logger.log('⚡ Cache HIT - Équipementiers depuis Redis (<5ms)');
+      return JSON.parse(cached);
     }
+
+    const equipementiersResult = await this.equipementiersService.getEquipementiers();
+
+    this.logger.log(`✅ ${equipementiersResult.stats.total_equipementiers} équipementiers récupérés`);
+
+    const result = {
+      success: equipementiersResult.success,
+      data: equipementiersResult.data,
+      stats: equipementiersResult.stats,
+      message: `${equipementiersResult.stats.total_equipementiers} équipementiers récupérés avec succès`,
+    };
+    
+    // Mise en cache (TTL: 1h)
+    try {
+      await this.cacheService.set(cacheKey, JSON.stringify(result), 3600);
+    } catch (error) {
+      this.logger.warn('⚠️ Erreur cache équipementiers:', error);
+    }
+    
+    return result;
   }
 
   /**

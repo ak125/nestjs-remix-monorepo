@@ -176,9 +176,9 @@ export class VehicleTypesService extends SupabaseBaseService {
             )
             .eq('type_id', typeId)
             .eq('type_display', 1)
-            .single();
+            .maybeSingle();
 
-          if (error) {
+          if (error || !data) {
             this.logger.debug(`Type non trouvé: ${typeId}`);
             return null;
           }

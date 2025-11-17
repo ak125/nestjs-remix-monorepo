@@ -49,6 +49,9 @@ import {
   toTitleCaseFromSlug
 } from '../utils/pieces-route.utils';
 
+// Service SEO variations
+import { getPrixPasCherVariation } from '../services/seo/seo-variations.service';
+
 // ========================================
 // 🔄 LOADER - Récupération des données
 // ========================================
@@ -76,6 +79,23 @@ export async function loader({ params }: LoaderFunctionArgs) {
     typeData.alias
   );
   
+  // 3.5 Récupération du type_name complet depuis l'API
+  let typeName = toTitleCaseFromSlug(typeData.alias);
+  try {
+    const typeResponse = await fetch(
+      `http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`
+    );
+    
+    if (typeResponse.ok) {
+      const typeData = await typeResponse.json();
+      if (typeData && typeData.type_name) {
+        typeName = typeData.type_name;
+      }
+    }
+  } catch (error) {
+    console.error('⚠️ Erreur récupération type_name:', error);
+  }
+  
   // ✅ Pour cette route avec IDs dans l'URL, utiliser directement l'ID parsé
   const gammeId = gammeData.id > 0 ? gammeData.id : await resolveGammeId(gammeData.alias);
 
@@ -84,10 +104,25 @@ export async function loader({ params }: LoaderFunctionArgs) {
     marque: toTitleCaseFromSlug(marqueData.alias),
     modele: toTitleCaseFromSlug(modeleData.alias),
     type: toTitleCaseFromSlug(typeData.alias),
+    typeName: typeName, // Nom complet avec puissance et années
     typeId: vehicleIds.typeId,
     marqueId: vehicleIds.marqueId,
     modeleId: vehicleIds.modeleId
   };
+
+  // 4.5 Récupération des infos complètes du véhicule (puissance, années)
+  let vehicleDetails = null;
+  try {
+    const vehicleResponse = await fetch(
+      `http://localhost:3000/api/vehicles/${vehicleIds.typeId}`
+    );
+    
+    if (vehicleResponse.ok) {
+      vehicleDetails = await vehicleResponse.json();
+    }
+  } catch (error) {
+    console.error('⚠️ Erreur récupération détails véhicule:', error);
+  }
 
   const gamme: GammeData = {
     id: gammeId,
@@ -135,6 +170,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
     ]
   };
 
+  // 8.5 Récupération variation "pas cher"
+  let prixPasCherText = "au meilleur prix";
+  try {
+    prixPasCherText = await getPrixPasCherVariation(gamme.id, vehicle.typeId);
+  } catch (error) {
+    console.error('⚠️ Erreur récupération variation prix:', error);
+  }
+
   // 9. Cross-selling et blog (parallèle)
   const [crossSellingGammes, blogArticle] = await Promise.all([
     fetchCrossSellingGammes(vehicle.typeId, gamme.id),
@@ -146,11 +189,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
   
   const loaderData: LoaderData = {
     vehicle,
+    vehicleDetails,
     gamme,
     pieces: piecesData,
     count: piecesData.length,
     minPrice,
     maxPrice,
+    prixPasCherText, // Ajout du texte dynamique "pas cher"
     seoContent,
     faqItems,
     relatedArticles,
@@ -205,6 +250,17 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function PiecesVehicleRoute() {
   const data = useLoaderData<typeof loader>();
   
+  // Extraction des données
+  const { 
+    vehicle, 
+    vehicleDetails, 
+    gamme, 
+    count, 
+    minPrice, 
+    prixPasCherText,
+    performance 
+  } = data;
+  
   // Hook custom pour la logique de filtrage (gère son propre état)
   const {
     activeFilters,
@@ -234,15 +290,16 @@ export default function PiecesVehicleRoute() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header moderne */}
-      <PiecesHeader
-        vehicle={data.vehicle}
-        gamme={data.gamme}
-        count={data.count}
-        performance={data.performance}
-      />
-
-      {/* Conteneur principal */}
+          {/* Hero Header */}
+          <PiecesHeader 
+            vehicle={vehicle} 
+            vehicleDetails={vehicleDetails}
+            gamme={gamme} 
+            count={count}
+            minPrice={minPrice}
+            prixPasCherText={prixPasCherText}
+            performance={performance}
+          />      {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
         <div className="mb-6 sticky top-4 z-10">
@@ -287,6 +344,18 @@ export default function PiecesVehicleRoute() {
           {/* Contenu principal */}
           <main className="flex-1 min-w-0">
             <div className="space-y-6">
+              
+              {/* Titre section impactant */}
+              <div className="text-center mb-8">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 tracking-tight">
+                  {data.gamme.name} pour votre véhicule
+                </h2>
+                <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6" />
+                <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+                  Découvrez notre sélection de <span className="font-bold text-gray-900">{data.count} pièces</span> compatibles avec votre{" "}
+                  <span className="font-bold text-blue-600">{data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}</span>
+                </p>
+              </div>
               
               {/* Barre d'outils vue */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
@@ -373,16 +442,25 @@ export default function PiecesVehicleRoute() {
 
               {/* Pièces recommandées */}
               {recommendedPieces.length > 0 && viewMode !== 'comparison' && (
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
-                  <h3 className="text-lg font-bold text-orange-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    Nos recommandations
-                  </h3>
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 border border-blue-100 shadow-sm">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Nos recommandations</h3>
+                      <p className="text-gray-600 text-sm">Sélection qualité pour votre véhicule</p>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {recommendedPieces.map(piece => (
-                      <div key={piece.id} className="bg-white rounded-lg p-4 shadow-sm">
+                      <div key={piece.id} className="relative bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow group">
+                        {/* Badge "Top vente" */}
+                        <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-full text-xs font-semibold text-white shadow-md bg-gradient-to-r from-yellow-500 to-orange-500">
+                          ⭐ Top vente
+                        </div>
                         <div className="font-medium text-gray-900 mb-1 line-clamp-2">{piece.name}</div>
                         <div className="text-sm text-gray-600 mb-2">{piece.brand}</div>
                         <div className="text-lg font-bold text-blue-600">{piece.priceFormatted}€</div>

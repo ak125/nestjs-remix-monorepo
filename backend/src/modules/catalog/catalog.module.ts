@@ -38,6 +38,7 @@ import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.ser
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
+import { SeoSwitchesService } from './services/seo-switches.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -101,6 +102,8 @@ import { PricingService } from '../products/services/pricing.service';
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
+    // 🔄 SEO SWITCHES SERVICE - Gestion des switches SEO (3 sources)
+    SeoSwitchesService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],

@@ -4,6 +4,7 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
+import { SeoSwitchesService } from './seo-switches.service';
 import {
   Gamme,
   FamilyWithGammes,
@@ -14,7 +15,10 @@ import {
 export class GammeUnifiedService extends SupabaseBaseService {
   protected readonly logger = new Logger(GammeUnifiedService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly seoSwitchesService: SeoSwitchesService
+  ) {
     super();
   }
 
@@ -245,5 +249,324 @@ export class GammeUnifiedService extends SupabaseBaseService {
       this.logger.error('❌ Erreur searchGammes:', error);
       return [];
     }
+  }
+
+  /**
+   * 📄 Récupère le contenu SEO pour une gamme depuis les tables SEO
+   * ⚡ Cache Redis: TTL 15min avec clé composite type_id:pg_id:marque_id (évite requêtes lentes 5-13s)
+   */
+  async getGammeSeoContent(
+    pgId: number,
+    typeId: number,
+    marqueId?: number,
+    modeleId?: number
+  ) {
+    const cacheKey = `catalog:seo:${typeId}:${pgId}:${marqueId || 0}`;
+
+    try {
+      // 1. Tentative lecture cache Redis
+      const cached = await this.cacheService.get(cacheKey);
+      if (cached && typeof cached === 'string') {
+        this.logger.log(`⚡ Cache HIT SEO - type_id=${typeId}, pg_id=${pgId} (<10ms)`);
+        return JSON.parse(cached);
+      }
+
+      this.logger.log(`🔍 Cache MISS - Récupération SEO pour pg_id=${pgId}, type_id=${typeId}`);
+
+      // Requête directe sur la table __seo_gamme_car
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_car')
+        .select('sgc_id, sgc_pg_id, sgc_title, sgc_descrip, sgc_h1, sgc_content, sgc_preview')
+        .eq('sgc_pg_id', pgId)
+        .limit(1)
+        .single();
+
+      if (error) {
+        this.logger.warn(`⚠️ Aucun template SEO trouvé pour pg_id=${pgId}:`, error.message);
+        return {
+          success: false,
+          h1: null,
+          content: null,
+          description: null,
+          keywords: null
+        };
+      }
+
+      if (!data) {
+        this.logger.warn(`⚠️ Aucun template SEO pour pg_id=${pgId}`);
+        return {
+          success: false,
+          h1: null,
+          content: null,
+          description: null,
+          keywords: null
+        };
+      }
+
+      this.logger.log(`✅ SEO template trouvé (${data.sgc_content?.length || 0} caractères)`);
+      
+      // Récupérer infos véhicule pour remplacement variables
+      const vehicleInfo = await this.getVehicleInfo(typeId, marqueId, modeleId);
+      const gammeInfo = await this.getGammeInfo(pgId);
+      
+      // Récupérer mf_id pour les switches famille
+      const { data: catalogGamme } = await this.supabase
+        .from('catalog_gamme')
+        .select('mc_mf_prime')
+        .eq('mc_pg_id', pgId)
+        .single();
+      
+      const mfId = catalogGamme?.mc_mf_prime;
+      
+      this.logger.log(`🔍 [DEBUG-SEO] vehicleInfo:`, JSON.stringify(vehicleInfo));
+      this.logger.log(`🔍 [DEBUG-SEO] gammeInfo:`, JSON.stringify(gammeInfo));
+      this.logger.log(`🔍 [DEBUG-SEO] mfId: ${mfId}`);
+      
+      // 5. Préparer les objets pour le traitement
+      const vehicle = {
+        marque: vehicleInfo.marque,
+        modele: vehicleInfo.modele,
+        type: vehicleInfo.type,
+        nbCh: vehicleInfo.nbCh
+      };
+      
+      const context = { typeId, pgId, mfId };
+      
+      // 6. Traiter chaque champ SEO avec variables ET switches
+      const processedH1 = await this.replaceVariablesAndSwitches(
+        data.sgc_h1,
+        vehicle,
+        vehicleInfo,
+        gammeInfo,
+        context
+      );
+      
+      const processedContent = await this.replaceVariablesAndSwitches(
+        data.sgc_content,
+        vehicle,
+        vehicleInfo,
+        gammeInfo,
+        context
+      );
+      
+      const processedDescription = await this.replaceVariablesAndSwitches(
+        data.sgc_descrip,
+        vehicle,
+        vehicleInfo,
+        gammeInfo,
+        context
+      );
+      
+      const processedTitle = await this.replaceVariablesAndSwitches(
+        data.sgc_title,
+        vehicle,
+        vehicleInfo,
+        gammeInfo,
+        context
+      );
+      
+      const processedPreview = await this.replaceVariablesAndSwitches(
+        data.sgc_preview,
+        vehicle,
+        vehicleInfo,
+        gammeInfo,
+        context
+      );
+
+      const finalResult = {
+        success: true,
+        h1: processedH1,
+        content: processedContent,
+        description: processedDescription,
+        title: processedTitle,
+        preview: processedPreview,
+        keywords: null
+      };
+
+      // 7. Mise en cache Redis (TTL: 15min)
+      try {
+        await this.cacheService.set(cacheKey, JSON.stringify(finalResult), 900);
+        this.logger.log(`💾 SEO mis en cache Redis (TTL: 15min) - ${cacheKey}`);
+      } catch (cacheError) {
+        this.logger.warn('⚠️ Erreur mise en cache SEO:', cacheError);
+      }
+
+      return finalResult;
+    } catch (error) {
+      this.logger.error('❌ Erreur getGammeSeoContent:', error);
+      return {
+        success: false,
+        h1: null,
+        content: null,
+        description: null,
+        keywords: null
+      };
+    }
+  }
+
+  /**
+   * 🔧 Récupère les infos véhicule pour remplacement variables
+   */
+  private async getVehicleInfo(typeId: number, marqueId?: number, modeleId?: number) {
+    this.logger.log(`🔍 [getVehicleInfo] Params: typeId=${typeId}, marqueId=${marqueId}, modeleId=${modeleId}`);
+    
+    // 🚀 OPTIMISATION: Récupérer type d'abord pour obtenir marqueId/modeleId
+    const { data: typeData, error: typeError } = await this.supabase
+      .from('auto_type')
+      .select('type_id, type_name, type_power_ps, type_year_from, type_year_to, type_marque_id, type_modele_id')
+      .eq('type_id', typeId)
+      .single();
+    
+    this.logger.log(`🔍 [getVehicleInfo] typeData:`, JSON.stringify(typeData));
+    if (typeError) this.logger.error(`❌ [getVehicleInfo] typeError:`, typeError);
+    
+    const finalMarqueId = typeData?.type_marque_id || marqueId;
+    const finalModeleId = typeData?.type_modele_id || modeleId;
+    
+    this.logger.log(`🔍 [getVehicleInfo] finalMarqueId=${finalMarqueId}, finalModeleId=${finalModeleId}`);
+    
+    // 🚀 OPTIMISATION: Paralléliser marque + modèle (5s → 1.5s)
+    const [marqueResult, modeleResult] = await Promise.all([
+      finalMarqueId ? this.supabase
+        .from('auto_marque')
+        .select('marque_id, marque_name')
+        .eq('marque_id', finalMarqueId)
+        .single() : Promise.resolve({ data: null, error: null }),
+      finalModeleId ? this.supabase
+        .from('auto_modele')
+        .select('modele_id, modele_name')
+        .eq('modele_id', finalModeleId)
+        .single() : Promise.resolve({ data: null, error: null })
+    ]);
+    
+    const marqueName = marqueResult.data?.marque_name || '';
+    const modeleName = modeleResult.data?.modele_name || '';
+    
+    this.logger.log(`🔍 [getVehicleInfo] marqueData:`, JSON.stringify(marqueResult.data));
+    if (marqueResult.error) this.logger.error(`❌ [getVehicleInfo] marqueError:`, marqueResult.error);
+    
+    this.logger.log(`🔍 [getVehicleInfo] modeleData:`, JSON.stringify(modeleResult.data));
+    if (modeleResult.error) this.logger.error(`❌ [getVehicleInfo] modeleError:`, modeleResult.error);
+    
+    // Formater les années
+    const yearFrom = typeData?.type_year_from || '';
+    const yearTo = typeData?.type_year_to || '';
+    let annee = yearFrom;
+    if (yearFrom && yearTo && yearFrom !== yearTo) {
+      annee = `${yearFrom} - ${yearTo}`;
+    }
+    
+    const result = {
+      type: typeData?.type_name || '',
+      nbCh: typeData?.type_power_ps || '',
+      annee: annee,
+      marque: marqueName,
+      modele: modeleName,
+      marqueId: finalMarqueId,
+      modeleId: finalModeleId
+    };
+    
+    this.logger.log(`✅ [getVehicleInfo] Résultat final:`, JSON.stringify(result));
+    return result;
+  }
+
+  /**
+   * 🔧 Récupère les infos gamme pour remplacement variables
+   */
+  private async getGammeInfo(pgId: number) {
+    const { data } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_name, pg_alias')
+      .eq('pg_id', pgId)
+      .single();
+    
+    return {
+      id: data?.pg_id || pgId,
+      name: data?.pg_name || '',
+      alias: data?.pg_alias || ''
+    };
+  }
+
+  /**
+   * 🔄 Remplace les variables ET traite tous les switches (méthode moderne)
+   * Utilise le nouveau SeoSwitchesService
+   */
+  private async replaceVariablesAndSwitches(
+    text: string | null,
+    vehicle: { marque: string; modele: string; type: string; nbCh: string },
+    vehicleInfo: any,
+    gamme: any,
+    context: { typeId: number; pgId: number; mfId?: number }
+  ): Promise<string | null> {
+    if (!text) return null;
+    
+    let result = text;
+    
+    // 1. Remplacer variables simples
+    result = result.replace(/#VMarque#/g, vehicle.marque || '');
+    result = result.replace(/#VModele#/g, vehicle.modele || '');
+    result = result.replace(/#VType#/g, vehicle.type || '');
+    result = result.replace(/#VNbCh#/g, vehicle.nbCh || '');
+    result = result.replace(/#VAnnee#/g, vehicleInfo.annee || '');
+    result = result.replace(/#VCarosserie#/g, vehicleInfo.carosserie || '');
+    result = result.replace(/#VMotorisation#/g, vehicleInfo.motorisation || '');
+    result = result.replace(/#VCodeMoteur#/g, vehicleInfo.codeMoteur || '');
+    
+    // 2. Variables gamme
+    result = result.replace(/#Gamme#/g, gamme.name || '');
+    result = result.replace(/#GammeAlias#/g, gamme.alias || '');
+    
+    // 3. Variables phrases génériques (tableaux PHP à implémenter)
+    result = result.replace(/#VousPropose#/g, 'vous propose');
+    result = result.replace(/#PrixPasCher#/g, 'pas cher');
+    result = result.replace(/#MinPrice#/g, '');
+    
+    // 4. Variables contextuelles
+    result = result.replace(/#LinkCarAll#/g, `${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicleInfo.carosserie || ''} ${vehicle.nbCh}`);
+    result = result.replace(/#LinkCar#/g, `${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicleInfo.motorisation || ''} ${vehicle.nbCh}`);
+    
+    // 5. 🚀 Traiter TOUS les switches via le nouveau service
+    result = await this.seoSwitchesService.processAllSwitches(
+      this.supabase,
+      result,
+      vehicle,
+      context
+    );
+    
+    // 6. 🧹 Nettoyer les phrases vides/incomplètes
+    result = this.cleanEmptyPhrases(result);
+    
+    return result;
+  }
+
+  /**
+   * 🧹 Nettoie les phrases vides ou incomplètes après remplacement des variables
+   */
+  private cleanEmptyPhrases(text: string): string {
+    let result = text;
+    
+    // Supprimer les patterns de phrases vides courantes
+    // "pour    quoi" → "pour quoi"
+    result = result.replace(/\s{2,}/g, ' ');
+    
+    // ", ." → ""
+    result = result.replace(/,\s*\./g, '.');
+    
+    // "de , ." → ""
+    result = result.replace(/\b(de|pour|avec|à)\s*,\s*\./g, '.');
+    
+    // "Nous vous conseillons  de , ." → "Nous vous conseillons."
+    result = result.replace(/\b(conseillons|propose)\s+(de|d'|à)?\s*,?\s*\./g, '$1.');
+    
+    // "Attention : ." → ""
+    result = result.replace(/Attention\s*:\s*\./g, '');
+    
+    // Supprimer lignes vides multiples dans HTML
+    result = result.replace(/(<br\s*\/?>\s*){2,}/gi, '<br />');
+    
+    // Supprimer phrases se terminant par "quoi doivent être ."
+    result = result.replace(/quoi doivent être\s*\./g, '');
+    
+    return result;
   }
 }

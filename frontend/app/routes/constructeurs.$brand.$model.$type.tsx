@@ -6,6 +6,7 @@ import { useState } from "react";
 import { catalogFamiliesApi, type CatalogFamily as ApiCatalogFamily } from "../services/api/catalog-families.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { hierarchyApi } from "../services/api/hierarchy.api";
+import { Car, Package } from "lucide-react";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -25,6 +26,7 @@ interface VehicleData {
   modele_name: string;
   modele_name_meta: string;
   modele_relfollow: number;
+  modele_pic?: string;
   type_id: number;
   type_alias: string;
   type_name: string;
@@ -209,7 +211,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // === EXTRACTION DES VRAIES DONNÉES (comme le PHP) ===
   const marque_name = vehicleRecord.auto_modele?.auto_marque?.marque_name;
+  const marque_alias_api = vehicleRecord.auto_modele?.auto_marque?.marque_alias;
   const modele_name = vehicleRecord.auto_modele?.modele_name;
+  const modele_pic = vehicleRecord.auto_modele?.modele_pic;
+  const modele_alias_api = vehicleRecord.auto_modele?.modele_alias;
   const type_name = vehicleRecord.type_name;
   const type_power_ps = vehicleRecord.type_power_ps;
   const type_fuel = vehicleRecord.type_fuel;
@@ -239,17 +244,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // === DONNÉES VÉHICULE SELON STRUCTURE PHP (avec power et date pour affichage) ===
   const vehicleData: VehicleData = {
     marque_id,
-    marque_alias,
+    marque_alias: marque_alias_api || marque_alias, // Priorité aux données API
     marque_name,
     marque_name_meta: marque_name,
     marque_name_meta_title: marque_name,
-    marque_logo: `${marque_alias}.webp`,
+    marque_logo: `${marque_alias_api || marque_alias}.webp`,
     marque_relfollow: 1,
     modele_id,
-    modele_alias,
+    modele_alias: modele_alias_api || modele_alias, // Priorité aux données API
     modele_name,
     modele_name_meta: modele_name,
     modele_relfollow: 1,
+    modele_pic: modele_pic, // Nouveau champ pour l'image
     type_id,
     type_alias,
     type_name,
@@ -592,6 +598,9 @@ export default function VehicleDetailPage() {
   const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
   const brandPrimary = brandColorsService.getBrandPrimaryColor(vehicle.marque_alias);
 
+  // State pour gérer l'erreur de chargement d'image
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
@@ -706,16 +715,30 @@ export default function VehicleDetailPage() {
                 
                 {/* Container carte */}
                 <div className="relative">
-                  <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
+                                    <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
-                      <img 
-                        src="https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/bmw/serie-2.webp"
-                        alt={`${vehicle.marque_name} ${vehicle.modele_name}`}
-                        className="w-full h-52 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
-                        loading="eager"
-                      />
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                      {!imageError && vehicle.modele_pic && vehicle.modele_pic !== 'no.webp' ? (
+                        <>
+                          <img 
+                            src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-concepts/${vehicle.marque_alias}/${vehicle.modele_pic}`}
+                            alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} - ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
+                            className="w-full h-52 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
+                            loading="eager"
+                            onError={() => setImageError(true)}
+                          />
+                          {/* Gradient overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                        </>
+                      ) : (
+                        <div className="w-full h-52 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-col gap-2">
+                          <Car 
+                            className="w-16 h-16 text-gray-400" 
+                            strokeWidth={1.5} 
+                            aria-label={`Image ${vehicle.marque_name} ${vehicle.modele_name} non disponible`} 
+                          />
+                          <p className="text-xs text-gray-500 font-medium">Image non disponible</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -753,55 +776,58 @@ export default function VehicleDetailPage() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {catalogFamilies.map((family, index) => {
                 const familyColor = hierarchyApi.getFamilyColor(family);
                 const familyImage = hierarchyApi.getFamilyImage(family);
                 const isExpanded = expandedFamilies.has(family.mf_id);
-                const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 4);
+                const displayedGammes = isExpanded ? family.gammes : family.gammes.slice(0, 5);
                 
                 return (
                   <div 
                     key={family.mf_id} 
-                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 overflow-hidden border border-gray-100"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 overflow-hidden"
                   >
-                    {/* Image header avec gradient couleur */}
-                    <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${familyColor}`}>
+                    {/* Image header avec gradient léger */}
+                    <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${familyColor}`}>
                       <img 
                         src={familyImage}
                         alt={family.mf_name}
-                        className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                        className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
                         loading="lazy"
                       />
                       
-                      {/* Titre overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-500">
-                        <h3 className="text-white font-black text-lg">{family.mf_name}</h3>
+                      {/* Badge nombre de gammes */}
+                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+                        {family.gammes.length} pièces
                       </div>
                     </div>
                     
-                    {/* Liste des gammes - 4 premiers ou tous */}
-                    <div className="p-5">
-                      <p className="text-sm text-gray-600 mb-4">
-                        {family.mf_description || 'Découvrez notre sélection complète'}
-                      </p>
-                      
-                      <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
+                    {/* Titre */}
+                    <div className="px-4 pt-4 pb-2 border-b border-gray-100">
+                      <h3 className="font-bold text-gray-900 text-base">{family.mf_name}</h3>
+                    </div>
+                    
+                    {/* Liste des gammes - 5 premiers ou tous */}
+                    <div className="p-4">
+                      <div className="space-y-1.5 mb-3 max-h-80 overflow-y-auto">
                         {displayedGammes.map((gamme) => (
                           <a 
                             key={gamme.pg_id}
                             href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:pl-2 transition-all duration-200 group/item py-1"
+                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-2 py-1.5 transition-all duration-200 group/item"
                           >
-                            <span className="w-1.5 h-1.5 bg-gray-400 rounded-full group-hover/item:bg-blue-600 group-hover/item:scale-125 transition-all" />
-                            <span className="font-medium line-clamp-1">{gamme.pg_name}</span>
+                            <span className="w-1 h-1 bg-gray-400 rounded-full group-hover/item:bg-blue-600 transition-colors" />
+                            <span className="font-medium line-clamp-1 flex-1">{gamme.pg_name}</span>
+                            <svg className="h-3 w-3 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </a>
                         ))}
                       </div>
                       
-                      {/* Bouton voir plus/moins si > 4 gammes */}
-                      {family.gammes.length > 4 && (
+                      {/* Bouton voir plus/moins si > 5 gammes */}
+                      {family.gammes.length > 5 && (
                         <button
                           onClick={() => {
                             const newExpanded = new Set(expandedFamilies);
@@ -812,20 +838,20 @@ export default function VehicleDetailPage() {
                             }
                             setExpandedFamilies(newExpanded);
                           }}
-                          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors flex items-center justify-center gap-2"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1.5"
                         >
                           {isExpanded ? (
                             <>
                               Voir moins
-                              <svg className="h-4 w-4 rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              <svg className="h-3 w-3 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
                             </>
                           ) : (
                             <>
-                              Voir plus de pièces
-                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              +{family.gammes.length - 5} pièces
+                              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
                             </>
                           )}
@@ -839,57 +865,76 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 🔥 Pièces populaires - Design premium */}
+        {/* 🔥 Pièces populaires - Design moderne */}
         {popularParts.length > 0 && (
           <div className="mb-12">
-            {/* Header avec gradient de marque */}
-            <div className="rounded-2xl p-8 mb-8 shadow-xl overflow-hidden relative" style={brandColor}>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
-              <h2 className="text-3xl font-bold text-white mb-2 relative z-10">
-                🔥 Catalogue pièces auto {vehicle.marque_name} les plus vendues
-              </h2>
-              <p className="text-white/80 relative z-10">
-                Pièces certifiées pour {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
-              </p>
+            {/* Header moderne avec gradient subtil */}
+            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 rounded-lg" style={{ backgroundColor: brandPrimary }}>
+                  <Package size={28} strokeWidth={2} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Pièces auto {vehicle.marque_name} les plus vendues
+                  </h2>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Sélection de {popularParts.length} pièces certifiées pour {vehicle.modele_name} {vehicle.type_name}
+                  </p>
+                </div>
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {popularParts.map((part) => (
-                <div key={part.cgc_pg_id} className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                <div key={part.cgc_pg_id} className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
                   {/* Badge "Populaire" */}
                   <div className="relative">
-                    <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-full text-xs font-bold text-white backdrop-blur-md" style={{ backgroundColor: brandPrimary }}>
-                      ⭐ Populaire
+                    <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-full text-xs font-semibold text-white shadow-md" style={{ backgroundColor: brandPrimary }}>
+                      ⭐ Top vente
                     </div>
                     
                     {/* Image gamme */}
-                    <div className="p-6 bg-gray-50">
-                      <img 
-                        src={`/upload/articles/gammes-produits/catalogue/${part.pg_img}`}
-                        alt={part.pg_name_meta}
-                        className="w-full h-32 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                      />
+                    <div className="p-6 bg-gray-50 flex items-center justify-center">
+                      {part.pg_img && part.pg_img !== 'no.webp' ? (
+                        <img 
+                          src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
+                          alt={part.pg_name_meta}
+                          className="w-full h-32 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback vers l'icône si l'image ne charge pas
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="hidden flex-col items-center justify-center w-full h-32 text-gray-400">
+                        <Package size={48} strokeWidth={1.5} />
+                        <span className="text-xs mt-2 text-gray-500">Image indisponible</span>
+                      </div>
                     </div>
                   </div>
                   
                   {/* Contenu */}
-                  <div className="p-5">
-                    <h3 className="font-bold text-gray-900 mb-3 text-base line-clamp-2">
-                      {part.pg_name} pour {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 text-sm line-clamp-2 min-h-[2.5rem]">
+                      {part.pg_name}
                     </h3>
                     
-                    <div className="text-sm text-gray-600 mb-4 line-clamp-3">
+                    <div className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2rem]">
                       <p dangerouslySetInnerHTML={{ __html: part.addon_content }} />
                     </div>
                     
-                    {/* CTA avec couleur de marque */}
+                    {/* CTA moderne */}
                     <a 
                       href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                      className="block text-center py-3 rounded-lg font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-medium text-sm text-white transition-all hover:brightness-110 hover:shadow-md group-hover:scale-[1.02]"
                       style={{ backgroundColor: brandPrimary }}
                     >
-                      Voir les pièces →
+                      <span>Découvrir</span>
+                      <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </a>
                   </div>
                 </div>

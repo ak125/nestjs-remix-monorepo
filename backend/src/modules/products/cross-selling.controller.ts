@@ -33,6 +33,7 @@ export class CrossSellingController {
   async getCrossSellingV5ByIds(
     @Param('typeId') typeId: string,
     @Param('pgId') pgId: string,
+    @Query('includeSeo') includeSeo?: string,
   ) {
     try {
       this.logger.log(
@@ -49,7 +50,7 @@ export class CrossSellingController {
         {
           includeFamily: true,
           includeConfig: true,
-          includeSeo: true,
+          includeSeo: includeSeo === 'true', // ⚡ SEO uniquement si demandé explicitement (évite 3s de latence)
           maxResults: 20,
         },
       );
