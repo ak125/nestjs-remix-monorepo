@@ -58,14 +58,22 @@ import {
 // 🔄 LOADER - Récupération des données
 // ========================================
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const startTime = Date.now();
+  
+  // Debug URL complète
+  const url = new URL(request.url);
+  console.log('🔍 [LOADER] URL complète:', url.pathname);
   
   // 1. Parse des paramètres URL
   const { gamme: rawGamme, marque: rawMarque, modele: rawModele, type: rawType } = params;
   
+  // Debug params
+  console.log('🔍 [LOADER] Params reçus:', { rawGamme, rawMarque, rawModele, rawType });
+  
   if (!rawGamme || !rawMarque || !rawModele || !rawType) {
-    throw new Response("Paramètres manquants", { status: 400 });
+    console.error('❌ [LOADER] Paramètres manquants:', { rawGamme, rawMarque, rawModele, rawType });
+    throw new Response(`Paramètres manquants: gamme=${rawGamme}, marque=${rawMarque}, modele=${rawModele}, type=${rawType}`, { status: 400 });
   }
 
   // 2. Parse les IDs depuis les URLs (extraction alias + ID)
@@ -142,13 +150,55 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 
   // 4. Construction des données véhicule
+  
+  // 4.1 Récupération du type_name complet depuis l'API
+  let typeName = toTitleCaseFromSlug(typeData.alias);
+  try {
+    const typeResponse = await fetch(
+      `http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`
+    );
+    
+    if (typeResponse.ok) {
+      const typeApiData = await typeResponse.json();
+      if (typeApiData && typeApiData.type_name) {
+        typeName = typeApiData.type_name;
+      }
+    }
+  } catch (error) {
+    console.error('⚠️ Erreur récupération type_name:', error);
+  }
+  
+  // 4.2 Récupération de la photo du modèle depuis l'API
+  let modelePic: string | undefined = undefined;
+  try {
+    const modeleResponse = await fetch(
+      `http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`
+    );
+    
+    if (modeleResponse.ok) {
+      const modelsData = await modeleResponse.json();
+      const modelData = modelsData.data?.find((m: any) => m.modele_id === vehicleIds.modeleId);
+      
+      if (modelData) {
+        modelePic = modelData.modele_pic || modelData.pic || undefined;
+        console.log(`✅ Photo modèle trouvée: ${modelePic} pour modele_id=${vehicleIds.modeleId}`);
+      }
+    }
+  } catch (error) {
+    console.error('⚠️ Erreur récupération photo modèle:', error);
+  }
+  
   const vehicle: VehicleData = {
     marque: toTitleCaseFromSlug(marqueData.alias),
     modele: toTitleCaseFromSlug(modeleData.alias),
     type: toTitleCaseFromSlug(typeData.alias),
+    typeName: typeName, // Nom complet avec puissance et années
     typeId: vehicleIds.typeId,
     marqueId: vehicleIds.marqueId,
-    modeleId: vehicleIds.modeleId
+    modeleId: vehicleIds.modeleId,
+    marqueAlias: marqueData.alias, // Pour les couleurs de marque
+    modeleAlias: modeleData.alias, // Pour les URLs
+    modelePic: modelePic // Photo du modèle depuis l'API
   };
 
   const gamme: GammeData = {
@@ -189,7 +239,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
         marque_logo: piece.marque_logo
       }));
       
+      // Debug: Vérifier les images dans les 3 premières pièces
       console.log(`📦 ${piecesData.length} pièces récupérées et mappées pour ${vehicle.marque} ${vehicle.modele}`);
+      if (piecesData.length > 0) {
+        console.log(`🖼️ Images des 3 premières pièces:`, piecesData.slice(0, 3).map(p => ({ id: p.id, name: p.name, image: p.image })));
+      }
     }
   } catch (error) {
     console.error('❌ Erreur récupération pièces:', error);
@@ -284,8 +338,44 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
-  // 7. Génération contenu SEO enrichi
-  const seoContent = generateSEOContent(vehicle, gamme);
+  // 7. Génération contenu SEO enrichi depuis l'API backend
+  let seoContent = generateSEOContent(vehicle, gamme); // Fallback par défaut
+  
+  try {
+    // ⚡ Appel RPC Supabase directe pour contenu SEO (plus fiable que API V4)
+    const seoResponse = await fetch(`http://localhost:3000/api/catalog/gammes/${gammeId}/seo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type_id: vehicleIds.typeId,
+        marque_id: vehicleIds.marqueId,
+        modele_id: vehicleIds.modeleId
+      })
+    });
+    
+    if (seoResponse.ok) {
+      const seoData = await seoResponse.json();
+      console.log('✅ SEO RPC data:', seoData);
+      
+      // Transformation vers format frontend
+      if (seoData && (seoData.content || seoData.data?.content)) {
+        const content = seoData.content || seoData.data?.content;
+        const h1 = seoData.h1 || seoData.data?.h1;
+        
+        seoContent = {
+          h1: h1 || seoContent.h1,
+          h2Sections: seoContent.h2Sections,
+          longDescription: content || seoContent.longDescription,
+          technicalSpecs: seoContent.technicalSpecs,
+          compatibilityNotes: seoContent.compatibilityNotes,
+          installationTips: seoContent.installationTips
+        };
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ SEO RPC non disponible, utilisation fallback:', error);
+  }
+  
   const faqItems = generateFAQ(vehicle, gamme);
   const relatedArticles = generateRelatedArticles(vehicle, gamme);
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
@@ -590,6 +680,13 @@ export default function PiecesVehicleRoute() {
           <main className="flex-1 min-w-0">
             <div className="space-y-6">
               
+              {/* Titre catégorie */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {data.gamme.name}
+                </h2>
+              </div>
+
               {/* Barre d'outils vue */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                 <div className="flex items-center justify-between flex-wrap gap-4">

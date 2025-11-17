@@ -1,7 +1,7 @@
 // 📁 backend/src/modules/catalog/controllers/gamme-unified.controller.ts
 // 🎯 Controller unifié pour les gammes - API simple et claire
 
-import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Query, Logger } from '@nestjs/common';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 
 @Controller('api/catalog/gammes')
@@ -75,5 +75,22 @@ export class GammeUnifiedController {
       featured_count: featured.length,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * 📄 POST /api/catalog/gammes/:id/seo - Contenu SEO pour une gamme
+   */
+  @Post(':id/seo')
+  async getGammeSeo(
+    @Param('id') gammeId: string,
+    @Body() body: { type_id: number; marque_id?: number; modele_id?: number }
+  ) {
+    this.logger.log(`📄 [POST] /api/catalog/gammes/${gammeId}/seo`);
+    return this.gammeService.getGammeSeoContent(
+      parseInt(gammeId),
+      body.type_id,
+      body.marque_id,
+      body.modele_id
+    );
   }
 }

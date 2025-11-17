@@ -1037,7 +1037,7 @@ export class VehiclesService extends SupabaseBaseService {
         .select('*')
         .eq('type_id', typeId)
         .eq('type_display', 1)
-        .single();
+        .maybeSingle();
 
       if (typeError || !typeData) {
         this.logger.error('Erreur getTypeById - type:', typeError);
@@ -1052,11 +1052,13 @@ export class VehiclesService extends SupabaseBaseService {
           modele_id,
           modele_name,
           modele_ful_name,
-          modele_marque_id
+          modele_marque_id,
+          modele_pic,
+          modele_alias
         `,
         )
         .eq('modele_id', typeData.type_modele_id)
-        .single();
+        .maybeSingle();
 
       if (modelError || !modelData) {
         this.logger.error('Erreur getTypeById - model:', modelError);
@@ -1069,11 +1071,12 @@ export class VehiclesService extends SupabaseBaseService {
         .select(
           `
           marque_id,
-          marque_name
+          marque_name,
+          marque_alias
         `,
         )
         .eq('marque_id', modelData.modele_marque_id)
-        .single();
+        .maybeSingle();
 
       if (brandError || !brandData) {
         this.logger.error('Erreur getTypeById - brand:', brandError);
@@ -1302,7 +1305,7 @@ export class VehiclesService extends SupabaseBaseService {
 
             let parts = (bestsellers?.parts || []).map((part: any) => ({
         ...part,
-        part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.type_alias}-${part.type_id}.html`,
+        part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.cgc_type_alias || 'type'}-${part.cgc_type_id || 0}.html`,
         image_url: part.pg_alias
           ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_alias}.webp`
           : null,

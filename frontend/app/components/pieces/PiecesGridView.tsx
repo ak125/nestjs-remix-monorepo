@@ -17,9 +17,9 @@ interface PiecesGridViewProps {
 }
 
 /**
- * Helper optimisation images WebP
+ * Helper optimisation images WebP - 200px optimal pour cards
  */
-const optimizeImageUrl = (imageUrl: string | undefined, width: number = 400): string => {
+const optimizeImageUrl = (imageUrl: string | undefined, width: number = 200): string => {
   if (!imageUrl) return '';
   
   if (imageUrl.includes('supabase.co/storage')) {
@@ -36,7 +36,7 @@ const optimizeImageUrl = (imageUrl: string | undefined, width: number = 400): st
 
 const generateSrcSet = (imageUrl: string | undefined): string => {
   if (!imageUrl) return '';
-  return [300, 400, 600]
+  return [200, 300, 400]
     .map(width => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
     .join(', ');
 };
@@ -82,16 +82,18 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
             }`}
           >
             {/* Image optimisée WebP */}
-            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
-              {piece.description ? (
+            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden group-hover:shadow-inner transition-shadow">
+              {piece.image && piece.image !== '/images/pieces/default.png' ? (
                 <img
-                  src={optimizeImageUrl(piece.description, 400)}
-                  srcSet={generateSrcSet(piece.description)}
-                  sizes="(max-width: 640px) 300px, 400px"
+                  src={piece.image}
                   alt={piece.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                   decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement!.classList.add('image-error');
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -104,7 +106,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
               {/* Badges overlay */}
               <div className="absolute top-2 right-2 flex flex-col gap-1">
                 {hasStock ? (
-                  <span className="bg-success text-success-foreground text-xs font-medium px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                  <span className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                     En stock
                   </span>
@@ -137,20 +139,15 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
 
             {/* Contenu carte */}
             <div className="p-4">
-              {/* Marque */}
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="info">{piece.brand}</Badge>
-                {piece.quality && piece.quality !== 'OES' && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {piece.quality}
-                  </span>
-                )}
-              </div>
-
-              {/* Désignation */}
-              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[48px] group-hover:text-blue-600 transition-colors leading-tight">
-                {piece.name}
+              {/* Marque en évidence */}
+              <h3 className="text-base font-semibold text-gray-900 uppercase tracking-wide mb-2">
+                {piece.brand}
               </h3>
+
+              {/* Désignation (sans répétition) */}
+              <h4 className="text-sm text-gray-700 mb-2 line-clamp-2 min-h-[40px] leading-snug">
+                {piece.name}
+              </h4>
 
               {/* Référence */}
               <div className="text-xs text-gray-500 mb-3 font-mono bg-gray-50 px-2 py-1 rounded inline-block">
@@ -158,16 +155,14 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
               </div>
 
               {/* Prix section */}
-              <div className="border-t pt-3 mt-3">
-                <div className="flex items-end justify-between mb-3">
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {typeof piece.price === 'number' ? piece.price.toFixed(2) : piece.priceFormatted}€
-                    </div>
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <div className="flex items-baseline justify-between mb-3">
+                  <div className="text-2xl font-bold text-gray-900">
+                    {typeof piece.price === 'number' ? piece.price.toFixed(2) : piece.priceFormatted}€
                   </div>
                   {piece.delaiLivraison && (
-                    <div className="text-xs text-gray-600">
-                      {piece.delaiLivraison}j
+                    <div className="text-xs text-gray-500 font-medium">
+                      Livraison {piece.delaiLivraison}j
                     </div>
                   )}
                 </div>

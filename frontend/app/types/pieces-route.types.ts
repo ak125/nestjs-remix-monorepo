@@ -21,9 +21,13 @@ export interface VehicleData {
   marque: string;
   modele: string;
   type: string;
+  typeName?: string; // Nom complet avec puissance et années (ex: "3.0 TDI 240 ch de 2009 à 2010")
   typeId: number;
   marqueId: number;
   modeleId: number;
+  marqueAlias?: string; // Alias de la marque pour les couleurs
+  modeleAlias?: string; // Alias du modèle pour l'URL
+  modelePic?: string; // Photo du modèle
 }
 
 export interface GammeData {
@@ -32,6 +36,7 @@ export interface GammeData {
   alias: string;
   description: string;
   image?: string;
+  famille?: FamilleData; // Famille pour gradient dynamique
 }
 
 export interface PieceData {
@@ -47,6 +52,7 @@ export interface PieceData {
   side?: string;
   delaiLivraison?: number;
   description?: string;
+  image?: string; // URL de l'image depuis Supabase rack-images
 }
 
 export interface SEOEnrichedContent {
@@ -129,11 +135,13 @@ export interface FamilleData {
 
 export interface LoaderData {
   vehicle: VehicleData;
+  vehicleDetails?: any; // Détails complets du véhicule
   gamme: GammeData;
   pieces: PieceData[];
   count: number;
   minPrice: number;
   maxPrice: number;
+  prixPasCherText?: string; // Texte dynamique "pas cher"
   
   // Contenu enrichi V5
   seoContent: SEOEnrichedContent;

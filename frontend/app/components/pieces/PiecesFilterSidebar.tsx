@@ -39,7 +39,7 @@ export function PiecesFilterSidebar({
   return (
     <div className="w-80 space-y-6">
       {/* Card principale des filtres */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
           <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
             <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,8 +83,8 @@ export function PiecesFilterSidebar({
                   return (
                     <label 
                       key={brand} 
-                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors hover:bg-gray-50 ${
-                        isSelected ? 'bg-primary/10 border border-blue-200' : ''
+                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:scale-[1.02] ${
+                        isSelected ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 shadow-sm' : 'border border-transparent'
                       }`}
                     >
                       <div className="flex items-center">

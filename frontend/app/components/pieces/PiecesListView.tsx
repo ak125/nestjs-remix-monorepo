@@ -17,9 +17,9 @@ interface PiecesListViewProps {
 }
 
 /**
- * Helper optimisation images WebP (petite taille pour liste)
+ * Helper optimisation images WebP (96px pour miniatures liste)
  */
-const optimizeImageUrl = (imageUrl: string | undefined, width: number = 150): string => {
+const optimizeImageUrl = (imageUrl: string | undefined, width: number = 96): string => {
   if (!imageUrl) return '';
   
   if (imageUrl.includes('supabase.co/storage')) {
@@ -90,13 +90,17 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
 
               {/* Image miniature */}
               <div className="w-24 h-24 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
-                {piece.description ? (
+                {piece.image && piece.image !== '/images/pieces/default.png' ? (
                   <img
-                    src={optimizeImageUrl(piece.description, 150)}
+                    src={piece.image}
                     alt={piece.name}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.classList.add('image-error');
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -111,23 +115,20 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="flex-1">
-                    {/* Marque + badges */}
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="info">{piece.brand}</Badge>
+                    {/* Marque en évidence */}
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <h3 className="text-base font-semibold text-gray-900 uppercase tracking-wide">
+                        {piece.brand}
+                      </h3>
                       {piece.quality === 'OES' && (
-                        <Badge variant="warning">🏆 OES</Badge>
-                      )}
-                      {piece.quality && piece.quality !== 'OES' && (
-                        <span className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                          {piece.quality}
-                        </span>
+                        <Badge variant="warning">OES</Badge>
                       )}
                     </div>
 
-                    {/* Désignation */}
-                    <h3 className="font-semibold text-gray-900 mb-1 leading-tight">
+                    {/* Désignation (sans répétition) */}
+                    <h4 className="text-sm text-gray-700 mb-1 leading-snug">
                       {piece.name}
-                    </h3>
+                    </h4>
 
                     {/* Référence */}
                     <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded inline-block">

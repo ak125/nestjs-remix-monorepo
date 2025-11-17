@@ -20,7 +20,13 @@ export function toTitleCaseFromSlug(slug: string): string {
  * Parse les paramètres d'URL avec IDs (format: nom-id ou nom-id-id)
  * Exemple: "renault-23" => { alias: "renault", id: 23 }
  */
-export function parseUrlParam(param: string): { alias: string; id: number } {
+export function parseUrlParam(param: string | undefined): { alias: string; id: number } {
+  // Protection contre undefined/null
+  if (!param) {
+    console.warn('⚠️ [PARSE-URL] Paramètre undefined ou null reçu');
+    return { alias: 'undefined', id: 0 };
+  }
+  
   const parts = param.split('-');
   
   // Chercher le dernier nombre dans l'URL
@@ -221,21 +227,59 @@ export function generateBuyingGuide(vehicle: VehicleData, gamme: GammeData): Gui
 }
 
 /**
- * Résolution intelligente des IDs véhicule avec parsing URL
+ * Résout les IDs du véhicule depuis les alias ou depuis l'URL
  */
 export async function resolveVehicleIds(marqueParam: string, modeleParam: string, typeParam: string) {
+  // Validation des paramètres
+  if (!marqueParam || !modeleParam || !typeParam) {
+    console.error(`❌ [RESOLVE-VEHICLE] Paramètres invalides:`, { marqueParam, modeleParam, typeParam });
+    throw new Error(`Paramètres véhicule invalides ou manquants`);
+  }
+  
   // Parse les paramètres avec IDs
   const marque = parseUrlParam(marqueParam);
   const modele = parseUrlParam(modeleParam);
   const type = parseUrlParam(typeParam);
   
-  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les utiliser directement
+  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les valider
   if (marque.id > 0 && modele.id > 0 && type.id > 0) {
-    return {
-      marqueId: marque.id,
-      modeleId: modele.id,
-      typeId: type.id
-    };
+    // Validation préventive de l'existence du type
+    try {
+      const validationResponse = await fetch(
+        `http://localhost:3000/api/catalog/integrity/validate-type/${type.id}`,
+        { method: 'GET' }
+      );
+      
+      if (validationResponse.ok) {
+        const validationData = await validationResponse.json();
+        if (validationData.exists) {
+          return {
+            marqueId: marque.id,
+            modeleId: modele.id,
+            typeId: type.id
+          };
+        } else {
+          console.error(`❌ [VALIDATE-TYPE] Type ID ${type.id} invalide ou n'existe pas`);
+          throw new Error(`Type de véhicule invalide (ID: ${type.id})`);
+        }
+      } else {
+        // Validation endpoint non accessible (404/500), utiliser les IDs quand même
+        console.warn(`⚠️ [VALIDATE-TYPE] Validation endpoint retourné ${validationResponse.status}, utilisation des IDs parsés`);
+        return {
+          marqueId: marque.id,
+          modeleId: modele.id,
+          typeId: type.id
+        };
+      }
+    } catch (error) {
+      console.warn(`⚠️ [VALIDATE-TYPE] Erreur validation type ${type.id}:`, error);
+      // Continuer avec l'ID si la validation échoue (éviter de bloquer)
+      return {
+        marqueId: marque.id,
+        modeleId: modele.id,
+        typeId: type.id
+      };
+    }
   }
   
   console.warn(`⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`);
@@ -270,23 +314,10 @@ export async function resolveVehicleIds(marqueParam: string, modeleParam: string
     console.warn('⚠️ [RESOLVE-VEHICLE] Erreur appel API:', error);
   }
   
-  // Fallback intelligent avec mappings connus
-  const knownIds: Record<string, { marqueId: number; typeId: number }> = {
-    "renault": { marqueId: 23, typeId: 55593 },
-    "peugeot": { marqueId: 19, typeId: 128049 },
-    "audi": { marqueId: 3, typeId: 5432 },
-    "bmw": { marqueId: 5, typeId: 9876 },
-    "volkswagen": { marqueId: 35, typeId: 12345 }
-  };
-  
-  const fallback = knownIds[marque.alias] || knownIds["renault"];
-  console.log(`⚠️ [RESOLVE-VEHICLE] Fallback utilisé pour ${marque.alias}:`, fallback);
-  
-  return {
-    marqueId: fallback.marqueId,
-    modeleId: 456,
-    typeId: type.id > 0 ? type.id : fallback.typeId
-  };
+  // ❌ Si aucune résolution possible, retourner une erreur
+  // Ne plus utiliser de fallback avec des IDs invalides
+  console.error(`❌ [RESOLVE-VEHICLE] Impossible de résoudre les IDs pour: marque=${marque.alias}, modele=${modele.alias}, type=${type.alias}`);
+  throw new Error(`Véhicule introuvable: ${marque.alias} ${modele.alias} ${type.alias}`);
 }
 
 /**

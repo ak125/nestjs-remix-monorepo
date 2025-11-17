@@ -1,0 +1,92 @@
+{
+  "guide_achat": {
+    "titre": "Comment choisir vos pièces auto ?",
+    "sous_titre": "Guide Expert - Suivez nos 3 étapes simples",
+    
+    "etape_1": {
+      "numero": 1,
+      "titre": "Vérifiez la compatibilité",
+      "contenu_court": "Vérifiez la compatibilité avec un sélecteur en ligne ! Sélectionnez votre type de carte grise et votre certificat R90 pour obtenir les résultats.",
+      "bullets": [
+        "Utilisez notre sélecteur pour garantir la compatibilité",
+        "Vérifiez votre type mine sur la carte grise",
+        "Toutes nos pièces sont certifiées R90"
+      ]
+    },
+    
+    "etape_2": {
+      "numero": 2,
+      "titre": "Choisissez votre gamme",
+      "gammes": {
+        "economique": {
+          "emoji": "🥉",
+          "nom": "Économique",
+          "usage": "Usage urbain modéré",
+          "contenu": "La gamme économique offre un prix attractif et une fiabilité assurée. Elle convient à un usage modéré quotidien, garantissant ainsi une expérience fiable et abordable.",
+          "avantages": [
+            "Prix le plus attractif",
+            "Fiabilité prouvée",
+            "Idéal pour trajets quotidiens courts",
+            "Bon rapport qualité-prix"
+          ]
+        },
+        "qualite_plus": {
+          "emoji": "🥈",
+          "nom": "Qualité+",
+          "usage": "Usage mixte recommandé",
+          "badge": "CHOIX POPULAIRE",
+          "contenu": "La gamme Qualité+ offre le meilleur équilibre entre ville et route. Elle est un choix populaire pour son excellence et polyvalence.",
+          "avantages": [
+            "Équilibre performance/durabilité",
+            "Polyvalent ville et route",
+            "Meilleur rapport qualité-prix",
+            "Choix de 70% de nos clients"
+          ]
+        },
+        "premium": {
+          "emoji": "🥇",
+          "nom": "Premium",
+          "usage": "Performances maximales",
+          "contenu": "La gamme premium offre des technologies avancées et une durée de vie maximale. Elle garantit des performances optimales et une qualité irréprochable, répondant aux attentes les plus élevées des utilisateurs exigeants.",
+          "avantages": [
+            "Technologies de pointe",
+            "Durée de vie maximale",
+            "Performances supérieures",
+            "Pour conducteurs exigeants"
+          ]
+        }
+      }
+    },
+    
+    "etape_3": {
+      "numero": 3,
+      "titre": "Sécurité essentielle",
+      "contenu_court": "Les règles de sécurité pour les freins préconisent un changement par paire et un seuil de 3mm. Un contrôle régulier, tous les 20 000 km, est recommandé pour garantir la sécurité routière.",
+      "consignes": [
+        "Changez toujours les deux côtés (avant ou arrière)",
+        "Remplacez si moins de 3mm d'épaisseur",
+        "Contrôle tous les 20 000 km recommandé"
+      ],
+      "alerte": {
+        "type": "warning",
+        "message": "La sécurité de votre freinage dépend de l'état de vos pièces. Ne négligez jamais les contrôles réguliers."
+      }
+    },
+    
+    "reassurance": {
+      "stats": {
+        "pieces_stock": "50 000+",
+        "livraison": "24-48h",
+        "clients_satisfaits": "+10 000",
+        "note_moyenne": "4.8/5",
+        "nb_avis": "2 347"
+      },
+      "garanties": [
+        "Conseils vérifiés par nos experts",
+        "Paiement sécurisé",
+        "Certification R90 sur toutes les pièces",
+        "Service client gratuit"
+      ]
+    }
+  }
+}

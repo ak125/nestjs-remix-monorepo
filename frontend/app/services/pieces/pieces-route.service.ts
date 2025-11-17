@@ -40,27 +40,19 @@ export async function fetchCrossSellingGammes(
     const data = await response.json();
     console.log(`✅ Cross-selling data:`, data);
     
-    // Transformation des données API vers le format attendu
-    if (data && Array.isArray(data.gammes)) {
-      return data.gammes.map((gamme: any) => ({
-        PG_ID: gamme.PG_ID || gamme.id,
-        PG_NAME: gamme.PG_NAME || gamme.name,
-        PG_ALIAS: gamme.PG_ALIAS || gamme.alias || slugify(gamme.PG_NAME || gamme.name || ''),
-        PG_IMAGE: gamme.PG_IMAGE || `pieces-${gamme.PG_ID || gamme.id}.webp`
+    // ⚡ CORRECTION: L'API V5 retourne { data: { cross_gammes: [] } }
+    const crossGammes = data?.data?.cross_gammes || data?.gammes || data?.cross_gammes || [];
+    
+    if (Array.isArray(crossGammes) && crossGammes.length > 0) {
+      return crossGammes.map((gamme: any) => ({
+        PG_ID: gamme.pg_id || gamme.PG_ID || gamme.id,
+        PG_NAME: gamme.pg_name || gamme.PG_NAME || gamme.name,
+        PG_ALIAS: gamme.pg_alias || gamme.PG_ALIAS || gamme.alias || slugify(gamme.pg_name || gamme.PG_NAME || gamme.name || ''),
+        PG_IMAGE: gamme.pg_img || gamme.PG_IMAGE || gamme.PG_IMG || `pieces-${gamme.pg_id || gamme.PG_ID || gamme.id}.webp`
       }));
     }
     
-    // Si structure différente, essayer d'adapter
-    if (data && typeof data === 'object' && !Array.isArray(data.gammes)) {
-      console.log(`🔄 Adaptation structure cross-selling`);
-      return Object.values(data).filter((item: any) => item && item.PG_ID).map((gamme: any) => ({
-        PG_ID: gamme.PG_ID || gamme.id,
-        PG_NAME: gamme.PG_NAME || gamme.name,
-        PG_ALIAS: gamme.PG_ALIAS || gamme.alias || slugify(gamme.PG_NAME || gamme.name || ''),
-        PG_IMAGE: gamme.PG_IMAGE || `pieces-${gamme.PG_ID || gamme.id}.webp`
-      }));
-    }
-    
+    console.warn(`⚠️ Aucune gamme cross-selling trouvée dans la réponse API`);
     return [];
   } catch (error) {
     console.error('❌ Erreur fetchCrossSellingGammes:', error);

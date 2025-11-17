@@ -59,7 +59,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         `🚀 [PARALLEL] ${relationsData.length} relations → ${pieceIds.length} pièces, ${pmIds.length} marques`,
       );
 
-      const [piecesResult, marquesResult, pricesResult, filtresResult] =
+      const [piecesResult, marquesResult, pricesResult, filtresResult, imagesResult] =
         await Promise.all([
           // Pièces (logique PHP: SELECT * FROM pieces WHERE piece_id IN (...))
           this.client
@@ -104,6 +104,14 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
               'psf_id',
               relationsData.map((r) => r.rtp_psf_id).filter(Boolean),
             ),
+
+          // Images (depuis pieces_media_img)
+          this.client
+            .from('pieces_media_img')
+            .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display')
+            .in('pmi_piece_id', pieceIds.map((id) => id.toString()))
+            .eq('pmi_display', '1')
+            .order('pmi_sort', { ascending: true }),
         ]);
 
       if (piecesResult.error) {
@@ -122,11 +130,12 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       const marquesData = marquesResult.data || [];
       const pricesData = pricesResult.data || [];
       const filtresData = filtresResult.data || [];
+      const imagesData = imagesResult.data || [];
 
       // 🔍 DEBUG: Vérification des données récupérées
       // Logs de debug pour diagnostiquer les prix
       this.logger.log(
-        `🔍 [DEBUG] Données récupérées: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${filtresData.length} filtres`,
+        `🔍 [DEBUG] Données récupérées: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${filtresData.length} filtres, ${imagesData.length} images`,
       );
       if (pricesData.length > 0) {
         this.logger.log(
@@ -140,6 +149,9 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         marquesData.map((m) => [m.pm_id.toString(), m]),
       );
       const filtresMap = new Map(filtresData.map((f) => [f.psf_id, f]));
+      const imagesMap = new Map(
+        imagesData.map((img) => [img.pmi_piece_id.toString(), img]),
+      );
       const relationsMap = new Map(
         relationsData.map((r) => [r.rtp_piece_id, r]),
       );
@@ -209,14 +221,29 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           qualite = 'Echange Standard';
         }
 
-        // Nom complet de la pièce (logique PHP: concat de tous les noms)
-        const nomComplet = [
-          piece.piece_name,
-          piece.piece_name_side || filtre?.psf_side,
-          piece.piece_name_comp,
-        ]
-          .filter(Boolean)
-          .join(' ');
+        // Nom complet de la pièce - ÉVITER LES RÉPÉTITIONS
+        const nomParts: string[] = [piece.piece_name];
+
+        // Ajouter le côté SEULEMENT s'il n'est pas déjà dans piece_name
+        const sideToAdd = piece.piece_name_side || filtre?.psf_side;
+        if (
+          sideToAdd &&
+          !piece.piece_name?.toLowerCase().includes(sideToAdd.toLowerCase())
+        ) {
+          nomParts.push(sideToAdd);
+        }
+
+        // Ajouter le complément SEULEMENT s'il existe et n'est pas déjà présent
+        if (
+          piece.piece_name_comp &&
+          !piece.piece_name
+            ?.toLowerCase()
+            .includes(piece.piece_name_comp.toLowerCase())
+        ) {
+          nomParts.push(piece.piece_name_comp);
+        }
+
+        const nomComplet = nomParts.filter(Boolean).join(' ').trim();
 
         return {
           id: piece.piece_id,
@@ -238,10 +265,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           has_oem: piece.piece_has_oem === 1,
           filtre_gamme: piece.piece_fil_name || '',
           filtre_side: filtre?.psf_side || '',
-          image:
-            piece.piece_has_img === 1
-              ? `/images/pieces/${piece.piece_id}.webp`
-              : '/images/pieces/default.png',
+          image: this.buildImageUrl(piece.piece_id, piece.piece_has_img, imagesMap),
           url: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
         };
       });
@@ -295,6 +319,26 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         duration: `${duration}ms`,
       };
     }
+  }
+
+  /**
+   * Construire l'URL de l'image depuis Supabase rack-images
+   * Ne pas vérifier piece_has_img car ce champ n'est pas fiable
+   */
+  private buildImageUrl(
+    pieceId: number,
+    hasImg: number,
+    imagesMap: Map<string, any>,
+  ): string {
+    // Chercher l'image directement dans la Map (ignore piece_has_img)
+    const image = imagesMap.get(pieceId.toString());
+    
+    if (image?.pmi_folder && image?.pmi_name) {
+      // URL Supabase rack-images directe (pmi_name contient déjà l'extension)
+      return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${image.pmi_folder}/${image.pmi_name}`;
+    }
+
+    return '/images/pieces/default.png';
   }
 
   private slugify(text: string): string {

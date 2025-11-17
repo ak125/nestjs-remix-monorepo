@@ -56,6 +56,9 @@ import { SeoKpisService } from './services/seo-kpis.service';
 // 🛡️ Service Validation Sitemap Véhicule-Pièces
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
+// 📝 Contrôleur Variations SEO
+import { SeoVariationsController } from './seo-variations.controller';
+
 // Contrôleurs existants
 import { SeoController } from './seo.controller';
 import { SeoEnhancedController } from './seo-enhanced.controller';
@@ -115,6 +118,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoMonitoringController, // 📊 Contrôleur Monitoring SEO
     SeoMonitorController, // 🛡️ Contrôleur SEO Monitor (BullMQ)
     SeoLogsController, // 📊 Contrôleur SEO Logs (Meilisearch)
+    SeoVariationsController, // 📝 Contrôleur Variations SEO
   ],
 
   providers: [
