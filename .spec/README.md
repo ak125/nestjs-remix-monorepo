@@ -532,6 +532,23 @@ Avant de marquer une spec comme `review`, vérifier :
 - [GitHub Spec Kit Documentation](https://github.com/github/spec-kit)
 - [Documentation projet](../docs/)
 
+## 🆕 Recent Updates (17 Nov 2025)
+
+### Performance Optimizations
+- ⚡ **Homepage Load Time**: -70% (15-20s → 3-5s)
+- 💾 **Cache Strategy**: Redis multi-niveaux (équipementiers TTL 1h, conseils TTL 30min)
+- 🔄 **Parallélisation**: Requêtes véhicule 5s → 1.5s (-70%)
+- 🔍 **Diagnostic Tool**: Script `diagnose-performance.js` pour analyse logs
+- 📊 **Cache Hit Rate**: <30% → >70% attendu
+- Voir [PERFORMANCE-OPTIMIZATIONS.md](../PERFORMANCE-OPTIMIZATIONS.md)
+
+### SEO Switches Migration
+- 🔄 **Migration complète PHP → TypeScript**: Service `SeoSwitchesService` (395 lignes)
+- 📊 **177 switches peuplés**: Table `__seo_gamme_car_switch` pour 5 gammes
+- ✅ **Formules rotation**: Réplication exacte logique PHP (`typeId % count`)
+- 🎯 **21 variables supportées**: #CompSwitch, #LinkGammeCar, #VMarque, etc.
+- Voir [SEO-SWITCHES-MIGRATION-COMPLETE.md](../backend/SEO-SWITCHES-MIGRATION-COMPLETE.md)
+
 ## 🆘 Support
 
 Pour toute question :
