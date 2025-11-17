@@ -75,8 +75,9 @@
 | **Config** | 1959 ⭐ | 36 | 4 niveaux, AES-256-GCM, audit trail | [config-module.md](features/config-module.md) |
 | **Health** | 1185 | 5 | Kubernetes probes, Prometheus, Grafana | [health-module.md](features/health-module.md) |
 | **Errors** | 574 | 12 | 404 suggestions, redirections, logging | [errors-module.md](features/errors-module.md) |
+| **SEO Switches** 🆕 | 395 | - | Migration PHP→TS, 177 switches, rotation formulas | [../backend/SEO-SWITCHES-MIGRATION-COMPLETE.md](../backend/SEO-SWITCHES-MIGRATION-COMPLETE.md) |
 
-**Business Impact**: Uptime 99.9%, Performance +200%, Debug time -40%
+**Business Impact**: Uptime 99.9%, Performance +200% (-70% homepage), Debug time -40%
 
 ### 📊 Analytics & Settings (3 modules, 31 endpoints)
 
@@ -235,13 +236,13 @@
 ## Reports
 
 ### 📊 Reports de Phase
-- [Phase 1 Complete](PHASE-1-COMPLETE.md) - 12 modules, 32% coverage
-- [Phase 2 Complete](PHASE-2-COMPLETE.md) - 9 modules, 57% coverage
-- [Phase 3 Extended Complete](PHASE-3-EXTENDED-COMPLETE.md) - 8 modules, 79% coverage
-- [**Phase 4 Complete**](PHASE-4-COMPLETE.md) - **1 module, 80% coverage** ✅ **MILESTONE**
+- [Phase 1 Complete](reports/phases/PHASE-1-COMPLETE.md) - 12 modules, 32% coverage
+- [Phase 2 Complete](reports/phases/PHASE-2-COMPLETE.md) - 9 modules, 57% coverage
+- [Phase 3 Extended Complete](reports/phases/PHASE-3-EXTENDED-COMPLETE.md) - 8 modules, 79% coverage
+- [**Phase 4 Complete**](reports/phases/PHASE-4-COMPLETE.md) - **1 module, 80% coverage** ✅ **MILESTONE**
 
 ### 📈 Rapport Global
-- [Global Coverage Report](GLOBAL-COVERAGE-REPORT.md) - Vue d'ensemble complète
+- [Global Coverage Report](reports/coverage/GLOBAL-COVERAGE-REPORT.md) - Vue d'ensemble complète
   - Architecture globale (60+ services)
   - Patterns architecturaux (9 identifiés)
   - Intégrations externes (12+)
@@ -249,6 +250,19 @@
   - Business value
   - Testing coverage
   - Deployment architecture
+
+### ⚡ Performance & Optimizations (17 Nov 2025)
+- [**Performance Optimizations**](../PERFORMANCE-OPTIMIZATIONS.md) - **Optimisations critiques (-70% homepage load)**
+  - ✅ Fix régression SEO (getGammeSeoContent variable undefined)
+  - ⚡ Parallélisation requêtes véhicule (5s → 1.5s, -70%)
+  - 💾 Cache Redis multi-niveaux: équipementiers (TTL 1h), conseils (TTL 30min), SEO (TTL 15min)
+  - 🔍 Script diagnostic performance (diagnose-performance.js)
+  - 📊 Gains mesurés: Homepage 15-20s → 3-5s, Équipementiers ×6 1.2s → 0.2s (-83%), Cache hit rate >70%
+- [SEO Switches Migration](../backend/SEO-SWITCHES-MIGRATION-COMPLETE.md) - Migration PHP → TypeScript complète
+  - 177 switches SEO peuplés (__seo_gamme_car_switch)
+  - Service SeoSwitchesService (395 lignes, SOLID principles)
+  - Formules rotation PHP répliquées exactement (typeId % count)
+  - 21 variables template supportées (#CompSwitch, #LinkGammeCar, etc.)
 
 ---
 
