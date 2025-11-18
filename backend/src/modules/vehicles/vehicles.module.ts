@@ -14,6 +14,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 // Controllers
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesFormsController } from './vehicles-forms-simple.controller';
+import { BrandsController } from './brands.controller'; // 🏷️ API marques automobiles /api/brands/*
 // import { VehiclesEnhancedController } from './vehicles-enhanced.controller'; // 👉 Décommente si présent et compilable
 
 // Services principaux
@@ -50,6 +51,7 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
   controllers: [
     VehiclesController,
     VehiclesFormsController,
+    BrandsController, // 🏷️ API marques /api/brands/*
     // VehiclesEnhancedController,
   ],
   providers: [

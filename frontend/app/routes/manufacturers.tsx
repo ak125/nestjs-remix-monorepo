@@ -1,33 +1,17 @@
 /**
- * 🏭 LAYOUT MANUFACTURERS
+ * 🔀 REDIRECT: /manufacturers → /brands
  * 
- * Layout pour toutes les pages manufacturers
- * Route: /manufacturers/*
+ * Layout route redirect - redirige toutes les sous-routes
  */
 
-import { Outlet } from "@remix-run/react";
+import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 
-export default function ManufacturersLayout() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header global manufacturers */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center py-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">
-                🚗 Catalogue Manufacturiers
-              </h1>
-              <p className="text-gray-600 text-sm">
-                Explorez nos marques, modèles et motorisations
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Contenu des pages */}
-      <Outlet />
-    </div>
-  );
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const path = url.pathname.replace('/manufacturers', '/brands');
+  return redirect(path + url.search, 301);
+}
+
+export default function ManufacturersLayoutRedirect() {
+  return null;
 }

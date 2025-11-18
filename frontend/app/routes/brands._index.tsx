@@ -1,18 +1,14 @@
 /**
- * 🔀 REDIRECT: /manufacturers → /brands
+ * 🏷️ LISTE DES MARQUES AUTOMOBILES
  * 
- * Cette route redirige vers /brands pour préserver le SEO
+ * Page publique listant toutes les marques automobiles
+ * Route: /brands
+ * 
+ * ✨ VERSION avec carousel modèles populaires
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  return redirect("/brands", 301);
-}
-
-export default function ManufacturersRedirect() {
-  return null;
-}
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { Alert } from '~/components/ui/alert';
@@ -91,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       models_count: brand.models_count || 0
     })) || [];
 
-    // ✨ NOUVEAU : Récupérer les modèles populaires
+    // ✨ Récupérer les modèles populaires
     let popularModels: FeaturedModel[] = [];
     try {
       const modelsResponse = await fetch(`${baseUrl}/api/brands/popular-models?limit=8`, {
@@ -105,7 +101,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       console.error("Erreur chargement modèles populaires:", error);
     }
 
-    // ✨ NOUVEAU : Récupérer les logos de marques
+    // ✨ Récupérer les logos de marques
     let brandLogos: BrandLogo[] = [];
     try {
       const logosResponse = await fetch(`${baseUrl}/api/brands/brands-logos?limit=18`, {
@@ -168,14 +164,14 @@ export default function BrandsIndex() {
         </p>
       </div>
 
-      {/* ✨ NOUVEAU : Carousel modèles populaires */}
+      {/* ✨ Carousel modèles populaires */}
       {popularModels.length > 0 && (
         <div className="mb-16">
           <FeaturedModelsCarousel models={popularModels} />
         </div>
       )}
 
-      {/* ✨ NOUVEAU : Logos de marques */}
+      {/* ✨ Logos de marques */}
       {brandLogos.length > 0 && (
         <div className="mb-16">
           <BrandLogosCarousel brands={brandLogos} />
@@ -240,7 +236,7 @@ export default function BrandsIndex() {
                   <div className="flex justify-center mb-4">
                     <div className="w-16 h-16 relative">
                       <BrandLogoClient 
-                        logoPath={null} // L'API ne retourne pas logoPath pour l'instant
+                        logoPath={null}
                         brandName={brand.marque_name}
                       />
                     </div>

@@ -1,19 +1,12 @@
 /**
- * 🔀 REDIRECT: /manufacturers/:brand/models/:model/types → /brands/:brand/models/:model/types
+ * ⚙️ TYPES/MOTORISATIONS D'UN MODÈLE
  * 
- * Cette route redirige vers /brands pour préserver le SEO
+ * Page des types/motorisations d'un modèle spécifique
+ * Route: /brands/$brandId/models/$modelId/types
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-
-export async function loader({ params }: LoaderFunctionArgs) {
-  const { brandId, modelId } = params;
-  return redirect(`/brands/${brandId}/models/${modelId}/types`, 301);
-}
-
-export default function ManufacturerModelTypesRedirect() {
-  return null;
-}
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Fuel, Zap, Calendar, Settings, Info } from "lucide-react";
 import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
@@ -156,7 +149,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 }
 
-export default function ManufacturerModelTypes() {
+export default function BrandModelTypes() {
   const { types, model, brand, stats, error } = useLoaderData<typeof loader>();
   const params = useParams();
 
@@ -180,9 +173,9 @@ export default function ManufacturerModelTypes() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <PublicBreadcrumb items={[
-        { label: "Marques", href: "/manufacturers" },
-        { label: brand?.marque_name || `Marque #${params.brandId}`, href: `/manufacturers/${params.brandId}` },
-        { label: model?.modele_name || "Modèle", href: `/manufacturers/${params.brandId}` },
+        { label: "Marques", href: "/brands" },
+        { label: brand?.marque_name || `Marque #${params.brandId}`, href: `/brands/${params.brandId}` },
+        { label: model?.modele_name || "Modèle", href: `/brands/${params.brandId}` },
         { label: "Motorisations" }
       ]} />
 
@@ -210,7 +203,7 @@ export default function ManufacturerModelTypes() {
           </div>
         </div>
         
-        <Link to={`/manufacturers/${params.brandId}`}>
+        <Link to={`/brands/${params.brandId}`}>
           <Button variant="outline" className="flex items-center space-x-2">
             <ArrowLeft className="h-4 w-4" />
             <span>Retour au modèle</span>

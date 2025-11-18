@@ -31,7 +31,7 @@ export function ManufacturerCard({
   viewMode = 'grid', 
   linkTo 
 }: ManufacturerCardProps) {
-  const defaultLink = linkTo || `/manufacturers/${manufacturer.slug || manufacturer.id}`;
+  const defaultLink = linkTo || `/brands/${manufacturer.slug || manufacturer.id}`;
   const displayName = manufacturer.display_name || manufacturer.name;
   const modelsCount = manufacturer.models_count || 0;
   const typesCount = manufacturer.types_count || 0;

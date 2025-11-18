@@ -611,7 +611,7 @@ class BrandApiService {
     }
 
     try {
-      const apiUrl = `${API_BASE_URL}/api/manufacturers/brands-logos?limit=${limit}`;
+      const apiUrl = `${API_BASE_URL}/api/brands/brands-logos?limit=${limit}`;
       console.log('[Brand API] Fetching from:', apiUrl);
       const response = await fetch(apiUrl);
       

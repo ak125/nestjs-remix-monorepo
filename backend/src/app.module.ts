@@ -20,8 +20,7 @@ import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Mod
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
-import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule
-import { ManufacturersModule } from './modules/manufacturers/manufacturers.module'; // 🏭 NOUVEAU - Module manufacturers !
+import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
@@ -94,8 +93,7 @@ import { AiContentModule } from './modules/ai-content/ai-content.module'; // �
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
     // 🚗 MODULES VÉHICULES
-    VehiclesModule, // Module vehicle principal pour sélecteur véhicule
-    ManufacturersModule, // 🏭 NOUVEAU - Module manufacturers avec tables auto_* !
+    VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
