@@ -98,8 +98,8 @@ export function BrandLogosCarousel({
       {/* Footer CTA */}
       <div className="mt-8 text-center">
         <Link
-          to="/manufacturers"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+          to="/brands"
+          className=""inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
         >
           Voir toutes les marques
           <svg

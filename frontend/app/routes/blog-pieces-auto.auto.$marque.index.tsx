@@ -63,7 +63,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
     // Récupérer les informations de la marque et ses modèles
-    const brandRes = await fetch(`${backendUrl}/api/manufacturers/brand/${marque}`, {
+    const brandRes = await fetch(`${backendUrl}/api/brands/brand/${marque}`, {
       headers: { "Content-Type": "application/json" },
     });
 

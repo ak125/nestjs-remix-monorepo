@@ -62,13 +62,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     // Fetch brands, popular models and metadata in parallel
     const [brandsRes, modelsRes, metadataRes] = await Promise.all([
-      fetch(`${backendUrl}/api/manufacturers/brands-logos?limit=50`, {
+      fetch(`${backendUrl}/api/brands/brands-logos?limit=50`, {
         headers: { "Content-Type": "application/json" },
       }),
-      fetch(`${backendUrl}/api/manufacturers/popular-models?limit=12`, {
+      fetch(`${backendUrl}/api/brands/popular-models?limit=12`, {
         headers: { "Content-Type": "application/json" },
       }),
-      fetch(`${backendUrl}/api/manufacturers/page-metadata/constructeurs`, {
+      fetch(`${backendUrl}/api/brands/page-metadata/constructeurs`, {
         headers: { "Content-Type": "application/json" },
       }),
     ]);
@@ -432,7 +432,7 @@ export default function BlogPiecesAutoIndex() {
                   {visibleModels.map((model) => (
                     <Link
                       key={model.id}
-                      to={`/manufacturers/${model.slug}`}
+                      to={`/brands/${model.slug}`}
                       className="group"
                     >
                       <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-green-300 bg-white overflow-hidden group-hover:-translate-y-1">

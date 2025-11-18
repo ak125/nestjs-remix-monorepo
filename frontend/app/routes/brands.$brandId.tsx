@@ -1,19 +1,12 @@
 /**
- * 🔀 REDIRECT: /manufacturers/:id → /brands/:id
+ * 🚗 PAGE PUBLIQUE MARQUE
  * 
- * Cette route redirige vers /brands pour préserver le SEO
+ * Version publique inspirée de l'existant commercial optimisé
+ * Route: /brands/$brandId
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-
-export async function loader({ params }: LoaderFunctionArgs) {
-  const { brandId } = params;
-  return redirect(`/brands/${brandId}`, 301);
-}
-
-export default function ManufacturerBrandRedirect() {
-  return null;
-}
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
 import { Alert } from '~/components/ui/alert';
 import { BrandLogoClient } from "../components/BrandLogoClient";
@@ -84,7 +77,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return json({ models, brand, types } as LoaderData);
 
   } catch (error) {
-    console.error("Erreur chargement manufacturier:", error);
+    console.error("Erreur chargement marque:", error);
     return json({ 
       models: [], 
       brand: null,
@@ -94,7 +87,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 }
 
-export default function ManufacturerPage() {
+export default function BrandPage() {
   const { models, brand, types, error } = useLoaderData<typeof loader>();
   const params = useParams();
 
@@ -102,7 +95,7 @@ export default function ManufacturerPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
       <PublicBreadcrumb items={[
-        { label: "Marques", href: "/manufacturers" },
+        { label: "Marques", href: "/brands" },
         { label: brand?.marque_name || `Marque #${params.brandId}` }
       ]} />
       
@@ -127,7 +120,7 @@ export default function ManufacturerPage() {
           </div>
         </div>
         
-        <Link to="/manufacturers">
+        <Link to="/brands">
           <Button variant="outline" className="flex items-center space-x-2">
             <ArrowLeft className="h-4 w-4" />
             <span>Retour aux marques</span>
@@ -186,7 +179,7 @@ export default function ManufacturerPage() {
                   
                   {/* Navigation vers les motorisations */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <Link to={`/manufacturers/${params.brandId}/models/${model.modele_id}/types`}>
+                    <Link to={`/brands/${params.brandId}/models/${model.modele_id}/types`}>
                       <Button variant="outline" size="sm" className="w-full">
                         <Settings className="h-4 w-4 mr-2" />
                         Voir motorisations

@@ -81,7 +81,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 
     // Récupérer les informations du modèle et ses motorisations
     const modelRes = await fetch(
-      `${backendUrl}/api/manufacturers/brand/${marque}/model/${modele}`,
+      `${backendUrl}/api/brands/brand/${marque}/model/${modele}`,
       {
         headers: { "Content-Type": "application/json" },
       },

@@ -244,7 +244,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Essayer de récupérer depuis l'API manufacturers (catalogue technique)
   try {
-    const apiUrl = new URL(`${API_BASE_URL}/api/manufacturers`);
+    const apiUrl = new URL(`${API_BASE_URL}/api/brands`);
     if (search) apiUrl.searchParams.set('search', search);
     if (letter) apiUrl.searchParams.set('letter', letter);
     // Pagination gérée côté client pour l'instant

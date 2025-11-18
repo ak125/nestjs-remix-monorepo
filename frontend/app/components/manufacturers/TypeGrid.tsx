@@ -42,7 +42,7 @@ export function TypeGrid({
   types, 
   layout = 'grid', 
   showActions = true,
-  linkPrefix = "/manufacturers/types",
+  linkPrefix = "/brands/types",
   emptyMessage = "Aucun type disponible"
 }: TypeGridProps) {
   // Fonction pour obtenir l'icône de carburant
