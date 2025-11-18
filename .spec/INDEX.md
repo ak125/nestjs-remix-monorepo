@@ -264,6 +264,24 @@
   - Formules rotation PHP répliquées exactement (typeId % count)
   - 21 variables template supportées (#CompSwitch, #LinkGammeCar, etc.)
 
+### 🏗️ Architecture Decision Records (ADRs)
+- [**ADR-003: Cache Redis Multi-Niveaux**](architecture/003-cache-redis-multi-levels.md) ⭐ **NEW**
+  - Stratégie cache 3 niveaux (TTL 1h/30min/15min)
+  - Gains mesurés: -70% homepage, -83% équipementiers
+  - Redis centralisé pour cohérence multi-instances
+- [**ADR-004: SEO Switches Migration PHP→TS**](architecture/004-seo-switches-migration-php-ts.md) ⭐ **NEW**
+  - Migration complète système SEO switches
+  - 177 switches migrés, 21 variables template
+  - Type-safety + tests + CI/CD intégré
+  - ROI positif dès 5 mois
+
+### 📋 Workflows
+- [**Performance Optimization Workflow**](workflows/performance-optimization.md) ⭐ **NEW**
+  - Process complet: Détection → Diagnostic → Fix → Validation
+  - 6 phases documentées avec checklists
+  - Impact matrix pour priorisation
+  - Post-mortem template
+
 ---
 
 ## Patterns Architecturaux
