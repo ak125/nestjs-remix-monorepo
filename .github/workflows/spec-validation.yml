@@ -1,26 +1,20 @@
-name: Spec Validation
+name: 📋 Validate Specifications
 
 on:
-  # Désactivé par défaut - À activer manuellement via workflow_dispatch
-  # ou après confirmation de l'équipe
-  # pull_request:
-  #   branches:
-  #     - main
-  #     - develop
-  #   paths:
-  #     - '.spec/**'
-  #     - 'backend/src/**'
-  #     - 'frontend/app/**'
-  #     - 'packages/**'
-
-  # push:
-  #   branches:
-  #     - main
-  #     - develop
-  #   paths:
-  #     - '.spec/**'
-
-  workflow_dispatch:  # Permet déclenchement manuel uniquement
+  pull_request:
+    branches: [main, develop, 'Feat/**']
+    paths:
+      - '.spec/**'
+      - 'backend/src/**/*.ts'
+      - 'frontend/app/**/*.{ts,tsx}'
+      - 'scripts/validate-specs.sh'
+  
+  push:
+    branches: [main]
+    paths:
+      - '.spec/**'
+  
+  workflow_dispatch:  # Permet déclenchement manuel
 
 jobs:
   validate-specs:
@@ -147,6 +141,30 @@ jobs:
           
           echo "✅ All OpenAPI specs are valid"
 
+      - name: Validate ADR metadata
+        run: |
+          echo "Validating Architecture Decision Records..."
+          
+          find .spec/architecture -name "*.md" | while read adr; do
+            echo "Checking $adr..."
+            
+            # Vérifier frontmatter YAML
+            if ! head -n 1 "$adr" | grep -q "^---$"; then
+              echo "❌ Missing YAML frontmatter in $adr"
+              exit 1
+            fi
+            
+            # Vérifier champs obligatoires ADR
+            for field in title status version authors created; do
+              if ! grep -q "^$field:" "$adr"; then
+                echo "❌ Missing field '$field' in $adr"
+                exit 1
+              fi
+            done
+            
+            echo "✅ $adr validated"
+          done
+      
       - name: Validate TypeScript schemas
         run: |
           echo "Validating TypeScript schema files..."
