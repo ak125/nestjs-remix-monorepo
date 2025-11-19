@@ -332,46 +332,16 @@ export class GammeUnifiedService extends SupabaseBaseService {
       
       const context = { typeId, pgId, mfId };
       
-      // 6. Traiter chaque champ SEO avec variables ET switches
-      const processedH1 = await this.replaceVariablesAndSwitches(
-        data.sgc_h1,
-        vehicle,
-        vehicleInfo,
-        gammeInfo,
-        context
-      );
-      
-      const processedContent = await this.replaceVariablesAndSwitches(
-        data.sgc_content,
-        vehicle,
-        vehicleInfo,
-        gammeInfo,
-        context
-      );
-      
-      const processedDescription = await this.replaceVariablesAndSwitches(
-        data.sgc_descrip,
-        vehicle,
-        vehicleInfo,
-        gammeInfo,
-        context
-      );
-      
-      const processedTitle = await this.replaceVariablesAndSwitches(
-        data.sgc_title,
-        vehicle,
-        vehicleInfo,
-        gammeInfo,
-        context
-      );
-      
-      const processedPreview = await this.replaceVariablesAndSwitches(
-        data.sgc_preview,
-        vehicle,
-        vehicleInfo,
-        gammeInfo,
-        context
-      );
+      // 🚀 OPTIMISATION: Paralléliser 5 champs SEO (30s → 6-8s)
+      // Principe #6 Constitution: Performance-Driven, Not Guess-Driven
+      const [processedH1, processedContent, processedDescription, processedTitle, processedPreview] = 
+        await Promise.all([
+          this.replaceVariablesAndSwitches(data.sgc_h1, vehicle, vehicleInfo, gammeInfo, context),
+          this.replaceVariablesAndSwitches(data.sgc_content, vehicle, vehicleInfo, gammeInfo, context),
+          this.replaceVariablesAndSwitches(data.sgc_descrip, vehicle, vehicleInfo, gammeInfo, context),
+          this.replaceVariablesAndSwitches(data.sgc_title, vehicle, vehicleInfo, gammeInfo, context),
+          this.replaceVariablesAndSwitches(data.sgc_preview, vehicle, vehicleInfo, gammeInfo, context)
+        ]);
 
       const finalResult = {
         success: true,

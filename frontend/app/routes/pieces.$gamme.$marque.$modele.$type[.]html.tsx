@@ -4,6 +4,7 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { useCallback } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 // ========================================
@@ -555,15 +556,16 @@ export default function PiecesVehicleRoute() {
   } = usePiecesFilters(data.pieces);
 
   // Actions de sélection pour mode comparaison
-  const handleSelectPiece = (pieceId: number) => {
+  // ⚡ Optimisé avec useCallback pour éviter re-création à chaque render
+  const handleSelectPiece = useCallback((pieceId: number) => {
     if (viewMode === 'comparison') {
       togglePieceSelection(pieceId);
     }
-  };
+  }, [viewMode, togglePieceSelection]);
 
-  const handleRemoveFromComparison = (pieceId: number) => {
+  const handleRemoveFromComparison = useCallback((pieceId: number) => {
     togglePieceSelection(pieceId);
-  };
+  }, [togglePieceSelection]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
