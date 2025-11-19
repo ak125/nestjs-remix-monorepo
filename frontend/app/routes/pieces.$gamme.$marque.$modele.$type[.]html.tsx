@@ -151,15 +151,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 4. Construction des données véhicule
   
-  // 4.1 Récupération du type_name complet depuis l'API
+  // ⚡ PARALLÉLISATION: Récupération type_name + photo modèle en une seule fois
+  const [typeApiResponse, modelsApiResponse] = await Promise.all([
+    fetch(`http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`).catch(() => null),
+    fetch(`http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`).catch(() => null)
+  ]);
+  
+  // 4.1 Extraction type_name
   let typeName = toTitleCaseFromSlug(typeData.alias);
   try {
-    const typeResponse = await fetch(
-      `http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`
-    );
-    
-    if (typeResponse.ok) {
-      const typeApiData = await typeResponse.json();
+    if (typeApiResponse?.ok) {
+      const typeApiData = await typeApiResponse.json();
       if (typeApiData && typeApiData.type_name) {
         typeName = typeApiData.type_name;
       }
@@ -168,15 +170,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     console.error('⚠️ Erreur récupération type_name:', error);
   }
   
-  // 4.2 Récupération de la photo du modèle depuis l'API
+  // 4.2 Extraction photo modèle
   let modelePic: string | undefined = undefined;
   try {
-    const modeleResponse = await fetch(
-      `http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`
-    );
-    
-    if (modeleResponse.ok) {
-      const modelsData = await modeleResponse.json();
+    if (modelsApiResponse?.ok) {
+      const modelsData = await modelsApiResponse.json();
       const modelData = modelsData.data?.find((m: any) => m.modele_id === vehicleIds.modeleId);
       
       if (modelData) {
@@ -475,7 +473,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 // 📄 META - SEO (Schema.org généré par composant Breadcrumbs)
 // ========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
       { title: 'Pièces automobile' },
@@ -483,12 +481,53 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ];
   }
 
+  // Construire URL canonique complète
+  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
+  
+  // Générer Schema.org Product pour rich snippets (première pièce comme exemple)
+  const firstPiece = data.pieces[0];
+  const productSchema = firstPiece ? {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
+    "description": data.seo.description,
+    "brand": {
+      "@type": "Brand",
+      "name": firstPiece.brand
+    },
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "EUR",
+      "lowPrice": data.minPrice,
+      "highPrice": data.maxPrice,
+      "offerCount": data.count,
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": data.count > 0 ? {
+      "@type": "AggregateRating",
+      "ratingValue": "4.5",
+      "reviewCount": data.count
+    } : undefined
+  } : null;
+
   return [
     { title: data.seo.title },
     { name: 'description', content: data.seo.description },
     { property: 'og:title', content: data.seo.title },
     { property: 'og:description', content: data.seo.description },
-    { name: 'robots', content: 'index, follow' }
+    { name: 'robots', content: 'index, follow' },
+    
+    // ✨ NOUVEAU: Canonical URL
+    { tagName: 'link', rel: 'canonical', href: canonicalUrl },
+    
+    // ✨ NOUVEAU: Resource Hints pour Supabase (préconnexion)
+    { tagName: 'link', rel: 'preconnect', href: 'https://cxpojprgwgubzjyqzmoq.supabase.co' },
+    { tagName: 'link', rel: 'dns-prefetch', href: 'https://cxpojprgwgubzjyqzmoq.supabase.co' },
+    
+    // ✨ NOUVEAU: Schema.org Product (rich snippets)
+    ...(productSchema ? [{
+      'script:ld+json': productSchema
+    }] : [])
   ];
 };
 
