@@ -9,12 +9,24 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiParam,
+  ApiBearerAuth,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { LocalAuthGuard } from './local-auth.guard';
 import { UsersService } from '../modules/users/users.service';
 import { AuthService } from './auth.service';
 import { UserService } from '../database/services/user.service';
 import { CartDataService } from '../database/services/cart-data.service';
+import { LoginResponseDto } from './dto/login-response.dto';
+import { LogoutResponseDto } from './dto/logout-response.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 import {
   ModuleAccessDto,
   BulkModuleAccessDto,
@@ -23,6 +35,7 @@ import {
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import RegisterSchema, { RegisterDto } from './dto/register.dto';
 
+@ApiTags('auth')
 @Controller()
 export class AuthController {
   constructor(
@@ -38,6 +51,32 @@ export class AuthController {
    * ✅ Validation automatique avec Zod (cohérent avec l'architecture)
    */
   @Post('auth/register')
+  @ApiOperation({
+    summary: 'Register new user account',
+    description:
+      'Create a new user account with email/password. Automatically logs in the user after registration.',
+  })
+  @ApiBody({ type: RegisterDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered and logged in successfully',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Email already in use',
+    schema: {
+      example: {
+        success: false,
+        message: 'Cet email est déjà utilisé',
+        status: 409,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Server error during registration',
+  })
   async register(
     @Body(new ZodValidationPipe(RegisterSchema)) userData: RegisterDto,
     @Req() request: Express.Request,
@@ -96,6 +135,50 @@ export class AuthController {
    * Authentification utilisateur avec email/password
    */
   @Post('auth/login')
+  @ApiOperation({
+    summary: 'Login with email and password',
+    description:
+      'Authenticate user with email/password and create session. Returns user info and session token.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: {
+          type: 'string',
+          format: 'email',
+          example: 'client@fafa-auto.fr',
+          description: 'User email',
+        },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'Password123!',
+          description: 'User password',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials',
+    schema: {
+      example: {
+        success: false,
+        message: 'Email ou mot de passe incorrect',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Server error during login',
+  })
   async loginPost(
     @Body() credentials: { email: string; password: string },
     @Req() request: Express.Request,
@@ -152,6 +235,28 @@ export class AuthController {
    * Récupérer l'utilisateur connecté
    */
   @Get('auth/me')
+  @ApiOperation({
+    summary: 'Get current authenticated user',
+    description:
+      'Returns the currently logged in user information from session.',
+  })
+  @ApiCookieAuth('connect.sid')
+  @ApiResponse({
+    status: 200,
+    description: 'User information retrieved',
+    type: UserResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'User not authenticated',
+    schema: {
+      example: {
+        success: false,
+        error: 'Utilisateur non connecté',
+        timestamp: '2024-01-15T10:30:00.000Z',
+      },
+    },
+  })
   async getCurrentUser(@Req() request: Express.Request) {
     if (request.user) {
       return {
@@ -305,6 +410,20 @@ export class AuthController {
   }
 
   @Post('auth/logout')
+  @ApiOperation({
+    summary: 'Logout current user',
+    description:
+      'Destroy user session, clear cookies, and log out. Redirects to homepage after logout.',
+  })
+  @ApiCookieAuth('connect.sid')
+  @ApiResponse({
+    status: 302,
+    description: 'Logout successful, redirects to homepage',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Error during logout',
+  })
   async logout(
     @Req() request: Express.Request,
     @Res() response: Response,

@@ -14,6 +14,13 @@ import {
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from './products.service';
 import { StockService } from './services/stock.service';
@@ -48,6 +55,7 @@ import { ZodQueryValidationPipe } from '../../common/pipes/zod-query-validation.
  * - Gestion d'erreurs améliorée
  * - Types stricts pour les DTOs
  */
+@ApiTags('products')
 @Controller('api/products')
 @UseInterceptors(CacheInterceptor)
 export class ProductsController {
@@ -148,6 +156,44 @@ export class ProductsController {
    * Endpoint: GET /api/products/search?query=...&limit=10
    */
   @Get('search')
+  @ApiOperation({
+    summary: 'Search products by name or reference',
+    description:
+      'Full-text search across product catalog. Returns up to 50 results. Cached for 1 minute.',
+  })
+  @ApiQuery({
+    name: 'query',
+    required: true,
+    description: 'Search term (min 2 characters)',
+    example: 'plaquettes frein',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Maximum results (max 50)',
+    example: '10',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results found',
+    schema: {
+      example: {
+        results: [
+          {
+            id: 123,
+            name: 'Plaquettes de frein avant',
+            reference: 'PF-001',
+            price: 45.99,
+            stock: 15,
+          },
+        ],
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid query parameter',
+  })
   @CacheTTL(60) // Cache 1 minute
   async searchProducts(
     @Query('query') query: string,
@@ -247,6 +293,39 @@ export class ProductsController {
    * Récupérer une pièce par ID avec informations de stock
    */
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get product details by ID',
+    description:
+      'Retrieve complete product information including stock availability, pricing, and specifications.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Product ID',
+    example: '12345',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product details retrieved',
+    schema: {
+      example: {
+        id: 12345,
+        name: 'Plaquettes de frein avant',
+        reference: 'PF-001',
+        price: 45.99,
+        description: 'Plaquettes haute performance',
+        stock: {
+          available: 15,
+          reserved: 2,
+          total: 17,
+          status: 'in_stock',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found',
+  })
   async findOne(@Param('id') id: string) {
     const product = await this.productsService.findOne(id);
 
