@@ -39,6 +39,19 @@ automecanik.fr {
     # Exemple de redirection manuelle (à supprimer après génération auto)
     # redir /pieces/ancien-slug/* /pieces/nouveau-slug/{uri} 301
     
+    # ===== REDIRECTIONS 301 IMAGES SUPABASE (SEO) =====
+    # Préserve les anciennes URLs publiques pour le SEO et liens externes
+    # Redirige vers Supabase Storage avec code 301 permanent
+    
+    # Images produits: /rack/{folder}/{filename} → Supabase rack-images bucket
+    @rack_images path_regexp rack_path ^/rack/(.+)$
+    redir @rack_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1} 301
+    
+    # Images uploads: /upload/* → Supabase uploads bucket
+    # Couvre 8 formats: gammes, familles, constructeurs, équipementiers, blog, favicon, etc.
+    @upload_images path_regexp upload_path ^/upload/(.+)$
+    redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
+    
     # ===== ASSETS STATIQUES AVEC CACHE =====
     # Cache agressif pour assets avec hash (build)
     @hashed path /build/*
