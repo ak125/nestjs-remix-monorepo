@@ -1,9 +1,11 @@
-import { Controller, Get, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Param, Logger, Inject } from '@nestjs/common';
 import { PiecesV4WorkingService } from '../services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
 import { PiecesPhpLogicCompleteService } from '../services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from '../services/pieces-enhanced.service';
 import { PricingService as PricingServiceV5UltimateFinal } from '../../products/services/pricing.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 /**
  * 🎯 CONTRÔLEUR PIÈCES NETTOYÉ
@@ -22,6 +24,7 @@ export class PiecesCleanController {
     private readonly piecesCompleteService: PiecesPhpLogicCompleteService,
     private readonly piecesEnhancedService: PiecesEnhancedService,
     private readonly pricingService: PricingServiceV5UltimateFinal,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   /**
@@ -47,6 +50,25 @@ export class PiecesCleanController {
         throw new Error(`pgId invalide: ${pgId}. Doit être un nombre > 0`);
       }
 
+      // ✅ CACHE REDIS: Vérifier le cache (5 minutes TTL)
+      const cacheKey = `pieces:php-logic:${typeIdNum}:${pgIdNum}`;
+      const cached = await this.cacheManager.get(cacheKey);
+
+      if (cached) {
+        const responseTime = Date.now() - startTime;
+        this.logger.log(
+          `⚡ [PHP-LOGIC] Cache HIT pour type=${typeIdNum}, gamme=${pgIdNum} (${responseTime}ms)`,
+        );
+        return {
+          ...(cached as any),
+          statistics: {
+            ...(cached as any).statistics,
+            response_time: `${responseTime}ms`,
+            cache_hit: true,
+          },
+        };
+      }
+
       this.logger.log(
         `🎯 [COMPATIBILITY] type_id=${typeIdNum}, pg_id=${pgIdNum}`,
       );
@@ -69,15 +91,24 @@ export class PiecesCleanController {
         );
       }
 
-      return {
+      const response = {
         success: result.success,
         data: result,
         statistics: {
           response_time: `${responseTime}ms`,
+          cache_hit: false,
         },
         timestamp: new Date().toISOString(),
         version: 'PHP_LOGIC_COMPLETE',
       };
+
+      // ✅ METTRE EN CACHE (5 minutes = 300 secondes)
+      if (result.success && result.pieces && result.pieces.length > 0) {
+        await this.cacheManager.set(cacheKey, response, 300000); // 5 minutes en ms
+        this.logger.log(`💾 [PHP-LOGIC] Mis en cache: ${cacheKey}`);
+      }
+
+      return response;
     } catch (error: any) {
       const responseTime = Date.now() - startTime;
       this.logger.error(`❌ [PHP-LOGIC] Erreur: ${error.message}`, error.stack);
@@ -87,6 +118,7 @@ export class PiecesCleanController {
         error: error.message,
         statistics: {
           response_time: `${responseTime}ms`,
+          cache_hit: false,
         },
         timestamp: new Date().toISOString(),
       };
