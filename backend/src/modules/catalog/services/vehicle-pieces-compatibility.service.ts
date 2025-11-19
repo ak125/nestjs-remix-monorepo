@@ -107,12 +107,16 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
             ),
 
           // Images (depuis pieces_media_img)
+          // 🚀 OPTIMISATION: Limiter fortement le nombre d'images récupérées
+          // Note: On ne peut pas LIMIT par groupe, mais on trie et filtre côté app
           this.client
             .from('pieces_media_img')
-            .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display')
+            .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display, pmi_sort')
             .in('pmi_piece_id', pieceIds.map((id) => id.toString()))
             .eq('pmi_display', '1')
-            .order('pmi_sort', { ascending: true }),
+            .order('pmi_piece_id', { ascending: true })
+            .order('pmi_sort', { ascending: true })
+            .limit(pieceIds.length * 2), // Max 2 images par pièce en moyenne
         ]);
 
       if (piecesResult.error) {
@@ -150,9 +154,17 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         marquesData.map((m) => [m.pm_id.toString(), m]),
       );
       const filtresMap = new Map(filtresData.map((f) => [f.psf_id, f]));
-      const imagesMap = new Map(
-        imagesData.map((img) => [img.pmi_piece_id.toString(), img]),
-      );
+      
+      // 🚀 OPTIMISATION: Ne garder que la première image par pièce (déjà trié par pmi_sort)
+      // Évite de stocker 286 images pour 8 pièces en Map
+      const imagesMap = new Map();
+      imagesData.forEach((img) => {
+        const pieceId = img.pmi_piece_id.toString();
+        if (!imagesMap.has(pieceId)) {
+          imagesMap.set(pieceId, img);
+        }
+      });
+      
       const relationsMap = new Map(
         relationsData.map((r) => [r.rtp_piece_id, r]),
       );
