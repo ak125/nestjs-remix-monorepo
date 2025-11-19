@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { buildRackImageUrl, buildImageMetadata, type PieceImageData } from '../utils/image-urls.utils';
 
 /**
  * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES
@@ -331,14 +332,8 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
     imagesMap: Map<string, any>,
   ): string {
     // Chercher l'image directement dans la Map (ignore piece_has_img)
-    const image = imagesMap.get(pieceId.toString());
-    
-    if (image?.pmi_folder && image?.pmi_name) {
-      // URL Supabase rack-images directe (pmi_name contient déjà l'extension)
-      return `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/${image.pmi_folder}/${image.pmi_name}`;
-    }
-
-    return '/images/pieces/default.png';
+    const image = imagesMap.get(pieceId.toString()) as PieceImageData | undefined;
+    return buildRackImageUrl(image);
   }
 
   private slugify(text: string): string {

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * ✅ Schema Zod pour l'inscription utilisateur
@@ -61,6 +62,65 @@ export const RegisterSchema = z.object({
 export type RegisterDto = z.infer<typeof RegisterSchema>;
 
 /**
+ * ✅ Classe DTO pour Swagger documentation
+ */
+export class RegisterDtoClass {
+  @ApiProperty({
+    description: 'User email address',
+    example: 'client@fafa-auto.fr',
+    type: String,
+  })
+  email: string;
+
+  @ApiProperty({
+    description: 'User password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
+    example: 'SecurePass123!',
+    type: String,
+  })
+  password: string;
+
+  @ApiProperty({
+    description: 'First name',
+    example: 'Jean',
+    required: false,
+    type: String,
+  })
+  firstName?: string;
+
+  @ApiProperty({
+    description: 'Last name',
+    example: 'Dupont',
+    required: false,
+    type: String,
+  })
+  lastName?: string;
+
+  @ApiProperty({
+    description: 'Civility',
+    example: 'M',
+    enum: ['M', 'Mme', 'Mlle'],
+    required: false,
+  })
+  civility?: 'M' | 'Mme' | 'Mlle';
+
+  @ApiProperty({
+    description: 'Phone number',
+    example: '+33 1 23 45 67 89',
+    required: false,
+    type: String,
+  })
+  tel?: string;
+
+  @ApiProperty({
+    description: 'Mobile number',
+    example: '+33 6 12 34 56 78',
+    required: false,
+    type: String,
+  })
+  gsm?: string;
+}
+
+/**
  * ✅ Helper pour validation manuelle si nécessaire
  */
 export const validateRegister = (data: unknown): RegisterDto => {
@@ -72,3 +132,4 @@ export const validateRegister = (data: unknown): RegisterDto => {
  * Usage: @Body(new ZodValidationPipe(RegisterSchema)) userData: RegisterDto
  */
 export default RegisterSchema;
+

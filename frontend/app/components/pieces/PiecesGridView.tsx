@@ -9,6 +9,18 @@ import { Badge } from '@fafa/ui';
 import React from 'react';
 import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
+import { normalizeImageUrl } from '../../utils/image.utils';
+
+interface PiecesGridViewProps {
+  pieces: PieceData[];
+  onSelectPiece?: (pieceId: number) => void;
+  selectedPieces?: number[];
+}
+
+import { Badge } from '@fafa/ui';
+import React from 'react';
+import { useCart } from '../../hooks/useCart';
+import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesGridViewProps {
   pieces: PieceData[];
@@ -85,7 +97,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
             <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden group-hover:shadow-inner transition-shadow">
               {piece.image && piece.image !== '/images/pieces/default.png' ? (
                 <img
-                  src={piece.image}
+                  src={normalizeImageUrl(piece.image)}
                   alt={piece.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"

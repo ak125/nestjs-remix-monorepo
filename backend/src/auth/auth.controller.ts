@@ -33,7 +33,7 @@ import {
   TokenValidationDto,
 } from './dto/module-access.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import RegisterSchema, { RegisterDto } from './dto/register.dto';
+import RegisterSchema, { RegisterDto, RegisterDtoClass } from './dto/register.dto';
 
 @ApiTags('auth')
 @Controller()
@@ -56,7 +56,7 @@ export class AuthController {
     description:
       'Create a new user account with email/password. Automatically logs in the user after registration.',
   })
-  @ApiBody({ type: RegisterDto })
+  @ApiBody({ type: RegisterDtoClass })
   @ApiResponse({
     status: 201,
     description: 'User registered and logged in successfully',
