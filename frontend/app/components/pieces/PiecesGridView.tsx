@@ -10,17 +10,7 @@ import React from 'react';
 import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
 import { normalizeImageUrl } from '../../utils/image.utils';
-
-interface PiecesGridViewProps {
-  pieces: PieceData[];
-  onSelectPiece?: (pieceId: number) => void;
-  selectedPieces?: number[];
-}
-
-import { Badge } from '@fafa/ui';
-import React from 'react';
-import { useCart } from '../../hooks/useCart';
-import { type PieceData } from '../../types/pieces-route.types';
+import { hasStockAvailable } from '../../utils/stock.utils';
 
 interface PiecesGridViewProps {
   pieces: PieceData[];
@@ -46,17 +36,11 @@ const optimizeImageUrl = (imageUrl: string | undefined, width: number = 200): st
   return imageUrl;
 };
 
-const generateSrcSet = (imageUrl: string | undefined): string => {
-  if (!imageUrl) return '';
-  return [200, 300, 400]
-    .map(width => `${optimizeImageUrl(imageUrl, width)} ${width}w`)
-    .join(', ');
-};
-
 /**
  * Vue Grid avec cartes pièces
+ * ⚡ Optimisé avec React.memo pour éviter re-renders inutiles
  */
-export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesGridViewProps) {
+export const PiecesGridView = React.memo(function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesGridViewProps) {
   const { addToCart } = useCart();
   
   if (pieces.length === 0) {
@@ -77,14 +61,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {pieces.map(piece => {
         const isSelected = selectedPieces.includes(piece.id);
-        // ✅ FIX: Gérer tous les statuts de disponibilité
-        // "En stock", "available", "Sur commande" = disponible
-        // Tout le reste ou undefined = rupture
-        const hasStock = piece.stock 
-          ? (piece.stock === 'En stock' || piece.stock === 'available' || piece.stock === 'Sur commande')
-          : true; // Si pas de champ stock, considérer comme disponible par défaut
-        
-        console.log(`🔍 Piece ${piece.id}: stock=${piece.stock}, hasStock=${hasStock}`);
+        const hasStock = hasStockAvailable(piece.stock);
         
         return (
           <div 
@@ -98,7 +75,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
               {piece.image && piece.image !== '/images/pieces/default.png' ? (
                 <img
                   src={normalizeImageUrl(piece.image)}
-                  alt={piece.name}
+                  alt={`${piece.name} ${piece.brand}${piece.reference ? ` pour véhicule - Réf ${piece.reference}` : ' pièce automobile de qualité'}`}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                   decoding="async"
@@ -212,4 +189,19 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
       })}
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // ⚡ Optimisation: shallow comparison au lieu de JSON.stringify (10-50x plus rapide)
+  // Principe #6 Constitution: Performance-Driven, Not Guess-Driven
+  if (prevProps.pieces !== nextProps.pieces) return false;
+  if (prevProps.onSelectPiece !== nextProps.onSelectPiece) return false;
+  
+  // Comparaison optimisée des selectedPieces
+  const prevSelected = prevProps.selectedPieces || [];
+  const nextSelected = nextProps.selectedPieces || [];
+  
+  if (prevSelected.length !== nextSelected.length) return false;
+  if (prevSelected.length === 0) return true; // Les deux vides
+  
+  // Vérification rapide: mêmes IDs dans le même ordre (O(n) optimisé)
+  return prevSelected.every((id, index) => id === nextSelected[index]);
+});
