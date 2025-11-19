@@ -160,6 +160,8 @@ async function bootstrap() {
     );
     expressApp.disable('x-powered-by');
 
+    const selectedPort = process.env.PORT || 3000;
+
     // 🔷 Configuration OpenAPI / Swagger
     if (!isProd || process.env.ENABLE_SWAGGER === 'true') {
       const config = new DocumentBuilder()
@@ -204,8 +206,6 @@ async function bootstrap() {
         `📚 Swagger UI disponible sur http://localhost:${selectedPort}/api/docs`,
       );
     }
-
-    const selectedPort = process.env.PORT || 3000;
     console.log(`Démarrage du serveur sur le port ${selectedPort}...`);
 
     await app.listen(selectedPort);
