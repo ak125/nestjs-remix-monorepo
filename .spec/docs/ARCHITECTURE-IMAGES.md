@@ -251,14 +251,49 @@ node scripts/verify-supabase-images.js
 ## 🚀 Migration Réalisée
 
 ### Stratégie Choisie
-**Option 3 : Frontend Fallback** (sans migration BDD)
+**Option 3 : Frontend Fallback + Redirections 301 Caddy**
 
 ✅ **Avantages :**
 - Aucune migration BDD nécessaire (2.7M+ lignes intactes)
-- SEO préservé (URLs relatives en BDD)
+- **SEO préservé avec redirections 301 permanentes** ✨
+- Anciennes URLs publiques redirigent automatiquement vers Supabase
 - Transformation côté client (cache navigateur)
 - Rollback instantané si problème
 - Pas d'impact sur les sauvegardes/backups
+
+### Redirections 301 (SEO)
+
+**Anciennes URLs publiques préservées :**
+```
+https://www.automecanik.com/rack/101/34407_1.JPG
+→ 301 → https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/101/34407_1.JPG
+
+https://www.automecanik.com/upload/articles/gammes-produits/catalogue/filtre-a-huile.webp
+→ 301 → https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/filtre-a-huile.webp
+
+https://www.automecanik.com/upload/articles/familles-produits/Filtres.webp
+→ 301 → https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/familles-produits/Filtres.webp
+```
+
+**Configuration Caddy :**
+```caddy
+# Fichier: config/caddy/Caddyfile
+
+# Images produits: /rack/{folder}/{filename}
+@rack_images path_regexp rack_path ^/rack/(.+)$
+redir @rack_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1} 301
+
+# Images uploads: /upload/*
+@upload_images path_regexp upload_path ^/upload/(.+)$
+redir @upload_images https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} 301
+```
+
+✅ **Bénéfices SEO :**
+- Code HTTP 301 (redirection permanente)
+- Moteurs de recherche transfèrent le PageRank
+- Liens externes continuent de fonctionner
+- Backlinks préservés
+- Pas de perte de référencement
 
 ### Fichiers Modifiés
 
@@ -300,6 +335,15 @@ SUPABASE_SERVICE_ROLE_KEY="eyJhbGci..."
 ```bash
 # Vérifier les images Supabase
 node scripts/verify-supabase-images.js
+
+# Tester les redirections 301 Caddy
+./scripts/test-caddy-redirects.sh
+
+# Tester avec un domaine spécifique
+DOMAIN=https://www.automecanik.com ./scripts/test-caddy-redirects.sh
+
+# Redémarrer Caddy après modification config
+docker-compose -f docker-compose.caddy.yml restart caddy
 
 # Analyser en profondeur la structure
 cd backend && cat <<'EOF' | node
