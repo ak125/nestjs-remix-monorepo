@@ -684,10 +684,21 @@ curl https://api.example.com/api/ai/health
 
 ### Guides Internes
 
+**Navigation & Référence:**
+- [API-ENDPOINTS-INDEX.md](./API-ENDPOINTS-INDEX.md) - 📖 Index complet des 187+ endpoints
+- [ARCHITECTURE-DIAGRAMS.md](./ARCHITECTURE-DIAGRAMS.md) - 🏗️ Diagrammes Mermaid (flows, architecture)
+- [SEARCH-GUIDE.md](./SEARCH-GUIDE.md) - 🔍 Guide de recherche rapide
+
+**Onboarding:**
+- [QUICK-START-DEV.md](./QUICK-START-DEV.md) - 🚀 Guide développeur (30min → productif)
+
+**Configuration & Setup:**
 - [CONTEXT7-GUIDE.md](../CONTEXT7-GUIDE.md) - Configuration Context7 MCP
 - [AI-README.md](../AI-README.md) - Multi-provider AI setup
 - [REDIS-CACHE-IMPLEMENTATION.md](../REDIS-CACHE-IMPLEMENTATION.md) - Cache strategies
-- [CRITICAL-MODULES-REPORT.md](./features/CRITICAL-MODULES-REPORT.md) - Rapport de coverage complet
+
+**Reports:**
+- [CRITICAL-MODULES-REPORT.md](./features/CRITICAL-MODULES-REPORT.md) - Rapport de coverage 100%
 
 ---
 
