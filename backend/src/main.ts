@@ -1,5 +1,6 @@
 import { getPublicDir, startDevServer } from '@fafa/frontend';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 import RedisStore from 'connect-redis';
@@ -158,6 +159,51 @@ async function bootstrap() {
       }),
     );
     expressApp.disable('x-powered-by');
+
+    // 🔷 Configuration OpenAPI / Swagger
+    if (!isProd || process.env.ENABLE_SWAGGER === 'true') {
+      const config = new DocumentBuilder()
+        .setTitle('FAFA Auto API')
+        .setDescription(
+          'API complète du monorepo FAFA Auto - E-commerce, Admin, Blog, Paiements',
+        )
+        .setVersion('1.0.0')
+        .addTag('auth', 'Authentication & Sessions')
+        .addTag('admin', 'Administration & Back-office')
+        .addTag('products', 'Catalogue produits')
+        .addTag('cart', 'Panier & Checkout')
+        .addTag('orders', 'Commandes & Factures')
+        .addTag('payments', 'Paiements Paybox')
+        .addTag('blog', 'Blog & CMS')
+        .addTag('analytics', 'Analytics & Tracking')
+        .addTag('ai-content', 'AI Content Generation')
+        .addBearerAuth(
+          {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+            description: 'Token JWT pour authentification admin',
+          },
+          'JWT-auth',
+        )
+        .addCookieAuth('connect.sid', {
+          type: 'apiKey',
+          in: 'cookie',
+          description: 'Session cookie pour authentification utilisateur',
+        })
+        .build();
+
+      const document = SwaggerModule.createDocument(app, config);
+      SwaggerModule.setup('api/docs', app, document, {
+        customSiteTitle: 'FAFA Auto API Documentation',
+        customfavIcon: '/favicon.ico',
+        customCss: '.swagger-ui .topbar { display: none }',
+      });
+
+      console.log(
+        `📚 Swagger UI disponible sur http://localhost:${selectedPort}/api/docs`,
+      );
+    }
 
     const selectedPort = process.env.PORT || 3000;
     console.log(`Démarrage du serveur sur le port ${selectedPort}...`);
