@@ -455,6 +455,7 @@ export default function TestHomepageModern() {
               {/* Grid simple sans groupement alphabétique - Plus lisible */}
               <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 xl:grid-cols-8 gap-4 max-w-7xl mx-auto mb-16">
                 {homeData.brands
+                  .filter((brand) => brand && brand.name)
                   .sort((a, b) => a.name.localeCompare(b.name, 'fr'))
                   .map((brand, index) => (
                     <Link
