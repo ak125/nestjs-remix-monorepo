@@ -61,14 +61,15 @@ relates-to:
 #### Actions Week 1: Test Infrastructure Setup
 
 ```bash
-# Day 1-2: Setup Jest avec coverage reporting
+# Day 1-2: Setup Tests avec coverage reporting
 cd backend
 npm install --save-dev @nestjs/testing @types/jest
-npm install --save-dev jest ts-jest supertest @types/supertest
+npm install --save-dev supertest @types/supertest
 
 # Configurer jest.config.js avec coverage
 # Créer test database (Supabase test instance)
 # Setup test fixtures et factories
+# Tester endpoints avec curl pour validation manuelle
 ```
 
 #### Modules Prioritaires (Week 2-3)
