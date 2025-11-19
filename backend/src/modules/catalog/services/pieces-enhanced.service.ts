@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { buildRackImageUrl, type PieceImageData } from '../utils/image-urls.utils';
 
 @Injectable()
 export class PiecesEnhancedService extends SupabaseBaseService {
@@ -153,11 +154,8 @@ export class PiecesEnhancedService extends SupabaseBaseService {
           .join(' ')
           .trim();
 
-        // IMAGE URL CORRECTE
-        let imageUrl = '/upload/articles/no.png';
-        if (piece.piece_has_img === 1 && image) {
-          imageUrl = `/rack/${image.pmi_folder}/${image.pmi_name}.webp`;
-        }
+        // IMAGE URL CORRECTE (helper centralisé)
+        const imageUrl = buildRackImageUrl(image as PieceImageData);
 
         return {
           // IDENTIFIANTS

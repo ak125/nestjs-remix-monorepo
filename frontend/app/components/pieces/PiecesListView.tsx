@@ -9,6 +9,18 @@ import { Badge } from '@fafa/ui';
 import React from 'react';
 import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
+import { normalizeImageUrl } from '../../utils/image.utils';
+
+interface PiecesListViewProps {
+  pieces: PieceData[];
+  onSelectPiece?: (pieceId: number) => void;
+  selectedPieces?: number[];
+}
+
+import { Badge } from '@fafa/ui';
+import React from 'react';
+import { useCart } from '../../hooks/useCart';
+import { type PieceData } from '../../types/pieces-route.types';
 
 interface PiecesListViewProps {
   pieces: PieceData[];
@@ -92,15 +104,11 @@ export function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: P
               <div className="w-24 h-24 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
                 {piece.image && piece.image !== '/images/pieces/default.png' ? (
                   <img
-                    src={piece.image}
+                    src={normalizeImageUrl(piece.image)}
                     alt={piece.name}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement!.classList.add('image-error');
-                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { buildRackImageUrl, buildImageMetadata, type PieceImageData } from '../utils/image-urls.utils';
 
 @Injectable()
 export class PiecesUltraEnhancedService extends SupabaseBaseService {
@@ -184,16 +185,15 @@ export class PiecesUltraEnhancedService extends SupabaseBaseService {
             .join(' ')
             .trim() || 'Pièce sans nom';
 
-        // IMAGE avec URL complète
-        let imageUrl = '/upload/articles/no.png';
-        let imageAlt = '';
-        let imageTitle = '';
-
-        if (piece.piece_has_img === 1 && image) {
-          imageUrl = `https://www.automecanik.com/rack/${image.pmi_folder}/${image.pmi_name}.webp`;
-          imageAlt = `${nomComplet} ${marqueEquip?.pm_name || ''} ${piece.piece_ref || ''}`;
-          imageTitle = `${nomComplet} ${piece.piece_ref || ''}`;
-        }
+        // IMAGE avec URL complète (helper centralisé)
+        const imageUrl = buildRackImageUrl(image as PieceImageData);
+        const imageMetadata = buildImageMetadata(
+          nomComplet,
+          marqueEquip?.pm_name,
+          piece.piece_ref,
+        );
+        const imageAlt = imageMetadata.alt;
+        const imageTitle = imageMetadata.title;
 
         return {
           // IDENTIFIANTS
