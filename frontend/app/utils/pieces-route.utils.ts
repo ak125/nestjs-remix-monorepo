@@ -351,8 +351,35 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     
     // 🛡️ VALIDATION: Vérifier que cet ID existe dans la base
     try {
-      const response = await fetch('http://localhost:3000/api/catalog/gammes');
-      const gammes = await response.json();
+      // ✅ TIMEOUT 5 secondes pour éviter blocage
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch('http://localhost:3000/api/catalog/gammes', {
+        signal: controller.signal,
+        headers: { 
+          'Accept': 'application/json',
+          'Cache-Control': 'max-age=3600' // Cache 1h
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      // ✅ Vérifier le status HTTP
+      if (!response.ok) {
+        console.warn(`⚠️ [GAMME-ID] API returned ${response.status}, using ID directly: ${gamme.id}`);
+        return gamme.id;
+      }
+      
+      const data = await response.json();
+      
+      // ✅ Vérifier que c'est un array (évite crash si erreur Supabase)
+      if (!Array.isArray(data)) {
+        console.error(`❌ [GAMME-ID] Invalid response format (expected array):`, data);
+        return gamme.id;
+      }
+      
+      const gammes = data;
       const gammeExists = gammes.some((g: any) => g.id === gamme.id);
       
       if (!gammeExists) {
@@ -367,7 +394,13 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
         return gamme.id;
       }
     } catch (error) {
-      console.error(`❌ [GAMME-ID] Erreur validation ID ${gamme.id}:`, error);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error(`⏱️ [GAMME-ID] Timeout after 5s, using ID directly: ${gamme.id}`);
+        } else {
+          console.error(`❌ [GAMME-ID] Erreur validation ID ${gamme.id}:`, error.message);
+        }
+      }
       // En cas d'erreur, utiliser l'ID tel quel (évite de casser le site)
       return gamme.id;
     }

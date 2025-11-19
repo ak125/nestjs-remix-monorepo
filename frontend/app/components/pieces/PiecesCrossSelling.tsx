@@ -163,7 +163,13 @@ export function PiecesCrossSellingCompact({ gammes, vehicle }: PiecesCrossSellin
             >
               <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
                 {gamme.PG_IMAGE ? (
-                  <img src={gamme.PG_IMAGE} alt="" className="w-8 h-8 object-cover rounded" />
+                  <img 
+                    src={gamme.PG_IMAGE} 
+                    alt="" 
+                    className="w-8 h-8 object-cover rounded"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
