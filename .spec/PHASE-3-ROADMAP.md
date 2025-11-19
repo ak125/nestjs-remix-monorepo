@@ -63,10 +63,9 @@ relates-to:
 ```bash
 # Day 1-2: Setup Tests avec coverage reporting
 cd backend
-npm install --save-dev @nestjs/testing @types/jest
+npm install --save-dev @nestjs/testing
 npm install --save-dev supertest @types/supertest
 
-# Configurer jest.config.js avec coverage
 # Créer test database (Supabase test instance)
 # Setup test fixtures et factories
 # Tester endpoints avec curl pour validation manuelle
@@ -432,7 +431,7 @@ packages/
 
 | Jour | Focus | Tâches | Heures |
 |------|-------|--------|--------|
-| **J1** | Tests Setup | Jest config, test DB, fixtures | 8h |
+| **J1** | Tests Setup | Test DB, fixtures, supertest config | 8h |
 | **J2** | OpenAPI Setup | Swagger module, decorators setup | 8h |
 | **J3** | Unit Tests Auth | AuthService, Guards | 8h |
 | **J4** | Unit Tests Payments | PaymentService, Webhooks | 8h |
@@ -490,7 +489,7 @@ packages/
 
 | Métrique | Baseline | Target | Validation |
 |----------|----------|--------|------------|
-| **Tests Coverage** | ~40% | >80% | `npm run test:cov` |
+| **Tests Coverage** | ~40% | >80% | `npm run test:cov` via supertest |
 | **Endpoints OpenAPI** | 0/187 | 187/187 | Swagger UI accessible |
 | **C4 Diagrams** | 0 | 6+ | `.spec/architecture/c4-model/` |
 | **Grafana Dashboards** | 0 | 4+ | http://localhost:3001 |
@@ -501,7 +500,7 @@ packages/
 **Tests:**
 - ✅ Tests unitaires pour modules critiques (Auth, Payments, Cart)
 - ✅ Tests intégration pour workflows e-commerce complets
-- ✅ CI/CD pipeline exécute tous les tests automatiquement
+- ✅ CI/CD pipeline exécute tous les tests automatiquement (supertest)
 - ✅ Coverage reports générés et visibles
 
 **API Contracts:**
@@ -548,10 +547,11 @@ packages/
 ### Tools & Services (Coût: $0)
 
 **Développement:**
-- ✅ Jest (tests) - Open source
+- ✅ @nestjs/testing (unit tests) - Open source
 - ✅ @nestjs/swagger (OpenAPI) - Open source
 - ✅ Supertest (API testing) - Open source
 - ✅ Spectral (OpenAPI linting) - Open source
+- ✅ curl (endpoint validation) - Built-in
 
 **Monitoring:**
 - ✅ Prometheus (metrics) - Open source
@@ -605,15 +605,16 @@ packages/
 ### Standards & Best Practices
 
 - [NestJS Testing](https://docs.nestjs.com/fundamentals/testing)
+- [Supertest Documentation](https://github.com/visionmedia/supertest)
 - [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
 - [C4 Model](https://c4model.com/)
 - [Prometheus Best Practices](https://prometheus.io/docs/practices/)
-- [Jest Best Practices](https://github.com/goldbergyoni/javascript-testing-best-practices)
 
 ### Tools Documentation
 
 - [@nestjs/swagger](https://docs.nestjs.com/openapi/introduction)
 - [@nestjs/testing](https://docs.nestjs.com/fundamentals/testing)
+- [Supertest](https://github.com/visionmedia/supertest)
 - [Grafana](https://grafana.com/docs/)
 - [Prometheus](https://prometheus.io/docs/)
 
@@ -625,7 +626,7 @@ packages/
 
 1. ✅ **Créer branche** `feat/phase-3-testing-contracts` (DONE)
 2. ✅ **Commiter roadmap** (EN COURS)
-3. [ ] **Setup Jest** avec coverage
+3. [ ] **Setup Supertest** avec coverage
 4. [ ] **Install @nestjs/swagger**
 
 ### Demain (J2)
