@@ -42,7 +42,7 @@ interface BatchLoaderResponse {
  * - Contenu SEO (gammes/{id}/seo)
  * - Cross-selling gammes (cross-selling)
  */
-@Controller('catalog/batch-loader')
+@Controller('api/catalog/batch-loader')
 export class BatchLoaderController {
   private readonly logger = new Logger(BatchLoaderController.name);
 
@@ -77,7 +77,7 @@ export class BatchLoaderController {
         }),
 
         // 2. SEO content
-        this.gammeService.getSEOByGamme(
+        this.gammeService.getGammeSeoContent(
           request.gammeId,
           request.typeId,
           request.marqueId,
@@ -136,6 +136,7 @@ export class BatchLoaderController {
       throw new HttpException(
         {
           success: false,
+          message: error.message, // Added for ExceptionFilter compatibility
           error: error.message,
           timestamp: new Date().toISOString(),
           loadTime,
