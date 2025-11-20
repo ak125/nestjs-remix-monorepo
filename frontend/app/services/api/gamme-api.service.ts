@@ -30,6 +30,8 @@ interface GammePageData {
   conseils?: any;
   informations?: any;
   guideAchat?: any;
+  catalogueMameFamille?: any;
+  famille?: any;
   performance?: {
     total_time_ms: number;
     rpc_time_ms?: number;
