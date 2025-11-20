@@ -16,6 +16,7 @@ import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filter
 import { PiecesCleanController } from './controllers/pieces-clean.controller';
 import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.controller';
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
+import { BatchLoaderController } from './controllers/batch-loader.controller';
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 // PiecesRealController utilisé dans catalog-simple.module.ts, pas ici
 
@@ -81,6 +82,7 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     PiecesCleanController,
     PiecesDiagnosticController, // 🔍 DIAGNOSTIC des relations pièces-véhicules
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
+    BatchLoaderController, // 🚀 BATCH LOADER pour optimisation performance
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [

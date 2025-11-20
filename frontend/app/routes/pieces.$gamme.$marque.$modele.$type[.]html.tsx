@@ -69,33 +69,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 1. Parse des paramètres URL
   const { gamme: rawGamme, marque: rawMarque, modele: rawModele, type: rawType } = params;
   
-  // Debug params
-  console.log('🔍 [LOADER] Params reçus:', { rawGamme, rawMarque, rawModele, rawType });
-  
   if (!rawGamme || !rawMarque || !rawModele || !rawType) {
-    console.error('❌ [LOADER] Paramètres manquants:', { rawGamme, rawMarque, rawModele, rawType });
-    throw new Response(`Paramètres manquants: gamme=${rawGamme}, marque=${rawMarque}, modele=${rawModele}, type=${rawType}`, { status: 400 });
+    throw new Response(`Paramètres manquants`, { status: 400 });
   }
 
-  // 2. Parse les IDs depuis les URLs (extraction alias + ID)
+  // 2. Parse les IDs depuis les URLs
   const gammeData = parseUrlParam(rawGamme);
   const marqueData = parseUrlParam(rawMarque);
   const modeleData = parseUrlParam(rawModele);
   const typeData = parseUrlParam(rawType);
 
   // 3. Résolution des IDs via API
-  // ✅ IMPORTANT: Passer les paramètres RAW (avec IDs) pas les alias déjà parsés
-  const vehicleIds = await resolveVehicleIds(
-    rawMarque,  // ✅ "renault-140"
-    rawModele,  // ✅ "clio-iii-140004"
-    rawType     // ✅ "1-5-dci-19052"
-  );
-  
-  // ✅ Passer le paramètre COMPLET (avec ID) à resolveGammeId pour qu'il puisse extraire l'ID
+  const vehicleIds = await resolveVehicleIds(rawMarque, rawModele, rawType);
   const gammeId = await resolveGammeId(rawGamme);
 
-  // ✅ VALIDATION CRITIQUE: Vérifier que tous les IDs sont présents
-  // Empêche le rendu de pages sans articles qui seraient désindexées
+  // Validation des IDs
   validateVehicleIds({
     marqueId: vehicleIds.marqueId,
     modeleId: vehicleIds.modeleId,
@@ -104,100 +92,67 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     source: 'loader-validation'
   });
 
-  // 🛡️ VALIDATION PRÉVENTIVE - NIVEAU 0: Vérifier l'intégrité AVANT de fetcher
-  // Évite de fetcher les pièces si on sait déjà que la combinaison est invalide
-  try {
-    const validationUrl = `http://localhost:3000/api/catalog/integrity/validate/${vehicleIds.typeId}/${gammeId}`;
-    const validationResponse = await fetch(validationUrl);
-    
-    if (validationResponse.ok) {
-      const validation = await validationResponse.json();
-      
-      // Si validation échoue, retourner 404/410 IMMÉDIATEMENT
-      if (!validation.success || !validation.data.valid) {
-        const statusCode = validation.data?.http_status || 410;
-        const reason = validation.data?.recommendation || "Cette combinaison n'est pas disponible.";
-        
-        console.warn(
-          `🚨 PRE-VALIDATION FAILED: type_id=${vehicleIds.typeId}, gamme_id=${gammeId}, status=${statusCode}, reason=${reason}`
-        );
-        
-        throw new Response(
-          reason,
-          { 
-            status: statusCode,
-            statusText: statusCode === 410 ? 'Gone' : 'Not Found',
-            headers: {
-              'X-Robots-Tag': 'noindex, nofollow',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'X-Validation-Failed': 'true',
-              'X-Validation-Reason': reason,
-              'X-Performance-Hint': 'Pre-validation saved DB query'
-            }
-          }
-        );
-      }
-      
-      console.log(
-        `✅ PRE-VALIDATION OK: type_id=${vehicleIds.typeId}, gamme_id=${gammeId}, ${validation.data.relations_count} pièces, ${validation.data.data_quality?.pieces_with_brand_percent}% avec marque`
-      );
-    }
-  } catch (error) {
-    // Si l'API de validation est down, continuer avec l'ancienne logique
-    if (error instanceof Response) {
-      throw error; // Re-throw les erreurs de validation
-    }
-    console.error('⚠️ Validation API unavailable, falling back to legacy validation');
-  }
+  // 4. Batch Loader & Parallel Fetches
+  // On lance tout en parallèle pour optimiser le temps de réponse
+  const batchLoaderPromise = fetch(`http://localhost:3000/api/catalog/batch-loader`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      typeId: vehicleIds.typeId,
+      gammeId,
+      marqueId: vehicleIds.marqueId,
+      modeleId: vehicleIds.modeleId
+    })
+  }).then(res => res.json());
 
-  // 4. Construction des données véhicule
-  
-  // ⚡ PARALLÉLISATION: Récupération type_name + photo modèle en une seule fois
-  const [typeApiResponse, modelsApiResponse] = await Promise.all([
+  const [
+    batchResponse,
+    typeApiResponse,
+    modelsApiResponse,
+    pageData,
+    hierarchyData
+  ] = await Promise.all([
+    batchLoaderPromise,
     fetch(`http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`).catch(() => null),
-    fetch(`http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`).catch(() => null)
+    fetch(`http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`).catch(() => null),
+    fetchGammePageData(gammeId).catch(() => null),
+    fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
+      headers: { 'Accept': 'application/json' }
+    }).then(res => res.ok ? res.json() : null).catch(() => null)
   ]);
+
+  // 5. Construction des objets Vehicle & Gamme
   
-  // 4.1 Extraction type_name
+  // Extraction type_name
   let typeName = toTitleCaseFromSlug(typeData.alias);
   try {
     if (typeApiResponse?.ok) {
       const typeApiData = await typeApiResponse.json();
-      if (typeApiData && typeApiData.type_name) {
-        typeName = typeApiData.type_name;
-      }
+      if (typeApiData?.type_name) typeName = typeApiData.type_name;
     }
-  } catch (error) {
-    console.error('⚠️ Erreur récupération type_name:', error);
-  }
+  } catch (e) { console.error('⚠️ Error type_name:', e); }
   
-  // 4.2 Extraction photo modèle
+  // Extraction photo modèle
   let modelePic: string | undefined = undefined;
   try {
     if (modelsApiResponse?.ok) {
       const modelsData = await modelsApiResponse.json();
       const modelData = modelsData.data?.find((m: any) => m.modele_id === vehicleIds.modeleId);
-      
-      if (modelData) {
-        modelePic = modelData.modele_pic || modelData.pic || undefined;
-        console.log(`✅ Photo modèle trouvée: ${modelePic} pour modele_id=${vehicleIds.modeleId}`);
-      }
+      if (modelData) modelePic = modelData.modele_pic || modelData.pic;
     }
-  } catch (error) {
-    console.error('⚠️ Erreur récupération photo modèle:', error);
-  }
+  } catch (e) { console.error('⚠️ Error model pic:', e); }
   
   const vehicle: VehicleData = {
     marque: toTitleCaseFromSlug(marqueData.alias),
     modele: toTitleCaseFromSlug(modeleData.alias),
     type: toTitleCaseFromSlug(typeData.alias),
-    typeName: typeName, // Nom complet avec puissance et années
+    typeName,
     typeId: vehicleIds.typeId,
     marqueId: vehicleIds.marqueId,
     modeleId: vehicleIds.modeleId,
-    marqueAlias: marqueData.alias, // Pour les couleurs de marque
-    modeleAlias: modeleData.alias, // Pour les URLs
-    modelePic: modelePic // Photo du modèle depuis l'API
+    marqueAlias: marqueData.alias,
+    modeleAlias: modeleData.alias,
+    modelePic
   };
 
   const gamme: GammeData = {
@@ -208,214 +163,93 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     image: undefined
   };
 
-  // 5. Récupération des pièces via API directe
-  let piecesData: PieceData[] = [];
+  // Fetch Blog Article (needs constructed objects)
+  const blogArticle = await fetchBlogArticle(gamme, vehicle);
+
+  // 6. Traitement de la réponse Batch
   
-  const apiUrl = `http://localhost:3000/api/catalog/pieces/php-logic/${vehicle.typeId}/${gammeId}`;
-  
-  try {
-    const response = await fetch(apiUrl);
-    
-    if (response.ok) {
-      const apiResponse = await response.json();
-      // L'API retourne { data: { pieces: [...], count, minPrice, ... }, success, timestamp }
-      const rawPieces = Array.isArray(apiResponse.data?.pieces) ? apiResponse.data.pieces : [];
-      
-      // 🔧 Mapper les champs FR → EN pour compatibilité avec les composants
-      piecesData = rawPieces.map((piece: any) => ({
-        id: piece.id,
-        name: piece.nom || piece.name || 'Pièce',
-        brand: piece.marque || piece.brand || 'Marque inconnue',
-        reference: piece.reference || '',
-        price: piece.prix_unitaire || piece.prix_ttc || piece.price || 0,
-        priceFormatted: (piece.prix_unitaire || piece.prix_ttc || piece.price || 0).toFixed(2),
-        image: piece.image || '',
-        stock: piece.dispo ? 'En stock' : 'Sur commande',
-        quality: piece.qualite || '',
-        description: piece.description || '',
-        url: piece.url || '',
-        marque_id: piece.marque_id,
-        marque_logo: piece.marque_logo
-      }));
-      
-      // Debug: Vérifier les images dans les 3 premières pièces
-      console.log(`📦 ${piecesData.length} pièces récupérées et mappées pour ${vehicle.marque} ${vehicle.modele}`);
-      if (piecesData.length > 0) {
-        console.log(`🖼️ Images des 3 premières pièces:`, piecesData.slice(0, 3).map(p => ({ id: p.id, name: p.name, image: p.image })));
+  // Validation
+  if (batchResponse.validation && !batchResponse.validation.valid) {
+    const statusCode = batchResponse.validation.http_status || 410;
+    const reason = batchResponse.validation.recommendation || "Cette combinaison n'est pas disponible.";
+    throw new Response(reason, { 
+      status: statusCode,
+      statusText: statusCode === 410 ? 'Gone' : 'Not Found',
+      headers: {
+        'X-Robots-Tag': 'noindex, nofollow',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
       }
-    }
-  } catch (error) {
-    console.error('❌ Erreur récupération pièces:', error);
-    piecesData = []; // Fallback sur tableau vide en cas d'erreur
+    });
   }
 
-  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 1: Aucune pièce
-  // Si 0 pièces trouvées → 410 Gone (ressource n'existe pas/plus)
+  // Mapping Pièces
+  const piecesData: PieceData[] = (batchResponse.pieces || []).map((piece: any) => ({
+    id: piece.id,
+    name: piece.nom || piece.name || 'Pièce',
+    brand: piece.marque || piece.brand || 'Marque inconnue',
+    reference: piece.reference || '',
+    price: piece.prix_unitaire || piece.prix_ttc || piece.price || 0,
+    priceFormatted: (piece.prix_unitaire || piece.prix_ttc || piece.price || 0).toFixed(2),
+    image: piece.image || '',
+    images: piece.images || [], // ✅ Mapping des images
+    stock: piece.dispo ? 'En stock' : 'Sur commande',
+    quality: piece.qualite || '',
+    description: piece.description || '',
+    url: piece.url || '',
+    marque_id: piece.marque_id,
+    marque_logo: piece.marque_logo
+  }));
+
   if (piecesData.length === 0) {
-    console.warn(
-      `🚨 SEO-410: 0 pièces pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`
-    );
-    
     throw new Response(
       `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible.`,
-      { 
-        status: 410,
-        statusText: 'Gone',
-        headers: {
-          'X-Robots-Tag': 'noindex, nofollow',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        }
-      }
+      { status: 410, statusText: 'Gone', headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
     );
   }
 
-  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 2: Données suspectes
-  // Si toutes les pièces n'ont pas de marque → probablement des données incorrectes
-  const piecesWithoutBrand = piecesData.filter(p => !p.brand || p.brand === 'Marque inconnue');
-  const percentageWithoutBrand = (piecesWithoutBrand.length / piecesData.length) * 100;
-  
-  if (percentageWithoutBrand > 80) {
-    console.warn(
-      `🚨 SEO-410: ${percentageWithoutBrand.toFixed(0)}% des pièces sans marque pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} - données suspectes`
-    );
-    
-    throw new Response(
-      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible (données incomplètes).`,
-      { 
-        status: 410,
-        statusText: 'Gone',
-        headers: {
-          'X-Robots-Tag': 'noindex, nofollow',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        }
-      }
-    );
-  }
-
-  // 🛡️ PROTECTION SEO ANTI-DÉSINDEXATION - NIVEAU 2: Mauvaise catégorie
-  // Vérifier que les pièces retournées correspondent bien à la gamme demandée
-  // Ex: si URL = "/pieces/amortisseur-1/..." mais que les pièces sont des batteries → 410 Gone
-  const categoryKeywords: Record<string, string[]> = {
-    'amortisseur': ['amortisseur', 'suspension', 'shock'],
-    'batterie': ['batterie', 'battery', 'accumulateur'],
-    'filtre': ['filtre', 'filter'],
-    'plaquette': ['plaquette', 'brake pad', 'frein'],
-    'disque': ['disque', 'brake disc', 'rotor'],
-  };
-
-  const gammeKeyword = gamme.alias.toLowerCase().split('-')[0]; // "amortisseur" depuis "amortisseur-1"
-  const expectedKeywords = categoryKeywords[gammeKeyword] || [gammeKeyword];
-  
-  // Vérifier si au moins UNE pièce correspond à la catégorie attendue
-  const hasCorrectCategory = piecesData.some(piece => {
-    const pieceName = (piece.name || '').toLowerCase();
-    return expectedKeywords.some(keyword => pieceName.includes(keyword));
-  });
-
-  if (!hasCorrectCategory && piecesData.length < 10) {
-    // Si aucune pièce ne correspond ET qu'il y a peu de résultats → probablement une erreur de données
-    console.warn(
-      `🚨 SEO-410: Catégorie incorrecte pour ${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`,
-      `Attendu: ${expectedKeywords.join('|')}, Trouvé: ${piecesData.map(p => p.name).join(', ')}`
-    );
-    
-    throw new Response(
-      `Cette combinaison ${gamme.name} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} n'est pas disponible (catégorie incorrecte).`,
-      { 
-        status: 410,
-        statusText: 'Gone',
-        headers: {
-          'X-Robots-Tag': 'noindex, nofollow',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-        }
-      }
-    );
-  }
-
-  // 6. Calcul des stats prix
-  const prices = Array.isArray(piecesData) ? piecesData.map(p => p.price || 0).filter(p => p > 0) : [];
+  // Stats prix
+  const prices = piecesData.map(p => p.price).filter(p => p > 0);
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
 
-  // 7. Génération contenu SEO enrichi depuis l'API backend
-  let seoContent = generateSEOContent(vehicle, gamme); // Fallback par défaut
-  
-  try {
-    // ⚡ Appel RPC Supabase directe pour contenu SEO (plus fiable que API V4)
-    const seoResponse = await fetch(`http://localhost:3000/api/catalog/gammes/${gammeId}/seo`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type_id: vehicleIds.typeId,
-        marque_id: vehicleIds.marqueId,
-        modele_id: vehicleIds.modeleId
-      })
-    });
+  // SEO Content
+  let seoContent = generateSEOContent(vehicle, gamme);
+  if (batchResponse.seo) {
+    const seoData = batchResponse.seo;
+    const content = seoData.content || seoData.data?.content;
+    const h1 = seoData.h1 || seoData.data?.h1;
     
-    if (seoResponse.ok) {
-      const seoData = await seoResponse.json();
-      console.log('✅ SEO RPC data:', seoData);
-      
-      // Transformation vers format frontend
-      if (seoData && (seoData.content || seoData.data?.content)) {
-        const content = seoData.content || seoData.data?.content;
-        const h1 = seoData.h1 || seoData.data?.h1;
-        
-        seoContent = {
-          h1: h1 || seoContent.h1,
-          h2Sections: seoContent.h2Sections,
-          longDescription: content || seoContent.longDescription,
-          technicalSpecs: seoContent.technicalSpecs,
-          compatibilityNotes: seoContent.compatibilityNotes,
-          installationTips: seoContent.installationTips
-        };
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ SEO RPC non disponible, utilisation fallback:', error);
+    seoContent = {
+      h1: h1 || seoContent.h1,
+      h2Sections: seoContent.h2Sections,
+      longDescription: content || seoContent.longDescription,
+      technicalSpecs: seoContent.technicalSpecs,
+      compatibilityNotes: seoContent.compatibilityNotes,
+      installationTips: seoContent.installationTips
+    };
   }
-  
+
+  // Cross Selling
+  const crossSellingGammes = batchResponse.crossSelling || [];
+
+  // Generated Content
   const faqItems = generateFAQ(vehicle, gamme);
   const relatedArticles = generateRelatedArticles(vehicle, gamme);
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
-
-  // 8. Infos compatibilité
   const compatibilityInfo = {
     engines: [vehicle.type],
     years: "2010-2024",
-    notes: [
-      "Vérifiez la référence d'origine avant commande",
-      "Compatible avec toutes les versions du moteur",
-      "Installation professionnelle recommandée"
-    ]
+    notes: ["Vérifiez la référence d'origine avant commande", "Compatible avec toutes les versions du moteur"]
   };
 
-  // 9. Cross-selling, blog et catalogue (parallèle)
-  const [crossSellingGammes, blogArticle, pageData, hierarchyData] = await Promise.all([
-    fetchCrossSellingGammes(vehicle.typeId, gamme.id),
-    fetchBlogArticle(gamme, vehicle),
-    // 🚀 Charger les données de la page gamme avec fallback automatique RPC V2
-    fetchGammePageData(gammeId).catch(() => null),
-    // Charger la hiérarchie pour avoir l'ordre correct
-    fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
-      headers: { 'Accept': 'application/json' }
-    }).then(res => res.ok ? res.json() : null).catch(() => null)
-  ]);
-
-  // Construire catalogueMameFamille depuis la hiérarchie si disponible
+  // Catalogue Famille Logic
   let catalogueMameFamille = pageData?.catalogueMameFamille;
   let famille = pageData?.famille;
   
   if (hierarchyData && famille?.mf_id) {
     const family = hierarchyData.families?.find((f: any) => f.id === famille.mf_id);
-    
     if (family && family.gammes) {
-      // Exclure la gamme actuelle
-      const otherGammes = family.gammes.filter((g: any) => {
-        const gammeIdNum = typeof g.id === 'string' ? parseInt(g.id) : g.id;
-        return gammeIdNum !== gammeId;
-      });
-      
+      const otherGammes = family.gammes.filter((g: any) => (typeof g.id === 'string' ? parseInt(g.id) : g.id) !== gammeId);
       catalogueMameFamille = {
         title: `Catalogue ${famille.mf_name}`,
         items: otherGammes.map((g: any) => ({
@@ -424,18 +258,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           image: g.image 
             ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.image}`
             : `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${g.alias}.webp`,
-          description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule et de le changer en respectant les périodes de remplacement du constructeur`,
-          meta_description: `${g.name} pas cher à contrôler régulièrement, changer si encrassé`,
+          description: `Automecanik vous conseils de contrôlez l'état du ${g.name.toLowerCase()} de votre véhicule`,
+          meta_description: `${g.name} pas cher à contrôler régulièrement`,
           sort: g.sort_order,
         }))
       };
     }
   }
 
-  // 10. Construction réponse finale
   const loadTime = Date.now() - startTime;
-  
-  const loaderData: LoaderData = {
+
+  return json({
     vehicle,
     gamme,
     pieces: piecesData,
@@ -458,15 +291,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
     performance: {
       loadTime,
-      source: 'php-logic-api',
+      source: 'batch-loader',
       cacheHit: false
     }
-  };
-
-  return json(loaderData, {
-    headers: {
-      'Cache-Control': 'public, max-age=300, s-maxage=600'
-    }
+  }, {
+    headers: { 'Cache-Control': 'public, max-age=300, s-maxage=600' }
   });
 }
 
