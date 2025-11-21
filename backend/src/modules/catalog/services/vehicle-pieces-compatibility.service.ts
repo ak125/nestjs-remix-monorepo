@@ -24,7 +24,8 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         .from('pieces_relation_type')
         .select('rtp_piece_id, rtp_psf_id, rtp_pm_id')
         .eq('rtp_type_id', typeId)
-        .eq('rtp_pg_id', pgId);
+        .eq('rtp_pg_id', pgId)
+        .limit(500);
 
       if (relationsError) {
         this.logger.error('❌ Erreur relations:', relationsError);
@@ -50,97 +51,136 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         };
       }
 
-      // 2️⃣ RÉCUPÉRATION PARALLÈLE DES DONNÉES (optimisation V4 hybride)
-      const pieceIds = [...new Set(relationsData.map((r) => r.rtp_piece_id))];
-      const pmIds = [
-        ...new Set(relationsData.map((r) => r.rtp_pm_id).filter(Boolean)),
-      ];
-
+      // 2️⃣ RÉCUPÉRATION DES PIÈCES (Filtrage display=1 d'abord pour optimiser)
+      const initialPieceIds = [...new Set(relationsData.map((r) => r.rtp_piece_id))];
+      
       this.logger.log(
-        `🚀 [PARALLEL] ${relationsData.length} relations → ${pieceIds.length} pièces, ${pmIds.length} marques`,
+        `🚀 [STEP 1] Récupération pièces pour ${initialPieceIds.length} relations`,
       );
 
-      const [piecesResult, marquesResult, pricesResult, filtresResult, imagesResult] =
-        await Promise.all([
-          // Pièces (logique PHP: SELECT * FROM pieces WHERE piece_id IN (...))
-          this.client
-            .from('pieces')
-            .select(
-              `
-            piece_id, piece_name, piece_ref, piece_ref_clean, piece_des,
-            piece_has_img, piece_has_oem, piece_qty_sale, piece_qty_pack,
-            piece_name_side, piece_name_comp, piece_fil_id, piece_fil_name,
-            piece_display, piece_pm_id
-          `,
-            )
-            .in('piece_id', pieceIds)
-            .eq('piece_display', 1),
+      const { data: piecesData, error: piecesError } = await this.client
+        .from('pieces')
+        .select(
+          `
+        piece_id, piece_name, piece_ref, piece_ref_clean, piece_des,
+        piece_has_img, piece_has_oem, piece_qty_sale, piece_qty_pack,
+        piece_name_side, piece_name_comp, piece_fil_id, piece_fil_name,
+        piece_display, piece_pm_id
+      `,
+        )
+        .in('piece_id', initialPieceIds)
+        .eq('piece_display', 1);
 
-          // Marques d'équipementiers (logique PHP: SELECT * FROM pieces_marque WHERE pm_id IN (...))
-          // 🔥 Ne PAS filtrer par pm_display - on veut toutes les marques associées aux pièces
-          pmIds.length > 0
+      if (piecesError) {
+        this.logger.error('❌ Erreur pièces:', piecesError);
+        return {
+          pieces: [],
+          count: 0,
+          minPrice: null,
+          error: piecesError.message,
+          success: false,
+        };
+      }
+
+      if (!piecesData?.length) {
+        return {
+          pieces: [],
+          count: 0,
+          minPrice: null,
+          message: 'Aucune pièce active trouvée',
+          success: true,
+        };
+      }
+
+      // 3️⃣ RÉCUPÉRATION DU RESTE (Optimisé sur pièces visibles uniquement)
+      const validPieceIds = piecesData.map(p => p.piece_id);
+      const validPieceIdsStr = validPieceIds.map(id => id.toString());
+      
+      // Recalcul des PM IDs (Marques) pour seulement les pièces visibles
+      const relevantRelations = relationsData.filter(r => validPieceIds.includes(r.rtp_piece_id));
+      const pmIdsSet = new Set<number>();
+      
+      relevantRelations.forEach(r => {
+          if (r.rtp_pm_id) pmIdsSet.add(r.rtp_pm_id);
+      });
+      piecesData.forEach(p => {
+          if (p.piece_pm_id) pmIdsSet.add(p.piece_pm_id);
+      });
+      const uniquePmIds = [...pmIdsSet];
+
+      this.logger.log(
+        `🚀 [STEP 2] Récupération détails pour ${validPieceIds.length} pièces actives (vs ${initialPieceIds.length} total)`,
+      );
+
+      const [marquesResult, pricesResult, filtresResult, imagesResult, criteriasResult, criteriasLinksResult] =
+        await Promise.all([
+          // Marques d'équipementiers
+          uniquePmIds.length > 0
             ? this.client
                 .from('pieces_marque')
                 .select(
                   'pm_id, pm_name, pm_alias, pm_logo, pm_quality, pm_oes, pm_nb_stars, pm_display',
                 )
-                .in('pm_id', pmIds)
+                .in('pm_id', uniquePmIds)
             : { data: [], error: null },
 
-          // Prix (logique PHP: ORDER BY PRI_TYPE DESC pour prendre le meilleur prix)
+          // Prix (avec tri pour garantir le meilleur prix)
           this.client
             .from('pieces_price')
             .select(
               'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
             )
-            .in('pri_piece_id', pieceIds)
-            .eq('pri_dispo', 1) // Rétabli selon PHP
-            .order('pri_type', { ascending: false }), // PRI_TYPE DESC comme dans PHP
+            .in('pri_piece_id', validPieceIds)
+            .eq('pri_dispo', 1)
+            .order('pri_type', { ascending: false }),
 
-          // Filtres de côté (logique PHP pour les sides)
+          // Filtres de côté
           this.client
             .from('pieces_side_filtre')
             .select('psf_id, psf_side, psf_sort')
             .in(
               'psf_id',
-              relationsData.map((r) => r.rtp_psf_id).filter(Boolean),
+              relevantRelations.map((r) => r.rtp_psf_id).filter(Boolean),
             ),
 
           // Images (depuis pieces_media_img)
-          // 🚀 OPTIMISATION: Limiter fortement le nombre d'images récupérées
-          // Note: On ne peut pas LIMIT par groupe, mais on trie et filtre côté app
           this.client
             .from('pieces_media_img')
             .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display, pmi_sort')
-            .in('pmi_piece_id', pieceIds.map((id) => id.toString()))
+            .in('pmi_piece_id', validPieceIdsStr)
             .eq('pmi_display', '1')
             .order('pmi_piece_id', { ascending: true })
             .order('pmi_sort', { ascending: true })
-            .limit(pieceIds.length * 2), // Max 2 images par pièce en moyenne
+            .limit(validPieceIds.length * 2), 
+
+          // Critères techniques (logique PHP simplifiée)
+          this.client
+            .from('pieces_criteria')
+            .select('*')
+            .in('pc_piece_id', validPieceIds),
+
+          // Liens des critères techniques
+          this.client
+            .from('pieces_criteria_link')
+            .select('*')
+            .eq('pcl_display', 1)
+            .order('pcl_level')
+            .order('pcl_sort'),
         ]);
 
-      if (piecesResult.error) {
-        this.logger.error('❌ Erreur pièces:', piecesResult.error);
-        return {
-          pieces: [],
-          count: 0,
-          minPrice: null,
-          error: piecesResult.error.message,
-          success: false,
-        };
-      }
-
       // 3️⃣ CONSTRUCTION DES MAPS POUR PERFORMANCE O(1) (optimisation)
-      const piecesData = piecesResult.data || [];
+      // const piecesData = piecesResult.data || []; // Déjà récupéré
       const marquesData = marquesResult.data || [];
       const pricesData = pricesResult.data || [];
       const filtresData = filtresResult.data || [];
       const imagesData = imagesResult.data || [];
+      const criteriasData = criteriasResult.data || [];
+      const criteriasLinksData = criteriasLinksResult.data || [];
 
       // 🔍 DEBUG: Vérification des données récupérées
       // Logs de debug pour diagnostiquer les prix
       this.logger.log(
-        `🔍 [DEBUG] Données récupérées: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${filtresData.length} filtres, ${imagesData.length} images`,
+        `🔍 [DEBUG] Données récupérées: ${piecesData.length} pièces, ${marquesData.length} marques, ${pricesData.length} prix, ${filtresData.length} filtres, ${imagesData.length} images, ${criteriasData.length} critères`,
       );
       if (pricesData.length > 0) {
         this.logger.log(
@@ -168,6 +208,24 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       const relationsMap = new Map(
         relationsData.map((r) => [r.rtp_piece_id, r]),
       );
+
+      // Critères : groupement par pièce avec liens
+      const criteriasLinksMap = new Map(
+        criteriasLinksData.map((cl: any) => [cl.pcl_cri_id, cl]),
+      );
+
+      const criteriasMap = new Map();
+      criteriasData.forEach((c: any) => {
+        if (!criteriasMap.has(c.pc_piece_id)) {
+          criteriasMap.set(c.pc_piece_id, []);
+        }
+        // Joindre avec les informations du lien
+        const criteriaLink = criteriasLinksMap.get(c.pc_cri_id);
+        criteriasMap.get(c.pc_piece_id).push({
+          ...c,
+          link_info: criteriaLink,
+        });
+      });
 
       // Debug: vérifier le contenu du marquesMap
       this.logger.log(
@@ -207,6 +265,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
         const marqueEquip = marquesMap.get(marqueKey);
         const price = pricesMap.get(piece.piece_id.toString()); // 🔧 Conversion en string
         const filtre = filtresMap.get(relation?.rtp_psf_id);
+        const criterias = criteriasMap.get(piece.piece_id) || [];
 
         // Calcul du prix total (logique PHP EXACTE avec debug)
         const prixUnitaire = parseFloat(price?.pri_vente_ttc || '0');
@@ -227,7 +286,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
 
         // Détermination de la qualité selon pm_oes
         let qualite = 'AFTERMARKET';
-        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O') {
+        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O' || marqueEquip?.pm_oes === '1') {
           qualite = 'OES';
         }
         if (prixConsigne > 0) {
@@ -258,6 +317,32 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
 
         const nomComplet = nomParts.filter(Boolean).join(' ').trim();
 
+        // IMAGE (logique PHP ligne 980-1000)
+        const imageObj = imagesMap.get(piece.piece_id.toString());
+        let imageUrl = 'upload/articles/no.png'; // Default PHP
+        let imageAlt = '';
+        let imageTitle = '';
+
+        if (piece.piece_has_img === 1 && imageObj) {
+          imageUrl = `rack/${imageObj.pmi_folder}/${imageObj.pmi_name}.webp`;
+          imageAlt = `${nomComplet} ${marqueEquip?.pm_name || ''} ${piece.piece_ref || ''}`;
+          imageTitle = `${nomComplet} ${piece.piece_ref || ''}`;
+        } else {
+           // Fallback to utility if needed, but prefer direct logic
+           imageUrl = this.buildImageUrl(piece.piece_id, piece.piece_has_img, imagesMap);
+        }
+
+        // CRITÈRES TECHNIQUES (logique PHP ligne 1050-1070, LIMIT 3)
+        const criteriasTechniques = criterias
+          .filter((c: any) => c.link_info) // Seulement avec liens valides
+          .slice(0, 3)
+          .map((c: any) => ({
+            criteria: c.link_info?.pcl_cri_criteria || '',
+            value: c.pc_cri_value || '',
+            unit: c.link_info?.pcl_cri_unit || '',
+            level: c.link_info?.pcl_level || 1,
+          }));
+
         return {
           id: piece.piece_id,
           nom: nomComplet || 'Pièce sans nom',
@@ -278,7 +363,10 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           has_oem: piece.piece_has_oem === 1,
           filtre_gamme: piece.piece_fil_name || '',
           filtre_side: filtre?.psf_side || '',
-          image: this.buildImageUrl(piece.piece_id, piece.piece_has_img, imagesMap),
+          image: imageUrl,
+          image_alt: imageAlt,
+          image_title: imageTitle,
+          criterias_techniques: criteriasTechniques,
           url: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
         };
       });
@@ -313,6 +401,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       return {
         pieces,
         grouped_pieces: Object.values(groupedByFilter),
+        blocs: Object.values(groupedByFilter), // Alias pour compatibilité
         count: pieces.length,
         minPrice: globalMinPrice,
         relations_found: relationsData.length,

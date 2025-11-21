@@ -56,7 +56,14 @@ export class ImageOptimizer {
     // Nettoyer le chemin de l'image
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
     
-    // Construire l'URL de base avec render/image pour la transformation
+    // 🚀 FIX: Utilisation de object/public car le service de transformation (render/image) semble instable
+    // Cela désactive temporairement l'optimisation mais garantit l'affichage des images
+    const baseUrl = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
+    
+    return baseUrl;
+
+    /* 
+    // ANCIENNE LOGIQUE (render/image) - À RÉACTIVER QUAND LE SERVICE SERA STABLE
     const baseUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${cleanPath}`;
     
     // Construire les paramètres de transformation
@@ -67,6 +74,7 @@ export class ImageOptimizer {
     params.set('quality', quality.toString());
     
     return `${baseUrl}?${params.toString()}`;
+    */
   }
 
   /**

@@ -131,13 +131,13 @@ class BrandApiService {
       ? logoFilename.replace('.webp', '.png')
       : logoFilename;
     
-    // 🚀 NOUVELLE VERSION: Utilise la transformation d'image Supabase pour WebP
+    // 🚀 NOUVELLE VERSION: Utilise l'accès direct aux objets (plus fiable si le service de transformation échoue)
     const path = `constructeurs-automobiles/marques-logos/${finalLogo}`;
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
     const STORAGE_BUCKET = 'uploads';
     
-    // Transformation WebP automatique avec redimensionnement
-    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=200&quality=90`;
+    // Accès direct au fichier
+    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
   }
 
   /**
@@ -153,12 +153,12 @@ class BrandApiService {
       ? modelPic.replace('.webp', '.jpg')
       : modelPic;
     
-    // 🚀 NOUVELLE VERSION: Transformation WebP automatique
+    // 🚀 NOUVELLE VERSION: Accès direct
     const path = `constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`;
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
     const STORAGE_BUCKET = 'uploads';
     
-    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=800&quality=85`;
+    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
   }
 
   /**
@@ -174,12 +174,12 @@ class BrandApiService {
       ? partImg.replace('.webp', '.jpg')
       : partImg;
     
-    // 🚀 NOUVELLE VERSION: Transformation WebP automatique
+    // 🚀 NOUVELLE VERSION: Accès direct
     const path = `articles/gammes-produits/catalogue/${finalImage}`;
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co';
     const STORAGE_BUCKET = 'uploads';
     
-    return `${SUPABASE_URL}/storage/v1/render/image/public/${STORAGE_BUCKET}/${path}?format=webp&width=600&quality=85`;
+    return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
   }
 
   /**
@@ -624,13 +624,13 @@ class BrandApiService {
       console.log('[Brand API] Sample brand:', result.data?.[0]);
       let brands = result.data || [];
 
-      // La nouvelle API retourne déjà le bon format avec id, name, alias, logo, slug
+      // Mapping des données brutes (marque_id, marque_name) vers le format attendu par le frontend
       brands = brands.map((brand: any) => ({
-        id: brand.id,
-        name: brand.name,
-        slug: brand.slug || brand.alias,
-        logo: brand.logo, // L'URL complète est déjà générée par le backend
-        display: true // Tous les brands retournés sont actifs
+        id: brand.marque_id || brand.id,
+        name: brand.marque_name || brand.name,
+        slug: brand.marque_alias || brand.slug || brand.alias,
+        logo: this.generateLogoUrl(brand.marque_logo) || brand.logo,
+        display: true
       }));
 
       console.log('[Brand API] Formatted brands sample:', brands.slice(0, 2));

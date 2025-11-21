@@ -332,15 +332,23 @@ export class GammeUnifiedService extends SupabaseBaseService {
       
       const context = { typeId, pgId, mfId };
       
+      // 🚀 OPTIMISATION: Pré-récupérer les switches pour éviter N+1 requêtes
+      this.logger.log(`🚀 [SEO] Pré-récupération des switches pour pgId=${pgId}, mfId=${mfId}`);
+      const prefetchedSwitches = await this.seoSwitchesService.prefetchSwitches(
+        this.supabase,
+        pgId,
+        mfId
+      );
+      
       // 🚀 OPTIMISATION: Paralléliser 5 champs SEO (30s → 6-8s)
       // Principe #6 Constitution: Performance-Driven, Not Guess-Driven
       const [processedH1, processedContent, processedDescription, processedTitle, processedPreview] = 
         await Promise.all([
-          this.replaceVariablesAndSwitches(data.sgc_h1, vehicle, vehicleInfo, gammeInfo, context),
-          this.replaceVariablesAndSwitches(data.sgc_content, vehicle, vehicleInfo, gammeInfo, context),
-          this.replaceVariablesAndSwitches(data.sgc_descrip, vehicle, vehicleInfo, gammeInfo, context),
-          this.replaceVariablesAndSwitches(data.sgc_title, vehicle, vehicleInfo, gammeInfo, context),
-          this.replaceVariablesAndSwitches(data.sgc_preview, vehicle, vehicleInfo, gammeInfo, context)
+          this.replaceVariablesAndSwitches(data.sgc_h1, vehicle, vehicleInfo, gammeInfo, context, prefetchedSwitches),
+          this.replaceVariablesAndSwitches(data.sgc_content, vehicle, vehicleInfo, gammeInfo, context, prefetchedSwitches),
+          this.replaceVariablesAndSwitches(data.sgc_descrip, vehicle, vehicleInfo, gammeInfo, context, prefetchedSwitches),
+          this.replaceVariablesAndSwitches(data.sgc_title, vehicle, vehicleInfo, gammeInfo, context, prefetchedSwitches),
+          this.replaceVariablesAndSwitches(data.sgc_preview, vehicle, vehicleInfo, gammeInfo, context, prefetchedSwitches)
         ]);
 
       const finalResult = {
@@ -466,7 +474,8 @@ export class GammeUnifiedService extends SupabaseBaseService {
     vehicle: { marque: string; modele: string; type: string; nbCh: string },
     vehicleInfo: any,
     gamme: any,
-    context: { typeId: number; pgId: number; mfId?: number }
+    context: { typeId: number; pgId: number; mfId?: number },
+    prefetchedSwitches?: any
   ): Promise<string | null> {
     if (!text) return null;
     
@@ -500,11 +509,12 @@ export class GammeUnifiedService extends SupabaseBaseService {
       this.supabase,
       result,
       vehicle,
-      context
+      context,
+      prefetchedSwitches
     );
     
     // 6. 🧹 Nettoyer les phrases vides/incomplètes
-    result = this.cleanEmptyPhrases(result);
+    // result = this.cleanEmptyPhrases(result); // Désactivé temporairement pour éviter de casser les caractères spéciaux
     
     return result;
   }

@@ -267,4 +267,34 @@ ROLLBACK;
       };
     }
   }
+
+  /**
+   * 🔍 Valide l'existence d'un type_id
+   * GET /api/catalog/integrity/validate-type/:typeId
+   *
+   * Utilisé par le frontend pour vérifier si un ID de véhicule est valide
+   * avant de charger la page.
+   */
+  @Get('validate-type/:typeId')
+  async validateType(@Param('typeId') typeId: string) {
+    const typeIdNum = parseInt(typeId);
+
+    if (isNaN(typeIdNum)) {
+      return {
+        exists: false,
+        error: 'type_id doit être un nombre',
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const result = await this.integrityService.validateTypeId(typeIdNum);
+
+    return {
+      exists: result.valid,
+      type_id: result.type_id,
+      type_name: result.type_name,
+      error: result.error,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
