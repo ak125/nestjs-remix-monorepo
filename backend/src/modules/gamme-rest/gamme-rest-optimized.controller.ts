@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Injectable } from '@nestjs/common';
+import { Controller, Get, Param, Query, Injectable } from '@nestjs/common';
 import { GammePageDataService } from './services/gamme-page-data.service';
 
 /**
@@ -20,9 +20,9 @@ export class GammeRestOptimizedController {
    * Toute la logique est déléguée au service pour la maintenabilité
    */
   @Get(':pgId/page-data')
-  async getPageData(@Param('pgId') pgId: string) {
+  async getPageData(@Param('pgId') pgId: string, @Query() query: any) {
     try {
-      return await this.pageDataService.getCompletePageData(pgId);
+      return await this.pageDataService.getCompletePageData(pgId, query);
     } catch (error) {
       console.error('❌ Erreur dans getPageData:', error);
       return {

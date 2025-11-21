@@ -31,11 +31,8 @@ import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.s
 import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
-import { PiecesV4WorkingService } from './services/pieces-v4-working.service';
 import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
-import { PiecesPhpLogicCompleteService } from './services/pieces-php-logic-complete.service';
 import { PiecesEnhancedService } from './services/pieces-enhanced.service';
-import { PiecesUltraEnhancedService } from './services/pieces-ultra-enhanced.service';
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
@@ -95,11 +92,8 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     GammeUnifiedService,
     EquipementiersService,
     VehicleFilteredCatalogV4HybridService,
-    PiecesV4WorkingService,
     VehiclePiecesCompatibilityService,
-    PiecesPhpLogicCompleteService,
     PiecesEnhancedService,
-    PiecesUltraEnhancedService,
     CatalogDataIntegrityService, // 🛡️ Service de validation de l'intégrité
     PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
@@ -117,6 +111,8 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     FamilyGammeHierarchyService,
     VehicleFilteredCatalogV4HybridService,
     CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
+    GammeUnifiedService, // ✅ Exporté pour GammeRestModule
+    VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
   ],
 })
 export class CatalogModule {
