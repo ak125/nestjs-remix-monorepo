@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
+import { BrandSeoService } from './services/seo/brand-seo.service';
 
 @Controller('api/brands')
 export class BrandsController {
@@ -26,6 +27,7 @@ export class BrandsController {
   constructor(
     private readonly brandsService: VehicleBrandsService,
     private readonly modelsService: VehicleModelsService,
+    private readonly brandSeoService: BrandSeoService,
   ) {
     this.logger.log('✅ BrandsController initialisé - Routes /api/brands/* actives');
   }
@@ -71,7 +73,7 @@ export class BrandsController {
 
   /**
    * GET /api/brands/brand/:brand
-   * Retourne info marque par slug
+   * Retourne info marque par slug + SEO enrichi
    */
   @Get('brand/:brand')
   async getBrandBySlug(@Param('brand') brandSlug: string) {
@@ -87,9 +89,32 @@ export class BrandsController {
       };
     }
 
+    const brand = result.data[0];
+
+    // 🔥 INTÉGRATION SEO __seo_marque
+    let seoData = null;
+    const marqueId = (brand as any).marque_id;
+    const marqueNom = (brand as any).marque_name || brandSlug;
+    
+    if (marqueId) {
+      seoData = await this.brandSeoService.getProcessedBrandSeo(
+        marqueId,
+        marqueNom,
+        0, // typeId=0 pour rotation #PrixPasCher# variation 0
+      );
+
+      // Fallback si pas de SEO custom
+      if (!seoData) {
+        seoData = this.brandSeoService.generateDefaultBrandSeo(marqueNom);
+      }
+    }
+
     return {
       success: true,
-      data: result.data[0],
+      data: {
+        ...brand,
+        seo: seoData, // 🎯 SEO enrichi avec variables remplacées
+      },
     };
   }
 
