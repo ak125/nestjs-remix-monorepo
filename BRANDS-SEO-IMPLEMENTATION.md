@@ -218,18 +218,46 @@ npm run start:prod
 
 ---
 
-## 📝 Prochaines étapes
+## 📝 Prochaines étapes (TODO pour plus tard)
 
-### Todo 2: Intégration TipTap éditeur riche
+<!--
+### Todo 2: Intégration TipTap éditeur riche ✅ TERMINÉ
 **Objectif:** Permettre édition WYSIWYG du contenu SEO dans backoffice
 
-**Scope:**
-- Installer TipTap React dans frontend
-- Créer composant RichTextEditor
-- Intégrer dans formulaire admin SEO
-- Gérer balises HTML autorisées (`<b>`, `<strong>`, `<i>`, `<em>`)
+**Status:** ✅ COMPLÉTÉ (22 nov 2025)
+- ✅ TipTap installé: @tiptap/react @tiptap/starter-kit
+- ✅ Composant RichTextEditor créé (178 lignes)
+- ✅ Page admin.brands-seo.tsx créée (282 lignes)
+- ✅ API GET /api/brands/:id ajoutée
+- ✅ API PUT /api/brands/:id/seo ajoutée
+- ✅ Tests validés (test-put-simple.js)
+- ✅ Commit 09429c0 effectué
 
-**Effort estimé:** 3-4h
+**À faire plus tard:**
+
+### 1. Authentification admin route (15min)
+- [ ] Ajouter `requireUser()` dans `admin.brands-seo.tsx` loader
+- [ ] Pattern: Copier de `admin.seo.tsx:16`
+- [ ] Tester accès non-authentifié → redirect login
+
+### 2. Tests E2E TipTap (30min)
+- [ ] Créer `frontend/tests/e2e/brand-seo-editor.spec.ts`
+- [ ] Tests: Édition, sauvegarde, prévisualisation
+- [ ] Validation traitement variables
+- [ ] Test toolbar (Bold, Italic, Lists)
+
+### 3. Interface liste marques admin (20min)
+- [ ] Page `/admin/brands-seo` liste toutes marques
+- [ ] Afficher status SEO (custom vs default)
+- [ ] Liens édition rapide
+- [ ] Filtres/recherche marques
+
+### 4. Documentation utilisateur (10min)
+- [ ] Guide admin: Comment éditer SEO marque
+- [ ] Screenshots TipTap
+- [ ] Exemples variables (#VMarque#, #PrixPasCher#)
+- [ ] Best practices SEO
+-->
 
 ---
 
