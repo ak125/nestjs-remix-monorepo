@@ -719,7 +719,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   }
 
   /**
-   * 🚀 AMÉLIORATION : SEO par défaut avec intelligence
+   * 🚀 AMÉLIORATION : SEO par défaut avec intelligence + gestion type "unknown"
    */
   private generateDefaultSeo(
     variables: SeoVariables,
@@ -727,27 +727,65 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   ): CompleteSeoResult {
     const processingTime = Date.now() - startTime;
 
-    // Génération intelligente selon le contexte
-    const title = variables.isTopGamme
-      ? `${variables.gamme} Premium ${variables.marque} ${variables.modele} ${variables.type}`
-      : `${variables.gamme} ${variables.marque} ${variables.modele} ${variables.type}`;
+    // Détection du contexte pour adaptation du fallback
+    const hasVehicleContext = variables.marque && variables.modele && variables.type;
+    const hasGammeOnly = variables.gamme && !hasVehicleContext;
+    
+    // Logging pour tracking pages "unknown"
+    if (!hasVehicleContext && !hasGammeOnly) {
+      this.logger.warn(`⚠️ [SEO V4] Page type "unknown" détectée - Contexte incomplet`, {
+        gamme: variables.gamme,
+        marque: variables.marque,
+        hasArticlesCount: variables.articlesCount > 0,
+      });
+    }
 
-    const description = `Découvrez notre sélection de ${variables.gamme.toLowerCase()} pour votre ${variables.marque} ${variables.modele} ${variables.type}. ${variables.articlesCount > 0 ? `${variables.articlesCount} références disponibles` : 'Large choix'} ${variables.minPrice ? `dès ${variables.minPrice}€` : 'aux meilleurs prix'}.`;
+    // Génération intelligente selon le contexte
+    let title: string;
+    let description: string;
+    let h1: string;
+    let preview: string;
+    let content: string;
+
+    if (hasVehicleContext) {
+      // Contexte complet : gamme + véhicule
+      title = variables.isTopGamme
+        ? `${variables.gamme} Premium ${variables.marque} ${variables.modele} ${variables.type}`
+        : `${variables.gamme} ${variables.marque} ${variables.modele} ${variables.type}`;
+      description = `Découvrez notre sélection de ${variables.gamme.toLowerCase()} pour votre ${variables.marque} ${variables.modele} ${variables.type}. ${variables.articlesCount > 0 ? `${variables.articlesCount} références disponibles` : 'Large choix'} ${variables.minPrice ? `dès ${variables.minPrice}€` : 'aux meilleurs prix'}.`;
+      h1 = `<b>${variables.gamme}</b> ${variables.marque} ${variables.modele} ${variables.type}`;
+      preview = `${variables.gamme} ${variables.marque} - Qualité garantie`;
+      content = `<p>Trouvez les meilleures <b>${variables.gamme.toLowerCase()}</b> pour votre <b>${variables.marque} ${variables.modele} ${variables.type}</b>. Nos experts sélectionnent pour vous des pièces de qualité ${variables.minPrice ? `à partir de ${variables.minPrice}€` : 'aux meilleurs prix'}.</p>`;
+    } else if (hasGammeOnly) {
+      // Contexte gamme uniquement
+      title = `${variables.gamme} - Pièces auto de qualité | Automecanik`;
+      description = `Large sélection de ${variables.gamme.toLowerCase()} pour toutes marques et modèles. ${variables.articlesCount > 0 ? `Plus de ${variables.articlesCount} références` : 'Catalogue complet'} ${variables.minPrice ? `à partir de ${variables.minPrice}€` : 'aux meilleurs prix'}. Livraison rapide.`;
+      h1 = `<b>${variables.gamme}</b> pour tous véhicules`;
+      preview = `${variables.gamme} - Catalogue complet`;
+      content = `<p>Explorez notre gamme complète de <b>${variables.gamme.toLowerCase()}</b> pour tous types de véhicules. Qualité garantie, livraison rapide${variables.minPrice ? `, prix à partir de ${variables.minPrice}€` : ''}.</p>`;
+    } else {
+      // Type "unknown" - Fallback générique
+      title = `${variables.gamme || 'Pièces auto'} | Automecanik`;
+      description = `Catalogue de pièces détachées auto de qualité. ${variables.articlesCount > 0 ? `${variables.articlesCount} produits disponibles` : 'Large choix'} pour toutes marques et modèles. Livraison rapide, prix compétitifs.`;
+      h1 = `<b>${variables.gamme || 'Pièces détachées'}</b>`;
+      preview = `${variables.gamme || 'Pièces auto'} - Qualité garantie`;
+      content = `<p>Découvrez notre catalogue de <b>${variables.gamme ? variables.gamme.toLowerCase() : 'pièces détachées'}</b> pour tous types de véhicules. Qualité garantie, livraison rapide${variables.minPrice ? `, prix à partir de ${variables.minPrice}€` : ''}.</p>`;
+    }
 
     return {
       title: this.cleanContent(title, true),
       description: this.cleanContent(description),
-      h1: `<b>${variables.gamme}</b> ${variables.marque} ${variables.modele} ${variables.type}`,
-      preview: `${variables.gamme} ${variables.marque} - Qualité garantie`,
-      content: `<p>Trouvez les meilleures <b>${variables.gamme.toLowerCase()}</b> pour votre <b>${variables.marque} ${variables.modele} ${variables.type}</b>. Nos experts sélectionnent pour vous des pièces de qualité ${variables.minPrice ? `à partir de ${variables.minPrice}€` : 'aux meilleurs prix'}.</p>`,
+      h1,
+      preview,
+      content,
       keywords: this.generateKeywords(variables),
       metadata: {
-        templatesUsed: ['default_fallback'],
+        templatesUsed: hasVehicleContext ? ['default_fallback'] : ['unknown_page_fallback'],
         switchesProcessed: 0,
-        variablesReplaced: 8,
+        variablesReplaced: hasVehicleContext ? 8 : 3,
         processingTime,
         cacheHit: false,
-        version: '4.0.0-fallback',
+        version: hasVehicleContext ? '4.0.0-fallback' : '4.0.0-unknown',
       },
     };
   }
