@@ -24,8 +24,32 @@ import animationsStylesheet from "./styles/animations.css?url";
 // @ts-ignore
 
 export const links: LinksFunction = () => [
+  // Stylesheets
   { rel: "stylesheet", href: stylesheet },
   { rel: "stylesheet", href: animationsStylesheet },
+  
+  // DNS Prefetch & Preconnect (Performance SEO Phase 1)
+  { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
+  { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
+  { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
+  { rel: "preconnect", href: "https://cxpojprgwgubzjyqzmoq.supabase.co" },
+  { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
+  
+  // Font Preload (Performance SEO Phase 1)
+  { 
+    rel: "preload", 
+    as: "font", 
+    type: "font/woff2", 
+    href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
+    crossOrigin: "anonymous" 
+  },
+  
+  // Image Preload critiques (Logos constructeurs top 10)
+  { rel: "preload", as: "image", href: "/assets/brands/renault.webp" },
+  { rel: "preload", as: "image", href: "/assets/brands/peugeot.webp" },
+  { rel: "preload", as: "image", href: "/assets/brands/citroen.webp" },
+  
+  // Manifest & Icons
   { rel: "manifest", href: "/manifest.json" },
   { rel: "icon", type: "image/webp", sizes: "192x192", href: "/icon-192.webp" },
   { rel: "icon", type: "image/webp", sizes: "512x512", href: "/icon-512.webp" },
