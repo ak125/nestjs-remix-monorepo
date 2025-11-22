@@ -223,4 +223,75 @@ export class BrandSeoService {
       keywords: `${marqueNom}, pièces auto ${marqueNom}, pièces détachées ${marqueNom}`,
     };
   }
+
+  /**
+   * Met à jour le SEO d'une marque dans __seo_marque
+   * @param marqueId ID de la marque
+   * @param seoData Données SEO à mettre à jour
+   * @returns Données mises à jour
+   */
+  async updateBrandSeo(
+    marqueId: number,
+    seoData: {
+      sm_title?: string;
+      sm_descrip?: string;
+      sm_h1?: string;
+      sm_content?: string;
+      sm_keywords?: string;
+    },
+  ): Promise<BrandSeoData | null> {
+    try {
+      // Vérifier si une entrée existe déjà
+      const existing = await this.getBrandSeo(marqueId);
+
+      if (existing) {
+        // UPDATE
+        const { data, error } = await this.supabase
+          .from('__seo_marque')
+          .update({
+            sm_title: seoData.sm_title,
+            sm_descrip: seoData.sm_descrip,
+            sm_h1: seoData.sm_h1,
+            sm_content: seoData.sm_content,
+            sm_keywords: seoData.sm_keywords,
+          })
+          .eq('sm_marque_id', marqueId)
+          .select()
+          .single();
+
+        if (error) {
+          this.logger.error(`❌ Erreur UPDATE SEO marque ${marqueId}:`, error);
+          throw error;
+        }
+
+        this.logger.log(`✅ SEO marque ${marqueId} mis à jour`);
+        return data as BrandSeoData;
+      } else {
+        // INSERT
+        const { data, error } = await this.supabase
+          .from('__seo_marque')
+          .insert({
+            sm_marque_id: marqueId,
+            sm_title: seoData.sm_title || '',
+            sm_descrip: seoData.sm_descrip || '',
+            sm_h1: seoData.sm_h1 || '',
+            sm_content: seoData.sm_content || '',
+            sm_keywords: seoData.sm_keywords || '',
+          })
+          .select()
+          .single();
+
+        if (error) {
+          this.logger.error(`❌ Erreur INSERT SEO marque ${marqueId}:`, error);
+          throw error;
+        }
+
+        this.logger.log(`✅ SEO marque ${marqueId} créé`);
+        return data as BrandSeoData;
+      }
+    } catch (err) {
+      this.logger.error(`❌ Exception updateBrandSeo marque ${marqueId}:`, err);
+      throw err;
+    }
+  }
 }

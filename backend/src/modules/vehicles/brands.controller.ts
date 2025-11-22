@@ -11,6 +11,8 @@
 import {
   Controller,
   Get,
+  Put,
+  Body,
   Param,
   Query,
   Logger,
@@ -182,5 +184,84 @@ export class BrandsController {
         keywords: 'pièces auto, constructeurs, marques',
       },
     };
+  }
+
+  /**
+   * GET /api/brands/:id
+   * Retourne info marque par ID + SEO enrichi
+   */
+  @Get(':id')
+  async getBrandById(@Param('id', ParseIntPipe) marqueId: number) {
+    const result = await this.brandsService.getBrands({ limit: 1000 });
+
+    if (!result.data || result.data.length === 0) {
+      return {
+        success: false,
+        message: 'Aucune marque trouvée',
+      };
+    }
+
+    const brand = result.data.find((b: any) => b.marque_id === marqueId);
+
+    if (!brand) {
+      return {
+        success: false,
+        message: `Marque ID ${marqueId} introuvable`,
+      };
+    }
+
+    // 🔥 INTÉGRATION SEO __seo_marque
+    const marqueNom = (brand as any).marque_name;
+    const seoData = await this.brandSeoService.getProcessedBrandSeo(
+      marqueId,
+      marqueNom,
+      0, // typeId=0 pour rotation #PrixPasCher# variation 0
+    );
+
+    return {
+      success: true,
+      marqueId: (brand as any).marque_id,
+      marqueNom: (brand as any).marque_name,
+      marqueSlug: (brand as any).marque_slug,
+      marqueImg: (brand as any).marque_img,
+      seo: seoData,
+    };
+  }
+
+  /**
+   * PUT /api/brands/:id/seo
+   * Met à jour le SEO d'une marque dans __seo_marque
+   */
+  @Put(':id/seo')
+  async updateBrandSeo(
+    @Param('id', ParseIntPipe) marqueId: number,
+    @Body() seoData: {
+      sm_title?: string;
+      sm_descrip?: string;
+      sm_h1?: string;
+      sm_content?: string;
+      sm_keywords?: string;
+    },
+  ) {
+    this.logger.log(`📝 Mise à jour SEO marque ID ${marqueId}`);
+
+    try {
+      const updated = await this.brandSeoService.updateBrandSeo(
+        marqueId,
+        seoData,
+      );
+
+      return {
+        success: true,
+        data: updated,
+        message: 'SEO mis à jour avec succès',
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur MAJ SEO marque ${marqueId}:`, error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
   }
 }
