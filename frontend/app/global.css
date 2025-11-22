@@ -5,6 +5,9 @@
 @import '@fafa/design-tokens/css';         /* CSS Variables */
 @import '@fafa/design-tokens/utilities';   /* Classes sémantiques */
 
+/* === MAILLAGE INTERNE === */
+@import './styles/links.css';              /* Styles liens internes */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
