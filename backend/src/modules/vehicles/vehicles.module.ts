@@ -34,6 +34,9 @@ import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { VehicleSearchService } from './services/search/vehicle-search.service';
 import { VehicleMineService } from './services/search/vehicle-mine.service';
 
+// Services SEO
+import { BrandSeoService } from './services/seo/brand-seo.service';
+
 @Module({
   imports: [
     ConfigModule,
@@ -71,6 +74,9 @@ import { VehicleMineService } from './services/search/vehicle-mine.service';
     // Search
     VehicleSearchService,
     VehicleMineService,
+
+    // SEO
+    BrandSeoService,
   ],
   exports: [
     VehiclesService,
