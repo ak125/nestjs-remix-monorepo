@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
@@ -662,7 +663,7 @@ export class SuppliersService extends SupabaseBaseService {
         linksData.map(async (link) => {
           // Récupérer les info du produit depuis la table pieces
           const { data: pieceData } = await this.supabase
-            .from('pieces')
+            .from(TABLES.pieces)
             .select(
               'piece_id, piece_des, piece_ref, piece_name, piece_display, piece_pg_id',
             )
@@ -808,7 +809,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Tester la table pieces_marque
       const { data: marques, error } = await this.supabase
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('*')
         .limit(5);
 
@@ -843,7 +844,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // D'abord tester l'accès à la table sans spécifier de colonnes
       const { data: sampleData, error: sampleError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(1);
 
@@ -863,7 +864,7 @@ export class SuppliersService extends SupabaseBaseService {
 
       // Tester avec quelques échantillons
       const { data: pieces, error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(5);
 

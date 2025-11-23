@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * 📦 StockManagementService - Service de gestion des stocks
  *
@@ -287,7 +288,7 @@ export class StockManagementService extends SupabaseBaseService {
 
       // Désactiver le produit
       const { data: product, error: disableError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -672,7 +673,7 @@ export class StockManagementService extends SupabaseBaseService {
     try {
       // Test simple de connectivité à la base
       const { error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('id')
         .limit(1);
 
@@ -805,7 +806,7 @@ export class StockManagementService extends SupabaseBaseService {
 
       // Vérifier que le produit existe
       const { data: product, error: productError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('id, reference, name')
         .eq('id', movement.productId)
         .single();

@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
@@ -164,7 +165,7 @@ export class CrawlBudgetAuditService {
     /*
     // VRAIE IMPLÉMENTATION :
     const { data } = await this.supabase
-      .from('pieces')
+      .from(TABLES.pieces)
       .select('piece_id, piece_alias, piece_ga_id, pieces_gamme!inner(pg_alias)')
       .eq('piece_display', true)
       .in('piece_ga_id', gammeIds || [])
