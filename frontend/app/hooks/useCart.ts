@@ -174,6 +174,8 @@ export function useCart(): UseCartReturn {
         console.log('✅ Article supprimé');
         // Recharger le panier après suppression
         refreshCart();
+        // Émettre un événement global pour synchroniser tous les composants
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         console.error('❌ Erreur suppression article:', response.status);
       }
@@ -211,6 +213,8 @@ export function useCart(): UseCartReturn {
         console.log('✅ Quantité mise à jour');
         // Recharger le panier après mise à jour
         refreshCart();
+        // Émettre un événement global pour synchroniser tous les composants
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         console.error('❌ Erreur mise à jour quantité:', response.status);
       }
@@ -240,6 +244,8 @@ export function useCart(): UseCartReturn {
         // Recharger le panier et l'ouvrir
         refreshCart();
         openCart();
+        // Émettre un événement global pour synchroniser tous les composants
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('❌ Erreur ajout panier:', response.status, errorData);

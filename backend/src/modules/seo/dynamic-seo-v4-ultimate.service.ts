@@ -32,6 +32,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 
 // Import du service de base pour l'accès à la database
@@ -551,7 +552,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     if (!allGammes) {
       const { data } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias') // Sélection optimisée
         .eq('pg_display', true)
         .in('pg_level', [1, 2])
@@ -976,7 +977,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     if (!popularGammes) {
       const { data } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias, pg_url_slug')
         .eq('pg_display', true)
         .in('pg_level', [1, 2])

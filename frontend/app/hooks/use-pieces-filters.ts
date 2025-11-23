@@ -14,6 +14,7 @@ export function usePiecesFilters(pieces: PieceData[]) {
     quality: "all",
     availability: "all",
     searchText: "",
+    minStars: undefined,
   });
 
   const [sortBy, setSortBy] = useState<SortBy>("name");
@@ -69,6 +70,13 @@ export function usePiecesFilters(pieces: PieceData[]) {
       result = result.filter(piece => piece.stock === "En stock");
     }
 
+    // Filtre par étoiles (note minimale)
+    if (activeFilters.minStars && activeFilters.minStars > 0) {
+      result = result.filter(piece => 
+        piece.stars && piece.stars >= activeFilters.minStars!
+      );
+    }
+
     // Tri avec protection contre les valeurs undefined
     // ⚡ Optimisé avec Intl.Collator (2-3x plus rapide que localeCompare)
     const collator = new Intl.Collator('fr', { numeric: true, sensitivity: 'base' });
@@ -97,6 +105,106 @@ export function usePiecesFilters(pieces: PieceData[]) {
     return Array.from(brands).sort();
   }, [pieces]);
 
+  // ✨ NOUVEAU: Comptages dynamiques croisés pour filtres
+  // Calcule les comptages en tenant compte des autres filtres actifs
+  const dynamicFilterCounts = useMemo(() => {
+    // Créer une copie des pièces pour chaque type de filtre
+    let basePieces = [...pieces];
+
+    // Appliquer recherche textuelle (toujours active)
+    if (activeFilters.searchText) {
+      const q = activeFilters.searchText.toLowerCase();
+      basePieces = basePieces.filter(piece => 
+        piece.name.toLowerCase().includes(q) ||
+        piece.reference.toLowerCase().includes(q) ||
+        piece.brand.toLowerCase().includes(q)
+      );
+    }
+
+    // Comptages par marque (exclut filtre marque, inclut qualité/prix/dispo)
+    const brandCounts = new Map<string, number>();
+    let piecesForBrands = basePieces;
+    
+    if (activeFilters.quality !== "all") {
+      piecesForBrands = piecesForBrands.filter(p => p.quality === activeFilters.quality);
+    }
+    if (activeFilters.priceRange !== "all") {
+      piecesForBrands = piecesForBrands.filter(p => {
+        const price = p.price;
+        switch (activeFilters.priceRange) {
+          case "low": return price < 50;
+          case "medium": return price >= 50 && price < 150;
+          case "high": return price >= 150;
+          default: return true;
+        }
+      });
+    }
+    if (activeFilters.availability === "stock") {
+      piecesForBrands = piecesForBrands.filter(p => p.stock === "En stock");
+    }
+
+    piecesForBrands.forEach(p => {
+      if (p.brand) {
+        brandCounts.set(p.brand, (brandCounts.get(p.brand) || 0) + 1);
+      }
+    });
+
+    // Comptages par qualité (exclut filtre qualité, inclut marque/prix/dispo)
+    const qualityCounts = new Map<string, number>();
+    let piecesForQuality = basePieces;
+    
+    if (activeFilters.brands.length) {
+      const brandsSet = new Set(activeFilters.brands);
+      piecesForQuality = piecesForQuality.filter(p => brandsSet.has(p.brand));
+    }
+    if (activeFilters.priceRange !== "all") {
+      piecesForQuality = piecesForQuality.filter(p => {
+        const price = p.price;
+        switch (activeFilters.priceRange) {
+          case "low": return price < 50;
+          case "medium": return price >= 50 && price < 150;
+          case "high": return price >= 150;
+          default: return true;
+        }
+      });
+    }
+    if (activeFilters.availability === "stock") {
+      piecesForQuality = piecesForQuality.filter(p => p.stock === "En stock");
+    }
+
+    piecesForQuality.forEach(p => {
+      if (p.quality) {
+        qualityCounts.set(p.quality, (qualityCounts.get(p.quality) || 0) + 1);
+      }
+    });
+
+    // Comptages par gamme de prix (exclut filtre prix, inclut marque/qualité/dispo)
+    let piecesForPrice = basePieces;
+    
+    if (activeFilters.brands.length) {
+      const brandsSet = new Set(activeFilters.brands);
+      piecesForPrice = piecesForPrice.filter(p => brandsSet.has(p.brand));
+    }
+    if (activeFilters.quality !== "all") {
+      piecesForPrice = piecesForPrice.filter(p => p.quality === activeFilters.quality);
+    }
+    if (activeFilters.availability === "stock") {
+      piecesForPrice = piecesForPrice.filter(p => p.stock === "En stock");
+    }
+
+    const priceCounts = {
+      low: piecesForPrice.filter(p => p.price < 50).length,
+      medium: piecesForPrice.filter(p => p.price >= 50 && p.price < 150).length,
+      high: piecesForPrice.filter(p => p.price >= 150).length,
+    };
+
+    return {
+      brandCounts,
+      qualityCounts,
+      priceCounts,
+    };
+  }, [pieces, activeFilters]);
+
   // Pièces recommandées
   const recommendedPieces = useMemo(() => {
     if (!showRecommendations) return [];
@@ -119,6 +227,7 @@ export function usePiecesFilters(pieces: PieceData[]) {
       quality: "all", 
       availability: "all",
       searchText: "",
+      minStars: undefined,
     });
     setSortBy("name");
   };
@@ -162,6 +271,7 @@ export function usePiecesFilters(pieces: PieceData[]) {
     uniqueBrands,
     recommendedPieces,
     selectedPiecesData,
+    dynamicFilterCounts, // ✨ NOUVEAU: Comptages dynamiques croisés
     
     // Actions
     setActiveFilters,

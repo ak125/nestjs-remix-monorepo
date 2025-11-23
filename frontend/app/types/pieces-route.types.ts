@@ -53,6 +53,9 @@ export interface PieceData {
   delaiLivraison?: number;
   description?: string;
   image?: string; // URL de l'image depuis Supabase rack-images
+  images?: string[]; // Galerie d'images
+  marque_id?: number; // ID de la marque équipementier
+  marque_logo?: string; // Nom du fichier logo (ex: "bosch.webp")
 }
 
 export interface SEOEnrichedContent {
@@ -169,6 +172,7 @@ export interface PiecesFilters {
   quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard";
   availability: "all" | "stock" | "order";
   searchText: string;
+  minStars?: number; // Filtre par note minimale (0-5)
 }
 
 export type SortBy = "name" | "price-asc" | "price-desc" | "brand";

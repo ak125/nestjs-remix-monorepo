@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
@@ -73,7 +74,7 @@ export class ProductFilteringService extends SupabaseBaseService {
 
       // ✅ ÉTAPE 1: Récupérer les IDs de pièces affichables pour ce type/gamme
       const { data: displayedPieces, error: piecesError } = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
@@ -89,7 +90,7 @@ export class ProductFilteringService extends SupabaseBaseService {
 
       // ✅ ÉTAPE 2: Filtrer uniquement les pièces avec piece_display = 1
       const { data: visiblePieces, error: visError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id')
         .in('piece_id', allPieceIds)
         .eq('piece_display', 1);
@@ -105,7 +106,7 @@ export class ProductFilteringService extends SupabaseBaseService {
 
       // ✅ ÉTAPE 3: Récupérer les relations uniquement pour les pièces visibles
       const { data: relations, error: relError } = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id, rtp_psf_id, rtp_pm_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
@@ -189,7 +190,7 @@ export class ProductFilteringService extends SupabaseBaseService {
     }
 
     const { data: sides } = await this.client
-      .from('pieces_side_filtre')
+      .from(TABLES.pieces_side_filtre)
       .select('psf_id, psf_side, psf_sort, psf_display')
       .in('psf_id', psfIds)
       .neq('psf_id', '9999') // Exclusion selon PHP
@@ -238,7 +239,7 @@ export class ProductFilteringService extends SupabaseBaseService {
     }
 
     const { data: brands } = await this.client
-      .from('pieces_marque')
+      .from(TABLES.pieces_marque)
       .select('pm_id, pm_oes')
       .in('pm_id', pmIds);
 
@@ -297,7 +298,7 @@ export class ProductFilteringService extends SupabaseBaseService {
     }
 
     const { data: brands } = await this.client
-      .from('pieces_marque')
+      .from(TABLES.pieces_marque)
       .select('pm_id, pm_name, pm_nb_stars')
       .in('pm_id', pmIds)
       .order('pm_name');
