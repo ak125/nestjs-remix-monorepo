@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
@@ -212,10 +213,10 @@ export class SeoKpisService extends SupabaseBaseService {
         await Promise.all([
           this.client.from('pieces_gamme').select('pg_id', { count: 'exact' }),
           this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id', { count: 'exact' }),
           this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id', { count: 'exact' }),
           this.client
             .from('__blog_advice')

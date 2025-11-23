@@ -234,7 +234,11 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private cacheHits = 0;
   private cacheMisses = 0;
   private processingTimes: number[] = [];
-  private unknownPagesDetected: Array<{ pgId: number; typeId: number; timestamp: Date }> = [];
+  private unknownPagesDetected: Array<{
+    pgId: number;
+    typeId: number;
+    timestamp: Date;
+  }> = [];
 
   /**
    * 🎯 GÉNÉRATION SEO COMPLÈTE ULTIMATE
@@ -828,7 +832,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         typeId: 0,
         timestamp: new Date(),
       });
-      
+
       this.logger.warn(
         `⚠️ [SEO V4] Page type "unknown" détectée - Contexte incomplet`,
         {

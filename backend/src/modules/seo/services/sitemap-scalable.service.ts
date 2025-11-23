@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   SitemapConfig,
@@ -368,7 +369,7 @@ export class SitemapScalableService extends SupabaseBaseService {
    */
   private async fetchConstructeurs(): Promise<SitemapEntry[]> {
     const { data: marques } = await this.supabase
-      .from('auto_marque')
+      .from(TABLES.auto_marque)
       .select('marque_id, marque_alias')
       .order('marque_id');
 
@@ -388,7 +389,7 @@ export class SitemapScalableService extends SupabaseBaseService {
   private async fetchModeles(shard?: ShardConfig): Promise<SitemapEntry[]> {
     // Charger les marques
     const { data: marques } = await this.supabase
-      .from('auto_marque')
+      .from(TABLES.auto_marque)
       .select('marque_id, marque_alias');
 
     if (!marques) return [];
@@ -405,7 +406,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     while (hasMore) {
       const { data } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           'modele_id, modele_alias, modele_name, modele_name_url, modele_marque_id',
         )
@@ -467,7 +468,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     // Charger les marques
     const { data: marques } = await this.supabase
-      .from('auto_marque')
+      .from(TABLES.auto_marque)
       .select('marque_id, marque_alias');
 
     if (!marques) return [];
@@ -484,7 +485,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     while (hasMoreModeles) {
       const { data } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_alias, modele_name_url, modele_marque_id')
         .range(modeleOffset, modeleOffset + modeleBatchSize - 1)
         .order('modele_id');
@@ -516,7 +517,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     while (hasMoreTypes && typeOffset <= max) {
       const { data } = await this.supabase
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_id, type_name, type_modele_id')
         .range(typeOffset, Math.min(typeOffset + typeBatchSize - 1, max))
         .order('type_id');
