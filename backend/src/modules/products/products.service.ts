@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 
@@ -48,7 +49,7 @@ export class ProductsService extends SupabaseBaseService {
   async findAll(filters?: SearchProductDto) {
     try {
       let query = this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           *,
@@ -115,7 +116,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       const { search = '', page = 1, limit = 24 } = options;
 
-      let query = this.client.from('pieces').select(
+      let query = this.client.from(TABLES.pieces).select(
         `
           piece_id,
           piece_name,
@@ -229,7 +230,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // D'abord récupérer les données de base de la pièce
       const { data: pieceData, error: pieceError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .eq('piece_id', parseInt(id, 10))
         .single();
@@ -288,7 +289,7 @@ export class ProductsService extends SupabaseBaseService {
       // Récupérer les prix si disponibles
       let priceData = null;
       const { data: price, error: priceError } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .eq('piece_id', id)
         .single();
@@ -324,7 +325,7 @@ export class ProductsService extends SupabaseBaseService {
   async findBySku(sku: string) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .or(`piece_ref.eq.${sku},piece_ref_brut.eq.${sku}`)
         .single();
@@ -357,7 +358,7 @@ export class ProductsService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .insert(pieceData)
         .select()
         .single();
@@ -381,7 +382,7 @@ export class ProductsService extends SupabaseBaseService {
   async update(id: string, updateProductDto: UpdateProductDto) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           ...updateProductDto,
           updated_at: new Date().toISOString(),
@@ -409,7 +410,7 @@ export class ProductsService extends SupabaseBaseService {
   async remove(id: string) {
     try {
       const { error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -437,7 +438,7 @@ export class ProductsService extends SupabaseBaseService {
   async updateStock(id: string, quantity: number) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({
           stock_quantity: quantity,
           updated_at: new Date().toISOString(),
@@ -516,7 +517,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Test pieces
       const { data: pieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name')
         .limit(5);
 
@@ -551,14 +552,14 @@ export class ProductsService extends SupabaseBaseService {
       // 🎯 Compter uniquement les pièces AFFICHABLES (piece_display = true)
       // Structure réelle vérifiée: piece_display = boolean
       const { count: totalPieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true);
 
       // Compter les pièces actives disponibles (avec stock > 0)
       // piece_qty_sale est de type SMALLINT (int2), comparaison numérique possible
       const { count: activePieces, error: activeError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true)
         .not('piece_qty_sale', 'is', null)
@@ -573,14 +574,14 @@ export class ProductsService extends SupabaseBaseService {
       // Compter les marques de pièces actives (pm_display = '1')
       // Note: pieces_marque contient les marques de pièces (toutes colonnes TEXT)
       const { count: totalMarques, error: marquesError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('*', { count: 'exact', head: true })
         .eq('pm_display', '1');
 
       // Compter les pièces avec stock faible (piece_qty_sale = 1)
       // piece_qty_sale est SMALLINT, comparaison numérique directe
       const { count: lowStockCount, error: lowStockError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true)
         .eq('piece_qty_sale', 1);
@@ -636,13 +637,13 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Récupérer quelques vraies pièces pour voir la structure - SANS spécifier les colonnes
       const { data: samplePieces, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(2);
 
       // Récupérer quelques vraies marques - SANS spécifier les colonnes
       const { data: sampleMarques, error: marquesError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('*')
         .limit(2);
 
@@ -681,7 +682,7 @@ export class ProductsService extends SupabaseBaseService {
     try {
       // Échantillon de stocks pour comprendre la distribution
       const { data: stockSample, error: stockError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name, piece_qty_sale, piece_display')
         .eq('piece_display', true)
         .not('piece_qty_sale', 'is', null)
@@ -700,7 +701,7 @@ export class ProductsService extends SupabaseBaseService {
       const rangeCounts: any = {};
       for (const range of ranges) {
         const { count } = await this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('*', { count: 'exact', head: true })
           .eq('piece_display', true)
           .gte('piece_qty_sale', range.min)
@@ -801,7 +802,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Construire la requête pour les produits
       let query = this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact' })
         .eq('piece_ga_id', gammeId)
         .eq('piece_display', true);
@@ -956,7 +957,7 @@ export class ProductsService extends SupabaseBaseService {
       const searchTerm = `%${query}%`;
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -1081,7 +1082,7 @@ export class ProductsService extends SupabaseBaseService {
   async getPopularProducts(limit = 10) {
     try {
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           *,
@@ -1589,7 +1590,7 @@ export class ProductsService extends SupabaseBaseService {
       this.logger.log('🏪 getProductsForCommercial - Options:', options);
 
       // Étape 1 : Récupérer les pièces
-      let query = this.client.from('pieces').select('*', { count: 'exact' });
+      let query = this.client.from(TABLES.pieces).select('*', { count: 'exact' });
 
       // Filtres
       if (search) {
@@ -1652,7 +1653,7 @@ export class ProductsService extends SupabaseBaseService {
         ...new Set(piecesData.map((p) => p.piece_pm_id).filter(Boolean)),
       ];
       const { data: marquesData } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name, pm_logo')
         .in('pm_id', marqueIds);
 
@@ -1668,7 +1669,7 @@ export class ProductsService extends SupabaseBaseService {
       // Étape 3 : Récupérer prix
       const pieceIds = piecesData.map((p) => p.piece_id);
       const { data: pricesData } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*')
         .in('pri_piece_id', pieceIds);
 
@@ -1788,7 +1789,7 @@ export class ProductsService extends SupabaseBaseService {
       );
 
       const { data, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .update({ piece_display: isActive })
         .eq('piece_id', parseInt(pieceId, 10))
         .select();
@@ -1889,7 +1890,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les marques des pièces actives de cette gamme avec LIMIT élevé
       const { data: piecesData, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_pm_id')
         .eq('piece_pg_id', gammeId)
         .eq('piece_display', true)
@@ -1911,7 +1912,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les infos des marques
       const { data: brandsData, error: brandsError } = await this.client
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_id, pm_name')
         .in('pm_id', brandIds)
         .order('pm_name', { ascending: true });
@@ -1948,7 +1949,7 @@ export class ProductsService extends SupabaseBaseService {
 
       // Récupérer les gammes des pièces actives de cette marque avec LIMIT élevé
       const { data: piecesData, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_pg_id')
         .eq('piece_pm_id', brandId)
         .eq('piece_display', true)

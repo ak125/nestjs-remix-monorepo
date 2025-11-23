@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
@@ -73,7 +74,7 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           // Recherche dans auto_type avec jointures
           let query = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -164,7 +165,7 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           // Construction de la requête avec jointures
           let dbQuery = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -284,7 +285,7 @@ export class VehicleSearchService extends SupabaseBaseService {
           const offset = page * limit;
 
           const { data, error, count } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -347,7 +348,7 @@ export class VehicleSearchService extends SupabaseBaseService {
           const offset = page * limit;
 
           let query = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -443,7 +444,7 @@ export class VehicleSearchService extends SupabaseBaseService {
           switch (type) {
             case 'marque':
               const { data: marques } = await this.client
-                .from('auto_marque')
+                .from(TABLES.auto_marque)
                 .select('marque_name')
                 .eq('marque_display', 1)
                 .ilike('marque_name', `%${query}%`)
@@ -455,7 +456,7 @@ export class VehicleSearchService extends SupabaseBaseService {
 
             case 'modele':
               const { data: modeles } = await this.client
-                .from('auto_modele')
+                .from(TABLES.auto_modele)
                 .select('modele_name')
                 .eq('modele_display', 1)
                 .ilike('modele_name', `%${query}%`)
@@ -467,7 +468,7 @@ export class VehicleSearchService extends SupabaseBaseService {
 
             case 'type':
               const { data: types } = await this.client
-                .from('auto_type')
+                .from(TABLES.auto_type)
                 .select('type_name')
                 .eq('type_display', 1)
                 .ilike('type_name', `%${query}%`)

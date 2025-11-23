@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
@@ -38,7 +39,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
 
       // Récupérer les familles avec la même logique que le PHP
       const { data: familiesData, error: familiesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           catalog_gamme!inner(
@@ -121,7 +122,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
   private async getGammesForFamily(mf_id: number): Promise<CatalogGamme[]> {
     try {
       const { data: gammesData, error: gammesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           pg_id,

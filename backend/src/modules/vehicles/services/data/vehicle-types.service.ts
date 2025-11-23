@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
@@ -74,7 +75,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           const offset = page * limit;
 
           let query = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -160,7 +161,7 @@ export class VehicleTypesService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -224,7 +225,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           const offset = page * limit;
 
           let query = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -300,7 +301,7 @@ export class VehicleTypesService extends SupabaseBaseService {
           const offset = page * limit;
 
           let dbQuery = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,
@@ -380,25 +381,25 @@ export class VehicleTypesService extends SupabaseBaseService {
 
           // Total des types
           const { count: totalTypes } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' });
 
           // Types actifs
           const { count: activeTypes } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' })
             .eq('type_display', 1);
 
           // Types avec moteur
           const { count: typesWithEngine } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id', { count: 'exact' })
             .eq('type_display', 1)
             .not('type_engine_code', 'is', null);
 
           // Par année
           const { data: yearData } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_year')
             .eq('type_display', 1)
             .not('type_year', 'is', null);
@@ -445,7 +446,7 @@ export class VehicleTypesService extends SupabaseBaseService {
   > {
     try {
       const { data } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_engine_code')
         .eq('type_display', 1)
         .not('type_engine_code', 'is', null);
@@ -488,7 +489,7 @@ export class VehicleTypesService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id, type_name, type_year, type_engine_code')
             .eq('type_modele_id', modeleId)
             .eq('type_display', 1)
@@ -538,7 +539,7 @@ export class VehicleTypesService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_year')
             .eq('type_modele_id', modeleId)
             .eq('type_display', 1)
@@ -577,7 +578,7 @@ export class VehicleTypesService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_engine_code')
             .eq('type_modele_id', modeleId)
             .eq('type_display', 1)
@@ -622,7 +623,7 @@ export class VehicleTypesService extends SupabaseBaseService {
       async () => {
         try {
           let dbQuery = this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_name')
             .eq('type_display', 1)
             .ilike('type_name', `%${query}%`)
@@ -665,7 +666,7 @@ export class VehicleTypesService extends SupabaseBaseService {
 
           // Types similaires du même modèle
           const { data: relatedData } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               *,

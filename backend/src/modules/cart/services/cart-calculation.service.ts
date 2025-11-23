@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * 🧮 SERVICE CALCUL PANIER - Architecture moderne avancée
  *
@@ -245,7 +246,7 @@ export class CartCalculationService extends SupabaseBaseService {
       try {
         // Récupérer la catégorie du produit
         const { data: product, error } = await this.supabase
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('category_id, categories(name)')
           .eq('id', item.product_id)
           .single();

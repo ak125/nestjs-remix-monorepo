@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
@@ -105,7 +106,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
     try {
       // ✅ FIX: Utiliser .maybeSingle() au lieu de .single()
       const { data, error } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name')
         .eq('pg_id', String(gammeId))
         .maybeSingle();
@@ -453,7 +454,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
           .from('auto_type')
           .select('type_id', { count: 'exact', head: true }),
         this.client
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id', { count: 'exact', head: true }),
         this.client
           .from('pieces_relation_type')

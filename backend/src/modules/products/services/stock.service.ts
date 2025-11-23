@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
@@ -81,7 +82,7 @@ export class StockService extends SupabaseBaseService {
       // 📊 MODE SUIVI: Vérifier le stock réel
       // 1. Récupérer le stock depuis pieces_price (pri_qte_cond = quantité en stock)
       const { data: priceData, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_qte_cond, pri_qte_vente')
         .eq('pri_piece_id', pieceId)
         .limit(1);
@@ -290,7 +291,7 @@ export class StockService extends SupabaseBaseService {
 
       // Récupérer tous les produits avec stock faible
       const { data: lowStockProducts, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           `
           pri_piece_id,
@@ -358,7 +359,7 @@ export class StockService extends SupabaseBaseService {
       // Mode UNLIMITED: Rapport simplifié
       if (this.STOCK_MODE === 'UNLIMITED') {
         const { count } = await this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('*', { count: 'exact', head: true });
 
         return {
@@ -394,7 +395,7 @@ export class StockService extends SupabaseBaseService {
 
       // Total des produits
       const { count } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true });
 
       stats.totalProducts = count || 0;
@@ -433,7 +434,7 @@ export class StockService extends SupabaseBaseService {
 
       // En mode TRACKED, mettre à jour le stock dans pieces_price
       const { error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .update({
           pri_qte_cond: quantity.toString(),
         })

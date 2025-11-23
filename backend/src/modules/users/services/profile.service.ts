@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * ProfileService - Gestion des profils utilisateurs
  *

@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -120,7 +121,7 @@ export class VehiclesService extends SupabaseBaseService {
       );
 
       const { data, error } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
@@ -216,7 +217,7 @@ export class VehiclesService extends SupabaseBaseService {
       this.logger.debug(`🔍 Récupération véhicules marque ${marqueId}`);
 
       const { data, error } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,
@@ -286,7 +287,7 @@ export class VehiclesService extends SupabaseBaseService {
   async findAll(filters?: VehiclePaginationDto): Promise<VehicleResponseDto> {
     try {
       let query = this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(`*`)
         .eq('marque_display', 1)
         .limit(filters?.limit || 50);
@@ -325,7 +326,7 @@ export class VehiclesService extends SupabaseBaseService {
   async getBrandById(brandId: string) {
     try {
       const { data, error } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*')
         .eq('marque_id', brandId)
         .single();
@@ -361,7 +362,7 @@ export class VehiclesService extends SupabaseBaseService {
         // Requête optimisée : récupérer les modele_id qui ont des motorisations pour l'année EXACTE
         // ✅ FILTRAGE STRICT : Une motorisation doit être disponible pour l'année demandée
         const { data: modelIdsWithTypes, error: typeError } = await this.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('type_modele_id, type_year_from, type_year_to')
           .eq('type_marque_id', brandIdNum)
           .lte('type_year_from', filters.year)
@@ -407,7 +408,7 @@ export class VehiclesService extends SupabaseBaseService {
 
         // Récupérer les modèles correspondants (déjà filtrés par année via motorisations)
         let query = this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select(
             `
             modele_id,
@@ -455,7 +456,7 @@ export class VehiclesService extends SupabaseBaseService {
 
         // Compter le total pour la pagination
         const { count } = await this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('modele_id', { count: 'exact' })
           .eq('modele_marque_id', brandIdNum)
           .eq('modele_display', 1)  // ✅ Même filtre pour le comptage
@@ -475,7 +476,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // 📋 REQUÊTE NORMALE : Sans filtrage par année, retourner tous les modèles
       let query = this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(`*`)
         .eq('modele_marque_id', brandId)
         .limit(filters?.limit || 50);
@@ -515,7 +516,7 @@ export class VehiclesService extends SupabaseBaseService {
   ): Promise<VehicleResponseDto> {
     try {
       let query = this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(`*`)
         .eq('type_modele_id', modelId)
         .eq('type_display', 1) // 🎯 Seulement les types affichables
@@ -560,7 +561,7 @@ export class VehiclesService extends SupabaseBaseService {
   async searchByCode(searchDto: VehicleSearchDto): Promise<VehicleResponseDto> {
     try {
       let query = this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           *,
@@ -632,7 +633,7 @@ export class VehiclesService extends SupabaseBaseService {
   ): Promise<VehicleResponseDto> {
     try {
       let query = this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           *,
@@ -701,16 +702,16 @@ export class VehiclesService extends SupabaseBaseService {
   async getStats() {
     try {
       const { count: brandCount } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact' })
         .eq('marque_display', 1);
 
       const { count: modelCount } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact' });
 
       const { count: typeCount } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*', { count: 'exact' });
 
       return {
@@ -731,7 +732,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // Recherche dans les marques uniquement pour commencer
       const brandsResult = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_alias, marque_logo')
         .eq('marque_display', 1)
         .ilike('marque_name', `%${searchTerm}%`)
@@ -745,7 +746,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Recherche dans les modèles
       const modelsResult = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           'modele_id, modele_name, modele_alias, modele_ful_name, modele_marque_id',
         )
@@ -815,7 +816,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Deuxième requête : récupérer les détails des types
       const { data: typeData, error: typeError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .in('type_id', typeIds)
         .limit(50);
@@ -891,7 +892,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // Deuxième requête : récupérer les détails des types
       const { data: typeData, error: typeError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .in('type_id', typeIds)
         .limit(50);
@@ -932,7 +933,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // Récupérer d'abord tous les types du modèle (sans jointure)
       const { data: typesData, error: typesError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .eq('type_modele_id', modelId)
         .eq('type_display', '1')
@@ -1000,15 +1001,15 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       const [brandsResult, modelsResult, typesResult] = await Promise.all([
         this.client
-          .from('auto_marque')
+          .from(TABLES.auto_marque)
           .select('marque_id', { count: 'exact' })
           .eq('marque_display', 1),
         this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('modele_id', { count: 'exact' })
           .eq('modele_display', 1),
         this.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('type_id', { count: 'exact' })
           .eq('type_display', 1),
       ]);
@@ -1033,7 +1034,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // 🎯 Requête simple pour récupérer les détails du type
       const { data: typeData, error: typeError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('*')
         .eq('type_id', typeId)
         .eq('type_display', 1)
@@ -1046,7 +1047,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // 🔄 Récupérer les infos du modèle
       const { data: modelData, error: modelError } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,
@@ -1067,7 +1068,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // 🏷️ Récupérer les infos de la marque
       const { data: brandData, error: brandError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_id,
@@ -1109,7 +1110,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // 🎯 COHÉRENCE : Utiliser auto_modele comme findModelsByBrand
       const { data, error } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_year_from, modele_year_to')
         .eq('modele_marque_id', parseInt(brandId))
         .eq('modele_display', 1)
@@ -1259,7 +1260,7 @@ export class VehiclesService extends SupabaseBaseService {
 
       // 1️⃣ Récupérer l'ID de la marque depuis l'alias
       const { data: brand, error: brandError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_alias')
         .eq('marque_alias', brandAlias)
         .single();
