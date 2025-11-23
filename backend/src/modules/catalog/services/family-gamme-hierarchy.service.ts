@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/family-gamme-hierarchy.service.ts
 // 🏗️ Service pour gérer la hiérarchie Familles → Gammes (sous-catégories)
 

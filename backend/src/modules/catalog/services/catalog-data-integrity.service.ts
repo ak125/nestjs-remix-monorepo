@@ -45,7 +45,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       // .single() lance une erreur si 0 ou 2+ résultats
       // .maybeSingle() retourne data: null si 0 résultats (sans erreur)
       const { data, error } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_id, type_name, type_modele_id')
         .eq('type_id', String(typeId))
         .maybeSingle();
@@ -273,7 +273,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
 
     // 4. Analyser la qualité des données (échantillon rapide)
     const { data: relations } = await this.client
-      .from('pieces_relation_type')
+      .from(TABLES.pieces_relation_type)
       .select('rtp_piece_id, rtp_pm_id')
       .eq('rtp_type_id', String(typeId))
       .eq('rtp_pg_id', String(gammeId))
@@ -360,7 +360,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
     try {
       // 1. Récupérer tous les type_id uniques dans pieces_relation_type
       const { data: relationTypeIds } = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_type_id')
         .limit(10000);
 
@@ -380,7 +380,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
         const batch = uniqueTypeIds.slice(i, i + 50);
 
         const { data: existingTypes } = await this.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('type_id')
           .in('type_id', batch);
 
@@ -400,7 +400,7 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
       const sampleRelations = [];
       for (const typeId of orphanTypeIds.slice(0, limit)) {
         const { data: gammes } = await this.client
-          .from('pieces_relation_type')
+          .from(TABLES.pieces_relation_type)
           .select('rtp_pg_id, rtp_piece_id')
           .eq('rtp_type_id', typeId);
 
@@ -451,13 +451,13 @@ export class CatalogDataIntegrityService extends SupabaseBaseService {
     const [typesCount, gammesCount, relationsCount, orphans] =
       await Promise.all([
         this.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('type_id', { count: 'exact', head: true }),
         this.client
           .from(TABLES.pieces_gamme)
           .select('pg_id', { count: 'exact', head: true }),
         this.client
-          .from('pieces_relation_type')
+          .from(TABLES.pieces_relation_type)
           .select('rtp_piece_id', { count: 'exact', head: true }),
         this.findOrphanTypeRelations(20),
       ]);

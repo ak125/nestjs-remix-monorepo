@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 // import { Cron, CronExpression } from '@nestjs/schedule'; // Temporairement désactivé
 import { ConfigService } from '@nestjs/config';
