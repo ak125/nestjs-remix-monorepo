@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import {
   Injectable,
   Logger,
@@ -597,7 +598,7 @@ export class ReviewService extends SupabaseBaseService {
       let product = null;
       if (content.product_id) {
         const { data: productData } = await this.supabase
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('*')
           .eq('pce_id', content.product_id)
           .single();

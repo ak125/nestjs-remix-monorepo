@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -435,7 +436,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
     try {
       // Estimation basée sur différentes sources
       const sources = await Promise.allSettled([
-        this.client.from('pieces').select('*', { count: 'exact', head: true }),
+        this.client.from(TABLES.pieces).select('*', { count: 'exact', head: true }),
         this.client
           .from('vehicules')
           .select('*', { count: 'exact', head: true }),
