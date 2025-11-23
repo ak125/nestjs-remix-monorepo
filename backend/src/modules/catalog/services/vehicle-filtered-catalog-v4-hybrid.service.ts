@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -248,7 +249,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     // 🎯 Récupérer gammes et catalogue en parallèle
     const [gammesResult, catalogGammeResult] = await Promise.all([
       this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img, pg_level')
         .in('pg_id', pgIds)
         .eq('pg_display', '1'),
@@ -391,7 +392,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
           )
           .eq('mf_display', 1),
         this.supabase
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id, pg_alias, pg_name, pg_name_meta, pg_img')
           .eq('pg_display', 1),
         // ⚠️ SUPPRIMÉ: .in('pg_level', [1, 2]) - Trop restrictif
@@ -501,7 +502,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       // 🔥 OPTIMISATION: Sélectionner seulement rtp_pg_id (pas rtp_piece_id, rtp_pm_id)
       // pour réduire la quantité de données
       const { data: relationData, error } = await this.supabase
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_pg_id') // 🔥 Seulement ce qu'on utilise vraiment
         .eq('rtp_type_id', typeId)
         .limit(5000); // 🔥 Réduit à 5000 pour éviter timeout

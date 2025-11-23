@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/seo-switches.service.ts
 // 🎯 Service dédié à la gestion des switches SEO (3 sources: SIS, SGCS, SFGCS)
 
@@ -497,7 +498,7 @@ export class SeoSwitchesService {
 
     // Récupérer nom de la gamme cible
     const { data: targetGamme } = await supabase
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_name')
       .eq('pg_id', targetPgId)
       .single();
@@ -561,7 +562,7 @@ export class SeoSwitchesService {
 
     // Récupérer nom et alias de la gamme cible
     const { data: targetGamme } = await supabase
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_name, pg_alias')
       .eq('pg_id', targetPgId)
       .single();
