@@ -110,7 +110,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     typeApiResponse,
     modelsApiResponse,
     pageData,
-    hierarchyData
+    hierarchyData,
+    filtersResponse
   ] = await Promise.all([
     batchLoaderPromise,
     fetch(`http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`).catch(() => null),
@@ -118,7 +119,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     fetchGammePageData(gammeId).catch(() => null),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { 'Accept': 'application/json' }
-    }).then(res => res.ok ? res.json() : null).catch(() => null)
+    }).then(res => res.ok ? res.json() : null).catch(() => null),
+    fetch(`http://localhost:3000/api/products/filters/${gammeId}/${vehicleIds.typeId}`).then(res => res.json()).catch(() => null)
   ]);
 
   // 5. Construction des objets Vehicle & Gamme
@@ -194,6 +196,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     images: piece.images || [], // ✅ Mapping des images
     stock: piece.dispo ? 'En stock' : 'Sur commande',
     quality: piece.qualite || '',
+    stars: piece.nb_stars ? parseInt(piece.nb_stars) : undefined, // ✅ Étoiles qualité marque
     description: piece.description || '',
     url: piece.url || '',
     marque_id: piece.marque_id,
@@ -268,6 +271,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const loadTime = Date.now() - startTime;
 
+  // Extract filters data
+  const filtersData = filtersResponse?.success ? filtersResponse.data : null;
+
   return json({
     vehicle,
     gamme,
@@ -275,6 +281,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     count: piecesData.length,
     minPrice,
     maxPrice,
+    filtersData,
     seoContent,
     faqItems,
     relatedArticles,
@@ -377,6 +384,7 @@ export default function PiecesVehicleRoute() {
     filteredProducts,
     uniqueBrands,
     recommendedPieces,
+    dynamicFilterCounts, // ✨ NOUVEAU: Comptages dynamiques
     setActiveFilters,
     setSortBy,
     setViewMode,
@@ -397,14 +405,19 @@ export default function PiecesVehicleRoute() {
   }, [togglePieceSelection]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
+      {/* Pattern d'arrière-plan subtil */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40"></div>
+      
       {/* Header moderne */}
-      <PiecesHeader
-        vehicle={data.vehicle}
-        gamme={data.gamme}
-        count={data.count}
-        performance={data.performance}
-      />
+      <div className="relative z-10">
+        <PiecesHeader
+          vehicle={data.vehicle}
+          gamme={data.gamme}
+          count={data.count}
+          performance={data.performance}
+        />
+      </div>
 
       {/* 🍞 Fil d'ariane avec composant existant - COHÉRENT AVEC URL */}
       {/* URL: /pieces/{gamme}/{marque}/{modele}/{type}.html */}
@@ -434,9 +447,9 @@ export default function PiecesVehicleRoute() {
       </div>
 
       {/* Conteneur principal */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         {/* 🚗 Sélecteur de véhicule - Mode compact sticky */}
-        <div className="mb-6 sticky top-4 z-10">
+        <div className="mb-6 sticky top-4 z-20 animate-in fade-in slide-in-from-top duration-500">
           <VehicleSelectorV2
             mode="compact"
             context="pieces"
@@ -462,18 +475,27 @@ export default function PiecesVehicleRoute() {
         <div className="flex flex-col lg:flex-row gap-8">
           
           {/* Sidebar filtres et catalogue */}
-          <aside className="lg:w-80 flex-shrink-0 space-y-6">
+          <aside className="lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700">
             {/* Filtres */}
-            <PiecesFilterSidebar
-              activeFilters={activeFilters}
-              setActiveFilters={setActiveFilters}
-              uniqueBrands={uniqueBrands}
-              piecesCount={filteredProducts.length}
-              resetAllFilters={resetAllFilters}
-              getBrandCount={(brand) => 
-                data.pieces.filter(p => p.brand === brand).length
-              }
-            />
+            <div className="sticky top-24">
+              <PiecesFilterSidebar
+                activeFilters={activeFilters}
+                setActiveFilters={setActiveFilters}
+                uniqueBrands={uniqueBrands}
+                piecesCount={filteredProducts.length}
+                resetAllFilters={resetAllFilters}
+                getBrandCount={(brand) => 
+                  dynamicFilterCounts.brandCounts.get(brand) || 0
+                }
+                getQualityCount={(quality) =>
+                  dynamicFilterCounts.qualityCounts.get(quality) || 0
+                }
+                getPriceRangeCount={(range) =>
+                  dynamicFilterCounts.priceCounts[range as 'low' | 'medium' | 'high'] || 0
+                }
+                filtersData={data.filtersData}
+              />
+            </div>
 
             {/* Catalogue inline - même présentation que test-catalogue-optimized */}
             {data.catalogueMameFamille && data.catalogueMameFamille.items.length > 0 && (() => {
@@ -551,67 +573,106 @@ export default function PiecesVehicleRoute() {
             <div className="space-y-6">
               
               {/* Titre catégorie */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 px-6 py-4">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {data.gamme.name}
-                </h2>
+              <div className="bg-gradient-to-r from-white via-white to-blue-50/30 rounded-2xl shadow-lg border border-gray-200/50 px-6 py-5 backdrop-blur-sm animate-in fade-in slide-in-from-top duration-500 delay-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
+                    {data.gamme.name}
+                  </h2>
+                </div>
               </div>
 
               {/* Barre d'outils vue */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5 animate-in fade-in slide-in-from-top duration-500 delay-150 sticky top-24 z-10">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="text-sm text-gray-600">
-                    <strong>{filteredProducts.length}</strong> pièce{filteredProducts.length > 1 ? 's' : ''} trouvée{filteredProducts.length > 1 ? 's' : ''}
+                  {/* Compteur de résultats */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
+                      <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                      </svg>
+                      <span className="text-sm font-semibold text-gray-900">
+                        <span className="text-blue-600">{filteredProducts.length}</span> pièce{filteredProducts.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
                     {data.minPrice > 0 && (
-                      <span className="ml-2">• À partir de <strong>{data.minPrice.toFixed(2)}€</strong></span>
+                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 px-4 py-2 rounded-xl border border-green-100">
+                        <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"></path>
+                        </svg>
+                        <span className="text-sm font-semibold text-gray-900">
+                          Dès <span className="text-green-600">{data.minPrice.toFixed(2)}€</span>
+                        </span>
+                      </div>
                     )}
                   </div>
                   
                   {/* Sélecteur de vue */}
-                  <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-1.5 border border-gray-200 shadow-inner">
                     <button
                       onClick={() => setViewMode('grid')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                         viewMode === 'grid' 
-                          ? 'bg-white text-blue-600 shadow-sm' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                       }`}
                     >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                      </svg>
                       Grille
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                         viewMode === 'list' 
-                          ? 'bg-white text-blue-600 shadow-sm' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                       }`}
                     >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"></path>
+                      </svg>
                       Liste
                     </button>
                     <button
                       onClick={() => setViewMode('comparison')}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 relative ${
                         viewMode === 'comparison' 
-                          ? 'bg-white text-blue-600 shadow-sm' 
-                          : 'text-gray-600 hover:text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105' 
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                       }`}
                     >
-                      Comparer ({selectedPieces.length})
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"></path>
+                      </svg>
+                      Comparer
+                      {selectedPieces.length > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                          {selectedPieces.length}
+                        </span>
+                      )}
                     </button>
                   </div>
 
                   {/* Tri */}
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="name">Nom</option>
-                    <option value="price-asc">Prix croissant</option>
-                    <option value="price-desc">Prix décroissant</option>
-                    <option value="brand">Marque</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="appearance-none px-4 py-2.5 pr-10 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all cursor-pointer"
+                    >
+                      <option value="name">📝 Trier par nom</option>
+                      <option value="price-asc">💰 Prix croissant</option>
+                      <option value="price-desc">💎 Prix décroissant</option>
+                      <option value="brand">🏷️ Marque</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path>
+                    </svg>
+                  </div>
                 </div>
               </div>
 

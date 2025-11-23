@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
@@ -312,7 +313,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
         // 🎯 ÉTAPE 2: Récupérer pièces compatibles avec le type_id
         const { data: relationData, error: relError } = await this.supabase
-          .from('pieces_relation_type')
+          .from(TABLES.pieces_relation_type)
           .select('rtp_piece_id, rtp_pg_id')
           .eq('rtp_type_id', typeId)
           .neq('rtp_pg_id', pgId)
@@ -346,7 +347,7 @@ export class CrossSellingService extends SupabaseBaseService {
         // 🎯 ÉTAPE 4: Récupérer détails gammes avec FILTRES PHP
         const filteredGammeIds = catalogGammesData.map((c) => c.mc_pg_id);
         const { data: gammesData, error: gammesError } = await this.supabase
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id, pg_name, pg_alias, pg_img, pg_level, pg_display')
           .in('pg_id', filteredGammeIds)
           .in('pg_level', [1, 2])  // 🎯 FILTRE PHP ligne 909
@@ -410,7 +411,7 @@ export class CrossSellingService extends SupabaseBaseService {
         // 🎯 ÉTAPE 1: Récupérer configuration cross depuis pieces_gamme_cross
         this.logger.debug(`🔍 Recherche pieces_gamme_cross pour pg_id=${pgId}`);
         const { data: crossData, error } = await this.supabase
-          .from('pieces_gamme_cross')
+          .from(TABLES.pieces_gamme_cross)
           .select('pgc_pg_cross, pgc_level')
           .eq('pgc_pg_id', pgId)
           .neq('pgc_pg_cross', pgId)
@@ -442,7 +443,7 @@ export class CrossSellingService extends SupabaseBaseService {
         this.logger.log(`🔍 Gamme IDs à récupérer: ${gammeIds.join(', ')}`);
         
         const { data: gammesData, error: gammesError } = await this.supabase
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id, pg_name, pg_alias, pg_img, pg_level, pg_display')
           .in('pg_id', gammeIds)
           .in('pg_level', [1, 2])  // 🎯 FILTRE PHP ligne 1054
@@ -695,7 +696,7 @@ export class CrossSellingService extends SupabaseBaseService {
       // 🎯 REQUÊTE COUNT OPTIMISÉE - Pattern PHP (PAS de filtre piece_display)
       // Le PHP génère le carousel sans filtrer PIECE_DISPLAY (lignes 1043-1100)
       const { data: pieceIds, error: pieceError } = await this.supabase
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId)
@@ -713,7 +714,7 @@ export class CrossSellingService extends SupabaseBaseService {
       this.logger.debug(`📊 pg_id=${pgId}: ${pieceIds.length} relations trouvées (pattern PHP, pas de filtre piece_display)`);
 
       const { count, error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id', { count: 'exact', head: true })
         .in('piece_id', pieceIds.map(p => p.rtp_piece_id))
         // ⚠️ PAS de .eq('piece_display', 1) - le PHP ne filtre pas
@@ -897,7 +898,7 @@ export class CrossSellingService extends SupabaseBaseService {
   ): Promise<number> {
     try {
       const { count } = await this.supabase
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id', { count: 'exact', head: true })
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);

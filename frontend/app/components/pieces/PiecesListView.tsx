@@ -6,11 +6,12 @@
  */
 
 import { Badge } from '@fafa/ui';
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
 import { normalizeImageUrl } from '../../utils/image.utils';
 import { hasStockAvailable } from '../../utils/stock.utils';
+import { StarRating } from '../common/StarRating';
 
 interface PiecesListViewProps {
   pieces: PieceData[];
@@ -43,6 +44,38 @@ const optimizeImageUrl = (imageUrl: string | undefined, width: number = 96): str
  */
 export const PiecesListView = React.memo(function PiecesListView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesListViewProps) {
   const { addToCart } = useCart();
+
+  // État pour gérer le loading par produit (anti-double-clic)
+  const [loadingItems, setLoadingItems] = useState<Set<number>>(new Set());
+
+  // Handler anti-double-clic pour ajout panier
+  const handleAddToCart = async (pieceId: number) => {
+    // Vérifier si déjà en cours d'ajout
+    if (loadingItems.has(pieceId)) {
+      console.log('⚠️ Ajout déjà en cours pour:', pieceId);
+      return;
+    }
+
+    console.log('🛒 Click Ajouter panier (ListView), piece:', pieceId);
+    
+    // Marquer comme en cours
+    setLoadingItems(prev => new Set(prev).add(pieceId));
+
+    try {
+      await addToCart(pieceId, 1);
+      // Petit délai avant de réactiver (debounce)
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('❌ Erreur ajout panier:', error);
+    } finally {
+      // Retirer du loading
+      setLoadingItems(prev => {
+        const next = new Set(prev);
+        next.delete(pieceId);
+        return next;
+      });
+    }
+  };
   
   if (pieces.length === 0) {
     return (
@@ -63,6 +96,11 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
       {pieces.map(piece => {
         const isSelected = selectedPieces.includes(piece.id);
         const hasStock = hasStockAvailable(piece.stock);
+        
+        // Construction URL logo marque équipementier
+        const logoUrl = piece.marque_logo 
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`
+          : null;
         
         return (
           <div 
@@ -88,19 +126,65 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
                 </div>
               )}
 
-              {/* Image miniature */}
-              <div className="w-24 h-24 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
+              {/* Header avec logo + badge OES + étoiles */}
+              <div className="flex items-center gap-3 pb-3 border-b border-gray-200 mb-3">
+                {/* Logo équipementier */}
+                {logoUrl ? (
+                  <div className="w-14 h-14 flex items-center justify-center flex-shrink-0">
+                    <img 
+                      src={logoUrl}
+                      alt={`Logo ${piece.brand}`}
+                      className="max-w-full max-h-full object-contain"
+                      onError={(e) => {
+                        console.error('❌ Erreur chargement logo:', logoUrl);
+                        const target = e.currentTarget as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.className = 'w-14 h-14 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-300 shadow-sm flex-shrink-0';
+                          parent.innerHTML = `<span class="text-sm font-bold text-gray-500">${piece.brand.substring(0, 2).toUpperCase()}</span>`;
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border border-gray-300 shadow-sm flex-shrink-0">
+                    <span className="text-sm font-bold text-gray-500">{piece.brand.substring(0, 2).toUpperCase()}</span>
+                  </div>
+                )}
+                
+                {/* Badge OES + étoiles */}
+                <div className="flex-1 min-w-0">
+                  {piece.quality === 'OES' && (
+                    <div className="mb-1">
+                      <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm border border-amber-300 inline-block">
+                        🏆 OES
+                      </span>
+                    </div>
+                  )}
+                  {piece.stars && piece.stars > 0 && (
+                    <div>
+                      <StarRating rating={piece.stars} size="sm" showNumber={false} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Image produit */}
+              <div className="w-32 h-32 flex-shrink-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200 relative group">
                 {piece.image && piece.image !== '/images/pieces/default.png' ? (
-                  <img
-                    src={normalizeImageUrl(piece.image)}
-                    alt={piece.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <>
+                    <img
+                      src={normalizeImageUrl(piece.image)}
+                      alt={piece.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -109,80 +193,53 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
 
               {/* Infos principales */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="flex-1">
-                    {/* Marque en évidence */}
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="text-base font-semibold text-gray-900 uppercase tracking-wide">
-                        {piece.brand}
-                      </h3>
-                      {piece.quality === 'OES' && (
-                        <Badge variant="warning">OES</Badge>
-                      )}
+                {/* Marque + Référence avec icon - Version améliorée */}
+                <div className="mb-4">
+                  <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 px-3 py-2 rounded-lg border border-blue-200 shadow-sm inline-block">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-base font-black text-gray-900 uppercase tracking-tight">{piece.brand}</span>
+                      <span className="text-sm font-bold text-blue-700 font-mono">{piece.reference}</span>
                     </div>
-
-                    {/* Désignation (sans répétition) */}
-                    <h4 className="text-sm text-gray-700 mb-1 leading-snug">
-                      {piece.name}
-                    </h4>
-
-                    {/* Référence */}
-                    <p className="text-xs text-gray-500 font-mono bg-gray-50 px-2 py-1 rounded inline-block">
-                      Réf: {piece.reference}
-                    </p>
                   </div>
+                </div>
 
-                  {/* Dispo badge */}
-                  <div>
-                    {hasStock ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-success bg-success/10 px-2 py-1 rounded-full">
-                        <span className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span>
-                        En stock
+                {/* Prix et action avec layout moderne */}
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-100">
+                  <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg px-3 py-2 border border-gray-200">
+                    <span className="text-[9px] text-gray-500 uppercase tracking-wider font-bold block mb-1">Prix TTC</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-none">
+                        {typeof piece.price === 'number' ? piece.price.toFixed(2) : piece.priceFormatted}
                       </span>
-                    ) : (
-                      <Badge variant="error">Rupture</Badge>
-                    )}
-                  </div>
-                </div>
-
-                {/* Détails supplémentaires */}
-                <div className="flex items-center gap-4 text-xs text-gray-600 mb-3">
-                  {piece.delaiLivraison && (
-                    <div className="flex items-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>{piece.delaiLivraison}j</span>
+                      <span className="text-lg font-bold text-gray-500">€</span>
                     </div>
-                  )}
-                  {piece.stars && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-yellow-500">{'⭐'.repeat(piece.stars)}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Prix et action */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      {typeof piece.price === 'number' ? piece.price.toFixed(2) : piece.priceFormatted}€
-                    </span>
                   </div>
 
                   <button 
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                      hasStock
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap ${
+                      hasStock && !loadingItems.has(piece.id)
                         ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm hover:shadow-md'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     }`}
-                    disabled={!hasStock}
-                    onClick={() => hasStock && addToCart(piece.id, 1)}
+                    disabled={!hasStock || loadingItems.has(piece.id)}
+                    onClick={() => hasStock && handleAddToCart(piece.id)}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    {hasStock ? 'Ajouter' : 'Indisponible'}
+                    {loadingItems.has(piece.id) ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Ajout...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {hasStock ? 'Ajouter' : 'Indispo'}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

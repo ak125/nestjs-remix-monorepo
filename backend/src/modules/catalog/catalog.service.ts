@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { TABLES, COLUMNS } from '@repo/database-types';
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -222,7 +222,7 @@ export class CatalogService
   private async getMainCategories(): Promise<CatalogItem[]> {
     try {
       const { data, error } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           pg_id,
@@ -367,7 +367,7 @@ export class CatalogService
     try {
       this.logger.log(`🔍 Recherche catalogue: "${query}" avec filtres`);
 
-      let queryBuilder = this.supabase.from('pieces_gamme').select(`
+      let queryBuilder = this.supabase.from(TABLES.pieces_gamme).select(`
           pg_id,
           pg_name,
           pg_alias,
@@ -519,7 +519,7 @@ export class CatalogService
   async getModelsByBrand(marqueId: number, limit: number = 100) {
     try {
       const { data, error } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,

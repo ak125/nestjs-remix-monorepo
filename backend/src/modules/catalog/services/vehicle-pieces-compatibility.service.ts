@@ -284,14 +284,13 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           );
         }
 
-        // Détermination de la qualité selon pm_oes
-        let qualite = 'AFTERMARKET';
-        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O' || marqueEquip?.pm_oes === '1') {
-          qualite = 'OES';
+        // Détermination de la qualité selon pm_oes (compatible avec API filters)
+        let qualite = 'A'; // Aftermarket par défaut
+        if (marqueEquip?.pm_oes === 'OES' || marqueEquip?.pm_oes === 'O') {
+          qualite = marqueEquip.pm_oes; // 'OES' ou 'O'
         }
-        if (prixConsigne > 0) {
-          qualite = 'Echange Standard';
-        }
+        // Note: "Echange Standard" n'a pas d'équivalent direct dans pm_oes
+        // On garde 'A' pour les pièces avec consigne
 
         // Nom complet de la pièce - ÉVITER LES RÉPÉTITIONS
         const nomParts: string[] = [piece.piece_name];

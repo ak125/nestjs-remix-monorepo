@@ -7,6 +7,28 @@
 
 import React from 'react';
 import { type PiecesFilters } from '../../types/pieces-route.types';
+import { StarRating } from '../common/StarRating';
+
+interface FilterOption {
+  id: number | string;
+  label: string;
+  count: number;
+  trending?: boolean;
+}
+
+interface FilterGroup {
+  type: string;
+  options: FilterOption[];
+}
+
+interface FiltersData {
+  filters: FilterGroup[];
+  summary?: {
+    total_filters: number;
+    total_options: number;
+    trending_options?: number;
+  };
+}
 
 interface PiecesFilterSidebarProps {
   // État des filtres
@@ -20,8 +42,13 @@ interface PiecesFilterSidebarProps {
   // Actions
   resetAllFilters: () => void;
   
-  // Helper pour obtenir le count par marque
+  // Helpers pour obtenir les comptages dynamiques croisés
   getBrandCount?: (brand: string) => number;
+  getQualityCount?: (quality: string) => number;
+  getPriceRangeCount?: (range: string) => number;
+  
+  // Nouvelles données réelles de l'API
+  filtersData?: FiltersData | null;
 }
 
 /**
@@ -33,86 +60,146 @@ export function PiecesFilterSidebar({
   uniqueBrands,
   piecesCount,
   resetAllFilters,
-  getBrandCount
+  getBrandCount,
+  getQualityCount,
+  getPriceRangeCount,
+  filtersData
 }: PiecesFilterSidebarProps) {
+  
+  // Extract data from API response
+  const brandFilters = filtersData?.filters?.find(f => f.type === 'brand')?.options || [];
+  const qualityFilters = filtersData?.filters?.find(f => f.type === 'quality')?.options || [];
+  
+  // Use API data if available, fallback to old uniqueBrands
+  const brandsToDisplay = brandFilters.length > 0 
+    ? brandFilters 
+    : uniqueBrands.map(brand => ({ id: brand, label: brand, count: getBrandCount?.(brand) || 0 }));
   
   return (
     <div className="w-80 space-y-6">
       {/* Card principale des filtres */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-          <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-            </svg>
-            Filtres
-          </h3>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl">
+        {/* Header avec gradient moderne */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-5 relative overflow-hidden">
+          {/* Effet de brillance */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+          
+          <div className="relative z-10">
+            <h3 className="font-bold text-lg text-white flex items-center gap-2.5">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              Filtres
+            </h3>
+            <p className="text-white/80 text-xs mt-1 font-medium">{piecesCount} résultat{piecesCount > 1 ? 's' : ''}</p>
+          </div>
         </div>
         
         <div className="p-6 space-y-6">
           {/* Recherche moderne */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Rechercher</label>
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <label className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+              Recherche rapide
+            </label>
+            <div className="relative group">
+              <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
                 type="text"
                 placeholder="Rechercher une pièce..."
                 value={activeFilters.searchText}
                 onChange={(e) => setActiveFilters({...activeFilters, searchText: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
               />
+              {activeFilters.searchText && (
+                <button
+                  onClick={() => setActiveFilters({...activeFilters, searchText: ''})}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
 
           {/* Marques */}
-          {uniqueBrands.length > 1 && (
+          {brandsToDisplay.length > 1 && (
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
-                Marques ({uniqueBrands.length})
+                Marques ({brandsToDisplay.length})
+                {filtersData?.summary?.trending_options ? (
+                  <span className="text-xs text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                    {filtersData.summary.trending_options} 🔥
+                  </span>
+                ) : null}
               </h4>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                {uniqueBrands.map(brand => {
-                  const isSelected = activeFilters.brands.includes(brand);
-                  const brandCount = getBrandCount ? getBrandCount(brand) : 0;
+                {brandsToDisplay.map(brandOption => {
+                  // ✅ Utiliser le LABEL (nom marque) pour le filtrage, pas l'ID
+                  const brandName = brandOption.label;
+                  const isSelected = activeFilters.brands.includes(brandName);
+                  
+                  // Construction URL logo marque équipementier
+                  const logoFileName = `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
+                  const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
+                  
                   return (
                     <label 
-                      key={brand} 
+                      key={brandOption.id} 
                       className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:scale-[1.02] ${
                         isSelected ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 shadow-sm' : 'border border-transparent'
                       }`}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mr-3"
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                           checked={isSelected}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setActiveFilters({
                                 ...activeFilters,
-                                brands: [...activeFilters.brands, brand]
+                                brands: [...activeFilters.brands, brandName]
                               });
                             } else {
                               setActiveFilters({
                                 ...activeFilters,
-                                brands: activeFilters.brands.filter(b => b !== brand)
+                                brands: activeFilters.brands.filter(b => b !== brandName)
                               });
                             }
                           }}
                         />
+                        {/* Logo marque */}
+                        <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                          <img 
+                            src={logoUrl}
+                            alt={`Logo ${brandName}`}
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
+                        </div>
                         <span className={`text-sm ${
                           isSelected ? 'font-medium text-blue-900' : 'text-gray-700'
-                        }`}>{brand}</span>
+                        }`}>{brandOption.label}</span>
+                        {brandOption.trending && (
+                          <span className="text-xs" title="Marque tendance">🔥</span>
+                        )}
                       </div>
-                      {brandCount > 0 && (
+                      {brandOption.count > 0 && (
                         <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          {brandCount}
+                          {brandOption.count}
                         </span>
                       )}
                     </label>
@@ -138,33 +225,48 @@ export function PiecesFilterSidebar({
                 { id: 'high', label: 'Plus de 150€', desc: '(premium)', color: 'border-purple-500 bg-purple-50' }
               ].map(price => {
                 const isSelected = activeFilters.priceRange === price.id;
+                const dynamicCount = price.id !== 'all' && getPriceRangeCount 
+                  ? getPriceRangeCount(price.id) 
+                  : undefined;
+                const isDisabled = price.id !== 'all' && dynamicCount === 0;
+                
                 return (
                   <label 
                     key={price.id} 
-                    className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
-                      isSelected ? `${price.color} border-opacity-100` : 'border-gray-100 hover:bg-gray-50'
+                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
+                      isSelected ? `${price.color} border-opacity-100` : 
+                      isDisabled ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed' :
+                      'border-gray-100 hover:bg-gray-50'
                     }`}
                   >
-                    <input 
-                      type="radio" 
-                      name="priceRange"
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
-                      checked={isSelected}
-                      onChange={() => {
-                        setActiveFilters({
-                          ...activeFilters,
-                          priceRange: price.id as any
-                        });
-                      }}
-                    />
-                    <div>
-                      <span className={`text-sm ${isSelected ? 'font-medium' : ''}`}>
-                        {price.label} 
-                      </span>
-                      {price.desc && (
-                        <span className="text-xs text-gray-500 block">{price.desc}</span>
-                      )}
+                    <div className="flex items-center">
+                      <input 
+                        type="radio" 
+                        name="priceRange"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                        checked={isSelected}
+                        disabled={isDisabled}
+                        onChange={() => {
+                          setActiveFilters({
+                            ...activeFilters,
+                            priceRange: price.id as any
+                          });
+                        }}
+                      />
+                      <div>
+                        <span className={`text-sm ${isSelected ? 'font-medium' : ''} ${isDisabled ? 'text-gray-400' : ''}`}>
+                          {price.label} 
+                        </span>
+                        {price.desc && (
+                          <span className="text-xs text-gray-500 block">{price.desc}</span>
+                        )}
+                      </div>
                     </div>
+                    {dynamicCount !== undefined && dynamicCount > 0 && (
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {dynamicCount}
+                      </span>
+                    )}
                   </label>
                 );
               })}
@@ -178,41 +280,200 @@ export function PiecesFilterSidebar({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
               Qualité
+              {qualityFilters.length > 0 && (
+                <span className="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                  {qualityFilters.reduce((sum, q) => sum + q.count, 0)} pièces
+                </span>
+              )}
             </h4>
             <div className="space-y-2">
-              {[
-                { id: 'all', label: 'Toutes qualités', icon: '🔧' },
-                { id: 'OES', label: 'OES (Origine)', icon: '🏆' },
-                { id: 'AFTERMARKET', label: 'Aftermarket', icon: '⭐' },
-                { id: 'Echange Standard', label: 'Échange Standard', icon: '🔄' }
-              ].map(quality => {
-                const isSelected = activeFilters.quality === quality.id;
+              {/* Option "Toutes qualités" toujours visible */}
+              {(() => {
+                const isSelected = activeFilters.quality === 'all';
                 return (
                   <label 
-                    key={quality.id} 
-                    className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
                       isSelected ? 'border-primary bg-primary/10' : 'border-gray-100 hover:bg-gray-50'
                     }`}
                   >
-                    <input 
-                      type="radio" 
-                      name="quality"
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
-                      checked={isSelected}
-                      onChange={() => {
-                        setActiveFilters({
-                          ...activeFilters,
-                          quality: quality.id as any
-                        });
-                      }}
-                    />
-                    <span className={`text-sm flex items-center gap-2 ${isSelected ? 'font-medium' : ''}`}>
-                      <span>{quality.icon}</span>
-                      {quality.label}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <input 
+                        type="radio" 
+                        name="quality"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                        checked={isSelected}
+                        onChange={() => {
+                          setActiveFilters({
+                            ...activeFilters,
+                            quality: 'all'
+                          });
+                        }}
+                      />
+                      <span className={`text-sm ${isSelected ? 'font-medium' : ''}`}>
+                        🔧 Toutes qualités
+                      </span>
+                    </div>
                   </label>
                 );
-              })}
+              })()}
+              
+              {/* Options de qualité réelles depuis l'API */}
+              {qualityFilters.length > 0 ? (
+                qualityFilters.map(qualityOption => {
+                  const isSelected = activeFilters.quality === qualityOption.id;
+                  // Comptage dynamique croisé (tient compte des autres filtres actifs)
+                  const dynamicCount = getQualityCount ? getQualityCount(String(qualityOption.id)) : qualityOption.count;
+                  
+                  // Map quality IDs to icons
+                  const iconMap: Record<string, string> = {
+                    'OES': '🏆',
+                    'A': '⭐',
+                    'aftermarket': '⭐',
+                    'O': '🔧'
+                  };
+                  const icon = iconMap[String(qualityOption.id)] || '🔧';
+                  
+                  return (
+                    <label 
+                      key={String(qualityOption.id)} 
+                      className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
+                        isSelected ? 'border-primary bg-primary/10' : 
+                        dynamicCount === 0 ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed' : 
+                        'border-gray-100 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="radio" 
+                          name="quality"
+                          className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                          checked={isSelected}
+                          disabled={dynamicCount === 0}
+                          onChange={() => {
+                            setActiveFilters({
+                              ...activeFilters,
+                              quality: String(qualityOption.id)
+                            });
+                          }}
+                        />
+                        <span className={`text-sm ${isSelected ? 'font-medium' : ''} ${dynamicCount === 0 ? 'text-gray-400' : ''}`}>
+                          {icon} {qualityOption.label}
+                        </span>
+                      </div>
+                      {dynamicCount > 0 && (
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                          {dynamicCount}
+                        </span>
+                      )}
+                    </label>
+                  );
+                })
+              ) : (
+                // Fallback vers options statiques si pas de données API
+                [
+                  { id: 'OES', label: 'OES (Origine)', icon: '🏆' },
+                  { id: 'AFTERMARKET', label: 'Aftermarket', icon: '⭐' },
+                  { id: 'Echange Standard', label: 'Échange Standard', icon: '🔄' }
+                ].map(quality => {
+                  const isSelected = activeFilters.quality === quality.id;
+                  return (
+                    <label 
+                      key={quality.id} 
+                      className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors border ${
+                        isSelected ? 'border-primary bg-primary/10' : 'border-gray-100 hover:bg-gray-50'
+                      }`}
+                    >
+                      <input 
+                        type="radio" 
+                        name="quality"
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2 mr-3"
+                        checked={isSelected}
+                        onChange={() => {
+                          setActiveFilters({
+                            ...activeFilters,
+                            quality: quality.id as any
+                          });
+                        }}
+                      />
+                      <span className={`text-sm flex items-center gap-2 ${isSelected ? 'font-medium' : ''}`}>
+                        <span>{quality.icon}</span>
+                        {quality.label}
+                      </span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Filtre Étoiles (Note minimale) */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+              <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Note minimale
+            </h4>
+            <div className="space-y-2">
+              {/* Toutes les notes */}
+              <label className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
+                !activeFilters.minStars ? 'border-primary bg-primary/10' : 'border-gray-100 hover:bg-gray-50'
+              }`}>
+                <div className="flex items-center">
+                  <input 
+                    type="radio" 
+                    name="minStars"
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                    checked={!activeFilters.minStars}
+                    onChange={() => setActiveFilters({...activeFilters, minStars: undefined})}
+                  />
+                  <span className={`text-sm ml-3 ${!activeFilters.minStars ? 'font-medium' : ''}`}>
+                    Toutes les notes
+                  </span>
+                </div>
+              </label>
+
+              {/* 3+ étoiles */}
+              <label className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
+                activeFilters.minStars === 3 ? 'border-warning bg-warning/10' : 'border-gray-100 hover:bg-gray-50'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="radio" 
+                    name="minStars"
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                    checked={activeFilters.minStars === 3}
+                    onChange={() => setActiveFilters({...activeFilters, minStars: 3})}
+                  />
+                  <div className="flex items-center gap-1">
+                    <StarRating rating={3} size="sm" />
+                    <span className={`text-sm ${activeFilters.minStars === 3 ? 'font-medium' : ''}`}>
+                      et plus
+                    </span>
+                  </div>
+                </div>
+              </label>
+
+              {/* 5+ étoiles */}
+              <label className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors border ${
+                activeFilters.minStars === 5 ? 'border-success bg-success/10' : 'border-gray-100 hover:bg-gray-50'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="radio" 
+                    name="minStars"
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                    checked={activeFilters.minStars === 5}
+                    onChange={() => setActiveFilters({...activeFilters, minStars: 5})}
+                  />
+                  <div className="flex items-center gap-1">
+                    <StarRating rating={5} size="sm" />
+                    <span className={`text-sm ${activeFilters.minStars === 5 ? 'font-medium' : ''}`}>
+                      et plus
+                    </span>
+                  </div>
+                </div>
+              </label>
             </div>
           </div>
 
