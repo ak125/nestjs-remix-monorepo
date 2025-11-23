@@ -623,11 +623,12 @@ export class CatalogService
   }
 
   /**
-   * Récupérer les détails d'une pièce
+   * Récupérer les détails d'une pièce avec prix, marque et images
    */
   async getPieceById(pieceId: number) {
     try {
-      const { data, error } = await this.supabase
+      // Récupérer la pièce avec toutes les informations nécessaires
+      const { data: pieceData, error: pieceError } = await this.supabase
         .from('pieces')
         .select(
           `
@@ -643,36 +644,90 @@ export class CatalogService
           piece_has_img,
           piece_year,
           piece_qty_sale,
-          piece_qty_pack
+          piece_qty_pack,
+          piece_pm_id,
+          piece_pg_id
         `,
         )
         .eq('piece_id', pieceId)
         .eq('piece_display', true)
         .single();
 
-      if (error) {
-        throw error;
+      if (pieceError || !pieceData) {
+        throw pieceError || new Error('Pièce non trouvée');
       }
+
+      // Récupérer le prix
+      const { data: prixData, error: prixError } = await this.supabase
+        .from('pieces_price')
+        .select('pri_vente_ttc, pri_consigne_ttc, pri_dispo')
+        .eq('pri_piece_id', pieceId)
+        .eq('pri_type', 0)
+        .single();
+
+      this.logger.log(`📊 Prix récupéré pour piece ${pieceId}:`, prixData);
+      if (prixError) this.logger.warn(`⚠️ Erreur prix:`, prixError);
+
+      // Récupérer la marque
+      const { data: marqueData, error: marqueError } = await this.supabase
+        .from('pieces_marque')
+        .select('pm_name, pm_logo, pm_quality, pm_nb_stars')
+        .eq('pm_id', pieceData.piece_pm_id)
+        .single();
+
+      this.logger.log(`🏷️ Marque récupérée pour pm_id ${pieceData.piece_pm_id}:`, marqueData);
+      if (marqueError) this.logger.warn(`⚠️ Erreur marque:`, marqueError);
+
+      // Récupérer les images
+      const { data: imagesData } = await this.supabase
+        .from('pieces_images')
+        .select('pim_url')
+        .eq('pim_piece_id', pieceId)
+        .order('pim_ordre', { ascending: true });
+
+      // Récupérer les critères techniques
+      const { data: criteresData } = await this.supabase
+        .from('pieces_criteres')
+        .select(`
+          pcr_id,
+          pcr_valeur,
+          pieces_criteres_def (
+            pcd_id,
+            pcd_name,
+            pcd_unite
+          )
+        `)
+        .eq('pcr_piece_id', pieceId)
+        .order('pcr_id', { ascending: true });
+
+      // Formater les critères techniques
+      const criteresTechniques = criteresData?.map((crit: any) => ({
+        id: crit.pcr_id,
+        name: crit.pieces_criteres_def?.pcd_name || '',
+        value: crit.pcr_valeur,
+        unit: crit.pieces_criteres_def?.pcd_unite || '',
+      })) || [];
 
       return {
         success: true,
-        data: data
-          ? {
-              id: data.piece_id,
-              reference: data.piece_ref,
-              referenceClean: data.piece_ref_clean,
-              name: data.piece_name,
-              description: data.piece_des,
-              completeName: data.piece_name_comp,
-              side: data.piece_name_side,
-              weight: data.piece_weight_kgm,
-              hasOem: data.piece_has_oem,
-              hasImage: data.piece_has_img,
-              year: data.piece_year,
-              quantitySale: data.piece_qty_sale,
-              quantityPack: data.piece_qty_pack,
-            }
-          : null,
+        data: {
+          id: pieceData.piece_id,
+          nom: pieceData.piece_name,
+          reference: pieceData.piece_ref,
+          marque: marqueData?.pm_name || '',
+          marque_logo: marqueData?.pm_logo || null,
+          qualite: marqueData?.pm_quality || null,
+          nb_stars: marqueData?.pm_nb_stars || 0,
+          prix_ttc: prixData?.pri_vente_ttc ? parseFloat(prixData.pri_vente_ttc) : 0,
+          consigne_ttc: prixData?.pri_consigne_ttc ? parseFloat(prixData.pri_consigne_ttc) : 0,
+          dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
+          description: pieceData.piece_des,
+          image: imagesData?.[0]?.pim_url || '',
+          images: imagesData?.map((img) => img.pim_url) || [],
+          weight: pieceData.piece_weight_kgm,
+          hasOem: pieceData.piece_has_oem,
+          criteresTechniques,
+        },
       };
     } catch (error) {
       this.logger.error('Erreur lors de la récupération de la pièce:', error);
