@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RedisCacheService } from '../../../database/services/redis-cache.service';
@@ -217,7 +218,7 @@ export class SearchSimpleService extends SupabaseBaseService {
         ...new Set(priceMatches.map((p) => p.pri_piece_id)),
       ];
       const directPiecesResult = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
         )
@@ -313,7 +314,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     const piecesResult = await this.client
-      .from('pieces')
+      .from(TABLES.pieces)
       .select(
         'piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_qty_sale, piece_display',
       )
@@ -494,7 +495,7 @@ export class SearchSimpleService extends SupabaseBaseService {
         : Promise.resolve({ data: [] as any[] }),
       gammeIds.length
         ? this.client
-            .from('pieces_gamme')
+            .from(TABLES.pieces_gamme)
             .select('pg_id, pg_name')
             .in('pg_id', gammeIds.map(String))
         : Promise.resolve({ data: [] as any[] }),

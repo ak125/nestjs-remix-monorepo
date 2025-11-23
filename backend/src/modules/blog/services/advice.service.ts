@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
@@ -968,7 +969,7 @@ export class AdviceService {
 
       // Charger tous les pg_alias ET pg_img en une seule requête
       const { data: gammes } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_img')
         .in('pg_id', pgIds);
 

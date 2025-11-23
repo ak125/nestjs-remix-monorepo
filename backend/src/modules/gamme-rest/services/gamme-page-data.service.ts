@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
@@ -81,7 +82,7 @@ export class GammePageDataService extends SupabaseBaseService {
     const pgIdNum = parseInt(pgId, 10);
 
     const { data, error } = await this.client
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias, pg_name_meta, pg_img, pg_wall')
       .eq('pg_id', pgIdNum)
       .single();

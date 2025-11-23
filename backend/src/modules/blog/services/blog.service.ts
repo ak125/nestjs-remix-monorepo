@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -259,7 +260,7 @@ export class BlogService {
 
       // 1. Trouver le pg_id depuis pieces_gamme
       const { data: gammeData } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name')
         .eq('pg_alias', pg_alias)
         .single();
@@ -446,7 +447,7 @@ export class BlogService {
       // Étape 2 : Charger les données des véhicules (AUTO_TYPE)
       const { data: typesData, error: typesError } =
         await this.supabaseService.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('*')
           .in('type_id', typeIds)
           .eq('type_display', 1)
@@ -478,7 +479,7 @@ export class BlogService {
 
       const { data: modelesData, error: modelesError } =
         await this.supabaseService.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('*')
           .in('modele_id', modeleIds)
           .eq('modele_display', 1);
@@ -518,7 +519,7 @@ export class BlogService {
       );
       const { data: marquesData, error: marquesError } =
         await this.supabaseService.client
-          .from('auto_marque')
+          .from(TABLES.auto_marque)
           .select('*')
           .in('marque_id', marqueIds)
           .eq('marque_display', 1);
@@ -1330,7 +1331,7 @@ export class BlogService {
 
       // Charger tous les pg_alias en une seule requête
       const { data: gammes } = await this.supabaseService.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias')
         .in('pg_id', pgIds);
 

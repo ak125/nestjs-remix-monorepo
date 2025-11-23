@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -83,7 +84,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
           .or(queryVariants.map((v) => `pro_oem_serach.eq.${v}`).join(',')),
         // Recherche DIRECTE dans pieces (fallback automatique)
         this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('piece_id, piece_ref, piece_pg_id, piece_pm_id')
           .or(queryVariants.map((v) => `piece_ref.ilike.%${v}%`).join(','))
           .limit(100),
@@ -139,7 +140,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         // 🔄 FALLBACK: Recherche directe dans la table pieces si indexation vide
         // Simplifiée: sans jointures pour éviter les erreurs de schéma
         const fallbackQuery = this.client
-          .from('pieces')
+          .from(TABLES.pieces)
           .select('piece_id, piece_ref, piece_pg_id, piece_pm_id, piece_code')
           .or(queryVariants.map((v) => `piece_ref.ilike.%${v}%`).join(','))
           .limit(100);
@@ -208,7 +209,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
             : Promise.resolve({ data: [] }),
           gammeIds.length > 0
             ? this.client
-                .from('pieces_gamme')
+                .from(TABLES.pieces_gamme)
                 .select('pg_id, pg_name')
                 .in('pg_id', gammeIds)
             : Promise.resolve({ data: [] }),
@@ -260,7 +261,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
       // 4️⃣ RÉCUPÉRATION des pièces complètes
       let piecesQuery = this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -362,7 +363,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
           // Gammes (jointure manuelle)
           this.client
-            .from('pieces_gamme')
+            .from(TABLES.pieces_gamme)
             .select('pg_id, pg_name, pg_alias')
             .in('pg_id', gammeIds)
             .eq('pg_display', 1),
@@ -655,7 +656,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
       // Recherche dans les noms de pièces les plus courants
       const { data: suggestions, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_name')
         .ilike('piece_name', `%${cleanQuery}%`)
         .eq('piece_display', 1)
@@ -748,7 +749,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
     try {
       const queries = [
         this.client
-          .from('auto_marque')
+          .from(TABLES.auto_marque)
           .select('marque_id, marque_name')
           .eq('marque_id', marqueId)
           .single(),
@@ -757,7 +758,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       if (modeleId) {
         queries.push(
           this.client
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id, modele_name')
             .eq('modele_id', modeleId)
             .single(),
@@ -767,7 +768,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       if (typeId) {
         queries.push(
           this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select('type_id, type_name, type_fuel')
             .eq('type_id', typeId)
             .single(),

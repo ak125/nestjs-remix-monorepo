@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '../../../cache/cache.service';
@@ -280,12 +281,12 @@ export class HeaderRealDataService extends SupabaseBaseService {
   }> {
     try {
       const { count: total, error: totalError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', 1);
 
       const { count: lowStock, error: lowStockError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', 1)
         .lte('piece_qty_sale', 5);
