@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { buildRackImageUrl, buildImageMetadata, type PieceImageData } from '../utils/image-urls.utils';
@@ -59,7 +60,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       );
 
       const { data: piecesData, error: piecesError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
         piece_id, piece_name, piece_ref, piece_ref_clean, piece_des,
@@ -145,7 +146,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
 
           // Images (depuis pieces_media_img)
           this.client
-            .from('pieces_media_img')
+            .from(TABLES.pieces_media_img)
             .select('pmi_piece_id, pmi_folder, pmi_name, pmi_display, pmi_sort')
             .in('pmi_piece_id', validPieceIdsStr)
             .eq('pmi_display', '1')
@@ -155,7 +156,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
 
           // Critères techniques (logique PHP simplifiée)
           this.client
-            .from('pieces_criteria')
+            .from(TABLES.pieces_criteria)
             .select('*')
             .in('pc_piece_id', validPieceIds),
 

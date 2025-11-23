@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { buildRackImageUrl, type PieceImageData } from '../utils/image-urls.utils';
@@ -51,7 +52,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
       // 1.5 RÉCUPÉRATION PIÈCES SÉPARÉE
       const piecesResult = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .in('piece_id', pieceIds)
         .eq('piece_display', 1)
@@ -79,7 +80,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
           // IMAGES principales
           this.client
-            .from('pieces_media_img')
+            .from(TABLES.pieces_media_img)
             .select('pmi_piece_id, pmi_folder, pmi_name')
             .in('pmi_piece_id', pieceIds)
             .eq('pmi_display', 1)

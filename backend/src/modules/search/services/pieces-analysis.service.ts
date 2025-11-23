@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -17,18 +18,18 @@ export class PiecesAnalysisService extends SupabaseBaseService {
 
       // 1. Compter les pièces totales
       const { count: totalCount } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true });
 
       // 2. Compter les pièces actives (piece_display = true)
       const { count: activeCount } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true);
 
       // 3. Échantillon de pièces
       const { data: samplePieces } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name, piece_ref, piece_des, piece_display')
         .eq('piece_display', true)
         .not('piece_name', 'is', null)
@@ -36,21 +37,21 @@ export class PiecesAnalysisService extends SupabaseBaseService {
 
       // 4. Rechercher tous les filtres (actifs et inactifs)
       const { data: allFilters } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_name, piece_ref, piece_des, piece_display')
         .ilike('piece_name', '%filtre%')
         .limit(50);
 
       // 5. Rechercher spécifiquement les filtres à air
       const { data: airFilters } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_name, piece_ref, piece_des, piece_display')
         .or('piece_name.ilike.%filtre*air%,piece_name.ilike.%air*filtre%')
         .limit(20);
 
       // 6. Analyser les types de pièces les plus courants (sans GROUP BY)
       const { data: commonTypes } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_name')
         .eq('piece_display', true)
         .not('piece_name', 'is', null)
@@ -104,7 +105,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
   async searchPiecesByName(query: string, limit: number = 20) {
     try {
       const { data: pieces } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_id, piece_name, piece_ref, piece_des, piece_display')
         .ilike('piece_name', `%${query}%`)
         .limit(limit);
@@ -138,7 +139,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
     try {
       // Récupérer un échantillon avec toutes les colonnes
       const { data: sample, error } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .limit(1);
 
@@ -164,7 +165,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
     try {
       // Recherche exacte pour "Filtre à air" avec toutes les colonnes
       const { data: exactMatches, error: exactError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .eq('piece_name', 'Filtre à air')
         .limit(limit);
@@ -175,7 +176,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
 
       // Recherche des variantes
       const { data: variants, error: variantError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*')
         .or(
           'piece_name.eq.Filtre à air secondaire,piece_name.ilike.Filtre à air%',
@@ -243,7 +244,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
     try {
       // D'abord, récupérer les IDs uniques pour comprendre les relations
       const { data: brandIds, error: idsError } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('piece_pm_id, piece_pg_id, piece_ga_id')
         .not('piece_pm_id', 'is', null)
         .limit(100);
@@ -301,7 +302,7 @@ export class PiecesAnalysisService extends SupabaseBaseService {
 
       // Récupérer quelques pièces avec leurs IDs pour analyse
       const { data: samplePieces } = await this.client
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           'piece_id, piece_name, piece_ref, piece_pm_id, piece_pg_id, piece_ga_id',
         )
