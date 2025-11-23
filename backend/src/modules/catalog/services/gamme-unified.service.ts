@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/gamme-unified.service.ts
 // 🎯 Service unifié pour les gammes - remplace gamme.service + catalog-gamme.service + pieces-gamme.service
 
@@ -31,7 +32,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // 1. Récupérer les gammes depuis pieces_gamme (source de vérité pour les noms)
       const { data: piecesGammes, error: piecesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select(
           `
           pg_id,
@@ -112,7 +113,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // 2. Récupérer les gammes avec liaison famille
       const { data: catalogGammes, error: catalogError } = await this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('*')
         .order('mc_sort', { ascending: true });
 
@@ -322,7 +323,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // Récupérer mf_id pour les switches famille
       const { data: catalogGamme } = await this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('mc_mf_prime')
         .eq('mc_pg_id', pgId)
         .single();
@@ -562,7 +563,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
    */
   private async getGammeInfo(pgId: number) {
     const { data } = await this.supabase
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias')
       .eq('pg_id', pgId)
       .single();

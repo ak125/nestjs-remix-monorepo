@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
@@ -57,7 +58,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const offset = page * limit;
 
           let query = this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('*')
             .eq('marque_display', 1)
             .limit(limit)
@@ -103,7 +104,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('*')
             .eq('marque_id', marqueId)
             .eq('marque_display', 1)
@@ -137,7 +138,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('*')
             .eq('marque_name', marqueName)
             .eq('marque_display', 1)
@@ -180,7 +181,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
           // Requête avec agrégation par année
           const { data, error } = await this.client
-            .from('auto_type')
+            .from(TABLES.auto_type)
             .select(
               `
               type_year,
@@ -252,7 +253,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const offset = page * limit;
 
           const { data, error, count } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('*')
             .eq('marque_display', 1)
             .ilike('marque_name', `%${query}%`)
@@ -295,18 +296,18 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
           // Total des marques
           const { count: totalBrands } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id', { count: 'exact' });
 
           // Marques actives
           const { count: activeBrands } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id', { count: 'exact' })
             .eq('marque_display', 1);
 
           // Marques avec modèles
           const { data: brandsWithModels } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select(
               `
               marque_id,
@@ -354,7 +355,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
   > {
     try {
       const { data } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_name,
@@ -398,7 +399,7 @@ export class VehicleBrandsService extends SupabaseBaseService {
       async () => {
         try {
           const { data, error } = await this.client
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id, marque_name')
             .eq('marque_display', 1)
             .order('marque_name');

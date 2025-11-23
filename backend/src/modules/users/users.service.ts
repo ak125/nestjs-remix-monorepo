@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 /**
  * Service Users - Version complète migrée depuis ecommerce-api
  * Implémente toutes les fonctionnalités nécessaires pour l'API

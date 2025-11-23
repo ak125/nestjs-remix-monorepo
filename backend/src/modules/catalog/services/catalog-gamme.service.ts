@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/services/catalog-gamme.service.ts
 // 🏭 Service pour gérer les gammes de catalogue (table catalog_gamme)
 
@@ -35,7 +36,7 @@ export class CatalogGammeService extends SupabaseBaseService {
 
       // OPTIMISATION 1: Récupérer d'abord pieces_gamme avec filtres (plus restrictif)
       const { data: piecesGammes, error: piecesError } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias, pg_img')
         .eq('pg_display', '1')
         .eq('pg_level', '1');
@@ -52,7 +53,7 @@ export class CatalogGammeService extends SupabaseBaseService {
 
       // OPTIMISATION 2: Filtrer catalog_gamme pour ne prendre que ceux avec pg_id valides
       const { data: catalogGammes, error: catalogError } = await this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('mc_id, mc_mf_id, mc_mf_prime, mc_pg_id, mc_sort')
         .in('mc_pg_id', Array.from(validPgIds))
         .order('mc_sort', { ascending: true });
@@ -217,7 +218,7 @@ export class CatalogGammeService extends SupabaseBaseService {
       this.logger.log(`🔧 Récupération gamme ID: ${gammeId}`);
 
       const { data: gamme, error } = await this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('*')
         .eq('mc_id', gammeId)
         .single();
@@ -245,7 +246,7 @@ export class CatalogGammeService extends SupabaseBaseService {
       this.logger.log(`🔧 Récupération gammes fabricant: ${manufacturerId}`);
 
       const { data: gammes, error } = await this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('*')
         .eq('mc_mf_id', manufacturerId)
         .order('mc_sort', { ascending: true });
@@ -289,7 +290,7 @@ export class CatalogGammeService extends SupabaseBaseService {
       // Requête avec tri par pertinence (pg_id croissant = gammes les plus importantes)
       // Les IDs les plus bas correspondent aux gammes historiquement les plus demandées
       const { data: topGammes, error } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias, pg_img')
         .eq('pg_top', '1') // Équivalent WHERE pg_top = 1
         .eq('pg_display', '1') // Bonus: seulement les gammes affichables

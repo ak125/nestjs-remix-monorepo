@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -124,7 +125,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // 1. Récupérer infos produit équivalent depuis table PIECES
       const { data: product, error: productError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
