@@ -59,8 +59,7 @@ export class CatalogFamilyService extends SupabaseBaseService {
         )
         .eq('pg_display', 1)
         .eq('pg_level', 1)
-        .eq('catalog_gamme.catalog_family.mf_display', 1)
-        .order('catalog_gamme.catalog_family.mf_sort', { ascending: true });
+        .eq('catalog_gamme.catalog_family.mf_display', 1);
 
       if (familiesError) {
         this.logger.error('Erreur récupération familles:', familiesError);
@@ -87,7 +86,10 @@ export class CatalogFamilyService extends SupabaseBaseService {
         }
       });
 
-      const families = Array.from(uniqueFamilies.values());
+      // Trier les familles par mf_sort
+      const families = Array.from(uniqueFamilies.values()).sort(
+        (a, b) => a.mf_sort - b.mf_sort,
+      );
       this.logger.log(`${families.length} familles trouvées`);
 
       // Pour chaque famille, récupérer ses gammes (reproduction de la boucle PHP)
