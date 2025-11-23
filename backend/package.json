@@ -27,6 +27,7 @@
     "@conform-to/zod": "^1.8.2",
     "@google-analytics/data": "^5.2.1",
     "@monorepo/shared-types": "^1.0.0",
+    "@repo/database-types": "*",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bull": "^10.2.3",
     "@nestjs/bullmq": "^11.0.4",

@@ -769,8 +769,18 @@ export class DynamicSeoController {
   })
   async getInternalLinksMetrics() {
     try {
-      const metrics =
-        await this.dynamicSeoService.trackInternalLinkPerformance('all');
+      // Récupérer les métriques pour tous les types de liens
+      const [linkGammeCar, linkGammeCarId, compSwitch] = await Promise.all([
+        this.dynamicSeoService.trackInternalLinkPerformance('LinkGammeCar'),
+        this.dynamicSeoService.trackInternalLinkPerformance('LinkGammeCar_ID'),
+        this.dynamicSeoService.trackInternalLinkPerformance('CompSwitch'),
+      ]);
+
+      const metrics = {
+        LinkGammeCar: linkGammeCar,
+        LinkGammeCar_ID: linkGammeCarId,
+        CompSwitch: compSwitch,
+      };
 
       return {
         success: true,

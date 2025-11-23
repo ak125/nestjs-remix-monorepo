@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { TABLES, COLUMNS } from '@repo/database-types';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -659,7 +660,7 @@ export class CatalogService
 
       // Récupérer le prix
       const { data: prixData, error: prixError } = await this.supabase
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_vente_ttc, pri_consigne_ttc, pri_dispo')
         .eq('pri_piece_id', pieceId)
         .eq('pri_type', 0)
@@ -670,7 +671,7 @@ export class CatalogService
 
       // Récupérer la marque
       const { data: marqueData, error: marqueError } = await this.supabase
-        .from('pieces_marque')
+        .from(TABLES.pieces_marque)
         .select('pm_name, pm_logo, pm_quality, pm_nb_stars')
         .eq('pm_id', pieceData.piece_pm_id)
         .single();
@@ -680,32 +681,32 @@ export class CatalogService
 
       // Récupérer les images
       const { data: imagesData } = await this.supabase
-        .from('pieces_images')
-        .select('pim_url')
-        .eq('pim_piece_id', pieceId)
-        .order('pim_ordre', { ascending: true });
+        .from(TABLES.pieces_media_img)
+        .select('pmi_folder, pmi_name')
+        .eq('pmi_piece_id', pieceId)
+        .order('pmi_sort', { ascending: true });
 
       // Récupérer les critères techniques
       const { data: criteresData } = await this.supabase
-        .from('pieces_criteres')
+        .from(TABLES.pieces_criteria)
         .select(`
-          pcr_id,
-          pcr_valeur,
-          pieces_criteres_def (
-            pcd_id,
-            pcd_name,
-            pcd_unite
+          pc_cri_id,
+          pc_cri_value,
+          pieces_criteria_link (
+            pcl_cri_id,
+            pcl_cri_criteria,
+            pcl_cri_unit
           )
         `)
-        .eq('pcr_piece_id', pieceId)
-        .order('pcr_id', { ascending: true });
+        .eq('pc_piece_id', pieceId)
+        .order('pc_cri_id', { ascending: true });
 
       // Formater les critères techniques
       const criteresTechniques = criteresData?.map((crit: any) => ({
-        id: crit.pcr_id,
-        name: crit.pieces_criteres_def?.pcd_name || '',
-        value: crit.pcr_valeur,
-        unit: crit.pieces_criteres_def?.pcd_unite || '',
+        id: crit.pc_cri_id,
+        name: crit.pieces_criteria_link?.pcl_cri_criteria || '',
+        value: crit.pc_cri_value,
+        unit: crit.pieces_criteria_link?.pcl_cri_unit || '',
       })) || [];
 
       return {
@@ -722,8 +723,8 @@ export class CatalogService
           consigne_ttc: prixData?.pri_consigne_ttc ? parseFloat(prixData.pri_consigne_ttc) : 0,
           dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
           description: pieceData.piece_des,
-          image: imagesData?.[0]?.pim_url || '',
-          images: imagesData?.map((img) => img.pim_url) || [],
+          image: imagesData?.[0] ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}` : '',
+          images: imagesData?.map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
           weight: pieceData.piece_weight_kgm,
           hasOem: pieceData.piece_has_oem,
           criteresTechniques,
