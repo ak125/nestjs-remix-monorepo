@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
@@ -187,7 +188,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name, marque_alias');
 
       if (options?.limit) {
@@ -242,7 +243,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select(
           `
           modele_id,
@@ -601,7 +602,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats constructeurs
       const { count: totalConstructeurs } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true });
 
       const constructeurUrls = await this.getAllConstructeurUrls({ limit: 5 });
@@ -609,7 +610,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats modèles
       const { count: totalModeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true })
         .eq('modele_display', 1);
 

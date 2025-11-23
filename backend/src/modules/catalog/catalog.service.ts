@@ -470,7 +470,7 @@ export class CatalogService
   async getAutoBrands(limit: number = 50) {
     try {
       const { data, error } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_id,
@@ -676,7 +676,10 @@ export class CatalogService
         .eq('pm_id', pieceData.piece_pm_id)
         .single();
 
-      this.logger.log(`🏷️ Marque récupérée pour pm_id ${pieceData.piece_pm_id}:`, marqueData);
+      this.logger.log(
+        `🏷️ Marque récupérée pour pm_id ${pieceData.piece_pm_id}:`,
+        marqueData,
+      );
       if (marqueError) this.logger.warn(`⚠️ Erreur marque:`, marqueError);
 
       // Récupérer les images
@@ -689,7 +692,8 @@ export class CatalogService
       // Récupérer les critères techniques
       const { data: criteresData } = await this.supabase
         .from(TABLES.pieces_criteria)
-        .select(`
+        .select(
+          `
           pc_cri_id,
           pc_cri_value,
           pieces_criteria_link (
@@ -697,17 +701,19 @@ export class CatalogService
             pcl_cri_criteria,
             pcl_cri_unit
           )
-        `)
+        `,
+        )
         .eq('pc_piece_id', pieceId)
         .order('pc_cri_id', { ascending: true });
 
       // Formater les critères techniques
-      const criteresTechniques = criteresData?.map((crit: any) => ({
-        id: crit.pc_cri_id,
-        name: crit.pieces_criteria_link?.pcl_cri_criteria || '',
-        value: crit.pc_cri_value,
-        unit: crit.pieces_criteria_link?.pcl_cri_unit || '',
-      })) || [];
+      const criteresTechniques =
+        criteresData?.map((crit: any) => ({
+          id: crit.pc_cri_id,
+          name: crit.pieces_criteria_link?.pcl_cri_criteria || '',
+          value: crit.pc_cri_value,
+          unit: crit.pieces_criteria_link?.pcl_cri_unit || '',
+        })) || [];
 
       return {
         success: true,
@@ -719,12 +725,19 @@ export class CatalogService
           marque_logo: marqueData?.pm_logo || null,
           qualite: marqueData?.pm_quality || null,
           nb_stars: marqueData?.pm_nb_stars || 0,
-          prix_ttc: prixData?.pri_vente_ttc ? parseFloat(prixData.pri_vente_ttc) : 0,
-          consigne_ttc: prixData?.pri_consigne_ttc ? parseFloat(prixData.pri_consigne_ttc) : 0,
+          prix_ttc: prixData?.pri_vente_ttc
+            ? parseFloat(prixData.pri_vente_ttc)
+            : 0,
+          consigne_ttc: prixData?.pri_consigne_ttc
+            ? parseFloat(prixData.pri_consigne_ttc)
+            : 0,
           dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
           description: pieceData.piece_des,
-          image: imagesData?.[0] ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}` : '',
-          images: imagesData?.map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
+          image: imagesData?.[0]
+            ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}`
+            : '',
+          images:
+            imagesData?.map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
           weight: pieceData.piece_weight_kgm,
           hasOem: pieceData.piece_has_oem,
           criteresTechniques,
@@ -747,13 +760,13 @@ export class CatalogService
     try {
       // Statistiques des marques
       const { count: brandsCount, error: brandsError } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true })
         .eq('marque_display', 1);
 
       // Statistiques des modèles
       const { count: modelsCount, error: modelsError } = await this.supabase
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true })
         .eq('modele_display', 1);
 
@@ -898,7 +911,7 @@ export class CatalogService
       );
 
       const { data, error } = await this.supabase
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select(
           `
           marque_id,

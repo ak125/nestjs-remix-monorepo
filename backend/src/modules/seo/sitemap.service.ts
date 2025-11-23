@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
@@ -80,7 +81,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Récupérer toutes les marques
       const { data: brands, error } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_alias, marque_name')
         .order('marque_name');
 
@@ -130,7 +131,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Récupérer toutes les marques
       const { data: marques } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_alias');
 
       if (!marques || marques.length === 0) {
@@ -149,7 +150,7 @@ export class SitemapService extends SupabaseBaseService {
 
       while (hasMore) {
         const { data: modelesBatch } = await this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select(
             'modele_id, modele_alias, modele_name, modele_name_url, modele_marque_id',
           )
@@ -239,7 +240,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Charger toutes les marques
       const { data: marques, error: marqueError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_alias');
 
       if (marqueError) {
@@ -266,7 +267,7 @@ export class SitemapService extends SupabaseBaseService {
 
       while (hasMoreModeles) {
         const { data: modelesBatch, error: modeleError } = await this.client
-          .from('auto_modele')
+          .from(TABLES.auto_modele)
           .select('modele_id, modele_alias, modele_name_url, modele_marque_id')
           .range(modeleOffset, modeleOffset + modeleBatchSize - 1)
           .order('modele_id');
@@ -312,7 +313,7 @@ export class SitemapService extends SupabaseBaseService {
 
       while (hasMore && entries.length < maxEntries) {
         const { data: typesBatch, error: typeError } = await this.client
-          .from('auto_type')
+          .from(TABLES.auto_type)
           .select('type_id, type_name, type_modele_id')
           .range(offset, offset + batchSize - 1)
           .order('type_id');
@@ -616,13 +617,13 @@ Crawl-delay: 1`;
     try {
       // Charger quelques types
       const { data: types } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select('type_id, type_name, type_modele_id')
         .limit(10);
 
       // Charger quelques modèles
       const { data: modeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_name, modele_marque_id')
         .limit(10);
 
@@ -768,11 +769,11 @@ ${entries
         .select('*', { count: 'exact', head: true });
 
       const { count: constructeursCount } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('*', { count: 'exact', head: true });
 
       const { count: modelesCount } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('*', { count: 'exact', head: true });
 
       const { count: gammesCount } = await this.client
@@ -812,7 +813,7 @@ ${entries
   async generateConstructeurSitemap(marqueId: number): Promise<string> {
     try {
       const { data: modeles } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_alias, modele_name, modele_name_url')
         .eq('modele_marque_id', marqueId)
         .eq('modele_display', 1)
