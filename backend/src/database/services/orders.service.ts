@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';

@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -107,7 +108,7 @@ export class VehicleNamingService extends SupabaseBaseService {
     try {
       // 1. Récupérer les types actifs
       const { data: types, error: typesError } = await this.client
-        .from('auto_type')
+        .from(TABLES.auto_type)
         .select(
           `
           type_id,
