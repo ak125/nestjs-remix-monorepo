@@ -1,8 +1,8 @@
-export * from './types';
-export * from './constants';
-export * from './schemas';
-import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants';
-import { PiecesSchemas, AutoSchemas, AllSchemas, } from './schemas';
+export * from './types.js';
+export * from './constants.js';
+export * from './schemas.js';
+import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants.js';
+import { PiecesSchemas, AutoSchemas, AllSchemas, } from './schemas.js';
 export const DatabaseTypes = {
     Pieces: {},
     PiecesPrice: {},
