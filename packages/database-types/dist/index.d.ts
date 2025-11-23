@@ -1,7 +1,7 @@
-export * from './types';
-export * from './constants';
-export * from './schemas';
-import type { Pieces, PiecesPrice, PiecesMarque, PiecesMediaImg, PiecesCriteria, PiecesCriteriaLink, AutoMarque, AutoModele, AutoType, TableName, TableRow, TableInsert, TableUpdate } from './types';
+export * from './types.js';
+export * from './constants.js';
+export * from './schemas.js';
+import type { Pieces, PiecesPrice, PiecesMarque, PiecesMediaImg, PiecesCriteria, PiecesCriteriaLink, AutoMarque, AutoModele, AutoType, TableName, TableRow, TableInsert, TableUpdate } from './types.js';
 export declare const DatabaseTypes: {
     readonly Pieces: Pieces;
     readonly PiecesPrice: PiecesPrice;

@@ -33,30 +33,30 @@
  * Types TypeScript pour toutes les tables (97 tables)
  * Compile-time type safety
  */
-export * from './types';
+export * from './types.js';
 
 /**
  * Constantes pour les noms de tables et colonnes
  * Prévient les erreurs de typage comme 'pieces_prix' vs 'pieces_price'
  */
-export * from './constants';
+export * from './constants.js';
 
 /**
  * Schémas Zod pour la validation runtime (90 schémas)
  * Auto-générés depuis les types TypeScript
  */
-export * from './schemas';
+export * from './schemas.js';
 
 // ============================================================================
 // 🔥 RE-EXPORTS PRATIQUES
 // ============================================================================
 
-import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants';
+import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants.js';
 import {
   PiecesSchemas,
   AutoSchemas,
   AllSchemas,
-} from './schemas';
+} from './schemas.js';
 
 import type {
   // Tables principales pièces
@@ -95,7 +95,7 @@ import type {
   TableRow,
   TableInsert,
   TableUpdate,
-} from './types';
+} from './types.js';
 
 /**
  * 🎁 Bundle de types les plus utilisés
