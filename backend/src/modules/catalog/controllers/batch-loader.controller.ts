@@ -11,6 +11,8 @@ interface BatchLoaderRequest {
 
 interface BatchLoaderResponse {
   pieces: any[];
+  grouped_pieces?: any[]; // ✨ Groupes avec title_h2 pour affichage par section
+  blocs?: any[]; // ✨ Alias pour compatibilité
   count: number;
   minPrice: number | null;
   seo: {
@@ -94,6 +96,7 @@ export class BatchLoaderController {
 
       // Extraction des données
       const pieces = Array.isArray(piecesResult.pieces) ? piecesResult.pieces : [];
+      const grouped_pieces = (piecesResult as any).grouped_pieces || (piecesResult as any).blocs || [];
       const count = pieces.length;
       const minPrice = piecesResult.minPrice || null;
 
@@ -112,6 +115,8 @@ export class BatchLoaderController {
 
       return {
         pieces,
+        grouped_pieces, // ✨ Groupes avec title_h2
+        blocs: grouped_pieces, // ✨ Alias pour compatibilité
         count,
         minPrice,
         seo: {
