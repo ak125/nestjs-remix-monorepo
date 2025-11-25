@@ -637,15 +637,35 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
           }
         }
         
-        // ÉTAPE 2: Si pieces_criteria n'a pas trouvé, utiliser pieces_relation_criteria (Priority 1)
+        // 🔧 CORRECTION: Pour Amortisseurs et Disques, ignorer Supérieur/Inférieur (position technique non pertinente)
+        // "Supérieur" = fixation haute de l'amortisseur, pas une position véhicule
+        const gammeNameLower = (piece.filtre_gamme || '').toLowerCase();
+        const isAmortisseurOrDisque = gammeNameLower.includes('amortisseur') || 
+                                      gammeNameLower.includes('disque') ||
+                                      gammeNameLower.includes('tambour');
+        
+        if (isAmortisseurOrDisque && (detectedPosition === 'Supérieur' || detectedPosition === 'Inférieur')) {
+          // Réinitialiser la position pour ces gammes
+          detectedPosition = '';
+        }
+        
+        // ÉTAPE 2: Si pieces_criteria n'a pas trouvé (ou position ignorée), utiliser pieces_relation_criteria (Priority 1)
         if (!detectedPosition) {
           const relationPosition = relationPositionsMap.get(piece.id.toString());
           if (relationPosition) {
             // Capitaliser
-            detectedPosition = relationPosition
+            const capitalizedPosition = relationPosition
               .split(' ')
               .map(word => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' ');
+            
+            // Appliquer le même filtre pour Amortisseurs/Disques
+            if (isAmortisseurOrDisque && (capitalizedPosition === 'Supérieur' || capitalizedPosition === 'Inférieur')) {
+              // Ne pas utiliser cette position
+              detectedPosition = '';
+            } else {
+              detectedPosition = capitalizedPosition;
+            }
           }
         }
         
