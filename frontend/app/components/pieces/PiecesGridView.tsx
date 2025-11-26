@@ -60,7 +60,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
   }, [selectedPieceId]);
 
   // Handler anti-double-clic pour ajout panier
-  const handleAddToCart = (pieceId: number) => {
+  const handleAddToCart = async (pieceId: number) => {
     // Vérifier si déjà en cours d'ajout
     if (loadingItems.has(pieceId)) {
       console.log('⚠️ Ajout déjà en cours pour:', pieceId);
@@ -72,17 +72,20 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
     // Marquer comme en cours
     setLoadingItems(prev => new Set(prev).add(pieceId));
 
-    // ⚡ Ajout optimiste - appel synchrone (useFetcher)
-    addToCart(pieceId, 1);
-    
-    // Délai minimal pour feedback visuel (réduit au minimum)
-    setTimeout(() => {
+    try {
+      await addToCart(pieceId, 1);
+      // Petit délai avant de réactiver (debounce)
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('❌ Erreur ajout panier:', error);
+    } finally {
+      // Retirer du loading
       setLoadingItems(prev => {
         const next = new Set(prev);
         next.delete(pieceId);
         return next;
       });
-    }, 200);
+    }
   };
   
   if (pieces.length === 0) {
