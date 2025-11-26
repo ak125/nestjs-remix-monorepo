@@ -49,7 +49,7 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
   const [loadingItems, setLoadingItems] = useState<Set<number>>(new Set());
 
   // Handler anti-double-clic pour ajout panier
-  const handleAddToCart = async (pieceId: number) => {
+  const handleAddToCart = (pieceId: number) => {
     // Vérifier si déjà en cours d'ajout
     if (loadingItems.has(pieceId)) {
       console.log('⚠️ Ajout déjà en cours pour:', pieceId);
@@ -61,20 +61,17 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
     // Marquer comme en cours
     setLoadingItems(prev => new Set(prev).add(pieceId));
 
-    try {
-      await addToCart(pieceId, 1);
-      // Petit délai avant de réactiver (debounce)
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error('❌ Erreur ajout panier:', error);
-    } finally {
-      // Retirer du loading
+    // ⚡ Ajout optimiste - appel synchrone (useFetcher)
+    addToCart(pieceId, 1);
+    
+    // Délai minimal pour feedback visuel
+    setTimeout(() => {
       setLoadingItems(prev => {
         const next = new Set(prev);
         next.delete(pieceId);
         return next;
       });
-    }
+    }, 400);
   };
   
   if (pieces.length === 0) {
