@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -46,7 +47,7 @@ export class GuideService {
       }
 
       const client = this.supabaseService.getClient();
-      let query = client.from('__blog_guide').select('*', { count: 'exact' });
+      let query = client.from(TABLES.blog_guide).select('*', { count: 'exact' });
 
       // Appliquer les filtres
       if (filters.type) {
@@ -102,7 +103,7 @@ export class GuideService {
 
       const client = this.supabaseService.getClient();
       const { data: guide } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_id', id.toString())
         .single();
@@ -137,7 +138,7 @@ export class GuideService {
 
       const client = this.supabaseService.getClient();
       const { data: guide } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_alias', slug)
         .single();
@@ -173,7 +174,7 @@ export class GuideService {
       const client = this.supabaseService.getClient();
 
       const { data: guidesList } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .or(
           [
@@ -219,7 +220,7 @@ export class GuideService {
       const client = this.supabaseService.getClient();
 
       const { data: guidesList } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .or(
           [
@@ -272,7 +273,7 @@ export class GuideService {
 
       // Statistiques de base
       const { data: allGuides } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_visit, bg_title, bg_keywords');
 
       if (!allGuides) {
@@ -324,7 +325,7 @@ export class GuideService {
 
       // Guides les plus populaires
       const { data: popularGuides } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .order('bg_visit', { ascending: false })
         .limit(5);
@@ -368,7 +369,7 @@ export class GuideService {
 
       // Récupérer les vues actuelles
       const { data: current } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_visit')
         .eq('bg_id', id.toString())
         .single();
@@ -379,7 +380,7 @@ export class GuideService {
 
       // Mettre à jour
       const { error } = await client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .update({ bg_visit: newViews.toString() })
         .eq('bg_id', id.toString());
 
@@ -410,7 +411,7 @@ export class GuideService {
   ): Promise<BlogArticle> {
     // Récupérer les sections H2
     const { data: h2Sections } = await client
-      .from('__blog_guide_h2')
+      .from(TABLES.blog_guide_h2)
       .select('*')
       .eq('bg2_bg_id', guide.bg_id)
       .order('bg2_id');
@@ -433,7 +434,7 @@ export class GuideService {
 
         // Récupérer les H3 de ce H2
         const { data: h3Sections } = await client
-          .from('__blog_guide_h3')
+          .from(TABLES.blog_guide_h3)
           .select('*')
           .eq('bg3_bg2_id', h2.bg2_id)
           .order('bg3_id');

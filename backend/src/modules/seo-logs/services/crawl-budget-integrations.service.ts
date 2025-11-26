@@ -137,7 +137,7 @@ export class SitemapGeneratorService {
     Array<{ url: string; familyCode: string; priority: number }>
   > {
     // TODO: Query Supabase
-    // const { data } = await this.supabase.from('products').select('url, gamme_code, views_count');
+    // const { data } = await this.supabase.from(TABLES.products).select('url, gamme_code, views_count');
 
     // Mock data
     return [

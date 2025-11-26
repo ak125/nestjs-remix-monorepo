@@ -476,7 +476,7 @@ export class PricingService extends SupabaseBaseService {
           let realBrand = 'Marque inconnue';
           if (pmId) {
             const { data: brandData } = await this.client
-              .from('pieces_marque')
+              .from(TABLES.pieces_marque)
               .select('pm_name, pm_alias')
               .eq('pm_id', pmId)
               .limit(1);

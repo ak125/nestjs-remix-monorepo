@@ -573,16 +573,6 @@ export default function PiecesVehicleRoute() {
           {/* Contenu principal */}
           <main className="flex-1 min-w-0">
             <div className="space-y-6">
-              
-              {/* Titre catégorie */}
-              <div className="bg-gradient-to-r from-white via-white to-blue-50/30 rounded-2xl shadow-lg border border-gray-200/50 px-6 py-5 backdrop-blur-sm animate-in fade-in slide-in-from-top duration-500 delay-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent">
-                    {data.gamme.name}
-                  </h2>
-                </div>
-              </div>
 
               {/* Barre d'outils vue */}
               <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5 animate-in fade-in slide-in-from-top duration-500 delay-150 sticky top-24 z-10">

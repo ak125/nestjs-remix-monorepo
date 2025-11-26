@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import type {
@@ -34,7 +35,7 @@ export class StaffDataService extends SupabaseBaseService {
       const offset = (page - 1) * limit;
 
       let query = this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .select('*', { count: 'exact' });
 
       // Filtres
@@ -88,7 +89,7 @@ export class StaffDataService extends SupabaseBaseService {
   async findById(id: string): Promise<Staff> {
     try {
       const { data, error } = await this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .select('*')
         .eq('cnfa_id', id)
         .single();
@@ -110,7 +111,7 @@ export class StaffDataService extends SupabaseBaseService {
   async findByEmail(email: string): Promise<Staff | null> {
     try {
       const { data, error } = await this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .select('*')
         .eq('cnfa_mail', email)
         .single();
@@ -135,7 +136,7 @@ export class StaffDataService extends SupabaseBaseService {
       const hashedPassword = await bcrypt.hash(dto.password, 10);
 
       const { data, error } = await this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .insert({
           cnfa_mail: dto.email,
           cnfa_pswd: hashedPassword,
@@ -176,7 +177,7 @@ export class StaffDataService extends SupabaseBaseService {
         updateData.cnfa_activ = dto.isActive ? '1' : '0';
 
       const { data, error } = await this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .update(updateData)
         .eq('cnfa_id', id)
         .select()
@@ -199,7 +200,7 @@ export class StaffDataService extends SupabaseBaseService {
   async delete(id: string): Promise<void> {
     try {
       const { error } = await this.supabase
-        .from('___config_admin')
+        .from(TABLES.config_admin)
         .update({ cnfa_activ: '0' })
         .eq('cnfa_id', id);
 

@@ -9,6 +9,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   CartItem,
@@ -141,7 +142,7 @@ export class CartValidationService extends SupabaseBaseService {
   private async checkStock(productId: string): Promise<number> {
     try {
       const { data, error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('stock_quantity')
         .eq('id', productId)
         .single();
@@ -200,7 +201,7 @@ export class CartValidationService extends SupabaseBaseService {
   private async checkPromoCodeExists(promoCode: string): Promise<boolean> {
     try {
       const { data, error } = await this.supabase
-        .from('promo_codes')
+        .from(TABLES.promo_codes)
         .select('id')
         .eq('code', promoCode)
         .eq('is_active', true)

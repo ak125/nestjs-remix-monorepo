@@ -295,7 +295,7 @@ export class CatalogService
    */
   private async getFallbackQuickAccess(): Promise<CatalogItem[]> {
     const { data } = await this.supabase
-      .from('pieces_gamme')
+      .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias, pg_image')
       .eq('pg_featured', 1)
       .eq('pg_display', 1)
@@ -573,7 +573,7 @@ export class CatalogService
   async searchPieces(query: string, limit: number = 50, offset: number = 0) {
     try {
       const { data, error } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -630,7 +630,7 @@ export class CatalogService
     try {
       // Récupérer la pièce avec toutes les informations nécessaires
       const { data: pieceData, error: pieceError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select(
           `
           piece_id,
@@ -692,28 +692,114 @@ export class CatalogService
       // Récupérer les critères techniques
       const { data: criteresData } = await this.supabase
         .from(TABLES.pieces_criteria)
-        .select(
-          `
-          pc_cri_id,
-          pc_cri_value,
-          pieces_criteria_link (
-            pcl_cri_id,
-            pcl_cri_criteria,
-            pcl_cri_unit
-          )
-        `,
-        )
+        .select('pc_cri_id, pc_cri_value')
         .eq('pc_piece_id', pieceId)
-        .order('pc_cri_id', { ascending: true });
+        .eq('pc_display', 1)
+        .order('pc_sort', { ascending: true });
 
-      // Formater les critères techniques
-      const criteresTechniques =
-        criteresData?.map((crit: any) => ({
-          id: crit.pc_cri_id,
-          name: crit.pieces_criteria_link?.pcl_cri_criteria || '',
-          value: crit.pc_cri_value,
-          unit: crit.pieces_criteria_link?.pcl_cri_unit || '',
-        })) || [];
+      // Récupérer les liens des critères (jointure manuelle)
+      let criteresTechniques: any[] = [];
+      if (criteresData && criteresData.length > 0) {
+        const criIds = [...new Set(criteresData.map(c => c.pc_cri_id))];
+        const { data: linksData } = await this.supabase
+          .from(TABLES.pieces_criteria_link)
+          .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
+          .in('pcl_cri_id', criIds)
+          .eq('pcl_display', 1)
+          .order('pcl_level', { ascending: true });
+        
+        // Créer une map des liens (prendre le premier par cri_id)
+        const linksMap = new Map();
+        linksData?.forEach(link => {
+          if (!linksMap.has(link.pcl_cri_id)) {
+            linksMap.set(link.pcl_cri_id, link);
+          }
+        });
+        
+        // Formater les critères avec leurs liens
+        criteresTechniques = criteresData
+          .map(crit => {
+            const link = linksMap.get(crit.pc_cri_id);
+            return link ? {
+              id: crit.pc_cri_id,
+              name: link.pcl_cri_criteria,
+              value: crit.pc_cri_value,
+              unit: link.pcl_cri_unit || '',
+              level: link.pcl_level || 5,
+            } : null;
+          })
+          .filter(Boolean);
+      }
+
+      // Récupérer les références équipementiers (Type 4) depuis pieces_ref_search
+      const { data: refEquipData } = await this.supabase
+        .from(TABLES.pieces_ref_search)
+        .select('prs_ref, prs_prb_id')
+        .eq('prs_piece_id', pieceId)
+        .eq('prs_kind', '4') // Type 4 = références équipementiers (ATE, BREMBO, HELLA...)
+        .limit(50);
+
+      // Récupérer les références OEM constructeurs (Type 3) depuis pieces_ref_search
+      const { data: refOemData } = await this.supabase
+        .from(TABLES.pieces_ref_search)
+        .select('prs_ref, prs_prb_id')
+        .eq('prs_piece_id', pieceId)
+        .eq('prs_kind', '3') // Type 3 = références OEM constructeurs (RENAULT, BMW, AUDI...)
+        .limit(50);
+
+      // Grouper les références équipementiers par marque
+      let referencesEquipementiers: Record<string, string[]> = {};
+      
+      if (refEquipData && refEquipData.length > 0) {
+        const brandIds = [...new Set(refEquipData.map(r => r.prs_prb_id))];
+        const { data: brandsData } = await this.supabase
+          .from(TABLES.pieces_ref_brand)
+          .select('prb_id, prb_name')
+          .in('prb_id', brandIds);
+        
+        const brandMap = new Map(
+          brandsData?.map(b => [b.prb_id.toString(), b.prb_name]) || []
+        );
+        
+        refEquipData.forEach(ref => {
+          const brandName = brandMap.get(ref.prs_prb_id.toString());
+          if (brandName) {
+            if (!referencesEquipementiers[brandName]) {
+              referencesEquipementiers[brandName] = [];
+            }
+            if (!referencesEquipementiers[brandName].includes(ref.prs_ref)) {
+              referencesEquipementiers[brandName].push(ref.prs_ref);
+            }
+          }
+        });
+      }
+
+      // Grouper les références OEM constructeurs par marque
+      let referencesOem: Record<string, string[]> = {};
+      
+      if (refOemData && refOemData.length > 0) {
+        const brandIds = [...new Set(refOemData.map(r => r.prs_prb_id))];
+        const { data: brandsData } = await this.supabase
+          .from(TABLES.pieces_ref_brand)
+          .select('prb_id, prb_name')
+          .in('prb_id', brandIds);
+        
+        const brandMap = new Map(
+          brandsData?.map(b => [b.prb_id.toString(), b.prb_name]) || []
+        );
+        
+        refOemData.forEach(ref => {
+          const brandName = brandMap.get(ref.prs_prb_id.toString());
+          if (brandName) {
+            if (!referencesOem[brandName]) {
+              referencesOem[brandName] = [];
+            }
+            if (!referencesOem[brandName].includes(ref.prs_ref)) {
+              referencesOem[brandName].push(ref.prs_ref);
+            }
+          }
+        });
+      }
 
       return {
         success: true,
@@ -741,6 +827,8 @@ export class CatalogService
           weight: pieceData.piece_weight_kgm,
           hasOem: pieceData.piece_has_oem,
           criteresTechniques,
+          referencesEquipementiers,
+          referencesOem,
         },
       };
     } catch (error) {
@@ -772,7 +860,7 @@ export class CatalogService
 
       // Statistiques des pièces
       const { count: piecesCount, error: piecesError } = await this.supabase
-        .from('pieces')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('piece_display', true);
 

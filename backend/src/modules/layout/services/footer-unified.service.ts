@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { CacheService } from '../../../cache/cache.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -269,7 +270,7 @@ export class FooterService extends SupabaseBaseService {
   private async getCompanyInfo(): Promise<FooterData['company']> {
     try {
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('name, address, phone, email')
         .eq('is_active', true)
         .single();
@@ -305,7 +306,7 @@ export class FooterService extends SupabaseBaseService {
   ): Promise<FooterData['columns']> {
     try {
       const { data, error } = await this.supabase
-        .from('___footer_menu')
+        .from(TABLES.footer_menu)
         .select('category, label, url')
         .eq('is_active', true)
         .order('position');

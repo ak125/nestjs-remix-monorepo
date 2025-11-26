@@ -37,7 +37,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Utiliser ___xtr_order avec filtre is_archived = true
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           `
           id,
@@ -128,7 +128,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Récupérer les commandes à archiver depuis ___xtr_order
       const { data: ordersToArchive, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .in('status', [6, 91, 92, 93, 94]) // Statuts terminés/finalisés
         .lt('date_order', threeMonthsAgo.toISOString())
@@ -190,7 +190,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Marquer la commande comme archivée dans la table existante
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           is_archived: true,
           archived_at: new Date().toISOString(),
@@ -222,7 +222,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Récupérer la commande
       const { data: order, error: orderError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('id', orderId)
         .single();
@@ -271,7 +271,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Total des archives (commandes marquées comme archivées)
       const { count: totalArchives } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .eq('is_archived', true);
 
@@ -285,14 +285,14 @@ export class CommercialArchivesService extends SupabaseBaseService {
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       const { count: recentArchives } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .eq('is_archived', true)
         .gte('archived_at', sevenDaysAgo.toISOString());
 
       // Archive la plus ancienne
       const { data: oldestArchiveData } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('archived_at')
         .eq('is_archived', true)
         .not('archived_at', 'is', null)
@@ -332,7 +332,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Récupérer la commande archivée
       const { data: order, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('id', orderId)
         .eq('is_archived', true)
@@ -347,7 +347,7 @@ export class CommercialArchivesService extends SupabaseBaseService {
 
       // Marquer la commande comme non archivée
       const { error: updateError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           is_archived: false,
           archived_at: null,

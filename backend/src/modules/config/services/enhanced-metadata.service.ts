@@ -58,7 +58,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
 
       // Récupérer depuis la table existante ___meta_tags_ariane
       const { data, error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .eq('mta_alias', cleanPath)
         .single();
@@ -133,7 +133,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
       };
 
       const { error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .upsert(updateData)
         .select()
         .single();
@@ -167,7 +167,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
       const cleanPath = this.cleanPath(path);
 
       const { error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .delete()
         .eq('mta_alias', cleanPath);
 
@@ -236,7 +236,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
     try {
       // Compter le total de pages avec métadonnées
       const { count: totalWithMetadata, error: countError } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
@@ -245,7 +245,7 @@ export class EnhancedMetadataService extends SupabaseBaseService {
 
       // Récupérer les mises à jour récentes
       const { data: recentUpdates, error: updatesError } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_alias, mta_title, updated_at')
         .order('updated_at', { ascending: false })
         .limit(10);
@@ -437,10 +437,9 @@ export class EnhancedMetadataService extends SupabaseBaseService {
       // Estimation basée sur différentes sources
       const sources = await Promise.allSettled([
         this.client.from(TABLES.pieces).select('*', { count: 'exact', head: true }),
-        this.client
-          .from('vehicules')
-          .select('*', { count: 'exact', head: true }),
-        this.client.from('marques').select('*', { count: 'exact', head: true }),
+        // Utiliser auto_type pour compter les types de véhicules
+        this.client.from(TABLES.auto_type).select('*', { count: 'exact', head: true }),
+        this.client.from(TABLES.auto_marque).select('*', { count: 'exact', head: true }),
       ]);
 
       let total = 100; // Pages statiques de base

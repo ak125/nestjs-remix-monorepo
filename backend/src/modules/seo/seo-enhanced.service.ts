@@ -81,7 +81,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
       // Récupération du template
       const supabase = this.supabase;
       const { data: template } = await supabase
-        .from('__seo_gamme_car')
+        .from(TABLES.seo_gamme_car)
         .select('*')
         .eq('pg_id', pgId)
         .single();
@@ -92,7 +92,7 @@ export class SeoEnhancedService extends SupabaseBaseService {
 
       // Récupération des switches
       const { data: switches } = await supabase
-        .from('__seo_gamme_car_switch')
+        .from(TABLES.seo_gamme_car_switch)
         .select('*');
 
       // Traitement du template
@@ -327,12 +327,12 @@ export class SeoEnhancedService extends SupabaseBaseService {
 
       // Statistiques des templates (pour usage futur)
       const { count: totalTemplates } = await supabase
-        .from('__seo_gamme_car')
+        .from(TABLES.seo_gamme_car)
         .select('*', { count: 'exact' });
 
       // Statistiques des switches (pour usage futur)
       const { count: totalSwitches } = await supabase
-        .from('__seo_gamme_car_switch')
+        .from(TABLES.seo_gamme_car_switch)
         .select('*', { count: 'exact' });
 
       return {

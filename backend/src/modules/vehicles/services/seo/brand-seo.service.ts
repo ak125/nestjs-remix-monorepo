@@ -11,6 +11,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
+import { TABLES } from '@repo/database-types';
 
 export interface BrandSeoData {
   sm_id: string;
@@ -52,7 +53,7 @@ export class BrandSeoService {
   async getBrandSeo(marqueId: number): Promise<BrandSeoData | null> {
     try {
       const { data, error } = await this.supabase
-        .from('__seo_marque')
+        .from(TABLES.seo_marque)
         .select('*')
         .eq('sm_marque_id', marqueId)
         .single();
@@ -247,7 +248,7 @@ export class BrandSeoService {
       if (existing) {
         // UPDATE
         const { data, error } = await this.supabase
-          .from('__seo_marque')
+          .from(TABLES.seo_marque)
           .update({
             sm_title: seoData.sm_title,
             sm_descrip: seoData.sm_descrip,
@@ -269,7 +270,7 @@ export class BrandSeoService {
       } else {
         // INSERT
         const { data, error } = await this.supabase
-          .from('__seo_marque')
+          .from(TABLES.seo_marque)
           .insert({
             sm_marque_id: marqueId,
             sm_title: seoData.sm_title || '',

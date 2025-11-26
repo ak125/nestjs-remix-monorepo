@@ -140,7 +140,7 @@ export class VehicleNamingService extends SupabaseBaseService {
         ),
       ];
       const { data: modeles, error: modelesError } = await this.client
-        .from('auto_modele')
+        .from(TABLES.auto_modele)
         .select('modele_id, modele_name, modele_ful_name')
         .in('modele_id', modeleIds);
 
@@ -156,7 +156,7 @@ export class VehicleNamingService extends SupabaseBaseService {
         ),
       ];
       const { data: marques, error: marquesError } = await this.client
-        .from('auto_marque')
+        .from(TABLES.auto_marque)
         .select('marque_id, marque_name')
         .in('marque_id', marqueIds);
 

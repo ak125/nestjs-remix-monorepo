@@ -615,7 +615,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     if (!switches) {
       const { data } = await this.supabase
-        .from('__seo_gamme_car_switch')
+        .from(TABLES.seo_gamme_car_switch)
         .select('sgcs_content, sgcs_alias')
         .eq('sgcs_pg_id', thisPgId);
 
@@ -901,7 +901,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getSeoTemplate(pgId: number): Promise<any> {
     const { data } = await this.supabase
-      .from('__seo_gamme_car')
+      .from(TABLES.seo_gamme_car)
       .select('*')
       .eq('sgc_pg_id', pgId)
       .single();
@@ -910,7 +910,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getItemSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('__seo_item_switch')
+      .from(TABLES.seo_item_switch)
       .select('*')
       .eq('sis_pg_id', pgId);
     return data || [];
@@ -918,7 +918,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
   private async getGammeCarSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('__seo_gamme_car_switch')
+      .from(TABLES.seo_gamme_car_switch)
       .select('*')
       .eq('sgcs_pg_id', pgId);
     return data || [];
@@ -930,7 +930,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   ): Promise<any[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
-      .from('__seo_family_gamme_car_switch')
+      .from(TABLES.seo_family_gamme_car_switch)
       .select('*')
       .eq('sfs_mf_id', mfId)
       .eq('sfs_pg_id', pgId);
@@ -1141,7 +1141,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
 
     // 1. Récupérer toutes les combinaisons pgId/typeId actives
     const { data: allPages } = await this.supabase
-      .from('__seo_gamme_car')
+      .from(TABLES.seo_gamme_car)
       .select('sgc_pg_id, sgc_type_id, sgc_title, sgc_updated_at')
       .not('sgc_title', 'is', null);
 

@@ -11,6 +11,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { TABLES } from '@repo/database-types';
 
 export interface BlogMetadata {
   title: string;
@@ -54,7 +55,7 @@ export class BlogMetadataService {
 
       // 2️⃣ Requête Supabase
       const { data, error } = await this.client
-        .from('__blog_meta_tags_ariane')
+        .from(TABLES.blog_meta_tags_ariane)
         .select('*')
         .eq('mta_alias', alias)
         .single();
@@ -115,7 +116,7 @@ export class BlogMetadataService {
 
       // Requête Supabase
       const { data, error } = await this.client
-        .from('__blog_meta_tags_ariane')
+        .from(TABLES.blog_meta_tags_ariane)
         .select('*')
         .order('mta_alias', { ascending: true });
 
@@ -160,7 +161,7 @@ export class BlogMetadataService {
       }
 
       const { data, error } = await this.client
-        .from('__blog_meta_tags_ariane')
+        .from(TABLES.blog_meta_tags_ariane)
         .select('mta_alias')
         .order('mta_alias', { ascending: true });
 

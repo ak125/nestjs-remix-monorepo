@@ -271,7 +271,7 @@ export class StockManagementService extends SupabaseBaseService {
 
       // Vérifier s'il y a des commandes en cours (simplifié)
       const { data: activeOrders, error: ordersError } = await this.client
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('id, order_id')
         .eq('product_id', productId)
         .in('status', [1, 2, 3]); // statuts actifs

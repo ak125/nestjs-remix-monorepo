@@ -155,7 +155,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 1) refs dans pieces_ref_search
     const searchRefsResult = await this.client
-      .from('pieces_ref_search')
+      .from(TABLES.pieces_ref_search)
       .select('prs_piece_id, prs_ref, prs_search, prs_kind')
       .in('prs_search', uniqueVariants)
       .limit(1000);
@@ -188,7 +188,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       // Utiliser seulement la variante principale pour la performance
       const mainVariant = uniqueVariants[0];
       const fallbackPricesResult = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('pri_piece_id, pri_ref, pri_pm_id, pri_dispo')
         .ilike('pri_ref', `%${mainVariant}%`)
         .eq('pri_dispo', '1')
@@ -237,7 +237,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
       // 3) Charger les prix disponibles (pri_dispo='1')
       const pricesResult = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
         )
@@ -341,7 +341,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
     // 3) Charger les prix disponibles (pri_dispo='1') — colonnes TEXT
     const pricesResult = await this.client
-      .from('pieces_price')
+      .from(TABLES.pieces_price)
       .select(
         'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
       )
@@ -489,7 +489,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     const [marquesResult, gammesResult] = await Promise.all([
       marqueIds.length
         ? this.client
-            .from('pieces_marque')
+            .from(TABLES.pieces_marque)
             .select('pm_id, pm_name, pm_oes')
             .in('pm_id', marqueIds.map(String))
         : Promise.resolve({ data: [] as any[] }),

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface MetaTagsArianeData {
@@ -29,7 +30,7 @@ export class MetaTagsArianeService extends SupabaseBaseService {
       this.logger.log(`🔍 Recherche meta tags pour alias: ${alias}`);
 
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .eq('mta_alias', alias)
         .single();
@@ -64,7 +65,7 @@ export class MetaTagsArianeService extends SupabaseBaseService {
       // L'alias est généralement formaté comme "constructeur-marque-modele-type-{type_id}"
       // On va chercher tous les meta tags qui contiennent le type_id
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .ilike('mta_alias', `%-${typeId}`)
         .limit(1)

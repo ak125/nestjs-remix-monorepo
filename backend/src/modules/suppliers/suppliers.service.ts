@@ -96,7 +96,7 @@ export class SuppliersService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .insert(formattedData)
         .select()
         .single();
@@ -127,7 +127,7 @@ export class SuppliersService extends SupabaseBaseService {
 
     try {
       let query = this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('*', { count: 'exact' });
 
       // Appliquer le filtre de recherche sur les colonnes réelles
@@ -169,7 +169,7 @@ export class SuppliersService extends SupabaseBaseService {
   async getSupplierById(id: string | number) {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('*')
         .eq('spl_id', id.toString())
         .single();
@@ -206,7 +206,7 @@ export class SuppliersService extends SupabaseBaseService {
 
       // Vérifier si la liaison existe déjà
       const { data: existing } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select('id')
         .eq('supplier_id', supplierId)
         .eq('brand_id', brandId)
@@ -226,7 +226,7 @@ export class SuppliersService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .insert(linkData)
         .select()
         .single();
@@ -260,7 +260,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Récupérer tous les fournisseurs actifs
       const { data: suppliers, error } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('*')
         .eq('is_active', true);
 
@@ -362,7 +362,7 @@ export class SuppliersService extends SupabaseBaseService {
   private async checkSupplierCodeExists(code: string): Promise<boolean> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('id')
         .eq('code', code)
         .limit(1);
@@ -427,7 +427,7 @@ export class SuppliersService extends SupabaseBaseService {
 
     // Vérifier si le fournisseur a des liaisons avec des marques
     const { data: brandLinks } = await this.supabase
-      .from('___xtr_supplier_link_pm')
+      .from(TABLES.xtr_supplier_link_pm)
       .select('*')
       .eq('supplier_id', supplier.id);
 
@@ -460,7 +460,7 @@ export class SuppliersService extends SupabaseBaseService {
   ) {
     try {
       const { data: suppliers } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('*')
         .eq('is_active', true)
         .neq('id', excludeSupplierId);
@@ -572,7 +572,7 @@ export class SuppliersService extends SupabaseBaseService {
 
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select(
           `
           *,
@@ -608,7 +608,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Désactiver le fournisseur
       const { error: supplierError } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -619,7 +619,7 @@ export class SuppliersService extends SupabaseBaseService {
 
       // Désactiver ses liaisons
       const { error: linkError } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .update({
           is_active: false,
           updated_at: new Date().toISOString(),
@@ -644,7 +644,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // D'abord récupérer les liens
       const { data: linksData, error: linksError } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select('*')
         .eq('slpm_spl_id', supplierId.toString())
         .limit(50);
@@ -674,7 +674,7 @@ export class SuppliersService extends SupabaseBaseService {
           let brandName = 'À déterminer';
           if (pieceData && pieceData.piece_pg_id) {
             const { data: gammeData } = await this.supabase
-              .from('pieces_gamme')
+              .from(TABLES.pieces_gamme)
               .select('pg_name')
               .eq('pg_id', pieceData.piece_pg_id)
               .single();
@@ -775,7 +775,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Tester la table pieces_gamme
       const { data: gammes, error } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*')
         .limit(5);
 
@@ -908,7 +908,7 @@ export class SuppliersService extends SupabaseBaseService {
         error: sampleError,
         count,
       } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select('*', { count: 'exact' })
         .limit(10);
 
@@ -961,7 +961,7 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       // Test de connexion
       const { data: connectionTest } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('count', { count: 'exact', head: true });
 
       const totalSuppliers = connectionTest || 0;
@@ -971,7 +971,7 @@ export class SuppliersService extends SupabaseBaseService {
 
       // Échantillon de données
       const { data: sampleData } = await this.supabase
-        .from('___xtr_supplier')
+        .from(TABLES.xtr_supplier)
         .select('*')
         .limit(1)
         .single();

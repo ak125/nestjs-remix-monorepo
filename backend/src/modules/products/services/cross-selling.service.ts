@@ -290,7 +290,7 @@ export class CrossSellingService extends SupabaseBaseService {
         if (!currentMfId) {
           this.logger.debug(`🔍 Recherche mc_mf_prime pour pg_id=${pgId}`);
           const { data: catalogData, error: catalogError } = await this.supabase
-            .from('catalog_gamme')
+            .from(TABLES.catalog_gamme)
             .select('mc_mf_prime, mc_pg_id, mc_mf_id')
             .eq('mc_pg_id', pgId)
             .single();
@@ -333,7 +333,7 @@ export class CrossSellingService extends SupabaseBaseService {
         const gammeIds = [...new Set(relationData.map((r) => r.rtp_pg_id))];
         
         const { data: catalogGammesData, error: catalogError } = await this.supabase
-          .from('catalog_gamme')
+          .from(TABLES.catalog_gamme)
           .select('mc_pg_id, mc_mf_prime, mc_sort')
           .in('mc_pg_id', gammeIds)
           .eq('mc_mf_prime', currentMfId)
@@ -462,7 +462,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
         // 🎯 ÉTAPE 3: Récupérer mc_sort depuis catalog_gamme pour tri PHP
         const { data: catalogData } = await this.supabase
-          .from('catalog_gamme')
+          .from(TABLES.catalog_gamme)
           .select('mc_pg_id, mc_sort')
           .in('mc_pg_id', gammeIds);
 
@@ -547,7 +547,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
       // 🎯 TEMPLATE SEO AVEC CACHE
       const { data: seoTemplate } = await this.supabase
-        .from('__seo_gamme_car')
+        .from(TABLES.seo_gamme_car)
         .select('sgc_title, sgc_descrip, sgc_h1, sgc_content')
         .eq('sgc_pg_id', crossGamme.pg_id)
         .single();
@@ -978,7 +978,7 @@ export class CrossSellingService extends SupabaseBaseService {
 
   private async getGammeSwitches(pgId: number): Promise<any[]> {
     const { data } = await this.supabase
-      .from('__seo_gamme_car_switch')
+      .from(TABLES.seo_gamme_car_switch)
       .select('*')
       .eq('sgcs_pg_id', pgId);
     return data || [];
@@ -987,7 +987,7 @@ export class CrossSellingService extends SupabaseBaseService {
   private async getFamilySwitches(mfId: number | undefined): Promise<any[]> {
     if (!mfId) return [];
     const { data } = await this.supabase
-      .from('seo_family_gamme_car_switch')
+      .from(TABLES.seo_family_gamme_car_switch)
       .select('*')
       .eq('sfgcs_mf_id', mfId);
     return data || [];

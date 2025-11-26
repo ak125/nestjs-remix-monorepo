@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 
@@ -45,7 +46,7 @@ export class SimpleConfigService extends SupabaseBaseService {
 
       // Charger depuis la base de données
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('*')
         .eq('cnf_id', '1')
         .single();
@@ -98,7 +99,7 @@ export class SimpleConfigService extends SupabaseBaseService {
       const updateData = { [key]: value };
 
       const { error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .update(updateData)
         .eq('cnf_id', '1');
 
@@ -169,7 +170,7 @@ export class SimpleConfigService extends SupabaseBaseService {
   async testDatabaseConnection(): Promise<{ status: string; message: string }> {
     try {
       const { data, error } = await this.supabase
-        .from('___config')
+        .from(TABLES.config)
         .select('cnf_id')
         .limit(1);
 

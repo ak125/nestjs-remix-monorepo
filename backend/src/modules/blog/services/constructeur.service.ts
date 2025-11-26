@@ -1,3 +1,4 @@
+import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
@@ -123,7 +124,7 @@ export class ConstructeurService {
     const modelCounts = await Promise.allSettled(
       articles.map(async (article) => {
         const { count } = await client
-          .from('__blog_advice_cross')
+          .from(TABLES.blog_advice_cross)
           .select('*', { count: 'exact', head: true })
           .eq('bac_ba_id', article.legacy_id?.toString() || '0');
 
@@ -194,12 +195,12 @@ export class ConstructeurService {
 
       // Construction requête avec filtres
       let query = client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*')
         .range(offset, offset + limit - 1);
 
       let countQuery = client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*', { count: 'exact', head: true });
 
       // Application des filtres
@@ -307,7 +308,7 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeur } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*')
         .eq('bsm_id', id.toString())
         .single();
@@ -346,7 +347,7 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeur } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*')
         .or(
           [
@@ -390,7 +391,7 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: constructeursList } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*')
         // .order() removed - column doesn't exist
         .limit(limit);
@@ -433,7 +434,7 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: constructeursList } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*')
         .order('bsm_marque_id', { ascending: true });
 
@@ -491,20 +492,20 @@ export class ConstructeurService {
         { count: modelsCount },
       ] = await Promise.all([
         client
-          .from('__blog_seo_marque')
+          .from(TABLES.blog_seo_marque)
           .select('bsm_marque_id, bsm_constructeur, bsm_visit'),
         client
-          .from('__blog_seo_marque')
+          .from(TABLES.blog_seo_marque)
           .select('*')
           // .order() removed - column doesn't exist
           .limit(5),
         client
-          .from('__blog_seo_marque')
+          .from(TABLES.blog_seo_marque)
           .select('*')
           // .order() removed - column doesn't exist
           .limit(5),
         client
-          .from('__blog_advice_cross')
+          .from(TABLES.blog_advice_cross)
           .select('bac_ba_id', { count: 'exact', head: true }),
       ]);
 
@@ -696,9 +697,9 @@ export class ConstructeurService {
       const searchTermClean = searchTerm.toLowerCase().trim();
 
       // Construction requête de recherche avancée
-      let query = client.from('__blog_seo_marque').select('*');
+      let query = client.from(TABLES.blog_seo_marque).select('*');
       let countQuery = client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('*', { count: 'exact', head: true });
 
       // Recherche multi-colonnes avec priorité
@@ -817,7 +818,7 @@ export class ConstructeurService {
     try {
       // Recherche de constructeurs similaires
       const { data: suggestions } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('bsm_marque_id')
         .or([
           `bc_constructeur.ilike.%${searchTerm.charAt(0)}%`,
@@ -853,7 +854,7 @@ export class ConstructeurService {
 
       const client = this.supabaseService.getClient();
       const { data: constructeurs } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('bsm_keywords, bsm_visit')
         .not('bsm_keywords', 'is', null);
 
@@ -900,7 +901,7 @@ export class ConstructeurService {
       const client = this.supabaseService.getClient();
 
       const { data: models } = await client
-        .from('__blog_advice_cross')
+        .from(TABLES.blog_advice_cross)
         .select('*')
         .eq('bac_ba_id', constructeurId.toString())
         .order('bcm_modele', { ascending: true });
@@ -925,7 +926,7 @@ export class ConstructeurService {
 
       // Récupérer les vues actuelles
       const { data: current } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .select('bc_visit')
         .eq('bsm_id', id.toString())
         .single();
@@ -936,7 +937,7 @@ export class ConstructeurService {
 
       // Mettre à jour
       const { error } = await client
-        .from('__blog_seo_marque')
+        .from(TABLES.blog_seo_marque)
         .update({ bc_visit: newViews.toString() })
         .eq('bsm_id', id.toString());
 
@@ -976,21 +977,21 @@ export class ConstructeurService {
         { count: modelsCount },
       ] = await Promise.all([
         client
-          .from('__blog_advice_h2')
+          .from(TABLES.blog_advice_h2)
           .select('*')
           .eq('ba2_ba_id', constructeur.bsm_id)
           .order('ba2_id')
           .then(({ data }: any) => ({ data: data || [] }))
           .catch(() => ({ data: [] })),
         client
-          .from('__blog_advice_h3')
+          .from(TABLES.blog_advice_h3)
           .select('*')
           .eq('bc3_bc_id', constructeur.bsm_id)
           .order('ba3_id')
           .then(({ data }: any) => ({ data: data || [] }))
           .catch(() => ({ data: [] })),
         client
-          .from('__blog_advice_cross')
+          .from(TABLES.blog_advice_cross)
           .select('*', { count: 'exact', head: true })
           .eq('bac_ba_id', constructeur.bsm_id)
           .then(({ count }: any) => ({ count: count || 0 }))

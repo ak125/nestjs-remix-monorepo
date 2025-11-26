@@ -126,7 +126,7 @@ export class RedirectService extends SupabaseBaseService {
       const result = await this.executeWithRetry(
         async () => {
           const { data: redirects, error } = await this.supabase
-            .from('___xtr_msg')
+            .from(TABLES.xtr_msg)
             .select('*')
             .eq('msg_subject', 'REDIRECT_RULE')
             .eq('msg_open', '1') // Actif
@@ -248,7 +248,7 @@ export class RedirectService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert(newRule)
         .select()
         .single();
@@ -299,7 +299,7 @@ export class RedirectService extends SupabaseBaseService {
     try {
       // Récupérer la règle existante
       const { data: existing, error: fetchError } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_id', id)
         .eq('msg_subject', 'REDIRECT_RULE')
@@ -320,7 +320,7 @@ export class RedirectService extends SupabaseBaseService {
       };
 
       const { error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_content: JSON.stringify(updatedMetadata),
           msg_open: updatedMetadata.is_active ? '1' : '0',
@@ -348,7 +348,7 @@ export class RedirectService extends SupabaseBaseService {
     try {
       // Au lieu de supprimer, on marque comme inactif et fermé
       const { error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .update({
           msg_open: '0', // Inactif
           msg_close: '1', // Fermé/archivé
@@ -375,7 +375,7 @@ export class RedirectService extends SupabaseBaseService {
   async getAllRedirectRules(): Promise<RedirectRule[]> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_subject', 'REDIRECT_RULE')
         .order('msg_date', { ascending: false });
@@ -534,7 +534,7 @@ export class RedirectService extends SupabaseBaseService {
     try {
       // Récupérer la règle actuelle
       const { data: currentRule } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('msg_content')
         .eq('msg_id', ruleId)
         .single();
@@ -545,7 +545,7 @@ export class RedirectService extends SupabaseBaseService {
         metadata.last_hit = new Date().toISOString();
 
         await this.supabase
-          .from('___xtr_msg')
+          .from(TABLES.xtr_msg)
           .update({
             msg_content: JSON.stringify(metadata),
           })

@@ -74,12 +74,12 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       const [refSearchResult, refOemResult] = await Promise.all([
         // Recherche par référence équipementier (indexation)
         this.client
-          .from('pieces_ref_search')
+          .from(TABLES.pieces_ref_search)
           .select('prs_piece_id, prs_kind, prs_ref')
           .or(queryVariants.map((v) => `prs_search.eq.${v}`).join(',')),
         // Recherche par référence OEM constructeur (indexation)
         this.client
-          .from('pieces_ref_oem')
+          .from(TABLES.pieces_ref_oem)
           .select('pro_piece_id, pro_oem')
           .or(queryVariants.map((v) => `pro_oem_serach.eq.${v}`).join(',')),
         // Recherche DIRECTE dans pieces (fallback automatique)
@@ -203,7 +203,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         const [marquesResult, gammesResult] = await Promise.all([
           marqueIds.length > 0
             ? this.client
-                .from('pieces_marque')
+                .from(TABLES.pieces_marque)
                 .select('pm_id, pm_name')
                 .in('pm_id', marqueIds)
             : Promise.resolve({ data: [] }),
@@ -340,7 +340,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         await Promise.all([
           // Prix des pièces
           this.client
-            .from('pieces_price')
+            .from(TABLES.pieces_price)
             .select('*')
             .in('pri_piece_id', pieceIds)
             .eq('pri_dispo', '1')
@@ -348,7 +348,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
           // Images des pièces
           this.client
-            .from('pieces_media_img')
+            .from(TABLES.pieces_media_img)
             .select('pmi_piece_id, pmi_folder, pmi_name')
             .in('pmi_piece_id', pieceIds)
             .eq('pmi_display', 1)
@@ -356,7 +356,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
           // Marques/équipementiers
           this.client
-            .from('pieces_marque')
+            .from(TABLES.pieces_marque)
             .select('*')
             .in('pm_id', marqueIds)
             .eq('pm_display', 1),

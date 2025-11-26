@@ -15,7 +15,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
       // 1️⃣ RÉCUPÉRATION DES RELATIONS SIMPLIFIÉE
       const relationsResult = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_piece_id, rtp_pm_id, rtp_psf_id, rtp_type_id, rtp_pg_id')
         .eq('rtp_type_id', typeId)
         .eq('rtp_pg_id', pgId);
@@ -64,13 +64,13 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         await Promise.all([
           // MARQUES avec logos
           this.client
-            .from('pieces_marque')
+            .from(TABLES.pieces_marque)
             .select('pm_id, pm_name, pm_logo, pm_alias, pm_nb_stars, pm_oes')
             .in('pm_id', pmIds),
 
           // PRIX avec meilleur type
           this.client
-            .from('pieces_price')
+            .from(TABLES.pieces_price)
             .select(
               'pri_piece_id, pri_vente_ttc, pri_consigne_ttc, pri_type, pri_dispo',
             )
@@ -88,7 +88,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
 
           // FILTRES latéraux
           this.client
-            .from('pieces_side_filtre')
+            .from(TABLES.pieces_side_filtre)
             .select('psf_id, psf_side')
             .in('psf_id', relations.map((r) => r.rtp_psf_id).filter(Boolean)),
         ]);

@@ -51,7 +51,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
         <img
           src={normalizeImageUrl(currentImage)}
           alt={alt}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-contain"
           loading="lazy"
           onError={(e) => {
             e.currentTarget.style.display = 'none';
@@ -67,7 +67,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
       <img
         src={normalizeImageUrl(currentImage)}
         alt={alt}
-        className="w-full h-full object-cover transition-transform duration-500"
+        className="w-full h-full object-contain"
         loading="lazy"
       />
       

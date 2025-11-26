@@ -465,6 +465,17 @@ export interface PromoCodes {
   stackable: string | null;
 }
 
+export interface QuantityDiscounts {
+  id: number;
+  product_id: number;
+  min_quantity: number;
+  discount_percent: number | null;
+  discount_amount: number | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ShippingRatesCache {
   id: string | null;
   zip_code: string | null;
@@ -1223,6 +1234,7 @@ export type TableName =
   | 'products'
   | 'promo_codes'
   | 'promo_usage'
+  | 'quantity_discounts'
   | 'sessions'
   | 'shipping_rates_cache'
   | 'users'
@@ -1322,6 +1334,7 @@ export interface Database {
   products: Record<string, any>; // Table vide ou manquante (utiliser 'pieces' à la place)
   promo_codes: PromoCodes;
   promo_usage: Record<string, any>; // Table vide ou manquante
+  quantity_discounts: QuantityDiscounts;
   sessions: Record<string, any>; // Table vide ou manquante
   shipping_rates_cache: ShippingRatesCache;
   users: Users;

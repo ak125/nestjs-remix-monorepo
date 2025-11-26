@@ -125,7 +125,7 @@ export class PaymentDataService extends SupabaseBaseService {
       // 2. Si orderId fourni, mettre à jour ___xtr_order
       if (paymentData.orderId) {
         const { error: orderError } = await this.supabase
-          .from('___xtr_order')
+          .from(TABLES.xtr_order)
           .update({
             ord_is_pay: '0', // 0 = en attente de paiement
             ord_date_pay: null,
@@ -230,7 +230,7 @@ export class PaymentDataService extends SupabaseBaseService {
       // Si paiement completé et orderId existe, mettre à jour ___xtr_order
       if (status === 'completed' && data.orderid) {
         await this.supabase
-          .from('___xtr_order')
+          .from(TABLES.xtr_order)
           .update({
             ord_is_pay: '1',
             ord_date_pay: new Date().toISOString(),

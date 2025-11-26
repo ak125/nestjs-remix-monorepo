@@ -29,7 +29,7 @@ export class UserDataService extends SupabaseBaseService {
   async getUserById(userId: string): Promise<User> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('customer_id', userId)
         .single();
@@ -51,7 +51,7 @@ export class UserDataService extends SupabaseBaseService {
   async getUserByEmail(email: string): Promise<User> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('customer_email', email)
         .single();
@@ -73,7 +73,7 @@ export class UserDataService extends SupabaseBaseService {
   async createUser(userData: Partial<User>): Promise<User> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .insert({
           customer_email: userData.email,
           customer_firstname: userData.firstName,
@@ -113,7 +113,7 @@ export class UserDataService extends SupabaseBaseService {
       if (updates.level) updateData.customer_level = updates.level;
 
       const { data, error } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           ...updateData,
           customer_updated_at: new Date(),

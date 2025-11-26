@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface ArchiveFilters {
@@ -36,7 +37,7 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Vérifier existence
       const { data: order, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('order_id', orderId)
         .single();
@@ -47,7 +48,7 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Marquer comme archivée
       const { error: updateError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           is_archived: true,
           archived_at: new Date().toISOString(),
@@ -75,7 +76,7 @@ export class OrderArchiveService extends SupabaseBaseService {
       this.logger.log(`Restauration commande #${orderId}`);
 
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           is_archived: false,
           archived_at: null,
@@ -103,7 +104,7 @@ export class OrderArchiveService extends SupabaseBaseService {
       this.logger.log(`Récupération commande archivée #${orderId}`);
 
       const { data: order, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('order_id', orderId)
         .eq('is_archived', true)
@@ -117,13 +118,13 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Récupérer les lignes
       const { data: lines } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('order_id', orderId);
 
       // Récupérer l'historique
       const { data: statusHistory } = await this.supabase
-        .from('___xtr_order_status')
+        .from(TABLES.xtr_order_status)
         .select('*')
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
@@ -149,7 +150,7 @@ export class OrderArchiveService extends SupabaseBaseService {
       const offset = (page - 1) * limit;
 
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           '*, customer:customer_id(cst_id, cst_mail, cst_fname, cst_name)',
           {
@@ -230,7 +231,7 @@ export class OrderArchiveService extends SupabaseBaseService {
     try {
       // Récupérer commande complète
       const { data: order } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('order_id', orderId)
         .single();
@@ -241,13 +242,13 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Récupérer lignes
       const { data: lines } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('order_id', orderId);
 
       // Récupérer historique statuts
       const { data: statusHistory } = await this.supabase
-        .from('___xtr_order_status')
+        .from(TABLES.xtr_order_status)
         .select('*')
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
@@ -282,7 +283,7 @@ export class OrderArchiveService extends SupabaseBaseService {
   async getArchiveStats(customerId?: number): Promise<any> {
     try {
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: false })
         .eq('is_archived', true);
 
@@ -331,7 +332,7 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Rechercher commandes temporaires anciennes
       const { data: tempOrders } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('order_id')
         .eq('order_status', 0) // 0 = temporaire
         .lt('created_at', yesterday.toISOString());
@@ -345,13 +346,13 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Supprimer lignes
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .delete()
         .in('order_id', orderIds);
 
       // Supprimer commandes
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .delete()
         .in('order_id', orderIds);
 
@@ -383,7 +384,7 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Rechercher commandes livrées anciennes non archivées
       const { data: oldOrders } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('order_id')
         .eq('order_status', 5) // 5 = livrée
         .eq('is_archived', false)
@@ -398,7 +399,7 @@ export class OrderArchiveService extends SupabaseBaseService {
 
       // Archiver en masse
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           is_archived: true,
           archived_at: new Date().toISOString(),

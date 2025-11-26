@@ -143,7 +143,7 @@ export class OrdersService extends SupabaseBaseService {
       );
 
       const { data: createdOrders, error: orderError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .insert(orderToInsert)
         .select();
 
@@ -200,13 +200,13 @@ export class OrdersService extends SupabaseBaseService {
       }));
 
       const { error: linesError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .insert(orderLines);
 
       if (linesError) {
         this.logger.error('Erreur création lignes:', linesError);
         // Rollback manuel - supprimer la commande
-        await this.supabase.from('___xtr_order').delete().eq('ord_id', orderId);
+        await this.supabase.from(TABLES.xtr_order).delete().eq('ord_id', orderId);
         throw new BadRequestException(
           `Échec création lignes: ${linesError.message}`,
         );
@@ -234,7 +234,7 @@ export class OrdersService extends SupabaseBaseService {
     try {
       // Simplifier sans JOIN pour éviter erreurs de relation
       const { data: order, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*')
         .eq('ord_id', orderId)
         .single();
@@ -245,7 +245,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Récupérer lignes
       const { data: lines } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('orl_ord_id', orderId);
 
@@ -254,7 +254,7 @@ export class OrdersService extends SupabaseBaseService {
       if (order.ord_cst_id) {
         this.logger.log(`🔍 Fetching customer with ID: ${order.ord_cst_id}`);
         const { data: customerData, error: customerError } = await this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select(
             'cst_id, cst_fname, cst_name, cst_mail, cst_tel, cst_gsm, cst_address, cst_zip_code, cst_city, cst_country',
           )
@@ -298,7 +298,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Utiliser les vrais noms de colonnes Supabase (préfixe ord_)
       let query = this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact' });
 
       // Filtres
@@ -410,7 +410,7 @@ export class OrdersService extends SupabaseBaseService {
       }
 
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update(dataToUpdate)
         .eq('order_id', orderId);
 
@@ -472,13 +472,13 @@ export class OrdersService extends SupabaseBaseService {
 
       // Supprimer lignes
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .delete()
         .eq('order_id', orderId);
 
       // Supprimer commande
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .delete()
         .eq('order_id', orderId);
 
@@ -510,7 +510,7 @@ export class OrdersService extends SupabaseBaseService {
    */
   async getOrderStats(customerId?: number): Promise<any> {
     try {
-      let query = this.supabase.from('___xtr_order').select('*', {
+      let query = this.supabase.from(TABLES.xtr_order).select('*', {
         count: 'exact',
         head: false,
       });

@@ -40,7 +40,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Récupérer ligne actuelle
       const { data: line, error } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('*')
         .eq('orl_id', lineId)
         .eq('orl_ord_id', orderId)
@@ -68,7 +68,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
         // 1. Passer en statut 5 d'abord
         await this.supabase
-          .from('___xtr_order_line')
+          .from(TABLES.xtr_order_line)
           .update({ orl_orls_id: 5 })
           .eq('orl_id', lineId);
 
@@ -84,7 +84,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Mettre à jour
       const { error: updateError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update(updateData)
         .eq('orl_id', lineId);
 
@@ -180,7 +180,7 @@ export class OrderActionsService extends SupabaseBaseService {
       };
 
       const { data: createdLine, error: insertError } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .insert(newLine)
         .select()
         .single();
@@ -191,19 +191,19 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // 3. Mettre à jour ligne originale avec equiv_id
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({ orl_equiv_id: createdLine.orl_id })
         .eq('orl_id', originalLineId);
 
       // 4. Envoyer message client
       const { data: order } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_cst_id')
         .eq('ord_id', orderId)
         .single();
 
       if (order) {
-        await this.supabase.from('___xtr_msg').insert({
+        await this.supabase.from(TABLES.xtr_msg).insert({
           msg_cst_id: order.ord_cst_id,
           msg_ord_id: orderId,
           msg_cnfa_id: userId,
@@ -232,7 +232,7 @@ export class OrderActionsService extends SupabaseBaseService {
     try {
       // Passer ligne équivalente en statut 92
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({ orl_orls_id: 92 })
         .eq('orl_id', equivalentLineId)
         .eq('orl_ord_id', orderId);
@@ -255,7 +255,7 @@ export class OrderActionsService extends SupabaseBaseService {
     try {
       // Récupérer ligne équivalente pour trouver l'originale
       const { data: equivLine } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('orl_id')
         .eq('orl_ord_id', orderId)
         .eq('orl_equiv_id', equivalentLineId)
@@ -267,7 +267,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // 1. Marquer équiv comme refusée (statut 93 + equiv_id vers originale)
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({
           orl_orls_id: 93,
           orl_equiv_id: equivLine.orl_id,
@@ -276,7 +276,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // 2. Reset equiv_id de la ligne originale
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({ orl_equiv_id: 0 })
         .eq('orl_id', equivLine.orl_id);
 
@@ -298,14 +298,14 @@ export class OrderActionsService extends SupabaseBaseService {
     try {
       // Récupérer ligne équiv + originale
       const { data: equivLine } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
         .eq('orl_ord_id', orderId)
         .eq('orl_equiv_id', equivalentLineId)
         .single();
 
       const { data: origLine } = await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .select('orl_id, orl_art_price_sell_ttc, orl_art_deposit_ttc')
         .eq('orl_id', equivalentLineId)
         .single();
@@ -323,13 +323,13 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // 1. Passer équiv en statut 5 (PD)
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({ orl_orls_id: 5 })
         .eq('orl_id', equivalentLineId);
 
       // 2. Passer originale en statut 2 (Annulée)
       await this.supabase
-        .from('___xtr_order_line')
+        .from(TABLES.xtr_order_line)
         .update({ orl_orls_id: 2 })
         .eq('orl_id', equivLine.orl_id);
 
@@ -383,7 +383,7 @@ export class OrderActionsService extends SupabaseBaseService {
    */
   async getOrder(orderId: string): Promise<any> {
     const { data, error } = await this.supabase
-      .from('___xtr_order')
+      .from(TABLES.xtr_order)
       .select('*')
       .eq('ord_id', orderId)
       .single();
@@ -400,7 +400,7 @@ export class OrderActionsService extends SupabaseBaseService {
    */
   async getCustomer(customerId: string): Promise<any> {
     const { data, error } = await this.supabase
-      .from('___xtr_customer')
+      .from(TABLES.xtr_customer)
       .select('*')
       .eq('cst_id', customerId)
       .single();
@@ -437,7 +437,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Mettre à jour statut → 3 (En cours)
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           ord_ords_id: '3', // En cours
           ord_updated_at: new Date().toISOString(),
@@ -486,7 +486,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Mettre à jour avec numéro de suivi
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           ord_ords_id: '4', // Expédiée
           ord_date_ship: new Date().toISOString(),
@@ -531,7 +531,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Mettre à jour
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           ord_ords_id: '5', // Livrée
           ord_date_deliv: new Date().toISOString(),
@@ -579,7 +579,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       // Mettre à jour
       const { error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .update({
           ord_ords_id: '6', // Annulée
           ord_cancel_date: new Date().toISOString(),

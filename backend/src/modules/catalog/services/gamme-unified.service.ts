@@ -100,7 +100,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // 1. Récupérer les familles
       const { data: families, error: familiesError } = await this.supabase
-        .from('catalog_family')
+        .from(TABLES.catalog_family)
         .select('*')
         .eq('mf_display', '1')
         .order('mf_sort', { ascending: true });
@@ -280,7 +280,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       // Requête directe sur la table __seo_gamme_car
       const { data, error } = await this.supabase
-        .from('__seo_gamme_car')
+        .from(TABLES.seo_gamme_car)
         .select(
           'sgc_id, sgc_pg_id, sgc_title, sgc_descrip, sgc_h1, sgc_content, sgc_preview',
         )
@@ -454,7 +454,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
     // 🚀 OPTIMISATION: Récupérer type d'abord pour obtenir marqueId/modeleId
     // 🎯 PHP: Ajouter type_body et type_fuel (NOMS CORRECTS)
     const { data: typeData, error: typeError } = await this.supabase
-      .from('auto_type')
+      .from(TABLES.auto_type)
       .select(
         'type_id, type_name, type_power_ps, type_year_from, type_year_to, type_marque_id, type_modele_id, type_body, type_fuel',
       )
@@ -476,21 +476,21 @@ export class GammeUnifiedService extends SupabaseBaseService {
     const [marqueResult, modeleResult, motorCodesResult] = await Promise.all([
       finalMarqueId
         ? this.supabase
-            .from('auto_marque')
+            .from(TABLES.auto_marque)
             .select('marque_id, marque_name')
             .eq('marque_id', finalMarqueId)
             .single()
         : Promise.resolve({ data: null, error: null }),
       finalModeleId
         ? this.supabase
-            .from('auto_modele')
+            .from(TABLES.auto_modele)
             .select('modele_id, modele_name')
             .eq('modele_id', finalModeleId)
             .single()
         : Promise.resolve({ data: null, error: null }),
       // 🎯 PHP: Récupérer codes moteur depuis auto_type_motor_code
       this.supabase
-        .from('auto_type_motor_code')
+        .from(TABLES.auto_type_motor_code)
         .select('tmc_code')
         .eq('tmc_type_id', typeId),
     ]);

@@ -338,7 +338,7 @@ export class HealthCheckService extends SupabaseBaseService {
     try {
       // Test rapide base de données
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id')
         .limit(1);
 
