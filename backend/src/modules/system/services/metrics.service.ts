@@ -101,10 +101,10 @@ export class MetricsService extends SupabaseBaseService {
       // Utiliser les requêtes existantes optimisées
       const [usersCount, activeUsersCount] = await Promise.all([
         this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select('*', { count: 'exact', head: true }),
         this.supabase
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .select('*', { count: 'exact', head: true })
           .eq('cst_activ', '1'),
       ]);
@@ -114,7 +114,7 @@ export class MetricsService extends SupabaseBaseService {
       yesterday.setDate(yesterday.getDate() - 1);
 
       const { data: recentOrders } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_total_ttc, ord_is_pay')
         .gte('ord_date_order', yesterday.toISOString());
 
@@ -179,13 +179,13 @@ export class MetricsService extends SupabaseBaseService {
 
       const [sitemapCount, , optimizedCount] = await Promise.all([
         this.supabase
-          .from('__sitemap_p_link')
+          .from(TABLES.sitemap_p_link)
           .select('*', { count: 'exact', head: true }),
         this.supabase
-          .from('___meta_tags_ariane')
+          .from(TABLES.meta_tags_ariane)
           .select('*', { count: 'exact', head: true }),
         this.supabase
-          .from('___meta_tags_ariane')
+          .from(TABLES.meta_tags_ariane)
           .select('*', { count: 'exact', head: true })
           .not('meta_title', 'is', null)
           .not('meta_description', 'is', null),
@@ -291,7 +291,7 @@ export class MetricsService extends SupabaseBaseService {
   private async testDatabaseConnection(): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id')
         .limit(1);
       return !error;

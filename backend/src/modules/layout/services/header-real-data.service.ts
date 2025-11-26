@@ -250,11 +250,11 @@ export class HeaderRealDataService extends SupabaseBaseService {
   private async getUserStats(): Promise<{ total: number; active: number }> {
     try {
       const { count: total, error: totalError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true });
 
       const { count: active, error: activeError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true })
         .eq('customer_active', true);
 
@@ -311,12 +311,12 @@ export class HeaderRealDataService extends SupabaseBaseService {
   private async getOrderStats(): Promise<{ active: number; pending: number }> {
     try {
       const { count: active, error: activeError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .in('order_status', ['pending', 'processing']);
 
       const { count: pending, error: pendingError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .eq('order_status', 'pending');
 
@@ -347,7 +347,7 @@ export class HeaderRealDataService extends SupabaseBaseService {
   } | null> {
     try {
       const { data: user, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', parseInt(userId))
         .single();

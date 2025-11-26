@@ -139,7 +139,7 @@ export class BlogService {
 
       // Insérer dans les tables modernes
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .insert(newArticle)
         .select()
         .single();
@@ -181,7 +181,7 @@ export class BlogService {
       updateData.updatedAt = new Date();
 
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .update(updateData)
         .eq('id', id)
         .select()
@@ -224,7 +224,7 @@ export class BlogService {
 
       // Recherche dans les conseils (titre, contenu, résumé)
       const { data, count } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact' })
         .or(
           `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_resume.ilike.%${query}%`,
@@ -276,7 +276,7 @@ export class BlogService {
 
       // 2. Trouver l'article le plus récent pour cette gamme
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_pg_id', gammeData.pg_id)
         .order('ba_update', { ascending: false })
@@ -334,7 +334,7 @@ export class BlogService {
       this.logger.log(`📰 Chargement articles croisés pour BA_ID: ${ba_id}`);
 
       const { data: crossData } = await this.supabaseService.client
-        .from('__blog_advice_cross')
+        .from(TABLES.blog_advice_cross)
         .select('bac_ba_id_cross')
         .eq('bac_ba_id', ba_id);
 
@@ -353,7 +353,7 @@ export class BlogService {
 
       // Charger les articles complets
       const { data: articles } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .in('ba_id', crossIds)
         .order('ba_update', { ascending: false });
@@ -651,7 +651,7 @@ export class BlogService {
     try {
       // Chercher dans toutes les tables via supabase
       const { data, error } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_alias', slug)
         .single();
@@ -659,7 +659,7 @@ export class BlogService {
       if (error || !data) {
         // Essayer dans les guides
         const { data: guideData } = await this.supabaseService.client
-          .from('__blog_guide')
+          .from(TABLES.blog_guide)
           .select('*')
           .eq('bg_alias', slug)
           .single();
@@ -689,7 +689,7 @@ export class BlogService {
 
       // Chercher d'abord dans la table moderne
       const { data: modernArticle } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('id', id)
         .single();
@@ -700,7 +700,7 @@ export class BlogService {
 
       // Chercher dans les tables legacy
       const { data: adviceData } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_id', id)
         .single();
@@ -711,7 +711,7 @@ export class BlogService {
 
       // Chercher dans les guides
       const { data: guideData } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_id', id)
         .single();
@@ -752,7 +752,7 @@ export class BlogService {
 
       // Construction de la requête de base
       let query = this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact' });
 
       // Filtre par statut si spécifié
@@ -814,12 +814,12 @@ export class BlogService {
 
       // Statistiques des conseils
       const { data: adviceStats } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_visit, ba_create, ba_update');
 
       // Statistiques des guides
       const { data: guideStats } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_visit, bg_create, bg_update');
 
       const totalAdvice = adviceStats?.length || 0;
@@ -910,7 +910,7 @@ export class BlogService {
   async getPopularArticles(limit: number = 10): Promise<BlogArticle[]> {
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_visit', { ascending: false })
         .limit(limit);
@@ -934,7 +934,7 @@ export class BlogService {
   ): Promise<BlogArticle> {
     // Charger d'abord les H2
     const { data: h2Sections } = await this.supabaseService.client
-      .from('__blog_advice_h2')
+      .from(TABLES.blog_advice_h2)
       .select('*')
       .eq('ba2_ba_id', advice.ba_id)
       .order('ba2_id');
@@ -946,7 +946,7 @@ export class BlogService {
     let h3Sections: any[] = [];
     if (h2Ids.length > 0) {
       const { data: h3Data } = await this.supabaseService.client
-        .from('__blog_advice_h3')
+        .from(TABLES.blog_advice_h3)
         .select('*')
         .in('ba3_ba2_id', h2Ids)
         .order('ba3_id');
@@ -1150,7 +1150,7 @@ export class BlogService {
 
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_views', { ascending: false })
         .limit(limit);
@@ -1178,7 +1178,7 @@ export class BlogService {
 
     try {
       const { data } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .order('ba_date_add', { ascending: false })
         .limit(limit);
@@ -1402,7 +1402,7 @@ export class BlogService {
   ): Promise<BlogArticle | null> {
     try {
       const { data: adviceData } = await this.supabaseService.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_alias', slug)
         .single();
@@ -1412,7 +1412,7 @@ export class BlogService {
       }
 
       const { data: guideData } = await this.supabaseService.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_alias', slug)
         .single();
@@ -1633,7 +1633,7 @@ export class BlogService {
       this.logger.log(`🔤 Récupération switches SEO pour pg_id=${pg_id}`);
 
       const { data, error } = await this.supabaseService.client
-        .from('__seo_item_switch')
+        .from(TABLES.seo_item_switch)
         .select('*')
         .eq('sis_pg_id', pg_id.toString())
         .order('sis_alias', { ascending: true });
@@ -1712,7 +1712,7 @@ export class BlogService {
 
       // Charger les H2
       const { data: h2Data } = await this.supabaseService.client
-        .from('__blog_advice_h2')
+        .from(TABLES.blog_advice_h2)
         .select('*')
         .eq('ba2_ba_id', ba_id)
         .order('ba2_id');
@@ -1724,7 +1724,7 @@ export class BlogService {
       let h3Data: any[] = [];
       if (h2Ids.length > 0) {
         const { data } = await this.supabaseService.client
-          .from('__blog_advice_h3')
+          .from(TABLES.blog_advice_h3)
           .select('*')
           .in('ba3_ba2_id', h2Ids)
           .order('ba3_id');
@@ -1760,7 +1760,7 @@ export class BlogService {
 
       // Récupérer quelques H3
       const { data: h3Samples } = await this.supabaseService.client
-        .from('__blog_advice_h3')
+        .from(TABLES.blog_advice_h3)
         .select('ba3_ba2_id, ba3_h3')
         .limit(10);
 
@@ -1776,7 +1776,7 @@ export class BlogService {
 
       // Récupérer les H2 correspondants pour avoir les ba_id
       const { data: h2Data } = await this.supabaseService.client
-        .from('__blog_advice_h2')
+        .from(TABLES.blog_advice_h2)
         .select('ba2_id, ba2_ba_id, ba2_h2')
         .in('ba2_id', ba2Ids);
 

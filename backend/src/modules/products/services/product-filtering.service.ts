@@ -193,11 +193,12 @@ export class ProductFilteringService extends SupabaseBaseService {
       .from(TABLES.pieces_side_filtre)
       .select('psf_id, psf_side, psf_sort, psf_display')
       .in('psf_id', psfIds)
-      .neq('psf_id', '9999') // Exclusion selon PHP
+      // ⚠️ Filtre .neq('psf_id', '9999') DÉSACTIVÉ - utilise fallback intelligent
       .eq('psf_display', '1')
       .order('psf_sort');
 
-    if (!sides || sides.length === 0) {
+    // ✅ Afficher filtres SEULEMENT si > 1 côté disponible - logique PHP if(num_rows > 1)
+    if (!sides || sides.length <= 1) {
       return { type: 'side', name: 'Côté du Véhicule', options: [] };
     }
 

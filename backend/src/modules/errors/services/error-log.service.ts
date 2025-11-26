@@ -84,7 +84,7 @@ export class ErrorLogService extends SupabaseBaseService {
         msg_close: '0', // Ouvert
       };
 
-      const { error } = await this.supabase.from('___xtr_msg').insert(errorLog);
+      const { error } = await this.supabase.from(TABLES.xtr_msg).insert(errorLog);
 
       if (error) {
         this.logger.error('Failed to log error:', error);
@@ -140,7 +140,7 @@ export class ErrorLogService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .insert(errorLog)
         .select()
         .single();
@@ -208,7 +208,7 @@ export class ErrorLogService extends SupabaseBaseService {
       };
 
       // Insérer les statistiques comme un message spécialisé
-      const { error } = await this.supabase.from('___xtr_msg').insert({
+      const { error } = await this.supabase.from(TABLES.xtr_msg).insert({
         msg_id: this.generateMessageId(),
         msg_cst_id: null,
         msg_cnfa_id: null,
@@ -238,7 +238,7 @@ export class ErrorLogService extends SupabaseBaseService {
   async getErrorStatistics(startDate: Date, endDate: Date) {
     try {
       const { data } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .eq('msg_subject', 'ERROR_STATISTICS')
         .gte('msg_date', startDate.toISOString())
@@ -274,7 +274,7 @@ export class ErrorLogService extends SupabaseBaseService {
   async getRecentErrors(limit: number = 100) {
     try {
       const { data } = await this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*')
         .like('msg_subject', 'ERROR_%')
         .neq('msg_subject', 'ERROR_STATISTICS')
@@ -329,7 +329,7 @@ export class ErrorLogService extends SupabaseBaseService {
       const { page = 1, limit = 50, resolved, startDate, endDate } = options;
 
       let query = this.supabase
-        .from('___xtr_msg')
+        .from(TABLES.xtr_msg)
         .select('*', { count: 'exact' })
         .order('msg_date', { ascending: false });
 

@@ -39,7 +39,7 @@ export class AddressesService extends SupabaseBaseService {
   async getBillingAddress(customerId: number): Promise<BillingAddress | null> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer_billing_address')
+        .from(TABLES.xtr_customer_billing_address)
         .select('*')
         .eq('customer_id', customerId)
         .single();
@@ -91,7 +91,7 @@ export class AddressesService extends SupabaseBaseService {
       if (existing) {
         // Mettre à jour
         const { data, error } = await this.client
-          .from('___xtr_customer_billing_address')
+          .from(TABLES.xtr_customer_billing_address)
           .update(addressPayload)
           .eq('customer_id', customerId)
           .select()
@@ -102,7 +102,7 @@ export class AddressesService extends SupabaseBaseService {
       } else {
         // Créer
         const { data, error } = await this.client
-          .from('___xtr_customer_billing_address')
+          .from(TABLES.xtr_customer_billing_address)
           .insert({
             ...addressPayload,
             created_at: new Date().toISOString(),
@@ -134,7 +134,7 @@ export class AddressesService extends SupabaseBaseService {
   async getDeliveryAddresses(customerId: number): Promise<DeliveryAddress[]> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .select('*')
         .eq('customer_id', customerId)
         .order('is_default', { ascending: false })
@@ -162,7 +162,7 @@ export class AddressesService extends SupabaseBaseService {
   ): Promise<DeliveryAddress | null> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .select('*')
         .eq('customer_id', customerId)
         .eq('is_default', true)
@@ -216,7 +216,7 @@ export class AddressesService extends SupabaseBaseService {
       };
 
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .insert(addressPayload)
         .select()
         .single();
@@ -272,7 +272,7 @@ export class AddressesService extends SupabaseBaseService {
       });
 
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .update(updatePayload)
         .eq('id', addressId)
         .eq('customer_id', customerId)
@@ -318,7 +318,7 @@ export class AddressesService extends SupabaseBaseService {
 
       // Supprimer l'adresse
       const { error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .delete()
         .eq('id', addressId)
         .eq('customer_id', customerId);
@@ -368,7 +368,7 @@ export class AddressesService extends SupabaseBaseService {
 
       // Définir cette adresse comme défaut
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .update({
           is_default: true,
           updated_at: new Date().toISOString(),
@@ -431,7 +431,7 @@ export class AddressesService extends SupabaseBaseService {
   ): Promise<DeliveryAddress | null> {
     try {
       const { data, error } = await this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .select('*')
         .eq('id', addressId)
         .eq('customer_id', customerId)
@@ -460,7 +460,7 @@ export class AddressesService extends SupabaseBaseService {
   ): Promise<void> {
     try {
       let query = this.client
-        .from('___xtr_customer_delivery_address')
+        .from(TABLES.xtr_customer_delivery_address)
         .update({
           is_default: false,
           updated_at: new Date().toISOString(),

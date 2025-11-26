@@ -39,7 +39,7 @@ export class SitemapService extends SupabaseBaseService {
       // Colonnes réelles: map_id, map_pg_alias, map_pg_id, map_marque_alias, map_marque_id,
       // map_modele_alias, map_modele_id, map_type_alias, map_type_id, map_has_item
       const { data: existingLinks } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select(
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_has_item',
         )
@@ -397,7 +397,7 @@ export class SitemapService extends SupabaseBaseService {
       // Pagination récursive pour contourner la limite PostgREST
       while (hasMore) {
         const { data, error } = await this.client
-          .from('pieces_gamme')
+          .from(TABLES.pieces_gamme)
           .select('pg_id, pg_alias, pg_name')
           .eq('pg_display', 1)
           .in('pg_level', [1, 2])
@@ -466,7 +466,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Récupérer les articles conseils depuis __blog_advice
       const { data: adviceArticles, error: adviceError } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_id, ba_alias, ba_create, ba_update')
         .order('ba_create', { ascending: false });
 
@@ -496,7 +496,7 @@ export class SitemapService extends SupabaseBaseService {
 
       // ✅ Récupérer les guides depuis __blog_guide (pas de colonne statut)
       const { data: guideArticles, error: guideError } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_id, bg_alias, bg_create, bg_update')
         .order('bg_create', { ascending: false });
 
@@ -656,31 +656,31 @@ Crawl-delay: 1`;
     try {
       // Total sans filtre
       const { count: totalCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true });
 
       // Avec pg_display = 1
       const { count: displayCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', 1);
 
       // Avec pg_level IN [1, 2]
       const { count: levelCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .in('pg_level', [1, 2]);
 
       // Avec les deux filtres
       const { count: bothCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', 1)
         .in('pg_level', [1, 2]);
 
       // Échantillon avec les filtres
       const { data: samples } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name, pg_display, pg_level')
         .eq('pg_display', 1)
         .in('pg_level', [1, 2])
@@ -757,15 +757,15 @@ ${entries
   async getSitemapStats() {
     try {
       const { count: sitemapLinksCount } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*', { count: 'exact', head: true });
 
       const { count: blogEntriesCount } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact', head: true });
 
       const { count: guidesCount } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*', { count: 'exact', head: true });
 
       const { count: constructeursCount } = await this.client
@@ -777,7 +777,7 @@ ${entries
         .select('*', { count: 'exact', head: true });
 
       const { count: gammesCount } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true });
 
       return {
@@ -886,7 +886,7 @@ ${entries
       const fetchLimit = Math.min(limit * 5, 50000);
 
       const { data: rawCombinations, error } = await this.client
-        .from('pieces_relation_type')
+        .from(TABLES.pieces_relation_type)
         .select('rtp_type_id, rtp_pg_id')
         .limit(fetchLimit);
 
@@ -987,7 +987,7 @@ ${entries
 
     // Récupérer un échantillon
     const { data: combinations } = await this.client
-      .from('pieces_relation_type')
+      .from(TABLES.pieces_relation_type)
       .select(
         `
         rtp_type_id,
@@ -1024,7 +1024,7 @@ ${entries
       // Récupérer les URLs depuis la table pré-calculée avec pagination
       // Supabase limite à 1000 lignes, donc on utilise range()
       const { data: sitemapUrls, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*')
         .range(0, Math.min(limit, 1000) - 1); // Max 1000 lignes par requête
 
@@ -1085,7 +1085,7 @@ ${entries
       );
 
       const { data: sitemapUrls, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*')
         .range(offset, offset + limit - 1);
 
@@ -1124,7 +1124,7 @@ ${entries
     try {
       // Compter le nombre total d'URLs dans __sitemap_p_link
       const { count, error } = await this.client
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*', { count: 'exact', head: true });
 
       if (error || !count) {

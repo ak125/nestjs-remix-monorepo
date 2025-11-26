@@ -18,6 +18,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { UserDataService } from '../../../database/services/user-data.service';
 import { MailService } from '../../../services/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { TABLES } from '@repo/database-types';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
@@ -59,7 +60,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Récupérer l'utilisateur avec son mot de passe actuel
       const { data: user, error: userError } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id, cst_mail, cst_fname, cst_pswd')
         .eq('cst_id', userId)
         .single();
@@ -82,7 +83,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Mettre à jour le mot de passe
       const { error: updateError } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .update({
           cst_pswd: hashedPassword,
           cst_password_changed_at: new Date().toISOString(),
@@ -125,7 +126,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Récupérer l'utilisateur par email
       const { data: user, error } = await this.client
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id, cst_fname, cst_mail')
         .eq('cst_mail', email.toLowerCase())
         .eq('cst_activ', '1') // Utilisateur actif (format legacy)
@@ -152,7 +153,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Enregistrer le token (remplacer l'ancien s'il existe)
       const { error: insertError } = await this.client
-        .from('password_resets')
+        .from(TABLES.password_resets)
         .upsert({
           user_id: user.cst_id,
           token: hashedToken,
@@ -206,7 +207,7 @@ export class PasswordService extends SupabaseBaseService {
 
       // Vérifier le token avec JOIN pour récupérer les infos utilisateur
       const { data: resetData, error } = await this.client
-        .from('password_resets')
+        .from(TABLES.password_resets)
         .select(
           `
           id,
@@ -239,7 +240,7 @@ export class PasswordService extends SupabaseBaseService {
       const updates = [
         // Mettre à jour le mot de passe
         this.client
-          .from('___xtr_customer')
+          .from(TABLES.xtr_customer)
           .update({
             cst_pswd: hashedPassword,
             cst_password_changed_at: new Date().toISOString(),
@@ -249,7 +250,7 @@ export class PasswordService extends SupabaseBaseService {
 
         // Marquer le token comme utilisé
         this.client
-          .from('password_resets')
+          .from(TABLES.password_resets)
           .update({
             used: true,
             used_at: new Date().toISOString(),
@@ -377,7 +378,7 @@ export class PasswordService extends SupabaseBaseService {
   private async invalidateAllUserSessions(userId: string): Promise<void> {
     try {
       const { error } = await this.client
-        .from('sessions')
+        .from(TABLES.sessions)
         .update({
           is_active: false,
           ended_at: new Date().toISOString(),
@@ -406,7 +407,7 @@ export class PasswordService extends SupabaseBaseService {
   async cleanupExpiredTokens(): Promise<number> {
     try {
       const { error, count } = await this.client
-        .from('password_resets')
+        .from(TABLES.password_resets)
         .delete()
         .lt('expires_at', new Date().toISOString());
 

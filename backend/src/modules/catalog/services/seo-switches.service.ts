@@ -60,18 +60,18 @@ export class SeoSwitchesService {
   ): Promise<PrefetchedSwitches> {
     const [itemResult, gammeResult, familyResult] = await Promise.all([
       // 1. Switches globaux (pg_id=0)
-      supabase.from('__seo_item_switch').select('*').eq('sis_pg_id', 0),
+      supabase.from(TABLES.seo_item_switch).select('*').eq('sis_pg_id', 0),
 
       // 2. Switches de la gamme courante
       supabase
-        .from('__seo_gamme_car_switch')
+        .from(TABLES.seo_gamme_car_switch)
         .select('*')
         .eq('sgcs_pg_id', pgId),
 
       // 3. Switches de la famille (si mfId existe)
       mfId
         ? supabase
-            .from('__seo_family_gamme_car_switch')
+            .from(TABLES.seo_family_gamme_car_switch)
             .select('*')
             .eq('sfgcs_mf_id', mfId)
             .or(`sfgcs_pg_id.eq.0,sfgcs_pg_id.eq.${pgId}`)
@@ -103,7 +103,7 @@ export class SeoSwitchesService {
     }
 
     const { data, error } = await supabase
-      .from('__seo_item_switch')
+      .from(TABLES.seo_item_switch)
       .select('*')
       .eq('sis_pg_id', pgId)
       .eq('sis_alias', alias);
@@ -147,7 +147,7 @@ export class SeoSwitchesService {
 
     // 1. Chercher dans __seo_gamme_car_switch
     let query = supabase
-      .from('__seo_gamme_car_switch')
+      .from(TABLES.seo_gamme_car_switch)
       .select('*')
       .eq('sgcs_pg_id', pgId);
 
@@ -172,7 +172,7 @@ export class SeoSwitchesService {
     // 2. FALLBACK: Chercher dans __seo_item_switch (car certaines gammes stockent leurs switches ici)
     // ex: PG 82, 407, etc.
     let itemQuery = supabase
-      .from('__seo_item_switch')
+      .from(TABLES.seo_item_switch)
       .select('*')
       .eq('sis_pg_id', pgId);
 
@@ -230,7 +230,7 @@ export class SeoSwitchesService {
     }
 
     const { data, error } = await supabase
-      .from('__seo_family_gamme_car_switch')
+      .from(TABLES.seo_family_gamme_car_switch)
       .select('*')
       .eq('sfgcs_mf_id', mfId)
       .eq('sfgcs_alias', alias)
@@ -751,7 +751,7 @@ export class SeoSwitchesService {
 
     // Récupérer tous les switches nécessaires en une requête
     const { data: switches } = await supabase
-      .from('__seo_gamme_car_switch')
+      .from(TABLES.seo_gamme_car_switch)
       .select('sgcs_pg_id, sgcs_content')
       .in('sgcs_pg_id', targetPgIds);
 

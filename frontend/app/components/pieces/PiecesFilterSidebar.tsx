@@ -76,26 +76,35 @@ export function PiecesFilterSidebar({
     : uniqueBrands.map(brand => ({ id: brand, label: brand, count: getBrandCount?.(brand) || 0 }));
   
   return (
-    <div className="w-80 space-y-6">
-      {/* Card principale des filtres - avec tokens sémantiques */}
-      <div className="bg-card rounded-2xl shadow-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-xl">
+    <div className="w-72 h-[calc(100vh-8rem)] flex flex-col">
+      {/* Card principale des filtres - Glassmorphism premium */}
+      <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden flex flex-col flex-1 min-h-0">
         
-        {/* Header avec gradient (utilise tokens primary) */}
-        <div className="bg-gradient-to-r from-primary via-primary/90 to-primary/80 px-6 py-5 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer"></div>
+        {/* Header avec gradient premium dark */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 px-5 py-4 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-purple-500/20 rounded-full blur-2xl"></div>
           
-          <div className="relative z-10">
-            <h3 className="font-bold text-lg text-primary-foreground flex items-center gap-2.5">
-              <Package className="w-5 h-5" />
-              Filtres
-            </h3>
-            <p className="text-primary-foreground/80 text-xs mt-1 font-medium">
-              {piecesCount} résultat{piecesCount > 1 ? 's' : ''}
-            </p>
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+                <Package className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-sm">Filtres</h3>
+                <p className="text-white/60 text-[10px] font-medium">Affiner la recherche</p>
+              </div>
+            </div>
+            <div className="bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/20">
+              <span className="text-white font-bold text-xs">{piecesCount}</span>
+              <span className="text-white/60 text-[10px] ml-1">résultat{piecesCount > 1 ? 's' : ''}</span>
+            </div>
           </div>
         </div>
         
-        <div className="p-6 space-y-6">
+        {/* Contenu scrollable */}
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-4 space-y-4">
           
           {/* Recherche moderne avec FilterSection */}
           <FilterSection 
@@ -136,8 +145,7 @@ export function PiecesFilterSidebar({
                 </Badge>
               }
             >
-              <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
+              <div className="space-y-2">
                   {brandsToDisplay.map(brandOption => {
                     const brandName = brandOption.label;
                     const isSelected = activeFilters.brands.includes(brandName);
@@ -181,9 +189,16 @@ export function PiecesFilterSidebar({
                           <Label className="text-sm cursor-pointer flex-1">
                             {brandOption.label}
                           </Label>
-                          {brandOption.trending && (
-                            <span className="text-xs" title="Marque tendance">🔥</span>
-                          )}
+                          {/* Mini barre fiabilité avec couleur dynamique */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <div className="w-8 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                                style={{ width: '75%' }}
+                              />
+                            </div>
+                            <span className="text-[9px] font-bold text-emerald-600">7.5</span>
+                          </div>
                         </div>
                         {brandOption.count > 0 && (
                           <Badge variant="secondary" className="text-xs ml-2">
@@ -194,60 +209,34 @@ export function PiecesFilterSidebar({
                     );
                   })}
                 </div>
-              </ScrollArea>
             </FilterSection>
           )}
 
-          {/* Prix avec RadioGroup de shadcn/ui */}
+          {/* Prix - Inline compact */}
           <FilterSection 
             title="Prix" 
             icon={<DollarSign className="w-4 h-4 text-muted-foreground" />}
           >
-            <RadioGroup
-              value={activeFilters.priceRange}
-              onValueChange={(value) => setActiveFilters({...activeFilters, priceRange: value as any})}
-            >
+            <div className="flex gap-1">
               {[
-                { id: 'all', label: 'Tous les prix', desc: '' },
-                { id: 'low', label: 'Moins de 50€', desc: '(économique)' },
-                { id: 'medium', label: '50€ - 150€', desc: '(standard)' },
-                { id: 'high', label: 'Plus de 150€', desc: '(premium)' }
-              ].map(price => {
-                const isSelected = activeFilters.priceRange === price.id;
-                const dynamicCount = price.id !== 'all' && getPriceRangeCount 
-                  ? getPriceRangeCount(price.id) 
-                  : undefined;
-                const isDisabled = price.id !== 'all' && dynamicCount === 0;
-                
-                return (
-                  <FilterOption 
-                    key={price.id} 
-                    isSelected={isSelected}
-                    isDisabled={isDisabled}
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <RadioGroupItem 
-                        value={price.id} 
-                        disabled={isDisabled}
-                      />
-                      <div className="flex-1">
-                        <Label className={`text-sm cursor-pointer block ${isDisabled ? 'text-muted-foreground' : ''}`}>
-                          {price.label}
-                        </Label>
-                        {price.desc && (
-                          <span className="text-xs text-muted-foreground block">{price.desc}</span>
-                        )}
-                      </div>
-                    </div>
-                    {dynamicCount !== undefined && dynamicCount > 0 && (
-                      <Badge variant="secondary" className="text-xs">
-                        {dynamicCount}
-                      </Badge>
-                    )}
-                  </FilterOption>
-                );
-              })}
-            </RadioGroup>
+                { id: 'all', label: 'Tous' },
+                { id: 'low', label: '<50€' },
+                { id: 'medium', label: '50-150€' },
+                { id: 'high', label: '>150€' }
+              ].map(price => (
+                <button
+                  key={price.id}
+                  onClick={() => setActiveFilters({...activeFilters, priceRange: price.id as any})}
+                  className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                    activeFilters.priceRange === price.id 
+                      ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/30' 
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                  }`}
+                >
+                  {price.label}
+                </button>
+              ))}
+            </div>
           </FilterSection>
 
           {/* Qualité avec RadioGroup */}
@@ -335,51 +324,37 @@ export function PiecesFilterSidebar({
             </RadioGroup>
           </FilterSection>
 
-          {/* Filtre Étoiles (Note minimale) */}
+          {/* Fiabilité minimum - Compact avec couleurs vibrantes */}
           <FilterSection 
-            title="Note minimale" 
+            title="Fiabilité min." 
             icon={<Star className="w-4 h-4 text-muted-foreground" />}
           >
-            <RadioGroup
-              value={activeFilters.minStars?.toString() || 'all'}
-              onValueChange={(value) => setActiveFilters({
-                ...activeFilters, 
-                minStars: value === 'all' ? undefined : parseInt(value)
+            <div className="flex gap-1.5">
+              {[
+                { value: 'all', label: 'Tous', gradient: 'from-slate-600 to-slate-700' },
+                { value: '3', label: '≥3', gradient: 'from-amber-500 to-orange-500' },
+                { value: '5', label: '≥5', gradient: 'from-emerald-500 to-teal-500' }
+              ].map(rating => {
+                const isActive = (rating.value === 'all' && !activeFilters.minStars) ||
+                  activeFilters.minStars?.toString() === rating.value;
+                return (
+                  <button
+                    key={rating.value}
+                    onClick={() => setActiveFilters({
+                      ...activeFilters, 
+                      minStars: rating.value === 'all' ? undefined : parseInt(rating.value)
+                    })}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                      isActive
+                        ? `bg-gradient-to-r ${rating.gradient} text-white shadow-lg shadow-black/20 scale-105` 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {rating.label}
+                  </button>
+                );
               })}
-            >
-              <FilterOption isSelected={!activeFilters.minStars}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="all" />
-                  <Label className="text-sm cursor-pointer">
-                    Toutes les notes
-                  </Label>
-                </div>
-              </FilterOption>
-
-              <FilterOption isSelected={activeFilters.minStars === 3}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="3" />
-                  <div className="flex items-center gap-1">
-                    <StarRating rating={3} size="sm" />
-                    <Label className="text-sm cursor-pointer ml-1">
-                      et plus
-                    </Label>
-                  </div>
-                </div>
-              </FilterOption>
-
-              <FilterOption isSelected={activeFilters.minStars === 5}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="5" />
-                  <div className="flex items-center gap-1">
-                    <StarRating rating={5} size="sm" />
-                    <Label className="text-sm cursor-pointer ml-1">
-                      et plus
-                    </Label>
-                  </div>
-                </div>
-              </FilterOption>
-            </RadioGroup>
+            </div>
           </FilterSection>
 
           {/* Disponibilité */}
@@ -412,25 +387,16 @@ export function PiecesFilterSidebar({
             </RadioGroup>
           </FilterSection>
 
-          {/* Bouton reset moderne avec tokens */}
+          {/* Bouton reset premium */}
           <button
             onClick={resetAllFilters}
-            className="w-full bg-muted hover:bg-muted/80 text-foreground font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 border border-border hover:border-primary"
+            className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md group"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
             Réinitialiser les filtres
           </button>
-        </div>
-      </div>
-
-      {/* Stats résumé avec tokens */}
-      <div className="bg-primary/10 rounded-xl p-4 border border-primary/20">
-        <div className="text-center">
-          <div className="text-3xl font-bold text-primary">{piecesCount}</div>
-          <div className="text-sm text-primary/80">
-            pièce{piecesCount > 1 ? 's' : ''} trouvée{piecesCount > 1 ? 's' : ''}
           </div>
-        </div>
+        </ScrollArea>
       </div>
     </div>
   );

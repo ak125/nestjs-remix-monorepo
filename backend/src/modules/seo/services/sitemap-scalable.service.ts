@@ -571,13 +571,13 @@ export class SitemapScalableService extends SupabaseBaseService {
   ): Promise<SitemapEntry[]> {
     // Charger les conseils
     const { data: adviceArticles } = await this.supabase
-      .from('__blog_advice')
+      .from(TABLES.blog_advice)
       .select('ba_id, ba_alias, ba_date')
       .order('ba_date', { ascending: false });
 
     // Charger les guides
     const { data: guideArticles } = await this.supabase
-      .from('__blog_guide')
+      .from(TABLES.blog_guide)
       .select('bg_id, bg_alias, bg_date')
       .order('bg_date', { ascending: false });
 
@@ -639,7 +639,7 @@ export class SitemapScalableService extends SupabaseBaseService {
 
     while (hasMore) {
       const { data } = await this.supabase
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_alias, pg_name')
         .eq('pg_display', 1)
         .eq('pg_level', level)

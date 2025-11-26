@@ -255,7 +255,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
         .eq('pg_display', '1'),
       // ⚠️ SUPPRIMÉ: .in('pg_level', ['1', '2']) - Trop restrictif, exclut beaucoup de gammes
       this.supabase
-        .from('catalog_gamme')
+        .from(TABLES.catalog_gamme)
         .select('mc_pg_id, mc_mf_id, mc_sort')
         .in('mc_pg_id', pgIdsAsStrings),
     ]);
@@ -274,7 +274,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
 
     // 🎯 Récupérer les familles (mf_id déjà en string depuis catalog_gamme)
     const { data: familiesData, error: familiesError } = await this.supabase
-      .from('catalog_family')
+      .from(TABLES.catalog_family)
       .select('mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort')
       .in('mf_id', mfIds)
       .eq('mf_display', '1');
@@ -386,7 +386,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     const [familiesResult, gammesResult, catalogGammeResult] =
       await Promise.all([
         this.supabase
-          .from('catalog_family')
+          .from(TABLES.catalog_family)
           .select(
             'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_sort',
           )
@@ -397,7 +397,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
           .eq('pg_display', 1),
         // ⚠️ SUPPRIMÉ: .in('pg_level', [1, 2]) - Trop restrictif
         this.supabase
-          .from('catalog_gamme')
+          .from(TABLES.catalog_gamme)
           .select('mc_pg_id, mc_mf_id, mc_sort'),
       ]);
 

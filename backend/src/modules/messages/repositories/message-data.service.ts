@@ -256,7 +256,7 @@ export class MessageDataService extends SupabaseBaseService {
   ): Promise<Array<{ cst_id: string; cst_fname: string; cst_mail: string }>> {
     try {
       const { data, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('cst_id, cst_fname, cst_mail')
         .limit(limit)
         .order('cst_id', { ascending: false });

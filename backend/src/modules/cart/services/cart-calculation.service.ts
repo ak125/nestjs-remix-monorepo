@@ -141,9 +141,10 @@ export class CartCalculationService extends SupabaseBaseService {
     try {
       // Récupérer les paliers de remise depuis la base
       const { data: discountTiers, error } = await this.supabase
-        .from('quantity_discounts')
+        .from(TABLES.quantity_discounts)
         .select('*')
         .eq('product_id', productId)
+        .eq('is_active', true)
         .lte('min_quantity', quantity)
         .order('min_quantity', { ascending: false })
         .limit(1);
@@ -188,7 +189,7 @@ export class CartCalculationService extends SupabaseBaseService {
     try {
       // Récupérer les détails du code promo
       const { data: promo, error } = await this.supabase
-        .from('promo_codes')
+        .from(TABLES.promo_codes)
         .select('*')
         .eq('code', promoCode)
         .eq('is_active', true)

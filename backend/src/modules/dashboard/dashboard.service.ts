@@ -159,7 +159,7 @@ export class DashboardService extends SupabaseBaseService {
 
       // 1. Comptage de la table principale __sitemap_p_link (714,336 entrées)
       const { count: sitemapEntries, error: sitemapError } = await this.supabase
-        .from('__sitemap_p_link')
+        .from(TABLES.sitemap_p_link)
         .select('*', { count: 'exact', head: true });
 
       if (sitemapError) {
@@ -169,7 +169,7 @@ export class DashboardService extends SupabaseBaseService {
 
       // 2. Comptage des articles de blog (__blog_advice)
       const { count: blogEntries, error: blogError } = await this.supabase
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact', head: true });
 
       if (blogError) {
@@ -231,7 +231,7 @@ export class DashboardService extends SupabaseBaseService {
 
       // Récupérer le total des commandes
       const { count: totalOrders, error: countError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
@@ -241,7 +241,7 @@ export class DashboardService extends SupabaseBaseService {
 
       // Récupérer les statistiques détaillées
       const { data: ordersData, error: dataError } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('ord_is_pay, ord_total_ttc');
 
       if (dataError) {
@@ -293,7 +293,7 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log('Fetching users statistics');
 
       const { count: totalUsers, error: totalError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true });
 
       if (totalError) {
@@ -302,7 +302,7 @@ export class DashboardService extends SupabaseBaseService {
       }
 
       const { count: activeUsers, error: activeError } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true })
         .eq('cst_activ', '1');
 
@@ -335,7 +335,7 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log('Fetching suppliers statistics');
 
       const { count: totalSuppliers, error } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select('*', { count: 'exact', head: true });
 
       if (error) {
@@ -364,7 +364,7 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log('Fetching products statistics');
 
       const { count: totalProducts, error: totalError } = await this.supabase
-        .from('___xtr_product')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true });
 
       if (totalError) {
@@ -373,7 +373,7 @@ export class DashboardService extends SupabaseBaseService {
       }
 
       const { count: activeProducts, error: activeError } = await this.supabase
-        .from('___xtr_product')
+        .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
         .eq('prd_online', '1');
 
@@ -382,7 +382,7 @@ export class DashboardService extends SupabaseBaseService {
       }
 
       const { count: totalCategories, error: catError } = await this.supabase
-        .from('___xtr_cat')
+        .from(TABLES.catalog_family)
         .select('*', { count: 'exact', head: true });
 
       if (catError) {
@@ -537,11 +537,11 @@ export class DashboardService extends SupabaseBaseService {
 
       // Utiliser les tables META existantes
       const { count: totalPages } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*', { count: 'exact', head: true });
 
       const { count: optimizedPages } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*', { count: 'exact', head: true })
         .not('meta_title', 'is', null)
         .not('meta_description', 'is', null);
@@ -620,7 +620,7 @@ export class DashboardService extends SupabaseBaseService {
   private async countOrdersByStatus(statuses: string[]): Promise<number> {
     try {
       const { count } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .in('ord_ords_id', statuses);
 
@@ -654,7 +654,7 @@ export class DashboardService extends SupabaseBaseService {
   async getUserCountFixed(): Promise<number> {
     try {
       const { count, error } = await this.supabase
-        .from('___xtr_customer')
+        .from(TABLES.xtr_customer)
         .select('*', { count: 'exact', head: true });
 
       if (error) {
@@ -674,7 +674,7 @@ export class DashboardService extends SupabaseBaseService {
   async getOrderCountFixed(): Promise<number> {
     try {
       const { count, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true });
 
       if (error) {
@@ -694,7 +694,7 @@ export class DashboardService extends SupabaseBaseService {
   async getSupplierCountFixed(): Promise<number> {
     try {
       const { count, error } = await this.supabase
-        .from('___xtr_supplier_link_pm')
+        .from(TABLES.xtr_supplier_link_pm)
         .select('*', { count: 'exact', head: true });
 
       if (error) {
@@ -717,7 +717,7 @@ export class DashboardService extends SupabaseBaseService {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
       const { count, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select('*', { count: 'exact', head: true })
         .gte('ord_date', oneWeekAgo.toISOString());
 
@@ -743,7 +743,7 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log(`Fetching ${limit} recent orders`);
 
       const { data, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           `
           ord_id,
@@ -789,7 +789,7 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log('Fetching shipments with tracking');
 
       const { data, error } = await this.supabase
-        .from('___xtr_order')
+        .from(TABLES.xtr_order)
         .select(
           `
           ord_id,

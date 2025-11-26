@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { CacheService } from '../../../cache/cache.service';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
@@ -195,7 +196,7 @@ export class FooterService {
 
     try {
       const { data, error } = await this.supabaseClient
-        .from('___footer_menu')
+        .from(TABLES.footer_menu)
         .select('*')
         .eq('is_active', true)
         .order('position');

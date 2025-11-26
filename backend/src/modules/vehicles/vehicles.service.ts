@@ -781,7 +781,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // Première requête : récupérer les codes mine
       const { data: codeData, error: codeError } = await this.client
-        .from('auto_type_number_code')
+        .from(TABLES.auto_type_number_code)
         .select('*')
         .eq('tnc_code', mineCode)
         .limit(10);
@@ -857,7 +857,7 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       // Première requête : récupérer les codes CNIT
       const { data: codeData, error: codeError } = await this.client
-        .from('auto_type_number_code')
+        .from(TABLES.auto_type_number_code)
         .select('*')
         .eq('tnc_cnit', cnitCode)
         .limit(10);
@@ -957,7 +957,7 @@ export class VehiclesService extends SupabaseBaseService {
       // Récupérer les codes mine pour ces types
       const typeIds = typesData.map((t) => t.type_id);
       const { data: minesData, error: minesError } = await this.client
-        .from('auto_type_number_code')
+        .from(TABLES.auto_type_number_code)
         .select('*')
         .in('tnc_type_id', typeIds)
         .limit(200);
@@ -1215,7 +1215,7 @@ export class VehiclesService extends SupabaseBaseService {
       this.logger.log(`🏷️ Recherche meta tags ariane pour type_id: ${typeId}`);
 
       const { data, error } = await this.supabase
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('*')
         .ilike('mta_alias', `%-${typeId}`)
         .limit(1);
@@ -1319,14 +1319,14 @@ export class VehiclesService extends SupabaseBaseService {
         
         // Récupérer les switches courts (alias 1)
         const { data: itemSwitches, error: itemError } = await this.client
-          .from('__seo_item_switch')
+          .from(TABLES.seo_item_switch)
           .select('sis_pg_id, sis_alias, sis_content')
           .in('sis_pg_id', pgIds.map(String))
           .eq('sis_alias', '1');
         
         // Récupérer les switches détaillés (alias 11 pour détails techniques)
         const { data: familySwitches, error: familyError } = await this.client
-          .from('__seo_family_gamme_car_switch')
+          .from(TABLES.seo_family_gamme_car_switch)
           .select('sfgcs_pg_id, sfgcs_alias, sfgcs_content')
           .in('sfgcs_pg_id', pgIds.map(String))
           .eq('sfgcs_alias', '11');

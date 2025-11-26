@@ -129,7 +129,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('pg_id, pg_name, pg_alias');
 
       if (options?.pgDisplay !== false) {
@@ -324,7 +324,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('ba_id, ba_title, ba_alias');
 
       if (options?.limit) {
@@ -374,7 +374,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
   > {
     try {
       let query = this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('bg_id, bg_title, bg_alias');
 
       if (options?.limit) {
@@ -587,12 +587,12 @@ export class UrlCompatibilityService extends SupabaseBaseService {
     try {
       // Stats gammes
       const { count: totalGammes } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', '1');
 
       const { count: gammesWithAlias } = await this.client
-        .from('pieces_gamme')
+        .from(TABLES.pieces_gamme)
         .select('*', { count: 'exact', head: true })
         .eq('pg_display', '1')
         .not('pg_alias', 'is', null);
@@ -619,7 +619,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats blog conseils
       const { count: totalConseils } = await this.client
-        .from('__blog_advice')
+        .from(TABLES.blog_advice)
         .select('*', { count: 'exact', head: true });
 
       const conseilsUrls = await this.getAllBlogConseilsUrls({ limit: 5 });
@@ -627,7 +627,7 @@ export class UrlCompatibilityService extends SupabaseBaseService {
 
       // Stats blog guides
       const { count: totalGuides } = await this.client
-        .from('__blog_guide')
+        .from(TABLES.blog_guide)
         .select('*', { count: 'exact', head: true });
 
       const guidesUrls = await this.getAllBlogGuidesUrls({ limit: 5 });

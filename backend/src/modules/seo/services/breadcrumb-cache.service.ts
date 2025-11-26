@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 export interface BreadcrumbItem {
@@ -18,7 +19,7 @@ export class BreadcrumbCacheService extends SupabaseBaseService {
   async getCachedBreadcrumb(alias: string): Promise<BreadcrumbItem[] | null> {
     try {
       const { data, error } = await this.client
-        .from('___meta_tags_ariane')
+        .from(TABLES.meta_tags_ariane)
         .select('mta_ariane')
         .eq('mta_alias', alias)
         .single();
@@ -68,7 +69,7 @@ export class BreadcrumbCacheService extends SupabaseBaseService {
 
       const mta_id = `breadcrumb_${alias.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}`;
 
-      const { error } = await this.client.from('___meta_tags_ariane').upsert(
+      const { error } = await this.client.from(TABLES.meta_tags_ariane).upsert(
         {
           mta_id,
           mta_alias: alias,

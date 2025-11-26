@@ -53,7 +53,7 @@ export class WorkingStockService extends SupabaseBaseService {
       );
 
       // Construire la requête
-      let query = this.client.from('pieces_price').select(`
+      let query = this.client.from(TABLES.pieces_price).select(`
           pri_piece_id,
           pri_ref,
           pri_des,
@@ -119,19 +119,19 @@ export class WorkingStockService extends SupabaseBaseService {
     try {
       // Articles disponibles
       const { count: availableCount } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*', { count: 'exact', head: true })
         .eq('pri_dispo', '1');
 
       // Articles indisponibles
       const { count: unavailableCount } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*', { count: 'exact', head: true })
         .eq('pri_dispo', '0');
 
       // Articles avec marge faible (< 20%)
       const { count: lowMarginCount } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select('*', { count: 'exact', head: true })
         .lte('pri_marge', '20')
         .eq('pri_dispo', '1');
@@ -161,7 +161,7 @@ export class WorkingStockService extends SupabaseBaseService {
   ): Promise<StockItemWorkingVersion[]> {
     try {
       let searchQuery = this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           `
           pri_piece_id,
@@ -203,7 +203,7 @@ export class WorkingStockService extends SupabaseBaseService {
   ): Promise<boolean> {
     try {
       const { error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .update({ pri_dispo: available ? '1' : '0' })
         .eq('pri_piece_id', pieceId);
 
@@ -225,7 +225,7 @@ export class WorkingStockService extends SupabaseBaseService {
   async getTopItems(limit: number = 10): Promise<StockItemWorkingVersion[]> {
     try {
       const { data, error } = await this.client
-        .from('pieces_price')
+        .from(TABLES.pieces_price)
         .select(
           `
           pri_piece_id,
