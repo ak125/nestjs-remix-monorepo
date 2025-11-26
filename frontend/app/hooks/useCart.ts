@@ -241,31 +241,29 @@ export function useCart(): UseCartReturn {
   const addToCart = useCallback((productId: number, quantity: number = 1) => {
     console.log('➕ addToCart:', { productId, quantity });
     
-    // ⚡ Feedback instantané
-    toast.success('🛒 Article ajouté !', 1500);
-    
-    // ⚡ UI Optimiste: Ouvrir le panier immédiatement
+    // ⚡ UI Optimiste: Ouvrir le panier IMMÉDIATEMENT
     openCart();
     
-    // 🚀 Utiliser Remix fetcher (optimisé, gère les types automatiquement)
+    // ⚡ Feedback instantané (sans bloquer)
+    requestAnimationFrame(() => {
+      toast.success('🛒 Ajouté !', 1200);
+    });
+    
+    // 🚀 Utiliser Remix fetcher (non-bloquant)
     const formData = new FormData();
     formData.append('action', 'add-to-cart');
     formData.append('productId', productId.toString());
     formData.append('quantity', quantity.toString());
-    formData.append('productName', 'Article'); // Peut être enrichi plus tard
-    formData.append('price', '0'); // Sera récupéré du backend
+    formData.append('productName', 'Article');
+    formData.append('price', '0');
     
     addItemFetcher.submit(formData, { 
       method: 'POST',
       action: '/api/cart/add'
     });
     
-    // Recharger après un court délai
-    setTimeout(() => {
-      refreshCart();
-      window.dispatchEvent(new Event('cart:updated'));
-    }, 300);
-  }, [addItemFetcher, refreshCart, openCart, toast]);
+    // 🔄 Recharger UNIQUEMENT quand le fetcher répond (via useEffect)
+  }, [addItemFetcher, openCart, toast]);
 
   return {
     items,
