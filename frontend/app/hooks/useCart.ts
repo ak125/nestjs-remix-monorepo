@@ -227,6 +227,9 @@ export function useCart(): UseCartReturn {
     try {
       console.log('➕ addToCart:', { productId, quantity });
       
+      // ⚡ Ouvrir le panier IMMÉDIATEMENT (feedback instantané)
+      openCart();
+      
       const response = await fetch('/api/cart/items', {
         method: 'POST',
         headers: { 
@@ -241,10 +244,8 @@ export function useCart(): UseCartReturn {
 
       if (response.ok) {
         console.log('✅ Article ajouté au panier');
-        // Recharger le panier et l'ouvrir
+        // Recharger le panier
         refreshCart();
-        openCart();
-        // Émettre un événement global pour synchroniser tous les composants
         window.dispatchEvent(new Event('cart:updated'));
       } else {
         const errorData = await response.json().catch(() => ({}));
