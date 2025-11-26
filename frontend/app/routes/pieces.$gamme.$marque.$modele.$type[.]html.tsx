@@ -25,6 +25,7 @@ import { PiecesHeader } from '../components/pieces/PiecesHeader';
 import { PiecesListView } from '../components/pieces/PiecesListView';
 import { PiecesSEOSection } from '../components/pieces/PiecesSEOSection';
 import { PiecesStatistics } from '../components/pieces/PiecesStatistics';
+import { ScrollToTop } from '../components/blog/ScrollToTop';
 import VehicleSelectorV2 from '../components/vehicle/VehicleSelectorV2';
 
 // Hook custom
@@ -278,6 +279,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     vehicle,
     gamme,
     pieces: piecesData,
+    grouped_pieces: batchResponse.grouped_pieces || batchResponse.blocs || [], // ✨ Groupes avec title_h2
     count: piecesData.length,
     minPrice,
     maxPrice,
@@ -677,20 +679,125 @@ export default function PiecesVehicleRoute() {
               </div>
 
               {/* Affichage des pièces selon le mode */}
-              {viewMode === 'grid' && (
-                <PiecesGridView
-                  pieces={filteredProducts}
-                  onSelectPiece={handleSelectPiece}
-                  selectedPieces={selectedPieces}
-                />
-              )}
+              {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
+                // ✨ AFFICHAGE GROUPÉ avec titres H2
+                <div className="space-y-8">
+                  {data.grouped_pieces.map((group: any, idx: number) => {
+                    // Filtrer les pièces du groupe selon les filtres actifs
+                    const groupPieces = group.pieces.filter((p: any) => {
+                      // Mapper l'objet API vers PieceData pour compatibilité avec filtres
+                      const pieceData = {
+                        id: p.id,
+                        name: p.nom || p.name || 'Pièce',
+                        brand: p.marque || p.brand || 'Marque inconnue',
+                        reference: p.reference || '',
+                        price: p.prix_unitaire || p.prix_ttc || p.price || 0,
+                        priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
+                        image: p.image || '',
+                        images: p.images || [],
+                        stock: p.dispo ? 'En stock' : 'Sur commande',
+                        quality: p.qualite || '',
+                        stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
+                        description: p.description || '',
+                        url: p.url || '',
+                        marque_id: p.marque_id,
+                        marque_logo: p.marque_logo
+                      };
+                      
+                      // Appliquer les filtres
+                      if (activeFilters.brands.length > 0 && !activeFilters.brands.includes(pieceData.brand)) {
+                        return false;
+                      }
+                      if (activeFilters.searchText && !pieceData.name.toLowerCase().includes(activeFilters.searchText.toLowerCase())) {
+                        return false;
+                      }
+                      return true;
+                    });
 
-              {viewMode === 'list' && (
-                <PiecesListView
-                  pieces={filteredProducts}
-                  onSelectPiece={handleSelectPiece}
-                  selectedPieces={selectedPieces}
-                />
+                    if (groupPieces.length === 0) return null;
+
+                    return (
+                      <div key={`${group.filtre_gamme}-${group.filtre_side}-${idx}`} className="animate-in fade-in slide-in-from-top duration-500">
+                        {/* Titre H2 dynamique */}
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
+                          <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
+                          {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}
+                          <span className="text-sm font-normal text-gray-500 ml-auto">
+                            ({groupPieces.length} article{groupPieces.length > 1 ? 's' : ''})
+                          </span>
+                        </h2>
+
+                        {/* Grille de pièces du groupe */}
+                        {viewMode === 'grid' && (
+                          <PiecesGridView
+                            pieces={groupPieces.map((p: any) => ({
+                              id: p.id,
+                              name: p.nom || p.name || 'Pièce',
+                              brand: p.marque || p.brand || 'Marque inconnue',
+                              reference: p.reference || '',
+                              price: p.prix_unitaire || p.prix_ttc || p.price || 0,
+                              priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
+                              image: p.image || '',
+                              images: p.images || [],
+                              stock: p.dispo ? 'En stock' : 'Sur commande',
+                              quality: p.qualite || '',
+                              stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
+                              description: p.description || '',
+                              url: p.url || '',
+                              marque_id: p.marque_id,
+                              marque_logo: p.marque_logo
+                            }))}
+                            onSelectPiece={handleSelectPiece}
+                            selectedPieces={selectedPieces}
+                          />
+                        )}
+
+                        {viewMode === 'list' && (
+                          <PiecesListView
+                            pieces={groupPieces.map((p: any) => ({
+                              id: p.id,
+                              name: p.nom || p.name || 'Pièce',
+                              brand: p.marque || p.brand || 'Marque inconnue',
+                              reference: p.reference || '',
+                              price: p.prix_unitaire || p.prix_ttc || p.price || 0,
+                              priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
+                              image: p.image || '',
+                              images: p.images || [],
+                              stock: p.dispo ? 'En stock' : 'Sur commande',
+                              quality: p.qualite || '',
+                              stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
+                              description: p.description || '',
+                              url: p.url || '',
+                              marque_id: p.marque_id,
+                              marque_logo: p.marque_logo
+                            }))}
+                            onSelectPiece={handleSelectPiece}
+                            selectedPieces={selectedPieces}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                // ✨ FALLBACK: Affichage simple si pas de groupes
+                <>
+                  {viewMode === 'grid' && (
+                    <PiecesGridView
+                      pieces={filteredProducts}
+                      onSelectPiece={handleSelectPiece}
+                      selectedPieces={selectedPieces}
+                    />
+                  )}
+
+                  {viewMode === 'list' && (
+                    <PiecesListView
+                      pieces={filteredProducts}
+                      onSelectPiece={handleSelectPiece}
+                      selectedPieces={selectedPieces}
+                    />
+                  )}
+                </>
               )}
 
               {viewMode === 'comparison' && (
@@ -759,6 +866,9 @@ export default function PiecesVehicleRoute() {
           </div>
         )}
       </div>
+
+      {/* Bouton retour en haut */}
+      <ScrollToTop />
 
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === 'development' && (

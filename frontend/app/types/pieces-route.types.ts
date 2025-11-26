@@ -169,7 +169,7 @@ export interface LoaderData {
 export interface PiecesFilters {
   brands: string[];
   priceRange: "all" | "low" | "medium" | "high";
-  quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard";
+  quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard" | string; // Support des valeurs API dynamiques
   availability: "all" | "stock" | "order";
   searchText: string;
   minStars?: number; // Filtre par note minimale (0-5)

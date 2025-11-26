@@ -21,6 +21,7 @@ import { PiecesHeader } from '../components/pieces/PiecesHeader';
 import { PiecesListView } from '../components/pieces/PiecesListView';
 import { PiecesSEOSection } from '../components/pieces/PiecesSEOSection';
 import { PiecesStatistics } from '../components/pieces/PiecesStatistics';
+import { ScrollToTop } from '../components/blog/ScrollToTop';
 import VehicleSelectorV2 from '../components/vehicle/VehicleSelectorV2';
 
 // Hook custom
@@ -293,7 +294,6 @@ export default function PiecesVehicleRoute() {
           {/* Hero Header */}
           <PiecesHeader 
             vehicle={vehicle} 
-            vehicleDetails={vehicleDetails}
             gamme={gamme} 
             count={count}
             minPrice={minPrice}
@@ -507,6 +507,9 @@ export default function PiecesVehicleRoute() {
           </div>
         )}
       </div>
+
+      {/* Bouton retour en haut */}
+      <ScrollToTop />
 
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === 'development' && (

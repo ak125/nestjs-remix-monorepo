@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { StarRating } from '../common/StarRating';
 import { useCart } from '../../hooks/useCart';
+import { normalizeImageUrl } from '../../utils/image.utils';
 
 interface PieceDetailModalProps {
   pieceId: number | null;
@@ -35,7 +36,10 @@ interface PieceDetail {
     name: string;
     value: string;
     unit: string;
+    level?: number;
   }>;
+  referencesEquipementiers?: Record<string, string[]>;
+  referencesOem?: Record<string, string[]>;
   vehiclesCompatibles?: Array<{
     marque: string;
     modele: string;
@@ -194,81 +198,118 @@ export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
               </button>
             </div>
           ) : piece ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-              {/* Colonne gauche - Images */}
-              <div>
-                {/* Image principale */}
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 mb-4">
-                  <div className="aspect-square overflow-hidden rounded-lg">
+            <div className="p-8">
+              {/* Header avec logo, marque et titre - Pleine largeur */}
+              <div className="flex items-start gap-4 mb-6">
+                {piece.marque_logo && (
+                  <div className="w-16 h-16 flex-shrink-0">
                     <img
-                      src={selectedImage || '/images/no.png'}
-                      alt={piece.nom}
-                      className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
+                      src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`}
+                      alt={`Logo ${piece.marque}`}
+                      className="w-full h-full object-contain"
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
                     />
                   </div>
-                </div>
-
-                {/* Galerie miniatures */}
-                {allImages.length > 1 && (
-                  <div className="grid grid-cols-5 gap-2">
-                    {allImages.map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImage(img)}
-                        className={`aspect-square bg-white rounded-lg p-2 border-2 transition-all hover:scale-105 ${
-                          selectedImage === img
-                            ? 'border-blue-500 shadow-md'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                      >
-                        <img
-                          src={img}
-                          alt={`Vue ${idx + 1}`}
-                          className="w-full h-full object-contain"
-                        />
-                      </button>
-                    ))}
+                )}
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{piece.nom}</h2>
+                  <div className="flex items-baseline gap-2 text-lg">
+                    <span className="font-black text-gray-900 uppercase">{piece.marque}</span>
+                    <span className="font-bold text-blue-700 font-mono">{piece.reference}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Badges qualité - Pleine largeur */}
+              <div className="flex items-center gap-3 mb-6">
+                {piece.qualite === 'OES' && (
+                  <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm">
+                    🏆 Qualité OES
+                  </span>
+                )}
+                {piece.nb_stars && piece.nb_stars > 0 && (
+                  <StarRating rating={piece.nb_stars} size="md" showNumber={false} />
                 )}
               </div>
 
-              {/* Colonne droite - Informations */}
-              <div className="flex flex-col">
-                {/* Header avec logo et marque */}
-                <div className="flex items-start gap-4 mb-6">
-                  {piece.marque_logo && (
-                    <div className="w-16 h-16 flex-shrink-0">
+              {/* Layout 2 colonnes: Images + Données techniques */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
+                {/* Colonne gauche - Images */}
+                <div>
+                  {/* Image principale */}
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8 mb-4">
+                    <div className="aspect-square overflow-hidden rounded-lg">
                       <img
-                        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${piece.marque_logo}`}
-                        alt={`Logo ${piece.marque}`}
-                        className="w-full h-full object-contain"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                        src={normalizeImageUrl(selectedImage ? `/rack/${selectedImage}` : piece.image ? `/rack/${piece.image}` : '/images/no.png')}
+                        alt={piece.nom}
+                        className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
                       />
                     </div>
-                  )}
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{piece.nom}</h2>
-                    <div className="flex items-baseline gap-2 text-lg">
-                      <span className="font-black text-gray-900 uppercase">{piece.marque}</span>
-                      <span className="font-bold text-blue-700 font-mono">{piece.reference}</span>
-                    </div>
                   </div>
+
+                  {/* Galerie miniatures */}
+                  {piece.images && piece.images.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2">
+                      {piece.images.map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedImage(img)}
+                          className={`aspect-square bg-white rounded-lg p-2 border-2 transition-all hover:scale-105 ${
+                            selectedImage === img
+                              ? 'border-blue-500 shadow-md'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <img
+                            src={normalizeImageUrl(`/rack/${img}`)}
+                            alt={`Vue ${idx + 1}`}
+                            className="w-full h-full object-contain"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Badges qualité */}
-                <div className="flex items-center gap-3 mb-6">
-                  {piece.qualite === 'OES' && (
-                    <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-sm">
-                      🏆 Qualité OES
-                    </span>
-                  )}
-                  {piece.nb_stars && piece.nb_stars > 0 && (
-                    <StarRating rating={piece.nb_stars} size="md" showNumber={false} />
+                {/* Colonne droite - Données techniques */}
+                <div className="bg-gray-50 rounded-xl p-5">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    Données techniques
+                  </h3>
+                  
+                  {piece.criteresTechniques && piece.criteresTechniques.length > 0 ? (
+                    <div className="space-y-2 max-h-[500px] overflow-y-auto custom-scrollbar pr-2">
+                      {piece.criteresTechniques
+                        .sort((a, b) => (a.level || 5) - (b.level || 5))
+                        .map((critere) => (
+                          <div 
+                            key={critere.id} 
+                            className="bg-white rounded-lg px-4 py-3 hover:shadow-md transition-shadow border border-gray-200"
+                          >
+                            <div className="flex justify-between items-start gap-3">
+                              <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                {critere.name}
+                              </span>
+                              <span className="text-sm text-gray-900 font-medium text-right">
+                                {critere.value} {critere.unit}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">Aucune donnée technique disponible</p>
                   )}
                 </div>
+              </div>
 
+              {/* Prix, disponibilité et bouton panier */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                 {/* Prix */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
                   <div className="text-sm text-gray-600 mb-2">Prix TTC</div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-black text-blue-600">
@@ -279,16 +320,16 @@ export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
                 </div>
 
                 {/* Disponibilité */}
-                <div className="mb-6">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-6 flex items-center justify-center">
                   {piece.dispo ? (
-                    <div className="flex items-center gap-2 text-green-600 font-medium text-lg">
+                    <div className="flex items-center gap-2 text-green-600 font-medium text-base">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      En stock - Livraison rapide
+                      <span>En stock - Livraison rapide</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-orange-600 font-medium text-lg">
+                    <div className="flex items-center gap-2 text-orange-600 font-medium text-base">
                       <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      Sur commande - Délai 2-5 jours
+                      <span>Sur commande - Délai 2-5 jours</span>
                     </div>
                   )}
                 </div>
@@ -297,7 +338,7 @@ export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
                 <button 
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 mb-6"
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   {addingToCart ? (
                     <>
@@ -305,109 +346,71 @@ export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Ajout en cours...
+                      <span className="hidden sm:inline">Ajout...</span>
                     </>
                   ) : (
                     <>
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      Ajouter au panier
+                      <span className="hidden sm:inline">Ajouter au panier</span>
+                      <span className="sm:hidden">Panier</span>
                     </>
                   )}
                 </button>
-
-                {/* Données techniques */}
-                <div className="bg-gray-50 rounded-xl p-5 mb-6">
+              </div>
+                
+              {/* Références équipementiers */}
+              {piece.referencesEquipementiers && Object.keys(piece.referencesEquipementiers).length > 0 && (
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 mb-6 border border-blue-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
-                    Données techniques
+                    Ref. Équipementiers
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white rounded-lg p-3">
-                      <div className="text-xs text-gray-500 mb-1">Référence</div>
-                      <div className="font-mono font-bold text-gray-900">{piece.reference}</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3">
-                      <div className="text-xs text-gray-500 mb-1">Marque</div>
-                      <div className="font-bold text-gray-900">{piece.marque}</div>
-                    </div>
-                    {piece.weight && (
-                      <div className="bg-white rounded-lg p-3">
-                        <div className="text-xs text-gray-500 mb-1">Poids</div>
-                        <div className="font-bold text-gray-900">{piece.weight} kg</div>
-                      </div>
-                    )}
-                    <div className="bg-white rounded-lg p-3">
-                      <div className="text-xs text-gray-500 mb-1">Qualité</div>
-                      <div className="font-bold text-gray-900">
-                        {piece.qualite === 'OES' ? (
-                          <span className="text-orange-600">OES ⭐</span>
-                        ) : (
-                          piece.qualite || 'Standard'
-                        )}
-                      </div>
-                    </div>
-                    {piece.hasOem && (
-                      <div className="bg-white rounded-lg p-3 col-span-2">
-                        <div className="text-xs text-gray-500 mb-1">Compatible OEM</div>
-                        <div className="flex items-center gap-1">
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-sm font-medium text-green-700">Pièce d'origine équipementier</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(piece.referencesEquipementiers).map(([marque, refs]) => (
+                      <div key={marque} className="bg-white rounded-lg p-3 border border-blue-100">
+                        <div className="font-bold text-gray-900 mb-2 uppercase text-sm">{marque}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {refs.map((ref, idx) => (
+                            <span key={idx} className="inline-block bg-blue-100 text-blue-800 text-xs font-mono font-semibold px-2.5 py-1 rounded">
+                              {ref}
+                            </span>
+                          ))}
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                  
-                  {/* Critères techniques supplémentaires */}
-                  {piece.criteresTechniques && piece.criteresTechniques.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="text-sm font-semibold text-gray-700 mb-3">Spécifications techniques</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {piece.criteresTechniques.map((critere) => (
-                          <div key={critere.id} className="bg-white rounded-lg p-2.5">
-                            <div className="text-xs text-gray-500 mb-0.5">{critere.name}</div>
-                            <div className="text-sm font-semibold text-gray-900">
-                              {critere.value} {critere.unit}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
+              )}
 
-                {/* Description */}
-                {piece.description && (
-                  <div className="pt-6 border-t border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-900 mb-3">Description</h3>
-                    <p className="text-gray-700 leading-relaxed text-sm">{piece.description}</p>
-                  </div>
-                )}
-
-                {/* Véhicules compatibles */}
-                {piece.vehiclesCompatibles && piece.vehiclesCompatibles.length > 0 && (
-                  <div className="pt-6 border-t border-gray-200 mt-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Véhicules compatibles</h3>
-                    <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scrollbar">
-                      {piece.vehiclesCompatibles.slice(0, 10).map((vehicle, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-sm bg-gray-50 px-3 py-2 rounded-lg">
-                          <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="text-gray-700">
-                            {vehicle.marque} {vehicle.modele} {vehicle.type}
-                          </span>
+              {/* Références OEM constructeurs */}
+              {piece.referencesOem && Object.keys(piece.referencesOem).length > 0 && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border border-green-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    Ref. OEM Constructeurs
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {Object.entries(piece.referencesOem).map(([marque, refs]) => (
+                      <div key={marque} className="bg-white rounded-lg p-3 border border-green-100">
+                        <div className="font-bold text-gray-900 mb-2 uppercase text-sm">{marque}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {refs.map((ref, idx) => (
+                            <span key={idx} className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded">
+                              {ref}
+                            </span>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           ) : null}
         </div>

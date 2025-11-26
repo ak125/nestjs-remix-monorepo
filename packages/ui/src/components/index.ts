@@ -10,6 +10,12 @@ export * from './dialog';
 export * from './combobox';
 export * from './alert';
 export * from './badge';
+export * from './card';
+export * from './checkbox';
+export * from './radio-group';
+export * from './scroll-area';
+export * from './label';
+export * from './filter-section';
 
 /**
  * 🎨 Patterns métier
