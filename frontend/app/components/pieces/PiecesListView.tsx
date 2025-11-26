@@ -64,14 +64,14 @@ export const PiecesListView = React.memo(function PiecesListView({ pieces, onSel
     // ⚡ Ajout optimiste - appel synchrone (useFetcher)
     addToCart(pieceId, 1);
     
-    // Délai minimal pour feedback visuel
+    // Délai minimal pour feedback visuel (réduit au minimum)
     setTimeout(() => {
       setLoadingItems(prev => {
         const next = new Set(prev);
         next.delete(pieceId);
         return next;
       });
-    }, 400);
+    }, 200);
   };
   
   if (pieces.length === 0) {
