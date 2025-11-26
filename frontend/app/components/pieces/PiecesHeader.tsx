@@ -46,32 +46,32 @@ export function PiecesHeader({ vehicle, gamme, count, minPrice, prixPasCherText,
   return (
     <>
       {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
-      <nav className="bg-white border-b border-gray-200 py-3" aria-label="Breadcrumb">
+      <nav className="bg-background border-b border-border py-3" aria-label="Breadcrumb">
         <div className="container mx-auto px-4">
           <ol className="flex items-center gap-2 text-sm flex-wrap">
             <li>
-              <a href="/" className="hover:underline text-blue-600">
+              <a href="/" className="hover:underline text-primary">
                 <span>Accueil</span>
               </a>
             </li>
-            <li><span className="text-gray-400">→</span></li>
+            <li><span className="text-muted-foreground">→</span></li>
             <li>
-              <a href="/pieces" className="hover:underline text-blue-600">
+              <a href="/pieces" className="hover:underline text-primary">
                 <span>Pièces</span>
               </a>
             </li>
-            <li><span className="text-gray-400">→</span></li>
+            <li><span className="text-muted-foreground">→</span></li>
             <li>
               <a 
                 href={`/pieces/${gamme.alias}`} 
-                className="hover:underline text-blue-600"
+                className="hover:underline text-primary"
               >
                 <span>{gamme.name}</span>
               </a>
             </li>
-            <li><span className="text-gray-400">→</span></li>
+            <li><span className="text-muted-foreground">→</span></li>
             <li>
-              <span className="font-semibold text-gray-900">{vehicle.marque} {vehicle.modele}</span>
+              <span className="font-semibold text-foreground">{vehicle.marque} {vehicle.modele}</span>
             </li>
           </ol>
         </div>

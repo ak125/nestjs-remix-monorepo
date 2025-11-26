@@ -5,7 +5,7 @@
  * Affichage grid moderne avec cartes optimisées
  */
 
-import { Badge } from '@fafa/ui';
+import { Badge, Card, CardContent } from '@fafa/ui';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../../hooks/useCart';
 import { type PieceData } from '../../types/pieces-route.types';
@@ -91,7 +91,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
   
   if (pieces.length === 0) {
     return (
-      <div className="text-center py-20 bg-gradient-to-br from-white via-gray-50 to-slate-50 rounded-2xl border-2 border-dashed border-gray-300 relative overflow-hidden">
+      <div className="text-center py-20 bg-gradient-to-br from-background via-muted/50 to-muted rounded-2xl border-2 border-dashed border-border relative overflow-hidden">
         {/* Pattern d'arrière-plan */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40\"></div>
         
@@ -105,34 +105,34 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
           </div>
           
           {/* Titre */}
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
+          <h3 className="text-2xl font-bold text-foreground mb-3">
             Aucune pièce trouvée
           </h3>
           
           {/* Description */}
-          <p className="text-gray-600 mb-6 leading-relaxed">
+          <p className="text-muted-foreground mb-6 leading-relaxed">
             Essayez de modifier vos filtres ou d'élargir vos critères de recherche pour découvrir plus de résultats.
           </p>
           
           {/* Suggestions */}
-          <div className="inline-flex flex-col gap-2 text-sm text-left bg-white rounded-xl p-4 shadow-sm border border-gray-200">
+          <div className="inline-flex flex-col gap-2 text-sm text-left bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-start gap-2">
               <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <span className="text-gray-700">Vérifiez vos filtres de marque et qualité</span>
+              <span className="text-foreground">Vérifiez vos filtres de marque et qualité</span>
             </div>
             <div className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <span className="text-gray-700">Essayez une recherche plus large</span>
+              <span className="text-foreground">Essayez une recherche plus large</span>
             </div>
             <div className="flex items-start gap-2">
-              <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              <span className="text-gray-700">Réinitialisez tous les filtres</span>
+              <span className="text-foreground">Réinitialisez tous les filtres</span>
             </div>
           </div>
         </div>
@@ -142,17 +142,6 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
   
   return (
     <>
-      {/* Bouton de test DEBUG */}
-      <button
-        onClick={() => {
-          console.log('🧪 TEST BUTTON CLICKED');
-          setSelectedPieceId(pieces[0]?.id || 2862263);
-        }}
-        className="mb-4 bg-red-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-red-600"
-      >
-        🧪 TEST MODAL (Debug)
-      </button>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Modal détail pièce */}
         <PieceDetailModal 
@@ -185,10 +174,10 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
         }
         
         return (
-          <div 
+          <Card 
             key={piece.id}
-            className={`bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group relative ${
-              isSelected ? 'ring-2 ring-blue-500 shadow-xl' : ''
+            className={`hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group relative ${
+              isSelected ? 'ring-2 ring-primary shadow-xl' : ''
             }`}
             onClick={(e) => {
               console.log('🖱️ CLICK DETECTED on card:', piece.id, piece.name);
@@ -202,7 +191,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 to-transparent group-hover:via-white/10 transition-all duration-500 pointer-events-none"></div>
             
             {/* Header avec logo + badge OES + étoiles */}
-            <div className="px-4 pt-4 pb-3 bg-white border-b border-gray-100 relative z-10">
+            <div className="px-4 pt-4 pb-3 bg-card border-b border-border relative z-10">
               <div className="flex items-center gap-3">
                 {/* Logo équipementier */}
                 {logoUrl ? (
@@ -251,7 +240,12 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
             <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
               <div className="group-hover:scale-110 transition-transform duration-500 ease-out">
                 <ProductGallery 
-                  images={piece.images} 
+                  images={piece.images?.map((url, idx) => ({
+                    id: `${piece.id}-${idx}`,
+                    url,
+                    sort: idx,
+                    alt: `${piece.name} ${piece.brand} - Image ${idx + 1}`
+                  }))} 
                   mainImage={piece.image} 
                   alt={`${piece.name} ${piece.brand}${piece.reference ? ` pour véhicule - Réf ${piece.reference}` : ' pièce automobile de qualité'}`}
                 />
@@ -268,8 +262,8 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
                   }}
                   className={`absolute top-3 left-3 w-7 h-7 rounded-lg shadow-lg flex items-center justify-center hover:scale-110 transition-all z-20 ${
                     isSelected 
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 border-2 border-white' 
-                      : 'bg-white/90 backdrop-blur-sm border border-gray-200'
+                      ? 'bg-gradient-to-r from-primary to-primary/90 border-2 border-background' 
+                      : 'bg-background/90 backdrop-blur-sm border border-border'
                   }`}
                 >
                   {isSelected && (
@@ -284,25 +278,35 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
             {/* Contenu carte */}
             <div className="p-5 relative z-10">
               {/* Marque + Référence avec icon - Version améliorée */}
-              <div className="mb-6">
-                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 px-4 py-3 rounded-xl border border-blue-200 shadow-sm">
+              <div className="mb-3">
+                <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 px-4 py-3 rounded-xl border border-primary/20 shadow-sm">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-lg font-black text-gray-900 uppercase tracking-tight">{piece.brand}</span>
-                    <span className="text-base font-bold text-blue-700 font-mono">{piece.reference}</span>
+                    <span className="text-lg font-black text-foreground uppercase tracking-tight">{piece.brand}</span>
+                    <span className="text-base font-bold text-primary font-mono">{piece.reference}</span>
                   </div>
                 </div>
               </div>
+              
+              {/* Info détails techniques disponibles */}
+              {(piece.description || (piece.images && piece.images.length > 1)) && (
+                <div className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+                  <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-medium">Cliquez pour voir les détails techniques{piece.images && piece.images.length > 1 ? ` et ${piece.images.length} photos` : ''}</span>
+                </div>
+              )}
 
               {/* Prix section avec label */}
-              <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-3 border-2 border-gray-100 relative z-20">
+              <div className="bg-gradient-to-br from-muted/50 to-background rounded-xl p-3 border-2 border-border relative z-20">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <span className="text-[9px] text-gray-500 uppercase tracking-wider font-bold block mb-1">Prix TTC</span>
+                    <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold block mb-1">Prix TTC</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent leading-none">
+                      <span className="text-2xl font-black bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent leading-none">
                         {typeof piece.price === 'number' ? piece.price.toFixed(2) : piece.priceFormatted}
                       </span>
-                      <span className="text-lg font-bold text-gray-500">€</span>
+                      <span className="text-lg font-bold text-muted-foreground">€</span>
                     </div>
                   </div>
 
@@ -311,8 +315,8 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
                     type="button"
                     className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 transform active:scale-95 whitespace-nowrap relative z-30 ${
                       hasStock && !loadingItems.has(piece.id)
-                        ? 'bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-800 text-white shadow-md hover:shadow-lg'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary/80 hover:to-primary/70 text-primary-foreground shadow-md hover:shadow-lg'
+                        : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={(e) => {
@@ -350,7 +354,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
         );
       })}
     </div>
