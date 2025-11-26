@@ -114,7 +114,12 @@ export function useCart(): UseCartReturn {
     if (addItemFetcher.data && !addItemFetcher.data.success) {
       toast.error('❌ ' + (addItemFetcher.data.error || 'Erreur ajout panier'), 3000);
     }
-  }, [addItemFetcher.data, toast]);
+    // ✅ Si succès, recharger le panier
+    if (addItemFetcher.data?.success) {
+      refreshCart();
+      window.dispatchEvent(new Event('cart:updated'));
+    }
+  }, [addItemFetcher.data, toast, refreshCart]);
 
   // 📥 Traiter la réponse du fetcher
   useEffect(() => {
