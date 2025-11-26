@@ -18,6 +18,7 @@
 import { useFetcher } from '@remix-run/react';
 import { useState, useEffect, useCallback } from 'react';
 import  { type CartData, type CartItem, type CartSummary } from '../types/cart';
+import { useToast } from './useToast';
 
 interface UseCartReturn {
   items: CartItem[];
@@ -30,7 +31,7 @@ interface UseCartReturn {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  addToCart: (productId: number, quantity?: number) => Promise<void>;
+  addToCart: (productId: number, quantity?: number) => void;
   removeItem: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, quantity: number) => Promise<void>;
   refreshCart: () => void;
@@ -53,9 +54,11 @@ export function useCart(): UseCartReturn {
     currency: 'EUR',
   });
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   // Fetcher pour les appels API
   const fetcher = useFetcher<{ success: boolean; cart?: CartData; error?: string }>();
+  const addItemFetcher = useFetcher<{ success: boolean; message?: string; error?: string }>();
 
   // 📊 Calcul automatique du résumé avec consignes
   const calculateSummary = useCallback((cartItems: CartItem[]): CartSummary => {
@@ -105,6 +108,13 @@ export function useCart(): UseCartReturn {
     refreshCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 📥 Traiter les erreurs du fetcher addToCart
+  useEffect(() => {
+    if (addItemFetcher.data && !addItemFetcher.data.success) {
+      toast.error('❌ ' + (addItemFetcher.data.error || 'Erreur ajout panier'), 3000);
+    }
+  }, [addItemFetcher.data, toast]);
 
   // 📥 Traiter la réponse du fetcher
   useEffect(() => {
@@ -223,39 +233,34 @@ export function useCart(): UseCartReturn {
     }
   }, [removeItem, refreshCart]);
 
-  const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
-    try {
-      console.log('➕ addToCart:', { productId, quantity });
-      
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          product_id: productId, 
-          quantity 
-        })
-      });
-
-      if (response.ok) {
-        console.log('✅ Article ajouté au panier');
-        // Recharger le panier et l'ouvrir
-        refreshCart();
-        openCart();
-        // Émettre un événement global pour synchroniser tous les composants
-        window.dispatchEvent(new Event('cart:updated'));
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erreur ajout panier:', response.status, errorData);
-        setError(errorData.message || 'Erreur lors de l\'ajout au panier');
-      }
-    } catch (error) {
-      console.error('❌ Erreur addToCart:', error);
-      setError('Erreur réseau lors de l\'ajout au panier');
-    }
-  }, [refreshCart, openCart]);
+  const addToCart = useCallback((productId: number, quantity: number = 1) => {
+    console.log('➕ addToCart:', { productId, quantity });
+    
+    // ⚡ Feedback instantané
+    toast.success('🛒 Article ajouté !', 1500);
+    
+    // ⚡ UI Optimiste: Ouvrir le panier immédiatement
+    openCart();
+    
+    // 🚀 Utiliser Remix fetcher (optimisé, gère les types automatiquement)
+    const formData = new FormData();
+    formData.append('action', 'add-to-cart');
+    formData.append('productId', productId.toString());
+    formData.append('quantity', quantity.toString());
+    formData.append('productName', 'Article'); // Peut être enrichi plus tard
+    formData.append('price', '0'); // Sera récupéré du backend
+    
+    addItemFetcher.submit(formData, { 
+      method: 'POST',
+      action: '/api/cart/add'
+    });
+    
+    // Recharger après un court délai
+    setTimeout(() => {
+      refreshCart();
+      window.dispatchEvent(new Event('cart:updated'));
+    }, 300);
+  }, [addItemFetcher, refreshCart, openCart, toast]);
 
   return {
     items,
