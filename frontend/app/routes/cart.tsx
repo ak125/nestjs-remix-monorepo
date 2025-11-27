@@ -54,108 +54,8 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   }
 }
 
-/**
- * 🧹 Fonction utilitaire pour vider le panier
- * Utilise directement l'API backend car les actions Remix ne fonctionnent pas
- * dans ce setup monorepo NestJS + Remix
- */
-async function clearCartAPI(): Promise<{ success: boolean; error?: string }> {
-  try {
-    console.log('🧹 [CLEAR CART] Appel API DELETE /api/cart');
-    
-    const response = await fetch('/api/cart', {
-      method: 'DELETE',
-      credentials: 'include', // Important: transmet les cookies de session/auth
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (response.ok) {
-      const result = await response.json();
-      console.log('✅ [CLEAR CART] Panier vidé avec succès:', result);
-      return { success: true };
-    } else {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('❌ [CLEAR CART] Erreur HTTP:', response.status, errorData);
-      return { 
-        success: false, 
-        error: errorData.message || `Erreur HTTP ${response.status}` 
-      };
-    }
-  } catch (error) {
-    console.error('❌ [CLEAR CART] Erreur réseau:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur réseau' 
-    };
-  }
-}
-
-/**
- * 🔄 Fonction pour modifier la quantité d'un article
- */
-// Fonction pour mettre à jour la quantité d'un article
-// Utilise le product_id numérique au lieu de l'ID UUID inexistant
-async function updateItemQuantityAPI(productId: number, quantity: number) {
-  try {
-    if (quantity < 1) {
-      throw new Error('La quantité doit être d\'au moins 1');
-    }
-    
-    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
-    const response = await fetch('/api/cart/items', {
-      method: 'POST', // Réutiliser l'endpoint d'ajout qui gère la mise à jour
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ 
-        product_id: productId, 
-        quantity: quantity,
-        replace: true // Flag pour indiquer qu'on remplace la quantité
-      })
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Erreur mise à jour quantité:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
-    };
-  }
-}
-
-// Fonction pour supprimer un article du panier
-// Utilise le product_id numérique qui correspond aux données du backend
-async function removeItemAPI(productId: number) {
-  try {
-    // ✅ Utiliser un chemin relatif pour fonctionner dans le monorepo
-    const response = await fetch(`/api/cart/items/${productId}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Erreur suppression article:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
-    };
-  }
-}
+// NOTE: Les fonctions API ont été supprimées.
+// Utiliser les méthodes du hook useCart() qui appellent cart.api.ts
 
 // Composant CartSummary avec design amélioré
 function CartSummary({ summary, children, isUpdating }: { 
@@ -479,7 +379,7 @@ function EmptyCart() {
 export default function CartPage() {
   const { cart, success, error, cleared } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const { clearCart, refreshCart } = useCart();
+  const { clearCart, removeItem, updateQuantity } = useCart();
   const [notification, setNotification] = React.useState<{
     type: 'success' | 'error';
     message: string;
@@ -491,29 +391,25 @@ export default function CartPage() {
     setTimeout(() => setNotification(null), 3000);
   };
   
-  // Gérer la mise à jour de quantité
+  // Gérer la mise à jour de quantité via useCart
   const handleUpdateQuantity = async (productId: number, quantity: number) => {
-    const result = await updateItemQuantityAPI(productId, quantity);
+    const success = await updateQuantity(String(productId), quantity);
     
-    if (result.success) {
-      showNotification('success', 'Quantité mise à jour avec succès');
-      // Attendre un peu avant de recharger pour que l'utilisateur voie la notification
-      setTimeout(() => window.location.reload(), 500);
+    if (success) {
+      showNotification('success', 'Quantité mise à jour');
     } else {
-      showNotification('error', result.error || 'Erreur lors de la mise à jour');
+      showNotification('error', 'Erreur lors de la mise à jour');
     }
   };
   
-  // Gérer la suppression d'article
+  // Gérer la suppression d'article via useCart
   const handleRemoveItem = async (productId: number) => {
-    const result = await removeItemAPI(productId);
+    const success = await removeItem(String(productId));
     
-    if (result.success) {
-      showNotification('success', 'Article supprimé avec succès');
-      // Attendre un peu avant de recharger pour que l'utilisateur voie la notification
-      setTimeout(() => window.location.reload(), 500);
+    if (success) {
+      showNotification('success', 'Article supprimé');
     } else {
-      showNotification('error', result.error || 'Erreur lors de la suppression');
+      showNotification('error', 'Erreur lors de la suppression');
     }
   };
 
