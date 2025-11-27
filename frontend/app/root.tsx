@@ -17,6 +17,8 @@ import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
 import { CartProvider } from "./contexts/CartContext";
+import { getCart } from "./services/cart.server";
+import type { CartData } from "./types/cart";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import stylesheet from "./global.css?url";
@@ -71,10 +73,19 @@ export const meta: MetaFunction = () => [
   { name: "twitter:image", content: "https://www.automecanik.com/logo-og.webp" },
 ];
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
-  const user = await getOptionalUser({ context });
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  // Charger user et cart en parallèle pour la performance
+  const [user, cart] = await Promise.all([
+    getOptionalUser({ context }),
+    getCart(request).catch((err) => {
+      console.warn('⚠️ [root.loader] Erreur chargement panier:', err.message);
+      return null;
+    })
+  ]);
+  
   return json({ 
-    user
+    user,
+    cart
   });
 };
 
@@ -89,6 +100,15 @@ export const useOptionalUser = () => {
   return data.user;
 }
 
+/**
+ * Hook pour accéder aux données du panier depuis le root loader
+ * Utilisé par CartSidebarSimple pour avoir les données SSR
+ */
+export const useRootCart = () => {
+  const data = useRouteLoaderData<typeof loader>("root");
+  return data?.cart || null;
+}
+
 declare module "@remix-run/node" {
   interface AppLoadContext {
     remixService: any;
@@ -99,8 +119,14 @@ declare module "@remix-run/node" {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData("root") as { user: any } | undefined;
+  const data = useRouteLoaderData("root") as { user: any; cart: CartData | null } | undefined;
   const user = data?.user;
+  const cart = data?.cart;
+  
+  // DEBUG: Log pour voir si les données arrivent
+  if (typeof window !== 'undefined') {
+    console.log('🏠 [root.Layout] cart data:', cart ? `${cart.items?.length || 0} items` : 'null');
+  }
   
   return (
     <html lang="fr" className="h-full">
@@ -111,7 +137,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full bg-gray-100">
-        <CartProvider>
+        <CartProvider initialData={cart}>
           <VehicleProvider>
             <NotificationProvider>
               <div className="min-h-screen flex flex-col">

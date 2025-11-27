@@ -69,9 +69,23 @@ const CartContext = createContext<CartContextType | null>(null);
 // PROVIDER
 // ============================================================================
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [summary, setSummary] = useState<CartSummary>(defaultSummary);
+interface CartProviderProps {
+  children: ReactNode;
+  initialData?: {
+    items: CartItem[];
+    summary: CartSummary;
+  } | null;
+}
+
+export function CartProvider({ children, initialData }: CartProviderProps) {
+  // DEBUG: Log pour voir les données initiales
+  if (typeof window !== 'undefined') {
+    console.log('🛒 [CartProvider] initialData:', initialData ? `${initialData.items?.length || 0} items` : 'null');
+  }
+  
+  const [items, setItems] = useState<CartItem[]>(initialData?.items || []);
+  const [summary, setSummary] = useState<CartSummary>(initialData?.summary || defaultSummary);
+  const [isInitialized, setIsInitialized] = useState(!!initialData);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -264,9 +278,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // EFFETS
   // ──────────────────────────────────────────────────────────────────────────
 
+  // NE PAS charger le panier au mount - laisser les loaders Remix gérer ça
+  // Le CartContext sera synchronisé via setCartData depuis les pages qui ont des loaders
+  // Cela évite les problèmes de session entre serveur et client
   useEffect(() => {
-    refreshCart();
-  }, [refreshCart]);
+    if (initialData) {
+      console.log('🛒 [CartContext] Initialisé avec données serveur:', initialData.items?.length || 0, 'items');
+      setIsInitialized(true);
+    }
+  }, [initialData]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // RENDER
