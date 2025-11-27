@@ -38,6 +38,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     error,
     removeItem,
     updateQuantity,
+    clearCart,
   } = useCart();
 
   return (
@@ -51,36 +52,32 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
         />
       )}
 
-      {/* Sidebar avec design modernisé */}
+      {/* Sidebar compact */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-full w-full sm:w-[500px] bg-gradient-to-br from-white to-gray-50 shadow-2xl z-50",
+          "fixed top-0 right-0 h-full w-full sm:w-[380px] bg-white shadow-2xl z-50",
           "transform transition-all duration-300 ease-in-out",
-          "flex flex-col border-l-4 border-blue-500",
+          "flex flex-col",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        {/* Header avec gradient amélioré */}
-        <div className="flex items-center justify-between p-5 border-b-2 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 text-white shadow-lg">
-          <div className="flex items-center gap-4">
-            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-              <ShoppingBag className="h-7 w-7" />
-            </div>
+        {/* Header compact */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="h-5 w-5" />
             <div>
-              <h2 className="text-xl font-bold tracking-tight">Mon Panier</h2>
-              <p className="text-sm text-blue-100 font-medium">
-                <span className="bg-white/20 px-2 py-0.5 rounded-full">
-                  {summary.total_items} article{summary.total_items > 1 ? 's' : ''}
-                </span>
+              <h2 className="text-base font-bold">Mon Panier</h2>
+              <p className="text-xs text-blue-100">
+                {summary.total_items} article{summary.total_items > 1 ? 's' : ''}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-white/20 h-10 w-10 p-0 rounded-xl flex items-center justify-center transition-all hover:rotate-90 hover:scale-110 backdrop-blur-sm"
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-lg flex items-center justify-center transition-all"
             aria-label="Fermer le panier"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -94,207 +91,110 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           </div>
         )}
 
-        {/* 🎯 Seuil Franco - Indicateur de progression */}
+        {/* 🎯 Seuil Franco - Indicateur compact */}
         {items.length > 0 && summary.subtotal < 150 && (
-          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-green-800">
-                🚚 Livraison gratuite à 150€
-              </p>
-              <p className="text-sm font-bold text-green-700">
-                Plus que {formatPrice(150 - summary.subtotal)} !
-              </p>
+          <div className="px-4 py-2 bg-green-50 border-b text-xs">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-green-700 font-medium">🚚 Livraison gratuite à 150€</span>
+              <span className="text-green-800 font-bold">-{formatPrice(150 - summary.subtotal)}</span>
             </div>
-            {/* Barre de progression */}
-            <div className="w-full bg-green-100 rounded-full h-2.5 overflow-hidden shadow-inner">
+            <div className="w-full bg-green-200 rounded-full h-1.5">
               <div
-                className="bg-gradient-to-r from-green-500 to-emerald-600 h-2.5 rounded-full transition-all duration-500 shadow-sm"
+                className="bg-green-500 h-1.5 rounded-full transition-all"
                 style={{ width: `${Math.min((summary.subtotal / 150) * 100, 100)}%` }}
               />
             </div>
-            <p className="text-xs text-green-700 mt-1 text-right font-medium">
-              {Math.round((summary.subtotal / 150) * 100)}%
-            </p>
           </div>
         )}
 
         {/* 🎁 Livraison gratuite atteinte */}
         {items.length > 0 && summary.subtotal >= 150 && (
-          <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white border-b-2 border-green-700 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
-                <ShoppingBag className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="font-bold text-lg">🎉 Livraison gratuite !</p>
-                <p className="text-sm text-green-100">Vous économisez 15,90€</p>
-              </div>
-            </div>
+          <div className="px-4 py-2 bg-green-500 text-white border-b text-xs font-medium">
+            🎉 Livraison gratuite incluse !
           </div>
         )}
 
-        {/* 📦 ETA Livraison */}
-        {items.length > 0 && (
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b-2 border-blue-200 shadow-sm">
-            <div className="flex items-center gap-3 text-blue-800">
-              <div className="bg-blue-500/20 p-2 rounded-lg">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">Livraison estimée</p>
-                <p className="text-xs text-blue-600 font-medium">
-                  {summary.subtotal >= 150 ? '2-3 jours ouvrés' : '3-5 jours ouvrés'} • Suivi inclus
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Liste des articles avec style amélioré */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-transparent to-gray-50/50">
+        {/* Liste des articles - compact */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {isLoading && items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 gap-3">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent shadow-lg" />
-              <p className="text-sm font-medium text-gray-600">Chargement...</p>
+            <div className="flex items-center justify-center h-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent" />
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12 px-6">
-              <div className="bg-gray-100 p-6 rounded-full mb-4 shadow-inner">
-                <ShoppingBag className="h-20 w-20 text-gray-400" />
-              </div>
-              <p className="text-xl font-bold text-gray-700 mb-2">Votre panier est vide</p>
-              <p className="text-sm text-center text-gray-500">
-                Ajoutez des articles pour commencer vos achats
-              </p>
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 py-8">
+              <ShoppingBag className="h-12 w-12 mb-3" />
+              <p className="font-medium">Votre panier est vide</p>
             </div>
           ) : (
             items.map((item) => (
-              <CartSidebarItem
+              <CartSidebarItemCompact
                 key={item.id}
                 item={item}
-                onRemove={async () => {
-                  console.log('🗑️ CartSidebar - Clic supprimer:', item.id);
-                  await removeItem(item.id);
-                  console.log('✅ CartSidebar - Après removeItem');
-                }}
-                onQuantityChange={async (qty) => {
-                  console.log('🔄 CartSidebar - Clic quantité:', { itemId: item.id, qty });
-                  await updateQuantity(item.id, qty);
-                  console.log('✅ CartSidebar - Après updateQuantity');
-                }}
+                onRemove={() => removeItem(item.id)}
+                onQuantityChange={(qty) => updateQuantity(item.id, qty)}
               />
             ))
           )}
         </div>
 
-        {/* 🎁 Upsell - Produits Recommandés */}
-        {items.length > 0 && items.length < 5 && (
-          <div className="border-t-2 bg-gradient-to-r from-purple-50 to-pink-50 p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="bg-purple-500/20 p-1.5 rounded-lg">
-                <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-purple-900">Souvent acheté avec</h3>
-            </div>
-            <div className="space-y-2">
-              {/* Mini cards recommandations - mock data */}
-              {[
-                { name: 'Filtre à huile', price: 12.90, ref: 'FO-123' },
-                { name: 'Bougies d\'allumage (x4)', price: 24.50, ref: 'BG-456' },
-              ].map((product, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-2 bg-white rounded-lg border border-purple-200 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-2xl">
-                    🔧
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{product.name}</p>
-                    <p className="text-xs text-gray-500">Réf: {product.ref}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-purple-600">{formatPrice(product.price)}</p>
-                    <button className="text-xs text-purple-600 hover:text-purple-800 font-medium">
-                      + Ajouter
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Footer avec totaux - Design amélioré */}
+        {/* Footer compact avec totaux */}
         {items.length > 0 && (
-          <div className="border-t-2 bg-gradient-to-br from-gray-50 to-gray-100 p-5 space-y-3 shadow-inner">
-            {/* Nombre de pièces - Badge style */}
-            <div className="flex justify-between items-center text-sm p-3 bg-white rounded-xl shadow-sm border border-gray-200">
-              <span className="text-gray-700 font-semibold flex items-center gap-2">
-                <span className="text-lg">🔢</span>
-                Nombre de pièces
-              </span>
-              <Badge variant="info">{summary.total_items}</Badge>
-            </div>
-
-            {/* Subtotal produits */}
-            <div className="flex justify-between text-sm p-3 bg-white rounded-lg shadow-sm">
-              <span className="text-gray-700 font-medium">Sous-total produits</span>
-              <span className="font-semibold text-gray-900">{formatPrice(summary.subtotal)}</span>
-            </div>
-
-            {/* Total consignes avec style particulier */}
-            {summary.consigne_total > 0 && (
-              <div className="flex justify-between items-center text-sm p-3 bg-amber-50 rounded-lg shadow-sm border-2 border-amber-300">
-                <span className="text-amber-800 font-medium flex items-center gap-2">
-                  <span className="text-lg">♻️</span>
-                  Consignes
-                  <span className="text-xs bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
-                    remboursables
-                  </span>
-                </span>
-                <span className="font-bold text-amber-700">
-                  +{formatPrice(summary.consigne_total)}
-                </span>
+          <div className="border-t bg-gray-50 p-4 space-y-3">
+            {/* Totaux */}
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Sous-total ({summary.total_items})</span>
+                <span className="font-medium">{formatPrice(summary.subtotal)}</span>
               </div>
-            )}
-
-            {/* Total TTC avec style imposant */}
-            <div className="mt-4 pt-4 border-t-2 border-gray-300">
-              <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg">
-                <span className="font-bold text-lg text-white">Total TTC</span>
-                <span className="font-bold text-3xl text-white">{formatPrice(summary.total_price)}</span>
-              </div>
+              {summary.consigne_total > 0 && (
+                <div className="flex justify-between text-amber-700">
+                  <span>♻️ Consignes</span>
+                  <span>+{formatPrice(summary.consigne_total)}</span>
+                </div>
+              )}
             </div>
 
-            {/* Boutons d'action avec design moderne */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                className="w-full border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 font-semibold"
-              >
-                Continuer
-              </Button>
+            {/* Total */}
+            <div className="flex justify-between items-center pt-2 border-t">
+              <span className="font-bold text-lg">Total TTC</span>
+              <span className="font-bold text-xl text-blue-600">{formatPrice(summary.total_price)}</span>
+            </div>
+
+            {/* Boutons */}
+            <div className="space-y-2 pt-2">
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 font-semibold shadow-md hover:shadow-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                <Link to="/cart">
-                  🛒 Voir panier
+                <Link to="/checkout" onClick={onClose}>
+                  ✅ Commander
                 </Link>
               </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="flex-1"
+                >
+                  <Link to="/cart" onClick={onClose}>
+                    Voir panier
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm('Vider le panier ?')) {
+                      await clearCart();
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  Vider
+                </Button>
+              </div>
             </div>
-
-            <Button
-              asChild
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 mt-3 py-6 text-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-            >
-              <Link to="/checkout">
-                ✅ Passer commande
-              </Link>
-            </Button>
           </div>
         )}
       </div>
@@ -303,112 +203,80 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 }
 
 /**
- * 🧩 CartSidebarItem - Item compact pour sidebar
- * Affiche: image, marque, référence, prix, consigne
+ * 🧱 CartSidebarItemCompact - Item très compact
  */
-interface CartSidebarItemProps {
+interface CartSidebarItemCompactProps {
   item: CartItem;
-  onRemove: () => void | Promise<void>;
-  onQuantityChange: (quantity: number) => void | Promise<void>;
+  onRemove: () => void;
+  onQuantityChange: (quantity: number) => void;
 }
 
-function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemProps) {
+function CartSidebarItemCompact({ item, onRemove, onQuantityChange }: CartSidebarItemCompactProps) {
   const imageUrl = getProductImageUrl(item);
   const unitPrice = item.unit_price || item.price || 0;
   const totalPrice = unitPrice * item.quantity;
   
   return (
-    <div className="flex gap-3 p-4 bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 rounded-xl hover:shadow-lg hover:border-blue-300 transition-all hover:scale-[1.02]">
-      {/* Image avec overlay */}
-      <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex-shrink-0 shadow-md relative group">
+    <div className="flex gap-3 p-2 bg-white border rounded-lg hover:shadow-sm transition-shadow group">
+      {/* Image petite */}
+      <div className="w-14 h-14 bg-gray-100 rounded overflow-hidden flex-shrink-0">
         <img
           src={imageUrl}
           alt={item.product_name || 'Produit'}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+          className="w-full h-full object-cover"
           onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = '/images/no.png';
+            (e.target as HTMLImageElement).src = '/images/no.png';
           }}
         />
-        {item.has_consigne && item.consigne_unit && item.consigne_unit > 0 && (
-          <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-bl-lg shadow-sm">
-            ♻️
-          </div>
-        )}
       </div>
 
-      {/* Informations */}
+      {/* Infos */}
       <div className="flex-1 min-w-0">
-        {/* Marque avec badge */}
-        {item.product_brand && (
-          <p className="text-xs text-gray-600 font-semibold uppercase bg-primary/5 inline-block px-2 py-0.5 rounded-full mb-1">
-            {item.product_brand}
-          </p>
-        )}
-        
-        {/* Nom produit */}
-        <h3 className="text-sm font-bold text-gray-900 truncate leading-tight">
-          {item.product_name || 'Produit'}
-        </h3>
-        
-        {/* Référence avec style */}
-        {item.product_ref && (
-          <p className="text-xs text-gray-500 mt-1 font-mono bg-gray-100 inline-block px-2 py-0.5 rounded">
-            Réf: {item.product_ref}
-          </p>
-        )}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            {item.product_brand && (
+              <p className="text-[10px] text-gray-500 uppercase truncate">{item.product_brand}</p>
+            )}
+            <h3 className="text-xs font-medium text-gray-900 truncate leading-tight">
+              {item.product_name || 'Produit'}
+            </h3>
+          </div>
+          {/* Bouton supprimer discret */}
+          <button
+            onClick={onRemove}
+            className="opacity-0 group-hover:opacity-100 h-5 w-5 text-gray-400 hover:text-red-500 transition-opacity flex-shrink-0"
+            aria-label="Supprimer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        {/* Prix et quantité avec design amélioré */}
-        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200">
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg p-1 shadow-sm">
+        {/* Prix et quantité sur une ligne */}
+        <div className="flex items-center justify-between mt-1.5">
+          <div className="flex items-center gap-1 bg-gray-100 rounded px-1">
             <button
-              onClick={() => {
-                console.log('➖ Bouton - cliqué, quantité actuelle:', item.quantity);
-                onQuantityChange(item.quantity - 1);
-              }}
+              onClick={() => onQuantityChange(item.quantity - 1)}
               disabled={item.quantity <= 1}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-destructive hover:bg-destructive/10 disabled:opacity-30 disabled:cursor-not-allowed font-bold hover:scale-110 transition-transform shadow-sm"
-              aria-label="Diminuer la quantité"
+              className="h-5 w-5 text-xs flex items-center justify-center hover:bg-gray-200 rounded disabled:opacity-30"
             >
               −
             </button>
-            <span className="text-sm font-bold w-8 text-center bg-white px-2 py-1 rounded">
-              {item.quantity}
-            </span>
+            <span className="text-xs font-medium w-5 text-center">{item.quantity}</span>
             <button
-              onClick={() => {
-                console.log('➕ Bouton + cliqué, quantité actuelle:', item.quantity);
-                onQuantityChange(item.quantity + 1);
-              }}
-              className="h-7 w-7 rounded-md bg-white border border-gray-300 flex items-center justify-center text-green-600 hover:bg-success/20 font-bold hover:scale-110 transition-transform shadow-sm"
-              aria-label="Augmenter la quantité"
+              onClick={() => onQuantityChange(item.quantity + 1)}
+              className="h-5 w-5 text-xs flex items-center justify-center hover:bg-gray-200 rounded"
             >
               +
             </button>
           </div>
-
           <div className="text-right">
-            <p className="text-base font-bold text-blue-600">
-              {formatPrice(totalPrice)}
-            </p>
-            {/* Consigne avec badge */}
-            {item.has_consigne && item.consigne_unit && item.consigne_unit > 0 && (
-              <p className="text-xs text-amber-700 font-semibold bg-amber-50 inline-block px-2 py-0.5 rounded-full mt-0.5">
-                +{formatPrice(item.consigne_unit * item.quantity)}
-              </p>
+            <p className="text-sm font-bold text-gray-900">{formatPrice(totalPrice)}</p>
+            {item.consigne_unit && item.consigne_unit > 0 && (
+              <p className="text-[10px] text-amber-600">+{formatPrice(item.consigne_unit * item.quantity)} cons.</p>
             )}
           </div>
         </div>
       </div>
-
-      {/* Bouton supprimer */}
-      <button
-        onClick={onRemove}
-        className="h-6 w-6 rounded text-gray-400 hover:text-destructive hover:bg-destructive/10 flex items-center justify-center flex-shrink-0"
-        aria-label="Supprimer l'article"
-      >
-        <X className="h-4 w-4" />
-      </button>
     </div>
   );
 }

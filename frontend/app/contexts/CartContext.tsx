@@ -239,23 +239,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = useCallback(async () => {
     try {
       console.log('🧹 [CartContext] Vidage du panier');
+      console.log('🍪 [CartContext] Cookies:', document.cookie);
       
+      // Appel direct à DELETE /api/cart (endpoint NestJS)
       const response = await fetch('/api/cart', {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' }
       });
 
-      if (response.ok) {
-        console.log('✅ [CartContext] Panier vidé');
+      console.log('📡 [CartContext] Response status:', response.status);
+      const data = await response.json();
+      console.log('📦 [CartContext] Response data:', data);
+      
+      if (response.ok && data.success) {
+        console.log('✅ [CartContext] Panier vidé:', data);
         setItems([]);
         setSummary(defaultSummary);
         window.dispatchEvent(new Event('cart:updated'));
       } else {
-        console.error('❌ [CartContext] Erreur vidage panier');
+        console.error('❌ [CartContext] Erreur vidage panier:', data.error || data.message);
+        throw new Error(data.error || data.message || `Erreur ${response.status}`);
       }
     } catch (err) {
       console.error('❌ [CartContext] Erreur:', err);
+      throw err; // Propager l'erreur pour le toast
     }
   }, []);
 
