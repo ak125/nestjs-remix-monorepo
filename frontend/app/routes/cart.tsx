@@ -16,6 +16,7 @@ import React from 'react';
 import { toast } from 'sonner';
 import { Button } from '~/components/ui/button';
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
+import { useCart } from "../hooks/useCart";
 import { getCart } from "../services/cart.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -478,6 +479,7 @@ function EmptyCart() {
 export default function CartPage() {
   const { cart, success, error, cleared } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const { clearCart, refreshCart } = useCart();
   const [notification, setNotification] = React.useState<{
     type: 'success' | 'error';
     message: string;
@@ -567,15 +569,15 @@ export default function CartPage() {
                 action: {
                   label: 'Confirmer',
                   onClick: async () => {
-                    const result = await clearCartAPI();
-                    
-                    if (result.success) {
+                    try {
+                      await clearCart();
                       toast.success('Panier vidé !');
+                      // Recharger la page pour afficher le panier vide
                       setTimeout(() => {
                         window.location.href = '/cart?cleared=true';
-                      }, 1000);
-                    } else {
-                      toast.error(result.error || 'Erreur lors du vidage du panier');
+                      }, 500);
+                    } catch (err) {
+                      toast.error('Erreur lors du vidage du panier');
                     }
                   },
                 },
