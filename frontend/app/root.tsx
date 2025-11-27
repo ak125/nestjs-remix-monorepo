@@ -16,6 +16,7 @@ import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors"
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
+import { CartProvider } from "./contexts/CartContext";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import stylesheet from "./global.css?url";
@@ -110,20 +111,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full bg-gray-100">
-        <VehicleProvider>
-          <NotificationProvider>
-            <div className="min-h-screen flex flex-col">
-                <Navbar logo={logo} />
-                <main className="flex-grow flex flex-col">
-                  <div className="flex-grow">
-                    {children}
-                  </div>
-                 </main>
-            </div>
-            <Footer />
-            <NotificationContainer />
-          </NotificationProvider>
-        </VehicleProvider>
+        <CartProvider>
+          <VehicleProvider>
+            <NotificationProvider>
+              <div className="min-h-screen flex flex-col">
+                  <Navbar logo={logo} />
+                  <main className="flex-grow flex flex-col">
+                    <div className="flex-grow">
+                      {children}
+                    </div>
+                   </main>
+              </div>
+              <Footer />
+              <NotificationContainer />
+            </NotificationProvider>
+          </VehicleProvider>
+        </CartProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
         <Toaster 
           position="top-right"
