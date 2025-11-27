@@ -19,6 +19,7 @@ import { Badge } from '@fafa/ui';
  */
 
 import { Link } from '@remix-run/react';
+import React from 'react';
 import { X, ShoppingBag, AlertCircle } from 'lucide-react';
 import { useCart, formatPrice, getProductImageUrl } from '../../hooks/useCart';
 import { cn } from '../../lib/utils';
@@ -40,6 +41,14 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
     updateQuantity,
     clearCart,
   } = useCart();
+
+  // DEBUG: Log au render
+  React.useEffect(() => {
+    if (isOpen) {
+      console.log('🔴 CartSidebar OPEN - items:', items);
+      console.log('🔴 CartSidebar - first item:', items[0]);
+    }
+  }, [isOpen, items]);
 
   return (
     <>
@@ -91,49 +100,63 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           </div>
         )}
 
-        {/* 🚚 LIVRAISON GRATUITE - Bannière mise en avant */}
-        {items.length > 0 && (
-          <div className={cn(
-            "px-4 py-3 border-b",
-            summary.subtotal >= 150 
-              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white" 
-              : "bg-gradient-to-r from-amber-50 to-orange-50"
-          )}>
-            {summary.subtotal >= 150 ? (
-              <div className="flex items-center gap-2">
+        {/* 🚚 LIVRAISON GRATUITE - Bannière toujours visible */}
+        <div className={cn(
+          "px-4 py-3 border-b-2",
+          items.length > 0 && summary.subtotal >= 150 
+            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-600" 
+            : "bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 border-blue-200"
+        )}>
+          {items.length > 0 && summary.subtotal >= 150 ? (
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2 animate-bounce">
                 <span className="text-2xl">🎉</span>
-                <div>
-                  <p className="font-bold text-sm">Livraison GRATUITE !</p>
-                  <p className="text-xs opacity-90">Expédition sous 24-48h</p>
+                <span className="text-2xl">🚚</span>
+              </div>
+              <div className="text-center">
+                <p className="font-black text-base tracking-wide">LIVRAISON GRATUITE !</p>
+                <p className="text-xs opacity-90">Vous économisez 9,90€ • Expédition 24-48h</p>
+              </div>
+              <span className="text-2xl">✅</span>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl animate-pulse">🚚</span>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">Livraison GRATUITE</p>
+                    <p className="text-xs text-gray-500">à partir de 150€ d'achat</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                    dès 150€
+                  </span>
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🚚</span>
-                    <span className="text-sm font-semibold text-gray-800">Livraison gratuite</span>
-                  </div>
-                  <span className="text-sm font-bold text-green-600">dès 150€</span>
-                </div>
-                <div className="relative">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+              {items.length > 0 && (
+                <div className="relative mt-3">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
                     <div
-                      className="bg-gradient-to-r from-green-400 to-green-600 h-2.5 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-green-400 via-green-500 to-emerald-500 h-3 rounded-full transition-all duration-700 ease-out relative"
                       style={{ width: `${Math.min((summary.subtotal / 150) * 100, 100)}%` }}
-                    />
+                    >
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                    </div>
                   </div>
-                  <div className="flex justify-between mt-1.5 text-xs">
-                    <span className="text-gray-600">{formatPrice(summary.subtotal)}</span>
-                    <span className="text-green-700 font-semibold">
+                  <div className="flex justify-between mt-2 items-center">
+                    <span className="text-sm font-bold text-gray-800">{formatPrice(summary.subtotal)}</span>
+                    <span className="text-sm font-bold text-orange-600 flex items-center gap-1">
+                      <span>⚡</span>
                       Plus que {formatPrice(150 - summary.subtotal)} !
                     </span>
                   </div>
                 </div>
-              </>
-            )}
-          </div>
-        )}
+              )}
+            </>
+          )}
+        </div>
 
         {/* 📦 Liste des articles */}
         <div className="flex-1 overflow-y-auto">
@@ -148,16 +171,32 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <p className="text-sm mt-1">Ajoutez des pièces pour commencer</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y-0">
               {/* Titre liste */}
-              <div className="px-4 py-2 bg-gray-50 sticky top-0 z-10">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  📋 {items.length} pièce{items.length > 1 ? 's' : ''} dans le panier
+              <div className="px-4 py-2.5 bg-gray-50 sticky top-0 z-10 border-b border-gray-200">
+                <p className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                  <span>📦</span>
+                  <span>{items.length} article{items.length > 1 ? 's' : ''}</span>
                 </p>
               </div>
-              {items.map((item) => (
+              
+              {/* DEBUG VISUEL - Afficher les données brutes */}
+              <div className="p-2 bg-yellow-100 text-xs">
+                <pre className="whitespace-pre-wrap">
+                  {JSON.stringify(items.map(i => ({
+                    id: i.id?.substring(0, 10),
+                    name: i.product_name,
+                    brand: i.product_brand,
+                    sku: i.product_sku,
+                    qty: i.quantity,
+                    price: i.price
+                  })), null, 2)}
+                </pre>
+              </div>
+              
+              {items.map((item, index) => (
                 <CartSidebarItem
-                  key={item.id}
+                  key={item.id || `item-${index}`}
                   item={item}
                   onRemove={() => removeItem(item.id)}
                   onQuantityChange={(qty) => updateQuantity(item.id, qty)}
@@ -262,79 +301,90 @@ interface CartSidebarItemProps {
 }
 
 function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemProps) {
+  // Extraire les données avec fallbacks robustes
   const imageUrl = getProductImageUrl(item);
-  const unitPrice = item.unit_price || item.price || 0;
-  const totalPrice = unitPrice * item.quantity;
+  const unitPrice = Number(item.unit_price) || Number(item.price) || 0;
+  const totalPrice = unitPrice * (item.quantity || 1);
+  const reference = item.product_ref || item.product_sku || item.product_id;
+  const brand = item.product_brand;
+  const name = item.product_name || item.name || `Produit #${item.product_id}`;
+  const qty = item.quantity || 1;
   
   return (
-    <div className="flex gap-3 p-3 hover:bg-gray-50 transition-colors group">
-      {/* Image */}
-      <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border">
-        <img
-          src={imageUrl}
-          alt={item.product_name || 'Produit'}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = '/images/no.png';
-          }}
-        />
+    <div className="flex gap-3 p-4 hover:bg-blue-50/50 transition-colors group border-b border-gray-100 last:border-b-0">
+      {/* Image avec badge quantité */}
+      <div className="relative flex-shrink-0">
+        <div className="w-20 h-20 bg-white rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm">
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-contain p-1"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/images/no.png';
+            }}
+          />
+        </div>
+        {/* Badge quantité sur l'image */}
+        <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg">
+          {qty}
+        </div>
       </div>
 
       {/* Détails produit */}
-      <div className="flex-1 min-w-0">
-        {/* Marque */}
-        {item.product_brand && (
-          <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">
-            {item.product_brand}
-          </p>
-        )}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Ligne marque + ref */}
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {brand && brand !== 'MARQUE INCONNUE' && brand !== 'Non spécifiée' && (
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 text-blue-700 font-semibold">
+              {brand}
+            </Badge>
+          )}
+          {reference && (
+            <span className="text-[10px] text-gray-500 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+              {reference}
+            </span>
+          )}
+        </div>
         
         {/* Nom produit */}
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-2 leading-tight">
-          {item.product_name || 'Produit'}
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-2">
+          {name}
         </h3>
-        
-        {/* Référence */}
-        {item.product_ref && (
-          <p className="text-[10px] text-gray-500 mt-0.5">
-            Réf: {item.product_ref}
-          </p>
-        )}
 
-        {/* Prix unitaire + Quantité + Total */}
-        <div className="flex items-center justify-between mt-2">
+        {/* Ligne prix + quantité */}
+        <div className="flex items-center justify-between mt-auto">
           {/* Sélecteur quantité */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-1 py-0.5">
+          <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
             <button
-              onClick={() => onQuantityChange(item.quantity - 1)}
-              disabled={item.quantity <= 1}
-              className="h-6 w-6 text-sm flex items-center justify-center hover:bg-white rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed font-bold"
+              onClick={() => onQuantityChange(qty - 1)}
+              disabled={qty <= 1}
+              className="h-7 w-7 flex items-center justify-center hover:bg-gray-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed text-gray-600"
             >
-              −
+              <span className="text-lg font-medium">−</span>
             </button>
-            <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
+            <span className="w-8 text-center text-sm font-bold text-gray-900">{qty}</span>
             <button
-              onClick={() => onQuantityChange(item.quantity + 1)}
-              className="h-6 w-6 text-sm flex items-center justify-center hover:bg-white rounded transition-colors font-bold"
+              onClick={() => onQuantityChange(qty + 1)}
+              className="h-7 w-7 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600"
             >
-              +
+              <span className="text-lg font-medium">+</span>
             </button>
           </div>
 
           {/* Prix */}
           <div className="text-right">
-            <p className="text-sm font-bold text-gray-900">{formatPrice(totalPrice)}</p>
-            {item.quantity > 1 && (
-              <p className="text-[10px] text-gray-500">{formatPrice(unitPrice)}/pièce</p>
+            <p className="text-base font-bold text-blue-600">{formatPrice(totalPrice)}</p>
+            {qty > 1 && (
+              <p className="text-[10px] text-gray-500">{formatPrice(unitPrice)} × {qty}</p>
             )}
           </div>
         </div>
 
         {/* Consigne si applicable */}
-        {item.consigne_unit && item.consigne_unit > 0 && (
-          <div className="mt-1.5 flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full w-fit">
+        {item.consigne_unit && Number(item.consigne_unit) > 0 && (
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-lg w-fit">
             <span>♻️</span>
-            <span>+{formatPrice(item.consigne_unit * item.quantity)} consigne</span>
+            <span>+{formatPrice(Number(item.consigne_unit) * qty)} consigne</span>
           </div>
         )}
       </div>
@@ -342,7 +392,7 @@ function CartSidebarItem({ item, onRemove, onQuantityChange }: CartSidebarItemPr
       {/* Bouton supprimer */}
       <button
         onClick={onRemove}
-        className="opacity-0 group-hover:opacity-100 h-6 w-6 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-all flex-shrink-0 flex items-center justify-center"
+        className="opacity-0 group-hover:opacity-100 h-7 w-7 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0 flex items-center justify-center self-start"
         aria-label="Supprimer"
       >
         <X className="h-4 w-4" />

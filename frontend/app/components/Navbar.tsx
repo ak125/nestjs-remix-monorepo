@@ -18,9 +18,8 @@ import { Bell, BookOpen, ChevronRight, Search, ShoppingCart, X, Menu, Phone, Tru
 import { useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
-import { useCart } from "../hooks/useCart";
-import { useOptionalUser } from "../root";
-import { CartSidebar } from "./navbar/CartSidebar";
+import { useOptionalUser, useRootCart } from "../root";
+import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
@@ -29,7 +28,17 @@ export const Navbar = ({ logo }: { logo: string }) => {
   const user = useOptionalUser();
   const location = useLocation();
   const navigate = useNavigate();
-  const { summary, isOpen, toggleCart, closeCart } = useCart();
+  
+  // 🛒 Panier: données depuis root loader + état local pour ouverture
+  const cartData = useRootCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const toggleCart = () => setIsCartOpen(prev => !prev);
+  const closeCart = () => setIsCartOpen(false);
+  const openCart = () => setIsCartOpen(true);
+  
+  // Résumé du panier depuis les données du root loader
+  const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
+  
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -382,8 +391,8 @@ export const Navbar = ({ logo }: { logo: string }) => {
           )}
         </div>
 
-        {/* Sidebar Panier */}
-        <CartSidebar isOpen={isOpen} onClose={closeCart} />
+        {/* Sidebar Panier - Version simplifiée sans contexte */}
+        <CartSidebarSimple isOpen={isCartOpen} onClose={closeCart} />
       </nav>
 
       {/* Barre de recherche mobile - Plein écran avec design premium */}

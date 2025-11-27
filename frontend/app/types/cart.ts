@@ -10,11 +10,13 @@ export interface CartItem {
   price: number;
   created_at: string;
   updated_at: string;
+  name?: string; // Alias pour product_name (compatibilité backend)
   product_name?: string;
   product_sku?: string;
   product_ref?: string; // Référence produit
   product_brand?: string; // 🔧 AJOUT: Marque du produit
   product_image?: string; // URL image produit
+  image_url?: string; // Alias pour product_image (compatibilité backend)
   weight?: number;
   stock_available?: number; // Stock disponible
   unit_price?: number; // Prix unitaire (alias de price)
