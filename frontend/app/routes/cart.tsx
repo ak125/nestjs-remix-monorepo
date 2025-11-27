@@ -587,16 +587,6 @@ export default function CartPage() {
               </p>
             </div>
           </div>
-          
-          <button
-            type="button"
-            onClick={handleClearCart}
-            disabled={isProcessing}
-            className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-          >
-            <Trash2 className="h-4 w-4" />
-            {isProcessing ? 'Vidage...' : 'Vider le panier'}
-          </button>
         </div>
         
         {/* Barre de progression livraison gratuite */}
@@ -624,14 +614,28 @@ export default function CartPage() {
               />
             ))}
             
-            {/* Lien retour */}
-            <Link 
-              to="/" 
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mt-4"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Continuer mes achats
-            </Link>
+            {/* Actions bas de liste */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
+              <Link 
+                to="/" 
+                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Continuer mes achats
+              </Link>
+              
+              <button
+                type="button"
+                onClick={handleClearCart}
+                disabled={isProcessing}
+                className="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 text-sm transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="underline-offset-2 hover:underline">
+                  {isProcessing ? 'Vidage...' : 'Vider le panier'}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Résumé et actions - Sticky sur desktop */}
