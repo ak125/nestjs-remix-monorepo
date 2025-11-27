@@ -465,6 +465,8 @@ export default function CartPage() {
       if (response.ok) {
         showNotification('success', 'Quantité mise à jour');
         revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         throw new Error('Erreur mise à jour');
       }
@@ -489,6 +491,8 @@ export default function CartPage() {
       if (response.ok) {
         showNotification('success', 'Article supprimé');
         revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         throw new Error('Erreur suppression');
       }
@@ -517,6 +521,8 @@ export default function CartPage() {
       if (response.ok) {
         showNotification('success', 'Panier vidé');
         revalidator.revalidate();
+        // 🔄 Synchroniser la Navbar et Sidecart
+        window.dispatchEvent(new Event('cart:updated'));
       } else {
         throw new Error('Erreur vidage');
       }

@@ -7,8 +7,10 @@ import {
   ScrollRestoration, 
   useRouteLoaderData,
   useRouteError,
-  isRouteErrorResponse 
+  isRouteErrorResponse,
+  useRevalidator
 } from "@remix-run/react";
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { getOptionalUser } from "./auth/unified.server";
@@ -16,7 +18,6 @@ import { Error404, Error410, Error412, ErrorGeneric } from "./components/errors"
 import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import { NotificationContainer, NotificationProvider } from "./components/notifications/NotificationContainer";
-import { CartProvider } from "./contexts/CartContext";
 import { getCart } from "./services/cart.server";
 import type { CartData } from "./types/cart";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
@@ -122,6 +123,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData("root") as { user: any; cart: CartData | null } | undefined;
   const user = data?.user;
   const cart = data?.cart;
+  const revalidator = useRevalidator();
+  
+  // 🔄 Synchronisation panier globale via événement
+  useEffect(() => {
+    const handleCartUpdated = () => {
+      console.log('🔄 [root] cart:updated → revalidate');
+      revalidator.revalidate();
+    };
+    
+    window.addEventListener('cart:updated', handleCartUpdated);
+    return () => window.removeEventListener('cart:updated', handleCartUpdated);
+  }, [revalidator]);
   
   // DEBUG: Log pour voir si les données arrivent
   if (typeof window !== 'undefined') {
@@ -137,22 +150,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body className="h-full bg-gray-100">
-        <CartProvider initialData={cart}>
-          <VehicleProvider>
-            <NotificationProvider>
-              <div className="min-h-screen flex flex-col">
-                  <Navbar logo={logo} />
-                  <main className="flex-grow flex flex-col">
-                    <div className="flex-grow">
-                      {children}
-                    </div>
-                   </main>
-              </div>
-              <Footer />
-              <NotificationContainer />
-            </NotificationProvider>
-          </VehicleProvider>
-        </CartProvider>
+        <VehicleProvider>
+          <NotificationProvider>
+            <div className="min-h-screen flex flex-col">
+                <Navbar logo={logo} />
+                <main className="flex-grow flex flex-col">
+                  <div className="flex-grow">
+                    {children}
+                  </div>
+                 </main>
+            </div>
+            <Footer />
+            <NotificationContainer />
+          </NotificationProvider>
+        </VehicleProvider>
         {/* 🎉 Sonner Toaster - Notifications modernes */}
         <Toaster 
           position="top-right"
