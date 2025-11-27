@@ -1,48 +1,53 @@
 /**
- * 🛒 CartContext - État partagé du panier
+ * 🛒 CartContext - État global du panier
  * 
- * Permet de synchroniser le panier entre tous les composants:
- * - Navbar (compteur)
- * - CartSidebar (liste des articles)
- * - Boutons "Ajouter au panier"
+ * Fournit un contexte React pour partager l'état du panier
+ * entre tous les composants (Navbar, Sidebar, Pages, Boutons).
  * 
- * @example
- * ```tsx
- * // Dans root.tsx
- * <CartProvider>
- *   <App />
- * </CartProvider>
- * 
- * // Dans n'importe quel composant
- * const { items, summary, addToCart } = useCartContext();
- * ```
+ * Utilise cart.api.ts pour TOUS les appels API.
  */
 
-import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import { useFetcher } from '@remix-run/react';
-import { type CartData, type CartItem, type CartSummary } from '../types/cart';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import { cartApi } from '../services/cart.api';
+import type { CartItem, CartSummary, CartData } from '../types/cart';
 
-// Types
+// ============================================================================
+// TYPES
+// ============================================================================
+
 interface CartContextType {
   items: CartItem[];
   summary: CartSummary;
   isOpen: boolean;
   isLoading: boolean;
   error: string | null;
-  
-  // Actions
+
+  // Actions UI
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  addToCart: (productId: number, quantity?: number) => Promise<void>;
-  removeItem: (itemId: string) => Promise<void>;
-  updateQuantity: (itemId: string, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>;
-  refreshCart: () => void;
-  
-  // Mise à jour directe (pour optimisation)
+
+  // Actions API
+  addToCart: (productId: number, quantity?: number) => Promise<boolean>;
+  removeItem: (itemId: string) => Promise<boolean>;
+  updateQuantity: (itemId: string, quantity: number) => Promise<boolean>;
+  clearCart: () => Promise<boolean>;
+  refreshCart: () => Promise<void>;
+
+  // Mise à jour directe
   setCartData: (items: CartItem[], summary: CartSummary) => void;
 }
+
+// ============================================================================
+// VALEURS PAR DÉFAUT
+// ============================================================================
 
 const defaultSummary: CartSummary = {
   total_items: 0,
@@ -54,224 +59,224 @@ const defaultSummary: CartSummary = {
   currency: 'EUR',
 };
 
-// Contexte
+// ============================================================================
+// CONTEXTE
+// ============================================================================
+
 const CartContext = createContext<CartContextType | null>(null);
 
-// Provider
+// ============================================================================
+// PROVIDER
+// ============================================================================
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  // État partagé
-  const [isOpen, setIsOpen] = useState(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [summary, setSummary] = useState<CartSummary>(defaultSummary);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetcher pour les appels API
-  const fetcher = useFetcher<{ success: boolean; cart?: CartData; error?: string }>();
+  // ──────────────────────────────────────────────────────────────────────────
+  // HELPERS
+  // ──────────────────────────────────────────────────────────────────────────
 
-  // 🔄 Charger le panier au montage
-  useEffect(() => {
-    fetcher.load('/cart');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 📥 Traiter la réponse du fetcher
-  useEffect(() => {
-    if (fetcher.data) {
-      if (fetcher.data.success && fetcher.data.cart) {
-        const cartData = fetcher.data.cart;
-        
-        // Enrichir les items
-        const enrichedItems = cartData.items.map(item => ({
-          ...item,
-          consigne_total: (item.consigne_unit || 0) * item.quantity,
-          has_consigne: (item.consigne_unit || 0) > 0,
-        }));
-
-        setItems(enrichedItems);
-        
-        if (cartData.summary) {
-          setSummary(cartData.summary);
-        }
-        
-        setError(null);
-      } else if (fetcher.data.error) {
-        setError(fetcher.data.error);
-      }
+  const extractProductId = (itemId: string): number => {
+    const parts = itemId.split('-');
+    if (parts.length >= 2) {
+      const productId = parseInt(parts[1], 10);
+      if (!isNaN(productId)) return productId;
     }
-  }, [fetcher.data]);
+    const parsed = parseInt(itemId, 10);
+    return isNaN(parsed) ? 0 : parsed;
+  };
 
-  // Actions
-  const toggleCart = useCallback(() => setIsOpen(prev => !prev), []);
-  const openCart = useCallback(() => setIsOpen(true), []);
-  const closeCart = useCallback(() => setIsOpen(false), []);
-  
-  const refreshCart = useCallback(() => {
-    fetcher.load('/cart');
-  }, [fetcher]);
-
-  // Mise à jour directe depuis les réponses API optimisées
-  const setCartData = useCallback((newItems: CartItem[], newSummary: CartSummary) => {
-    const enrichedItems = newItems.map(item => ({
+  const updateCartState = useCallback((cartData: CartData) => {
+    const enrichedItems = cartData.items.map((item) => ({
       ...item,
       consigne_total: (item.consigne_unit || 0) * item.quantity,
       has_consigne: (item.consigne_unit || 0) > 0,
     }));
     setItems(enrichedItems);
-    setSummary(newSummary);
+    setSummary(cartData.summary);
     setError(null);
   }, []);
 
-  // ➕ Ajouter au panier
-  const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
+  const emitCartUpdated = () => {
+    window.dispatchEvent(new Event('cart:updated'));
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ACTIONS UI
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const toggleCart = useCallback(() => setIsOpen((prev) => !prev), []);
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // ACTIONS API
+  // ──────────────────────────────────────────────────────────────────────────
+
+  const refreshCart = useCallback(async () => {
+    setIsLoading(true);
     try {
-      console.log('➕ [CartContext] addToCart:', { productId, quantity });
-      
-      // ⚡ Ouvrir le panier IMMÉDIATEMENT
+      const result = await cartApi.getCart();
+      if (result.success && result.data) {
+        updateCartState(result.data);
+      } else {
+        setError(result.error || 'Erreur lors du chargement');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [updateCartState]);
+
+  const addToCart = useCallback(
+    async (productId: number, quantity: number = 1): Promise<boolean> => {
+      setIsLoading(true);
+      setError(null);
       openCart();
-      
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ product_id: productId, quantity })
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ [CartContext] Article ajouté');
-        
-        // ⚡ Mise à jour directe depuis la réponse
-        if (data.cart) {
-          console.log('⚡ [CartContext] Mise à jour inline:', data.cart.summary?.total_items);
-          setCartData(data.cart.items || [], data.cart.summary || defaultSummary);
+      try {
+        const result = await cartApi.addItem(productId, quantity);
+        if (result.success && result.cart) {
+          updateCartState(result.cart);
+          emitCartUpdated();
+          return true;
         } else {
-          refreshCart();
+          setError(result.error || "Erreur lors de l'ajout");
+          return false;
         }
-        
-        // Émettre événement pour compatibilité
-        window.dispatchEvent(new Event('cart:updated'));
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ [CartContext] Erreur:', errorData);
-        setError(errorData.message || 'Erreur lors de l\'ajout');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('❌ [CartContext] Erreur réseau:', err);
-      setError('Erreur réseau');
-    }
-  }, [openCart, setCartData, refreshCart]);
+    },
+    [openCart, updateCartState]
+  );
 
-  // 🗑️ Supprimer du panier
-  const removeItem = useCallback(async (itemId: string) => {
-    try {
-      const parts = itemId.split('-');
-      const productId = parts.length >= 2 ? parts[1] : itemId;
-      
-      console.log('🗑️ [CartContext] removeItem:', { itemId, productId });
-      
-      const response = await fetch(`/api/cart/items/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+  const removeItem = useCallback(
+    async (itemId: string): Promise<boolean> => {
+      const productId = extractProductId(itemId);
+      if (!productId) {
+        setError('ID produit invalide');
+        return false;
+      }
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ [CartContext] Article supprimé');
-        
-        if (data.cart) {
-          setCartData(data.cart.items || [], data.cart.summary || defaultSummary);
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await cartApi.removeItem(productId);
+        if (result.success && result.cart) {
+          updateCartState(result.cart);
+          emitCartUpdated();
+          return true;
         } else {
-          refreshCart();
+          setError(result.error || 'Erreur lors de la suppression');
+          return false;
         }
-        
-        window.dispatchEvent(new Event('cart:updated'));
-      } else {
-        console.error('❌ [CartContext] Erreur suppression');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('❌ [CartContext] Erreur:', err);
-    }
-  }, [setCartData, refreshCart]);
+    },
+    [updateCartState]
+  );
 
-  // 🔄 Mettre à jour quantité
-  const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
-    if (quantity < 1) {
-      return removeItem(itemId);
-    }
+  const updateQuantity = useCallback(
+    async (itemId: string, quantity: number): Promise<boolean> => {
+      const productId = extractProductId(itemId);
+      if (!productId) {
+        setError('ID produit invalide');
+        return false;
+      }
 
-    try {
-      const parts = itemId.split('-');
-      const productId = parts.length >= 2 ? parts[1] : itemId;
-      
-      console.log('🔄 [CartContext] updateQuantity:', { productId, quantity });
-      
-      const response = await fetch('/api/cart/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          product_id: parseInt(productId), 
-          quantity,
-          replace: true 
-        })
-      });
+      if (quantity < 1) {
+        return removeItem(itemId);
+      }
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ [CartContext] Quantité mise à jour');
-        
-        if (data.cart) {
-          setCartData(data.cart.items || [], data.cart.summary || defaultSummary);
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const result = await cartApi.updateQuantity(productId, quantity);
+        if (result.success && result.cart) {
+          updateCartState(result.cart);
+          emitCartUpdated();
+          return true;
         } else {
-          refreshCart();
+          setError(result.error || 'Erreur lors de la mise à jour');
+          return false;
         }
-        
-        window.dispatchEvent(new Event('cart:updated'));
-      } else {
-        console.error('❌ [CartContext] Erreur mise à jour');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Erreur inconnue');
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error('❌ [CartContext] Erreur:', err);
-    }
-  }, [removeItem, setCartData, refreshCart]);
+    },
+    [removeItem, updateCartState]
+  );
 
-  // 🧹 Vider le panier
-  const clearCart = useCallback(async () => {
+  const clearCart = useCallback(async (): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      console.log('🧹 [CartContext] Vidage du panier');
-      console.log('🍪 [CartContext] Cookies:', document.cookie);
-      
-      // Appel direct à DELETE /api/cart (endpoint NestJS)
-      const response = await fetch('/api/cart', {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      console.log('📡 [CartContext] Response status:', response.status);
-      const data = await response.json();
-      console.log('📦 [CartContext] Response data:', data);
-      
-      if (response.ok && data.success) {
-        console.log('✅ [CartContext] Panier vidé:', data);
+      const result = await cartApi.clearCart();
+      if (result.success) {
         setItems([]);
         setSummary(defaultSummary);
-        window.dispatchEvent(new Event('cart:updated'));
+        emitCartUpdated();
+        return true;
       } else {
-        console.error('❌ [CartContext] Erreur vidage panier:', data.error || data.message);
-        throw new Error(data.error || data.message || `Erreur ${response.status}`);
+        setError(result.error || 'Erreur lors du vidage');
+        return false;
       }
     } catch (err) {
-      console.error('❌ [CartContext] Erreur:', err);
-      throw err; // Propager l'erreur pour le toast
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
+
+  const setCartData = useCallback(
+    (newItems: CartItem[], newSummary: CartSummary) => {
+      const enrichedItems = newItems.map((item) => ({
+        ...item,
+        consigne_total: (item.consigne_unit || 0) * item.quantity,
+        has_consigne: (item.consigne_unit || 0) > 0,
+      }));
+      setItems(enrichedItems);
+      setSummary(newSummary);
+      setError(null);
+    },
+    []
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // EFFETS
+  // ──────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    refreshCart();
+  }, [refreshCart]);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ──────────────────────────────────────────────────────────────────────────
 
   const value: CartContextType = {
     items,
     summary,
     isOpen,
-    isLoading: fetcher.state !== 'idle',
+    isLoading,
     error,
     toggleCart,
     openCart,
@@ -284,14 +289,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCartData,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-// Hook pour utiliser le contexte
+// ============================================================================
+// HOOKS
+// ============================================================================
+
 export function useCartContext(): CartContextType {
   const context = useContext(CartContext);
   if (!context) {
@@ -300,5 +304,9 @@ export function useCartContext(): CartContextType {
   return context;
 }
 
-// Export du contexte pour les cas avancés
+// Alias pour compatibilité avec useCart existant
+export const useCart = useCartContext;
+
+// Export du contexte
 export { CartContext };
+export type { CartContextType };
