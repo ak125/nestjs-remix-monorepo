@@ -171,10 +171,25 @@ export function useCart(): UseCartReturn {
       });
 
       if (response.ok) {
+        const data = await response.json();
         console.log('✅ Article supprimé');
-        // Recharger le panier après suppression
-        refreshCart();
-        // Émettre un événement global pour synchroniser tous les composants
+        
+        // ⚡ OPTIMISATION: Utiliser le panier retourné directement
+        if (data.cart) {
+          console.log('⚡ OPTIMISATION removeItem: panier inline', data.cart.summary?.total_items);
+          const enrichedItems = (data.cart.items || []).map((item: CartItem) => ({
+            ...item,
+            consigne_total: (item.consigne_unit || 0) * item.quantity,
+            has_consigne: (item.consigne_unit || 0) > 0,
+          }));
+          setItems(enrichedItems);
+          if (data.cart.summary) {
+            setSummary(data.cart.summary);
+          }
+        } else {
+          refreshCart();
+        }
+        
         window.dispatchEvent(new Event('cart:updated'));
       } else {
         console.error('❌ Erreur suppression article:', response.status);
@@ -182,7 +197,7 @@ export function useCart(): UseCartReturn {
     } catch (error) {
       console.error('❌ Erreur removeItem:', error);
     }
-  }, [refreshCart]);
+  }, []);
 
   const updateQuantity = useCallback(async (itemId: string, quantity: number) => {
     if (quantity < 1) {
@@ -210,10 +225,25 @@ export function useCart(): UseCartReturn {
       });
 
       if (response.ok) {
+        const data = await response.json();
         console.log('✅ Quantité mise à jour');
-        // Recharger le panier après mise à jour
-        refreshCart();
-        // Émettre un événement global pour synchroniser tous les composants
+        
+        // ⚡ OPTIMISATION: Utiliser le panier retourné directement
+        if (data.cart) {
+          console.log('⚡ OPTIMISATION updateQuantity: panier inline', data.cart.summary?.total_items);
+          const enrichedItems = (data.cart.items || []).map((item: CartItem) => ({
+            ...item,
+            consigne_total: (item.consigne_unit || 0) * item.quantity,
+            has_consigne: (item.consigne_unit || 0) > 0,
+          }));
+          setItems(enrichedItems);
+          if (data.cart.summary) {
+            setSummary(data.cart.summary);
+          }
+        } else {
+          refreshCart();
+        }
+        
         window.dispatchEvent(new Event('cart:updated'));
       } else {
         console.error('❌ Erreur mise à jour quantité:', response.status);
@@ -243,9 +273,36 @@ export function useCart(): UseCartReturn {
       });
 
       if (response.ok) {
+        const data = await response.json();
         console.log('✅ Article ajouté au panier');
-        // Recharger le panier
-        refreshCart();
+        
+        // ⚡ OPTIMISATION: Utiliser le panier retourné directement par l'API
+        // Évite un appel réseau supplémentaire pour refreshCart()
+        if (data.cart) {
+          console.log('⚡ OPTIMISATION: Utilisation du panier inline', {
+            items: data.cart.items?.length || 0,
+            total: data.cart.summary?.total_price || 0
+          });
+          // Enrichir les items avec calcul consignes
+          const enrichedItems = (data.cart.items || []).map((item: CartItem) => ({
+            ...item,
+            consigne_total: (item.consigne_unit || 0) * item.quantity,
+            has_consigne: (item.consigne_unit || 0) > 0,
+          }));
+          
+          setItems(enrichedItems);
+          
+          // Utiliser le summary directement du backend
+          if (data.cart.summary) {
+            setSummary(data.cart.summary);
+          }
+          
+          setError(null);
+        } else {
+          // Fallback: recharger si le panier n'est pas dans la réponse
+          refreshCart();
+        }
+        
         window.dispatchEvent(new Event('cart:updated'));
       } else {
         const errorData = await response.json().catch(() => ({}));
@@ -256,7 +313,7 @@ export function useCart(): UseCartReturn {
       console.error('❌ Erreur addToCart:', error);
       setError('Erreur réseau lors de l\'ajout au panier');
     }
-  }, [refreshCart, openCart]);
+  }, [openCart]);
 
   return {
     items,
