@@ -563,29 +563,24 @@ export default function CartPage() {
           <button
             type="button"
             onClick={async () => {
-              toast.warning('Vider le panier ?', {
-                duration: 5000,
-                description: `${cart.summary.total_items} article(s) seront supprimés`,
-                action: {
-                  label: 'Confirmer',
-                  onClick: async () => {
-                    try {
-                      await clearCart();
-                      toast.success('Panier vidé !');
-                      // Recharger la page pour afficher le panier vide
-                      setTimeout(() => {
-                        window.location.href = '/cart?cleared=true';
-                      }, 500);
-                    } catch (err) {
-                      toast.error('Erreur lors du vidage du panier');
-                    }
-                  },
-                },
-                cancel: {
-                  label: 'Annuler',
-                  onClick: () => {},
-                },
-              });
+              console.log('🔴 Bouton Vider cliqué !');
+              
+              // Confirmation simple
+              if (!confirm('Vider le panier ? ' + cart.summary.total_items + ' article(s) seront supprimés')) {
+                console.log('❌ Annulé par utilisateur');
+                return;
+              }
+              
+              console.log('✅ Confirmé, appel clearCart...');
+              try {
+                await clearCart();
+                console.log('✅ clearCart terminé');
+                alert('Panier vidé !');
+                window.location.href = '/cart?cleared=true';
+              } catch (err) {
+                console.error('❌ Erreur clearCart:', err);
+                alert('Erreur: ' + (err instanceof Error ? err.message : 'Erreur inconnue'));
+              }
             }}
             className="text-red-600 hover:text-red-800 text-sm font-medium px-4 py-2 border border-red-600 rounded hover:bg-destructive/5 transition-colors"
             title="Supprimer tous les articles du panier"
