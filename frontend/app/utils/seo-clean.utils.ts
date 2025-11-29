@@ -54,6 +54,34 @@ export function cleanOrphanParagraphs(html: string): string {
 }
 
 /**
+ * 🎨 Supprime les styles inline qui écrasent les classes CSS
+ * Supprime: font-family, font-size, line-height des attributs style
+ * 
+ * @param html - Contenu HTML avec styles inline
+ * @returns Contenu HTML sans styles inline de typographie
+ */
+export function cleanInlineStyles(html: string): string {
+  if (!html || typeof html !== 'string') {
+    return html;
+  }
+
+  let result = html;
+
+  // 1. Supprimer les attributs style contenant font-family, font-size, line-height
+  // Pattern: style="font-size:11pt" ou style="font-family:Calibri,sans-serif"
+  result = result.replace(/\s*style="[^"]*(?:font-family|font-size|line-height)[^"]*"/gi, '');
+
+  // 2. Supprimer les <span> vides (sans attributs) qui restent après nettoyage
+  // Pattern: <span>texte</span> → texte
+  result = result.replace(/<span>([^<]*)<\/span>/gi, '$1');
+
+  // 3. Répéter pour les spans imbriqués
+  result = result.replace(/<span>([^<]*)<\/span>/gi, '$1');
+
+  return result;
+}
+
+/**
  * Nettoie tous les champs SEO d'un objet
  * 
  * @param seoData - Objet contenant h1, title, description, content, longDescription
