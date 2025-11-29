@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { buildRackImageUrl, type PieceImageData } from '../utils/image-urls.utils';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 
 @Injectable()
 export class PiecesEnhancedService extends SupabaseBaseService {
@@ -245,7 +246,7 @@ export class PiecesEnhancedService extends SupabaseBaseService {
           // URLs
           urls: {
             fiche: `/fiche/${piece.piece_id}/${typeId}`,
-            detail: `/piece/${piece.piece_id}/${this.slugify(nomComplet || 'piece')}.html`,
+            detail: `/piece/${piece.piece_id}/${normalizeAlias(nomComplet || 'piece')}.html`,
           },
         };
       });
@@ -372,15 +373,5 @@ export class PiecesEnhancedService extends SupabaseBaseService {
         (a: any, b: any) => a.label.localeCompare(b.label),
       ),
     };
-  }
-
-  private slugify(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-');
   }
 }

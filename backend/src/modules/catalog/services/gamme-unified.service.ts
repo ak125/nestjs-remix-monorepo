@@ -6,6 +6,7 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { SeoSwitchesService } from './seo-switches.service';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 import {
   Gamme,
   FamilyWithGammes,
@@ -410,11 +411,11 @@ export class GammeUnifiedService extends SupabaseBaseService {
 
       const finalResult = {
         success: true,
-        h1: processedH1,
-        content: processedContent,
-        description: processedDescription,
-        title: processedTitle,
-        preview: processedPreview,
+        h1: decodeHtmlEntities(processedH1),
+        content: decodeHtmlEntities(processedContent),
+        description: decodeHtmlEntities(processedDescription),
+        title: decodeHtmlEntities(processedTitle),
+        preview: decodeHtmlEntities(processedPreview),
         keywords: null,
       };
 

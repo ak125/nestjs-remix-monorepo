@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { BlogService } from './blog.service';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
@@ -444,7 +445,7 @@ export class AdviceService {
         // Version simplifiée si BlogService pas disponible
         const articleData = {
           ba_title: article.title,
-          ba_alias: article.slug || this.slugify(article.title || ''),
+          ba_alias: article.slug || normalizeAlias(article.title || ''),
           ba_descrip: article.excerpt,
           ba_content: article.content,
           ba_keywords: article.keywords?.join(','),
@@ -758,20 +759,6 @@ export class AdviceService {
         .update({ ba_visit: 'ba_visit::int + 1' })
         .eq('ba_id', adviceId);
     }
-  }
-
-  /**
-   * 🔗 Créer un slug à partir d'un titre
-   */
-  private slugify(text: string): string {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
   }
 
   // === MÉTHODES DE COMPATIBILITÉ ===

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
  * Service de transformation des données pour les pages gamme
@@ -8,57 +10,29 @@ import { Injectable } from '@nestjs/common';
 export class GammeDataTransformerService {
   /**
    * Nettoie le contenu HTML et les entités
+   * ✅ Utilise decodeHtmlEntities centralisé (80+ entités supportées)
    */
   contentCleaner(content: string): string {
     if (!content) return '';
-    return this.cleanHtmlContent(content);
-  }
-
-  /**
-   * Nettoie le contenu HTML
-   */
-  private cleanHtmlContent(content: string): string {
-    if (!content) return '';
+    // Supprimer les balises HTML puis décoder les entités
     const withoutTags = content.replace(/<[^>]*>/g, '');
-    const decoded = withoutTags
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&nbsp;/g, ' ');
-    return decoded.replace(/\s+/g, ' ').trim();
+    return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
   }
 
   /**
    * Décode les entités HTML et remplace les variables
+   * ✅ Utilise decodeHtmlEntities centralisé
    */
   cleanSeoText(text: string, marqueName: string): string {
     if (!text) return text;
-    
-    const htmlEntities: Record<string, string> = {
-      '&eacute;': 'é', '&egrave;': 'è', '&ecirc;': 'ê', '&euml;': 'ë',
-      '&agrave;': 'à', '&acirc;': 'â', '&auml;': 'ä',
-      '&ocirc;': 'ô', '&ouml;': 'ö', '&ograve;': 'ò',
-      '&icirc;': 'î', '&iuml;': 'ï', '&igrave;': 'ì',
-      '&ucirc;': 'û', '&ugrave;': 'ù', '&uuml;': 'ü',
-      '&ccedil;': 'ç', '&rsquo;': "'", '&lsquo;': "'",
-      '&rdquo;': '"', '&ldquo;': '"', '&nbsp;': ' ',
-      '&amp;': '&', '&lt;': '<', '&gt;': '>',
-    };
-    
-    let cleanedText = text;
-    Object.entries(htmlEntities).forEach(([entity, char]) => {
-      cleanedText = cleanedText.replace(new RegExp(entity, 'g'), char);
-    });
-    
+    let cleanedText = decodeHtmlEntities(text);
     cleanedText = cleanedText.replace(/#VMarque#/g, marqueName);
-    
     return cleanedText;
   }
 
   /**
    * Génère une URL de pièce avec véhicule
+   * ✅ Utilise url-builder.utils.ts centralisé
    */
   buildPieceVehicleUrl(params: {
     gammeAlias: string;
@@ -70,22 +44,12 @@ export class GammeDataTransformerService {
     typeName: string;
     typeId: number;
   }): string {
-    const slugify = (text: string): string => {
-      return text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    };
-
-    return [
-      '/pieces',
-      `${slugify(params.gammeAlias)}-${params.gammeId}`,
-      `${slugify(params.marqueName)}-${params.marqueId}`,
-      `${slugify(params.modeleName)}-${params.modeleId}`,
-      `${slugify(params.typeName)}-${params.typeId}.html`
-    ].join('/');
+    return buildPieceVehicleUrlRaw(
+      { alias: params.gammeAlias, id: params.gammeId },
+      { alias: params.marqueName, id: params.marqueId },
+      { alias: params.modeleName, id: params.modeleId },
+      { alias: params.typeName, id: params.typeId },
+    );
   }
 
   /**

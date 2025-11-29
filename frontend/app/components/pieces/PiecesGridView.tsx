@@ -247,12 +247,14 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
               <div className="absolute inset-2 flex items-center justify-center">
                 <div className="relative w-full h-full">
                   <ProductGallery 
-                    images={piece.images?.map((url, idx) => ({
-                      id: `${piece.id}-${idx}`,
-                      url,
-                      sort: idx,
-                      alt: `${piece.name} ${piece.brand} - Image ${idx + 1}`
-                    }))} 
+                    images={piece.images
+                      ?.filter((url): url is string => typeof url === 'string' && url.trim() !== '')
+                      .map((url, idx) => ({
+                        id: `${piece.id}-${idx}`,
+                        url,
+                        sort: idx,
+                        alt: `${piece.name} ${piece.brand} - Image ${idx + 1}`
+                      }))} 
                     mainImage={piece.image} 
                     alt={`${piece.name} ${piece.brand}${piece.reference ? ` - Réf ${piece.reference}` : ''}`}
                   />

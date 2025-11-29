@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
+import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 Import pour batch-loader vehicleInfo
 
 // ========================================
 // 📋 CONTROLLERS - API REST complets
@@ -66,7 +67,7 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     DatabaseModule,
     CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
-    // forwardRef(() => VehiclesModule), // Import circulaire géré - TEMPORAIREMENT DÉSACTIVÉ
+    VehiclesModule, // 🚗 Import pour batch-loader vehicleInfo
   ],
   controllers: [
     CatalogController,

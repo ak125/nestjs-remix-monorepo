@@ -42,7 +42,8 @@ const RACK_IMAGES_BUCKET = 'rack-images';
  * // → 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/icon/bmw.webp'
  */
 export function normalizeImageUrl(url: string | undefined | null): string {
-  if (!url) return '';
+  // Vérification stricte : doit être une chaîne non vide
+  if (!url || typeof url !== 'string') return '';
   
   // Si déjà une URL Supabase complète, retourner telle quelle
   if (url.includes('supabase.co/storage')) {
