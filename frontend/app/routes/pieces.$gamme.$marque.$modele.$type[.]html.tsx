@@ -94,7 +94,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   // 4. Batch Loader & Parallel Fetches
-  // On lance tout en parallèle pour optimiser le temps de réponse
+  // 🚀 OPTIMISÉ V3: batch-loader inclut maintenant vehicleInfo et filters
+  // Suppression des appels redondants: /api/vehicles/types, /api/vehicles/brands/models, /api/products/filters
   const batchLoaderPromise = fetch(`http://localhost:3000/api/catalog/batch-loader`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -108,53 +109,33 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const [
     batchResponse,
-    typeApiResponse,
-    modelsApiResponse,
     pageData,
     hierarchyData,
-    filtersResponse
   ] = await Promise.all([
     batchLoaderPromise,
-    fetch(`http://localhost:3000/api/vehicles/types/${vehicleIds.typeId}`).catch(() => null),
-    fetch(`http://localhost:3000/api/vehicles/brands/${vehicleIds.marqueId}/models`).catch(() => null),
     fetchGammePageData(gammeId).catch(() => null),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { 'Accept': 'application/json' }
     }).then(res => res.ok ? res.json() : null).catch(() => null),
-    fetch(`http://localhost:3000/api/products/filters/${gammeId}/${vehicleIds.typeId}`).then(res => res.json()).catch(() => null)
   ]);
 
   // 5. Construction des objets Vehicle & Gamme
   
-  // Extraction type_name
-  let typeName = toTitleCaseFromSlug(typeData.alias);
-  try {
-    if (typeApiResponse?.ok) {
-      const typeApiData = await typeApiResponse.json();
-      if (typeApiData?.type_name) typeName = typeApiData.type_name;
-    }
-  } catch (e) { console.error('⚠️ Error type_name:', e); }
-  
-  // Extraction photo modèle
-  let modelePic: string | undefined = undefined;
-  try {
-    if (modelsApiResponse?.ok) {
-      const modelsData = await modelsApiResponse.json();
-      const modelData = modelsData.data?.find((m: any) => m.modele_id === vehicleIds.modeleId);
-      if (modelData) modelePic = modelData.modele_pic || modelData.pic;
-    }
-  } catch (e) { console.error('⚠️ Error model pic:', e); }
+  // 🚀 OPTIMISÉ V3: Utilise vehicleInfo du batch-loader au lieu d'appels séparés
+  const vehicleInfo = batchResponse.vehicleInfo;
+  const typeName = vehicleInfo?.typeName || toTitleCaseFromSlug(typeData.alias);
+  const modelePic = vehicleInfo?.modelePic || undefined;
   
   const vehicle: VehicleData = {
-    marque: toTitleCaseFromSlug(marqueData.alias),
-    modele: toTitleCaseFromSlug(modeleData.alias),
+    marque: vehicleInfo?.marqueName || toTitleCaseFromSlug(marqueData.alias),
+    modele: vehicleInfo?.modeleName || toTitleCaseFromSlug(modeleData.alias),
     type: toTitleCaseFromSlug(typeData.alias),
     typeName,
     typeId: vehicleIds.typeId,
     marqueId: vehicleIds.marqueId,
     modeleId: vehicleIds.modeleId,
-    marqueAlias: marqueData.alias,
-    modeleAlias: modeleData.alias,
+    marqueAlias: vehicleInfo?.marqueAlias || marqueData.alias,
+    modeleAlias: vehicleInfo?.modeleAlias || modeleData.alias,
     modelePic
   };
 
@@ -272,8 +253,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const loadTime = Date.now() - startTime;
 
-  // Extract filters data
-  const filtersData = filtersResponse?.success ? filtersResponse.data : null;
+  // 🚀 OPTIMISÉ V3: filters inclus dans batch-loader, plus d'appel séparé
+  const filtersData = batchResponse.filters?.data || batchResponse.filters || null;
 
   return json({
     vehicle,
@@ -674,7 +655,8 @@ export default function PiecesVehicleRoute() {
                 <div className="space-y-8">
                   {data.grouped_pieces.map((group: any, idx: number) => {
                     // Filtrer les pièces du groupe selon les filtres actifs
-                    const groupPieces = group.pieces.filter((p: any) => {
+                    // ✅ Protection: group.pieces peut être undefined
+                    const groupPieces = (group.pieces || []).filter((p: any) => {
                       // Mapper l'objet API vers PieceData pour compatibilité avec filtres
                       const pieceData = {
                         id: p.id,
@@ -879,6 +861,11 @@ export default function PiecesVehicleRoute() {
 export function ErrorBoundary() {
   const error = useRouteError();
   
+  // Log détaillé de l'erreur pour debug
+  console.error('🚨 [ERROR BOUNDARY] Erreur capturée:', error);
+  console.error('🚨 [ERROR BOUNDARY] Type:', typeof error);
+  console.error('🚨 [ERROR BOUNDARY] Stack:', error instanceof Error ? error.stack : 'N/A');
+  
   // Gestion spécifique du 410 Gone (page sans résultats)
   if (isRouteErrorResponse(error) && error.status === 410) {
     return (
@@ -895,18 +882,40 @@ export function ErrorBoundary() {
     );
   }
 
+  // Message d'erreur détaillé pour le développement
+  const errorMessage = error instanceof Error 
+    ? error.message 
+    : isRouteErrorResponse(error)
+    ? `${error.status}: ${error.statusText}`
+    : "Une erreur inattendue s'est produite";
+
+  const errorDetails = error instanceof Error && error.stack 
+    ? error.stack 
+    : JSON.stringify(error, null, 2);
+
   // Autres erreurs (404, 500, etc.)
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
         <h1 className="text-2xl font-bold text-red-600 mb-4">
           Une erreur est survenue
         </h1>
-        <p className="text-gray-600 mb-6">
-          {isRouteErrorResponse(error) 
-            ? `Erreur ${error.status}: ${error.statusText}`
-            : "Une erreur inattendue s'est produite"}
+        <p className="text-gray-600 mb-4">
+          {errorMessage}
         </p>
+        
+        {/* Détails de l'erreur en mode développement */}
+        {process.env.NODE_ENV === 'development' && (
+          <details className="mb-6 bg-gray-100 rounded p-4">
+            <summary className="cursor-pointer font-semibold text-sm text-gray-700 mb-2">
+              Détails techniques (développement)
+            </summary>
+            <pre className="text-xs text-gray-600 overflow-auto max-h-64 whitespace-pre-wrap">
+              {errorDetails}
+            </pre>
+          </details>
+        )}
+        
         <a
           href="/"
           className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium transition-colors"

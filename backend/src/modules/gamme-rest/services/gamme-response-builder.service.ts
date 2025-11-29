@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
+import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 
 /**
  * Service de construction de la réponse finale
@@ -136,15 +137,8 @@ export class GammeResponseBuilderService {
         }
 
         // Slugify pour les URLs
-        const slugify = (text: string): string => {
-          return text
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-        };
-
+        // ✅ Utilise buildPieceVehicleUrlRaw centralisé
+        
         // Construire la période
         const yearFrom = item.type_year_from || '';
         const yearTo = item.type_year_to || "aujourd'hui";
@@ -152,10 +146,12 @@ export class GammeResponseBuilderService {
 
         // Construire le lien vers la page gamme avec véhicule
         // Format: /pieces/gamme-alias-ID/marque-ID/modele-ID/type-ID.html
-        const marqueSlug = slugify(item.marque_name);
-        const modeleSlug = slugify(item.modele_name);
-        const typeSlug = slugify(item.type_name);
-        const link = `/pieces/${pgAlias}-${pgIdNum}/${marqueSlug}-${item.marque_id}/${modeleSlug}-${item.modele_id}/${typeSlug}-${item.type_id}.html`;
+        const link = buildPieceVehicleUrlRaw(
+          { alias: pgAlias, id: pgIdNum },
+          { alias: item.marque_name, id: item.marque_id },
+          { alias: item.modele_name, id: item.modele_id },
+          { alias: item.type_name, id: item.type_id },
+        );
 
         // Valider et nettoyer les fragments SEO
         const validateFragment = (frag: string, marqueName: string): string => {

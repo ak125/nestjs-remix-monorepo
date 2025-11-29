@@ -6,7 +6,10 @@
 import { useState, useMemo } from 'react';
 import { type PieceData, type PiecesFilters, type SortBy, type ViewMode } from '../types/pieces-route.types';
 
-export function usePiecesFilters(pieces: PieceData[]) {
+export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
+  // ✅ Protection: S'assurer que pieces est toujours un tableau
+  const pieces = inputPieces ?? [];
+  
   // État des filtres
   const [activeFilters, setActiveFilters] = useState<PiecesFilters>({
     brands: [],
@@ -27,13 +30,13 @@ export function usePiecesFilters(pieces: PieceData[]) {
   const filteredProducts = useMemo(() => {
     let result = [...pieces];
 
-    // Recherche textuelle
+    // Recherche textuelle - ✅ Protection contre undefined
     if (activeFilters.searchText) {
       const q = activeFilters.searchText.toLowerCase();
       result = result.filter(piece => 
-        piece.name.toLowerCase().includes(q) ||
-        piece.reference.toLowerCase().includes(q) ||
-        piece.brand.toLowerCase().includes(q)
+        (piece.name || '').toLowerCase().includes(q) ||
+        (piece.reference || '').toLowerCase().includes(q) ||
+        (piece.brand || '').toLowerCase().includes(q)
       );
     }
 
@@ -111,13 +114,13 @@ export function usePiecesFilters(pieces: PieceData[]) {
     // Créer une copie des pièces pour chaque type de filtre
     let basePieces = [...pieces];
 
-    // Appliquer recherche textuelle (toujours active)
+    // Appliquer recherche textuelle (toujours active) - ✅ Protection contre undefined
     if (activeFilters.searchText) {
       const q = activeFilters.searchText.toLowerCase();
       basePieces = basePieces.filter(piece => 
-        piece.name.toLowerCase().includes(q) ||
-        piece.reference.toLowerCase().includes(q) ||
-        piece.brand.toLowerCase().includes(q)
+        (piece.name || '').toLowerCase().includes(q) ||
+        (piece.reference || '').toLowerCase().includes(q) ||
+        (piece.brand || '').toLowerCase().includes(q)
       );
     }
 

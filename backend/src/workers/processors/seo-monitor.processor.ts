@@ -310,6 +310,7 @@ export class SeoMonitorProcessor {
           row.type_alias,
           row.gamme_alias,
           row.id_type,
+          row.id_pg,
         ),
         typeId: row.id_type,
         gammeId: row.id_pg,
@@ -322,6 +323,7 @@ export class SeoMonitorProcessor {
 
   /**
    * 🔧 Construit une URL de pièce
+   * Format: /pieces/{gamme-id}/{marque}/{modele}/{type-id}.html
    */
   private buildUrl(
     marqueAlias: string,
@@ -329,8 +331,9 @@ export class SeoMonitorProcessor {
     typeAlias: string,
     gammeAlias: string,
     typeId: number,
+    gammeId: number,
   ): string {
-    return `/pieces/${gammeAlias}/${marqueAlias}/${modeleAlias}/${typeAlias}-${typeId}.html`;
+    return `/pieces/${gammeAlias}-${gammeId}/${marqueAlias}/${modeleAlias}/${typeAlias}-${typeId}.html`;
   }
 
   /**

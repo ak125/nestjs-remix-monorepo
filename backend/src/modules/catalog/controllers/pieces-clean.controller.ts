@@ -68,7 +68,8 @@ export class PiecesCleanController {
         `🎯 [COMPATIBILITY] type_id=${typeIdNum}, pg_id=${pgIdNum}`,
       );
 
-      const result = await this.vehiclePiecesService.getPiecesExactPHP(
+      // ⚡ RPC optimisée: 1 requête au lieu de 9
+      const result = await this.vehiclePiecesService.getPiecesViaRPC(
         typeIdNum,
         pgIdNum,
       );

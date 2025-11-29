@@ -211,14 +211,14 @@ export function ErrorBoundary() {
   }
 
   // Erreur non-HTTP (erreur JavaScript, etc.)
-  const errorMessage = error instanceof Error ? error.message : "Une erreur inattendue s'est produite";
-  const errorStack = error instanceof Error ? error.stack : undefined;
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : JSON.stringify(error, null, 2);
   
   return <ErrorGeneric 
     status={500}
     message={errorMessage}
-    details="Une erreur technique s'est produite. Nos équipes ont été notifiées."
-    showStackTrace={process.env.NODE_ENV === 'development'}
+    details={errorStack || "Une erreur technique s'est produite."}
+    showStackTrace={true}
     stack={errorStack}
   />;
 }

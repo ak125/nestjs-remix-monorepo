@@ -16,16 +16,17 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({ images = [], mai
   const allImages = useMemo(() => {
     const list: { id: string; url: string; sort: number; alt: string }[] = [];
     
-    // Ajouter l'image principale si elle existe
-    if (mainImage) {
+    // Ajouter l'image principale si elle existe et est valide
+    if (mainImage && typeof mainImage === 'string' && mainImage.trim()) {
         list.push({ id: 'main', url: mainImage, sort: 0, alt });
     }
     
     // Ajouter les autres images
     if (images && images.length > 0) {
         images.forEach(img => {
-            // Éviter les doublons d'URL
-            if (!list.some(existing => existing.url === img.url)) {
+            // Vérifier que l'URL est valide et éviter les doublons
+            if (img.url && typeof img.url === 'string' && img.url.trim() && 
+                !list.some(existing => existing.url === img.url)) {
                 list.push(img);
             }
         });
