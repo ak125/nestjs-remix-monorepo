@@ -8,7 +8,7 @@
 import React from 'react';
 import { Alert } from '~/components/ui/alert';
 import { type SEOEnrichedContent } from '../../types/pieces-route.types';
-import { cleanOrphanParagraphs } from '../../utils/seo-clean.utils';
+import { cleanOrphanParagraphs, cleanInlineStyles } from '../../utils/seo-clean.utils';
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;
@@ -22,7 +22,8 @@ interface PiecesSEOSectionProps {
 export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOSectionProps) {
   // 🧹 Nettoyer les balises <p> orphelines dans tout le contenu SEO
   const cleanH1 = cleanOrphanParagraphs(content.h1);
-  const cleanLongDescription = cleanOrphanParagraphs(content.longDescription);
+  // 🎨 Nettoyer les styles inline (font-family:Calibri, font-size:11pt) qui écrasent font-heading
+  const cleanLongDescription = cleanInlineStyles(cleanOrphanParagraphs(content.longDescription));
   
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -35,17 +36,13 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
 
       <div className="p-6 space-y-8">
         {/* Description longue - Support HTML depuis API backend */}
-        <div className="prose prose-gray max-w-none">
-          {cleanLongDescription.startsWith('<') ? (
-            <div 
-              className="text-lg text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: cleanLongDescription }}
-            />
-          ) : (
-            <p className="text-lg text-gray-700 leading-relaxed">
-              {cleanLongDescription}
-            </p>
-          )}
+        {/* ✅ Toujours utiliser dangerouslySetInnerHTML car le contenu contient des balises <strong>, <br/>, etc. */}
+        {/* 🎨 font-heading pour uniformiser la police avec le H1 (Montserrat) */}
+        <div className="prose prose-gray max-w-none font-heading">
+          <div 
+            className="text-lg text-gray-700 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: cleanLongDescription }}
+          />
         </div>
 
         {/* Sections H2 */}
