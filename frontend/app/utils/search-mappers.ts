@@ -52,6 +52,8 @@ export interface SearchResultItem {
   _relevance?: number;
   _qualityLevel?: number;
   oemRef?: string;
+  _prsKind?: number; // 0=direct, 1=OEM équip, 2=OEM constr, 3-4=équivalences
+  matchKind?: number; // Alias pour _prsKind
 }
 
 /**
@@ -134,6 +136,8 @@ export function mapSearchItemToPieceData(item: SearchResultItem): PieceData {
     brand: item.brand || 'Marque inconnue',
     stock,
     reference: item.reference || '',
+    oemRef: item.oemRef || undefined,
+    matchKind: item._prsKind ?? item.matchKind ?? undefined, // Prioriser kind 2-3 (OEM constructeur)
     quality,
     stars,
     side,
@@ -196,38 +200,121 @@ export function groupSearchResultsByGamme(
   // Convertir en tableau pour tri
   const groups = Array.from(groupMap.values());
   
-  // 🎯 NOUVEAU: Si la query est un match exact d'une référence,
-  // ne retourner QUE les groupes contenant cette référence exacte
+  // 🎯 NOUVEAU: Si la query est un match exact d'une référence OU d'une référence OEM,
+  // prioriser les groupes avec matchKind = 2-3 (OEM constructeur comme PSA 1109.91)
+  // Normaliser en enlevant espaces/tirets/points pour matcher les variantes
+  const normalizedQueryClean = normalizedQuery.replace(/[\s\-\.]/g, '');
+  
+  // Fonction helper pour vérifier si une pièce matche la query
+  const itemMatchesQuery = (item: PieceData) => {
+    const refUpper = item.reference?.toUpperCase() || '';
+    const refClean = refUpper.replace(/[\s\-\.]/g, '');
+    const oemUpper = item.oemRef?.toUpperCase() || '';
+    const oemClean = oemUpper.replace(/[\s\-\.]/g, '');
+    
+    // Match sur référence équipementier (exact ou normalisé)
+    if (refUpper === normalizedQuery || refClean === normalizedQueryClean) return true;
+    
+    // Match sur oemRef (exact ou normalisé)
+    if (oemUpper === normalizedQuery || oemClean === normalizedQueryClean) return true;
+    
+    return false;
+  };
+  
+  // 🎯 NOUVEAU: Vérifier si un item a un matchKind OEM constructeur (2 ou 3)
+  const itemHasOemConstructeurKind = (item: PieceData) => {
+    return item.matchKind === 2 || item.matchKind === 3;
+  };
+  
   if (normalizedQuery) {
-    // Chercher les groupes avec au moins un match exact de référence
+    // Chercher les groupes avec au moins un match exact de référence OU oemRef
     const groupsWithExactMatch = groups.filter(group =>
-      group.items.some(item => item.reference?.toUpperCase() === normalizedQuery)
+      group.items.some(itemMatchesQuery)
     );
     
-    // Si au moins un groupe a un match exact, on filtre pour ne garder que ceux-là
-    if (groupsWithExactMatch.length > 0) {
-      // Trier les items dans chaque groupe: match exact en premier
-      groupsWithExactMatch.forEach(group => {
+    if (groupsWithExactMatch.length > 1) {
+      // 🎯 NOUVEAU: Prioriser les groupes ayant des matchs avec kind=2-3 (OEM constructeur)
+      // D'abord, identifier les groupes avec au moins un match kind=2-3
+      const groupsWithOemMatch = groupsWithExactMatch.filter(group =>
+        group.items.some(item => itemMatchesQuery(item) && itemHasOemConstructeurKind(item))
+      );
+      
+      // Si on a des groupes avec kind=2-3, les prioriser
+      const priorityGroups = groupsWithOemMatch.length > 0 ? groupsWithOemMatch : groupsWithExactMatch;
+      
+      // Compter les matchs OEM par groupe (pour départager)
+      const groupsWithMatchCount = priorityGroups.map(group => {
+        const oemMatchCount = group.items.filter(item => 
+          itemMatchesQuery(item) && itemHasOemConstructeurKind(item)
+        ).length;
+        const totalMatchCount = group.items.filter(itemMatchesQuery).length;
+        return {
+          group,
+          oemMatchCount,
+          totalMatchCount,
+          // Score: prioriser kind=2-3, sinon utiliser le total
+          score: oemMatchCount > 0 ? oemMatchCount * 100 : totalMatchCount
+        };
+      });
+      
+      // Trouver le max de score
+      const maxScore = Math.max(...groupsWithMatchCount.map(g => g.score));
+      
+      // Ne garder que les groupes avec un score suffisant (50% du max)
+      const threshold = maxScore * 0.5;
+      const topGroups = groupsWithMatchCount
+        .filter(g => g.score >= threshold)
+        .map(g => g.group);
+      
+      // Trier les items dans chaque groupe: matchs kind=2-3 en premier, puis matchs exacts
+      topGroups.forEach(group => {
         group.items.sort((a, b) => {
-          const aExact = a.reference?.toUpperCase() === normalizedQuery;
-          const bExact = b.reference?.toUpperCase() === normalizedQuery;
+          const aExact = itemMatchesQuery(a);
+          const bExact = itemMatchesQuery(b);
+          const aOem = aExact && itemHasOemConstructeurKind(a);
+          const bOem = bExact && itemHasOemConstructeurKind(b);
+          
+          // Prioriser OEM kind=2-3
+          if (aOem && !bOem) return -1;
+          if (!aOem && bOem) return 1;
+          // Puis match exact
           if (aExact && !bExact) return -1;
           if (!aExact && bExact) return 1;
           return 0;
         });
       });
       
-      // Retourner uniquement les groupes avec match exact, triés par count
+      return topGroups.sort((a, b) => b.count - a.count);
+    }
+    
+    // Si un seul groupe avec match exact
+    if (groupsWithExactMatch.length > 0) {
+      // Trier les items: matchs OEM kind=2-3 en premier
+      groupsWithExactMatch.forEach(group => {
+        group.items.sort((a, b) => {
+          const aExact = itemMatchesQuery(a);
+          const bExact = itemMatchesQuery(b);
+          const aOem = aExact && itemHasOemConstructeurKind(a);
+          const bOem = bExact && itemHasOemConstructeurKind(b);
+          
+          if (aOem && !bOem) return -1;
+          if (!aOem && bOem) return 1;
+          if (aExact && !bExact) return -1;
+          if (!aExact && bExact) return 1;
+          return 0;
+        });
+      });
+      
       return groupsWithExactMatch.sort((a, b) => b.count - a.count);
     }
   }
   
-  // Pas de match exact → comportement normal: trier items et groupes
+  // Pas de match exact → comportement normal
   if (normalizedQuery) {
     groups.forEach(group => {
       group.items.sort((a, b) => {
-        const aExact = a.reference?.toUpperCase() === normalizedQuery;
-        const bExact = b.reference?.toUpperCase() === normalizedQuery;
+        const aExact = itemMatchesQuery(a);
+        const bExact = itemMatchesQuery(b);
         if (aExact && !bExact) return -1;
         if (!aExact && bExact) return 1;
         return 0;

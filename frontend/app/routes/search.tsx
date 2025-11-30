@@ -322,37 +322,89 @@ export default function SearchPage() {
   }, [hasMore, isLoadingMore, currentPage, searchParams, fetcher]);
   
   // 🎯 NOUVEAU: Filtrer allPieces pour ne garder que celles des gammes avec match exact
+  // Prioriser les gammes ayant des matchs kind=2-3 (OEM constructeur comme PSA 1109.91)
   const piecesForFilters = useMemo(() => {
     if (!query) return allPieces;
     
     const normalizedQuery = query.trim().toUpperCase();
+    const normalizedQueryClean = normalizedQuery.replace(/[\s\-\.]/g, '');
     
-    // Vérifier s'il existe un match exact de référence
-    const hasExactMatch = allPieces.some(p => p.reference?.toUpperCase() === normalizedQuery);
+    // Fonction helper pour vérifier si une pièce matche la query (ref ou oemRef)
+    // Normalisation: espaces/tirets/points sont ignorés (110991 = 1109 91 = 1109.91)
+    const pieceMatchesQuery = (p: PieceData) => {
+      const refUpper = p.reference?.toUpperCase() || '';
+      const refClean = refUpper.replace(/[\s\-\.]/g, '');
+      const oemUpper = p.oemRef?.toUpperCase() || '';
+      const oemClean = oemUpper.replace(/[\s\-\.]/g, '');
+      
+      // Match sur référence équipementier
+      if (refUpper === normalizedQuery || refClean === normalizedQueryClean) return true;
+      
+      // Match sur oemRef
+      if (oemUpper === normalizedQuery || oemClean === normalizedQueryClean) return true;
+      
+      return false;
+    };
+    
+    // 🎯 NOUVEAU: Vérifier si un item a un matchKind OEM constructeur (2 ou 3)
+    const pieceHasOemConstructeurKind = (p: PieceData) => {
+      return p.matchKind === 2 || p.matchKind === 3;
+    };
+    
+    // Vérifier s'il existe un match exact de référence OU oemRef
+    const hasExactMatch = allPieces.some(pieceMatchesQuery);
     
     if (!hasExactMatch) {
       // Pas de match exact → retourner toutes les pièces
       return allPieces;
     }
     
-    // Match exact trouvé → ne garder que les pièces des gammes contenant ce match exact
-    // D'abord, identifier les gammes avec match exact via allGroupedPieces
-    const gammeNamesWithExactMatch = new Set<string>();
+    // Match exact trouvé → identifier les gammes avec match et compter les matchs
+    // 🎯 NOUVEAU: Prioriser les gammes ayant des matchs avec kind=2-3
+    const gammeMatchData = new Map<string, { totalMatches: number; oemMatches: number }>();
     allGroupedPieces.forEach(group => {
-      if (group.items.some(item => item.reference?.toUpperCase() === normalizedQuery)) {
-        gammeNamesWithExactMatch.add(group.gammeName.toLowerCase().trim());
+      const matchingItems = group.items.filter(pieceMatchesQuery);
+      const oemMatchCount = matchingItems.filter(pieceHasOemConstructeurKind).length;
+      if (matchingItems.length > 0) {
+        gammeMatchData.set(group.gammeName.toLowerCase().trim(), {
+          totalMatches: matchingItems.length,
+          oemMatches: oemMatchCount
+        });
       }
     });
     
-    // Ensuite, filtrer allPieces pour ne garder que celles de ces gammes
-    // Note: on utilise le name/category pour matcher (pas l'id qui peut varier)
+    // Vérifier si au moins une gamme a des matchs OEM kind=2-3
+    const hasOemMatches = Array.from(gammeMatchData.values()).some(d => d.oemMatches > 0);
+    
+    // Calculer le score de chaque gamme (prioriser OEM kind=2-3)
+    const gammeScores = new Map<string, number>();
+    gammeMatchData.forEach((data, gammeName) => {
+      // Si on a des matchs OEM, le score est basé sur oemMatches * 100
+      // Sinon, fallback sur totalMatches
+      const score = hasOemMatches 
+        ? (data.oemMatches > 0 ? data.oemMatches * 100 : 0) 
+        : data.totalMatches;
+      gammeScores.set(gammeName, score);
+    });
+    
+    // Trouver le max de score
+    const maxScore = Math.max(...gammeScores.values());
+    const threshold = maxScore * 0.5; // Au moins 50% du max
+    
+    const topGammeNames = new Set<string>();
+    gammeScores.forEach((score, gammeName) => {
+      if (score >= threshold) {
+        topGammeNames.add(gammeName);
+      }
+    });
+    
+    // Filtrer allPieces pour ne garder que celles des top gammes
     return allPieces.filter(piece => {
-      // Trouver la gamme de cette pièce dans allGroupedPieces
       const pieceGroup = allGroupedPieces.find(g => 
         g.items.some(i => i.id === piece.id)
       );
       if (!pieceGroup) return false;
-      return gammeNamesWithExactMatch.has(pieceGroup.gammeName.toLowerCase().trim());
+      return topGammeNames.has(pieceGroup.gammeName.toLowerCase().trim());
     });
   }, [allPieces, allGroupedPieces, query]);
   
