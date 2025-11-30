@@ -47,6 +47,8 @@ export interface PieceData {
   brand: string;
   stock: string;
   reference: string;
+  oemRef?: string; // Référence OEM constructeur (ex: "1109 91")
+  matchKind?: number; // 0=direct, 1=OEM équip, 2=OEM constr, 3-4=équivalences croisées
   quality?: string;
   stars?: number;
   side?: string;
