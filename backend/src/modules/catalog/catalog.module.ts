@@ -38,6 +38,7 @@ import { CatalogDataIntegrityService } from './services/catalog-data-integrity.s
 import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { SeoSwitchesService } from './services/seo-switches.service';
+import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -101,6 +102,8 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     PricingService,
     // 🔄 SEO SWITCHES SERVICE - Gestion des switches SEO (3 sources)
     SeoSwitchesService,
+    // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)
+    OemPlatformMappingService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],
@@ -114,6 +117,7 @@ import { SeoSwitchesService } from './services/seo-switches.service';
     CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
     GammeUnifiedService, // ✅ Exporté pour GammeRestModule
     VehiclePiecesCompatibilityService, // ✅ Exporté pour GammeRestModule
+    OemPlatformMappingService, // 🔧 Exporté pour filtrage OEM SEO
   ],
 })
 export class CatalogModule {

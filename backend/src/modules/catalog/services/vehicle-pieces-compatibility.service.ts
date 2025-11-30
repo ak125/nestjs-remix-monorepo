@@ -85,6 +85,145 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       duration: '0ms',
     };
   }
+
+  /**
+   * 🔧 Récupère les refs OEM constructeur pour une page liste
+   * Filtrées par la marque du véhicule (ex: RENAULT sur Clio)
+   * 
+   * @param typeId - ID du type de véhicule
+   * @param pgId - ID de la gamme de pièces
+   * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
+   * @returns Liste des refs OEM de cette marque
+   */
+  async getOemRefsForVehicle(typeId: number, pgId: number, marqueName: string): Promise<OemRefsResult> {
+    const startTime = Date.now();
+    this.logger.log(`🔧 [RPC] get_oem_refs_for_vehicle(${typeId}, ${pgId}, ${marqueName})`);
+
+    try {
+      const { data, error } = await this.client.rpc('get_oem_refs_for_vehicle', {
+        p_type_id: typeId,
+        p_pg_id: pgId,
+        p_marque_name: marqueName
+      });
+
+      if (error) {
+        this.logger.warn(`⚠️ [RPC OEM] Erreur: ${error.message}`);
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+          error: error.message
+        };
+      }
+
+      const duration = Date.now() - startTime;
+      this.logger.log(`✅ [RPC OEM] ${data?.count || 0} refs ${marqueName} en ${duration}ms`);
+
+      return {
+        vehicleMarque: data?.vehicleMarque || marqueName.toUpperCase(),
+        oemRefs: data?.oemRefs || [],
+        count: data?.count || 0,
+        piecesWithOem: data?.piecesWithOem
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ [RPC OEM] Exception: ${error.message}`);
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
+        count: 0,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * 🚀 Récupère les refs OEM de manière légère (sans RPC lente)
+   * Utilise les piece_ids déjà récupérés par getPiecesViaRPC
+   * 
+   * @param pieceIds - Liste des IDs de pièces déjà récupérées
+   * @param marqueName - Nom de la marque du véhicule (ex: "RENAULT")
+   * @returns Liste des refs OEM filtrées par marque
+   */
+  async getOemRefsLightweight(
+    pieceIds: number[],
+    marqueName: string,
+  ): Promise<OemRefsResult> {
+    const startTime = Date.now();
+    this.logger.log(
+      `🔧 [OEM-LIGHT] Récupération refs OEM pour ${pieceIds.length} pièces, marque=${marqueName}`,
+    );
+
+    if (!pieceIds || pieceIds.length === 0) {
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
+        count: 0,
+      };
+    }
+
+    try {
+      // 1. Récupérer le brand_id de la marque constructeur
+      const { data: brandData, error: brandError } = await this.client
+        .from('pieces_ref_brand')
+        .select('prb_id')
+        .eq('prb_name', marqueName.toUpperCase())
+        .limit(1)
+        .single();
+
+      if (brandError || !brandData) {
+        this.logger.warn(`⚠️ [OEM-LIGHT] Marque "${marqueName}" non trouvée`);
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+        };
+      }
+
+      // 2. Récupérer les refs OEM (kind=3) pour ces pièces et cette marque
+      // Limite à 100 pièces pour éviter les requêtes trop grosses
+      const limitedPieceIds = pieceIds.slice(0, 100);
+
+      const { data: refData, error: refError } = await this.client
+        .from('pieces_ref_search')
+        .select('prs_ref')
+        .in('prs_piece_id', limitedPieceIds)
+        .eq('prs_prb_id', brandData.prb_id)
+        .eq('prs_kind', '3') // Type 3 = OEM constructeurs
+        .limit(200);
+
+      if (refError) {
+        this.logger.warn(`⚠️ [OEM-LIGHT] Erreur requête refs: ${refError.message}`);
+        return {
+          vehicleMarque: marqueName.toUpperCase(),
+          oemRefs: [],
+          count: 0,
+          error: refError.message,
+        };
+      }
+
+      // 3. Extraire les refs uniques
+      const uniqueRefs = [...new Set((refData || []).map((r) => r.prs_ref))];
+      const duration = Date.now() - startTime;
+
+      this.logger.log(
+        `✅ [OEM-LIGHT] ${uniqueRefs.length} refs OEM ${marqueName} en ${duration}ms`,
+      );
+
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: uniqueRefs,
+        count: uniqueRefs.length,
+      };
+    } catch (error: any) {
+      this.logger.error(`❌ [OEM-LIGHT] Exception: ${error.message}`);
+      return {
+        vehicleMarque: marqueName.toUpperCase(),
+        oemRefs: [],
+        count: 0,
+        error: error.message,
+      };
+    }
+  }
 }
 
 /**
@@ -101,6 +240,15 @@ export interface PiecesResult {
   error?: string;
   method: string;
   duration: string;
+}
+
+/** 🔧 Résultat des refs OEM constructeur */
+export interface OemRefsResult {
+  vehicleMarque: string;
+  oemRefs: string[];
+  count: number;
+  piecesWithOem?: number;
+  error?: string;
 }
 
 export interface PieceItem {

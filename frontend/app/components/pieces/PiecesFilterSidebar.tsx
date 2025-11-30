@@ -52,6 +52,9 @@ interface PiecesFilterSidebarProps {
   getQualityCount?: (quality: string) => number;
   getPriceRangeCount?: (range: string) => number;
   filtersData?: FiltersData | null;
+  availablePositions?: string[]; // Positions disponibles (Avant, Arrière, Gauche, Droite...)
+  positionLabel?: string; // Label du filtre ("Position" ou "Côté")
+  brandAverageNotes?: Map<string, number>; // Notes moyennes par marque
 }
 
 export function PiecesFilterSidebar({
@@ -63,7 +66,10 @@ export function PiecesFilterSidebar({
   getBrandCount,
   getQualityCount,
   getPriceRangeCount,
-  filtersData
+  filtersData,
+  availablePositions = [],
+  positionLabel = 'Position',
+  brandAverageNotes
 }: PiecesFilterSidebarProps) {
   
   // Extract data from API response
@@ -91,7 +97,7 @@ export function PiecesFilterSidebar({
                 <Package className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm">Filtres</h3>
+                <h3 className="font-bold text-white text-xs">Filtres</h3>
                 <p className="text-white/60 text-[10px] font-medium">Affiner la recherche</p>
               </div>
             </div>
@@ -105,47 +111,98 @@ export function PiecesFilterSidebar({
         {/* Contenu scrollable */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-4 space-y-4">
-          
-          {/* Recherche moderne avec FilterSection */}
-          <FilterSection 
-            title="Recherche rapide" 
-            icon={<Search className="w-4 h-4 text-muted-foreground" />}
-            variant="compact"
-          >
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              <input
-                type="text"
-                placeholder="Rechercher une pièce..."
-                value={activeFilters.searchText}
-                onChange={(e) => setActiveFilters({...activeFilters, searchText: e.target.value})}
-                className="w-full pl-10 pr-4 py-3 border-2 border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all bg-muted/50 hover:bg-background text-foreground placeholder:text-muted-foreground"
-              />
-              {activeFilters.searchText && (
+
+          {/* Position (Avant/Arrière ou Gauche/Droite) - affiché si positions disponibles */}
+          {availablePositions.length > 1 && (
+            <FilterSection 
+              title={positionLabel}
+              icon={
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+              }
+            >
+              <div className="flex flex-wrap gap-1">
                 <button
-                  onClick={() => setActiveFilters({...activeFilters, searchText: ''})}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  onClick={() => setActiveFilters({...activeFilters, position: 'all'})}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                    !activeFilters.position || activeFilters.position === 'all'
+                      ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/30' 
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                  }`}
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
+                  Tous
                 </button>
-              )}
+                {availablePositions.map(pos => (
+                  <button
+                    key={pos}
+                    onClick={() => setActiveFilters({...activeFilters, position: pos})}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                      activeFilters.position === pos
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30' 
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800'
+                    }`}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+            </FilterSection>
+          )}
+
+          {/* Fiabilité - Section autonome avec couleurs par niveau */}
+          <FilterSection 
+            title="Fiabilité" 
+            icon={<Star className="w-4 h-4 text-muted-foreground" />}
+          >
+            <div className="flex gap-2">
+              {[
+                { value: 'all', label: 'Tous', bg: 'bg-slate-100', border: 'border-slate-400', text: 'text-slate-600', activeBg: 'bg-slate-600', activeBorder: 'border-slate-700' },
+                { value: '5', label: '5+', bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-600', activeBg: 'bg-gradient-to-r from-amber-500 to-orange-500', activeBorder: 'border-amber-600', shadow: 'shadow-amber-400/50' },
+                { value: '7', label: '7+', bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-600', activeBg: 'bg-gradient-to-r from-blue-500 to-cyan-500', activeBorder: 'border-blue-600', shadow: 'shadow-blue-400/50' },
+                { value: '8', label: '8+', bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-600', activeBg: 'bg-gradient-to-r from-emerald-500 to-green-500', activeBorder: 'border-emerald-600', shadow: 'shadow-emerald-400/50' },
+                { value: '9', label: '9+', bg: 'bg-cyan-50', border: 'border-cyan-400', text: 'text-cyan-600', activeBg: 'bg-gradient-to-r from-cyan-500 to-teal-500', activeBorder: 'border-cyan-600', shadow: 'shadow-cyan-400/50' }
+              ].map(rating => {
+                const isActive = (rating.value === 'all' && !activeFilters.minNote) ||
+                  activeFilters.minNote?.toString() === rating.value;
+                return (
+                  <button
+                    key={rating.value}
+                    onClick={() => setActiveFilters({
+                      ...activeFilters, 
+                      minNote: rating.value === 'all' ? undefined : parseInt(rating.value)
+                    })}
+                    className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-200 border-2 ${
+                      isActive
+                        ? `${rating.activeBg} text-white shadow-lg ${rating.shadow || ''} scale-105 ${rating.activeBorder}` 
+                        : `${rating.bg} ${rating.text} ${rating.border} hover:scale-102 hover:shadow-md`
+                    }`}
+                  >
+                    {rating.label}
+                  </button>
+                );
+              })}
             </div>
           </FilterSection>
 
-          {/* Marques avec ScrollArea et Checkbox de shadcn/ui */}
+          {/* Marques - Design Grille de Cartes Premium */}
           {brandsToDisplay.length > 1 && (
             <FilterSection 
               title="Marques" 
               icon={<Package className="w-4 h-4 text-muted-foreground" />}
               badge={
-                <Badge variant="secondary" className="text-xs">
-                  {brandsToDisplay.length}
-                </Badge>
+                activeFilters.brands.length > 0 ? (
+                  <Badge variant="default" className="text-xs bg-blue-600">
+                    {activeFilters.brands.length} sélectionnée{activeFilters.brands.length > 1 ? 's' : ''}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-xs">
+                    {brandsToDisplay.length}
+                  </Badge>
+                )
               }
             >
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
                   {brandsToDisplay.map(brandOption => {
                     const brandName = brandOption.label;
                     const isSelected = activeFilters.brands.includes(brandName);
@@ -153,64 +210,161 @@ export function PiecesFilterSidebar({
                     const logoFileName = `${brandName.toLowerCase().replace(/\s+/g, '-')}.webp`;
                     const logoUrl = `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipementiers-automobiles/${logoFileName}`;
                     
+                    // Note moyenne réelle depuis les pièces
+                    const noteAvg = brandAverageNotes?.get(brandName) ?? 7;
+                    
+                    // Couleurs synchronisées avec PiecesGridView
+                    const getBarColor = (score: number) => {
+                      if (score >= 10) return 'from-cyan-400 via-teal-500 to-emerald-500';
+                      if (score >= 8)  return 'from-emerald-400 via-green-500 to-lime-500';
+                      if (score >= 7)  return 'from-blue-400 via-sky-500 to-cyan-500';
+                      if (score >= 5)  return 'from-yellow-400 via-amber-500 to-orange-400';
+                      if (score >= 3)  return 'from-orange-400 via-rose-500 to-red-400';
+                      return 'from-slate-400 via-gray-500 to-zinc-500';
+                    };
+                    const getTextColor = (score: number) => {
+                      if (score >= 10) return 'text-teal-600';
+                      if (score >= 8)  return 'text-emerald-600';
+                      if (score >= 7)  return 'text-blue-600';
+                      if (score >= 5)  return 'text-amber-600';
+                      if (score >= 3)  return 'text-rose-600';
+                      return 'text-slate-500';
+                    };
+                    const noteColor = getTextColor(noteAvg);
+                    const barColor = getBarColor(noteAvg);
+                    
                     return (
-                      <FilterOption 
-                        key={brandOption.id} 
-                        isSelected={isSelected}
+                      <button
+                        key={brandOption.id}
+                        onClick={() => {
+                          if (isSelected) {
+                            setActiveFilters({
+                              ...activeFilters,
+                              brands: activeFilters.brands.filter(b => b !== brandName)
+                            });
+                          } else {
+                            setActiveFilters({
+                              ...activeFilters,
+                              brands: [...activeFilters.brands, brandName]
+                            });
+                          }
+                        }}
+                        className={`relative flex flex-col items-center p-1.5 rounded-lg transition-all duration-200 group ${
+                          isSelected 
+                            ? 'bg-blue-50 border-2 border-blue-500 shadow-md shadow-blue-500/20' 
+                            : 'bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md'
+                        }`}
                       >
-                        <div className="flex items-center gap-2 flex-1">
-                          <Checkbox
-                            checked={isSelected}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setActiveFilters({
-                                  ...activeFilters,
-                                  brands: [...activeFilters.brands, brandName]
-                                });
-                              } else {
-                                setActiveFilters({
-                                  ...activeFilters,
-                                  brands: activeFilters.brands.filter(b => b !== brandName)
-                                });
+                        {/* Logo centré - agrandi */}
+                        <div className="w-full h-10 flex items-center justify-center mb-1 px-1">
+                          <img 
+                            src={logoUrl}
+                            alt={`Logo ${brandName}`}
+                            className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              const target = e.currentTarget as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<span class="text-[10px] font-bold text-slate-500">${brandName.substring(0, 6)}</span>`;
                               }
                             }}
                           />
-                          <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                            <img 
-                              src={logoUrl}
-                              alt={`Logo ${brandName}`}
-                              className="max-w-full max-h-full object-contain"
-                              onError={(e) => {
-                                const target = e.currentTarget as HTMLImageElement;
-                                target.style.display = 'none';
-                              }}
+                        </div>
+                        
+                        {/* Note compacte avec barre */}
+                        <div className="w-full flex items-center gap-1">
+                          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full bg-gradient-to-r ${barColor} rounded-full`}
+                              style={{ width: `${(noteAvg / 10) * 100}%` }}
                             />
                           </div>
-                          <Label className="text-sm cursor-pointer flex-1">
-                            {brandOption.label}
-                          </Label>
-                          {/* Mini barre fiabilité avec couleur dynamique */}
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <div className="w-8 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
-                                style={{ width: '75%' }}
-                              />
-                            </div>
-                            <span className="text-[9px] font-bold text-emerald-600">7.5</span>
-                          </div>
+                          <span className={`text-[9px] font-bold ${noteColor}`}>
+                            {noteAvg.toFixed(1)}
+                          </span>
                         </div>
-                        {brandOption.count > 0 && (
-                          <Badge variant="secondary" className="text-xs ml-2">
-                            {brandOption.count}
-                          </Badge>
+                        
+                        {/* Coche de sélection */}
+                        {isSelected && (
+                          <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
+                            <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
                         )}
-                      </FilterOption>
+                      </button>
                     );
                   })}
                 </div>
             </FilterSection>
           )}
+
+          {/* Qualité - Design boutons colorés */}
+          <FilterSection 
+            title="Qualité" 
+            icon={<Star className="w-4 h-4 text-muted-foreground" />}
+          >
+            <div className="flex flex-col gap-1.5">
+              {/* Bouton Toutes qualités */}
+              <button
+                onClick={() => setActiveFilters({...activeFilters, quality: 'all'})}
+                className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-between border-2 ${
+                  activeFilters.quality === 'all'
+                    ? 'bg-slate-600 text-white border-slate-700 shadow-lg'
+                    : 'bg-slate-50 text-slate-600 border-slate-300 hover:border-slate-400 hover:shadow-md'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span>🔧</span>
+                  Toutes qualités
+                </span>
+              </button>
+              
+              {/* Grille OE / Aftermarket */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {(qualityFilters.length > 0 ? 
+                  qualityFilters.map(q => ({
+                    id: String(q.id),
+                    label: q.label,
+                    count: getQualityCount ? getQualityCount(String(q.id)) : q.count,
+                    color: q.id === 'OES' || q.label?.includes('Origine') 
+                      ? { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-700', activeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500', shadow: 'shadow-amber-400/50' }
+                      : { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-700', activeBg: 'bg-gradient-to-r from-blue-500 to-indigo-500', shadow: 'shadow-blue-400/50' }
+                  }))
+                : [
+                  { id: 'OES', label: 'Origine (OE)', count: 0, color: { bg: 'bg-amber-50', border: 'border-amber-400', text: 'text-amber-700', activeBg: 'bg-gradient-to-r from-amber-500 to-yellow-500', shadow: 'shadow-amber-400/50' } },
+                  { id: 'AFTERMARKET', label: 'Aftermarket', count: 0, color: { bg: 'bg-blue-50', border: 'border-blue-400', text: 'text-blue-700', activeBg: 'bg-gradient-to-r from-blue-500 to-indigo-500', shadow: 'shadow-blue-400/50' } }
+                ]).map(quality => {
+                  const isSelected = activeFilters.quality === quality.id;
+                  const isDisabled = quality.count === 0;
+                  return (
+                    <button
+                      key={quality.id}
+                      onClick={() => !isDisabled && setActiveFilters({...activeFilters, quality: quality.id})}
+                      disabled={isDisabled}
+                      className={`py-2.5 px-2 rounded-lg text-[11px] font-bold transition-all duration-200 flex flex-col items-center gap-1 border-2 ${
+                        isDisabled
+                          ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-50'
+                          : isSelected
+                            ? `${quality.color.activeBg} text-white ${quality.color.border} shadow-lg ${quality.color.shadow} scale-105`
+                            : `${quality.color.bg} ${quality.color.text} ${quality.color.border} hover:shadow-md hover:scale-102`
+                      }`}
+                    >
+                      <span className="leading-tight text-center">{quality.label}</span>
+                      {quality.count > 0 && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${
+                          isSelected ? 'bg-white/20' : 'bg-slate-200/60'
+                        }`}>
+                          {quality.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </FilterSection>
 
           {/* Prix - Inline compact */}
           <FilterSection 
@@ -239,125 +393,7 @@ export function PiecesFilterSidebar({
             </div>
           </FilterSection>
 
-          {/* Qualité avec RadioGroup */}
-          <FilterSection 
-            title="Qualité" 
-            icon={<Star className="w-4 h-4 text-muted-foreground" />}
-            badge={
-              qualityFilters.length > 0 ? (
-                <Badge variant="secondary" className="text-xs">
-                  {qualityFilters.reduce((sum, q) => sum + q.count, 0)} pièces
-                </Badge>
-              ) : null
-            }
-          >
-            <RadioGroup
-              value={activeFilters.quality}
-              onValueChange={(value) => setActiveFilters({...activeFilters, quality: value})}
-            >
-              <FilterOption isSelected={activeFilters.quality === 'all'}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="all" />
-                  <Label className="text-sm cursor-pointer">
-                    🔧 Toutes qualités
-                  </Label>
-                </div>
-              </FilterOption>
-              
-              {qualityFilters.length > 0 ? (
-                qualityFilters.map(qualityOption => {
-                  const isSelected = activeFilters.quality === String(qualityOption.id);
-                  const dynamicCount = getQualityCount ? getQualityCount(String(qualityOption.id)) : qualityOption.count;
-                  const isDisabled = dynamicCount === 0;
-                  
-                  const iconMap: Record<string, string> = {
-                    'OES': '🏆',
-                    'A': '⭐',
-                    'aftermarket': '⭐',
-                    'O': '🔧'
-                  };
-                  const icon = iconMap[String(qualityOption.id)] || '🔧';
-                  
-                  return (
-                    <FilterOption 
-                      key={String(qualityOption.id)}
-                      isSelected={isSelected}
-                      isDisabled={isDisabled}
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <RadioGroupItem 
-                          value={String(qualityOption.id)}
-                          disabled={isDisabled}
-                        />
-                        <Label className={`text-sm cursor-pointer ${isDisabled ? 'text-muted-foreground' : ''}`}>
-                          {icon} {qualityOption.label}
-                        </Label>
-                      </div>
-                      {dynamicCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {dynamicCount}
-                        </Badge>
-                      )}
-                    </FilterOption>
-                  );
-                })
-              ) : (
-                [
-                  { id: 'OES', label: 'OES (Origine)', icon: '🏆' },
-                  { id: 'AFTERMARKET', label: 'Aftermarket', icon: '⭐' },
-                  { id: 'Echange Standard', label: 'Échange Standard', icon: '🔄' }
-                ].map(quality => {
-                  const isSelected = activeFilters.quality === quality.id;
-                  return (
-                    <FilterOption key={quality.id} isSelected={isSelected}>
-                      <div className="flex items-center gap-3">
-                        <RadioGroupItem value={quality.id} />
-                        <Label className="text-sm cursor-pointer flex items-center gap-2">
-                          <span>{quality.icon}</span>
-                          {quality.label}
-                        </Label>
-                      </div>
-                    </FilterOption>
-                  );
-                })
-              )}
-            </RadioGroup>
-          </FilterSection>
-
-          {/* Fiabilité minimum - Compact avec couleurs vibrantes */}
-          <FilterSection 
-            title="Fiabilité min." 
-            icon={<Star className="w-4 h-4 text-muted-foreground" />}
-          >
-            <div className="flex gap-1.5">
-              {[
-                { value: 'all', label: 'Tous', gradient: 'from-slate-600 to-slate-700' },
-                { value: '3', label: '≥3', gradient: 'from-amber-500 to-orange-500' },
-                { value: '5', label: '≥5', gradient: 'from-emerald-500 to-teal-500' }
-              ].map(rating => {
-                const isActive = (rating.value === 'all' && !activeFilters.minStars) ||
-                  activeFilters.minStars?.toString() === rating.value;
-                return (
-                  <button
-                    key={rating.value}
-                    onClick={() => setActiveFilters({
-                      ...activeFilters, 
-                      minStars: rating.value === 'all' ? undefined : parseInt(rating.value)
-                    })}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
-                      isActive
-                        ? `bg-gradient-to-r ${rating.gradient} text-white shadow-lg shadow-black/20 scale-105` 
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {rating.label}
-                  </button>
-                );
-              })}
-            </div>
-          </FilterSection>
-
-          {/* Disponibilité */}
+          {/* Disponibilité - Désactivé temporairement
           <FilterSection 
             title="Disponibilité" 
             icon={<Box className="w-4 h-4 text-muted-foreground" />}
@@ -367,32 +403,33 @@ export function PiecesFilterSidebar({
               onValueChange={(value) => setActiveFilters({...activeFilters, availability: value as any})}
             >
               <FilterOption isSelected={activeFilters.availability === "all"}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="all" />
-                  <Label className="text-sm cursor-pointer">
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="all" className="h-3.5 w-3.5" />
+                  <Label className="text-xs cursor-pointer">
                     Toutes disponibilités
                   </Label>
                 </div>
               </FilterOption>
               
               <FilterOption isSelected={activeFilters.availability === "stock"}>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="stock" />
-                  <Label className="text-sm cursor-pointer flex items-center gap-2">
-                    <span className="w-2 h-2 bg-success rounded-full"></span>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="stock" className="h-3.5 w-3.5" />
+                  <Label className="text-xs cursor-pointer flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-success rounded-full"></span>
                     En stock uniquement
                   </Label>
                 </div>
               </FilterOption>
             </RadioGroup>
           </FilterSection>
+          */}
 
           {/* Bouton reset premium */}
           <button
             onClick={resetAllFilters}
-            className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md group"
+            className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-2 px-3 rounded-lg text-xs transition-all duration-300 flex items-center justify-center gap-2 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md group"
           >
-            <RotateCcw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+            <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
             Réinitialiser les filtres
           </button>
           </div>

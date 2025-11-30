@@ -14,6 +14,7 @@ import { normalizeImageUrl } from '../../utils/image.utils';
 interface PieceDetailModalProps {
   pieceId: number | null;
   onClose: () => void;
+  vehicleMarque?: string;
 }
 
 interface PieceDetail {
@@ -38,7 +39,6 @@ interface PieceDetail {
     unit: string;
     level?: number;
   }>;
-  referencesEquipementiers?: Record<string, string[]>;
   referencesOem?: Record<string, string[]>;
   vehiclesCompatibles?: Array<{
     marque: string;
@@ -47,7 +47,7 @@ interface PieceDetail {
   }>;
 }
 
-export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
+export function PieceDetailModal({ pieceId, onClose, vehicleMarque }: PieceDetailModalProps) {
   const [piece, setPiece] = useState<PieceDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>('');
@@ -359,58 +359,41 @@ export function PieceDetailModal({ pieceId, onClose }: PieceDetailModalProps) {
                   )}
                 </button>
               </div>
-                
-              {/* Références équipementiers */}
-              {piece.referencesEquipementiers && Object.keys(piece.referencesEquipementiers).length > 0 && (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 mb-6 border border-blue-200">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    Ref. Équipementiers
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.entries(piece.referencesEquipementiers).map(([marque, refs]) => (
-                      <div key={marque} className="bg-white rounded-lg p-3 border border-blue-100">
-                        <div className="font-bold text-gray-900 mb-2 uppercase text-sm">{marque}</div>
-                        <div className="flex flex-wrap gap-2">
-                          {refs.map((ref, idx) => (
-                            <span key={idx} className="inline-block bg-blue-100 text-blue-800 text-xs font-mono font-semibold px-2.5 py-1 rounded">
-                              {ref}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Références OEM constructeurs */}
-              {piece.referencesOem && Object.keys(piece.referencesOem).length > 0 && (
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border border-green-200">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                    Ref. OEM Constructeurs
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {Object.entries(piece.referencesOem).map(([marque, refs]) => (
-                      <div key={marque} className="bg-white rounded-lg p-3 border border-green-100">
-                        <div className="font-bold text-gray-900 mb-2 uppercase text-sm">{marque}</div>
-                        <div className="flex flex-wrap gap-2">
-                          {refs.map((ref, idx) => (
-                            <span key={idx} className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded">
-                              {ref}
-                            </span>
-                          ))}
+              {/* Références OEM constructeurs - Filtré par marque véhicule si disponible */}
+              {piece.referencesOem && Object.keys(piece.referencesOem).length > 0 && (() => {
+                // Filtrer les OEM par la marque du véhicule (ex: sur Renault Clio, ne montrer que Renault)
+                const filteredOemEntries = Object.entries(piece.referencesOem).filter(
+                  ([marque]) => !vehicleMarque || marque.toUpperCase() === vehicleMarque.toUpperCase()
+                );
+                
+                if (filteredOemEntries.length === 0) return null;
+                
+                return (
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border border-green-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      Ref. OEM {vehicleMarque || 'Constructeurs'}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {filteredOemEntries.map(([marque, refs]) => (
+                        <div key={marque} className="bg-white rounded-lg p-3 border border-green-100">
+                          <div className="font-bold text-gray-900 mb-2 uppercase text-sm">{marque}</div>
+                          <div className="flex flex-wrap gap-2">
+                            {refs.map((ref, idx) => (
+                              <span key={idx} className="inline-block bg-green-100 text-green-800 text-xs font-mono font-semibold px-2.5 py-1 rounded">
+                                {ref}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           ) : null}
         </div>

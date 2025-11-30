@@ -1,5 +1,6 @@
-import { Controller, Get, Param, Injectable } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, Injectable } from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
+import { GammeRpcService } from './services/gamme-rpc.service';
 
 /**
  * 🚀 GAMME REST CONTROLLER RPC V2 - VERSION ULTRA-OPTIMISÉE
@@ -7,11 +8,19 @@ import { GammeResponseBuilderService } from './services';
  * 1 SEULE requête PostgreSQL RPC au lieu de 15+
  * Performance : ~75ms (au lieu de 680ms)
  * Gain : 9x plus rapide
+ * 
+ * ⚡ OPTIMISATIONS CACHE:
+ * - Cache Redis 1h sur données gamme
+ * - Stale-while-revalidate pattern
+ * - Fallback sur cache expiré si timeout
  */
 @Injectable()
 @Controller('api/gamme-rest')
 export class GammeRestRpcV2Controller {
-  constructor(private readonly responseBuilder: GammeResponseBuilderService) {}
+  constructor(
+    private readonly responseBuilder: GammeResponseBuilderService,
+    private readonly rpcService: GammeRpcService,
+  ) {}
 
   /**
    * ⚡ RPC V2 - PostgreSQL Function ultra-optimisée
@@ -24,7 +33,8 @@ export class GammeRestRpcV2Controller {
 
     try {
       const result = await this.responseBuilder.buildRpcV2Response(pgId);
-      console.log(`✅ RPC V2 SUCCESS pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms (RPC: ${result.performance?.rpc_time_ms?.toFixed(0) || 'N/A'}ms)`);
+      const cacheInfo = '🔄 RPC';
+      console.log(`✅ RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`);
       return result;
     } catch (error) {
       console.error('❌ Erreur dans getPageDataRpcV2:', {
@@ -44,5 +54,45 @@ export class GammeRestRpcV2Controller {
         retryable: error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET',
       };
     }
+  }
+
+  /**
+   * 🔥 Warm Cache - Précharge les gammes populaires
+   * Endpoint: POST /api/gamme-rest/cache/warm
+   */
+  @Post('cache/warm')
+  async warmCache(@Body() body: { pgIds?: string[] }) {
+    // Gammes les plus populaires (à personnaliser selon analytics)
+    const defaultPopularGammes = [
+      '4', '2', '103', '104', '105', '144', '145', '156', '158', '174',
+      '176', '178', '216', '217', '222', '223', '251', '252', '270', '410',
+    ];
+
+    const pgIds = body.pgIds || defaultPopularGammes;
+    
+    console.log(`🔥 Warm cache pour ${pgIds.length} gammes...`);
+    const result = await this.rpcService.warmCache(pgIds);
+
+    return {
+      status: 200,
+      message: `Warm cache terminé`,
+      success: result.success,
+      failed: result.failed,
+      total: pgIds.length,
+    };
+  }
+
+  /**
+   * 🗑️ Invalide le cache d'une gamme
+   * Endpoint: POST /api/gamme-rest/:pgId/cache/invalidate
+   */
+  @Post(':pgId/cache/invalidate')
+  async invalidateCache(@Param('pgId') pgId: string) {
+    await this.rpcService.invalidateCache(pgId);
+    
+    return {
+      status: 200,
+      message: `Cache invalidé pour gamme ${pgId}`,
+    };
   }
 }

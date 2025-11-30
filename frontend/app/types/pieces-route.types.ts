@@ -98,6 +98,16 @@ export interface CrossSellingGamme {
   PG_IMAGE?: string;
 }
 
+/**
+ * 🔧 Données OEM constructeur
+ * Références OEM pour SEO et affichage
+ */
+export interface OemRefsData {
+  vehicleMarque: string;
+  oemRefs: string[];
+  count: number;
+}
+
 export interface CompatibilityInfo {
   engines: string[];
   years: string;
@@ -161,6 +171,10 @@ export interface LoaderData {
   catalogueMameFamille?: CatalogueMameFamille;
   famille?: FamilleData;
   
+  // 🔧 Références OEM constructeur
+  oemRefs?: OemRefsData;
+  oemRefsSeo?: string[];
+  
   seo: SEOInfo;
   performance: PerformanceInfo;
 }
@@ -172,7 +186,8 @@ export interface PiecesFilters {
   quality: "all" | "OES" | "AFTERMARKET" | "Echange Standard" | string; // Support des valeurs API dynamiques
   availability: "all" | "stock" | "order";
   searchText: string;
-  minStars?: number; // Filtre par note minimale (0-5)
+  minNote?: number; // Filtre par note minimale sur 10 (calculée depuis nb_stars)
+  position?: "all" | string; // Filtre par position (Avant/Arrière, Gauche/Droite, etc.)
 }
 
 export type SortBy = "name" | "price-asc" | "price-desc" | "brand";

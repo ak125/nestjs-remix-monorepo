@@ -1,5 +1,5 @@
 import { TABLES } from '@repo/database-types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
@@ -7,13 +7,20 @@ import { VehiclePiecesCompatibilityService } from '../../catalog/services/vehicl
 import { GammeUnifiedService } from '../../catalog/services/gamme-unified.service';
 
 /**
- * Service pour récupérer les données de page gamme (méthode classique avec cache)
- *
- * ⚠️ TODO: Migrer toute la logique de gamme-rest-optimized.controller.old ici
- * Pour l'instant, retourne une implémentation temporaire
+ * 🚀 Service optimisé pour récupérer les données de page gamme
+ * 
+ * OPTIMISATIONS:
+ * 1. Cache Redis avec TTL intelligent
+ * 2. Appels parallèles (Promise.all) pour SEO + Pièces
+ * 3. Pattern stale-while-revalidate sur les données
  */
 @Injectable()
 export class GammePageDataService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(GammePageDataService.name);
+  
+  // TTL Cache: 30 min pour données page complètes
+  private readonly CACHE_TTL_SECONDS = 1800;
+
   constructor(
     private readonly cacheService: CacheService,
     private readonly transformer: GammeDataTransformerService,
@@ -24,37 +31,58 @@ export class GammePageDataService extends SupabaseBaseService {
   }
 
   /**
-   * Récupère les données complètes de page avec cache Redis
-   *
-   * ⚠️ TEMPORAIRE: Délègue à l'ancienne implémentation
-   * TODO: Refactoriser en extrayant le code de .old
+   * 🔑 Génère la clé de cache pour page complète
+   */
+  private getCacheKey(pgId: number, typeId: number | null, marqueId: number | null, modeleId: number | null): string {
+    return `gamme:page:${pgId}:${typeId || 0}:${marqueId || 0}:${modeleId || 0}`;
+  }
+
+  /**
+   * ⚡ Récupère les données complètes de page avec cache Redis et appels parallèles
    */
   async getCompletePageData(pgId: string, query: any = {}) {
+    const startTime = performance.now();
     const pgIdNum = parseInt(pgId, 10);
     const typeId = query.typeId ? parseInt(query.typeId, 10) : null;
     const marqueId = query.marqueId ? parseInt(query.marqueId, 10) : null;
     const modeleId = query.modeleId ? parseInt(query.modeleId, 10) : null;
 
-    console.log(`🚀 OPTIMISÉ CLASSIQUE - PG_ID=${pgIdNum} (via service)`);
+    const cacheKey = this.getCacheKey(pgIdNum, typeId, marqueId, modeleId);
 
-    // 1. Get Gamme Details & SEO
-    // Si typeId est présent, on récupère le SEO spécifique, sinon générique (à implémenter si besoin)
-    const seoContent = await this.gammeUnifiedService.getGammeSeoContent(
-      pgIdNum, 
-      typeId || 0, 
-      marqueId, 
-      modeleId
-    );
-    
-    // 2. Get Pieces via RPC optimisée (si véhicule spécifié)
-    let piecesData: any = { pieces: [], count: 0, minPrice: null, grouped_pieces: [] };
-    if (typeId) {
-        // ⚡ RPC: 1 requête au lieu de 9 (~100ms vs ~2000ms)
-        piecesData = await this.vehiclePiecesCompatibilityService.getPiecesViaRPC(typeId, pgIdNum);
+    // 1. Vérifier le cache Redis d'abord
+    const cached = await this.cacheService.get<any>(cacheKey);
+    if (cached) {
+      const cacheTime = performance.now() - startTime;
+      this.logger.debug(`🎯 CACHE HIT page gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`);
+      return {
+        ...cached,
+        _cacheHit: true,
+        _responseTime: cacheTime,
+      };
     }
 
-    // 3. Construct Response (Format compatible BatchLoaderResponse pour les pages véhicules)
-    return {
+    this.logger.log(`🚀 OPTIMISÉ PARALLÈLE - PG_ID=${pgIdNum} typeId=${typeId || 'none'}`);
+
+    // 2. ⚡ APPELS PARALLÈLES - SEO + Pièces en même temps
+    const [seoContent, piecesData] = await Promise.all([
+      // Appel SEO
+      this.gammeUnifiedService.getGammeSeoContent(
+        pgIdNum, 
+        typeId || 0, 
+        marqueId, 
+        modeleId
+      ),
+      // Appel Pièces (seulement si véhicule spécifié)
+      typeId 
+        ? this.vehiclePiecesCompatibilityService.getPiecesViaRPC(typeId, pgIdNum)
+        : Promise.resolve({ pieces: [], count: 0, minPrice: null, grouped_pieces: [] }),
+    ]);
+
+    const parallelTime = performance.now() - startTime;
+    this.logger.log(`⚡ Appels parallèles terminés en ${parallelTime.toFixed(1)}ms`);
+
+    // 3. Construire la réponse
+    const response = {
         status: 200,
         pieces: piecesData.pieces || [],
         count: piecesData.count || 0,
@@ -72,8 +100,16 @@ export class GammePageDataService extends SupabaseBaseService {
         },
         success: true,
         timestamp: new Date().toISOString(),
-        source: 'fallback_optimized_controller'
+        source: 'optimized_parallel',
+        _responseTime: performance.now() - startTime,
     };
+
+    // 4. Stocker en cache (async, non-bloquant)
+    this.cacheService.set(cacheKey, response, this.CACHE_TTL_SECONDS).catch(err => 
+      this.logger.error(`Erreur cache page gamme ${pgIdNum}:`, err)
+    );
+
+    return response;
   }
 
   /**

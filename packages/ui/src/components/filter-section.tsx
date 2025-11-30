@@ -26,7 +26,7 @@ const filterSectionVariants = cva(
 );
 
 const filterSectionHeaderVariants = cva(
-  'text-sm font-semibold flex items-center gap-2',
+  'text-xs font-semibold flex items-center gap-2',
   {
     variants: {
       variant: {

@@ -1,9 +1,10 @@
 import { Controller, Post, Body, Logger, HttpException, HttpStatus, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { VehiclePiecesCompatibilityService } from '../services/vehicle-pieces-compatibility.service';
+import { VehiclePiecesCompatibilityService, OemRefsResult } from '../services/vehicle-pieces-compatibility.service';
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { VehiclesService } from '../../vehicles/vehicles.service';
+import { OemPlatformMappingService } from '../services/oem-platform-mapping.service';
 
 interface BatchLoaderRequest {
   typeId: number;
@@ -45,6 +46,8 @@ interface BatchLoaderResponse {
   };
   crossSelling: any[];
   vehicleInfo?: VehicleInfo; // 🚗 V3: Infos véhicule intégrées
+  oemRefs?: OemRefsResult; // 🔧 V4: Refs OEM constructeur filtrées par marque véhicule
+  oemRefsSeo?: string[]; // 🎯 V5: Refs OEM filtrées par plateforme véhicule (SEO optimisé)
   validation: {
     valid: boolean;
     relationsCount: number;
@@ -75,6 +78,7 @@ export class BatchLoaderController {
     private readonly piecesService: VehiclePiecesCompatibilityService,
     private readonly gammeService: GammeUnifiedService,
     private readonly vehiclesService: VehiclesService,
+    private readonly oemPlatformMappingService: OemPlatformMappingService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -141,19 +145,14 @@ export class BatchLoaderController {
         }),
       ]);
 
-      // Extraction des données
-      const pieces = Array.isArray(piecesResult.pieces) ? piecesResult.pieces : [];
-      const grouped_pieces = (piecesResult as any).grouped_pieces || (piecesResult as any).blocs || [];
-      const filters = (piecesResult as any).filters || null; // ✨ V2: Filtres intégrés depuis RPC
-      const count = pieces.length;
-      const minPrice = piecesResult.minPrice || null;
-
-      // 🚗 Extraction des infos véhicule
+      // 🚗 Extraction des infos véhicule (avant l'appel OEM car on a besoin du nom de marque)
       let vehicleInfo: VehicleInfo | undefined;
+      let marqueName: string | undefined;
       if (vehicleResult?.data?.[0]) {
         const typeData = vehicleResult.data[0];
         const modeleData = typeData.auto_modele;
         const marqueData = modeleData?.auto_marque;
+        marqueName = marqueData?.marque_name;
         
         vehicleInfo = {
           typeId: typeData.type_id,
@@ -168,9 +167,105 @@ export class BatchLoaderController {
           modelePic: modeleData?.modele_pic || undefined,
           modeleAlias: modeleData?.modele_alias || undefined,
           marqueId: marqueData?.marque_id || request.marqueId,
-          marqueName: marqueData?.marque_name || '',
+          marqueName: marqueName || '',
           marqueAlias: marqueData?.marque_alias || undefined,
         };
+      }
+
+      // Extraction des données
+      const pieces = Array.isArray(piecesResult.pieces) ? piecesResult.pieces : [];
+      const grouped_pieces = (piecesResult as any).grouped_pieces || (piecesResult as any).blocs || [];
+      const filters = (piecesResult as any).filters || null; // ✨ V2: Filtres intégrés depuis RPC
+      const count = pieces.length;
+      const minPrice = piecesResult.minPrice || null;
+
+      // 🎯 V7: Enrichir les pièces avec filtre_side depuis leurs groupes
+      // Créer une map pieceId -> filtre_side pour un lookup rapide
+      const pieceToSideMap = new Map<number, string>();
+      for (const group of grouped_pieces) {
+        if (group.pieces && group.filtre_side) {
+          for (const piece of group.pieces) {
+            if (piece.id && !pieceToSideMap.has(piece.id)) {
+              pieceToSideMap.set(piece.id, group.filtre_side);
+            }
+          }
+        }
+      }
+      // Appliquer filtre_side à chaque pièce
+      for (const piece of pieces) {
+        if (piece.id && pieceToSideMap.has(piece.id)) {
+          piece.filtre_side = pieceToSideMap.get(piece.id);
+        }
+      }
+
+      // 🔧 V5: Récupération OEM légère + filtrage par préfixes SEO
+      let oemRefsData: OemRefsResult | undefined;
+      let oemRefsSeo: string[] | undefined;
+
+      if (marqueName && pieces.length > 0) {
+        try {
+          // Extraire les piece_ids des pièces retournées
+          const pieceIds = pieces.map((p: any) => p.id).filter(Boolean);
+
+          // Récupérer les refs OEM de manière légère (sans RPC lente)
+          oemRefsData = await this.piecesService.getOemRefsLightweight(
+            pieceIds,
+            marqueName,
+          );
+
+          // Filtrer les refs OEM par préfixes dominants pour SEO
+          if (oemRefsData.oemRefs.length > 0) {
+            const seoResult = this.oemPlatformMappingService.filterOemRefsForSeo(
+              oemRefsData.oemRefs,
+              request.typeId,
+              request.gammeId,
+              marqueName,
+            );
+            oemRefsSeo = seoResult.filteredRefs;
+
+            this.logger.log(
+              `🎯 [BATCH-LOADER] OEM SEO: ${oemRefsSeo.length}/${oemRefsData.oemRefs.length} refs ` +
+                `(préfixes: ${seoResult.prefixes.join(', ')})`,
+            );
+          }
+
+          // 🎯 V6: Ajouter les refs OEM par groupe (AV/AR) pour affichage ciblé
+          if (grouped_pieces && grouped_pieces.length > 0) {
+            for (const group of grouped_pieces) {
+              if (group.pieces && group.pieces.length > 0) {
+                // Extraire les IDs des pièces de ce groupe
+                const groupPieceIds = group.pieces.map((p: any) => p.id).filter(Boolean);
+                
+                // Récupérer les refs OEM spécifiques à ce groupe
+                const groupOemResult = await this.piecesService.getOemRefsLightweight(
+                  groupPieceIds,
+                  marqueName,
+                );
+                
+                // Filtrer et dédupliquer
+                if (groupOemResult.oemRefs.length > 0) {
+                  const groupSeoResult = this.oemPlatformMappingService.filterOemRefsForSeo(
+                    groupOemResult.oemRefs,
+                    request.typeId,
+                    request.gammeId,
+                    marqueName,
+                  );
+                  group.oemRefs = groupSeoResult.filteredRefs;
+                  group.oemRefsCount = groupSeoResult.filteredRefs.length;
+                  
+                  this.logger.debug(
+                    `🎯 [OEM-GROUPE] "${group.title_h2 || group.filtre_side}": ${group.oemRefsCount} refs`,
+                  );
+                } else {
+                  group.oemRefs = [];
+                  group.oemRefsCount = 0;
+                }
+              }
+            }
+          }
+        } catch (oemError: any) {
+          this.logger.warn(`⚠️ [BATCH-LOADER] Erreur OEM (non bloquante): ${oemError.message}`);
+        }
       }
 
       // Validation basée sur les pièces retournées
@@ -183,7 +278,7 @@ export class BatchLoaderController {
       const loadTime = Date.now() - startTime;
 
       this.logger.log(
-        `✅ [BATCH-LOADER] SUCCESS: ${count} pièces, min=${minPrice}€, SEO=${!!seoResult.content}, cross=${Array.isArray(crossSellingResult) ? crossSellingResult.length : 0}, vehicle=${!!vehicleInfo}, ${loadTime}ms`
+        `✅ [BATCH-LOADER] SUCCESS: ${count} pièces, min=${minPrice}€, SEO=${!!seoResult.content}, cross=${Array.isArray(crossSellingResult) ? crossSellingResult.length : 0}, vehicle=${!!vehicleInfo}, OEM=${oemRefsData?.count || 0}, OEMSEO=${oemRefsSeo?.length || 0}, ${loadTime}ms`
       );
 
       const response: BatchLoaderResponse = {
@@ -201,6 +296,8 @@ export class BatchLoaderController {
         },
         crossSelling: Array.isArray(crossSellingResult) ? crossSellingResult : [],
         vehicleInfo, // 🚗 V3: Infos véhicule intégrées
+        oemRefs: oemRefsData, // 🔧 V4: Refs OEM constructeur filtrées
+        oemRefsSeo, // 🎯 V5: Refs OEM filtrées par préfixes dominants (SEO)
         validation,
         success: true,
         timestamp: new Date().toISOString(),
