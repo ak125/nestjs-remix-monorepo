@@ -731,14 +731,6 @@ export class CatalogService
           .filter(Boolean);
       }
 
-      // Récupérer les références équipementiers (Type 4) depuis pieces_ref_search
-      const { data: refEquipData } = await this.supabase
-        .from(TABLES.pieces_ref_search)
-        .select('prs_ref, prs_prb_id')
-        .eq('prs_piece_id', pieceId)
-        .eq('prs_kind', '4') // Type 4 = références équipementiers (ATE, BREMBO, HELLA...)
-        .limit(50);
-
       // Récupérer les références OEM constructeurs (Type 3) depuis pieces_ref_search
       const { data: refOemData } = await this.supabase
         .from(TABLES.pieces_ref_search)
@@ -746,33 +738,6 @@ export class CatalogService
         .eq('prs_piece_id', pieceId)
         .eq('prs_kind', '3') // Type 3 = références OEM constructeurs (RENAULT, BMW, AUDI...)
         .limit(50);
-
-      // Grouper les références équipementiers par marque
-      let referencesEquipementiers: Record<string, string[]> = {};
-      
-      if (refEquipData && refEquipData.length > 0) {
-        const brandIds = [...new Set(refEquipData.map(r => r.prs_prb_id))];
-        const { data: brandsData } = await this.supabase
-          .from(TABLES.pieces_ref_brand)
-          .select('prb_id, prb_name')
-          .in('prb_id', brandIds);
-        
-        const brandMap = new Map(
-          brandsData?.map(b => [b.prb_id.toString(), b.prb_name]) || []
-        );
-        
-        refEquipData.forEach(ref => {
-          const brandName = brandMap.get(ref.prs_prb_id.toString());
-          if (brandName) {
-            if (!referencesEquipementiers[brandName]) {
-              referencesEquipementiers[brandName] = [];
-            }
-            if (!referencesEquipementiers[brandName].includes(ref.prs_ref)) {
-              referencesEquipementiers[brandName].push(ref.prs_ref);
-            }
-          }
-        });
-      }
 
       // Grouper les références OEM constructeurs par marque
       let referencesOem: Record<string, string[]> = {};
@@ -827,7 +792,6 @@ export class CatalogService
           weight: pieceData.piece_weight_kgm,
           hasOem: pieceData.piece_has_oem,
           criteresTechniques,
-          referencesEquipementiers,
           referencesOem,
         },
       };

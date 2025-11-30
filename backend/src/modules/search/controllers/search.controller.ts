@@ -28,6 +28,11 @@ export class SearchController {
   @ApiQuery({ name: 'page', required: false, description: 'Page number' })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page' })
   @ApiQuery({
+    name: 'includeEquivalences',
+    required: false,
+    description: 'Include OEM equivalences (prs_kind >= 3). Default: true',
+  })
+  @ApiQuery({
     name: 'clear_cache',
     required: false,
     description: 'Clear cache',
@@ -37,6 +42,7 @@ export class SearchController {
     @Query('query') query?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('includeEquivalences') includeEquivalences?: string,
   ) {
     const searchParams = {
       query: query || '',
@@ -51,6 +57,8 @@ export class SearchController {
         page: searchParams.page,
         limit: searchParams.limit,
       },
+      // Par défaut: true (inclure toutes les équivalences OEM)
+      includeEquivalences: includeEquivalences !== 'false',
     });
   }
 

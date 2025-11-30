@@ -17,7 +17,8 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     quality: "all",
     availability: "all",
     searchText: "",
-    minStars: undefined,
+    minNote: undefined,
+    position: "all",
   });
 
   const [sortBy, setSortBy] = useState<SortBy>("name");
@@ -55,6 +56,13 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       );
     }
 
+    // Filtre par position (Avant/Arrière ou Gauche/Droite)
+    if (activeFilters.position && activeFilters.position !== "all") {
+      result = result.filter(piece => 
+        piece.side === activeFilters.position
+      );
+    }
+
     // Filtre par prix
     if (activeFilters.priceRange !== "all") {
       result = result.filter(piece => {
@@ -73,11 +81,13 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       result = result.filter(piece => piece.stock === "En stock");
     }
 
-    // Filtre par étoiles (note minimale)
-    if (activeFilters.minStars && activeFilters.minStars > 0) {
-      result = result.filter(piece => 
-        piece.stars && piece.stars >= activeFilters.minStars!
-      );
+    // Filtre par note minimale (sur 10, calculée depuis stars)
+    if (activeFilters.minNote && activeFilters.minNote > 0) {
+      result = result.filter(piece => {
+        const stars = piece.stars || 3;
+        const note = Math.round((stars / 6) * 10);
+        return note >= activeFilters.minNote!;
+      });
     }
 
     // Tri avec protection contre les valeurs undefined
@@ -208,6 +218,30 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     };
   }, [pieces, activeFilters]);
 
+  // ✨ NOUVEAU: Notes moyennes par marque (calculées à partir des pièces)
+  const brandAverageNotes = useMemo(() => {
+    const brandNoteSums = new Map<string, { sum: number; count: number }>();
+    
+    pieces.forEach(piece => {
+      if (piece.brand && piece.stars !== undefined) {
+        const existing = brandNoteSums.get(piece.brand) || { sum: 0, count: 0 };
+        // Convertir nb_stars (1-6) en note sur 10
+        const note = Math.round((piece.stars / 6) * 10);
+        brandNoteSums.set(piece.brand, {
+          sum: existing.sum + note,
+          count: existing.count + 1
+        });
+      }
+    });
+    
+    const averages = new Map<string, number>();
+    brandNoteSums.forEach((data, brand) => {
+      averages.set(brand, Math.round((data.sum / data.count) * 10) / 10);
+    });
+    
+    return averages;
+  }, [pieces]);
+
   // Pièces recommandées
   const recommendedPieces = useMemo(() => {
     if (!showRecommendations) return [];
@@ -275,6 +309,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     recommendedPieces,
     selectedPiecesData,
     dynamicFilterCounts, // ✨ NOUVEAU: Comptages dynamiques croisés
+    brandAverageNotes, // ✨ Notes moyennes par marque
     
     // Actions
     setActiveFilters,

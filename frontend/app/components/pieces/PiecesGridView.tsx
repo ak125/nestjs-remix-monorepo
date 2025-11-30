@@ -18,6 +18,7 @@ interface PiecesGridViewProps {
   pieces: PieceData[];
   onSelectPiece?: (pieceId: number) => void;
   selectedPieces?: number[];
+  vehicleMarque?: string;
 }
 
 /**
@@ -43,7 +44,7 @@ const optimizeImageUrl = (imageUrl: string | undefined, width: number = 200): st
  * Vue Grid avec cartes pièces
  * ⚡ Optimisé avec React.memo pour éviter re-renders inutiles
  */
-export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: PiecesGridViewProps) {
+export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [], vehicleMarque }: PiecesGridViewProps) {
   const { addToCart } = useCart();
   
   // État pour gérer le loading par produit (anti-double-clic)
@@ -145,6 +146,7 @@ export function PiecesGridView({ pieces, onSelectPiece, selectedPieces = [] }: P
         {/* Modal détail pièce */}
         <PieceDetailModal 
           pieceId={selectedPieceId}
+          vehicleMarque={vehicleMarque}
           onClose={() => {
             console.log('🚪 Modal fermé');
             setSelectedPieceId(null);

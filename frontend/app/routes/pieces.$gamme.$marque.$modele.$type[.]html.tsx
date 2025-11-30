@@ -4,7 +4,7 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 // ========================================
@@ -23,6 +23,7 @@ import { PiecesFilterSidebar } from '../components/pieces/PiecesFilterSidebar';
 import { PiecesGridView } from '../components/pieces/PiecesGridView';
 import { PiecesHeader } from '../components/pieces/PiecesHeader';
 import { PiecesListView } from '../components/pieces/PiecesListView';
+import { PiecesOemRefsDisplay } from '../components/pieces/PiecesOemRefsDisplay';
 import { PiecesSEOSection } from '../components/pieces/PiecesSEOSection';
 import { PiecesStatistics } from '../components/pieces/PiecesStatistics';
 import { ScrollToTop } from '../components/blog/ScrollToTop';
@@ -179,6 +180,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     stock: piece.dispo ? 'En stock' : 'Sur commande',
     quality: piece.qualite || '',
     stars: piece.nb_stars ? parseInt(piece.nb_stars) : undefined, // ✅ Étoiles qualité marque
+    side: piece.filtre_side || undefined, // ✅ Position (Avant/Arrière ou Gauche/Droite)
     description: piece.description || '',
     url: piece.url || '',
     marque_id: piece.marque_id,
@@ -274,6 +276,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     blogArticle: blogArticle || undefined,
     catalogueMameFamille,
     famille,
+    // 🔧 Références OEM constructeur
+    oemRefs: batchResponse.oemRefs || undefined,
+    oemRefsSeo: batchResponse.oemRefsSeo || undefined,
     seo: {
       title: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
       h1: seoContent.h1,
@@ -368,12 +373,16 @@ export default function PiecesVehicleRoute() {
     uniqueBrands,
     recommendedPieces,
     dynamicFilterCounts, // ✨ NOUVEAU: Comptages dynamiques
+    brandAverageNotes, // ✨ Notes moyennes par marque
     setActiveFilters,
     setSortBy,
     setViewMode,
     resetAllFilters,
     togglePieceSelection
   } = usePiecesFilters(data.pieces);
+
+  // État pour catalogue collapsible (fermé par défaut)
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
 
   // Actions de sélection pour mode comparaison
   // ⚡ Optimisé avec useCallback pour éviter re-création à chaque render
@@ -386,6 +395,26 @@ export default function PiecesVehicleRoute() {
   const handleRemoveFromComparison = useCallback((pieceId: number) => {
     togglePieceSelection(pieceId);
   }, [togglePieceSelection]);
+
+  // ✨ Calcul des positions disponibles pour le filtre sidebar
+  const availablePositions = useMemo((): string[] => {
+    const groupedPieces = data.grouped_pieces || [];
+    const positions: string[] = groupedPieces
+      .map((g: any) => g.filtre_side as string)
+      .filter((side): side is string => Boolean(side));
+    return [...new Set(positions)];
+  }, [data.grouped_pieces]);
+
+  // ✨ Label du filtre position adapté selon la gamme
+  const positionLabel = useMemo(() => {
+    const gammeAlias = data.gamme?.alias?.toLowerCase() || '';
+    // Rétroviseurs, essuie-glaces, clignotants → Côté (Gauche/Droite)
+    if (['retroviseur', 'essuie-glace', 'clignotant', 'feu', 'phare'].some(k => gammeAlias.includes(k))) {
+      return 'Côté';
+    }
+    // Plaquettes, disques, amortisseurs → Position (Avant/Arrière)
+    return 'Position';
+  }, [data.gamme]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
@@ -477,10 +506,13 @@ export default function PiecesVehicleRoute() {
                   dynamicFilterCounts.priceCounts[range as 'low' | 'medium' | 'high'] || 0
                 }
                 filtersData={data.filtersData}
+                availablePositions={availablePositions}
+                positionLabel={positionLabel}
+                brandAverageNotes={brandAverageNotes}
               />
             </div>
 
-            {/* Catalogue inline - même présentation que test-catalogue-optimized */}
+            {/* Catalogue collapsible */}
             {data.catalogueMameFamille && data.catalogueMameFamille.items.length > 0 && (() => {
               // Calculer la couleur de la famille
               const familleColor = data.famille ? hierarchyApi.getFamilyColor({
@@ -492,14 +524,27 @@ export default function PiecesVehicleRoute() {
               return (
                 <div>
                   <div className={`relative rounded-lg overflow-hidden shadow-lg bg-gradient-to-br ${familleColor}`}>
-                    {/* Overlay pour améliorer le contraste du titre */}
-                    <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-black/20 to-transparent"></div>
-                    
-                    <div className="relative p-3">
-                      <h2 className="text-sm font-bold text-white mb-3 text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                    {/* Header cliquable pour toggle */}
+                    <button
+                      onClick={() => setCatalogueOpen(!catalogueOpen)}
+                      className="w-full flex items-center justify-between p-3 hover:bg-white/10 transition-colors"
+                    >
+                      <h2 className="text-sm font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
                         Catalogue {data.famille?.mf_name || "Système de freinage"}
+                        <span className="text-xs font-normal opacity-75">({data.catalogueMameFamille.items.length})</span>
                       </h2>
-                      <div className="grid grid-cols-4 gap-1.5 auto-rows-max">
+                      <svg className={`w-5 h-5 text-white transition-transform duration-300 ${catalogueOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {/* Contenu collapsible */}
+                    <div className={`overflow-hidden transition-all duration-300 ${catalogueOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                      <div className="p-3 pt-0">
+                        <div className="grid grid-cols-4 gap-1.5 auto-rows-max">
                         {data.catalogueMameFamille.items.slice(0, 32).map((item, index) => (
                           <a
                             key={index}
@@ -543,6 +588,7 @@ export default function PiecesVehicleRoute() {
                             +{data.catalogueMameFamille.items.length - 32}
                           </div>
                         )}
+                      </div>
                       </div>
                     </div>
                   </div>
@@ -630,21 +676,60 @@ export default function PiecesVehicleRoute() {
                     </button>
                   </div>
 
-                  {/* Tri */}
-                  <div className="relative">
-                    <select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
-                      className="appearance-none px-4 py-2.5 pr-10 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all cursor-pointer"
+                  {/* Tri avec boutons visuels - icônes seules */}
+                  <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => setSortBy('name')}
+                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
+                        sortBy === 'name'
+                          ? 'bg-blue-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                      title="Trier par nom (A→Z)"
                     >
-                      <option value="name">📝 Trier par nom</option>
-                      <option value="price-asc">💰 Prix croissant</option>
-                      <option value="price-desc">💎 Prix décroissant</option>
-                      <option value="brand">🏷️ Marque</option>
-                    </select>
-                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path>
-                    </svg>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setSortBy('price-asc')}
+                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
+                        sortBy === 'price-asc'
+                          ? 'bg-emerald-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                      title="Prix croissant"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setSortBy('price-desc')}
+                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
+                        sortBy === 'price-desc'
+                          ? 'bg-rose-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                      title="Prix décroissant"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4 4m4-4l4 4" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => setSortBy('brand')}
+                      className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all ${
+                        sortBy === 'brand'
+                          ? 'bg-indigo-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                      title="Trier par marque"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -653,7 +738,15 @@ export default function PiecesVehicleRoute() {
               {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
                 // ✨ AFFICHAGE GROUPÉ avec titres H2
                 <div className="space-y-8">
-                  {data.grouped_pieces.map((group: any, idx: number) => {
+                  {data.grouped_pieces
+                    // 🎯 Filtrer les groupes par position (Avant/Arrière ou Gauche/Droite)
+                    .filter((group: any) => {
+                      if (!activeFilters.position || activeFilters.position === 'all') {
+                        return true;
+                      }
+                      return group.filtre_side === activeFilters.position;
+                    })
+                    .map((group: any, idx: number) => {
                     // Filtrer les pièces du groupe selon les filtres actifs
                     // ✅ Protection: group.pieces peut être undefined
                     const groupPieces = (group.pieces || []).filter((p: any) => {
@@ -668,7 +761,7 @@ export default function PiecesVehicleRoute() {
                         image: p.image || '',
                         images: p.images || [],
                         stock: p.dispo ? 'En stock' : 'Sur commande',
-                        quality: p.qualite || '',
+                        quality: p.qualite || p.quality || '',
                         stars: p.nb_stars ? parseInt(p.nb_stars) : undefined,
                         description: p.description || '',
                         url: p.url || '',
@@ -683,6 +776,27 @@ export default function PiecesVehicleRoute() {
                       if (activeFilters.searchText && !pieceData.name.toLowerCase().includes(activeFilters.searchText.toLowerCase())) {
                         return false;
                       }
+                      // 🎯 Filtre par qualité
+                      if (activeFilters.quality !== 'all' && pieceData.quality !== activeFilters.quality) {
+                        return false;
+                      }
+                      // 🎯 Filtre par prix
+                      if (activeFilters.priceRange !== 'all') {
+                        const price = pieceData.price;
+                        if (activeFilters.priceRange === 'low' && price >= 50) return false;
+                        if (activeFilters.priceRange === 'medium' && (price < 50 || price >= 150)) return false;
+                        if (activeFilters.priceRange === 'high' && price < 150) return false;
+                      }
+                      // 🎯 Filtre par disponibilité
+                      if (activeFilters.availability === 'stock' && pieceData.stock !== 'En stock') {
+                        return false;
+                      }
+                      // 🎯 Filtre par note minimale (sur 10)
+                      if (activeFilters.minNote && activeFilters.minNote > 0) {
+                        const stars = pieceData.stars || 3;
+                        const note = Math.round((stars / 6) * 10);
+                        if (note < activeFilters.minNote) return false;
+                      }
                       return true;
                     });
 
@@ -690,10 +804,10 @@ export default function PiecesVehicleRoute() {
 
                     return (
                       <div key={`${group.filtre_gamme}-${group.filtre_side}-${idx}`} className="animate-in fade-in slide-in-from-top duration-500">
-                        {/* Titre H2 dynamique */}
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
+                        {/* Titre H2 dynamique avec modèle véhicule */}
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
                           <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
-                          {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}
+                          {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`} {data.vehicle.modele}
                           <span className="text-sm font-normal text-gray-500 ml-auto">
                             ({groupPieces.length} article{groupPieces.length > 1 ? 's' : ''})
                           </span>
@@ -721,6 +835,7 @@ export default function PiecesVehicleRoute() {
                             }))}
                             onSelectPiece={handleSelectPiece}
                             selectedPieces={selectedPieces}
+                            vehicleMarque={data.vehicle.marque}
                           />
                         )}
 
@@ -759,6 +874,7 @@ export default function PiecesVehicleRoute() {
                       pieces={filteredProducts}
                       onSelectPiece={handleSelectPiece}
                       selectedPieces={selectedPieces}
+                      vehicleMarque={data.vehicle.marque}
                     />
                   )}
 
@@ -808,6 +924,143 @@ export default function PiecesVehicleRoute() {
                   vehicleName={`${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`}
                   gammeName={data.gamme.name}
                 />
+
+                {/* 🎯 Section Références OEM Constructeur - SEO optimisée */}
+                {data.grouped_pieces && data.grouped_pieces.some((g: any) => g.oemRefs && g.oemRefs.length > 0) && (
+                  <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    {/* En-tête de section */}
+                    <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-4">
+                      <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                        <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Références constructeur (OEM) {data.vehicle.marque}
+                      </h2>
+                      <p className="text-slate-300 text-sm mt-1">
+                        Numéros de pièce d'origine pour votre {data.vehicle.marque} {data.vehicle.modele}
+                      </p>
+                    </div>
+                    
+                    {/* Contenu avec groupes séparés */}
+                    <div className="p-6 space-y-6">
+                      {/* Introduction SEO enrichie */}
+                      <div className="prose prose-gray max-w-none">
+                        <p className="text-gray-600 leading-relaxed">
+                          Vous cherchez des <strong>{data.gamme.name}</strong> pour votre{' '}
+                          <strong>{data.vehicle.marque} {data.vehicle.modele} {data.vehicle.type}</strong> ? 
+                          Ci-dessous, retrouvez toutes les <em>références OEM</em> (Original Equipment Manufacturer) 
+                          correspondant à votre véhicule. Ces numéros de pièce d'origine {data.vehicle.marque} vous garantissent 
+                          une compatibilité parfaite.
+                        </p>
+                      </div>
+
+                      {/* Qu'est-ce qu'une référence OEM ? */}
+                      <details className="group bg-blue-50 rounded-lg border border-blue-100">
+                        <summary className="flex items-center justify-between cursor-pointer p-4 text-blue-900 font-medium">
+                          <span className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Qu'est-ce qu'une référence OEM ?
+                          </span>
+                          <svg className="w-5 h-5 text-blue-500 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </summary>
+                        <div className="px-4 pb-4 text-sm text-blue-800 space-y-2">
+                          <p>
+                            Une <strong>référence OEM</strong> est le numéro de pièce attribué par le constructeur automobile 
+                            (ici {data.vehicle.marque}) pour identifier une pièce spécifique. Par exemple, la référence 
+                            <code className="bg-white px-1.5 py-0.5 rounded text-xs mx-1">{data.grouped_pieces?.[0]?.oemRefs?.[0] || '41 06 003 79R'}</code> 
+                            désigne une pièce d'origine {data.vehicle.marque}.
+                          </p>
+                          <p>
+                            <strong>Pourquoi c'est utile ?</strong> Cette référence vous permet de trouver des pièces 
+                            équivalentes chez d'autres fabricants (Bosch, TRW, Brembo...) qui respectent les mêmes 
+                            spécifications techniques que la pièce d'origine.
+                          </p>
+                        </div>
+                      </details>
+
+                      {/* Groupes OEM (AV/AR) */}
+                      <div className="grid gap-6 md:grid-cols-2">
+                        {data.grouped_pieces.filter((g: any) => g.oemRefs && g.oemRefs.length > 0).map((group: any, idx: number) => {
+                          const isAvant = (group.filtre_side || '').toLowerCase().includes('avant') || 
+                                          (group.title_h2 || '').toLowerCase().includes('avant');
+                          const positionText = isAvant ? "à l'avant" : "à l'arrière";
+                          const positionIcon = isAvant ? '🔵' : '🟠';
+                          
+                          return (
+                            <div key={idx} className={`rounded-lg border p-5 ${isAvant ? 'bg-gradient-to-br from-blue-50 to-slate-50 border-blue-200' : 'bg-gradient-to-br from-orange-50 to-slate-50 border-orange-200'}`}>
+                              {/* Titre H3 OEM avec préfixe et modèle */}
+                              <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                <svg className={`w-4 h-4 flex-shrink-0 ${isAvant ? 'text-blue-600' : 'text-orange-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                <span>Références OEM {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`} {data.vehicle.modele}</span>
+                                <span className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${isAvant ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                                  {group.oemRefs.length} réf{group.oemRefs.length > 1 ? 's' : ''}
+                                </span>
+                              </h3>
+                              
+                              {/* Texte explicatif dynamique */}
+                              <p className="text-sm text-gray-600 mb-3">
+                                Ces références {data.vehicle.marque} correspondent aux {data.gamme.name} montées {positionText} de votre {data.vehicle.modele}. 
+                                Utilisez-les pour trouver des équivalences chez nos marques partenaires.
+                              </p>
+                              
+                              {/* Liste des refs avec meilleur styling */}
+                              <div className="flex flex-wrap gap-1.5">
+                                {group.oemRefs.map((ref: string, i: number) => (
+                                  <span 
+                                    key={i} 
+                                    className={`px-2.5 py-1.5 bg-white border rounded-md text-xs font-mono text-gray-800 shadow-sm hover:shadow transition-all cursor-default ${isAvant ? 'border-blue-200 hover:border-blue-400 hover:bg-blue-50' : 'border-orange-200 hover:border-orange-400 hover:bg-orange-50'}`}
+                                    title={`Référence OEM ${data.vehicle.marque} - ${group.title_h2 || group.filtre_gamme}`}
+                                  >
+                                    {ref}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Équivalences et conseils */}
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {/* Conseil équivalences */}
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Équivalences de qualité
+                          </h4>
+                          <p className="text-sm text-green-800">
+                            Les grandes marques comme <strong>Bosch</strong>, <strong>TRW</strong>, <strong>Brembo</strong> ou <strong>Ferodo</strong> fabriquent 
+                            des pièces équivalentes aux références {data.vehicle.marque}. Elles offrent souvent le même niveau de qualité 
+                            (voire supérieur) à un prix plus compétitif.
+                          </p>
+                        </div>
+
+                        {/* Conseil sécurité */}
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                          <h4 className="font-medium text-amber-900 mb-2 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Sécurité freinage
+                          </h4>
+                          <p className="text-sm text-amber-800">
+                            Le système de freinage est un élément de sécurité critique. Privilégiez toujours des pièces 
+                            de qualité <strong>OES</strong> (première monte) ou <strong>certifiées ECE R90</strong> pour garantir 
+                            des performances de freinage optimales.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                )}
 
                 <PiecesBuyingGuide guide={data.buyingGuide} />
 
