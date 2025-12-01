@@ -21,6 +21,22 @@ BEGIN
   -- RÉCUPÉRATION DONNÉES DE BASE (1 requête composite)
   -- ========================================
   SELECT json_build_object(
+    'page_info', (
+      SELECT json_build_object(
+        'pg_id', pg_id,
+        'pg_name', pg_name,
+        'pg_name_meta', pg_name_meta,
+        'pg_alias', pg_alias,
+        'pg_pic', pg_pic,
+        'pg_img', pg_img,
+        'pg_wall', pg_wall,
+        'pg_level', pg_level,
+        'pg_relfollow', pg_relfollow
+      )
+      FROM pieces_gamme
+      WHERE pg_id = p_pg_id
+      LIMIT 1
+    ),
     'catalog', (
       SELECT json_build_object(
         'mc_mf_prime', mc_mf_prime
@@ -140,21 +156,66 @@ BEGIN
   END IF;
 
   -- ========================================
-  -- MOTORISATIONS ENRICHIES (avec marque/modèle/type en une seule query)
+  -- SEO VALIDATION (comptages famille/gamme pour robots)
+  -- Logique PHP: family_count >= 3 ET gamme_count >= 5 → index, follow
+  -- ========================================
+  v_result := v_result || json_build_object(
+    'seo_validation', (
+      SELECT json_build_object(
+        'family_count', COALESCE((
+          SELECT COUNT(DISTINCT mc_mf_id)::INTEGER 
+          FROM catalog_gamme 
+          WHERE mc_mf_prime = v_mf_id
+        ), 0),
+        'gamme_count', COALESCE((
+          SELECT COUNT(DISTINCT mc_pg_id)::INTEGER 
+          FROM catalog_gamme 
+          WHERE mc_mf_prime = v_mf_id
+        ), 0)
+      )
+    )
+  );
+
+  -- ========================================
+  -- MOTORISATIONS ENRICHIES (avec 17 champs véhicule complets)
+  -- Ajout: type_alias, type_fuel, type_engine, type_liter, type_body, mois
+  -- Ajout: modele_alias, modele_pic, modele_body
+  -- Ajout: marque_alias, marque_logo, marque_name_meta
   -- ========================================
   v_result := v_result || json_build_object(
     'motorisations_enriched', (
       SELECT json_agg(
         json_build_object(
+          -- AUTO_TYPE (motorisation) - 12 champs
           'type_id', at.type_id,
+          'type_alias', at.type_alias,
           'type_name', at.type_name,
+          'type_name_meta', at.type_name_meta,
           'type_power_ps', at.type_power_ps,
+          'type_power_kw', at.type_power_kw,
+          'type_fuel', at.type_fuel,
+          'type_engine', at.type_engine,
+          'type_liter', at.type_liter,
+          'type_body', at.type_body,
           'type_year_from', at.type_year_from,
+          'type_month_from', at.type_month_from,
           'type_year_to', at.type_year_to,
+          'type_month_to', at.type_month_to,
+          -- AUTO_MODELE (modèle) - 7 champs
           'modele_id', am.modele_id,
+          'modele_alias', am.modele_alias,
           'modele_name', am.modele_name,
+          'modele_name_meta', am.modele_name_meta,
+          'modele_pic', am.modele_pic,
+          'modele_body', am.modele_body,
+          'modele_year_from', am.modele_year_from,
+          'modele_year_to', am.modele_year_to,
+          -- AUTO_MARQUE (marque) - 5 champs
           'marque_id', amarq.marque_id,
-          'marque_name', amarq.marque_name
+          'marque_alias', amarq.marque_alias,
+          'marque_name', amarq.marque_name,
+          'marque_name_meta', amarq.marque_name_meta,
+          'marque_logo', amarq.marque_logo
         )
       )
       FROM __cross_gamme_car_new cgc

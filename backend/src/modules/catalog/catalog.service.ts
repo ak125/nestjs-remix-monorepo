@@ -698,15 +698,37 @@ export class CatalogService
         .order('pc_sort', { ascending: true });
 
       // Récupérer les liens des critères (jointure manuelle)
+      // 🎯 Filtre PHP: pcl_level='1' pour critères prioritaires, avec fallback si aucun résultat
       let criteresTechniques: any[] = [];
       if (criteresData && criteresData.length > 0) {
         const criIds = [...new Set(criteresData.map(c => c.pc_cri_id))];
-        const { data: linksData } = await this.supabase
+        
+        // Étape 1: Essayer avec pcl_level='1' (critères prioritaires)
+        let { data: linksData } = await this.supabase
           .from(TABLES.pieces_criteria_link)
           .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
           .in('pcl_cri_id', criIds)
           .eq('pcl_display', 1)
+          .eq('pcl_level', '1')
           .order('pcl_level', { ascending: true });
+        
+        let usedFallback = false;
+        
+        // Étape 2: Fallback si aucun critère level=1 trouvé
+        if (!linksData || linksData.length === 0) {
+          usedFallback = true;
+          const fallbackResult = await this.supabase
+            .from(TABLES.pieces_criteria_link)
+            .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
+            .in('pcl_cri_id', criIds)
+            .eq('pcl_display', 1)
+            .order('pcl_level', { ascending: true });
+          linksData = fallbackResult.data;
+          this.logger.warn(`⚠️ [CRITÈRES FALLBACK] piece_id=${pieceId}: aucun critère level=1, utilisation de tous les niveaux`);
+        }
+        
+        // Logging pour monitoring
+        this.logger.log(`📊 [CRITÈRES] piece_id=${pieceId}: ${criIds.length} critères → ${linksData?.length || 0} level=1 ${usedFallback ? '(FALLBACK all levels)' : ''}`);
         
         // Créer une map des liens (prendre le premier par cri_id)
         const linksMap = new Map();
@@ -725,7 +747,8 @@ export class CatalogService
               name: link.pcl_cri_criteria,
               value: crit.pc_cri_value,
               unit: link.pcl_cri_unit || '',
-              level: link.pcl_level || 5,
+              level: link.pcl_level || '5',
+              priority: link.pcl_level === '1',
             } : null;
           })
           .filter(Boolean);
