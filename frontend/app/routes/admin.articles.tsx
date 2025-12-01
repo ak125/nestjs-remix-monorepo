@@ -324,7 +324,7 @@ export default function AdminArticlesPage() {
                     
                     <div className="flex items-center space-x-2 ml-4">
                       <Link
-                        to={`/blog/${article.slug}`}
+                        to={`/blog-pieces-auto/${article.slug}`}
                         target="_blank"
                         className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
                         title="Voir l'article"

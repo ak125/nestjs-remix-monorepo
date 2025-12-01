@@ -211,7 +211,7 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
             </Link>
 
             <Link
-              to="/blog"
+              to="/blog-pieces-auto"
               className="relative group px-4 py-2 text-sm font-semibold text-slate-600 hover:text-blue-600 transition-all duration-300 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 flex items-center gap-2"
             >
               <BookOpen className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:text-blue-500" />

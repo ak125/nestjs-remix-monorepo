@@ -4,6 +4,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
 
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { Card, CardContent } from "../components/ui/card";
@@ -62,7 +63,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
   try {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
-    // Récupérer les informations de la marque et ses modèles
+    // 1. Récupérer les informations de la marque
     const brandRes = await fetch(`${backendUrl}/api/brands/brand/${marque}`, {
       headers: { "Content-Type": "application/json" },
     });
@@ -71,19 +72,71 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       throw new Response("Marque non trouvée", { status: 404 });
     }
 
-    const response = await brandRes.json();
+    const brandResponse = await brandRes.json();
 
-    if (!response?.success || !response?.data?.brand) {
+    if (!brandResponse?.success || !brandResponse?.data) {
       throw new Response("Marque non trouvée", { status: 404 });
     }
 
+    const brandData = brandResponse.data;
+    const brandId = brandData.marque_id;
+
+    // URL de base Supabase pour les logos
+    const supabaseLogoBaseUrl = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos';
+
+    // 2. Récupérer les modèles de cette marque
+    const modelsRes = await fetch(`${backendUrl}/api/vehicles/brands/${brandId}/models`, {
+      headers: { "Content-Type": "application/json" },
+    }).catch(() => null);
+
+    const modelsResponse = modelsRes?.ok ? await modelsRes.json().catch(() => null) : null;
+    const modelsData = modelsResponse?.data || [];
+
+    // Mapper les modèles vers le format attendu
+    const mappedModels: VehicleModel[] = modelsData
+      .filter((model: any) => model.modele_display === 1) // Filtrer uniquement les modèles affichables
+      .map((model: any) => ({
+        id: model.modele_id,
+        name: model.modele_name,
+        alias: model.modele_alias || model.modele_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        yearFrom: model.modele_year_from,
+        yearTo: model.modele_year_to,
+        imageUrl: model.modele_pic && model.modele_pic !== 'no.webp' 
+          ? getOptimizedModelImageUrl(brandData.marque_alias, model.modele_pic) 
+          : null,
+        dateRange: `${model.modele_year_from || '?'} - ${model.modele_year_to || "aujourd'hui"}`,
+        modele_body: model.modele_body,
+        modele_is_new: model.modele_is_new,
+        motorisationsCount: model.motorisationsCount || 0,
+        modele_fuel_types: model.modele_fuel_types || [],
+      }));
+
+    // Mapper la marque
+    const brand = {
+      id: brandData.marque_id,
+      name: brandData.marque_name,
+      alias: brandData.marque_alias,
+      logo: brandData.marque_logo ? `${supabaseLogoBaseUrl}/${brandData.marque_logo}` : null,
+    };
+
+    // Mapper les métadonnées SEO
+    const metadata = brandData.seo ? {
+      title: brandData.seo.title || `Pièces détachées ${brand.name}`,
+      description: brandData.seo.description || `Trouvez toutes les pièces pour ${brand.name}`,
+      keywords: brandData.seo.keywords || `${brand.name}, pièces détachées`,
+      h1: brandData.seo.h1 || `Modèles ${brand.name}`,
+      content: brandData.seo.content || '',
+      relfollow: 'index, follow',
+    } : null;
+
     return json<LoaderData>({
-      brand: response.data.brand || null,
-      models: response.data.models || [],
-      metadata: response.data.metadata || null,
+      brand,
+      models: mappedModels,
+      metadata,
     });
   } catch (e) {
     console.error("Erreur loader marque:", e);
+    if (e instanceof Response) throw e;
     throw new Response("Erreur lors du chargement de la marque", { status: 500 });
   }
 };

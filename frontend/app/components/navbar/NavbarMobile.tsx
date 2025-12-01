@@ -207,7 +207,7 @@ export function NavbarMobile({ user, onSearchClick }: NavbarMobileProps) {
             {/* Blog */}
             <li>
               <Link
-                to="/blog"
+                to="/blog-pieces-auto"
                 onClick={closeMenu}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
               >

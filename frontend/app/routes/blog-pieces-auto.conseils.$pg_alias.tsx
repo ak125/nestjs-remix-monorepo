@@ -572,7 +572,7 @@ export default function LegacyBlogArticle() {
                     {article.relatedArticles.map((related) => (
                       <Link
                         key={related.id}
-                        to={related.pg_alias ? `/blog-pieces-auto/conseils/${related.pg_alias}` : `/blog/article/${related.slug}`}
+                        to={related.pg_alias ? `/blog-pieces-auto/conseils/${related.pg_alias}` : `/blog-pieces-auto/article/${related.slug}`}
                       >
                         <Card className="overflow-hidden hover:shadow-md transition-all group border-gray-200">
                           <div className="flex gap-3 p-3">

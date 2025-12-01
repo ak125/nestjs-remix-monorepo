@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useNavigation } from "@remix-run/react";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
@@ -20,7 +20,9 @@ import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { TrustBadgeGroup } from "../components/trust/TrustBadge";
-import { PurchaseGuide } from "../components/catalog/PurchaseGuide";
+
+// Lazy load PurchaseGuide (contains framer-motion ~167KB)
+const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
 
 interface LoaderData {
   status: number;
@@ -507,13 +509,23 @@ export default function PiecesDetailPage() {
 
       {/* 💡 Guide d'achat personnalisé par famille - Sous le hero */}
       {data.famille && (
-        <PurchaseGuide
-          familleId={data.famille.mf_id}
-          familleName={data.famille.mf_name}
-          productName={data.content?.pg_name}
-          familleColor={familleColor}
-          className="-mt-space-3 mb-space-6"
-        />
+        <Suspense fallback={
+          <div className="container mx-auto px-4 -mt-space-3 mb-space-6">
+            <div className="max-w-6xl mx-auto space-y-6 animate-pulse">
+              <div className="h-12 bg-gray-200 rounded-lg w-2/3 mx-auto"></div>
+              <div className="h-64 bg-gray-100 rounded-2xl"></div>
+              <div className="h-96 bg-gray-100 rounded-2xl"></div>
+            </div>
+          </div>
+        }>
+          <PurchaseGuide
+            familleId={data.famille.mf_id}
+            familleName={data.famille.mf_name}
+            productName={data.content?.pg_name}
+            familleColor={familleColor}
+            className="-mt-space-3 mb-space-6"
+          />
+        </Suspense>
       )}
 
       {/* 🛡️ Conseil Automecanik - Card blanche avec Design Tokens */}
