@@ -27,7 +27,7 @@ const navigationItems: NavigationItem[] = [
   },
   {
     label: "Constructeurs Automobile",
-    href: "/blog/constructeurs",
+    href: "/blog-pieces-auto/auto",
     icon: Car,
     description: "Histoire et modèles des marques",
     color: "text-blue-600",
@@ -60,7 +60,7 @@ export function BlogNavigation() {
         <div className="flex items-center justify-between py-4">
           {/* Logo/Home */}
           <Link 
-            to="/blog" 
+            to="/blog-pieces-auto" 
             className="flex items-center gap-3 group hover:scale-105 transition-transform"
           >
             <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-2.5 shadow-lg">

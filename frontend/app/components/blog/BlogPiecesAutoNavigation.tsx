@@ -112,7 +112,7 @@ export function BlogPiecesAutoNavigation() {
           {/* Boutons secondaires */}
           <div className="hidden lg:flex items-center gap-3">
             <Link 
-              to="/blog"
+              to="/blog-pieces-auto"
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors font-medium text-sm"
             >
               <BookOpen className="w-4 h-4" />

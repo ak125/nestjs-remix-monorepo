@@ -5,7 +5,7 @@
 
 import { type LoaderFunctionArgs, type MetaFunction, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { getOptionalUser } from "../auth/unified.server";
+import { getOptionalUser, getAuthUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
 
 export const meta: MetaFunction = () => {
@@ -19,7 +19,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // Essayer d'abord avec context, puis avec request si context vide
   let user = context?.user ? await getOptionalUser({ context }) : null;
   if (!user) {
-    const { getAuthUser } = await import("../auth/unified.server");
     user = await getAuthUser(request);
   }
   

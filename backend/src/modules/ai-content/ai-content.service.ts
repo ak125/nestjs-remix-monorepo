@@ -11,6 +11,7 @@ import { buildPrompt } from './templates/content-templates';
 import { createHash } from 'crypto';
 import { HuggingFaceProvider } from './providers/huggingface.provider';
 import { GroqProvider } from './providers/groq.provider';
+import { AnthropicProvider } from './providers/anthropic.provider';
 
 interface AIProvider {
   generateContent(
@@ -41,7 +42,18 @@ export class AiContentService {
 
     // Auto-detect: Try providers in order of preference
     if (provider === 'auto') {
-      // 1. Try Groq (gratuit, ultra rapide, quota généreux)
+      // 1. Try Anthropic Claude (meilleur qualité, payant)
+      const anthropicKey = this.configService.get<string>('ANTHROPIC_API_KEY');
+      if (anthropicKey) {
+        const anthropicProvider = new AnthropicProvider(this.configService);
+        if (await anthropicProvider.checkHealth()) {
+          this.aiProvider = anthropicProvider;
+          this.logger.log('✅ Using Anthropic Claude (best quality)');
+          return;
+        }
+      }
+
+      // 2. Try Groq (gratuit, ultra rapide, quota généreux)
       const groqKey = this.configService.get<string>('GROQ_API_KEY');
       if (groqKey) {
         const groqProvider = new GroqProvider(this.configService);
@@ -79,6 +91,12 @@ export class AiContentService {
 
     // Manuel provider selection
     switch (provider) {
+      case 'anthropic':
+      case 'claude':
+        this.aiProvider = new AnthropicProvider(this.configService);
+        this.logger.log('✅ Using Anthropic Claude');
+        break;
+
       case 'groq':
         this.aiProvider = new GroqProvider(this.configService);
         this.logger.log('✅ Using Groq');
@@ -297,6 +315,10 @@ export class AiContentService {
 
   private getProviderModelName(): string {
     const provider = this.configService.get<string>('AI_PROVIDER', 'auto');
+    
+    if (provider === 'anthropic' || provider === 'claude' || (provider === 'auto' && this.aiProvider instanceof AnthropicProvider)) {
+      return this.configService.get<string>('ANTHROPIC_MODEL', 'claude-sonnet-4-20250514');
+    }
     
     if (provider === 'groq' || (provider === 'auto' && this.aiProvider instanceof GroqProvider)) {
       return this.configService.get<string>('GROQ_MODEL', 'llama-3.3-70b-versatile');

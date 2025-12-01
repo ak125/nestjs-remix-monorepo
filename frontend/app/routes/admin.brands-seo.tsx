@@ -8,14 +8,16 @@
 
 import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Form, useNavigation } from '@remix-run/react';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Alert } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
-import { RichTextEditor } from '~/components/RichTextEditor';
+
+// Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
+const RichTextEditor = lazy(() => import('~/components/RichTextEditor').then(m => ({ default: m.RichTextEditor })));
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -178,12 +180,19 @@ export default function AdminBrandsSeo() {
                   (Utilisez <code className="bg-gray-100 px-1 rounded">&lt;b&gt;</code> pour gras)
                 </span>
               </Label>
-              <RichTextEditor
-                name="sm_content"
-                content={content}
-                onChange={setContent}
-                placeholder={`Écrivez le contenu SEO pour ${brand.marque_name}...`}
-              />
+              <Suspense fallback={
+                <div className="border rounded-lg p-4 bg-gray-50 animate-pulse">
+                  <div className="h-8 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-32 bg-gray-200 rounded"></div>
+                </div>
+              }>
+                <RichTextEditor
+                  name="sm_content"
+                  content={content}
+                  onChange={setContent}
+                  placeholder={`Écrivez le contenu SEO pour ${brand.marque_name}...`}
+                />
+              </Suspense>
               <Alert intent="info">
                 💡 Le contenu supporte le HTML basique: <strong>gras</strong>, <em>italique</em>, listes
               </Alert>

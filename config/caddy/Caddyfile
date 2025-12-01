@@ -112,7 +112,7 @@ automecanik.fr {
         header @products Cache-Control "public, max-age=300, stale-while-revalidate=600"
         
         # Pages blog et guides : cache long (30min)
-        @content path_regexp ^/(blog|guides|articles|conseils)/
+        @content path_regexp ^/(blog-pieces-auto|blog|guides|articles|conseils)/
         header @content Cache-Control "public, max-age=1800, stale-while-revalidate=3600"
         
         # Pages de recherche : cache très court (30s)
