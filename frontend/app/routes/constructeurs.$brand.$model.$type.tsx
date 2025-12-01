@@ -323,27 +323,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
   }
 
-  // === VALIDATION ROBOTS (logique PHP) ===
-  const mockFamilyCount = 4; // Simule le résultat de la requête catalog_family
-  const mockGammeCount = 8;  // Simule le résultat de la requête catalog_gamme
-
-  let pageRobots = "index, follow";
-  let _relfollow = 1; // Préfixé avec _ pour indiquer intentionnellement inutilisé
-
-  // Logique de validation SEO (exactement comme dans le PHP)
-  if (vehicleData.marque_relfollow && vehicleData.modele_relfollow && vehicleData.type_relfollow) {
-    if (mockFamilyCount < 3) {
-      pageRobots = "noindex, nofollow";
-      _relfollow = 0;
-    } else if (mockGammeCount < 5) {
-      pageRobots = "noindex, nofollow";
-      _relfollow = 0;
-    }
-  } else {
-    pageRobots = "noindex, nofollow";
-    _relfollow = 0;
-  }
-
   // === GÉNÉRATION CANONIQUE (logique PHP) ===
   const canonicalLink = `https://domain.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
 
@@ -352,6 +331,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   let popularParts: PopularPart[] = [];
   let queryType = 'UNKNOWN';
   let seoValid = false;
+  let seoValidation = { familyCount: 0, gammeCount: 0, isIndexable: false };
   
   try {
     // 🚀 NOUVEAU V4: Service hybride ultime avec cache intelligent + requêtes parallèles
@@ -382,6 +362,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     
     queryType = hybridResult.queryType;
     seoValid = hybridResult.seoValid;
+    seoValidation = hybridResult.seoValidation;
       
     console.log(`✅ [V4 ULTIMATE] ${catalogFamilies.length} familles (${queryType}), ${popularParts.length} pièces populaires, SEO: ${seoValid}, Cache: ${hybridResult.performance?.source || 'N/A'}`);
     
@@ -391,6 +372,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // Fallback vers les données simulées en cas d'erreur totale
     queryType = 'SIMULATION_FALLBACK';
     seoValid = false;
+    seoValidation = { familyCount: 0, gammeCount: 0, isIndexable: false };
     catalogFamilies = [
       {
         mf_id: 1,
@@ -414,6 +396,30 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     ];
   }
+
+  // === VALIDATION ROBOTS (logique PHP avec données réelles de l'API) ===
+  // 🎯 Utilise seoValidation depuis l'API au lieu des valeurs mock
+  const realFamilyCount = seoValidation.familyCount;
+  const realGammeCount = seoValidation.gammeCount;
+
+  let pageRobots = "index, follow";
+  let _relfollow = 1; // Préfixé avec _ pour indiquer intentionnellement inutilisé
+
+  // Logique de validation SEO (exactement comme dans le PHP)
+  if (vehicleData.marque_relfollow && vehicleData.modele_relfollow && vehicleData.type_relfollow) {
+    if (realFamilyCount < 3) {
+      pageRobots = "noindex, nofollow";
+      _relfollow = 0;
+    } else if (realGammeCount < 5) {
+      pageRobots = "noindex, nofollow";
+      _relfollow = 0;
+    }
+  } else {
+    pageRobots = "noindex, nofollow";
+    _relfollow = 0;
+  }
+
+  console.log(`🔍 [SEO VALIDATION] familyCount=${realFamilyCount}, gammeCount=${realGammeCount}, robots=${pageRobots}`);
 
   // === CONSTRUCTION DU CONTENU SEO ET DES DONNÉES ===
   const generateSeoContent = (pgName: string, vehicleData: VehicleData, typeId: number): string => {

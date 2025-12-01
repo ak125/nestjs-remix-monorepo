@@ -63,8 +63,11 @@ export class GammeResponseBuilderService {
       pageContent = defaultSeo.content;
     }
 
+    // Logique SEO PHP: pg_relfollow=1 ET family_count >= 3 ET gamme_count >= 5
+    const seoValidation = aggregatedData?.seo_validation || { family_count: 0, gamme_count: 0 };
     const relfollow = pgRelfollow === 1 ? 1 : 0;
-    const pageRobots = relfollow === 1 ? 'index, follow' : 'noindex, nofollow';
+    const isIndexable = relfollow === 1 && seoValidation.family_count >= 3 && seoValidation.gamme_count >= 5;
+    const pageRobots = isIndexable ? 'index, follow' : 'noindex, nofollow';
     const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
 
     // Traitement données
@@ -145,12 +148,13 @@ export class GammeResponseBuilderService {
         const periode = `${yearFrom} - ${yearTo}`;
 
         // Construire le lien vers la page gamme avec véhicule
-        // Format: /pieces/gamme-alias-ID/marque-ID/modele-ID/type-ID.html
+        // Format: /pieces/gamme-alias-ID/marque-alias-ID/modele-alias-ID/type-alias-ID.html
+        // ✅ Utilise les alias de la DB (marque_alias, modele_alias, type_alias) au lieu de slugifier
         const link = buildPieceVehicleUrlRaw(
           { alias: pgAlias, id: pgIdNum },
-          { alias: item.marque_name, id: item.marque_id },
-          { alias: item.modele_name, id: item.modele_id },
-          { alias: item.type_name, id: item.type_id },
+          { alias: item.marque_alias || item.marque_name, id: item.marque_id },
+          { alias: item.modele_alias || item.modele_name, id: item.modele_id },
+          { alias: item.type_alias || item.type_name, id: item.type_id },
         );
 
         // Valider et nettoyer les fragments SEO
@@ -403,6 +407,13 @@ export class GammeResponseBuilderService {
           : null,
       informations: informations.length > 0 ? informations : null,
       guideAchat,
+      seoValidation: {
+        familyCount: seoValidation.family_count,
+        gammeCount: seoValidation.gamme_count,
+        relfollow: relfollow,
+        isIndexable: isIndexable,
+        robots: pageRobots,
+      },
       performance: {
         total_time_ms: totalTime,
         rpc_time_ms: timings.rpcTime,

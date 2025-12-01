@@ -361,8 +361,16 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       0,
     );
 
+    // 🎯 SEO Validation: Logique PHP pour robots index/noindex
+    // family_count >= 3 ET gamme_count >= 5 → index, follow
+    const seoValidation = {
+      familyCount: finalFamilies.length,
+      gammeCount: totalGammes,
+      isIndexable: finalFamilies.length >= 3 && totalGammes >= 5,
+    };
+
     this.logger.log(
-      `✅ [${queryType}] ${finalFamilies.length} familles, ${totalGammes} gammes compatibles`,
+      `✅ [${queryType}] ${finalFamilies.length} familles, ${totalGammes} gammes compatibles, SEO: ${seoValidation.isIndexable ? 'indexable' : 'noindex'}`,
     );
 
     return {
@@ -370,6 +378,7 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       families: finalFamilies,
       totalFamilies: finalFamilies.length,
       totalGammes,
+      seoValidation,
     };
   }
 
