@@ -63,10 +63,13 @@ export class GammeResponseBuilderService {
       pageContent = defaultSeo.content;
     }
 
-    // Logique SEO PHP: pg_relfollow=1 ET family_count >= 3 ET gamme_count >= 5
+    // Logique SEO pour pages GAMME: seul pg_relfollow compte
+    // NOTE: La logique family_count >= 3 ET gamme_count >= 5 est pour les pages VÉHICULES, pas les gammes
     const seoValidation = aggregatedData?.seo_validation || { family_count: 0, gamme_count: 0 };
-    const relfollow = pgRelfollow === 1 ? 1 : 0;
-    const isIndexable = relfollow === 1 && seoValidation.family_count >= 3 && seoValidation.gamme_count >= 5;
+    // pg_relfollow est TEXT en BDD ('1' ou '0'), conversion pour comparaison
+    const relfollow = String(pgRelfollow) === '1' ? 1 : 0;
+    // Pour une page gamme: index si pg_relfollow='1', noindex sinon
+    const isIndexable = relfollow === 1;
     const pageRobots = isIndexable ? 'index, follow' : 'noindex, nofollow';
     const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
 
@@ -413,6 +416,8 @@ export class GammeResponseBuilderService {
         relfollow: relfollow,
         isIndexable: isIndexable,
         robots: pageRobots,
+        pgLevel: pageData.pg_level,
+        pgRelfollow: pageData.pg_relfollow,
       },
       performance: {
         total_time_ms: totalTime,
