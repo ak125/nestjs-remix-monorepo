@@ -40,6 +40,8 @@ export class GammeResponseBuilderService {
     const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
     const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
     const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
+    const cgcLevelStats = aggregatedData?.cgc_level_stats || { level_1: 0, level_2: 0, level_3: 0, level_5: 0, total: 0 };
+    const motorisationsBlogRaw = aggregatedData?.motorisations_blog || [];
 
     // Traitement SEO
     let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
@@ -315,6 +317,7 @@ export class GammeResponseBuilderService {
         };
 
         return {
+          cgc_level: item.cgc_level || '1', // Niveau CGC (1=page gamme, 2=page marque, 3=page type)
           cgc_type_id: item.type_id,
           type_name: item.type_name,
           type_power_ps: item.type_power_ps,
@@ -335,6 +338,40 @@ export class GammeResponseBuilderService {
         };
       },
     );
+
+    // Traitement motorisations blog (niveau 5)
+    const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
+      const marqueAlias = item.marque_alias || item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const carImage = item.modele_pic && item.modele_pic !== 'no.webp'
+        ? `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${item.modele_pic}`
+        : `${SUPABASE_URL}/constructeurs-automobiles/marques-modeles/no.png`;
+      
+      const yearFrom = item.type_year_from || '';
+      const yearTo = item.type_year_to || "aujourd'hui";
+      const periode = `${yearFrom} - ${yearTo}`;
+
+      const link = buildPieceVehicleUrlRaw(
+        { alias: pgAlias, id: pgIdNum },
+        { alias: item.marque_alias || item.marque_name, id: item.marque_id },
+        { alias: item.modele_alias || item.modele_name, id: item.modele_id },
+        { alias: item.type_alias || item.type_name, id: item.type_id },
+      );
+
+      return {
+        cgc_level: item.cgc_level,
+        type_id: item.type_id,
+        type_name: item.type_name,
+        puissance: `${item.type_power_ps} ch`,
+        periode,
+        modele_id: item.modele_id,
+        modele_name: item.modele_name,
+        marque_id: item.marque_id,
+        marque_name: item.marque_name,
+        image: carImage,
+        link,
+        title: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
+      };
+    });
 
     // Guide d'achat
     const guideAchat = blogData
@@ -410,6 +447,13 @@ export class GammeResponseBuilderService {
           : null,
       informations: informations.length > 0 ? informations : null,
       guideAchat,
+      motorisationsBlog:
+        motorisationsBlog.length > 0
+          ? {
+              title: 'Véhicules cités dans nos guides',
+              items: motorisationsBlog,
+            }
+          : null,
       seoValidation: {
         familyCount: seoValidation.family_count,
         gammeCount: seoValidation.gamme_count,
@@ -419,10 +463,19 @@ export class GammeResponseBuilderService {
         pgLevel: pageData.pg_level,
         pgRelfollow: pageData.pg_relfollow,
       },
+      cgcLevelStats: {
+        level1: cgcLevelStats.level_1,
+        level2: cgcLevelStats.level_2,
+        level3: cgcLevelStats.level_3,
+        level5: cgcLevelStats.level_5,
+        total: cgcLevelStats.total,
+        description: 'CGC_LEVEL: 1=motorisations grille, 2=page marque, 3=page type, 5=section blog',
+      },
       performance: {
         total_time_ms: totalTime,
         rpc_time_ms: timings.rpcTime,
         motorisations_count: motorisations.length,
+        motorisations_blog_count: motorisationsBlog.length,
         catalogue_famille_count: catalogueFiltres.length,
         equipementiers_count: equipementiers.length,
         conseils_count: conseils.length,
