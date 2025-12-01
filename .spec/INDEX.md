@@ -1,7 +1,7 @@
 # Documentation Index - NestJS Remix Monorepo
 
-**Version**: 1.0.0  
-**Date**: 15 novembre 2025  
+**Version**: 1.1.0  
+**Date**: 2 décembre 2025  
 **Coverage**: 79% (29/37 modules)
 
 ## Quick Navigation
@@ -345,13 +345,26 @@
 
 ---
 
+## 🆕 Changements Récents (Décembre 2025)
+
+### Migration Blog → Blog-Pieces-Auto
+- 🔄 Toutes les routes `/blog/*` renommées en `/blog-pieces-auto/*`
+- ✅ Pages constructeurs avec images Supabase CDN optimisées
+- ✅ Helpers `getOptimizedBrandLogoUrl()` et `getOptimizedModelImageUrl()`
+
+### Cleanup Code
+- 🗑️ Suppression 187 fichiers (markdown temporaires, routes de test, ai-agents-python)
+- ✅ Codebase plus propre et maintenable
+
+---
+
 ## Quick Stats
 
 ### Documentation Volume
 - **Total lignes**: ~30K
 - **Fichiers créés**: 33 (29 specs + 4 reports)
-- **Commits**: 30
-- **Durée**: ~15 heures (3 phases)
+- **Commits**: 30+
+- **Dernière sync**: 2 décembre 2025
 
 ### Coverage
 - **Modules documentés**: 29/37 (79%)
@@ -387,7 +400,7 @@
 
 ---
 
-**Version**: 1.0.0  
-**Dernière mise à jour**: 15 novembre 2025  
+**Version**: 1.1.0  
+**Dernière mise à jour**: 2 décembre 2025  
 **Maintenu par**: Documentation Team  
 **Contact**: docs@company.com
