@@ -247,6 +247,141 @@ export const DEFAULT_VALUES = {
 } as const;
 
 /**
+ * 📊 SYSTÈMES DE NIVEAUX (LEVELS) - Documentation complète
+ * 
+ * 4 systèmes hiérarchiques utilisés dans l'application :
+ * 1. CGC_LEVEL - Curation véhicules par gamme (Cross Gamme Car)
+ * 2. PCL_LEVEL - Hiérarchie critères techniques (Pieces Criteria Link)
+ * 3. PG_LEVEL - Catégorisation gammes produits (Pieces Gamme)
+ * 4. FM_LEVEL - Organisation menu footer (Footer Menu)
+ * 
+ * @see ANALYSE-LEVELS-AUTOMECANIK.md pour documentation complète
+ */
+export const LEVELS = {
+  /**
+   * CGC_LEVEL - Cross Gamme Car Level
+   * Table: __cross_gamme_car_new (colonne: cgc_level)
+   * 
+   * Gère quels véhicules sont affichés pour chaque gamme de produits
+   * avec priorisation selon le type de page.
+   */
+  CGC: {
+    /** Niveau 1 - VEDETTES : Véhicules les plus consultés, affichés en grille sur page gamme */
+    GAMME_PAGE: '1',
+    /** Niveau 2 - SECONDAIRES : Véhicules populaires affichés sur page marque constructeur */
+    BRAND_PAGE: '2', 
+    /** Niveau 3 - EXHAUSTIF : Toutes les gammes compatibles affichées sur page motorisation/type véhicule */
+    VEHICLE_PAGE: '3',
+    /** Niveau 5 - BLOG : Véhicules cités dans les articles blog/guides d'achat de la page gamme */
+    BLOG: '5',
+  },
+
+  /**
+   * PCL_LEVEL - Pieces Criteria Link Level
+   * Table: pieces_criteria_link (colonne: pcl_level)
+   * 
+   * Hiérarchise les critères techniques par importance pour l'utilisateur.
+   * - Listing produits : max 3 critères (niveau 1 puis 2)
+   * - Fiche détaillée : tous les critères affichés
+   */
+  PCL: {
+    /** Niveau 1 - CRITIQUE : Critères essentiels au choix (Ampérage, Tension, Dimensions) */
+    CRITICAL: '1',
+    /** Niveau 2 - SECONDAIRE : Critères utiles mais non critiques (Fixation, Poulie) */
+    SECONDARY: '2',
+  },
+
+  /**
+   * PG_LEVEL - Pieces Gamme Level
+   * Table: pieces_gamme (colonne: pg_level)
+   * 
+   * Distingue gammes principales (catégories) des sous-catégories.
+   */
+  PG: {
+    /** Niveau 1 - PRINCIPAL : Gamme principale dans navigation (Kit embrayage, Plaquette frein) */
+    MAIN: '1',
+    /** Niveau 2 - SOUS-CATÉGORIE : Variante d'une gamme principale (Plaquette céramique) */
+    SUB: '2',
+  },
+
+  /**
+   * FM_LEVEL - Footer Menu Level
+   * Table: ___footer_menu (colonne: fm_level)
+   * 
+   * Organise les liens footer en colonnes distinctes.
+   */
+  FM: {
+    /** Niveau 1 - POLITIQUES : Liens commerciaux/service client (CGV, Retours, Garantie) */
+    POLICIES: '1',
+    /** Niveau 2 - LÉGAL : Liens légaux obligatoires (Mentions légales, Cookies, Contact) */
+    LEGAL: '2',
+  },
+} as const;
+
+/**
+ * Configuration d'affichage par niveau CGC
+ * Définit le contexte et les limites d'affichage pour chaque niveau
+ */
+export const CGC_LEVEL_CONFIG = {
+  [LEVELS.CGC.GAMME_PAGE]: {
+    description: 'Motorisations les plus consultées',
+    displayContext: 'grid' as const,
+    priority: 'high' as const,
+    limit: 20,
+    showOnPage: 'gamme',
+    section: 'motorisations_enriched',
+  },
+  [LEVELS.CGC.BRAND_PAGE]: {
+    description: 'Véhicules populaires de la marque',
+    displayContext: 'grid' as const,
+    priority: 'medium' as const,
+    limit: 50,
+    showOnPage: 'marque',
+    section: 'motorisations_brand',
+  },
+  [LEVELS.CGC.VEHICLE_PAGE]: {
+    description: 'Toutes les gammes compatibles',
+    displayContext: 'grid' as const,
+    priority: 'low' as const,
+    limit: 48,
+    showOnPage: 'type',
+    section: 'gammes_compatibles',
+  },
+  [LEVELS.CGC.BLOG]: {
+    description: 'Véhicules cités dans le blog/guide',
+    displayContext: 'blog' as const,
+    priority: 'medium' as const,
+    limit: 10,
+    showOnPage: 'gamme',
+    section: 'motorisations_blog',
+  },
+} as const;
+
+/**
+ * Configuration d'affichage critères PCL
+ */
+export const PCL_LEVEL_CONFIG = {
+  listing: {
+    maxCriteria: 3,
+    levels: [LEVELS.PCL.CRITICAL, LEVELS.PCL.SECONDARY],
+    description: 'Aperçu rapide sur listing produits',
+  },
+  detail: {
+    maxCriteria: Infinity,
+    levels: [LEVELS.PCL.CRITICAL, LEVELS.PCL.SECONDARY],
+    description: 'Affichage complet sur fiche détaillée',
+  },
+} as const;
+
+/**
+ * Types pour les niveaux
+ */
+export type CgcLevel = typeof LEVELS.CGC[keyof typeof LEVELS.CGC];
+export type PclLevel = typeof LEVELS.PCL[keyof typeof LEVELS.PCL];
+export type PgLevel = typeof LEVELS.PG[keyof typeof LEVELS.PG];
+export type FmLevel = typeof LEVELS.FM[keyof typeof LEVELS.FM];
+
+/**
  * 🔍 HELPER TYPE - Pour autocomplete dans les requêtes
  */
 export type TableNames = typeof TABLES;
