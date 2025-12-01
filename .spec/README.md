@@ -3,8 +3,8 @@
 > **Documentation complète de l'architecture backend** - 37 modules, 187+ endpoints, 25,179 lignes de spécifications techniques.
 
 **Statut:** ✅ **100% Coverage** (37/37 modules)  
-**Dernière mise à jour:** 2025-11-18  
-**Version:** 1.0.0
+**Dernière mise à jour:** 2025-12-02  
+**Version:** 1.1.0
 
 ---
 
@@ -692,17 +692,33 @@ curl https://api.example.com/api/ai/health
 **Onboarding:**
 - [QUICK-START-DEV.md](./QUICK-START-DEV.md) - 🚀 Guide développeur (30min → productif)
 
-**Configuration & Setup:**
-- [CONTEXT7-GUIDE.md](../CONTEXT7-GUIDE.md) - Configuration Context7 MCP
-- [AI-README.md](../AI-README.md) - Multi-provider AI setup
-- [REDIS-CACHE-IMPLEMENTATION.md](../REDIS-CACHE-IMPLEMENTATION.md) - Cache strategies
-
 **Reports:**
 - [CRITICAL-MODULES-REPORT.md](./features/CRITICAL-MODULES-REPORT.md) - Rapport de coverage 100%
 
 ---
 
 ## 🆕 Recent Updates
+
+### Version 1.1.0 (2025-12-02) - Blog Migration & Cleanup
+
+**Blog Migration:**
+- 🔄 **Routes renommées**: `/blog` → `/blog-pieces-auto` (toutes les routes)
+- ✅ **blog-pieces-auto._index.tsx** - Page principale blog
+- ✅ **blog-pieces-auto.auto._index.tsx** - Liste constructeurs avec images Supabase CDN
+- ✅ **blog-pieces-auto.auto.$marque.index.tsx** - Page marque avec modèles
+- ✅ **blog-pieces-auto.advice._index.tsx** - Page conseils
+- ✅ **blog-pieces-auto.article.$slug.tsx** - Articles individuels
+
+**Images Supabase CDN:**
+- 🖼️ **Logos marques**: `getOptimizedBrandLogoUrl()` via `~/utils/image-optimizer.ts`
+- 🖼️ **Images modèles**: `getOptimizedModelImageUrl()` via `~/utils/image-optimizer.ts`
+- 📦 **Path correct**: `constructeurs-automobiles/marques-modeles/${marque_alias}/${modele_pic}`
+
+**Cleanup majeur (187 fichiers):**
+- 🗑️ Suppression fichiers markdown temporaires (AI-*, CONTEXT7-*, etc.)
+- 🗑️ Suppression dossier ai-agents-python/
+- 🗑️ Suppression routes de test (test.*, commercial.vehicles.*)
+- ✅ Code plus propre et maintenable
 
 ### Version 1.0.0 (2025-11-18) - 100% Coverage ✅
 
@@ -727,12 +743,6 @@ curl https://api.example.com/api/ai/health
 - ⚡ **Homepage Load Time**: -70% (15-20s → 3-5s)
 - 💾 **Cache Strategy**: Redis multi-niveaux (équipementiers TTL 1h, conseils TTL 30min)
 - 🔄 **Parallélisation**: Requêtes véhicule 5s → 1.5s (-70%)
-- Voir [PERFORMANCE-OPTIMIZATIONS.md](../PERFORMANCE-OPTIMIZATIONS.md)
-
-### SEO Switches Migration (17 Nov 2025)
-- 🔄 **Migration complète PHP → TypeScript**: Service `SeoSwitchesService` (395 lignes)
-- 📊 **177 switches peuplés**: Table `__seo_gamme_car_switch` pour 5 gammes
-- Voir [SEO-SWITCHES-MIGRATION-COMPLETE.md](../backend/SEO-SWITCHES-MIGRATION-COMPLETE.md)
 
 ---
 
@@ -751,6 +761,6 @@ curl https://api.example.com/api/ai/health
 ---
 
 **Made with ❤️ by Backend Team**  
-**Documentation v1.0.0 - 2025-11-18**
+**Documentation v1.1.0 - 2025-12-02**
 
 > **Note** : Les spécifications complètent la documentation existante dans `/docs/`. Les docs expliquent le "pourquoi" et le contexte, les specs définissent le "quoi" de manière exécutable.

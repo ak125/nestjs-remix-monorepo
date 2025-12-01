@@ -59,26 +59,6 @@ cat docs/CONSOLIDATION-GUIDE.md
 
 👉 **Guide complet** : [docs/CONSOLIDATION-GUIDE.md](./docs/CONSOLIDATION-GUIDE.md)
 
-### 🤖 Système d'Agents IA
-
-**Nouveau !** Système d'audit et d'amélioration automatique du monorepo :
-
-```bash
-# Audit complet du monorepo
-cd ai-agents && npm run agent:driver
-
-# Agent Cartographe seul
-npm run agent:cartographe
-```
-
-**Fonctionnalités** :
-- ✅ Cartographie complète du monorepo
-- ✅ Heatmap des fichiers volumineux
-- ✅ KPIs et métriques détaillées
-- ✅ Rapports automatiques (JSON + Markdown)
-
-👉 **Documentation** : [ai-agents/README.md](./ai-agents/README.md) | [Guide de démarrage](./ai-agents/QUICKSTART.md)
-
 ---
 
 ## 🏗️ Architecture
@@ -464,7 +444,7 @@ Développé avec ❤️ par [@ak125](https://github.com/ak125)
 - [Context7 MCP](https://context7.com/) - Up-to-date documentation for AI coding
 
 **🤖 AI Development** :
-Ce projet utilise [Context7 MCP](https://context7.com/) pour obtenir de la documentation à jour directement dans GitHub Copilot. Voir [CONTEXT7-SETUP.md](./CONTEXT7-SETUP.md) pour l'utilisation.
+Ce projet utilise [Context7 MCP](https://context7.com/) pour obtenir de la documentation à jour directement dans GitHub Copilot.
 
 ---
 
@@ -484,6 +464,6 @@ Ce projet utilise [Context7 MCP](https://context7.com/) pour obtenir de la docum
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-**Last Update** : 5 octobre 2025  
-**Version** : 2.0.0  
+**Last Update** : 2 décembre 2025  
+**Version** : 2.1.0  
 **Status** : Production Ready ✅
