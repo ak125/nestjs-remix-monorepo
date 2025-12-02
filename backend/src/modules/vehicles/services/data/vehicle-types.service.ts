@@ -224,22 +224,12 @@ export class VehicleTypesService extends SupabaseBaseService {
           } = options;
           const offset = page * limit;
 
+          // ✅ Même approche que findTypesByModel() - sans jointure auto_modele!inner
+          // type_modele_id est de type TEXT dans la DB
           let query = this.client
             .from(TABLES.auto_type)
-            .select(
-              `
-              *,
-              auto_modele!inner(
-                modele_id,
-                modele_name,
-                auto_marque!inner(
-                  marque_id,
-                  marque_name
-                )
-              )
-            `,
-            )
-            .eq('auto_modele.modele_id', modeleId)
+            .select('*')
+            .eq('type_modele_id', modeleId.toString())
             .eq('type_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
