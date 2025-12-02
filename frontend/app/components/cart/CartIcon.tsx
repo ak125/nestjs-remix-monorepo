@@ -59,6 +59,7 @@ export function CartIcon({ className = "" }: CartIconProps) {
   return (
     <Link 
       to="/cart" 
+      rel="nofollow"
       className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >

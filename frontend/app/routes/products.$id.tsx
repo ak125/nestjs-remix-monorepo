@@ -15,7 +15,7 @@
  * - /products/:id?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 import { ArrowLeft, Package, Tag, Info, Star, TrendingUp, ShoppingCart } from 'lucide-react';
 import { requireUser } from '../auth/unified.server';
@@ -24,6 +24,42 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
+
+/**
+ * 🔍 SEO Meta Tags - Page produit individuel
+ */
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data?.product) {
+    return [
+      { title: 'Produit non trouvé' },
+      { name: 'robots', content: 'noindex' },
+    ];
+  }
+  
+  const product = data.product;
+  const brandName = product.pieces_marque?.marque_name || '';
+  const gammeName = product.pieces_gamme?.gamme_name || '';
+  const price = product.pieces_price?.price_ttc;
+  
+  const title = `${product.piece_name} ${brandName} | ${gammeName}`;
+  const description = product.piece_description 
+    || `${product.piece_name} ${brandName} - Référence ${product.piece_sku}. ${gammeName} de qualité. ${price ? `À partir de ${price.toFixed(2)}€ TTC.` : ''} Livraison rapide.`;
+  
+  return [
+    { title },
+    { name: 'description', content: description },
+    { name: 'robots', content: 'index, follow' },
+    // Open Graph
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:type', content: 'product' },
+    ...(product.piece_image ? [{ property: 'og:image', content: product.piece_image }] : []),
+    // Twitter
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
+  ];
+};
 
 interface ProductDetail {
   piece_id: string;

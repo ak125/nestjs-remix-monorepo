@@ -9,7 +9,8 @@ import { Label } from "~/components/ui/label";
 import { getOptionalUser } from "../../auth/unified.server";
 
 export const meta: MetaFunction = () => [
-  { title: "Connexion - E-Commerce Platform" },
+  { title: "Connexion | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
 ];
 
 export async function loader({ request, context }: LoaderFunctionArgs) {

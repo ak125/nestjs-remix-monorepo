@@ -160,6 +160,7 @@ export function CartSidebarSimple({ isOpen, onClose }: CartSidebarSimpleProps) {
           {itemCount > 0 && (
             <Link 
               to="/cart" 
+              rel="nofollow"
               onClick={onClose}
               className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
             >

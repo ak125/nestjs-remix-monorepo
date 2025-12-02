@@ -1,10 +1,16 @@
-import { json, type ActionFunction, type LoaderFunction, redirect } from "@remix-run/node";
+import { json, type ActionFunction, type LoaderFunction, type MetaFunction, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData, useSearchParams, Link } from "@remix-run/react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Réinitialisation du mot de passe | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 export const loader: LoaderFunction = async ({ params }) => {
   const { token } = params;

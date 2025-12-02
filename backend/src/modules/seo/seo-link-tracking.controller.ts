@@ -1,0 +1,212 @@
+/**
+ * 📊 SEO Link Tracking Controller
+ *
+ * Endpoints pour le tracking des liens internes (maillage SEO)
+ *
+ * Endpoints:
+ * - POST /api/seo/track-click : Enregistre un clic sur lien interne
+ * - POST /api/seo/track-impression : Enregistre une impression de liens
+ * - GET /api/seo/metrics/:linkType : Métriques par type de lien
+ * - GET /api/seo/metrics/report : Rapport complet de performance
+ */
+
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Headers,
+  Logger,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
+import {
+  SeoLinkTrackingService,
+  LinkClickEvent,
+  LinkImpressionEvent,
+  LinkMetrics,
+  LinkPerformanceReport,
+} from './seo-link-tracking.service';
+
+// DTO pour les requêtes
+class TrackClickDto {
+  linkType:
+    | 'LinkGammeCar'
+    | 'LinkGammeCar_ID'
+    | 'CompSwitch'
+    | 'CrossSelling'
+    | 'VoirAussi'
+    | 'Footer'
+    | 'RelatedArticles';
+  sourceUrl: string;
+  destinationUrl: string;
+  anchorText?: string;
+  linkPosition?:
+    | 'header'
+    | 'content'
+    | 'sidebar'
+    | 'footer'
+    | 'crossselling'
+    | 'voiraussi';
+  sessionId?: string;
+}
+
+class TrackImpressionDto {
+  linkType: string;
+  pageUrl: string;
+  linkCount: number;
+  sessionId?: string;
+}
+
+@ApiTags('SEO Link Tracking')
+@Controller('api/seo')
+export class SeoLinkTrackingController {
+  private readonly logger = new Logger(SeoLinkTrackingController.name);
+
+  constructor(private readonly trackingService: SeoLinkTrackingService) {}
+
+  /**
+   * Enregistre un clic sur un lien interne
+   */
+  @Post('track-click')
+  @ApiOperation({ summary: 'Track un clic sur lien interne' })
+  @ApiResponse({ status: 201, description: 'Clic enregistré' })
+  async trackClick(
+    @Body() dto: TrackClickDto,
+    @Headers('user-agent') userAgent?: string,
+    @Headers('referer') referer?: string,
+  ): Promise<{ success: boolean }> {
+    // Détecter le type de device
+    const deviceType = this.detectDeviceType(userAgent);
+
+    const event: LinkClickEvent = {
+      ...dto,
+      userAgent,
+      referer,
+      deviceType,
+    };
+
+    const success = await this.trackingService.trackClick(event);
+
+    this.logger.debug(
+      `📊 Track click: ${dto.linkType} | ${dto.sourceUrl} -> ${dto.destinationUrl} | ${deviceType}`,
+    );
+
+    return { success };
+  }
+
+  /**
+   * Enregistre une impression de liens (page vue)
+   */
+  @Post('track-impression')
+  @ApiOperation({ summary: 'Track une impression de liens' })
+  @ApiResponse({ status: 201, description: 'Impression enregistrée' })
+  async trackImpression(
+    @Body() dto: TrackImpressionDto,
+  ): Promise<{ success: boolean }> {
+    const event: LinkImpressionEvent = {
+      linkType: dto.linkType,
+      pageUrl: dto.pageUrl,
+      linkCount: dto.linkCount,
+      sessionId: dto.sessionId,
+    };
+
+    const success = await this.trackingService.trackImpression(event);
+    return { success };
+  }
+
+  /**
+   * Récupère les métriques pour un type de lien
+   */
+  @Get('metrics/:linkType')
+  @ApiOperation({ summary: 'Métriques par type de lien' })
+  @ApiParam({
+    name: 'linkType',
+    description: 'Type de lien (LinkGammeCar, CrossSelling, etc.)',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Date de début (ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Date de fin (ISO)',
+  })
+  @ApiResponse({ status: 200, description: 'Métriques du lien' })
+  async getMetricsByLinkType(
+    @Param('linkType') linkType: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ): Promise<LinkMetrics | null> {
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    return this.trackingService.getMetricsByLinkType(linkType, start, end);
+  }
+
+  /**
+   * Rapport complet de performance des liens internes
+   */
+  @Get('metrics/report')
+  @ApiOperation({ summary: 'Rapport complet de performance SEO' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Date de début (ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Date de fin (ISO)',
+  })
+  @ApiResponse({ status: 200, description: 'Rapport de performance' })
+  async getPerformanceReport(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ): Promise<LinkPerformanceReport> {
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    return this.trackingService.getPerformanceReport(start, end);
+  }
+
+  /**
+   * Détecte le type de device depuis le User-Agent
+   */
+  private detectDeviceType(
+    userAgent?: string,
+  ): 'mobile' | 'desktop' | 'tablet' {
+    if (!userAgent) return 'desktop';
+
+    const ua = userAgent.toLowerCase();
+
+    // Tablettes
+    if (
+      ua.includes('ipad') ||
+      (ua.includes('android') && !ua.includes('mobile'))
+    ) {
+      return 'tablet';
+    }
+
+    // Mobile
+    if (
+      ua.includes('mobile') ||
+      ua.includes('iphone') ||
+      ua.includes('android') ||
+      ua.includes('windows phone')
+    ) {
+      return 'mobile';
+    }
+
+    return 'desktop';
+  }
+}

@@ -214,15 +214,21 @@ export function AdminSidebar({ className, stats, ...props }: SidebarProps) {
           description: `${stats?.seoStats?.sitemapEntries?.toLocaleString() || "714K+"} pages indexées`
         },
         {
+          name: "Maillage Interne",
+          href: "/admin/seo-dashboard",
+          icon: Globe,
+          description: "Tracking liens internes"
+        },
+        {
           name: "Sitemaps",
           href: "/admin/seo?tab=tools", 
-          icon: Globe,
+          icon: FileText,
           description: "Génération automatique"
         },
         {
           name: "Métadonnées",
           href: "/admin/seo?tab=batch-update",
-          icon: FileText,
+          icon: Tag,
           description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`
         }
       ]

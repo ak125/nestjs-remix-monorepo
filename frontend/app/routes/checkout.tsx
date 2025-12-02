@@ -3,13 +3,19 @@
  * Route simple pour créer une commande depuis le panier
  */
 
-import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, useLoaderData, useNavigation, useActionData, Link } from "@remix-run/react";
 import { useEffect } from "react";
 import { toast } from 'sonner';
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Finalisation de commande | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   // ✅ Authentification requise - redirige vers /login?redirectTo=/checkout

@@ -3,11 +3,13 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  * 
  * ⚠️ CRITIQUE: URLs préservées /pieces/{gamme}/{marque}/{modele}/{type}.html
+ * 📊 TRACKING: Intégration du hook useSeoLinkTracking pour analytics
  */
 
 import { Link } from '@remix-run/react';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { type CrossSellingGamme, type VehicleData } from '../../types/pieces-route.types';
+import { useSeoLinkTracking } from '../../hooks/useSeoLinkTracking';
 
 interface PiecesCrossSellingProps {
   gammes: CrossSellingGamme[];
@@ -19,7 +21,23 @@ interface PiecesCrossSellingProps {
  * URLs FORMAT: /pieces/{gamme}/{marque}/{modele}/{type}.html
  */
 export function PiecesCrossSelling({ gammes, vehicle }: PiecesCrossSellingProps) {
+  const { trackClick, trackImpression } = useSeoLinkTracking();
   
+  // 📊 Track les impressions au montage
+  useEffect(() => {
+    if (gammes.length > 0) {
+      trackImpression('CrossSelling', gammes.length);
+    }
+  }, [gammes.length, trackImpression]);
+
+  // Handler pour tracker les clics
+  const handleCrossSellingClick = (gamme: CrossSellingGamme, url: string) => {
+    trackClick('CrossSelling', url, {
+      anchorText: gamme.PG_NAME,
+      position: 'crossselling'
+    });
+  };
+
   if (gammes.length === 0) return null;
 
   return (
@@ -50,6 +68,7 @@ export function PiecesCrossSelling({ gammes, vehicle }: PiecesCrossSellingProps)
                 key={gamme.PG_ID}
                 to={url}
                 className="group bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                onClick={() => handleCrossSellingClick(gamme, url)}
               >
                 {/* Image gamme */}
                 <div className="aspect-video bg-gradient-to-br from-teal-50 to-cyan-50 relative overflow-hidden">

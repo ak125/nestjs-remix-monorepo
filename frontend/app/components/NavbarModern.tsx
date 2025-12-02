@@ -366,12 +366,14 @@ export const NavbarModern = ({ logo }: { logo: string }) => {
             <div className="hidden md:flex items-center gap-2 ml-2">
               <Link
                 to="/login"
+                rel="nofollow"
                 className="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-normal"
               >
                 Connexion
               </Link>
               <Link
                 to="/register"
+                rel="nofollow"
                 className="relative px-5 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
               >
                 {/* Shine effect */}

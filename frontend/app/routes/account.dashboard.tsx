@@ -1,4 +1,4 @@
-import { json, type LoaderFunction } from "@remix-run/node";
+import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { 
   User, 
@@ -15,6 +15,14 @@ import { AuthErrorState } from "../components/dashboard/AuthErrorState";
 import { QuickActions } from "../components/dashboard/QuickActions";
 import { StatCard } from "../components/dashboard/StatCard";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+
+/**
+ * 🔒 SEO Meta Tags - noindex pour espace compte utilisateur
+ */
+export const meta: MetaFunction = () => [
+  { title: 'Mon compte | Tableau de bord' },
+  { name: 'robots', content: 'noindex, nofollow' },
+];
 
 type User = {
   id: string;

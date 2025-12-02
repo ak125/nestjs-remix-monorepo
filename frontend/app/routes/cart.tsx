@@ -11,13 +11,19 @@
  */
 
 import { Alert, Badge } from "@fafa/ui";
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useNavigation, useRevalidator } from "@remix-run/react";
 import React from 'react';
 import { ShoppingBag, Truck, Shield, CreditCard, Package, Trash2, Plus, Minus, ArrowRight, ChevronLeft } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { PublicBreadcrumb } from '~/components/ui/PublicBreadcrumb';
 import { getCart } from "../services/cart.server";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Mon panier | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 // Seuil pour la livraison gratuite
 const FREE_SHIPPING_THRESHOLD = 150;

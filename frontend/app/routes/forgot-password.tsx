@@ -1,10 +1,16 @@
-import { json, type ActionFunction, redirect } from "@remix-run/node";
+import { json, type ActionFunction, type MetaFunction, redirect } from "@remix-run/node";
 import { Form, useActionData, useSearchParams, Link } from "@remix-run/react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Mot de passe oublié | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 export const action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();

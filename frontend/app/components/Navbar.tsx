@@ -375,12 +375,14 @@ export const Navbar = ({ logo }: { logo: string }) => {
             <div className="hidden md:flex items-center gap-2 ml-2">
               <Link
                 to="/login"
+                rel="nofollow"
                 className="px-4 py-2 text-sm font-semibold text-neutral-700 hover:text-semantic-info hover:bg-semantic-info/10 rounded-lg transition-all duration-normal"
               >
                 Connexion
               </Link>
               <Link
                 to="/register"
+                rel="nofollow"
                 className="relative px-5 py-2 text-sm font-semibold bg-semantic-action text-semantic-action-contrast hover:bg-semantic-action/90 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
               >
                 {/* Shine effect */}

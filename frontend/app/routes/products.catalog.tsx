@@ -15,7 +15,7 @@
  * - /products/catalog?enhanced=true (advanced interface)
  */
 
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
+import { json, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node';
 import { useLoaderData, Link, useSearchParams, Form } from '@remix-run/react';
 import { ArrowLeft, Search, Filter, Package, Grid, List, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
@@ -26,6 +26,18 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { PublicBreadcrumb } from '../components/ui/PublicBreadcrumb';
+
+/**
+ * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)
+ */
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const total = data?.pagination?.total || 0;
+  return [
+    { title: `Catalogue Produits (${total.toLocaleString()}) | Espace Pro` },
+    { name: 'description', content: `Catalogue de ${total.toLocaleString()} pièces détachées automobiles. Accès réservé aux professionnels.` },
+    { name: 'robots', content: 'noindex, nofollow' }, // Espace pro - pas d'indexation
+  ];
+};
 
 interface Product {
   piece_id: string;
