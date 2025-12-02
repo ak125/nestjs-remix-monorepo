@@ -334,7 +334,6 @@ export default function BlogIndex() {
           ? `${blogData.stats.totalArticles}+ articles • ${formatViews(blogData.stats.totalViews)} vues`
           : "Conseils d'experts et guides pratiques automobile"
         }
-        breadcrumb="Accueil > Blog"
         stats={blogData.success && blogData.stats ? [
           { icon: BookOpen, value: blogData.stats.totalArticles, label: "Articles" },
           { icon: Sparkles, value: blogData.stats.totalAdvice, label: "Conseils" },

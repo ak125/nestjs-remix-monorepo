@@ -178,10 +178,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       guide: apiData.guideAchat,
     };
     
-    // 🍞 Construire breadcrumb de base
+    // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
     const baseBreadcrumb = [
       { label: "Accueil", href: "/" },
-      { label: "Pièces", href: "/pieces/catalogue" },
       { label: data.content?.pg_name || "Pièce", current: true }
     ];
 
@@ -305,7 +304,6 @@ export default function PiecesDetailPage() {
     current: item.current
   })) || [
     { label: "Accueil", href: "/" },
-    { label: "Pièces", href: "/pieces/catalogue" },
     { label: data.content?.pg_name || "Pièce", href: data.meta?.canonical || "" }
   ];
 

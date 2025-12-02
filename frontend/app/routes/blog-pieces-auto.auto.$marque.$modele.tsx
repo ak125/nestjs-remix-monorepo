@@ -243,13 +243,6 @@ export default function BlogPiecesAutoMarqueModele() {
         description={`${models.length} version${models.length > 1 ? 's' : ''} • ${totalTypes} motorisation${totalTypes > 1 ? 's' : ''} disponible${totalTypes > 1 ? 's' : ''}`}
         logo={brand.logo || undefined}
         logoAlt={`Logo ${brand.name}`}
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Blog", href: "/blog-pieces-auto" },
-          { label: "Constructeurs", href: "/blog-pieces-auto/auto" },
-          { label: brand.name, href: `/blog-pieces-auto/auto/${brand.alias}` },
-          { label: modelGroup.name },
-        ]}
         stats={[
           { label: "Versions", value: models.length.toString(), icon: Wrench },
           { label: "Motorisations", value: totalTypes.toString(), icon: Gauge },

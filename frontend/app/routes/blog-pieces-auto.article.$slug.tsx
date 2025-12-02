@@ -255,7 +255,7 @@ export default function BlogArticle() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <PublicBreadcrumb items={[
-            { label: "Blog", href: "/blog" },
+            { label: "Blog", href: "/blog-pieces-auto" },
             { label: article.title }
           ]} />
         </div>

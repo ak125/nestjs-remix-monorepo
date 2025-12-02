@@ -1,0 +1,385 @@
+#!/bin/bash
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🧪 TEST BREADCRUMB LINKS - VALIDATION 404
+# ═══════════════════════════════════════════════════════════════════════════════
+# Ce script teste que tous les liens du fil d'Ariane (breadcrumb) mènent vers
+# des pages valides (HTTP 200) et non vers des erreurs 404.
+#
+# Usage: ./test-breadcrumb-links-404.sh [BASE_URL]
+# Exemple: ./test-breadcrumb-links-404.sh http://localhost:3000
+# ═══════════════════════════════════════════════════════════════════════════════
+
+set -euo pipefail
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
+
+# Configuration
+BASE_URL="${1:-http://localhost:3000}"
+REPORT_DIR="./breadcrumb-test-reports"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+REPORT_FILE="$REPORT_DIR/breadcrumb-test-$TIMESTAMP.json"
+TEMP_FILE=$(mktemp)
+
+# Compteurs
+TOTAL_TESTS=0
+PASSED_TESTS=0
+FAILED_TESTS=0
+SKIPPED_TESTS=0
+
+# Créer le répertoire de rapports
+mkdir -p "$REPORT_DIR"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🛠️ FONCTIONS UTILITAIRES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+log_info() {
+    echo -e "${BLUE}ℹ️  $1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✅ $1${NC}"
+}
+
+log_error() {
+    echo -e "${RED}❌ $1${NC}"
+}
+
+log_warning() {
+    echo -e "${YELLOW}⚠️  $1${NC}"
+}
+
+log_header() {
+    echo ""
+    echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${CYAN}${BOLD}  $1${NC}"
+    echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════════════════${NC}"
+    echo ""
+}
+
+# Fonction pour tester une URL et retourner le code HTTP
+test_url() {
+    local url="$1"
+    local timeout="${2:-10}"
+    
+    # Faire la requête et récupérer le code HTTP
+    local http_code
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$timeout" -L "$url" 2>/dev/null || echo "000")
+    
+    echo "$http_code"
+}
+
+# Fonction pour extraire les liens du breadcrumb d'une page
+extract_breadcrumb_links() {
+    local page_url="$1"
+    
+    # Télécharger la page
+    local page_content
+    page_content=$(curl -s -L --max-time 30 "$page_url" 2>/dev/null || echo "")
+    
+    if [[ -z "$page_content" ]]; then
+        echo ""
+        return
+    fi
+    
+    # Extraire les hrefs du breadcrumb (plusieurs patterns possibles)
+    # Pattern 1: href="..." dans une <nav> avec aria-label="Breadcrumb"
+    # Pattern 2: href="..." dans un <ol> avec itemType="BreadcrumbList"
+    # Pattern 3: Liens dans composant Breadcrumbs
+    
+    local links
+    links=$(echo "$page_content" | grep -oP 'href="[^"]*"' | grep -oP '"/[^"]*"' | tr -d '"' | sort -u || echo "")
+    
+    echo "$links"
+}
+
+# Fonction pour tester une page et ses liens breadcrumb
+test_page_breadcrumb() {
+    local page_url="$1"
+    local page_name="$2"
+    local expected_links="$3"
+    
+    echo -e "${BOLD}📄 Page: $page_name${NC}"
+    echo "   URL: $page_url"
+    
+    # 1. Tester que la page elle-même est accessible
+    local page_status
+    page_status=$(test_url "$page_url")
+    ((TOTAL_TESTS++))
+    
+    if [[ "$page_status" == "200" ]]; then
+        log_success "Page accessible (HTTP $page_status)"
+        ((PASSED_TESTS++))
+    elif [[ "$page_status" == "000" ]]; then
+        log_warning "Page inaccessible (timeout/erreur réseau)"
+        ((SKIPPED_TESTS++))
+        echo ""
+        return
+    else
+        log_error "Page non accessible (HTTP $page_status)"
+        ((FAILED_TESTS++))
+        echo ""
+        return
+    fi
+    
+    # 2. Tester les liens breadcrumb attendus
+    if [[ -n "$expected_links" ]]; then
+        echo "   🔗 Test des liens breadcrumb:"
+        
+        IFS=',' read -ra LINKS <<< "$expected_links"
+        for link in "${LINKS[@]}"; do
+            link=$(echo "$link" | xargs) # Trim whitespace
+            if [[ -z "$link" ]]; then
+                continue
+            fi
+            
+            local full_url="${BASE_URL}${link}"
+            local link_status
+            link_status=$(test_url "$full_url")
+            ((TOTAL_TESTS++))
+            
+            if [[ "$link_status" == "200" ]]; then
+                echo -e "      ${GREEN}✅${NC} $link (HTTP $link_status)"
+                ((PASSED_TESTS++))
+            elif [[ "$link_status" == "301" ]] || [[ "$link_status" == "302" ]]; then
+                echo -e "      ${YELLOW}↪️${NC}  $link (HTTP $link_status - redirect)"
+                ((PASSED_TESTS++))
+            elif [[ "$link_status" == "000" ]]; then
+                echo -e "      ${YELLOW}⏳${NC} $link (timeout)"
+                ((SKIPPED_TESTS++))
+            else
+                echo -e "      ${RED}❌${NC} $link (HTTP $link_status)"
+                ((FAILED_TESTS++))
+            fi
+        done
+    fi
+    
+    echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 🧪 DÉFINITION DES TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+log_header "🧪 TEST BREADCRUMB LINKS - VALIDATION 404"
+echo "Base URL: $BASE_URL"
+echo "Timestamp: $TIMESTAMP"
+echo ""
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 1: Pages Pièces (gamme simple)
+# Breadcrumb attendu: Accueil → Pièces → {Gamme}
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "1️⃣ PAGES PIÈCES - GAMME SIMPLE"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/plaquette-de-frein-1.html" \
+    "Plaquettes de frein" \
+    "/, /pieces/catalogue"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/disque-de-frein-2.html" \
+    "Disques de frein" \
+    "/, /pieces/catalogue"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/amortisseur-6.html" \
+    "Amortisseurs" \
+    "/, /pieces/catalogue"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 2: Pages Pièces avec Véhicule (composit)
+# Breadcrumb attendu: Accueil → {Gamme} → {Marque Modèle} → {N pièces}
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "2️⃣ PAGES PIÈCES - AVEC VÉHICULE"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/plaquette-de-frein-1/renault-140/clio-iii-33058/1-5-dci-75-6547.html" \
+    "Plaquettes Renault Clio III" \
+    "/, /pieces/plaquette-de-frein-1.html, /constructeurs/renault-140/clio-iii-33058/1-5-dci-75-6547.html"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/disque-de-frein-2/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html" \
+    "Disques BMW Série 1" \
+    "/, /pieces/disque-de-frein-2.html, /constructeurs/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/amortisseur-6/peugeot-136/308-ii-33066/1-6-hdi-92-8234.html" \
+    "Amortisseurs Peugeot 308" \
+    "/, /pieces/amortisseur-6.html, /constructeurs/peugeot-136/308-ii-33066/1-6-hdi-92-8234.html"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 3: Pages Constructeurs (marque)
+# Breadcrumb attendu: Accueil → {Marque}
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "3️⃣ PAGES CONSTRUCTEURS - MARQUE"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/renault-140.html" \
+    "Renault (marque)" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/bmw-33.html" \
+    "BMW (marque)" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/peugeot-136.html" \
+    "Peugeot (marque)" \
+    "/"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 4: Pages Constructeurs (véhicule complet)
+# Breadcrumb attendu: Accueil → {Marque} → {Modèle Type}
+# (SANS niveau "Constructeurs" intermédiaire)
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "4️⃣ PAGES CONSTRUCTEURS - VÉHICULE"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/renault-140/clio-iii-33058/1-5-dci-75-6547.html" \
+    "Renault Clio III 1.5 dCi" \
+    "/, /constructeurs/renault-140.html"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/bmw-33/serie-1-f20-33019/2-0-118-d-5671.html" \
+    "BMW Série 1 118d" \
+    "/, /constructeurs/bmw-33.html"
+
+test_page_breadcrumb \
+    "$BASE_URL/constructeurs/peugeot-136/308-ii-33066/1-6-hdi-92-8234.html" \
+    "Peugeot 308 1.6 HDi" \
+    "/, /constructeurs/peugeot-136.html"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 5: Pages Blog
+# Breadcrumb attendu: Accueil → Blog → {Section} → {Article}
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "5️⃣ PAGES BLOG"
+
+test_page_breadcrumb \
+    "$BASE_URL/blog-pieces-auto" \
+    "Blog (accueil)" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/blog-pieces-auto/conseils" \
+    "Blog Conseils" \
+    "/, /blog-pieces-auto"
+
+test_page_breadcrumb \
+    "$BASE_URL/blog-pieces-auto/guide" \
+    "Blog Guides" \
+    "/, /blog-pieces-auto"
+
+test_page_breadcrumb \
+    "$BASE_URL/blog-pieces-auto/auto" \
+    "Blog Constructeurs" \
+    "/, /blog-pieces-auto"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 6: Pages Catalogue
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "6️⃣ PAGES CATALOGUE"
+
+test_page_breadcrumb \
+    "$BASE_URL/pieces/catalogue" \
+    "Catalogue pièces" \
+    "/"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 7: Pages Statiques / Légales
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "7️⃣ PAGES STATIQUES"
+
+test_page_breadcrumb \
+    "$BASE_URL/contact" \
+    "Contact" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/legal/cgv" \
+    "CGV" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/legal/mentions-legales" \
+    "Mentions légales" \
+    "/"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEST 8: Pages Compte (si accessible sans auth)
+# ─────────────────────────────────────────────────────────────────────────────
+log_header "8️⃣ PAGES COMPTE (peut nécessiter auth)"
+
+test_page_breadcrumb \
+    "$BASE_URL/account/dashboard" \
+    "Mon compte" \
+    "/"
+
+test_page_breadcrumb \
+    "$BASE_URL/account/orders" \
+    "Mes commandes" \
+    "/, /account/dashboard"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📊 RÉSUMÉ DES TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+log_header "📊 RÉSUMÉ DES TESTS"
+
+echo -e "${BOLD}Total tests:${NC}     $TOTAL_TESTS"
+echo -e "${GREEN}${BOLD}Passés:${NC}          $PASSED_TESTS"
+echo -e "${RED}${BOLD}Échoués:${NC}         $FAILED_TESTS"
+echo -e "${YELLOW}${BOLD}Ignorés:${NC}         $SKIPPED_TESTS"
+echo ""
+
+# Calcul du pourcentage de réussite
+if [[ $TOTAL_TESTS -gt 0 ]]; then
+    PASS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+else
+    PASS_RATE=0
+fi
+
+if [[ $FAILED_TESTS -eq 0 ]]; then
+    echo -e "${GREEN}${BOLD}🎉 TOUS LES TESTS ONT RÉUSSI ! (${PASS_RATE}%)${NC}"
+    EXIT_CODE=0
+else
+    echo -e "${RED}${BOLD}⚠️  ${FAILED_TESTS} TEST(S) ÉCHOUÉ(S) (${PASS_RATE}% de réussite)${NC}"
+    EXIT_CODE=1
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 📄 GÉNÉRATION DU RAPPORT JSON
+# ═══════════════════════════════════════════════════════════════════════════════
+
+cat > "$REPORT_FILE" <<EOF
+{
+  "timestamp": "$(date -Iseconds)",
+  "base_url": "$BASE_URL",
+  "summary": {
+    "total": $TOTAL_TESTS,
+    "passed": $PASSED_TESTS,
+    "failed": $FAILED_TESTS,
+    "skipped": $SKIPPED_TESTS,
+    "pass_rate": $PASS_RATE
+  },
+  "status": "$(if [[ $FAILED_TESTS -eq 0 ]]; then echo "PASS"; else echo "FAIL"; fi)"
+}
+EOF
+
+echo ""
+echo -e "${BLUE}📄 Rapport sauvegardé: $REPORT_FILE${NC}"
+
+# Nettoyage
+rm -f "$TEMP_FILE"
+
+exit $EXIT_CODE

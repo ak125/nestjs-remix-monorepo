@@ -184,7 +184,6 @@ export default function BlogPiecesAutoIndex() {
       <CompactBlogHeader
         title={metadata?.h1 || "Catalogue des Constructeurs"}
         description={`${stats.totalBrands} marques • 5000+ versions disponibles`}
-        breadcrumb={metadata?.ariane || "Accueil > Blog > Constructeurs"}
         stats={[
           { icon: Factory, value: stats.totalBrands, label: "Marques" },
           { icon: Car, value: "5K+", label: "Versions" },

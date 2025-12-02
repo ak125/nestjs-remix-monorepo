@@ -621,13 +621,6 @@ export default function VehicleDetailPage() {
             </li>
             <li><span className="text-gray-400">→</span></li>
             <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-              <a href="/constructeurs" itemProp="item" className="hover:underline" style={{ color: brandPrimary }}>
-                <span itemProp="name">Constructeurs</span>
-              </a>
-              <meta itemProp="position" content="2" />
-            </li>
-            <li><span className="text-gray-400">→</span></li>
-            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
               <a 
                 href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} 
                 itemProp="item"
@@ -636,12 +629,12 @@ export default function VehicleDetailPage() {
               >
                 <span itemProp="name">{breadcrumb.brand}</span>
               </a>
-              <meta itemProp="position" content="3" />
+              <meta itemProp="position" content="2" />
             </li>
             <li><span className="text-gray-400">→</span></li>
             <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
               <span itemProp="name" className="font-semibold text-gray-900">{breadcrumb.model} {breadcrumb.type}</span>
-              <meta itemProp="position" content="4" />
+              <meta itemProp="position" content="3" />
             </li>
           </ol>
         </div>
@@ -957,7 +950,7 @@ export default function VehicleDetailPage() {
             <div>
               <h4 className="font-semibold mb-3">Navigation</h4>
               <ul className="space-y-1 text-sm">
-                <li><a href="/constructeurs" className="hover:text-blue-300">Tous les constructeurs</a></li>
+                <li><a href="/" className="hover:text-blue-300">Accueil</a></li>
                 <li><a href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`} className="hover:text-blue-300">Modèles {vehicle.marque_name}</a></li>
               </ul>
             </div>
