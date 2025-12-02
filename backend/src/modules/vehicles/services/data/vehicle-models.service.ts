@@ -127,6 +127,42 @@ export class VehicleModelsService extends SupabaseBaseService {
   }
 
   /**
+   * 🚗 Obtenir un modèle par marque et alias
+   * Méthode simple pour récupérer un modèle spécifique sans logique de filtrage par motorisations
+   */
+  async getModelByBrandAndAlias(marqueId: number, alias: string): Promise<VehicleModel | null> {
+    const cacheKey = `model_by_alias:${marqueId}:${alias}`;
+
+    return await this.cacheService.getOrSet(
+      CacheType.MODELS,
+      cacheKey,
+      async () => {
+        try {
+          this.logger.debug(`🔍 Recherche modèle par alias: ${alias} (marque: ${marqueId})`);
+
+          const { data, error } = await this.client
+            .from(TABLES.auto_modele)
+            .select('*')
+            .eq('modele_marque_id', marqueId)
+            .eq('modele_alias', alias)
+            .eq('modele_display', 1)
+            .single();
+
+          if (error) {
+            this.logger.debug(`Modèle non trouvé: ${alias}`);
+            return null;
+          }
+
+          return data;
+        } catch (error) {
+          this.logger.error(`Erreur getModelByBrandAndAlias ${marqueId}/${alias}:`, error);
+          return null;
+        }
+      },
+    );
+  }
+
+  /**
    * 🚗 Obtenir les modèles par marque
    */
   async getModelsByBrand(
@@ -163,27 +199,32 @@ export class VehicleModelsService extends SupabaseBaseService {
           }
 
           const allModelIds = allModels.map(m => m.modele_id);
+          // ⚠️ type_modele_id est TEXT dans auto_type, convertir en strings
+          const allModelIdsStr = allModelIds.map(id => id.toString());
           this.logger.log(`🔍 DEBUG: ${allModelIds.length} modèles totaux pour marque ${marqueId}`);
 
           // 🔧 Étape 2: Récupérer les types pour ces modèles
+          // ⚠️ Utiliser les IDs en string car type_modele_id est TEXT
           const { data: allTypes, error: typesError } = await this.client
             .from(TABLES.auto_type)
             .select('type_id, type_modele_id, type_year_from, type_year_to')
-            .in('type_modele_id', allModelIds);
+            .in('type_modele_id', allModelIdsStr);
 
           if (typesError) {
             this.logger.error('Erreur récupération types:', typesError);
             throw typesError;
           }
 
-          // 🔧 Étape 3: Grouper les types par modèle
-          const modelIdsByType = new Map<number, any[]>();
+          // 🔧 Étape 3: Grouper les types par modèle (type_modele_id est STRING)
+          const modelIdsByType = new Map<string, any[]>();
           
           allTypes?.forEach((type: any) => {
-            if (!modelIdsByType.has(type.type_modele_id)) {
-              modelIdsByType.set(type.type_modele_id, []);
+            const modelIdStr = type.type_modele_id?.toString();
+            if (!modelIdStr) return;
+            if (!modelIdsByType.has(modelIdStr)) {
+              modelIdsByType.set(modelIdStr, []);
             }
-            modelIdsByType.get(type.type_modele_id)!.push(type);
+            modelIdsByType.get(modelIdStr)!.push(type);
           });
 
           // 🔧 Étape 4: Filtrer les modèles selon disponibilité des motorisations
@@ -201,7 +242,7 @@ export class VehicleModelsService extends SupabaseBaseService {
                   return yearFrom <= year && year <= yearTo;
                 });
               })
-              .map(([modelId, _]) => modelId);
+              .map(([modelIdStr, _]) => parseInt(modelIdStr, 10));
             
             this.logger.debug(
               `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations pour ${year}`,
@@ -209,7 +250,8 @@ export class VehicleModelsService extends SupabaseBaseService {
             this.logger.log(`🔍 DEBUG année ${year}: IDs filtrés = [${modelIdsWithTypes.slice(0, 5).join(', ')}...]`);
           } else {
             // Sans année, prendre tous les modèles qui ont au moins une motorisation
-            modelIdsWithTypes = Array.from(modelIdsByType.keys());
+            // Convertir les clés string en numbers
+            modelIdsWithTypes = Array.from(modelIdsByType.keys()).map(k => parseInt(k, 10));
             
             this.logger.debug(
               `✅ ${modelIdsWithTypes.length}/${allModelIds.length} modèles avec motorisations`,
