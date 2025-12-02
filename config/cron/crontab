@@ -1,6 +1,10 @@
 # 📅 SUPERCRONIC CRONTAB
 # Format: minute hour day month weekday command
 
+# =====================================================
+# 🗺️ SITEMAPS
+# =====================================================
+
 # Sitemaps - Génération delta quotidienne (3h du matin)
 0 3 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/generate
 
@@ -9,6 +13,20 @@
 
 # Sitemaps - Cleanup deltas expirés (tous les jours 4h)
 0 4 * * * curl -X POST http://localhost:3000/sitemap-v2/delta/cleanup
+
+# =====================================================
+# 📊 SEO LINK TRACKING (Maillage interne)
+# =====================================================
+
+# SEO - Agrégation métriques quotidiennes (tous les jours 2h30)
+30 2 * * * curl -X POST http://localhost:3000/api/seo/aggregate
+
+# SEO - Nettoyage données > 90 jours (tous les lundis 3h30)
+30 3 * * 1 curl -X POST http://localhost:3000/api/seo/cleanup?daysToKeep=90
+
+# =====================================================
+# 🔧 MAINTENANCE SYSTÈME
+# =====================================================
 
 # Cache - Nettoyage Redis (tous les jours 5h)
 0 5 * * * node /app/backend/dist/scripts/cleanup-redis-cache.js

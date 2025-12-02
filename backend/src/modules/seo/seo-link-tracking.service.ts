@@ -376,4 +376,102 @@ export class SeoLinkTrackingService {
       }
     );
   }
+
+  /**
+   * 📊 Agrège les métriques quotidiennes (appelé par cron job)
+   * Exécute la fonction SQL aggregate_seo_link_metrics()
+   */
+  async aggregateDailyMetrics(): Promise<{
+    success: boolean;
+    message: string;
+    aggregatedDate?: string;
+  }> {
+    if (!this.supabase) {
+      return { success: false, message: 'Supabase non disponible' };
+    }
+
+    try {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      this.logger.log(`📊 Début agrégation métriques pour ${yesterdayStr}...`);
+
+      // Appeler la fonction SQL via RPC
+      const { error } = await this.supabase.rpc('aggregate_seo_link_metrics');
+
+      if (error) {
+        this.logger.error(`❌ Erreur agrégation: ${error.message}`);
+        return { success: false, message: error.message };
+      }
+
+      this.logger.log(`✅ Agrégation terminée pour ${yesterdayStr}`);
+      return {
+        success: true,
+        message: `Métriques agrégées pour ${yesterdayStr}`,
+        aggregatedDate: yesterdayStr,
+      };
+    } catch (err) {
+      this.logger.error(`❌ Exception agrégation: ${err}`);
+      return { success: false, message: String(err) };
+    }
+  }
+
+  /**
+   * 🧹 Nettoie les anciennes données brutes (> 90 jours)
+   * Garde seulement les métriques agrégées pour l'historique
+   */
+  async cleanupOldData(daysToKeep: number = 90): Promise<{
+    success: boolean;
+    deletedClicks: number;
+    deletedImpressions: number;
+  }> {
+    if (!this.supabase) {
+      return { success: false, deletedClicks: 0, deletedImpressions: 0 };
+    }
+
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+      const cutoffStr = cutoffDate.toISOString();
+
+      this.logger.log(`🧹 Nettoyage données avant ${cutoffStr}...`);
+
+      // Supprimer les clics anciens
+      const { count: deletedClicks, error: clicksError } = await this.supabase
+        .from('seo_link_clicks')
+        .delete({ count: 'exact' })
+        .lt('clicked_at', cutoffStr);
+
+      if (clicksError) {
+        this.logger.error(`❌ Erreur suppression clics: ${clicksError.message}`);
+      }
+
+      // Supprimer les impressions anciennes
+      const { count: deletedImpressions, error: impressionsError } =
+        await this.supabase
+          .from('seo_link_impressions')
+          .delete({ count: 'exact' })
+          .lt('viewed_at', cutoffStr);
+
+      if (impressionsError) {
+        this.logger.error(
+          `❌ Erreur suppression impressions: ${impressionsError.message}`,
+        );
+      }
+
+      this.logger.log(
+        `✅ Nettoyage terminé: ${deletedClicks || 0} clics, ${deletedImpressions || 0} impressions supprimés`,
+      );
+
+      return {
+        success: true,
+        deletedClicks: deletedClicks || 0,
+        deletedImpressions: deletedImpressions || 0,
+      };
+    } catch (err) {
+      this.logger.error(`❌ Exception cleanup: ${err}`);
+      return { success: false, deletedClicks: 0, deletedImpressions: 0 };
+    }
+  }
 }

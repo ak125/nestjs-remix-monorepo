@@ -209,4 +209,42 @@ export class SeoLinkTrackingController {
 
     return 'desktop';
   }
+
+  /**
+   * 📊 Agrège les métriques quotidiennes (appelé par cron job)
+   */
+  @Post('aggregate')
+  @ApiOperation({ summary: 'Agrège les métriques quotidiennes (cron job)' })
+  @ApiResponse({ status: 200, description: 'Agrégation effectuée' })
+  async aggregateDailyMetrics(): Promise<{
+    success: boolean;
+    message: string;
+    aggregatedDate?: string;
+  }> {
+    this.logger.log('📊 Déclenchement agrégation métriques quotidiennes...');
+    return this.trackingService.aggregateDailyMetrics();
+  }
+
+  /**
+   * 🧹 Nettoie les anciennes données brutes
+   */
+  @Post('cleanup')
+  @ApiOperation({ summary: 'Nettoie les données de plus de 90 jours' })
+  @ApiQuery({
+    name: 'daysToKeep',
+    required: false,
+    description: 'Nombre de jours à conserver (défaut: 90)',
+  })
+  @ApiResponse({ status: 200, description: 'Nettoyage effectué' })
+  async cleanupOldData(
+    @Query('daysToKeep') daysToKeep?: string,
+  ): Promise<{
+    success: boolean;
+    deletedClicks: number;
+    deletedImpressions: number;
+  }> {
+    const days = daysToKeep ? parseInt(daysToKeep, 10) : 90;
+    this.logger.log(`🧹 Déclenchement nettoyage données > ${days} jours...`);
+    return this.trackingService.cleanupOldData(days);
+  }
 }
