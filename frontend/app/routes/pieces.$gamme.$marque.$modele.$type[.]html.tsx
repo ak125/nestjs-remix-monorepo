@@ -1147,48 +1147,52 @@ export default function PiecesVehicleRoute() {
               Voir aussi
             </h2>
             <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              {/* Lien vers la gamme parent */}
+              {/* Lien vers la gamme parent - Ancre enrichie SEO */}
               <li>
                 <Link 
                   to={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() => handleVoirAussiClick(`/pieces/${data.gamme.alias}-${data.gamme.id}.html`, `Toutes les ${data.gamme.name}`)}
+                  onClick={() => handleVoirAussiClick(`/pieces/${data.gamme.alias}-${data.gamme.id}.html`, `Voir toutes les ${data.gamme.name} neuves - Prix discount`)}
+                  title={`Découvrez notre gamme complète de ${data.gamme.name} neuves à prix réduit`}
                 >
                   <span className="text-gray-400">→</span>
-                  Toutes les {data.gamme.name}
+                  Voir toutes les {data.gamme.name} neuves
                 </Link>
               </li>
-              {/* Lien vers le constructeur */}
+              {/* Lien vers le constructeur - Ancre enrichie avec marque */}
               <li>
                 <Link 
                   to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`, `Pièces ${data.vehicle.marque}`)}
+                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`, `Toutes les pièces auto ${data.vehicle.marque} pas chères`)}
+                  title={`Catalogue complet de pièces détachées ${data.vehicle.marque} - Qualité origine`}
                 >
                   <span className="text-gray-400">→</span>
-                  Pièces {data.vehicle.marque}
+                  Pièces auto {data.vehicle.marque} pas chères
                 </Link>
               </li>
-              {/* Lien vers le modèle */}
+              {/* Lien vers le modèle - Ancre enrichie avec marque + modèle */}
               <li>
                 <Link 
                   to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`, `Pièces ${data.vehicle.marque} ${data.vehicle.modele}`)}
+                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`, `Pièces détachées ${data.vehicle.marque} ${data.vehicle.modele} - Livraison rapide`)}
+                  title={`Toutes les pièces détachées pour ${data.vehicle.marque} ${data.vehicle.modele} - Livraison 24/48h`}
                 >
                   <span className="text-gray-400">→</span>
                   Pièces {data.vehicle.marque} {data.vehicle.modele}
                 </Link>
               </li>
-              {/* Lien vers catalogue complet */}
+              {/* Lien vers catalogue complet - Ancre descriptive */}
               <li>
                 <Link 
                   to="/pieces"
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  onClick={() => handleVoirAussiClick('/pieces', 'Catalogue complet')}
+                  onClick={() => handleVoirAussiClick('/pieces', 'Catalogue pièces auto toutes marques')}
+                  title="Explorer notre catalogue complet de pièces détachées auto pour toutes les marques"
                 >
                   <span className="text-gray-400">→</span>
-                  Catalogue complet
+                  Catalogue pièces toutes marques
                 </Link>
               </li>
             </ul>
