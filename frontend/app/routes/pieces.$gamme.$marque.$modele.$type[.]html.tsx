@@ -464,29 +464,83 @@ export default function PiecesVehicleRoute() {
         />
       </div>
 
-      {/* 🍞 Fil d'ariane SEO optimisé - Liens HTML natifs */}
+      {/* 🍞 Fil d'ariane SEO optimisé - Liens HTML natifs + JSON-LD Schema */}
       <div className="bg-white border-b border-gray-200 relative z-[100]" style={{ pointerEvents: 'auto', position: 'relative' }}>
         <div className="max-w-7xl mx-auto px-4 py-3" style={{ pointerEvents: 'auto' }}>
-          <nav aria-label="Fil d'Ariane" style={{ pointerEvents: 'auto' }}>
+          {/* JSON-LD Schema.org pour BreadcrumbList */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Accueil",
+                    "item": "https://www.automecanik.com/"
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": data.gamme.name,
+                    "item": `https://www.automecanik.com/pieces/${data.gamme.alias}-${data.gamme.id}.html`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": `Pièces ${data.vehicle.marque}`,
+                    "item": `https://www.automecanik.com/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 4,
+                    "name": `${data.vehicle.marque} ${data.vehicle.modele}`,
+                    "item": `https://www.automecanik.com/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}.html`
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 5,
+                    "name": `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`
+                  }
+                ]
+              })
+            }}
+          />
+          <nav aria-label="Fil d'Ariane" itemScope itemType="https://schema.org/BreadcrumbList" style={{ pointerEvents: 'auto' }}>
             <ol className="flex items-center flex-wrap gap-1 text-sm" style={{ pointerEvents: 'auto' }}>
-              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
-                <a href="/" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">Accueil</a>
+              <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" style={{ pointerEvents: 'auto' }}>
+                <a href="/" itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
+                  <span itemProp="name">Accueil</span>
+                </a>
+                <meta itemProp="position" content="1" />
               </li>
-              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+              <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" style={{ pointerEvents: 'auto' }}>
                 <span className="text-gray-400 mx-2">→</span>
-                <a href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.gamme.name}</a>
+                <a href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`} itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
+                  <span itemProp="name">{data.gamme.name}</span>
+                </a>
+                <meta itemProp="position" content="2" />
               </li>
-              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+              <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" style={{ pointerEvents: 'auto' }}>
                 <span className="text-gray-400 mx-2">→</span>
-                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.vehicle.marque}</a>
+                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`} itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
+                  <span itemProp="name">Pièces {data.vehicle.marque}</span>
+                </a>
+                <meta itemProp="position" content="3" />
               </li>
-              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+              <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" style={{ pointerEvents: 'auto' }}>
                 <span className="text-gray-400 mx-2">→</span>
-                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</a>
+                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}`} itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
+                  <span itemProp="name">{data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</span>
+                </a>
+                <meta itemProp="position" content="4" />
               </li>
-              <li className="flex items-center">
+              <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
                 <span className="text-gray-400 mx-2">→</span>
-                <span className="text-gray-800 font-semibold">{data.gamme.name} {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</span>
+                <span className="text-gray-800 font-semibold" itemProp="name">{data.gamme.name} {data.vehicle.marque} {data.vehicle.modele}</span>
+                <meta itemProp="position" content="5" />
               </li>
             </ol>
           </nav>
