@@ -137,6 +137,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     modeleId: vehicleIds.modeleId,
     marqueAlias: vehicleInfo?.marqueAlias || marqueData.alias,
     modeleAlias: vehicleInfo?.modeleAlias || modeleData.alias,
+    typeAlias: vehicleInfo?.typeAlias || typeData.alias,
     modelePic
   };
 
@@ -431,30 +432,32 @@ export default function PiecesVehicleRoute() {
         />
       </div>
 
-      {/* 🍞 Fil d'ariane avec composant existant - COHÉRENT AVEC URL */}
-      {/* URL: /pieces/{gamme}/{marque}/{modele}/{type}.html */}
-      {/* Breadcrumb suit l'ordre URL: Gamme → Véhicule → Résultat */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <Breadcrumbs
-            items={[
-              { 
-                label: data.gamme.name, 
-                href: `/pieces/${data.gamme.alias}`
-              },
-              { 
-                label: `${data.vehicle.marque} ${data.vehicle.modele}`, 
-                href: `/constructeurs/${data.vehicle.marque.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.marqueId}/${data.vehicle.modele.toLowerCase().replace(/\s+/g, '-')}-${data.vehicle.modeleId}/${data.vehicle.typeId}.html`
-              },
-              { 
-                label: `${data.count} pièce${data.count > 1 ? 's' : ''}`,
-                current: true
-              }
-            ]}
-            separator="arrow"
-            showHome={true}
-            enableSchema={true}
-          />
+      {/* 🍞 Fil d'ariane SEO optimisé - Liens HTML natifs */}
+      <div className="bg-white border-b border-gray-200 relative z-[100]" style={{ pointerEvents: 'auto', position: 'relative' }}>
+        <div className="max-w-7xl mx-auto px-4 py-3" style={{ pointerEvents: 'auto' }}>
+          <nav aria-label="Fil d'Ariane" style={{ pointerEvents: 'auto' }}>
+            <ol className="flex items-center flex-wrap gap-1 text-sm" style={{ pointerEvents: 'auto' }}>
+              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+                <a href="/" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">Accueil</a>
+              </li>
+              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+                <span className="text-gray-400 mx-2">→</span>
+                <a href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.gamme.name}</a>
+              </li>
+              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+                <span className="text-gray-400 mx-2">→</span>
+                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}.html`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.vehicle.marque}</a>
+              </li>
+              <li className="flex items-center" style={{ pointerEvents: 'auto' }}>
+                <span className="text-gray-400 mx-2">→</span>
+                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}`} style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">{data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</a>
+              </li>
+              <li className="flex items-center">
+                <span className="text-gray-400 mx-2">→</span>
+                <span className="text-gray-800 font-semibold">{data.gamme.name} {data.vehicle.marque} {data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</span>
+              </li>
+            </ol>
+          </nav>
         </div>
       </div>
 

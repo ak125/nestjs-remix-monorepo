@@ -252,11 +252,6 @@ export default function BlogGuidesIndex() {
         description={`${totalGuides} guides pour faire les meilleurs choix • ${stats.totalViews.toLocaleString()} vues • ${stats.totalCategories} catégories`}
         gradientFrom="from-green-600"
         gradientTo="to-emerald-600"
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Blog", href: "/blog" },
-          { label: "Guide d'Achat" },
-        ]}
       />
 
       {/* Points clés */}

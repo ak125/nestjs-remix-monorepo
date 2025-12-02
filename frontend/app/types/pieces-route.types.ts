@@ -27,6 +27,7 @@ export interface VehicleData {
   modeleId: number;
   marqueAlias?: string; // Alias de la marque pour les couleurs
   modeleAlias?: string; // Alias du modèle pour l'URL
+  typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
 }
 

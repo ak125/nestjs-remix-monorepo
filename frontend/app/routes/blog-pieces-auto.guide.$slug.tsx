@@ -151,11 +151,6 @@ export default function GuideDetailPage() {
         description={guide.excerpt}
         gradientFrom="from-green-600"
         gradientTo="to-emerald-600"
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Guides d'Achat", href: "/blog-pieces-auto/guide" },
-          { label: cleanTitle },
-        ]}
       />
 
       {/* Back Button */}

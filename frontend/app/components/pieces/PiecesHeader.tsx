@@ -45,38 +45,6 @@ export function PiecesHeader({ vehicle, gamme, count, minPrice, prixPasCherText,
   
   return (
     <>
-      {/* 🍞 Fil d'Ariane - Au-dessus du hero avec design amélioré */}
-      <nav className="bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 border-b-2 border-indigo-100 py-3 shadow-sm" aria-label="Breadcrumb">
-        <div className="container mx-auto px-4">
-          <ol className="flex items-center gap-2 text-sm flex-wrap">
-            <li>
-              <a href="/" className="hover:underline text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-                <span>🏠 Accueil</span>
-              </a>
-            </li>
-            <li><span className="text-indigo-400 font-bold">→</span></li>
-            <li>
-              <a href="/pieces" className="hover:underline text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
-                <span>🔧 Pièces</span>
-              </a>
-            </li>
-            <li><span className="text-indigo-400 font-bold">→</span></li>
-            <li>
-              <a 
-                href={`/pieces/${gamme.alias}`} 
-                className="hover:underline text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
-              >
-                <span>{gamme.name}</span>
-              </a>
-            </li>
-            <li><span className="text-indigo-400 font-bold">→</span></li>
-            <li>
-              <span className="font-bold text-slate-800 bg-white px-3 py-1 rounded-full shadow-sm border border-indigo-200">{vehicle.marque} {vehicle.modele}</span>
-            </li>
-          </ol>
-        </div>
-      </nav>
-
       {/* 🚗 Hero Section - Design UI/UX Expert Premium */}
       <section className="relative overflow-hidden text-white py-8 md:py-10" style={gradientStyle}>
         {/* Effets d'arrière-plan optimisés */}

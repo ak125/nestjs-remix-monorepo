@@ -128,10 +128,6 @@ export default function BrandCatalogPage() {
               <Link to="/" className="text-blue-600 hover:underline">Accueil</Link>
             </li>
             <li><ChevronRight className="w-4 h-4 text-gray-400" /></li>
-            <li>
-              <Link to="/#toutes-les-marques" className="text-blue-600 hover:underline">Constructeurs</Link>
-            </li>
-            <li><ChevronRight className="w-4 h-4 text-gray-400" /></li>
             <li className="font-semibold text-gray-900">{manufacturer.marque_name}</li>
           </ol>
         </div>

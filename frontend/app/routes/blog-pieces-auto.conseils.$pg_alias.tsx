@@ -317,12 +317,6 @@ export default function LegacyBlogArticle() {
       <CompactBlogHeader
         title={article.h1}
         description={`Publié le ${new Date(article.publishedAt).toLocaleDateString('fr-FR')} • ${article.viewsCount.toLocaleString()} vues`}
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Blog", href: "/blog" },
-          { label: "Conseils", href: "/blog-pieces-auto/conseils" },
-          { label: article.title },
-        ]}
         stats={[
           { icon: Eye, value: article.viewsCount.toLocaleString(), label: "Vues" },
           { icon: Clock, value: `${Math.ceil(article.content.split(' ').length / 200)} min`, label: "Lecture" },

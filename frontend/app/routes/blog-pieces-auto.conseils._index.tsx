@@ -177,11 +177,6 @@ export default function BlogConseilsIndex() {
       <CompactBlogHeader
         title="Montage et Entretien"
         description={`${totalArticles} guides pratiques • ${stats.totalCategories} catégories • ${formatViews(stats.totalViews)} vues`}
-        breadcrumb={[
-          { label: "Accueil", href: "/" },
-          { label: "Blog", href: "/blog" },
-          { label: "Montage et Entretien" },
-        ]}
         stats={[
           { icon: BookOpen, value: totalArticles, label: "Guides" },
           { icon: Tag, value: stats.totalCategories, label: "Catégories" },

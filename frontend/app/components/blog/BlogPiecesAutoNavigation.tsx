@@ -1,6 +1,22 @@
-import { Link, useLocation } from "@remix-run/react";
+import { Link, useLocation, useParams } from "@remix-run/react";
 import { Wrench, BookOpen, Car, Home } from "lucide-react";
 import { cn } from "~/lib/utils";
+
+// Fonction pour formater un slug en nom lisible
+function formatSlugToName(slug: string): string {
+  if (!slug) return '';
+  // Cas spéciaux pour les marques connues (uppercase)
+  const upperCaseBrands = ['bmw', 'kia', 'mg', 'ds', 'tvr', 'audi', 'vw'];
+  if (upperCaseBrands.includes(slug.toLowerCase())) {
+    return slug.toUpperCase();
+  }
+  // Convertir slug en nom lisible: "serie-1-e87" => "Série 1 E87"
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+    .replace(/\b(E\d+|F\d+|G\d+)\b/gi, match => match.toUpperCase()); // E87, F20, etc.
+}
 
 interface NavigationItem {
   label: string;
@@ -44,6 +60,11 @@ const navigationItems: NavigationItem[] = [
 
 export function BlogPiecesAutoNavigation() {
   const location = useLocation();
+  const params = useParams();
+
+  // Extraire marque et modèle des params
+  const marque = params.marque;
+  const modele = params.modele;
 
   const isActive = (href: string) => {
     return location.pathname.startsWith(href);
@@ -164,8 +185,8 @@ export function BlogPiecesAutoNavigation() {
                 Accueil
               </Link>
               <span>›</span>
-              <Link to="/blog-pieces-auto/conseils" className="hover:text-blue-600 transition-colors">
-                Pièces Auto
+              <Link to="/blog-pieces-auto" className="hover:text-blue-600 transition-colors">
+                Blog automobile
               </Link>
               {isConseilsActive && (
                 <>
@@ -176,7 +197,31 @@ export function BlogPiecesAutoNavigation() {
               {isAutoActive && (
                 <>
                   <span>›</span>
-                  <span className="text-gray-900 font-medium">Constructeurs</span>
+                  {marque ? (
+                    <Link to="/blog-pieces-auto/auto" className="hover:text-blue-600 transition-colors">
+                      Constructeurs automobile
+                    </Link>
+                  ) : (
+                    <span className="text-gray-900 font-medium">Constructeurs automobile</span>
+                  )}
+                </>
+              )}
+              {isAutoActive && marque && (
+                <>
+                  <span>›</span>
+                  {modele ? (
+                    <Link to={`/blog-pieces-auto/auto/${marque}`} className="hover:text-blue-600 transition-colors">
+                      {formatSlugToName(marque)}
+                    </Link>
+                  ) : (
+                    <span className="text-gray-900 font-medium">{formatSlugToName(marque)}</span>
+                  )}
+                </>
+              )}
+              {isAutoActive && modele && (
+                <>
+                  <span>›</span>
+                  <span className="text-gray-900 font-medium">{formatSlugToName(modele)}</span>
                 </>
               )}
             </div>
