@@ -4,27 +4,29 @@ import { useEffect } from 'react';
 import { useSeoLinkTracking, type LinkType } from '../hooks/useSeoLinkTracking';
 
 // 🚗 Top Marques pour le maillage interne SEO
+// Ancres optimisées: "Pièces [Marque]" pour meilleur CTR et pertinence
 const TOP_MARQUES = [
-    { name: 'Peugeot', alias: 'peugeot', id: 128 },
-    { name: 'Renault', alias: 'renault', id: 140 },
-    { name: 'Citroën', alias: 'citroen', id: 42 },
-    { name: 'Volkswagen', alias: 'volkswagen', id: 173 },
-    { name: 'BMW', alias: 'bmw', id: 33 },
-    { name: 'Mercedes', alias: 'mercedes-benz', id: 90 },
-    { name: 'Audi', alias: 'audi', id: 22 },
-    { name: 'Ford', alias: 'ford', id: 53 },
+    { name: 'Peugeot', alias: 'peugeot', id: 128, anchor: 'Pièces auto Peugeot' },
+    { name: 'Renault', alias: 'renault', id: 140, anchor: 'Pièces détachées Renault' },
+    { name: 'Citroën', alias: 'citroen', id: 42, anchor: 'Pièces Citroën' },
+    { name: 'Volkswagen', alias: 'volkswagen', id: 173, anchor: 'Pièces VW Golf & Polo' },
+    { name: 'BMW', alias: 'bmw', id: 33, anchor: 'Pièces BMW Série 3 & 5' },
+    { name: 'Mercedes', alias: 'mercedes-benz', id: 90, anchor: 'Pièces Mercedes Classe A & C' },
+    { name: 'Audi', alias: 'audi', id: 22, anchor: 'Pièces Audi A3 & A4' },
+    { name: 'Ford', alias: 'ford', id: 53, anchor: 'Pièces Ford Focus & Fiesta' },
 ];
 
-// 🔧 Gammes populaires pour le maillage interne SEO
+// 🔧 Gammes populaires pour le maillage interne SEO  
+// Ancres optimisées: nom gamme + mot-clé secondaire
 const TOP_GAMMES = [
-    { name: 'Plaquettes de frein', alias: 'plaquettes-de-frein', id: 1 },
-    { name: 'Disque de frein', alias: 'disque-de-frein', id: 2 },
-    { name: 'Filtre à huile', alias: 'filtre-a-huile', id: 7 },
-    { name: 'Filtre à air', alias: 'filtre-a-air', id: 8 },
-    { name: 'Kit de distribution', alias: 'kit-de-distribution', id: 5 },
-    { name: 'Amortisseur', alias: 'amortisseur', id: 15 },
-    { name: 'Kit d\'embrayage', alias: 'kit-d-embrayage', id: 12 },
-    { name: 'Batterie', alias: 'batterie', id: 100 },
+    { name: 'Plaquettes de frein', alias: 'plaquettes-de-frein', id: 1, anchor: 'Plaquettes de frein avant/arrière' },
+    { name: 'Disque de frein', alias: 'disque-de-frein', id: 2, anchor: 'Disques de frein ventilés' },
+    { name: 'Filtre à huile', alias: 'filtre-a-huile', id: 7, anchor: 'Filtres à huile moteur' },
+    { name: 'Filtre à air', alias: 'filtre-a-air', id: 8, anchor: 'Filtres à air habitacle' },
+    { name: 'Kit de distribution', alias: 'kit-de-distribution', id: 5, anchor: 'Kit distribution complet' },
+    { name: 'Amortisseur', alias: 'amortisseur', id: 15, anchor: 'Amortisseurs avant/arrière' },
+    { name: 'Kit d\'embrayage', alias: 'kit-d-embrayage', id: 12, anchor: 'Kit embrayage + volant moteur' },
+    { name: 'Batterie', alias: 'batterie', id: 100, anchor: 'Batteries auto 12V' },
 ];
 
 export const Footer = () => {
@@ -40,14 +42,14 @@ export const Footer = () => {
     // Handler pour tracker les clics
     const handleMarqueClick = (marque: typeof TOP_MARQUES[0]) => {
         trackClick('TopMarques', `/constructeurs/${marque.alias}-${marque.id}.html`, {
-            anchorText: `Pièces ${marque.name}`,
+            anchorText: marque.anchor,
             position: 'footer'
         });
     };
 
     const handleGammeClick = (gamme: typeof TOP_GAMMES[0]) => {
         trackClick('GammesPopulaires', `/pieces/${gamme.alias}-${gamme.id}.html`, {
-            anchorText: gamme.name,
+            anchorText: gamme.anchor,
             position: 'footer'
         });
     };
@@ -79,8 +81,9 @@ export const Footer = () => {
                                             to={`/constructeurs/${marque.alias}-${marque.id}.html`}
                                             className="text-neutral-400 hover:text-semantic-info transition-colors text-sm"
                                             onClick={() => handleMarqueClick(marque)}
+                                            title={`Toutes les pièces détachées ${marque.name}`}
                                         >
-                                            Pièces {marque.name}
+                                            {marque.anchor}
                                         </Link>
                                     </li>
                                 ))}
@@ -106,8 +109,9 @@ export const Footer = () => {
                                             to={`/pieces/${gamme.alias}-${gamme.id}.html`}
                                             className="text-neutral-400 hover:text-semantic-info transition-colors text-sm"
                                             onClick={() => handleGammeClick(gamme)}
+                                            title={`Acheter ${gamme.name} - Prix bas`}
                                         >
-                                            {gamme.name}
+                                            {gamme.anchor}
                                         </Link>
                                     </li>
                                 ))}

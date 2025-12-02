@@ -30,10 +30,12 @@ export function PiecesCrossSelling({ gammes, vehicle }: PiecesCrossSellingProps)
     }
   }, [gammes.length, trackImpression]);
 
-  // Handler pour tracker les clics
+  // Handler pour tracker les clics avec ancres SEO enrichies
   const handleCrossSellingClick = (gamme: CrossSellingGamme, url: string) => {
+    // Ancre enrichie: "Gamme + véhicule + qualité"
+    const seoAnchor = `${gamme.PG_NAME} ${vehicle.marque} ${vehicle.modele} - Qualité origine`;
     trackClick('CrossSelling', url, {
-      anchorText: gamme.PG_NAME,
+      anchorText: seoAnchor,
       position: 'crossselling'
     });
   };
@@ -69,6 +71,7 @@ export function PiecesCrossSelling({ gammes, vehicle }: PiecesCrossSellingProps)
                 to={url}
                 className="group bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200 hover:border-teal-400 hover:shadow-lg transition-all duration-300 overflow-hidden"
                 onClick={() => handleCrossSellingClick(gamme, url)}
+                title={`Achetez des ${gamme.PG_NAME} pour ${vehicle.marque} ${vehicle.modele} ${vehicle.type} - Livraison rapide`}
               >
                 {/* Image gamme */}
                 <div className="aspect-video bg-gradient-to-br from-teal-50 to-cyan-50 relative overflow-hidden">
@@ -93,15 +96,15 @@ export function PiecesCrossSelling({ gammes, vehicle }: PiecesCrossSellingProps)
                   </div>
                 </div>
 
-                {/* Contenu */}
+                {/* Contenu - Ancre SEO enrichie */}
                 <div className="p-4">
                   <h3 className="font-semibold text-gray-900 group-hover:text-teal-600 transition-colors line-clamp-2 leading-tight min-h-[40px]">
-                    {gamme.PG_NAME}
+                    {gamme.PG_NAME} {vehicle.marque}
                   </h3>
                   
                   <div className="mt-3 flex items-center justify-between">
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                      Pour {vehicle.type}
+                      Compatible {vehicle.type}
                     </span>
                     <svg className="w-5 h-5 text-teal-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

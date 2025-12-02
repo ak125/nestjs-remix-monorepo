@@ -45,10 +45,14 @@ export function PiecesRelatedArticles({
     }
   }, [articles.length, trackImpression]);
 
-  // Handler pour tracker les clics
+  // Handler pour tracker les clics avec ancres SEO enrichies
   const handleArticleClick = (article: BlogArticle) => {
+    // Ancre enrichie avec contexte gamme/véhicule
+    const seoAnchor = vehicleName 
+      ? `${article.title} - Guide ${gammeName} ${vehicleName}`
+      : `${article.title} - Conseils ${gammeName}`;
     trackClick('RelatedArticles', `/blog-pieces-auto/article/${article.slug}`, {
-      anchorText: article.title,
+      anchorText: seoAnchor,
       position: 'content'
     });
   };
@@ -124,36 +128,39 @@ export function PiecesRelatedArticles({
                     )}
                   </div>
 
-                  {/* Lien vers l'article */}
+                  {/* Lien vers l'article - Ancre SEO optimisée */}
                   <Link
                     to={`/blog-pieces-auto/article/${article.slug}`}
                     className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 group-hover:gap-2 transition-all"
+                    title={`Lire notre guide complet: ${article.title}`}
                   >
-                    Lire
+                    Lire l'article
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
               </div>
 
-              {/* Overlay lien sur toute la carte */}
+              {/* Overlay lien sur toute la carte - Ancre SEO enrichie */}
               <Link 
                 to={`/blog-pieces-auto/article/${article.slug}`}
                 className="absolute inset-0"
-                aria-label={`Lire l'article: ${article.title}`}
+                aria-label={`Guide complet: ${article.title} - Conseils ${gammeName}`}
+                title={`${article.title} - Découvrez nos conseils pour ${gammeName}`}
                 onClick={() => handleArticleClick(article)}
               />
             </article>
           ))}
         </div>
 
-        {/* Lien vers tous les articles */}
+        {/* Lien vers tous les articles - Ancre descriptive */}
         <div className="mt-6 text-center">
           <Link
             to="/blog-pieces-auto"
             className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg transition-colors"
+            title="Découvrez tous nos guides et conseils pour entretenir votre véhicule"
           >
             <BookOpen className="w-4 h-4" />
-            Tous nos articles & conseils
+            Tous nos guides entretien auto
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
