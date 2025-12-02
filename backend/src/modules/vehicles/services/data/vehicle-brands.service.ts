@@ -125,6 +125,40 @@ export class VehicleBrandsService extends SupabaseBaseService {
   }
 
   /**
+   * 🏷️ Obtenir une marque par alias (slug URL)
+   */
+  async getBrandByAlias(alias: string): Promise<VehicleBrand | null> {
+    if (!alias?.trim()) return null;
+
+    const cacheKey = `brand_alias:${alias.toLowerCase()}`;
+
+    return await this.cacheService.getOrSet(
+      CacheType.BRANDS,
+      cacheKey,
+      async () => {
+        try {
+          const { data, error } = await this.client
+            .from(TABLES.auto_marque)
+            .select('*')
+            .eq('marque_alias', alias.toLowerCase())
+            .eq('marque_display', 1)
+            .single();
+
+          if (error) {
+            this.logger.debug(`Marque non trouvée pour alias: ${alias}`);
+            return null;
+          }
+
+          return data;
+        } catch (error) {
+          this.logger.error(`Erreur getBrandByAlias ${alias}:`, error);
+          return null;
+        }
+      },
+    );
+  }
+
+  /**
    * 🏷️ Obtenir une marque par nom
    */
   async getBrandByName(marqueName: string): Promise<VehicleBrand | null> {

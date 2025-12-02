@@ -4,7 +4,6 @@ import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
 
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { Card, CardContent } from "../components/ui/card";
@@ -92,7 +91,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const modelsResponse = modelsRes?.ok ? await modelsRes.json().catch(() => null) : null;
     const modelsData = modelsResponse?.data || [];
 
-    // Mapper les modèles vers le format attendu
+    // Mapper les modèles vers le format attendu - utiliser image_url du backend (comme /constructeurs/)
     const mappedModels: VehicleModel[] = modelsData
       .filter((model: any) => model.modele_display === 1) // Filtrer uniquement les modèles affichables
       .map((model: any) => ({
@@ -101,9 +100,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         alias: model.modele_alias || model.modele_name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         yearFrom: model.modele_year_from,
         yearTo: model.modele_year_to,
-        imageUrl: model.modele_pic && model.modele_pic !== 'no.webp' 
-          ? getOptimizedModelImageUrl(brandData.marque_alias, model.modele_pic) 
-          : null,
+        imageUrl: model.image_url, // ✅ Utiliser directement l'URL générée par le backend
         dateRange: `${model.modele_year_from || '?'} - ${model.modele_year_to || "aujourd'hui"}`,
         modele_body: model.modele_body,
         modele_is_new: model.modele_is_new,
@@ -456,22 +453,48 @@ export default function BlogPiecesAutoMarque() {
                   >
                     <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg border group-hover:border-primary">
                       {/* Image */}
-                      <div className="relative h-64 overflow-hidden bg-muted/50">
+                      <div className="relative h-64 overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100">
                         {model.imageUrl ? (
                           <img
                             src={model.imageUrl}
                             alt={`${brand.name} ${model.name}`}
                             className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"
+                            onError={(e) => {
+                              // Fallback si l'image ne charge pas
+                              const target = e.currentTarget;
+                              target.style.display = 'none';
+                              const fallback = target.parentElement?.querySelector('.image-fallback') as HTMLElement;
+                              if (fallback) {
+                                fallback.classList.remove('hidden');
+                                fallback.style.display = 'flex';
+                              }
+                            }}
                           />
-                        ) : (
-                          <div className="h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                            <Car className="w-20 h-20 text-gray-300" />
-                          </div>
-                        )}
+                        ) : null}
+                        {/* Fallback design attractif avec logo marque */}
+                        <div 
+                          className={`image-fallback absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-white to-slate-100 ${model.imageUrl ? 'hidden' : ''}`}
+                        >
+                          {brand.logo ? (
+                            <img 
+                              src={brand.logo} 
+                              alt={brand.name}
+                              className="w-16 h-16 object-contain opacity-40 mb-3"
+                            />
+                          ) : (
+                            <Car className="w-16 h-16 text-slate-300 mb-3" />
+                          )}
+                          <span className="text-sm font-medium text-slate-400 uppercase tracking-wide">
+                            {model.name}
+                          </span>
+                          <span className="text-xs text-slate-300 mt-1">
+                            Image non disponible
+                          </span>
+                        </div>
                         
                         {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
 
                       {/* Content */}

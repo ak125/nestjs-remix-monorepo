@@ -57,17 +57,10 @@ export class VehicleModelsService extends SupabaseBaseService {
           const { page = 0, limit = 50, search } = options;
           const offset = page * limit;
 
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           let query = this.client
             .from(TABLES.auto_modele)
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .select('*')
             .eq('modele_display', 1)
             .limit(limit)
             .range(offset, offset + limit - 1);
@@ -111,17 +104,10 @@ export class VehicleModelsService extends SupabaseBaseService {
       cacheKey,
       async () => {
         try {
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           const { data, error } = await this.client
             .from(TABLES.auto_modele)
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .select('*')
             .eq('modele_id', modeleId)
             .eq('modele_display', 1)
             .single();
@@ -182,8 +168,8 @@ export class VehicleModelsService extends SupabaseBaseService {
           // 🔧 Étape 2: Récupérer les types pour ces modèles
           const { data: allTypes, error: typesError } = await this.client
             .from(TABLES.auto_type)
-            .select('type_id, modele_id, type_year_from, type_year_to')
-            .in('modele_id', allModelIds);
+            .select('type_id, type_modele_id, type_year_from, type_year_to')
+            .in('type_modele_id', allModelIds);
 
           if (typesError) {
             this.logger.error('Erreur récupération types:', typesError);
@@ -194,10 +180,10 @@ export class VehicleModelsService extends SupabaseBaseService {
           const modelIdsByType = new Map<number, any[]>();
           
           allTypes?.forEach((type: any) => {
-            if (!modelIdsByType.has(type.modele_id)) {
-              modelIdsByType.set(type.modele_id, []);
+            if (!modelIdsByType.has(type.type_modele_id)) {
+              modelIdsByType.set(type.type_modele_id, []);
             }
-            modelIdsByType.get(type.modele_id)!.push(type);
+            modelIdsByType.get(type.type_modele_id)!.push(type);
           });
 
           // 🔧 Étape 4: Filtrer les modèles selon disponibilité des motorisations
@@ -239,23 +225,17 @@ export class VehicleModelsService extends SupabaseBaseService {
           }
 
           // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
+          // Utiliser modele_marque_id directement
           let query = this.client
             .from(TABLES.auto_modele)
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-              { count: 'exact' }
-            )
-            .eq('auto_marque.marque_id', marqueId)
+            .select('*', { count: 'exact' })
+            .eq('modele_marque_id', marqueId)
             .in('modele_id', modelIdsWithTypes);
 
           if (search?.trim()) {
-            query = query.ilike('modele_name', `%${search}%`);
+            // Recherche par alias OU par nom
+            query = query.or(`modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`);
           }
 
           query = query
@@ -318,27 +298,17 @@ export class VehicleModelsService extends SupabaseBaseService {
           const { page = 0, limit = 50, marqueId } = options;
           const offset = page * limit;
 
+          // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
           let dbQuery = this.client
             .from(TABLES.auto_modele)
-            .select(
-              `
-              *,
-              auto_marque!inner(
-                marque_id,
-                marque_name
-              )
-            `,
-            )
+            .select('*')
             .eq('modele_display', 1)
-            .or(
-              `modele_name.ilike.%${query}%,` +
-                `auto_marque.marque_name.ilike.%${query}%`,
-            )
+            .or(`modele_name.ilike.%${query}%,modele_alias.ilike.%${query}%`)
             .limit(limit)
             .range(offset, offset + limit - 1);
 
           if (marqueId) {
-            dbQuery = dbQuery.eq('auto_marque.marque_id', marqueId);
+            dbQuery = dbQuery.eq('modele_marque_id', marqueId);
           }
 
           const { data, error, count } = await dbQuery.order('modele_name');

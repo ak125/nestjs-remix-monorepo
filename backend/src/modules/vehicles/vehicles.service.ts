@@ -353,6 +353,16 @@ export class VehiclesService extends SupabaseBaseService {
     try {
       const brandIdNum = parseInt(brandId, 10);
       
+      // 🖼️ Récupérer le marque_alias pour générer les URLs d'images (comme getBrandBestsellers)
+      const { data: brandData } = await this.client
+        .from(TABLES.auto_marque)
+        .select('marque_alias')
+        .eq('marque_id', brandIdNum)
+        .single();
+      
+      const marqueAlias = brandData?.marque_alias || '';
+      const SUPABASE_STORAGE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+      
       // 🎯 FILTRAGE OPTIMISÉ : Requête unique pour modèles avec motorisations
       if (filters?.year) {
         this.logger.debug(
@@ -466,8 +476,16 @@ export class VehiclesService extends SupabaseBaseService {
           `📊 Modèles optimisés pour ${brandId} année ${filters.year}: ${data?.length || 0} (total: ${count || 0})`,
         );
 
+        // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
+        const enrichedData = (data || []).map((model: any) => ({
+          ...model,
+          image_url: model.modele_pic && model.modele_pic !== 'no.webp'
+            ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
+            : null,
+        }));
+
         return {
-          data: data || [],
+          data: enrichedData,
           total: count || 0,
           page: filters?.page || 0,
           limit: filters?.limit || 50,
@@ -475,29 +493,48 @@ export class VehiclesService extends SupabaseBaseService {
       }
 
       // 📋 REQUÊTE NORMALE : Sans filtrage par année, retourner tous les modèles
+      // 🖼️ Récupérer TOUS les modèles sans limit pour pouvoir trier par image
       let query = this.client
         .from(TABLES.auto_modele)
         .select(`*`)
         .eq('modele_marque_id', brandId)
-        .limit(filters?.limit || 50);
+        .eq('modele_display', 1);  // ✅ Filtrer uniquement les modèles affichables
 
       if (filters?.search) {
         query = query.ilike('modele_name', `%${filters.search}%`);
       }
 
-      const offset = (filters?.page || 0) * (filters?.limit || 50);
-      const { data, error } = await query
-        .order('modele_name', { ascending: true })
-        .range(offset, offset + (filters?.limit || 50) - 1);
+      const { data, error } = await query.order('modele_name', { ascending: true });
 
       if (error) {
         this.logger.error('Erreur findModelsByBrand:', error);
         throw error;
       }
 
+      // 🖼️ Enrichir avec image_url (même logique que getBrandBestsellers)
+      const enrichedData = (data || []).map((model: any) => ({
+        ...model,
+        image_url: model.modele_pic && model.modele_pic !== 'no.webp'
+          ? `${SUPABASE_STORAGE_URL}/constructeurs-automobiles/marques-modeles/${marqueAlias}/${model.modele_pic}`
+          : null,
+      }));
+
+      // 🎯 Trier : modèles avec images en premier, puis par nom
+      const sortedData = enrichedData.sort((a: any, b: any) => {
+        // Priorité aux modèles avec images
+        if (a.image_url && !b.image_url) return -1;
+        if (!a.image_url && b.image_url) return 1;
+        // Ensuite tri alphabétique
+        return a.modele_name.localeCompare(b.modele_name);
+      });
+
+      // Pagination après tri
+      const offset = (filters?.page || 0) * (filters?.limit || 50);
+      const paginatedData = sortedData.slice(offset, offset + (filters?.limit || 50));
+
       return {
-        data: data || [],
-        total: data?.length || 0,
+        data: paginatedData,
+        total: sortedData.length,
         page: filters?.page || 0,
         limit: filters?.limit || 50,
       };
