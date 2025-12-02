@@ -149,17 +149,8 @@ export class BrandsController {
       const marqueId = brandData.marque_id;
       const marqueAlias = brandData.marque_alias || brandSlug;
 
-      // 2. Trouver modèle par alias
-      const modelResult = await this.modelsService.getModelsByBrand(marqueId, {
-        search: modelSlug,
-        limit: 100, // Prendre plus pour recherche par alias
-      });
-
-      // Chercher correspondance exacte par alias
-      const model = modelResult.data?.find((m: any) => 
-        m.modele_alias === modelSlug || 
-        m.modele_alias?.toLowerCase() === modelSlug.toLowerCase()
-      );
+      // 2. Trouver modèle par alias (méthode directe, pas de filtrage motorisations)
+      const model = await this.modelsService.getModelByBrandAndAlias(marqueId, modelSlug);
 
       if (!model) {
         this.logger.warn(`❌ Modèle "${modelSlug}" introuvable pour "${brandSlug}"`);
