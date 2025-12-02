@@ -164,9 +164,20 @@ ALTER TABLE seo_link_clicks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE seo_link_metrics_daily ENABLE ROW LEVEL SECURITY;
 ALTER TABLE seo_link_impressions ENABLE ROW LEVEL SECURITY;
 
+-- Supprimer les anciennes policies si elles existent
+DROP POLICY IF EXISTS "Allow anonymous inserts on seo_link_clicks" ON seo_link_clicks;
+DROP POLICY IF EXISTS "Allow admin read on seo_link_clicks" ON seo_link_clicks;
+DROP POLICY IF EXISTS "Allow admin read on seo_link_metrics_daily" ON seo_link_metrics_daily;
+DROP POLICY IF EXISTS "Allow anonymous inserts on seo_link_impressions" ON seo_link_impressions;
+DROP POLICY IF EXISTS "Allow admin read on seo_link_impressions" ON seo_link_impressions;
+
 -- Politique: tout le monde peut insérer (tracking anonyme)
 CREATE POLICY "Allow anonymous inserts on seo_link_clicks" 
 ON seo_link_clicks FOR INSERT 
+WITH CHECK (true);
+
+CREATE POLICY "Allow anonymous inserts on seo_link_impressions" 
+ON seo_link_impressions FOR INSERT 
 WITH CHECK (true);
 
 -- Politique: seuls les admins peuvent lire
@@ -183,6 +194,17 @@ USING (
 -- Même chose pour metrics
 CREATE POLICY "Allow admin read on seo_link_metrics_daily" 
 ON seo_link_metrics_daily FOR SELECT 
+USING (
+    EXISTS (
+        SELECT 1 FROM auth.users 
+        WHERE auth.users.id = auth.uid() 
+        AND auth.users.raw_user_meta_data->>'isAdmin' = 'true'
+    )
+);
+
+-- Politique pour impressions
+CREATE POLICY "Allow admin read on seo_link_impressions" 
+ON seo_link_impressions FOR SELECT 
 USING (
     EXISTS (
         SELECT 1 FROM auth.users 
