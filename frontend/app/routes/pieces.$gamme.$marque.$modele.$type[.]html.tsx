@@ -3,9 +3,10 @@
 // ⚠️ URLs PRÉSERVÉES - Ne jamais modifier le format d'URL
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { useCallback, useMemo, useState } from "react";
+import { useLoaderData, useRouteError, isRouteErrorResponse, Link } from "@remix-run/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { useSeoLinkTracking } from '../hooks/useSeoLinkTracking';
 
 // ========================================
 // 📦 IMPORTS DES MODULES REFACTORISÉS
@@ -18,6 +19,7 @@ import { PiecesBuyingGuide } from '../components/pieces/PiecesBuyingGuide';
 import { PiecesComparisonView } from '../components/pieces/PiecesComparisonView';
 import { PiecesCompatibilityInfo } from '../components/pieces/PiecesCompatibilityInfo';
 import { PiecesCrossSelling } from '../components/pieces/PiecesCrossSelling';
+import { PiecesRelatedArticles } from '../components/pieces/PiecesRelatedArticles';
 import { PiecesFAQSection } from '../components/pieces/PiecesFAQSection';
 import { PiecesFilterSidebar } from '../components/pieces/PiecesFilterSidebar';
 import { PiecesGridView } from '../components/pieces/PiecesGridView';
@@ -312,11 +314,24 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   
   // Générer Schema.org Product pour rich snippets (première pièce comme exemple)
   const firstPiece = data.pieces[0];
+  
+  // 🔗 Préparer les produits liés pour isRelatedTo (cross-selling)
+  const relatedProducts = data.crossSellingGammes?.slice(0, 3).map((gamme: any) => ({
+    "@type": "Product",
+    "name": gamme.PG_NAME,
+    "url": `https://www.automecanik.com/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}.html`
+  })) || [];
+
   const productSchema = firstPiece ? {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": `${data.gamme.name} ${data.vehicle.marque} ${data.vehicle.modele}`,
     "description": data.seo.description,
+    "url": canonicalUrl,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": canonicalUrl
+    },
     "brand": {
       "@type": "Brand",
       "name": firstPiece.brand
@@ -327,13 +342,16 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       "lowPrice": data.minPrice,
       "highPrice": data.maxPrice,
       "offerCount": data.count,
-      "availability": "https://schema.org/InStock"
+      "availability": "https://schema.org/InStock",
+      "url": canonicalUrl
     },
     "aggregateRating": data.count > 0 ? {
       "@type": "AggregateRating",
       "ratingValue": "4.5",
       "reviewCount": data.count
-    } : undefined
+    } : undefined,
+    // 🔗 SEO: Produits liés pour maillage interne
+    ...(relatedProducts.length > 0 && { "isRelatedTo": relatedProducts })
   } : null;
 
   return [
@@ -363,6 +381,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
 export default function PiecesVehicleRoute() {
   const data = useLoaderData<typeof loader>();
+  const { trackClick, trackImpression } = useSeoLinkTracking();
   
   // Hook custom pour la logique de filtrage (gère son propre état)
   const {
@@ -384,6 +403,19 @@ export default function PiecesVehicleRoute() {
 
   // État pour catalogue collapsible (fermé par défaut)
   const [catalogueOpen, setCatalogueOpen] = useState(false);
+
+  // 📊 Track les impressions de la section "Voir aussi" au montage
+  useEffect(() => {
+    trackImpression('VoirAussi', 4); // 4 liens dans la section
+    if (data.crossSellingGammes?.length > 0) {
+      trackImpression('CrossSelling', data.crossSellingGammes.length);
+    }
+  }, [trackImpression, data.crossSellingGammes?.length]);
+
+  // 📊 Handlers pour tracker les clics "Voir aussi"
+  const handleVoirAussiClick = useCallback((url: string, anchorText: string) => {
+    trackClick('VoirAussi', url, { anchorText, position: 'voiraussi' });
+  }, [trackClick]);
 
   // Actions de sélection pour mode comparaison
   // ⚡ Optimisé avec useCallback pour éviter re-création à chaque render
@@ -1093,6 +1125,75 @@ export default function PiecesVehicleRoute() {
             />
           </div>
         )}
+
+        {/* Articles liés - Maillage de contenu */}
+        {data.relatedArticles && data.relatedArticles.length > 0 && (
+          <div className="container mx-auto px-4">
+            <PiecesRelatedArticles
+              articles={data.relatedArticles}
+              gammeName={data.gamme.name}
+              vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+            />
+          </div>
+        )}
+
+        {/* Section "Voir aussi" - Maillage interne SEO */}
+        <section className="container mx-auto px-4 mt-8 mb-12">
+          <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Voir aussi
+            </h2>
+            <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              {/* Lien vers la gamme parent */}
+              <li>
+                <Link 
+                  to={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  onClick={() => handleVoirAussiClick(`/pieces/${data.gamme.alias}-${data.gamme.id}.html`, `Toutes les ${data.gamme.name}`)}
+                >
+                  <span className="text-gray-400">→</span>
+                  Toutes les {data.gamme.name}
+                </Link>
+              </li>
+              {/* Lien vers le constructeur */}
+              <li>
+                <Link 
+                  to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}.html`, `Pièces ${data.vehicle.marque}`)}
+                >
+                  <span className="text-gray-400">→</span>
+                  Pièces {data.vehicle.marque}
+                </Link>
+              </li>
+              {/* Lien vers le modèle */}
+              <li>
+                <Link 
+                  to={`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  onClick={() => handleVoirAussiClick(`/constructeurs/${data.vehicle.marqueAlias || data.vehicle.marque.toLowerCase()}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias || data.vehicle.modele.toLowerCase()}-${data.vehicle.modeleId}.html`, `Pièces ${data.vehicle.marque} ${data.vehicle.modele}`)}
+                >
+                  <span className="text-gray-400">→</span>
+                  Pièces {data.vehicle.marque} {data.vehicle.modele}
+                </Link>
+              </li>
+              {/* Lien vers catalogue complet */}
+              <li>
+                <Link 
+                  to="/pieces"
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  onClick={() => handleVoirAussiClick('/pieces', 'Catalogue complet')}
+                >
+                  <span className="text-gray-400">→</span>
+                  Catalogue complet
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </section>
       </div>
 
       {/* Bouton retour en haut */}

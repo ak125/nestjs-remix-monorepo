@@ -7,7 +7,7 @@
  * ✨ VERSION avec carousel modèles populaires
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -19,6 +19,30 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+
+/**
+ * 🔍 SEO Meta Tags
+ */
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const total = data?.total || 0;
+  const title = `Toutes les Marques Automobiles (${total}) | Pièces Détachées Auto`;
+  const description = `Découvrez notre catalogue complet de ${total} marques automobiles. Trouvez les pièces détachées pour BMW, Mercedes, Audi, Volkswagen, Renault, Peugeot et toutes les autres marques.`;
+  
+  return [
+    { title },
+    { name: 'description', content: description },
+    { name: 'robots', content: 'index, follow' },
+    // Open Graph
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:type', content: 'website' },
+    { property: 'og:url', content: '/brands' },
+    // Twitter
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
+  ];
+};
 
 interface Brand {
   marque_id: number;

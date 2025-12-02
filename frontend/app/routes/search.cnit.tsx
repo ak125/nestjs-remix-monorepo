@@ -5,7 +5,7 @@
  * Route: /search/cnit
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Form, Link } from "@remix-run/react";
 import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
 import { useState } from "react";
@@ -13,6 +13,15 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { VehicleCard } from "../components/vehicles/VehicleCard";
+
+/**
+ * 🔍 SEO Meta Tags - noindex pour recherche CNIT
+ */
+export const meta: MetaFunction = () => [
+  { title: 'Recherche par code CNIT | Identifier votre véhicule' },
+  { name: 'description', content: 'Recherchez votre véhicule par code CNIT pour trouver les pièces compatibles.' },
+  { name: 'robots', content: 'noindex, nofollow' }, // Recherche non indexée
+];
 
 interface LoaderData {
   vehicle?: {

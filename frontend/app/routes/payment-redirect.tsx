@@ -1,5 +1,14 @@
+import { type MetaFunction } from '@remix-run/node';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+/**
+ * 🔒 SEO Meta Tags - noindex pour page technique de paiement
+ */
+export const meta: MetaFunction = () => [
+  { title: 'Redirection paiement...' },
+  { name: 'robots', content: 'noindex, nofollow' },
+];
 
 export default function PaymentRedirect() {
   const formRef = useRef<HTMLFormElement>(null);

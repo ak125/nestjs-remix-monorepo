@@ -1,10 +1,16 @@
-import { type ActionFunctionArgs, type LoaderFunctionArgs, json, redirect } from "@remix-run/node";
+import { type ActionFunctionArgs, type LoaderFunctionArgs, type MetaFunction, json, redirect } from "@remix-run/node";
 import { useLoaderData, useActionData, Link } from "@remix-run/react";
 import { useRef, useState } from "react";
 import { toast } from 'sonner';
 import { requireAuth } from "../auth/unified.server";
 import { initializePayment, getAvailablePaymentMethods } from "../services/payment.server";
 import { type PaymentMethod, type OrderSummary } from "../types/payment";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Paiement | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 interface LoaderData {
   order: OrderSummary;

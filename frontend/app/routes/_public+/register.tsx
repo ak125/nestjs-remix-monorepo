@@ -1,5 +1,6 @@
 import { 
   type LoaderFunctionArgs,
+  type MetaFunction,
   redirect 
 } from "@remix-run/node";
 import { Link, useSearchParams } from "@remix-run/react";
@@ -11,6 +12,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { getOptionalUser } from "../../auth/unified.server";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Inscription | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 const _RegisterSchema = z.object({
   email: z.string().email("Email invalide"),

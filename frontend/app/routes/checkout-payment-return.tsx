@@ -1,9 +1,15 @@
 import { Alert } from '@fafa/ui';
-import { json, redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { processPaymentReturn } from "../services/payment.server";
 import { formatPrice } from "../utils/orders";
+
+// 🤖 SEO: Page transactionnelle non indexable
+export const meta: MetaFunction = () => [
+  { title: "Confirmation de paiement | AutoMecanik" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 interface PaymentResult {
   status: 'SUCCESS' | 'REFUSED' | 'CANCELLED' | 'PENDING';

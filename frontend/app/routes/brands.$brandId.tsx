@@ -5,7 +5,7 @@
  * Route: /brands/$brandId
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
 import { Alert } from '~/components/ui/alert';
@@ -13,6 +13,30 @@ import { BrandLogoClient } from "../components/BrandLogoClient";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
+
+/**
+ * 🔍 SEO Meta Tags
+ */
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const brandName = data?.brand?.marque_name || 'Marque';
+  const modelsCount = data?.models?.length || 0;
+  const title = `Pièces Détachées ${brandName} | ${modelsCount} Modèles Disponibles`;
+  const description = `Trouvez toutes les pièces détachées pour votre ${brandName}. ${modelsCount} modèles disponibles avec livraison rapide. Pièces auto ${brandName} de qualité.`;
+  
+  return [
+    { title },
+    { name: 'description', content: description },
+    { name: 'robots', content: 'index, follow' },
+    // Open Graph
+    { property: 'og:title', content: title },
+    { property: 'og:description', content: description },
+    { property: 'og:type', content: 'website' },
+    // Twitter
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
+  ];
+};
 
 interface Model {
   modele_id: number;

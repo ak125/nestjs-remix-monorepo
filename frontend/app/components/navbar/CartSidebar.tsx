@@ -266,7 +266,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   asChild
                   className="flex-1"
                 >
-                  <Link to="/cart" onClick={onClose}>
+                  <Link to="/cart" rel="nofollow" onClick={onClose}>
                     📋 Voir détails
                   </Link>
                 </Button>
