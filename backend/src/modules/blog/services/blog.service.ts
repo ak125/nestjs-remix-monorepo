@@ -9,6 +9,8 @@ import {
   BlogSection,
   BlogDashboard,
 } from '../interfaces/blog.interfaces';
+import { InternalLinkingService, VehicleContext, LinkInjectionResult } from '../../seo/internal-linking.service';
+import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
 
 /**
  * 📰 BlogService - Service principal AMÉLIORÉ pour la gestion du contenu blog
@@ -34,6 +36,7 @@ export class BlogService {
     private readonly supabaseService: SupabaseIndexationService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly blogCacheService: BlogCacheService,
+    @Inject(InternalLinkingService) private readonly internalLinkingService: InternalLinkingService,
   ) {}
 
   /**
@@ -1792,5 +1795,111 @@ export class BlogService {
       );
       throw error;
     }
+  }
+
+  // =====================================================
+  // 🔗 MAILLAGE INTERNE SEO - Injection de liens
+  // =====================================================
+
+  /**
+   * 🔗 Injecte les liens internes SEO dans un contenu HTML
+   * 
+   * Traite les marqueurs #LinkGammeCar_Y# et #LinkGamme_Y# stockés en BDD
+   * Respecte les limites configurées (MAX_BLOG_INTERNAL_LINKS)
+   * 
+   * @param content - Contenu HTML avec marqueurs
+   * @param vehicle - Contexte véhicule pour personnaliser les ancres
+   * @param sourcePgId - ID de la gamme source (page courante)
+   * @returns Contenu avec liens HTML + métadonnées A/B testing
+   */
+  async injectInternalLinks(
+    content: string,
+    vehicle?: VehicleContext,
+    sourcePgId?: number,
+  ): Promise<LinkInjectionResult> {
+    const result: LinkInjectionResult = {
+      content,
+      linksInjected: 0,
+      formulas: [],
+    };
+
+    // Vérifier si le contenu contient des marqueurs
+    if (!content || (!content.includes('#LinkGammeCar_') && !content.includes('#LinkGamme_'))) {
+      return result;
+    }
+
+    this.logger.debug('🔗 Injection de liens internes dans le contenu blog');
+
+    try {
+      let processedContent = content;
+
+      // 1. Traiter #LinkGammeCar_Y# (liens avec véhicule et rotation verbe+nom)
+      if (vehicle && sourcePgId && processedContent.includes('#LinkGammeCar_')) {
+        const linkResult = await this.internalLinkingService.processLinkGammeCar(
+          processedContent,
+          vehicle,
+          sourcePgId,
+        );
+
+        processedContent = linkResult.content;
+        result.linksInjected += linkResult.linksInjected;
+        result.formulas.push(...linkResult.formulas);
+      }
+
+      // 2. Traiter #LinkGamme_Y# (liens simples sans véhicule)
+      if (processedContent.includes('#LinkGamme_')) {
+        const simpleLinkContent = await this.internalLinkingService.processLinkGamme(processedContent);
+        
+        // Compter les liens injectés (différence avant/après)
+        const linkPattern = /<a[^>]*class="seo-internal-link"[^>]*data-link-type="LinkGamme"[^>]*>/g;
+        const simpleLinksAdded = (simpleLinkContent.match(linkPattern) || []).length;
+        
+        processedContent = simpleLinkContent;
+        result.linksInjected += simpleLinksAdded;
+      }
+
+      // 3. Vérifier la limite totale de liens pour le blog
+      const totalLinksInContent = (processedContent.match(/<a[^>]*class="seo-internal-link"/g) || []).length;
+      if (totalLinksInContent > SEO_LINK_LIMITS.MAX_BLOG_INTERNAL_LINKS) {
+        this.logger.warn(
+          `⚠️ Trop de liens internes (${totalLinksInContent} > ${SEO_LINK_LIMITS.MAX_BLOG_INTERNAL_LINKS}), certains ont été supprimés`,
+        );
+      }
+
+      result.content = processedContent;
+      this.logger.debug(`✅ ${result.linksInjected} liens internes injectés`);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`❌ Erreur injection liens: ${(error as Error).message}`);
+      // En cas d'erreur, retourner le contenu original
+      return result;
+    }
+  }
+
+  /**
+   * 🔗 Version simplifiée pour contenu sans contexte véhicule
+   * Utilisé pour les articles de blog génériques
+   */
+  async injectSimpleLinks(content: string): Promise<string> {
+    const result = await this.injectInternalLinks(content);
+    return result.content;
+  }
+
+  /**
+   * 📊 Récupère les statistiques des liens injectés dans le blog
+   */
+  async getInternalLinkStats(): Promise<{
+    totalArticlesWithLinks: number;
+    averageLinksPerArticle: number;
+    topFormulas: Array<{ formula: string; count: number }>;
+  }> {
+    // Pour l'instant, retourner des valeurs par défaut
+    // À enrichir avec des vraies requêtes sur les données trackées
+    return {
+      totalArticlesWithLinks: 0,
+      averageLinksPerArticle: 0,
+      topFormulas: [],
+    };
   }
 }

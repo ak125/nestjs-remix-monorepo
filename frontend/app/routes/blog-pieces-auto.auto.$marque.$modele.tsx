@@ -13,6 +13,8 @@ import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNaviga
 
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { Card, CardContent } from "../components/ui/card";
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from "../components/seo/HtmlContent";
 
 /* ===========================
    Types
@@ -257,9 +259,10 @@ export default function BlogPiecesAutoMarqueModele() {
           <div className="container mx-auto px-4">
             <div className="max-w-7xl mx-auto">
               <div className="prose prose-lg max-w-none">
-                <div 
+                <HtmlContent 
+                  html={metadata.content}
+                  trackLinks={true}
                   className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: metadata.content }} 
                 />
               </div>
             </div>
@@ -637,9 +640,10 @@ export default function BlogPiecesAutoMarqueModele() {
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="prose prose-lg max-w-none">
-                <div 
+                <HtmlContent 
+                  html={metadata.content}
+                  trackLinks={true}
                   className="text-gray-700 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: metadata.content }} 
                 />
               </div>
             </div>

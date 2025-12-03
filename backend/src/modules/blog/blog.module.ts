@@ -18,6 +18,7 @@ import { HtmlContentSanitizerService } from './services/html-content-sanitizer.s
 
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
+import { SeoModule } from '../seo/seo.module';
 
 /**
  * 📰 BlogModule - Module de gestion complète du contenu blog
@@ -52,6 +53,7 @@ import { SearchModule } from '../search/search.module';
       isGlobal: false, // Cache spécifique au module blog
     }),
     SearchModule, // Services Meilisearch et Supabase intégrés
+    SeoModule, // 🔗 InternalLinkingService pour maillage interne
   ],
   controllers: [
     BlogController, // API générale blog et recherche

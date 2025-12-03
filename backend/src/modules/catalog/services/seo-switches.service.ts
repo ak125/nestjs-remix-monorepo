@@ -478,7 +478,8 @@ export class SeoSwitchesService {
 
   /**
    * 🔄 Traite #LinkGammeCar_Y# (lien vers autre gamme avec switches)
-   * Combine alias 1 et 2 pour créer un lien complet
+   * Combine alias 1 et 2 pour créer un lien complet avec URL
+   * 🎯 Génère un lien HTML cliquable vers la page gamme+véhicule
    */
   async processLinkGammeCar(
     supabase: SupabaseClient,
@@ -492,14 +493,22 @@ export class SeoSwitchesService {
     },
     context: SwitchContext,
     prefetched?: PrefetchedSwitches,
+    vehicleInfo?: {
+      marqueId?: number;
+      modeleId?: number;
+      typeId?: number;
+      marqueAlias?: string;
+      modeleAlias?: string;
+      typeAlias?: string;
+    },
   ): Promise<string> {
     const marker = `#LinkGammeCar_${targetPgId}#`;
     if (!text.includes(marker)) return text;
 
-    // Récupérer nom de la gamme cible
+    // Récupérer nom et alias de la gamme cible
     const { data: targetGamme } = await supabase
       .from(TABLES.pieces_gamme)
-      .select('pg_name')
+      .select('pg_name, pg_alias')
       .eq('pg_id', targetPgId)
       .single();
 
@@ -541,10 +550,33 @@ export class SeoSwitchesService {
       return text.replace(new RegExp(marker, 'g'), '');
     }
 
-    // Construire le texte du lien
-    const linkText = `${selected1.sgcs_content} les ${targetGamme.pg_name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicle.nbCh} ch et ${selected2.sgcs_content}`;
+    // 🎯 Construire le texte d'ancre du lien
+    const anchorText = `${selected1.sgcs_content} les ${targetGamme.pg_name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} ${vehicle.nbCh} ch et ${selected2.sgcs_content}`;
 
-    return text.replace(new RegExp(marker, 'g'), linkText);
+    // 🔗 Construire l'URL du lien vers la page gamme+véhicule
+    // Format: /pieces/{gamme-alias}-{gamme-id}/{marque-alias}-{marque-id}/{modele-alias}-{modele-id}/{type-alias}-{type-id}.html
+    let linkUrl: string;
+    
+    if (vehicleInfo?.marqueId && vehicleInfo?.modeleId && vehicleInfo?.typeId) {
+      // Lien complet vers gamme+véhicule
+      const gammeSlug = `${targetGamme.pg_alias}-${targetPgId}`;
+      const marqueSlug = `${vehicleInfo.marqueAlias || vehicle.marque.toLowerCase()}-${vehicleInfo.marqueId}`;
+      const modeleSlug = `${vehicleInfo.modeleAlias || vehicle.modele.toLowerCase()}-${vehicleInfo.modeleId}`;
+      const typeSlug = `${vehicleInfo.typeAlias || vehicle.type.toLowerCase()}-${vehicleInfo.typeId}`;
+      linkUrl = `/pieces/${gammeSlug}/${marqueSlug}/${modeleSlug}/${typeSlug}.html`;
+    } else {
+      // Lien simple vers la gamme seule
+      linkUrl = `/pieces/${targetGamme.pg_alias}-${targetPgId}.html`;
+    }
+
+    // 🎯 Construire le lien HTML avec data attributes pour tracking A/B
+    const verbId = switches1.indexOf(selected1);
+    const nounId = switches2.indexOf(selected2);
+    const formula = `${verbId}:${nounId}`;
+    
+    const linkHtml = `<a href="${linkUrl}" class="seo-internal-link" data-link-type="LinkGammeCar" data-formula="${formula}" data-target-gamme="${targetPgId}">${anchorText}</a>`;
+
+    return text.replace(new RegExp(marker, 'g'), linkHtml);
   }
 
   /**
@@ -573,7 +605,7 @@ export class SeoSwitchesService {
 
     // Construire le lien simple (sans variables de véhicule)
     // Format PHP: <a href='DOMAIN/Piece/ALIAS-ID.html'><b>NOM</b></a>
-    const linkHtml = `<a href="/${targetGamme.pg_alias}-${targetPgId}.html"><b>${targetGamme.pg_name}</b></a>`;
+    const linkHtml = `<a href="/pieces/${targetGamme.pg_alias}-${targetPgId}.html" class="seo-internal-link" data-link-type="LinkGamme" data-target-gamme="${targetPgId}"><b>${targetGamme.pg_name}</b></a>`;
 
     return text.replace(new RegExp(marker, 'g'), linkHtml);
   }
@@ -593,6 +625,14 @@ export class SeoSwitchesService {
     },
     context: SwitchContext,
     prefetched?: PrefetchedSwitches,
+    vehicleInfo?: {
+      marqueId?: number;
+      modeleId?: number;
+      typeId?: number;
+      marqueAlias?: string;
+      modeleAlias?: string;
+      typeAlias?: string;
+    },
   ): Promise<string> {
     let result = text;
 
@@ -671,6 +711,7 @@ export class SeoSwitchesService {
         vehicle,
         context,
         prefetched,
+        vehicleInfo,
       );
     }
 

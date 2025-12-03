@@ -11,6 +11,8 @@ import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
 import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
@@ -578,9 +580,10 @@ export default function PiecesDetailPage() {
           {/* Contenu SEO */}
           {data.content?.content && (
             <div className="p-4 md:p-6 lg:p-8">
-              <div 
+              <HtmlContent 
+                html={data.content.content}
+                trackLinks={true}
                 className="prose prose-lg max-w-none text-neutral-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: data.content.content }} 
               />
             </div>
           )}

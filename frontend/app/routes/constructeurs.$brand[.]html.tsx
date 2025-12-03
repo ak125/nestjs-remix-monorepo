@@ -6,6 +6,8 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, Link } from "@remix-run/react";
 import { Car, Filter, Disc, Wrench, Droplet, Zap, Settings, ChevronRight, TrendingUp, Package } from "lucide-react";
 import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from "../components/seo/HtmlContent";
 import { brandApi } from "../services/api/brand.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import type { PopularVehicle, PopularPart as ApiPopularPart } from "../types/brand.types";
@@ -349,7 +351,7 @@ export default function BrandCatalogPage() {
           </h2>
           <div className="prose max-w-none">
             {blog_content?.content ? (
-              <div dangerouslySetInnerHTML={{ __html: blog_content.content }} />
+              <HtmlContent html={blog_content.content} trackLinks={true} className="" />
             ) : (
               <p className="text-gray-700 text-lg leading-relaxed mb-6">
                 {brandDescription.history}

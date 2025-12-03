@@ -32,6 +32,9 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 
+// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
+import { HtmlContent } from "~/components/seo/HtmlContent";
+
 // Types
 interface GuideSection {
   level: number; // 2 pour H2, 3 pour H3
@@ -223,9 +226,10 @@ export default function GuideDetailPage() {
               )}
 
               {/* Main Content */}
-              <div 
+              <HtmlContent 
+                html={guide.content}
                 className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6"
-                dangerouslySetInnerHTML={{ __html: guide.content }}
+                trackLinks={true}
               />
 
               {/* Sections */}
@@ -248,9 +252,10 @@ export default function GuideDetailPage() {
                               </span>
                               {section.title}
                             </h3>
-                            <div 
+                            <HtmlContent 
+                              html={section.content}
                               className="prose max-w-none text-gray-700"
-                              dangerouslySetInnerHTML={{ __html: section.content }}
+                              trackLinks={true}
                             />
                           </CardContent>
                         </Card>
@@ -262,9 +267,10 @@ export default function GuideDetailPage() {
                           <h4 className="text-lg font-semibold text-gray-900 mb-3">
                             {section.title}
                           </h4>
-                          <div 
+                          <HtmlContent 
+                            html={section.content}
                             className="prose max-w-none text-gray-700"
-                            dangerouslySetInnerHTML={{ __html: section.content }}
+                            trackLinks={true}
                           />
                         </div>
                       );
