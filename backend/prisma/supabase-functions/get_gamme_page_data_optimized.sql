@@ -124,6 +124,7 @@ BEGIN
 
   -- ========================================
   -- CATALOGUE MÊME FAMILLE (si mf_id trouvé)
+  -- ✅ ENRICHI: Joint __seo_gamme pour récupérer sg_descrip (descriptions riches)
   -- ========================================
   IF v_mf_id IS NOT NULL THEN
     v_result := v_result || jsonb_build_object(
@@ -135,10 +136,11 @@ BEGIN
             pg.pg_name,
             pg.pg_alias,
             pg.pg_pic,
-            '' as description,
-            '' as meta_description
+            COALESCE(sg.sg_descrip, '') as description,
+            COALESCE(sg.sg_title, '') as meta_description
           FROM catalog_gamme cg
           INNER JOIN pieces_gamme pg ON cg.mc_pg_id::INTEGER = pg.pg_id
+          LEFT JOIN __seo_gamme sg ON sg.sg_pg_id = cg.mc_pg_id
           WHERE cg.mc_mf_prime = v_mf_id
             AND cg.mc_pg_id != v_pg_id_text
             AND pg.pg_display = '1'
@@ -341,6 +343,32 @@ BEGIN
         WHERE sis_pg_id = '0'
           AND sis_alias = '3'
         ORDER BY sis_id
+      ) sub
+    ),
+    -- ========================================
+    -- 🔗 COMPSWITCH - Switches pour maillage interne LinkGammeCar
+    -- ALIAS=1: Verbes (Découvrez, Trouvez, etc.)
+    -- ALIAS=2: Noms (accessoires, équipements, etc.)
+    -- Utilisés pour rotation A/B testing dans InternalLinkingService
+    -- ========================================
+    'comp_switch_verbs', (
+      SELECT jsonb_agg(sub)
+      FROM (
+        SELECT sgcs_id, sgcs_content
+        FROM __seo_gamme_car_switch
+        WHERE sgcs_pg_id = v_pg_id_text
+          AND sgcs_alias = '1'
+        ORDER BY sgcs_id
+      ) sub
+    ),
+    'comp_switch_nouns', (
+      SELECT jsonb_agg(sub)
+      FROM (
+        SELECT sgcs_id, sgcs_content
+        FROM __seo_gamme_car_switch
+        WHERE sgcs_pg_id = v_pg_id_text
+          AND sgcs_alias = '2'
+        ORDER BY sgcs_id
       ) sub
     ),
     -- ========================================
