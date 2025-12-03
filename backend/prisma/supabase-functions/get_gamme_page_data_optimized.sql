@@ -346,32 +346,6 @@ BEGIN
       ) sub
     ),
     -- ========================================
-    -- 🔗 COMPSWITCH - Switches pour maillage interne LinkGammeCar
-    -- ALIAS=1: Verbes (Découvrez, Trouvez, etc.)
-    -- ALIAS=2: Noms (accessoires, équipements, etc.)
-    -- Utilisés pour rotation A/B testing dans InternalLinkingService
-    -- ========================================
-    'comp_switch_verbs', (
-      SELECT jsonb_agg(sub)
-      FROM (
-        SELECT sgcs_id, sgcs_content
-        FROM __seo_gamme_car_switch
-        WHERE sgcs_pg_id = v_pg_id_text
-          AND sgcs_alias = '1'
-        ORDER BY sgcs_id
-      ) sub
-    ),
-    'comp_switch_nouns', (
-      SELECT jsonb_agg(sub)
-      FROM (
-        SELECT sgcs_id, sgcs_content
-        FROM __seo_gamme_car_switch
-        WHERE sgcs_pg_id = v_pg_id_text
-          AND sgcs_alias = '2'
-        ORDER BY sgcs_id
-      ) sub
-    ),
-    -- ========================================
     -- STATISTIQUES CGC_LEVEL (pour debug et monitoring)
     -- ========================================
     'cgc_level_stats', (

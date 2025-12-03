@@ -431,6 +431,16 @@ export class GammeResponseBuilderService {
               items: catalogueFiltres,
             }
           : null,
+      // Alias pour compatibilité frontend
+      catalogueMameFamille:
+        catalogueFiltres.length > 0
+          ? {
+              title: familleInfo
+                ? `Autres pièces de la famille ${familleInfo.mf_name}`
+                : 'Pièces similaires',
+              items: catalogueFiltres,
+            }
+          : null,
       equipementiers:
         equipementiers.length > 0
           ? {
@@ -470,6 +480,13 @@ export class GammeResponseBuilderService {
         level5: cgcLevelStats.level_5,
         total: cgcLevelStats.total,
         description: 'CGC_LEVEL: 1=motorisations grille, 2=page marque, 3=page type, 5=section blog',
+      },
+      // 🔗 SEO Switches pour maillage interne (ancres variées)
+      seoSwitches: {
+        verbs: seoFragments1.slice(0, 20).map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        nouns: seoFragments2.slice(0, 20).map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        verbCount: seoFragments1.length,
+        nounCount: seoFragments2.length,
       },
       performance: {
         total_time_ms: totalTime,
