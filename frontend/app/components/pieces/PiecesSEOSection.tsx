@@ -3,12 +3,15 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  * 
  * Contenu SEO enrichi avec H1, sections H2, description longue
+ * ✨ Utilise HtmlContent pour le maillage interne (liens SPA + tracking)
  */
 
 import React from 'react';
 import { Alert } from '~/components/ui/alert';
 import { type SEOEnrichedContent } from '../../types/pieces-route.types';
 import { cleanOrphanParagraphs, cleanInlineStyles } from '../../utils/seo-clean.utils';
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;
@@ -36,12 +39,13 @@ export function PiecesSEOSection({ content, vehicleName, gammeName }: PiecesSEOS
 
       <div className="p-6 space-y-8">
         {/* Description longue - Support HTML depuis API backend */}
-        {/* ✅ Toujours utiliser dangerouslySetInnerHTML car le contenu contient des balises <strong>, <br/>, etc. */}
+        {/* ✨ HtmlContent pour maillage interne: convertit les <a> en <Link> Remix avec tracking */}
         {/* 🎨 font-heading pour uniformiser la police avec le H1 (Montserrat) */}
         <div className="prose prose-gray max-w-none font-heading">
-          <div 
+          <HtmlContent 
+            html={cleanLongDescription}
+            trackLinks={true}
             className="text-lg text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: cleanLongDescription }}
           />
         </div>
 

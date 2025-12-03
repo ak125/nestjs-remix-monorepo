@@ -457,7 +457,7 @@ export class GammeUnifiedService extends SupabaseBaseService {
     const { data: typeData, error: typeError } = await this.supabase
       .from(TABLES.auto_type)
       .select(
-        'type_id, type_name, type_power_ps, type_year_from, type_year_to, type_marque_id, type_modele_id, type_body, type_fuel',
+        'type_id, type_name, type_alias, type_power_ps, type_year_from, type_year_to, type_marque_id, type_modele_id, type_body, type_fuel',
       )
       .eq('type_id', typeId)
       .single();
@@ -478,14 +478,14 @@ export class GammeUnifiedService extends SupabaseBaseService {
       finalMarqueId
         ? this.supabase
             .from(TABLES.auto_marque)
-            .select('marque_id, marque_name')
+            .select('marque_id, marque_name, marque_alias')
             .eq('marque_id', finalMarqueId)
             .single()
         : Promise.resolve({ data: null, error: null }),
       finalModeleId
         ? this.supabase
             .from(TABLES.auto_modele)
-            .select('modele_id, modele_name')
+            .select('modele_id, modele_name, modele_alias')
             .eq('modele_id', finalModeleId)
             .single()
         : Promise.resolve({ data: null, error: null }),
@@ -497,7 +497,9 @@ export class GammeUnifiedService extends SupabaseBaseService {
     ]);
 
     const marqueName = marqueResult.data?.marque_name || '';
+    const marqueAlias = marqueResult.data?.marque_alias || '';
     const modeleName = modeleResult.data?.modele_name || '';
+    const modeleAlias = modeleResult.data?.modele_alias || '';
 
     // Concaténer les codes moteur séparés par virgules
     const codeMoteur =
@@ -546,6 +548,12 @@ export class GammeUnifiedService extends SupabaseBaseService {
       modele: modeleName,
       marqueId: finalMarqueId,
       modeleId: finalModeleId,
+      // 🔗 Alias pour génération de liens internes
+      marqueAlias: marqueAlias,
+      modeleAlias: modeleAlias,
+      typeAlias: typeData?.type_alias || '',
+      mfId: finalMarqueId, // Compatibilité avec vehicleInfo
+      mlId: finalModeleId, // Compatibilité avec vehicleInfo
       // 🎯 PHP: Ajouter les nouveaux champs
       carosserie: typeData?.type_body || '',
       motorisation: typeData?.type_fuel || '', // fuel = motorisation
@@ -607,6 +615,14 @@ export class GammeUnifiedService extends SupabaseBaseService {
       vehicle,
       context,
       prefetchedSwitches,
+      {
+        marqueId: vehicleInfo?.mfId,
+        modeleId: vehicleInfo?.mlId,
+        typeId: context.typeId,
+        marqueAlias: vehicleInfo?.marqueAlias,
+        modeleAlias: vehicleInfo?.modeleAlias,
+        typeAlias: vehicleInfo?.typeAlias,
+      },
     );
 
     // 3. Remplacer variables simples (Deuxième passage pour les variables dans les switches)
@@ -706,6 +722,12 @@ export class GammeUnifiedService extends SupabaseBaseService {
     // Supprimer points orphelins en fin de phrase incomplète: "il faut ." → "il faut"
     result = result.replace(/\s+\.\s*$/gm, '');
     result = result.replace(/(\s+\w+)\s+\.\s+/g, '$1. '); // "faut . les" → "faut. les"
+    
+    // 🎯 Corriger espace avant point: "freinage ." → "freinage."
+    result = result.replace(/(\w)\s+\./g, '$1.');
+    
+    // Corriger virgule suivie de point: ", ." → "."
+    result = result.replace(/,\s*\./g, '.');
 
     // Nettoyer espaces multiples
     result = result.replace(/\s{2,}/g, ' ');

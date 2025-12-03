@@ -40,11 +40,13 @@ class TrackClickDto {
   linkType:
     | 'LinkGammeCar'
     | 'LinkGammeCar_ID'
+    | 'LinkGamme'
     | 'CompSwitch'
     | 'CrossSelling'
     | 'VoirAussi'
     | 'Footer'
-    | 'RelatedArticles';
+    | 'RelatedArticles'
+    | string;
   sourceUrl: string;
   destinationUrl: string;
   anchorText?: string;
@@ -56,6 +58,14 @@ class TrackClickDto {
     | 'crossselling'
     | 'voiraussi';
   sessionId?: string;
+  deviceType?: 'mobile' | 'desktop' | 'tablet';
+  userAgent?: string;
+  referer?: string;
+  // A/B Testing fields
+  switchVerbId?: number;
+  switchNounId?: number;
+  switchFormula?: string;
+  targetGammeId?: number;
 }
 
 class TrackImpressionDto {
@@ -83,20 +93,30 @@ export class SeoLinkTrackingController {
     @Headers('user-agent') userAgent?: string,
     @Headers('referer') referer?: string,
   ): Promise<{ success: boolean }> {
-    // Détecter le type de device
-    const deviceType = this.detectDeviceType(userAgent);
+    // Détecter le type de device (utiliser celui du DTO si fourni)
+    const deviceType = dto.deviceType || this.detectDeviceType(userAgent);
 
     const event: LinkClickEvent = {
-      ...dto,
-      userAgent,
-      referer,
+      linkType: dto.linkType,
+      sourceUrl: dto.sourceUrl,
+      destinationUrl: dto.destinationUrl,
+      anchorText: dto.anchorText,
+      linkPosition: dto.linkPosition,
+      sessionId: dto.sessionId,
+      userAgent: dto.userAgent || userAgent,
+      referer: dto.referer || referer,
       deviceType,
+      // A/B Testing fields
+      switchVerbId: dto.switchVerbId,
+      switchNounId: dto.switchNounId,
+      switchFormula: dto.switchFormula,
+      targetGammeId: dto.targetGammeId,
     };
 
     const success = await this.trackingService.trackClick(event);
 
     this.logger.debug(
-      `📊 Track click: ${dto.linkType} | ${dto.sourceUrl} -> ${dto.destinationUrl} | ${deviceType}`,
+      `📊 Track click: ${dto.linkType} | ${dto.sourceUrl} -> ${dto.destinationUrl} | ${deviceType}${dto.switchFormula ? ` | formula: ${dto.switchFormula}` : ''}`,
     );
 
     return { success };
@@ -120,6 +140,33 @@ export class SeoLinkTrackingController {
 
     const success = await this.trackingService.trackImpression(event);
     return { success };
+  }
+
+  /**
+   * Rapport complet de performance des liens internes
+   * ⚠️ Route statique AVANT la route dynamique :linkType
+   */
+  @Get('metrics/report')
+  @ApiOperation({ summary: 'Rapport complet de performance SEO' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Date de début (ISO)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Date de fin (ISO)',
+  })
+  @ApiResponse({ status: 200, description: 'Rapport de performance' })
+  async getPerformanceReport(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ): Promise<LinkPerformanceReport> {
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    return this.trackingService.getPerformanceReport(start, end);
   }
 
   /**
@@ -151,32 +198,6 @@ export class SeoLinkTrackingController {
     const end = endDate ? new Date(endDate) : undefined;
 
     return this.trackingService.getMetricsByLinkType(linkType, start, end);
-  }
-
-  /**
-   * Rapport complet de performance des liens internes
-   */
-  @Get('metrics/report')
-  @ApiOperation({ summary: 'Rapport complet de performance SEO' })
-  @ApiQuery({
-    name: 'startDate',
-    required: false,
-    description: 'Date de début (ISO)',
-  })
-  @ApiQuery({
-    name: 'endDate',
-    required: false,
-    description: 'Date de fin (ISO)',
-  })
-  @ApiResponse({ status: 200, description: 'Rapport de performance' })
-  async getPerformanceReport(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ): Promise<LinkPerformanceReport> {
-    const start = startDate ? new Date(startDate) : undefined;
-    const end = endDate ? new Date(endDate) : undefined;
-
-    return this.trackingService.getPerformanceReport(start, end);
   }
 
   /**

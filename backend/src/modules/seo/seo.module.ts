@@ -59,6 +59,9 @@ import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces
 // 📊 Service Tracking Liens Internes (Maillage SEO)
 import { SeoLinkTrackingService } from './seo-link-tracking.service';
 
+// 🔗 Service Maillage Interne Centralisé
+import { InternalLinkingService } from './internal-linking.service';
+
 // 📝 Contrôleur Variations SEO
 import { SeoVariationsController } from './seo-variations.controller';
 
@@ -147,6 +150,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     SeoKpisService, // 📊 Service KPIs Dashboard
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap Véhicule-Pièces
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes
+    InternalLinkingService, // 🔗 Service Maillage Interne Centralisé
 
     // 🛡️ Interceptor Headers SEO (activé globalement)
     {
@@ -177,6 +181,7 @@ import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
     UrlCompatibilityService, // 🔍 Service Compatibilité URLs exporté
     SitemapVehiclePiecesValidator, // 🛡️ Service Validation Sitemap exporté
     SeoLinkTrackingService, // 📊 Service Tracking Liens Internes exporté
+    InternalLinkingService, // 🔗 Service Maillage Interne Centralisé exporté
     // Note: SeoHeadersInterceptor est activé globalement via APP_INTERCEPTOR, pas besoin de l'exporter
   ],
 })

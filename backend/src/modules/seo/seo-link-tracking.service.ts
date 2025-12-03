@@ -23,11 +23,15 @@ export interface LinkClickEvent {
   linkType:
     | 'LinkGammeCar'
     | 'LinkGammeCar_ID'
+    | 'LinkGamme'
     | 'CompSwitch'
     | 'CrossSelling'
     | 'VoirAussi'
     | 'Footer'
-    | 'RelatedArticles';
+    | 'RelatedArticles'
+    | 'TopMarques'
+    | 'GammesPopulaires'
+    | string;  // Support custom types
   sourceUrl: string;
   destinationUrl: string;
   anchorText?: string;
@@ -37,12 +41,19 @@ export interface LinkClickEvent {
     | 'sidebar'
     | 'footer'
     | 'crossselling'
-    | 'voiraussi';
+    | 'voiraussi'
+    | 'blog';
   sessionId?: string;
   userId?: string;
   userAgent?: string;
   referer?: string;
   deviceType?: 'mobile' | 'desktop' | 'tablet';
+  
+  // 🧪 A/B Testing: Tracking des formulations de switches
+  switchVerbId?: number;       // ID du verbe utilisé (SGCS_ALIAS=1)
+  switchNounId?: number;       // ID du nom utilisé (SGCS_ALIAS=2)
+  switchFormula?: string;      // Formule complète "verb_id:noun_id"
+  targetGammeId?: number;      // ID de la gamme cible du lien
 }
 
 export interface LinkImpressionEvent {
@@ -112,6 +123,11 @@ export class SeoLinkTrackingService {
         user_agent: event.userAgent,
         referer: event.referer,
         device_type: event.deviceType,
+        // 🧪 A/B Testing fields
+        switch_verb_id: event.switchVerbId || null,
+        switch_noun_id: event.switchNounId || null,
+        switch_formula: event.switchFormula || null,
+        target_gamme_id: event.targetGammeId || null,
         clicked_at: new Date().toISOString(),
       });
 

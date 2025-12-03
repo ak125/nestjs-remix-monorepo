@@ -27,6 +27,9 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
+// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
+import { HtmlContent } from "~/components/seo/HtmlContent";
+
 // Types
 interface BlogArticle {
   id: string;
@@ -337,8 +340,9 @@ export default function BlogArticle() {
                   <Alert intent="info">{article.excerpt}</Alert>
                 )}
 
-                {/* 🎯 AFFICHAGE DU CONTENU HTML */}
-                <div 
+                {/* 🎯 AFFICHAGE DU CONTENU HTML - Utilise HtmlContent pour navigation SPA */}
+                <HtmlContent 
+                  html={article.content}
                   className="prose prose-lg max-w-none
                     prose-headings:text-gray-900 prose-headings:font-bold
                     prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
@@ -354,7 +358,7 @@ export default function BlogArticle() {
                     prose-blockquote:pl-6 prose-blockquote:italic prose-blockquote:text-gray-700
                     prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
                   "
-                  dangerouslySetInnerHTML={{ __html: article.content }}
+                  trackLinks={true}
                 />
 
                 {/* Sections additionnelles (si structurées) */}
@@ -365,9 +369,10 @@ export default function BlogArticle() {
                         <h3 className="text-2xl font-bold text-gray-900 mb-4">
                           {section.title}
                         </h3>
-                        <div 
+                        <HtmlContent 
+                          html={section.content}
                           className="prose prose-lg max-w-none text-gray-700"
-                          dangerouslySetInnerHTML={{ __html: section.content }}
+                          trackLinks={true}
                         />
                       </div>
                     ))}

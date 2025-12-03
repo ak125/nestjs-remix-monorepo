@@ -7,6 +7,8 @@ import { catalogFamiliesApi, type CatalogFamily as ApiCatalogFamily } from "../s
 import { brandColorsService } from "../services/brand-colors.service";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { Car, Package } from "lucide-react";
+// SEO Components - HtmlContent pour maillage interne
+import { HtmlContent } from "../components/seo/HtmlContent";
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: any; timestamp: number }>();
@@ -754,8 +756,8 @@ export default function VehicleDetailPage() {
         {/* Description SEO (logique PHP avec switches) */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="prose max-w-none">
-            <p dangerouslySetInnerHTML={{ __html: seo.content }} />
-            <p dangerouslySetInnerHTML={{ __html: seo.content2 }} />
+            <HtmlContent html={seo.content} trackLinks={true} />
+            <HtmlContent html={seo.content2} trackLinks={true} />
           </div>
         </div>
 
@@ -923,7 +925,7 @@ export default function VehicleDetailPage() {
                     </h3>
                     
                     <div className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2rem]">
-                      <p dangerouslySetInnerHTML={{ __html: part.addon_content }} />
+                      <HtmlContent html={part.addon_content} trackLinks={true} />
                     </div>
                     
                     {/* CTA moderne */}

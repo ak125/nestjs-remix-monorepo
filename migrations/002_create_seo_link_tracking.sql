@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS seo_link_clicks (
     -- Device type (mobile, desktop, tablet)
     device_type VARCHAR(20),
     
+    -- 🧪 A/B Testing: Tracking des formulations de switches
+    -- Pour mesurer quel combo verbe+nom génère le meilleur CTR
+    switch_verb_id INTEGER,           -- ID du verbe utilisé (SGCS_ALIAS=1): Découvrez, Trouvez, etc.
+    switch_noun_id INTEGER,           -- ID du nom utilisé (SGCS_ALIAS=2): accessoires, équipements, etc.
+    switch_formula VARCHAR(100),      -- Formule complète "verb_id:noun_id" pour analytics
+    target_gamme_id INTEGER,          -- ID de la gamme cible du lien
+    
     -- Timestamps
     clicked_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -47,6 +54,10 @@ CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_source ON seo_link_clicks(source_
 CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_destination ON seo_link_clicks(destination_url);
 CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_date ON seo_link_clicks(clicked_at);
 CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_session ON seo_link_clicks(session_id);
+
+-- Index pour A/B testing des formulations
+CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_formula ON seo_link_clicks(switch_formula);
+CREATE INDEX IF NOT EXISTS idx_seo_link_clicks_gamme ON seo_link_clicks(target_gamme_id);
 
 -- Table agrégée pour les métriques quotidiennes (performance)
 CREATE TABLE IF NOT EXISTS seo_link_metrics_daily (
@@ -218,3 +229,89 @@ COMMENT ON TABLE seo_link_clicks IS 'Tracking des clics sur liens internes pour 
 COMMENT ON TABLE seo_link_metrics_daily IS 'Métriques agrégées quotidiennes pour dashboard SEO';
 COMMENT ON TABLE seo_link_impressions IS 'Tracking des impressions de liens (pour calcul CTR)';
 COMMENT ON VIEW seo_link_ctr IS 'Vue calculant le CTR des liens internes sur 30 jours';
+
+-- =====================================================
+-- 🧪 A/B Testing Analytics - Vues pour mesurer CTR par formulation
+-- =====================================================
+
+-- Vue: CTR par formulation (verbe+nom) sur 30 jours
+CREATE OR REPLACE VIEW seo_ab_testing_formula_ctr AS
+SELECT 
+    switch_formula,
+    switch_verb_id,
+    switch_noun_id,
+    target_gamme_id,
+    COUNT(*) as total_clicks,
+    COUNT(DISTINCT session_id) as unique_users,
+    DATE_TRUNC('day', clicked_at) as date
+FROM seo_link_clicks
+WHERE 
+    switch_formula IS NOT NULL
+    AND clicked_at >= NOW() - INTERVAL '30 days'
+GROUP BY switch_formula, switch_verb_id, switch_noun_id, target_gamme_id, DATE_TRUNC('day', clicked_at)
+ORDER BY total_clicks DESC;
+
+-- Vue: Performance des verbes (SGCS_ALIAS=1)
+CREATE OR REPLACE VIEW seo_ab_testing_verbs AS
+SELECT 
+    switch_verb_id,
+    COUNT(*) as total_clicks,
+    COUNT(DISTINCT session_id) as unique_users,
+    COUNT(DISTINCT source_url) as pages_sources,
+    ROUND(AVG(CASE WHEN device_type = 'mobile' THEN 1 ELSE 0 END) * 100, 2) as mobile_pct
+FROM seo_link_clicks
+WHERE 
+    switch_verb_id IS NOT NULL
+    AND clicked_at >= NOW() - INTERVAL '30 days'
+GROUP BY switch_verb_id
+ORDER BY total_clicks DESC;
+
+-- Vue: Performance des noms (SGCS_ALIAS=2)
+CREATE OR REPLACE VIEW seo_ab_testing_nouns AS
+SELECT 
+    switch_noun_id,
+    COUNT(*) as total_clicks,
+    COUNT(DISTINCT session_id) as unique_users,
+    COUNT(DISTINCT target_gamme_id) as gammes_ciblees
+FROM seo_link_clicks
+WHERE 
+    switch_noun_id IS NOT NULL
+    AND clicked_at >= NOW() - INTERVAL '30 days'
+GROUP BY switch_noun_id
+ORDER BY total_clicks DESC;
+
+-- Vue: Top formulations combinées avec CTR estimé
+CREATE OR REPLACE VIEW seo_ab_testing_top_formulas AS
+WITH formula_clicks AS (
+    SELECT 
+        switch_formula,
+        COUNT(*) as clicks
+    FROM seo_link_clicks
+    WHERE switch_formula IS NOT NULL
+    GROUP BY switch_formula
+),
+formula_impressions AS (
+    SELECT 
+        link_type,
+        SUM(link_count) as impressions
+    FROM seo_link_impressions
+    WHERE link_type = 'LinkGammeCar'
+    GROUP BY link_type
+)
+SELECT 
+    fc.switch_formula,
+    fc.clicks,
+    fi.impressions,
+    CASE WHEN fi.impressions > 0 
+         THEN ROUND((fc.clicks::numeric / fi.impressions) * 100, 2) 
+         ELSE 0 
+    END as ctr_pct
+FROM formula_clicks fc
+CROSS JOIN formula_impressions fi
+ORDER BY fc.clicks DESC
+LIMIT 20;
+
+COMMENT ON VIEW seo_ab_testing_formula_ctr IS 'CTR par formulation verbe+nom pour A/B testing';
+COMMENT ON VIEW seo_ab_testing_verbs IS 'Performance des verbes (Découvrez, Trouvez, etc.)';
+COMMENT ON VIEW seo_ab_testing_nouns IS 'Performance des noms (accessoires, équipements, etc.)';
+COMMENT ON VIEW seo_ab_testing_top_formulas IS 'Top 20 formulations avec CTR estimé';

@@ -40,6 +40,9 @@ import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
 
+// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
+import { HtmlContent } from "~/components/seo/HtmlContent";
+
 // Analytics
 import { trackArticleView, trackReadingTime, trackShareArticle, trackBookmark } from "~/utils/analytics";
 import { Badge } from "../components/ui/badge";
@@ -387,18 +390,20 @@ export default function LegacyBlogArticle() {
                       </svg>
                       {conseil.find(c => c.title.toLowerCase().includes('rôle'))!.title}
                     </h2>
-                    <div 
+                    <HtmlContent 
+                      html={conseil.find(c => c.title.toLowerCase().includes('rôle'))!.content}
                       className="prose prose-lg max-w-none
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                         prose-strong:text-gray-900 prose-strong:font-semibold"
-                      dangerouslySetInnerHTML={{ __html: conseil.find(c => c.title.toLowerCase().includes('rôle'))!.content }}
+                      trackLinks={true}
                     />
                   </div>
                 )}
 
                 {/* Contenu principal */}
-                <div 
+                <HtmlContent 
+                  html={article.content}
                   className="prose prose-lg max-w-none mb-8
                     prose-headings:text-gray-900 prose-headings:font-bold
                     prose-p:text-gray-700 prose-p:leading-relaxed
@@ -406,7 +411,7 @@ export default function LegacyBlogArticle() {
                     prose-strong:text-gray-900 prose-strong:font-semibold
                     prose-ul:list-disc prose-ul:pl-6
                     prose-li:text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: article.content }}
+                  trackLinks={true}
                 />
 
                 {/* CTA Principal (après le contenu principal) */}
@@ -446,14 +451,15 @@ export default function LegacyBlogArticle() {
                       </Card>
                     )}
                     
-                    <div 
+                    <HtmlContent 
+                      html={section.content}
                       className={`prose prose-lg max-w-none ${section.level === 3 ? 'ml-4' : ''}
                         prose-p:text-gray-700 prose-p:leading-relaxed
                         prose-a:text-primary prose-a:no-underline hover:prose-a:underline
                         prose-strong:font-semibold
                         prose-ul:list-disc prose-ul:pl-6
                         prose-li:text-gray-700`}
-                      dangerouslySetInnerHTML={{ __html: section.content }}
+                      trackLinks={true}
                     />
 
                     {/* Clear float après l'image */}
@@ -511,7 +517,8 @@ export default function LegacyBlogArticle() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
-                    <div 
+                    <HtmlContent 
+                      html={conseilItem.content}
                       className="prose prose-lg max-w-none
                         prose-headings:text-gray-900 prose-headings:font-bold
                         prose-p:text-gray-700 prose-p:leading-relaxed
@@ -520,7 +527,7 @@ export default function LegacyBlogArticle() {
                         prose-ul:list-disc prose-ul:pl-6
                         prose-ol:list-decimal prose-ol:pl-6
                         prose-li:text-gray-700 prose-li:mb-2"
-                      dangerouslySetInnerHTML={{ __html: conseilItem.content }}
+                      trackLinks={true}
                     />
                   </CardContent>
                 </Card>
