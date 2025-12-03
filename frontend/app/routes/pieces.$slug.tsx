@@ -10,6 +10,7 @@ import EquipementiersSection from "../components/pieces/EquipementiersSection";
 import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
+import RelatedGammesSection from "../components/pieces/RelatedGammesSection";
 import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -128,6 +129,13 @@ interface LoaderData {
     title: string;
     content: string;
     items: string[];
+  };
+  // 🔗 SEO Switches pour maillage interne (ancres variées)
+  seoSwitches?: {
+    verbs: Array<{ id: string; content: string }>;
+    nouns: Array<{ id: string; content: string }>;
+    verbCount: number;
+    nounCount: number;
   };
 }
 
@@ -610,6 +618,17 @@ export default function PiecesDetailPage() {
         >
           <CatalogueSection catalogueMameFamille={data.catalogueMameFamille} />
         </LazySection>
+
+        {/* 🔗 Section Maillage Interne - Liens vers gammes liées avec ancres SEO */}
+        {data.catalogueMameFamille?.items && data.catalogueMameFamille.items.length > 0 && (
+          <RelatedGammesSection
+            gammes={data.catalogueMameFamille.items}
+            currentGamme={data.content?.pg_name || 'Pièce'}
+            familleName={data.famille?.mf_name || data.catalogueMameFamille?.title?.replace('Autres pièces de la famille ', '') || 'Freinage'}
+            verbSwitches={data.seoSwitches?.verbs?.map(v => ({ sis_id: v.id, sis_content: v.content }))}
+            nounSwitches={data.seoSwitches?.nouns?.map(n => ({ sis_id: n.id, sis_content: n.content }))}
+          />
+        )}
 
         {/* Équipementiers - Lazy load */}
         <LazySection
