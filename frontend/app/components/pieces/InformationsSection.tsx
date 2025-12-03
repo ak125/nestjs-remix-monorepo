@@ -10,13 +10,16 @@ interface InformationsSectionProps {
 
 export default function InformationsSection({ informations }: InformationsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Limite initiale augmentée à 10 pour plus de contenu SEO visible
+  const INITIAL_DISPLAY_LIMIT = 10;
 
   if (!informations?.items || informations.items.length === 0) {
     return null;
   }
 
-  const displayItems = isExpanded ? informations.items : informations.items.slice(0, 5);
-  const hasMore = informations.items.length > 5;
+  const displayItems = isExpanded ? informations.items : informations.items.slice(0, INITIAL_DISPLAY_LIMIT);
+  const hasMore = informations.items.length > INITIAL_DISPLAY_LIMIT;
 
   return (
     <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
@@ -61,7 +64,7 @@ export default function InformationsSection({ informations }: InformationsSectio
                 </>
               ) : (
                 <>
-                  Voir toutes les informations ({informations.items.length - 5} de plus)
+                  Voir toutes les informations ({informations.items.length - INITIAL_DISPLAY_LIMIT} de plus)
                   <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
