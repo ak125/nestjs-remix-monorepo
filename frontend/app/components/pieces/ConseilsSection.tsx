@@ -1,10 +1,22 @@
 import { Badge } from '@fafa/ui';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface ConseilItem {
   id: number;
   title: string;
   content: string;
+}
+
+interface CatalogueItem {
+  id?: number;
+  name: string;
+  alias?: string;
+  link?: string;
+  image?: string;
+  description?: string;
+  meta_description?: string;
+  sort?: number;
 }
 
 interface ConseilsSectionProps {
@@ -13,10 +25,74 @@ interface ConseilsSectionProps {
     content: string;
     items: ConseilItem[];
   };
+  catalogueFamille?: CatalogueItem[];
+  /** Nom de la gamme pour les ancres SEO enrichies */
+  gammeName?: string;
 }
 
-export default function ConseilsSection({ conseils }: ConseilsSectionProps) {
+/**
+ * Ajoute des liens vers les gammes connexes dans le contenu HTML des conseils
+ * Génère du HTML avec des <a> tags qui seront convertis en <Link> par HtmlContent
+ */
+function addGammeLinksToHtml(html: string, catalogueFamille?: CatalogueItem[]): string {
+  if (!catalogueFamille || !Array.isArray(catalogueFamille) || catalogueFamille.length === 0) return html;
+  
+  // Dédupliquer par nom (éviter doublons de la BDD)
+  const uniqueGammes = catalogueFamille.filter((gamme, index, self) => 
+    index === self.findIndex(g => g.name === gamme.name)
+  );
+  
+  let result = html;
+  const linkedGammes = new Set<string>();
+  
+  for (const gamme of uniqueGammes) {
+    // Vérifier que la gamme a les propriétés nécessaires (name et link ou alias+id)
+    if (!gamme || !gamme.name) continue;
+    
+    // Construire l'URL: utiliser link si disponible, sinon construire depuis alias+id
+    const gammeUrl = gamme.link || (gamme.alias && gamme.id ? `/pieces/${gamme.alias}-${gamme.id}.html` : null);
+    if (!gammeUrl) continue;
+    
+    // Éviter les doublons de liens
+    if (linkedGammes.has(gamme.name)) continue;
+    
+    // Créer des patterns pour le nom de la gamme (singulier et pluriel)
+    const name = gamme.name.toLowerCase();
+    const patterns = [
+      name,
+      name + 's',
+      name.replace('é', 'e'),
+      (name + 's').replace('é', 'e'),
+    ];
+    
+    for (const pattern of patterns) {
+      // Regex insensible à la casse, évitant les mots déjà dans des liens
+      const regex = new RegExp(`(?<!<a[^>]*>)\\b(${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b(?![^<]*<\\/a>)`, 'gi');
+      
+      if (regex.test(result) && !linkedGammes.has(gamme.name)) {
+        result = result.replace(regex, (match) => {
+          linkedGammes.add(gamme.name);
+          return `<a href="${gammeUrl}" class="text-green-600 hover:text-green-800 underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
+        });
+        break; // Un seul lien par gamme
+      }
+    }
+  }
+  
+  return result;
+}
+
+export default function ConseilsSection({ conseils, catalogueFamille, gammeName }: ConseilsSectionProps) {
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  
+  // Mémoïser le traitement des liens pour les performances
+  const processedConseils = useMemo(() => {
+    if (!conseils?.items) return [];
+    return conseils.items.map(conseil => ({
+      ...conseil,
+      contentWithLinks: addGammeLinksToHtml(conseil.content, catalogueFamille),
+    }));
+  }, [conseils?.items, catalogueFamille]);
 
   if (!conseils?.items || conseils.items.length === 0) {
     return null;
@@ -45,9 +121,10 @@ export default function ConseilsSection({ conseils }: ConseilsSectionProps) {
       
       <div className="p-6">
         <div className="space-y-4">
-          {conseils.items.map((conseil) => {
+          {processedConseils.map((conseil) => {
             const isExpanded = expandedItems.has(conseil.id);
             const preview = conseil.content.substring(0, 150);
+            const previewWithLinks = addGammeLinksToHtml(preview, catalogueFamille);
             const needsExpansion = conseil.content.length > 150;
             
             return (
@@ -62,27 +139,27 @@ export default function ConseilsSection({ conseils }: ConseilsSectionProps) {
                   </h3>
                   
                   <div className="text-gray-700 leading-relaxed">
-                    <div 
-                      dangerouslySetInnerHTML={{ 
-                        __html: isExpanded ? conseil.content : preview + (needsExpansion ? '...' : '')
-                      }} 
+                    <HtmlContent 
+                      html={isExpanded ? conseil.contentWithLinks : previewWithLinks + (needsExpansion ? '...' : '')}
+                      trackLinks={true}
                     />
                     
                     {needsExpansion && (
                       <button
                         onClick={() => toggleExpanded(conseil.id)}
                         className="mt-2 inline-flex items-center text-green-600 hover:text-green-700 font-medium text-sm transition-colors"
+                        title={gammeName ? `Conseil complet ${gammeName} - Blog Automecanik` : 'Voir le conseil complet'}
                       >
                         {isExpanded ? (
                           <>
-                            Voir moins
+                            Réduire le conseil
                             <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
                             </svg>
                           </>
                         ) : (
                           <>
-                            Lire la suite
+                            Voir le conseil complet
                             <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>

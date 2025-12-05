@@ -2,16 +2,15 @@ import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { useLoaderData, useNavigation } from "@remix-run/react";
 import { useEffect, lazy, Suspense } from "react";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
+import { ScrollToTop } from "~/components/blog/ScrollToTop";
 
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import CatalogueSection from "../components/pieces/CatalogueSection";
 import ConseilsSection from "../components/pieces/ConseilsSection";
 import EquipementiersSection from "../components/pieces/EquipementiersSection";
-import GuideSection from "../components/pieces/GuideSection";
 import InformationsSection from "../components/pieces/InformationsSection";
 import MotorisationsSection from "../components/pieces/MotorisationsSection";
-import RelatedGammesSection from "../components/pieces/RelatedGammesSection";
-import { LazySection, LazySectionSkeleton } from "../components/seo/LazySection";
+import { PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { SEOHelmet, type BreadcrumbItem } from "../components/ui/SEOHelmet";
@@ -22,7 +21,6 @@ import { CheckCircle2, Truck, Shield, Users } from 'lucide-react';
 import { generateGammeMeta } from "../utils/seo/meta-generators";
 import { getVehicleFromCookie, buildBreadcrumbWithVehicle, storeVehicleClient, type VehicleCookie } from "../utils/vehicle-cookie";
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { TrustBadgeGroup } from "../components/trust/TrustBadge";
 
 // Lazy load PurchaseGuide (contains framer-motion ~167KB)
 const PurchaseGuide = lazy(() => import("../components/catalog/PurchaseGuide").then(m => ({ default: m.PurchaseGuide })));
@@ -185,7 +183,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         pg_wall: apiData.hero.wall,
       } : undefined,
       famille: apiData.hero?.famille_info,
-      guide: apiData.guideAchat,
+      guide: apiData.guideAchat ? {
+        ...apiData.guideAchat,
+        date: apiData.guideAchat.updated,
+      } : undefined,
     };
     
     // 🍞 Construire breadcrumb de base (sans niveau "Pièces" intermédiaire)
@@ -324,6 +325,18 @@ export default function PiecesDetailPage() {
     mf_pic: data.famille.mf_pic,
   } as any) : 'from-primary-950 via-primary-900 to-secondary-900'; // Fallback avec design tokens
 
+  // 📋 Préparer ItemList schema pour SEO (liste des motorisations/produits)
+  const itemListData = data.motorisations?.items && data.motorisations.items.length > 0 ? {
+    name: `${data.content?.pg_name || 'Pièces'} - Véhicules compatibles`,
+    description: `Liste des ${data.motorisations.items.length} véhicules compatibles avec ${data.content?.pg_name || 'cette pièce'}`,
+    items: data.motorisations.items.slice(0, 50).map((item, index) => ({
+      name: `${item.title} - ${item.marque_name} ${item.modele_name}`,
+      url: item.link,
+      description: item.description,
+      position: index + 1
+    }))
+  } : undefined;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       
@@ -355,7 +368,8 @@ export default function PiecesDetailPage() {
               "https://www.facebook.com/automecanik",
               "https://twitter.com/automecanik"
             ]
-          }
+          },
+          itemList: itemListData
         }}
       />
 
@@ -484,7 +498,7 @@ export default function PiecesDetailPage() {
                 </div>
                 
                 {/* VehicleSelector à droite */}
-                <div className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
+                <div id="vehicle-selector" className="flex-1 w-full animate-in fade-in slide-in-from-right duration-1000 delay-400">
                   <VehicleSelectorV2 enableTypeMineSearch={true} />
                 </div>
               </div>
@@ -530,46 +544,12 @@ export default function PiecesDetailPage() {
             familleId={data.famille.mf_id}
             familleName={data.famille.mf_name}
             productName={data.content?.pg_name}
+            productAlias={data.content?.pg_alias}
             familleColor={familleColor}
             className="-mt-space-3 mb-space-6"
           />
         </Suspense>
       )}
-
-      {/* 🛡️ Conseil Automecanik - Card blanche avec Design Tokens */}
-      {data.famille?.mf_name.toLowerCase().includes('frein') && (
-        <section className="container mx-auto px-space-4 -mt-space-6 mb-space-6 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-space-6 border border-neutral-200 hover:shadow-2xl transition-shadow duration-300">
-              <div className="flex items-start gap-space-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-heading text-neutral-900 font-bold text-base mb-space-2">Conseil Automecanik</p>
-                  <p className="font-sans text-neutral-700 text-sm md:text-base leading-relaxed mb-space-3">
-                    Contrôlez et changez vos plaquettes de frein régulièrement pour votre sécurité et le bon fonctionnement du système de freinage.
-                  </p>
-                  <a 
-                    href="#guide" 
-                    className="inline-flex items-center gap-space-2 text-blue-600 hover:text-blue-700 font-semibold text-sm transition-colors group"
-                  >
-                    <span>En savoir plus sur l'entretien</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 📊 Sections lazy-loaded */}
-
-      {/* �🛡️ Conseil Automecanik - Card blanche améliorée */}
-            {/* 🚗 Badge véhicule actif (si présent) */}
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {data.selectedVehicle && (
@@ -597,11 +577,6 @@ export default function PiecesDetailPage() {
           )}
         </section>
 
-        {/* Guide Expert */}
-        <div id="guide-expert" className="scroll-mt-20">
-          <GuideSection guide={data.guide} familleColor={familleColor} familleName={data.famille?.mf_name} />
-        </div>
-
         {/* Motorisations - Section critique, chargée immédiatement */}
         <MotorisationsSection 
           motorisations={data.motorisations}
@@ -609,74 +584,30 @@ export default function PiecesDetailPage() {
           familleName={data.famille?.mf_name || 'pièces'}
         />
 
-        {/* Catalogue Même Famille - Lazy load avec skeleton */}
-        <LazySection
-          id="catalogue-section"
-          threshold={0.1}
-          rootMargin="200px"
-          fallback={<LazySectionSkeleton rows={4} height="h-48" />}
-        >
-          <CatalogueSection catalogueMameFamille={data.catalogueMameFamille} />
-        </LazySection>
+        {/* Informations SEO - Contenu unique riche avec maillage interne */}
+        <InformationsSection 
+          informations={data.informations}
+          catalogueFamille={data.catalogueMameFamille?.items}
+        />
 
-        {/* 🔗 Section Maillage Interne - Liens vers gammes liées avec ancres SEO */}
-        {data.catalogueMameFamille?.items && data.catalogueMameFamille.items.length > 0 && (
-          <RelatedGammesSection
-            gammes={data.catalogueMameFamille.items}
-            currentGamme={data.content?.pg_name || 'Pièce'}
-            familleName={data.famille?.mf_name || data.catalogueMameFamille?.title?.replace('Autres pièces de la famille ', '') || 'Freinage'}
-            verbSwitches={data.seoSwitches?.verbs?.map(v => ({ sis_id: v.id, sis_content: v.content }))}
-            nounSwitches={data.seoSwitches?.nouns?.map(n => ({ sis_id: n.id, sis_content: n.content }))}
-          />
-        )}
+        {/* Équipementiers - Chargé immédiatement pour SEO */}
+        <EquipementiersSection equipementiers={data.equipementiers} />
 
-        {/* Équipementiers - Lazy load */}
-        <LazySection
-          id="equipementiers-section"
-          threshold={0.1}
-          rootMargin="200px"
-          fallback={<LazySectionSkeleton rows={3} height="h-32" />}
-        >
-          <EquipementiersSection equipementiers={data.equipementiers} />
-        </LazySection>
+        {/* Conseils - Chargé immédiatement pour indexation SEO */}
+        <ConseilsSection 
+          conseils={data.conseils}
+          catalogueFamille={data.catalogueMameFamille?.items}
+          gammeName={data.content?.pg_name}
+        />
 
-        {/* Conseils - Lazy load */}
-        <LazySection
-          id="conseils-section"
-          threshold={0.05}
-          rootMargin="300px"
-          fallback={
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
-              <div className="h-8 bg-neutral-200 rounded w-1/3 mb-6"></div>
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-24 bg-neutral-100 rounded"></div>
-                ))}
-              </div>
-            </div>
-          }
-        >
-          <ConseilsSection conseils={data.conseils} />
-        </LazySection>
+        {/* Catalogue Même Famille - Autres pièces de la famille */}
+        <CatalogueSection 
+          catalogueMameFamille={data.catalogueMameFamille}
+          verbSwitches={data.seoSwitches?.verbs?.map(v => ({ id: v.id, content: v.content }))}  
+        />
 
-        {/* Informations - Lazy load (footer-like) */}
-        <LazySection
-          id="informations-section"
-          threshold={0}
-          rootMargin="400px"
-          fallback={
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6 md:mb-8 animate-pulse">
-              <div className="h-8 bg-neutral-200 rounded w-1/4 mb-4"></div>
-              <div className="space-y-2">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-4 bg-neutral-100 rounded"></div>
-                ))}
-              </div>
-            </div>
-          }
-        >
-          <InformationsSection informations={data.informations} />
-        </LazySection>
+        {/* Bouton Scroll To Top */}
+        <ScrollToTop />
 
       </div>
     </div>

@@ -324,4 +324,128 @@ export class CatalogGammeService extends SupabaseBaseService {
       };
     }
   }
+
+  /**
+   * 🔗 Récupère les gammes populaires pour le maillage interne SEO
+   * Retourne les gammes TOP avec URL générées pour liens internes
+   * @param limit - Nombre de gammes à retourner (défaut: 8)
+   */
+  async getPopularGammesForMaillage(limit: number = 8): Promise<{
+    data: Array<{
+      pg_id: string;
+      pg_name: string;
+      pg_alias: string;
+      pg_img: string | null;
+      link: string;
+      anchor: string;
+    }>;
+    success: boolean;
+  }> {
+    try {
+      this.logger.log(`🔗 Récupération ${limit} gammes pour maillage SEO...`);
+
+      // Récupérer les gammes TOP avec images
+      const { data: topGammes, error } = await this.supabase
+        .from(TABLES.pieces_gamme)
+        .select('pg_id, pg_name, pg_alias, pg_img')
+        .eq('pg_top', '1')
+        .eq('pg_display', '1')
+        .order('pg_id', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('❌ Erreur récupération gammes maillage:', error);
+        return { data: [], success: false };
+      }
+
+      // Variations d'ancres SEO pour diversifier le maillage
+      const anchorVariations = [
+        (name: string) => `${name} au meilleur prix`,
+        (name: string) => `Acheter ${name.toLowerCase()}`,
+        (name: string) => `${name} pas cher`,
+        (name: string) => `Voir ${name.toLowerCase()}`,
+        (name: string) => `Catalogue ${name.toLowerCase()}`,
+        (name: string) => `${name} de qualité`,
+        (name: string) => `${name} d'origine`,
+        (name: string) => `Découvrir ${name.toLowerCase()}`,
+      ];
+
+      const formattedGammes = (topGammes || []).map((gamme, index) => ({
+        pg_id: gamme.pg_id,
+        pg_name: gamme.pg_name,
+        pg_alias: gamme.pg_alias,
+        pg_img: gamme.pg_img,
+        link: `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`,
+        anchor: anchorVariations[index % anchorVariations.length](gamme.pg_name),
+      }));
+
+      this.logger.log(`✅ ${formattedGammes.length} gammes pour maillage récupérées`);
+      return {
+        data: formattedGammes,
+        success: true,
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur gammes maillage:', error);
+      return { data: [], success: false };
+    }
+  }
+
+  /**
+   * 🔗 Récupère les gammes populaires pour une marque spécifique (maillage interne)
+   * Retourne les gammes TOP contextualisées pour la marque
+   * @param brandId - ID de la marque automobile
+   * @param brandAlias - Alias de la marque (pour générer les URLs)
+   * @param limit - Nombre de gammes à retourner (défaut: 8)
+   */
+  async getPopularGammesForBrand(
+    brandId: number,
+    brandAlias: string,
+    limit: number = 8
+  ): Promise<{
+    id: string;
+    name: string;
+    alias: string;
+    image: string | null;
+    description: string | null;
+    url: string;
+    vehicleCount: number | null;
+  }[]> {
+    try {
+      this.logger.log(`🔗 Récupération ${limit} gammes populaires pour marque ${brandId}...`);
+
+      // Récupérer les gammes TOP avec images
+      const { data: topGammes, error } = await this.supabase
+        .from(TABLES.pieces_gamme)
+        .select('pg_id, pg_name, pg_alias, pg_img, pg_desc')
+        .eq('pg_top', '1')
+        .eq('pg_display', '1')
+        .order('pg_id', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        this.logger.error('❌ Erreur récupération gammes pour marque:', error);
+        return [];
+      }
+
+      // Formater avec URLs contextualisées pour la marque
+      const formattedGammes = (topGammes || []).map((gamme) => ({
+        id: String(gamme.pg_id),
+        name: gamme.pg_name || '',
+        alias: gamme.pg_alias || '',
+        image: gamme.pg_img 
+          ? `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/gammes/${gamme.pg_img}`
+          : null,
+        description: gamme.pg_desc || null,
+        // URL vers la page pièces filtrée par marque
+        url: `/pieces/${gamme.pg_alias}/constructeurs/${brandAlias}-${brandId}.html`,
+        vehicleCount: null, // Peut être enrichi avec une requête supplémentaire si besoin
+      }));
+
+      this.logger.log(`✅ ${formattedGammes.length} gammes pour marque ${brandId} récupérées`);
+      return formattedGammes;
+    } catch (error) {
+      this.logger.error('❌ Erreur gammes pour marque:', error);
+      return [];
+    }
+  }
 }

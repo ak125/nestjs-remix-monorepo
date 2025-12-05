@@ -1,4 +1,4 @@
-import { Badge } from '@fafa/ui';
+import { Link } from '@remix-run/react';
 import React from 'react';
 
 interface EquipementierItem {
@@ -15,6 +15,21 @@ interface EquipementiersSectionProps {
     title: string;
     items: EquipementierItem[];
   };
+}
+
+/**
+ * Génère l'URL de la page équipementier
+ * Exemple: BOSCH → /pieces-bosch.html
+ */
+function getEquipementierUrl(pmName: string): string {
+  const slug = pmName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Enlever les accents
+    .replace(/[^a-z0-9]+/g, '-') // Remplacer les caractères spéciaux par des tirets
+    .replace(/-+/g, '-') // Éviter les doubles tirets
+    .replace(/^-|-$/g, ''); // Enlever les tirets au début/fin
+  return `/pieces-${slug}.html`;
 }
 
 export default function EquipementiersSection({ equipementiers }: EquipementiersSectionProps) {
@@ -36,16 +51,17 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {equipementiers.items.map((equipementier) => (
-            <div
+            <Link
               key={equipementier.pm_id}
-              className="border border-gray-200 rounded-lg p-5 hover:border-orange-300 hover:shadow-md transition-all duration-200"
+              to={getEquipementierUrl(equipementier.pm_name)}
+              className="group border border-gray-200 rounded-lg p-5 hover:border-orange-300 hover:shadow-md transition-all duration-200 block"
             >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
                   <img
                     src={equipementier.pm_logo || equipementier.image}
                     alt={`Logo ${equipementier.pm_name}`}
-                    className="w-16 h-16 object-contain rounded-lg border-2 border-gray-100 p-2"
+                    className="w-16 h-16 object-contain rounded-lg border-2 border-gray-100 p-2 group-hover:border-orange-200 transition-colors"
                     onError={(e) => {
                       e.currentTarget.src = '/images/default-brand.jpg';
                     }}
@@ -53,24 +69,31 @@ export default function EquipementiersSection({ equipementiers }: Equipementiers
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
                     {equipementier.pm_name}
-                    <Badge variant="warning">Équipementier</Badge>
                   </h3>
                   
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {equipementier.description}
                   </p>
                   
-                  <div className="mt-3 flex items-center text-xs text-orange-600 font-medium">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Marque de confiance
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-xs text-orange-600 font-medium flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Marque de confiance
+                    </span>
+                    <span className="text-xs text-gray-400 group-hover:text-orange-500 transition-colors flex items-center">
+                      Voir les pièces
+                      <svg className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

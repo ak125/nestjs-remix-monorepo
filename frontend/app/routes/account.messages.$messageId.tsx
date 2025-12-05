@@ -5,6 +5,7 @@ import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { HtmlContent } from "../components/seo/HtmlContent";
 
 /**
  * Route: /account/messages/:messageId
@@ -124,14 +125,9 @@ export default function MessageDetail() {
           </p>
         </CardHeader>
         <CardContent>
-          <div
+          <HtmlContent 
+            html={message.MSG_CONTENT}
             className="prose max-w-none"
-            dangerouslySetInnerHTML={{
-              __html: message.MSG_CONTENT
-                .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "") // Supprimer scripts
-                .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "") // Supprimer iframes
-                .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, ""), // Supprimer objects
-            }}
           />
         </CardContent>
       </Card>

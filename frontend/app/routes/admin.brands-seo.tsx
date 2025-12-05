@@ -14,6 +14,7 @@ import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Alert } from '~/components/ui/alert';
+import { HtmlContent } from '~/components/seo/HtmlContent';
 import { Badge } from '~/components/ui/badge';
 
 // Lazy load TipTap editor to reduce initial bundle size (~370KB -> ~50KB)
@@ -216,9 +217,9 @@ export default function AdminBrandsSeo() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   {brand.seo?.h1 || `Modèles du constructeur ${brand.marque_name}`}
                 </h1>
-                <div
+                <HtmlContent 
+                  html={content || brand.seo?.content || '<p>Aucun contenu</p>'}
                   className="mt-4 text-gray-700"
-                  dangerouslySetInnerHTML={{ __html: content || brand.seo?.content || '<p>Aucun contenu</p>' }}
                 />
               </div>
             </div>

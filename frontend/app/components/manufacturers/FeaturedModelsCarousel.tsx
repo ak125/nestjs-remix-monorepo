@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
+import { VehicleImage } from "../ui/ResponsiveImage";
 
 interface FeaturedModel {
   type_id: number;
@@ -123,18 +124,13 @@ export function FeaturedModelsCarousel({
             >
               <Card className="h-full transition-all hover:shadow-lg">
                 <CardContent className="p-4">
-                  {/* Image */}
+                  {/* Image responsive avec srcset */}
                   <div className="relative aspect-video mb-4 bg-gray-100 rounded-lg overflow-hidden">
-                    <img
+                    <VehicleImage
                       src={model.modele_image_url}
                       alt={`${model.marque_name} ${model.modele_name}`}
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                      loading="lazy"
-                      onError={(e) => {
-                        // Fallback si image manquante
-                        e.currentTarget.src =
-                          "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-modeles/no.png";
-                      }}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
                   </div>
 

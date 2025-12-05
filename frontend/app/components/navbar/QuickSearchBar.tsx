@@ -18,6 +18,7 @@ import { Link } from '@remix-run/react';
 import { Search, ShoppingCart, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useProductSearch } from '../../hooks/useProductSearch';
+import { PartImage } from '~/components/ui/ResponsiveImage';
 
 interface QuickSearchBarProps {
   className?: string;
@@ -150,10 +151,11 @@ export function QuickSearchBar({ className = '' }: QuickSearchBarProps) {
                   className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
                 >
                   {product.image_url ? (
-                    <img
+                    <PartImage
                       src={product.image_url}
                       alt={product.name}
                       className="w-12 h-12 object-cover rounded border"
+                      sizes="48px"
                     />
                   ) : (
                     <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center">

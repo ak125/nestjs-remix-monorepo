@@ -2,11 +2,29 @@
 
 import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { catalogFamiliesApi, type CatalogFamily as ApiCatalogFamily } from "../services/api/catalog-families.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { hierarchyApi } from "../services/api/hierarchy.api";
-import { Car, Package } from "lucide-react";
+import { 
+  Car, 
+  Package, 
+  Shield, 
+  Truck, 
+  HeadphonesIcon, 
+  Clock, 
+  CheckCircle, 
+  ChevronDown, 
+  ChevronUp, 
+  Wrench, 
+  Fuel, 
+  Gauge, 
+  Calendar, 
+  Info,
+  Star,
+  Award,
+  RotateCcw
+} from "lucide-react";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../components/seo/HtmlContent";
 
@@ -171,13 +189,41 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   console.log(`🔍 Appel API pour type_id=${type_id}`);
   const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
   
-  const vehicleResponse = await fetch(
-    `${baseUrl}/api/vehicles/types/${type_id}`,
-    { headers: { 'internal-call': 'true' } }
-  );
+  // 🛡️ ROBUSTESSE: Fetch avec retry pour éviter erreurs temporaires
+  let vehicleResponse: Response | null = null;
+  let retryCount = 0;
+  const maxRetries = 2;
+  
+  while (retryCount <= maxRetries && !vehicleResponse?.ok) {
+    try {
+      vehicleResponse = await fetch(
+        `${baseUrl}/api/vehicles/types/${type_id}`,
+        { 
+          headers: { 'internal-call': 'true' },
+          signal: AbortSignal.timeout(10000)
+        }
+      );
+      
+      if (vehicleResponse.ok) break;
+      
+    } catch (error) {
+      retryCount++;
+      console.warn(`⚠️ [VEHICLE-API] Tentative ${retryCount}/${maxRetries + 1} échouée:`, error);
+      
+      if (retryCount > maxRetries) {
+        console.error('❌ [VEHICLE-API] Backend inaccessible après retries');
+        throw new Response(
+          "Service temporairement indisponible",
+          { status: 503, headers: { 'Retry-After': '30' } }
+        );
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+    }
+  }
 
-  if (!vehicleResponse.ok) {
-    console.error('❌ API error:', vehicleResponse.status);
+  if (!vehicleResponse?.ok) {
+    console.error('❌ API error:', vehicleResponse?.status);
     throw new Response("Véhicule non trouvé", { status: 404 });
   }
 
@@ -556,7 +602,7 @@ function generateBreadcrumbSchema(vehicle: any, breadcrumb: any) {
         "@type": "ListItem",
         "position": 4,
         "name": `${breadcrumb.model} ${breadcrumb.type}`,
-        "item": `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_id}.html`
+        "item": `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`
       }
     ]
   };
@@ -608,6 +654,43 @@ export default function VehicleDetailPage() {
 
   // State pour gérer l'erreur de chargement d'image
   const [imageError, setImageError] = useState(false);
+
+  // 🎯 FAQ dynamique - état et données
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  // FAQ items dynamiques basés sur le véhicule
+  const faqItems = [
+    {
+      question: `Quelles pièces sont compatibles avec ma ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ?`,
+      answer: `Toutes les pièces proposées sur cette page sont 100% compatibles avec votre ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch. Nous vérifions systématiquement la compatibilité avec les références constructeur.`
+    },
+    {
+      question: `Comment être sûr que la pièce correspond à mon ${vehicle.modele_name} ?`,
+      answer: `Chaque pièce affichée est filtrée selon les caractéristiques exactes de votre véhicule : motorisation ${vehicle.type_name}, puissance ${vehicle.type_power_ps} ch, années ${vehicle.type_year_from}-${vehicle.type_year_to || "aujourd'hui"}. En cas de doute, notre service client peut vérifier la compatibilité avec votre numéro de châssis.`
+    },
+    {
+      question: `Quel est le délai de livraison pour les pièces ${vehicle.marque_name} ?`,
+      answer: `La majorité des pièces pour ${vehicle.marque_name} ${vehicle.modele_name} sont expédiées sous 24-48h. Les pièces en stock sont livrées en 2-4 jours ouvrés. Pour les pièces sur commande, comptez 5-7 jours ouvrés.`
+    },
+    {
+      question: `Les pièces sont-elles garanties ?`,
+      answer: `Oui, toutes nos pièces bénéficient d'une garantie de 2 ans minimum. Les pièces d'origine constructeur ${vehicle.marque_name} et les équipementiers premium (Bosch, Valeo, TRW...) sont garanties selon les conditions du fabricant.`
+    },
+    {
+      question: `Puis-je retourner une pièce si elle ne convient pas ?`,
+      answer: `Absolument. Vous disposez de 30 jours pour retourner toute pièce non montée et dans son emballage d'origine. Le remboursement est effectué sous 5 jours ouvrés après réception.`
+    }
+  ];
+
+  // Effet pour afficher le CTA sticky au scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowStickyCta(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -866,75 +949,111 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 🔥 Pièces populaires - Design moderne */}
+        {/* 🔥 Pièces populaires - Design moderne amélioré */}
         {popularParts.length > 0 && (
           <div className="mb-12">
-            {/* Header moderne avec gradient subtil */}
+            {/* Header moderne avec gradient et stats */}
             <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 rounded-lg" style={{ backgroundColor: brandPrimary }}>
-                  <Package size={28} strokeWidth={2} className="text-white" />
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl shadow-lg" style={{ backgroundColor: brandPrimary }}>
+                    <Award size={32} strokeWidth={2} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      Pièces auto {vehicle.marque_name} les plus vendues
+                    </h2>
+                    <p className="text-gray-600 text-sm mt-1">
+                      Top {popularParts.length} pièces certifiées pour {vehicle.modele_name} {vehicle.type_name}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Pièces auto {vehicle.marque_name} les plus vendues
-                  </h2>
-                  <p className="text-gray-600 text-sm mt-1">
-                    Sélection de {popularParts.length} pièces certifiées pour {vehicle.modele_name} {vehicle.type_name}
-                  </p>
+                {/* Stats rapides */}
+                <div className="flex gap-4">
+                  <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
+                    <div className="text-2xl font-bold" style={{ color: brandPrimary }}>{popularParts.length}</div>
+                    <div className="text-xs text-gray-500">Best-sellers</div>
+                  </div>
+                  <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">2 ans</div>
+                    <div className="text-xs text-gray-500">Garantie</div>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {popularParts.map((part) => (
-                <div key={part.cgc_pg_id} className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  {/* Badge "Populaire" */}
-                  <div className="relative">
-                    <div className="absolute top-2 right-2 z-10 px-2 py-1 rounded-full text-xs font-semibold text-white shadow-md" style={{ backgroundColor: brandPrimary }}>
-                      ⭐ Top vente
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {popularParts.map((part, index) => (
+                <div key={part.cgc_pg_id} className="group bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+                  {/* Badge ranking */}
+                  <div className="absolute top-3 left-3 z-20">
+                    <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
+                      index === 0 ? 'bg-gradient-to-r from-yellow-400 to-amber-500' :
+                      index === 1 ? 'bg-gradient-to-r from-gray-400 to-slate-500' :
+                      index === 2 ? 'bg-gradient-to-r from-orange-400 to-amber-600' :
+                      'bg-gray-600'
+                    }`}>
+                      <Star size={12} fill="currentColor" />
+                      <span>#{index + 1}</span>
                     </div>
-                    
-                    {/* Image gamme */}
-                    <div className="p-6 bg-gray-50 flex items-center justify-center">
-                      {part.pg_img && part.pg_img !== 'no.webp' ? (
-                        <img 
-                          src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
-                          alt={part.pg_name_meta}
-                          className="w-full h-32 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                          onError={(e) => {
-                            // Fallback vers l'icône si l'image ne charge pas
-                            e.currentTarget.style.display = 'none';
-                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <div className="hidden flex-col items-center justify-center w-full h-32 text-gray-400">
-                        <Package size={48} strokeWidth={1.5} />
-                        <span className="text-xs mt-2 text-gray-500">Image indisponible</span>
-                      </div>
+                  </div>
+                  
+                  {/* Badge "Populaire" */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <div className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1" style={{ backgroundColor: brandPrimary }}>
+                      <CheckCircle size={12} />
+                      <span>Compatible</span>
+                    </div>
+                  </div>
+                  
+                  {/* Image gamme */}
+                  <div className="p-6 bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+                    {part.pg_img && part.pg_img !== 'no.webp' ? (
+                      <img 
+                        src={`https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
+                        alt={part.pg_name_meta}
+                        className="w-full h-36 object-contain rounded-lg group-hover:scale-110 transition-transform duration-500"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className="hidden flex-col items-center justify-center w-full h-36 text-gray-400">
+                      <Package size={48} strokeWidth={1.5} />
+                      <span className="text-xs mt-2 text-gray-500">Image indisponible</span>
                     </div>
                   </div>
                   
                   {/* Contenu */}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 text-sm line-clamp-2 min-h-[2.5rem]">
+                  <div className="p-5 border-t border-gray-100">
+                    <h3 className="font-bold text-gray-900 mb-2 text-base line-clamp-2 min-h-[3rem] group-hover:text-blue-600 transition-colors">
                       {part.pg_name}
                     </h3>
                     
-                    <div className="text-xs text-gray-500 mb-3 line-clamp-2 min-h-[2rem]">
+                    <div className="text-sm text-gray-500 mb-4 line-clamp-2 min-h-[2.5rem]">
                       <HtmlContent html={part.addon_content} trackLinks={true} />
+                    </div>
+                    
+                    {/* Badges de confiance mini */}
+                    <div className="flex items-center gap-2 mb-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded-full">
+                        <Truck size={12} /> 24-48h
+                      </span>
+                      <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                        <Shield size={12} /> Garanti
+                      </span>
                     </div>
                     
                     {/* CTA moderne */}
                     <a 
                       href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-medium text-sm text-white transition-all hover:brightness-110 hover:shadow-md group-hover:scale-[1.02]"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg group-hover:scale-[1.02] active:scale-[0.98]"
                       style={{ backgroundColor: brandPrimary }}
                     >
-                      <span>Découvrir</span>
+                      <span>Voir les pièces</span>
                       <span className="group-hover:translate-x-1 transition-transform">→</span>
                     </a>
                   </div>
@@ -943,7 +1062,194 @@ export default function VehicleDetailPage() {
             </div>
           </div>
         )}
+
+        {/* 📋 Fiche technique du véhicule */}
+        <div className="mb-12">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <Info size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Fiche technique</h2>
+                  <p className="text-gray-300 text-sm">{vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandPrimary}20` }}>
+                    <Car size={20} style={{ color: brandPrimary }} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Carrosserie</div>
+                    <div className="font-semibold text-gray-900">{vehicle.type_body || 'Non spécifié'}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandPrimary}20` }}>
+                    <Fuel size={20} style={{ color: brandPrimary }} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Carburant</div>
+                    <div className="font-semibold text-gray-900">{vehicle.type_fuel || 'Non spécifié'}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandPrimary}20` }}>
+                    <Gauge size={20} style={{ color: brandPrimary }} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Puissance</div>
+                    <div className="font-semibold text-gray-900">{vehicle.type_power_ps} ch</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${brandPrimary}20` }}>
+                    <Calendar size={20} style={{ color: brandPrimary }} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase">Période</div>
+                    <div className="font-semibold text-gray-900">{vehicle.type_year_from} - {vehicle.type_year_to || "aujourd'hui"}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ❓ FAQ dynamique avec Schema.org */}
+        <div className="mb-12">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg" style={{ backgroundColor: brandPrimary }}>
+                  <HeadphonesIcon size={24} className="text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Questions fréquentes</h2>
+                  <p className="text-gray-500 text-sm">Tout savoir sur les pièces pour votre {vehicle.modele_name}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* FAQ Schema.org JSON-LD */}
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify({
+                  "@context": "https://schema.org",
+                  "@type": "FAQPage",
+                  "mainEntity": faqItems.map(item => ({
+                    "@type": "Question",
+                    "name": item.question,
+                    "acceptedAnswer": {
+                      "@type": "Answer",
+                      "text": item.answer
+                    }
+                  }))
+                })
+              }}
+            />
+            
+            <div className="divide-y divide-gray-100">
+              {faqItems.map((item, index) => (
+                <div key={index} className="group">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="font-medium text-gray-900 pr-4">{item.question}</span>
+                    <div className="flex-shrink-0 p-1 rounded-full" style={{ backgroundColor: openFaqIndex === index ? brandPrimary : '#e5e7eb' }}>
+                      {openFaqIndex === index ? (
+                        <ChevronUp size={18} className="text-white" />
+                      ) : (
+                        <ChevronDown size={18} className="text-gray-500" />
+                      )}
+                    </div>
+                  </button>
+                  {openFaqIndex === index && (
+                    <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
+                      <div className="pl-4 border-l-2" style={{ borderColor: brandPrimary }}>
+                        {item.answer}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 🛡️ Badges de confiance */}
+        <div className="mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
+              <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
+                <Shield size={28} className="text-green-600" />
+              </div>
+              <h3 className="font-bold text-gray-900">Garantie 2 ans</h3>
+              <p className="text-sm text-gray-500 mt-1">Sur toutes nos pièces</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
+              <div className="inline-flex p-3 rounded-full bg-blue-100 mb-3">
+                <Truck size={28} className="text-blue-600" />
+              </div>
+              <h3 className="font-bold text-gray-900">Livraison 24-48h</h3>
+              <p className="text-sm text-gray-500 mt-1">Expédition rapide</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
+              <div className="inline-flex p-3 rounded-full bg-purple-100 mb-3">
+                <HeadphonesIcon size={28} className="text-purple-600" />
+              </div>
+              <h3 className="font-bold text-gray-900">Conseil expert</h3>
+              <p className="text-sm text-gray-500 mt-1">Service client dédié</p>
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
+              <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
+                <RotateCcw size={28} className="text-orange-600" />
+              </div>
+              <h3 className="font-bold text-gray-900">Retour 30 jours</h3>
+              <p className="text-sm text-gray-500 mt-1">Satisfait ou remboursé</p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* 🎯 CTA Sticky - Apparaît au scroll */}
+      {showStickyCta && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl py-3 px-4 animate-in slide-in-from-bottom duration-300">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="hidden sm:flex items-center gap-3">
+              <Car size={24} style={{ color: brandPrimary }} />
+              <div>
+                <div className="font-bold text-gray-900 text-sm">{vehicle.marque_name} {vehicle.modele_name}</div>
+                <div className="text-xs text-gray-500">{vehicle.type_name} - {vehicle.type_power_ps} ch</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 flex-1 sm:flex-none">
+              <a 
+                href="#catalogue" 
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg"
+                style={{ backgroundColor: brandPrimary }}
+              >
+                <Package size={18} />
+                <span>Voir le catalogue</span>
+              </a>
+              <a 
+                href="/contact" 
+                className="hidden md:flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold border-2 transition-all hover:bg-gray-50"
+                style={{ borderColor: brandPrimary, color: brandPrimary }}
+              >
+                <HeadphonesIcon size={18} />
+                <span>Assistance</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer avec liens utiles */}
       <footer className="bg-gray-800 text-white py-8 mt-12">

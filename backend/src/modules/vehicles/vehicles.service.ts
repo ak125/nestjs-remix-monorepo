@@ -1281,8 +1281,8 @@ export class VehiclesService extends SupabaseBaseService {
    */
   async getBrandBestsellers(
     brandAlias: string,
-    limitVehicles = 12,
-    limitParts = 12,
+    limitVehicles = 0,
+    limitParts = 0,
   ) {
     try {
       const cacheKey = `brand_bestsellers_${brandAlias}_${limitVehicles}_${limitParts}`;
@@ -1332,8 +1332,8 @@ export class VehiclesService extends SupabaseBaseService {
         };
       }
 
-      // 3️⃣ Transformer et enrichir les données
-      const vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
+      // 3️⃣ Transformer et enrichir les données véhicules
+      let vehicles = (bestsellers?.vehicles || []).map((vehicle: any) => ({
         ...vehicle,
         vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
         image_url: vehicle.modele_pic 
@@ -1341,7 +1341,58 @@ export class VehiclesService extends SupabaseBaseService {
           : null,
       }));
 
-            let parts = (bestsellers?.parts || []).map((part: any) => ({
+      // 🚗 ENRICHISSEMENT SEO VÉHICULES avec __seo_type_switch
+      if (vehicles.length > 0) {
+        const { data: typeSwitches } = await this.client
+          .from('__seo_type_switch')
+          .select('sts_id, sts_alias, sts_content')
+          .eq('sts_alias', '1');
+        
+        if (typeSwitches && typeSwitches.length > 0) {
+          // 🎯 Mélanger les switches pour plus de variété (Fisher-Yates shuffle basé sur marque_id)
+          const shuffledSwitches = [...typeSwitches];
+          const seed = brand.marque_id || 1;
+          for (let i = shuffledSwitches.length - 1; i > 0; i--) {
+            const j = (seed * (i + 1) * 7) % (i + 1);
+            [shuffledSwitches[i], shuffledSwitches[j]] = [shuffledSwitches[j], shuffledSwitches[i]];
+          }
+          
+          vehicles = vehicles.map((vehicle: any, index: number) => {
+            const marque = vehicle.marque_name || '';
+            const modele = vehicle.modele_name || '';
+            const type = vehicle.type_name || '';
+            const puissance = vehicle.type_power_ps || '';
+            const yearFrom = vehicle.type_year_from || '';
+            const yearTo = vehicle.type_year_to || '';
+            const yearRange = yearTo ? `${yearFrom}-${yearTo}` : `depuis ${yearFrom}`;
+            
+            // 🔄 Sélection variée basée sur index + hash du type_id pour éviter les répétitions
+            const typeIdNum = parseInt(vehicle.cgc_type_id) || parseInt(vehicle.type_id) || index;
+            const hashBase = (typeIdNum * 31 + index * 17) % shuffledSwitches.length;
+            const switchIdx = Math.abs(hashBase);
+            const seoSwitch = shuffledSwitches[switchIdx]?.sts_content || '';
+            
+            // Construire les contenus SEO
+            const seoTitle = `Pièces ${marque} ${modele} ${type} ${puissance} ch`;
+            const seoDescription = `Trouvez vos pièces auto ${marque} ${modele} ${type} ${seoSwitch}. Moteur ${puissance} ch, ${yearRange}.`;
+            const seoSubtitle = `${type} • ${puissance} ch • ${yearRange}`;
+            const seoBenefit = seoSwitch;
+            
+            return {
+              ...vehicle,
+              seo_title: seoTitle,
+              seo_description: seoDescription,
+              seo_subtitle: seoSubtitle,
+              seo_benefit: seoBenefit,
+              seo_year_range: yearRange,
+            };
+          });
+          
+          this.logger.debug(`✅ ${vehicles.length} véhicules enrichis avec SEO type switches (${shuffledSwitches.length} switches disponibles)`);
+        }
+      }
+
+      let parts = (bestsellers?.parts || []).map((part: any) => ({
         ...part,
         part_url: `/pieces/${part.pg_alias}-${part.pg_id}/${part.marque_alias}-${part.marque_id}/${part.modele_alias}-${part.modele_id}/${part.cgc_type_alias || 'type'}-${part.cgc_type_id || 0}.html`,
         image_url: part.pg_alias
@@ -1349,84 +1400,123 @@ export class VehiclesService extends SupabaseBaseService {
           : null,
       }));
 
-      // 🎯 ENRICHISSEMENT SWITCHES SEO DYNAMIQUES
-      // Combine __seo_item_switch (descriptions courtes) + __seo_family_gamme_car_switch (détails)
+      // 🎯 ENRICHISSEMENT SWITCHES SEO DYNAMIQUES - VERSION MULTI-ALIAS
+      // Récupère plusieurs alias pour un contenu SEO plus riche
       if (parts.length > 0) {
         const pgIds = parts.map(p => p.pg_id || p.cgc_pg_id);
         
-        // Récupérer les switches courts (alias 1)
+        // Récupérer TOUS les switches courts (alias 1, 2, 3)
         const { data: itemSwitches, error: itemError } = await this.client
           .from(TABLES.seo_item_switch)
           .select('sis_pg_id, sis_alias, sis_content')
           .in('sis_pg_id', pgIds.map(String))
-          .eq('sis_alias', '1');
+          .in('sis_alias', ['1', '2', '3']);
         
-        // Récupérer les switches détaillés (alias 11 pour détails techniques)
+        // Récupérer les switches détaillés (alias 11, 12)
         const { data: familySwitches, error: familyError } = await this.client
           .from(TABLES.seo_family_gamme_car_switch)
           .select('sfgcs_pg_id, sfgcs_alias, sfgcs_content')
           .in('sfgcs_pg_id', pgIds.map(String))
-          .eq('sfgcs_alias', '11');
+          .in('sfgcs_alias', ['11', '12']);
+        
+        // Récupérer les switches gamme car (alias 1, 2, 3)
+        const { data: gammeSwitches, error: gammeError } = await this.client
+          .from(TABLES.seo_gamme_car_switch)
+          .select('sgcs_pg_id, sgcs_alias, sgcs_content')
+          .in('sgcs_pg_id', pgIds.map(String))
+          .in('sgcs_alias', ['1', '2', '3']);
 
-        if (!itemError && itemSwitches && itemSwitches.length > 0) {
-          this.logger.debug(`🔄 ${itemSwitches.length} switches courts + ${familySwitches?.length || 0} switches détaillés`);
+        const totalSwitches = (itemSwitches?.length || 0) + (familySwitches?.length || 0) + (gammeSwitches?.length || 0);
+        
+        if (totalSwitches > 0) {
+          this.logger.debug(`🔄 Switches SEO: ${itemSwitches?.length || 0} items + ${familySwitches?.length || 0} family + ${gammeSwitches?.length || 0} gamme`);
           
-          // Enrichir chaque pièce avec ses switches au format exact de l'exemple PHP
+          // Enrichir chaque pièce avec tous ses switches
           parts = parts.map(part => {
             const partPgId = part.pg_id || part.cgc_pg_id;
             const partTypeId = parseInt(part.cgc_type_id) || 0;
             
-            // Récupérer les switches courts (alias 1)
-            const itemList = itemSwitches.filter(s => s.sis_pg_id === String(partPgId));
+            // === Switches courts alias 1 (verbes d'action) ===
+            const itemList1 = itemSwitches?.filter(s => s.sis_pg_id === String(partPgId) && s.sis_alias === '1') || [];
             let shortDesc = '';
-            if (itemList.length > 0) {
-              const idx = (partTypeId + 1) % itemList.length;
-              shortDesc = itemList[idx]?.sis_content || '';
+            if (itemList1.length > 0) {
+              const idx = (partTypeId + 1) % itemList1.length;
+              shortDesc = itemList1[idx]?.sis_content || '';
             }
             
-            // Récupérer les switches détaillés (alias 11)
-            const familyList = familySwitches?.filter(s => s.sfgcs_pg_id === String(partPgId)) || [];
+            // === Switches alias 2 (fonctions/bénéfices) ===
+            const itemList2 = itemSwitches?.filter(s => s.sis_pg_id === String(partPgId) && s.sis_alias === '2') || [];
+            let benefitDesc = '';
+            if (itemList2.length > 0) {
+              const idx = (partTypeId + 2) % itemList2.length;
+              benefitDesc = itemList2[idx]?.sis_content || '';
+            }
+            
+            // === Switches gamme car (descriptions complètes) ===
+            const gammeList = gammeSwitches?.filter(s => s.sgcs_pg_id === String(partPgId)) || [];
+            let gammeDesc = '';
+            if (gammeList.length > 0) {
+              const idx = (partTypeId + partPgId) % gammeList.length;
+              gammeDesc = gammeList[idx]?.sgcs_content || '';
+            }
+            
+            // === Switches détaillés alias 11 ===
+            const familyList = familySwitches?.filter(s => s.sfgcs_pg_id === String(partPgId) && s.sfgcs_alias === '11') || [];
             let detailDesc = '';
             if (familyList.length > 0) {
               const idx = (partTypeId + partPgId + 2) % familyList.length;
               detailDesc = familyList[idx]?.sfgcs_content || '';
             }
             
-            // 🎯 CONSTRUCTION DU FORMAT EXACT : 
-            // "[switch court] les [gamme] [MARQUE] [MODÈLE] [TYPE] [PUISSANCE] ch, [switch détail]"
+            // Infos véhicule
             const marque = (part.marque_name || '').toUpperCase();
             const modele = part.modele_name || '';
             const type = part.type_name || '';
             const puissance = part.type_power_ps || '';
             const gamme = part.pg_name || '';
             
-            // Générer le titre enrichi : "Filtre à huile pour PEUGEOT 206 1.4 HDI"
+            // Titre enrichi
             const enrichedTitle = `${gamme} pour ${marque} ${modele} ${type}`;
             
-            // Générer la description enrichie au format exact
+            // Description enrichie (format prioritaire)
             let enrichedDesc = '';
             if (shortDesc && detailDesc) {
-              // Format complet avec switch court + véhicule + switch détail
               enrichedDesc = `${shortDesc} les ${gamme} ${marque} ${modele} ${type} ${puissance} ch, ${detailDesc}`;
+            } else if (shortDesc && benefitDesc) {
+              enrichedDesc = `${shortDesc} les ${gamme} ${marque} ${modele} ${type} ${puissance} ch, ${benefitDesc}`;
+            } else if (gammeDesc) {
+              enrichedDesc = gammeDesc;
             } else if (shortDesc) {
-              // Format partiel avec switch court + véhicule uniquement
               enrichedDesc = `${shortDesc} les ${gamme} ${marque} ${modele} ${type} ${puissance} ch`;
             } else {
-              // Fallback simple sans switches
               enrichedDesc = `${gamme} pour ${marque} ${modele} ${type} ${puissance} ch`;
+            }
+            
+            // Sous-description commerciale
+            let commercialDesc = '';
+            if (benefitDesc) {
+              commercialDesc = `${gamme} ${marque} ${modele} ${type} ${benefitDesc}`;
+            } else {
+              const priceTerms = ['prix bas', 'mini coût', 'bas coût', 'meilleur prix', 'tarif réduit'];
+              commercialDesc = `${gamme} ${marque} ${modele} ${type} ${priceTerms[(partPgId + partTypeId) % priceTerms.length]}.`;
             }
             
             return {
               ...part,
-              seo_switch_content: enrichedDesc,           // Description formatée complète
-              seo_switch_short: shortDesc,                // Switch court brut
-              seo_switch_detail: detailDesc,              // Switch détail brut
-              seo_title: enrichedTitle,                   // Titre enrichi
-              seo_description_formatted: enrichedDesc,    // Alias de seo_switch_content
+              // Contenus SEO principaux
+              seo_switch_content: enrichedDesc,
+              seo_switch_short: shortDesc,
+              seo_switch_benefit: benefitDesc,
+              seo_switch_detail: detailDesc,
+              seo_switch_gamme: gammeDesc,
+              // Contenus formatés
+              seo_title: enrichedTitle,
+              seo_description_formatted: enrichedDesc,
+              seo_commercial: commercialDesc,
             };
           });
           
-          this.logger.debug(`✅ ${parts.filter(p => p.seo_switch_content).length} pièces enrichies avec format complet`);
+          this.logger.debug(`✅ ${parts.filter(p => p.seo_switch_content).length} pièces enrichies avec multi-alias`);
         } else {
           this.logger.warn(`⚠️ Aucun switch SEO trouvé`);
         }

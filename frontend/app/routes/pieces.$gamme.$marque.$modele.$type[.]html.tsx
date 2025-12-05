@@ -98,24 +98,61 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 4. Batch Loader & Parallel Fetches
   // 🚀 OPTIMISÉ V3: batch-loader inclut maintenant vehicleInfo et filters
-  // Suppression des appels redondants: /api/vehicles/types, /api/vehicles/brands/models, /api/products/filters
-  const batchLoaderPromise = fetch(`http://localhost:3000/api/catalog/batch-loader`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      typeId: vehicleIds.typeId,
-      gammeId,
-      marqueId: vehicleIds.marqueId,
-      modeleId: vehicleIds.modeleId
-    })
-  }).then(res => res.json());
+  // 🛡️ ROBUSTESSE: Gestion des erreurs réseau avec retry pour éviter faux 410
+  
+  let batchResponse: any = null;
+  let retryCount = 0;
+  const maxRetries = 2;
+  
+  while (retryCount <= maxRetries && !batchResponse) {
+    try {
+      const response = await fetch(`http://localhost:3000/api/catalog/batch-loader`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          typeId: vehicleIds.typeId,
+          gammeId,
+          marqueId: vehicleIds.marqueId,
+          modeleId: vehicleIds.modeleId
+        }),
+        signal: AbortSignal.timeout(15000) // Timeout 15s
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      batchResponse = await response.json();
+    } catch (error) {
+      retryCount++;
+      console.warn(`⚠️ [BATCH-LOADER] Tentative ${retryCount}/${maxRetries + 1} échouée:`, error);
+      
+      if (retryCount > maxRetries) {
+        // 🚨 Erreur réseau confirmée après retries → 503 (pas 410!)
+        // Cela évite la désindexation SEO pour une erreur temporaire
+        console.error(`❌ [BATCH-LOADER] Échec après ${maxRetries + 1} tentatives - Backend inaccessible`);
+        throw new Response(
+          `Service temporairement indisponible. Veuillez réessayer dans quelques instants.`,
+          { 
+            status: 503, 
+            statusText: 'Service Unavailable',
+            headers: {
+              'Retry-After': '30',
+              'Cache-Control': 'no-cache, no-store'
+            }
+          }
+        );
+      }
+      
+      // Attendre avant retry (backoff exponentiel)
+      await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+    }
+  }
 
   const [
-    batchResponse,
     pageData,
     hierarchyData,
   ] = await Promise.all([
-    batchLoaderPromise,
     fetchGammePageData(gammeId).catch(() => null),
     fetch(`http://localhost:3000/api/catalog/gammes/hierarchy`, {
       headers: { 'Accept': 'application/json' }
@@ -532,7 +569,7 @@ export default function PiecesVehicleRoute() {
               </li>
               <li className="flex items-center" itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem" style={{ pointerEvents: 'auto' }}>
                 <span className="text-gray-400 mx-2">→</span>
-                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}`} itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
+                <a href={`/constructeurs/${data.vehicle.marqueAlias}-${data.vehicle.marqueId}/${data.vehicle.modeleAlias}-${data.vehicle.modeleId}/${data.vehicle.typeAlias}-${data.vehicle.typeId}.html`} itemProp="item" style={{ color: '#2563eb', cursor: 'pointer', pointerEvents: 'auto', position: 'relative', zIndex: 100 }} className="hover:underline font-medium">
                   <span itemProp="name">{data.vehicle.modele} {data.vehicle.typeName || data.vehicle.type}</span>
                 </a>
                 <meta itemProp="position" content="4" />
@@ -1270,7 +1307,7 @@ export default function PiecesVehicleRoute() {
 }
 
 // ========================================
-// 🚨 ERROR BOUNDARY - Gestion 410 Gone
+// 🚨 ERROR BOUNDARY - Gestion 410 Gone & 503 Service Unavailable
 // ========================================
 
 export function ErrorBoundary() {
@@ -1280,6 +1317,53 @@ export function ErrorBoundary() {
   console.error('🚨 [ERROR BOUNDARY] Erreur capturée:', error);
   console.error('🚨 [ERROR BOUNDARY] Type:', typeof error);
   console.error('🚨 [ERROR BOUNDARY] Stack:', error instanceof Error ? error.stack : 'N/A');
+  
+  // 🛡️ Gestion spécifique du 503 Service Unavailable (erreur réseau temporaire)
+  if (isRouteErrorResponse(error) && error.status === 503) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
+          <div className="mb-6">
+            <div className="inline-flex p-4 bg-blue-100 rounded-full mb-4">
+              <svg className="w-12 h-12 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Chargement en cours...
+            </h1>
+            <p className="text-gray-600 mb-4">
+              Notre service est temporairement surchargé. La page va se recharger automatiquement.
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              🔄 Réessayer maintenant
+            </button>
+            <a
+              href="/"
+              className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              ← Retour à l'accueil
+            </a>
+          </div>
+          
+          {/* Auto-reload après 5s */}
+          <script dangerouslySetInnerHTML={{ __html: `
+            setTimeout(() => window.location.reload(), 5000);
+          `}} />
+          
+          <p className="text-xs text-gray-400 mt-4">
+            Rechargement automatique dans 5 secondes...
+          </p>
+        </div>
+      </div>
+    );
+  }
   
   // Gestion spécifique du 410 Gone (page sans résultats)
   if (isRouteErrorResponse(error) && error.status === 410) {

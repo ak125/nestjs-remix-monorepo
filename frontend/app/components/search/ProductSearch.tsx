@@ -7,6 +7,7 @@ import { useNavigate } from '@remix-run/react';
 import { Search, Package, TrendingUp, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useProductSearch, type ProductSearchResult } from '../../hooks/useProductSearch';
+import { PartImage } from '~/components/ui/ResponsiveImage';
 
 interface ProductSearchProps {
   variant?: 'hero' | 'compact'; // hero = grande pour homepage, compact = petite pour navbar
@@ -143,13 +144,14 @@ export function ProductSearch({
                         onClick={() => handleResultClick(result)}
                         className="w-full p-4 hover:bg-info/20 transition-colors flex items-center gap-4 text-left"
                       >
-                        {/* Image */}
+                        {/* Image responsive */}
                         <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                           {result.image_url ? (
-                            <img 
+                            <PartImage 
                               src={result.image_url} 
                               alt={result.name}
                               className="w-full h-full object-cover"
+                              sizes="64px"
                             />
                           ) : (
                             <Package className="w-8 h-8 text-gray-400" />

@@ -90,6 +90,40 @@ function getTextContent(nodes: DOMNode[]): string {
     .join('');
 }
 
+/**
+ * Clean HTML from Word/Microsoft junk and invalid tags
+ * Fixes issues like: <spancalibri","sans-serif""> becoming valid HTML
+ */
+function cleanHtml(html: string): string {
+  if (!html) return '';
+  
+  let cleaned = html;
+  
+  // Remove invalid Microsoft Word tags like <spancalibri...>, <spanTimes...>, etc.
+  // These are malformed tags from copy-paste from Word
+  cleaned = cleaned.replace(/<span[a-zA-Z][^>]*>/gi, '<span>');
+  
+  // Remove tags with quotes/special chars in name (invalid HTML)
+  cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, '');
+  
+  // Clean style attributes with invalid content
+  cleaned = cleaned.replace(/style="[^"]*mso-[^"]*"/gi, '');
+  
+  // Remove Word-specific XML namespaces and tags
+  cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, '');
+  cleaned = cleaned.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, '');
+  cleaned = cleaned.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, '');
+  cleaned = cleaned.replace(/<!\[if[^>]*>[\s\S]*?<!\[endif\]>/gi, '');
+  
+  // Remove empty spans
+  cleaned = cleaned.replace(/<span>\s*<\/span>/gi, '');
+  
+  // Clean up multiple spaces
+  cleaned = cleaned.replace(/\s+/g, ' ');
+  
+  return cleaned.trim();
+}
+
 // =====================================================
 // Component
 // =====================================================
@@ -191,7 +225,10 @@ export function HtmlContent({
     return null;
   }
 
-  return <div className={className}>{parse(html, options)}</div>;
+  // Clean HTML from Word/Microsoft junk before parsing
+  const cleanedHtml = cleanHtml(html);
+
+  return <div className={className}>{parse(cleanedHtml, options)}</div>;
 }
 
 export default HtmlContent;

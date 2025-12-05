@@ -3,6 +3,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Link } from '@remix-run/react';
 import { ArrowLeft, Mail, Phone, User, MapPin, ShoppingBag, Award, Calendar, TrendingUp, Building2, CreditCard, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { HtmlContent } from '~/components/seo/HtmlContent';
 
 
 
@@ -692,7 +693,7 @@ export default function UserDetails() {
                           </pre>
                         ) : (
                           // Sinon afficher tel quel, en remplaçant les <br> par des sauts de ligne
-                          <div dangerouslySetInnerHTML={{ __html: order.info.replace(/<br>/g, '<br/>') }} />
+                          <HtmlContent html={order.info.replace(/<br>/g, '<br/>')} />
                         )}
                       </div>
                     </div>

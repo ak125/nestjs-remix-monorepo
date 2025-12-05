@@ -22,6 +22,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useState } from 'react';
+import { HtmlContent } from '../seo/HtmlContent';
 
 
 import { Badge } from '../ui/badge';
@@ -109,9 +110,9 @@ export function ProductTabs({
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Description du produit
           </h3>
-          <div
+          <HtmlContent 
+            html={description}
             className="text-gray-700 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: description }}
           />
         </div>
       </TabsContent>
@@ -210,9 +211,9 @@ export function ProductTabs({
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Guide d'installation
             </h3>
-            <div
+            <HtmlContent 
+              html={installationGuide}
               className="text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: installationGuide }}
             />
           </div>
         </TabsContent>
