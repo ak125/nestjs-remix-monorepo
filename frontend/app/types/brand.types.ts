@@ -31,6 +31,7 @@ export interface BrandData {
   marque_sort?: number;
   marque_top?: number;       // 1 = marque populaire
   marque_activ?: string;     // '1' = active (pour compatibilité legacy)
+  marque_country?: string;   // Pays d'origine (France, Allemagne, etc.)
 }
 
 /**
@@ -82,6 +83,7 @@ export interface PopularVehicle {
   type_year_from: number;
   type_month_to?: number;
   type_year_to?: number;
+  type_fuel?: string;
   
   // Données du modèle
   modele_id: number;
@@ -103,6 +105,11 @@ export interface PopularVehicle {
   image_url?: string;
   seo_title?: string;
   seo_description?: string;
+  
+  // SEO enrichi depuis __seo_type_switch
+  seo_switch_content?: string;
+  seo_benefit?: string;
+  seo_year_range?: string;
 }
 
 // ====================================
@@ -152,8 +159,14 @@ export interface PopularPart {
   seo_title?: string;
   seo_description?: string;
   
-  // 🎯 Switches SEO dynamiques (depuis __seo_gamme_car_switch)
-  seo_switch_content?: string;
+  // 🎯 Switches SEO dynamiques multi-alias
+  seo_switch_content?: string;      // Description formatée complète
+  seo_switch_short?: string;        // Alias 1 - verbes d'action
+  seo_switch_benefit?: string;      // Alias 2 - bénéfices/fonctions
+  seo_switch_detail?: string;       // Alias 11 - détails techniques
+  seo_switch_gamme?: string;        // Switch gamme car
+  seo_description_formatted?: string; // Alias de seo_switch_content
+  seo_commercial?: string;          // Sous-description commerciale
   seo_switch_alias?: number;
 }
 
@@ -178,6 +191,39 @@ export interface ProcessedSeoData {
   og_image?: string;
   schema_org?: Record<string, any>;
 }
+
+// ====================================
+// 🔗 TYPES MAILLAGE INTERNE SEO
+// ====================================
+
+/**
+ * Interface pour les marques liées/similaires (pour maillage interne)
+ */
+export interface RelatedBrand {
+  marque_id: number;
+  marque_name: string;
+  marque_alias: string;
+  marque_logo: string | null;
+  marque_country: string | null;
+  link: string;
+}
+
+/**
+ * Interface pour les gammes populaires (pour maillage interne)
+ */
+export interface PopularGamme {
+  pg_id: string;
+  pg_name: string;
+  pg_alias: string;
+  pg_img: string | null;
+  link: string;
+  anchor: string;
+}
+
+/**
+ * Interface pour les données SEO traitées et enrichies
+ * Combine les données brutes avec les variables dynamiques PHP
+ */
 
 /**
  * Interface pour les variables SEO dynamiques (reproduction logique PHP)
@@ -243,9 +289,14 @@ export interface BrandPageResponse {
       h1: string;
       content: string;
     };
+    // 🔗 Données de maillage interne SEO
+    related_brands?: RelatedBrand[];
+    popular_gammes?: PopularGamme[];
     meta: {
       total_vehicles: number;
       total_parts: number;
+      total_related_brands?: number;
+      total_popular_gammes?: number;
       last_updated: string;
     };
   };

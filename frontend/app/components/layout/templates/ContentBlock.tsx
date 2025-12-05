@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { HtmlContent } from '../../seo/HtmlContent';
 
 interface ContentBlockProps {
   title?: string;
@@ -64,9 +65,9 @@ export const ContentBlock: React.FC<ContentBlockProps> = ({
               </h2>
             )}
 
-            <div
+            <HtmlContent 
+              html={content} 
               className="prose prose-lg max-w-none text-gray-600"
-              dangerouslySetInnerHTML={{ __html: content }}
             />
           </div>
 

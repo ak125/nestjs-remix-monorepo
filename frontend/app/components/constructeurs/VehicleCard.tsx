@@ -32,8 +32,8 @@ interface VehicleCardProps {
 }
 
 const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, className = "" }) => {
-  // 🔗 Construction de l'URL du véhicule
-  const vehicleUrl = `/constructeurs/${vehicle.marque_alias}/${vehicle.modele_alias}/${vehicle.type_alias}.html`;
+  // 🔗 Construction de l'URL du véhicule - Format SEO: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
+  const vehicleUrl = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`;
   
   // 📅 Formatage de la période
   const formatDateRange = (monthFrom: number, yearFrom: number, monthTo?: number, yearTo?: number) => {

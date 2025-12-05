@@ -10,6 +10,7 @@ import { OrderLineActions } from "~/components/admin/OrderLineActions";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 
 /**
  * 🎯 FORMAT BDD SUPABASE - Format legacy consolidé
@@ -572,9 +573,9 @@ export default function OrderDetailsReal() {
                 // Si ce n'est pas du JSON, afficher en tant que texte/HTML
                 return (
                   <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-4 border border-orange-200">
-                    <div 
+                    <HtmlContent 
+                      html={order.ord_info.replace(/<br>/g, '<br/>')}
                       className="text-sm text-gray-700 whitespace-pre-wrap"
-                      dangerouslySetInnerHTML={{ __html: order.ord_info.replace(/<br>/g, '<br/>') }}
                     />
                   </div>
                 );

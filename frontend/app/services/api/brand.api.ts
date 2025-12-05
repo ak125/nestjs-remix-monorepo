@@ -19,7 +19,9 @@ import {
   type MineSearchParams,
   type MineSearchResult,
   type SeoVariables,
-  type PhpLegacyVariables
+  type PhpLegacyVariables,
+  type RelatedBrand,
+  type PopularGamme
 } from '../../types/brand.types';
 
 // Configuration de l'API
@@ -529,12 +531,13 @@ class BrandApiService {
       const brandData = await this.getBrandData(brandId);
       const brandAlias = brandData.marque_alias || brandData.marque_name.toLowerCase();
 
-      // Récupération parallèle des autres données
-      const [seoData, popularVehicles, popularParts, blogContent] = await Promise.all([
+      // Récupération parallèle des autres données (incluant maillage)
+      const [seoData, popularVehicles, popularParts, blogContent, maillageData] = await Promise.all([
         this.getSeoData(brandId),
         this.getPopularVehicles(brandAlias, 12),
         this.getPopularParts(brandAlias, 12),
-        this.getBlogContent(brandId)
+        this.getBlogContent(brandId),
+        this.getMaillageData(brandId)
       ]);
 
       // Vérification que la marque est affichée
@@ -563,9 +566,14 @@ class BrandApiService {
           popular_vehicles: popularVehicles,
           popular_parts: popularParts,
           blog_content: processedBlogContent,
+          // 🔗 Nouvelles données de maillage interne
+          related_brands: maillageData.related_brands,
+          popular_gammes: maillageData.popular_gammes,
           meta: {
             total_vehicles: popularVehicles.length,
             total_parts: popularParts.length,
+            total_related_brands: maillageData.related_brands.length,
+            total_popular_gammes: maillageData.popular_gammes.length,
             last_updated: new Date().toISOString()
           }
         }
@@ -575,6 +583,8 @@ class BrandApiService {
         brandId,
         vehiclesCount: popularVehicles.length,
         partsCount: popularParts.length,
+        relatedBrandsCount: maillageData.related_brands.length,
+        popularGammesCount: maillageData.popular_gammes.length,
         hasSeo: !!seoData,
         hasBlog: !!blogContent
       });
@@ -589,6 +599,65 @@ class BrandApiService {
         data: {} as any,
         error: error instanceof Error ? error.message : 'Erreur inconnue'
       };
+    }
+  }
+
+  /**
+   * 🔗 Récupère les données de maillage interne pour une marque
+   * - Marques similaires (même pays d'origine)
+   * - Gammes populaires pour liens croisés
+   */
+  async getMaillageData(brandId: number): Promise<{
+    related_brands: RelatedBrand[];
+    popular_gammes: PopularGamme[];
+  }> {
+    const cacheKey = `maillage:${brandId}`;
+    const cached = this.cache.get(cacheKey);
+
+    if (cached && this.isValidCache(cached)) {
+      console.log('[CACHE HIT] Maillage data:', brandId);
+      return cached.data;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/vehicles/brand/${brandId}/maillage`);
+      
+      if (!response.ok) {
+        console.warn(`Maillage API error: ${response.status}`);
+        return { related_brands: [], popular_gammes: [] };
+      }
+
+      const result = await response.json();
+      
+      if (!result.success || !result.data) {
+        console.warn('No maillage data in response:', result);
+        return { related_brands: [], popular_gammes: [] };
+      }
+
+      // Les données sont déjà au bon format depuis le backend
+      const maillageData = {
+        related_brands: result.data.related_brands || [],
+        popular_gammes: result.data.popular_gammes || []
+      };
+
+      // Mise en cache (30 min car données semi-stables)
+      const ttl = 30 * 60 * 1000;
+      this.cache.set(cacheKey, { 
+        data: maillageData, 
+        timestamp: Date.now(), 
+        ttl 
+      });
+
+      console.log('[API CALL] Maillage data:', brandId, {
+        relatedBrands: maillageData.related_brands.length,
+        popularGammes: maillageData.popular_gammes.length
+      });
+      
+      return maillageData;
+
+    } catch (error) {
+      console.warn('[WARNING] Maillage data not available:', error);
+      return { related_brands: [], popular_gammes: [] };
     }
   }
 

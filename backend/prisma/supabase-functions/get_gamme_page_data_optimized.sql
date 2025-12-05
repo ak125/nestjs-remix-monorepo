@@ -91,14 +91,19 @@ BEGIN
         AND cgc_level = '1'  -- Level 1 uniquement (véhicules vedettes)
     ),
     'equipementiers', (
-      SELECT jsonb_agg(jsonb_build_object(
-        'seg_pm_id', seg_pm_id,
-        'seg_content', seg_content
-      ))
-      FROM __seo_equip_gamme
-      WHERE seg_pg_id = v_pg_id_text
-        AND seg_content IS NOT NULL
-      LIMIT 4
+      SELECT jsonb_agg(sub)
+      FROM (
+        SELECT 
+          seg.seg_pm_id,
+          seg.seg_content,
+          pm.pm_name,
+          pm.pm_logo
+        FROM __seo_equip_gamme seg
+        INNER JOIN pieces_marque pm ON pm.pm_id::TEXT = seg.seg_pm_id
+        WHERE seg.seg_pg_id = v_pg_id_text
+          AND seg.seg_content IS NOT NULL
+        LIMIT 6
+      ) sub
     ),
     'blog', (
       SELECT jsonb_build_object(
@@ -125,6 +130,7 @@ BEGIN
   -- ========================================
   -- CATALOGUE MÊME FAMILLE (si mf_id trouvé)
   -- ✅ ENRICHI: Joint __seo_gamme pour récupérer sg_descrip (descriptions riches)
+  -- ✅ Ordre par mc_sort (même ordre que la page catalogue/index)
   -- ========================================
   IF v_mf_id IS NOT NULL THEN
     v_result := v_result || jsonb_build_object(
@@ -137,14 +143,15 @@ BEGIN
             pg.pg_alias,
             pg.pg_pic,
             COALESCE(sg.sg_descrip, '') as description,
-            COALESCE(sg.sg_title, '') as meta_description
+            COALESCE(sg.sg_title, '') as meta_description,
+            cg.mc_sort
           FROM catalog_gamme cg
           INNER JOIN pieces_gamme pg ON cg.mc_pg_id::INTEGER = pg.pg_id
           LEFT JOIN __seo_gamme sg ON sg.sg_pg_id = cg.mc_pg_id
           WHERE cg.mc_mf_prime = v_mf_id
             AND cg.mc_pg_id != v_pg_id_text
             AND pg.pg_display = '1'
-          ORDER BY pg.pg_name ASC
+          ORDER BY cg.mc_sort::INTEGER ASC, pg.pg_name ASC
           LIMIT 20
         ) sub
       ),

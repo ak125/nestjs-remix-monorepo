@@ -10,7 +10,12 @@ import VehicleSelectorV2 from "../components/vehicle/VehicleSelectorV2";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { brandApi } from "../services/api/brand.api";
 import { brandColorsService } from "../services/brand-colors.service";
-import type { PopularVehicle, PopularPart as ApiPopularPart } from "../types/brand.types";
+// 🖼️ Images responsives avec srcset/sizes
+import { VehicleImage, PartImage } from "../components/ui/ResponsiveImage";
+import type { PopularVehicle, PopularPart as ApiPopularPart, RelatedBrand, PopularGamme } from "../types/brand.types";
+// 🔗 Composants de maillage interne SEO
+import { RelatedBrandsSection } from "../components/constructeurs/RelatedBrandsSection";
+import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
 
 // ==========================================
 // 🛠️ INTERFACES
@@ -92,12 +97,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
 // ==========================================
 
 export default function BrandCatalogPage() {
-  const { brand, popular_parts, popular_vehicles, blog_content } = useLoaderData<typeof loader>();
+  const { brand, popular_parts, popular_vehicles, blog_content, related_brands, popular_gammes } = useLoaderData<typeof loader>();
 
   // Adapter les noms pour le code existant
   const manufacturer = brand;
   const apiParts = popular_parts;
   const apiVehicles = popular_vehicles;
+  
+  // Données de maillage interne
+  const relatedBrands: RelatedBrand[] = related_brands || [];
+  const popularGammes: PopularGamme[] = popular_gammes || [];
   
   // Reconstruction de la description à partir des données disponibles ou fallback
   const brandDescription: BrandDescription = {
@@ -263,38 +272,49 @@ export default function BrandCatalogPage() {
 
       {/* 📦 Pièces populaires depuis l'API */}
       {apiParts.length > 0 && (
-        <div className="bg-gradient-to-b from-gray-50 to-white py-16 border-b border-gray-100">
+        <div className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-16 border-b border-gray-100">
           <div className="container mx-auto px-4">
             {/* En-tête avec gradient de marque */}
-            <div className="relative mb-12">
-              <div className="relative rounded-2xl p-8 shadow-xl overflow-hidden" style={brandColor}>
+            <div className="relative mb-8 md:mb-12">
+              <div className="relative rounded-2xl p-6 md:p-8 shadow-xl overflow-hidden" style={brandColor}>
                 {/* Effet shimmer */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
-                <div className="relative flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/20">
-                      <Package className="w-8 h-8 text-white" />
+                <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="bg-white/10 backdrop-blur-sm p-2.5 md:p-3 rounded-xl border border-white/20">
+                      <Package className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-white mb-1">
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-0.5 md:mb-1">
                         Pièces {manufacturer.marque_name} populaires
                       </h2>
-                      <p className="text-white/80 text-sm">Les pièces les plus recherchées par nos clients</p>
+                      <p className="text-white/80 text-xs md:text-sm">Les pièces les plus recherchées par nos clients</p>
                     </div>
                   </div>
                   
-                  {/* Badge avec backdrop-blur */}
-                  <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                    <span className="text-white font-bold text-lg">{apiParts.length}</span>
-                    <span className="text-white/80 text-sm ml-2">pièces</span>
+                  {/* Badges compteurs */}
+                  <div className="flex items-center gap-2">
+                    <div className="bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20">
+                      <span className="text-white font-bold text-base md:text-lg">{apiParts.length}</span>
+                      <span className="text-white/80 text-xs md:text-sm ml-1.5">pièces</span>
+                    </div>
+                    {/* Indicateur SEO enrichi */}
+                    {apiParts.filter(p => p.seo_switch_content).length > 0 && (
+                      <div className="hidden sm:flex items-center gap-1.5 bg-green-500/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-green-400/30" title="Descriptions SEO enrichies">
+                        <Zap className="w-3.5 h-3.5 text-green-300" />
+                        <span className="text-green-200 text-xs font-medium">{apiParts.filter(p => p.seo_switch_content).length} SEO</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {apiParts.map((part) => (
-                <ApiPartCard key={part.pg_id} part={part} brandAlias={manufacturer.marque_alias} brandPrimary={brandPrimary} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" role="list" aria-label={`Pièces populaires ${manufacturer.marque_name}`}>
+              {apiParts.map((part, index) => (
+                <div key={`${part.pg_id}-${part.cgc_type_id}-${index}`} role="listitem">
+                  <ApiPartCard part={part} brandAlias={manufacturer.marque_alias} brandPrimary={brandPrimary} />
+                </div>
               ))}
             </div>
           </div>
@@ -303,50 +323,63 @@ export default function BrandCatalogPage() {
 
       {/* 🚗 Véhicules les plus recherchés */}
       {apiVehicles.length > 0 && (
-        <div className="bg-gradient-to-b from-white to-gray-50 py-16 border-b border-gray-100">
+        <div className="bg-gradient-to-b from-white to-gray-50 py-10 md:py-16 border-b border-gray-100">
           <div className="container mx-auto px-4">
             {/* En-tête avec gradient de marque atténué */}
-            <div className="relative mb-12">
-              <div className="relative rounded-2xl p-8 shadow-xl overflow-hidden" style={{
+            <div className="relative mb-6 md:mb-12">
+              <div className="relative rounded-2xl p-4 md:p-8 shadow-xl overflow-hidden" style={{
                 backgroundImage: brandColor.backgroundImage.replace('to bottom right', 'to bottom right').replace(/\)/g, ', rgba(0,0,0,0.15))')
               }}>
                 {/* Effet shimmer */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
-                <div className="relative flex items-center justify-between flex-wrap gap-4">
+                <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/20">
-                      <TrendingUp className="w-8 h-8 text-white" />
+                    <div className="bg-white/10 backdrop-blur-sm p-2.5 md:p-3 rounded-xl border border-white/20">
+                      <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-white mb-1">
+                      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-0.5 md:mb-1">
                         Véhicules {manufacturer.marque_name} les plus recherchés
                       </h2>
-                      <p className="text-white/80 text-sm">Découvrez les modèles préférés de nos clients</p>
+                      <p className="text-white/80 text-xs md:text-sm">Découvrez les modèles préférés de nos clients</p>
                     </div>
                   </div>
                   
                   {/* Badge avec backdrop-blur */}
-                  <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-                    <span className="text-white font-bold text-lg">{apiVehicles.length}</span>
-                    <span className="text-white/80 text-sm ml-2">véhicules</span>
+                  <div className="bg-white/10 backdrop-blur-md px-3 md:px-4 py-1.5 md:py-2 rounded-full border border-white/20">
+                    <span className="text-white font-bold text-base md:text-lg">{apiVehicles.length}</span>
+                    <span className="text-white/80 text-xs md:text-sm ml-1.5 md:ml-2">véhicules</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" role="list" aria-label={`Véhicules ${manufacturer.marque_name} populaires`}>
               {apiVehicles.map((vehicle) => (
-                <VehicleCard key={vehicle.type_id} vehicle={vehicle} brandPrimary={brandPrimary} />
+                <div key={vehicle.cgc_type_id} role="listitem">
+                  <VehicleCard vehicle={vehicle} brandPrimary={brandPrimary} />
+                </div>
               ))}
             </div>
           </div>
         </div>
       )}
 
+      {/* 🔗 Maillage interne - Gammes populaires pour cette marque */}
+      {popularGammes.length > 0 && (
+        <PopularGammesSection
+          gammes={popularGammes}
+          brandName={manufacturer.marque_name}
+          brandAlias={manufacturer.marque_alias}
+          brandId={manufacturer.marque_id}
+          className="bg-white border-b border-gray-100"
+        />
+      )}
+
       {/* 📘 Présentation Constructeur */}
-      <div className="bg-white py-12 border-t border-gray-200">
+      <div className="bg-white py-8 md:py-12 border-t border-gray-200">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6">
             À propos de {manufacturer.marque_name}
           </h2>
           <div className="prose max-w-none">
@@ -374,54 +407,197 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       </div>
+
+      {/* 🔗 Schema.org - Données structurées SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              // BreadcrumbList
+              {
+                '@type': 'BreadcrumbList',
+                'itemListElement': [
+                  {
+                    '@type': 'ListItem',
+                    'position': 1,
+                    'name': 'Accueil',
+                    'item': 'https://www.automecanik.com/'
+                  },
+                  {
+                    '@type': 'ListItem',
+                    'position': 2,
+                    'name': 'Constructeurs',
+                    'item': 'https://www.automecanik.com/constructeurs/'
+                  },
+                  {
+                    '@type': 'ListItem',
+                    'position': 3,
+                    'name': `Pièces ${manufacturer.marque_name}`,
+                    'item': `https://www.automecanik.com/constructeurs/${manufacturer.marque_alias}-${manufacturer.marque_id}.html`
+                  }
+                ]
+              },
+              // Organization (Marque)
+              {
+                '@type': 'Organization',
+                'name': manufacturer.marque_name,
+                'url': `https://www.automecanik.com/constructeurs/${manufacturer.marque_alias}-${manufacturer.marque_id}.html`,
+                'logo': manufacturer.marque_logo || `https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/${manufacturer.marque_alias}.webp`
+              },
+              // ItemList - Véhicules populaires
+              {
+                '@type': 'ItemList',
+                'name': `Véhicules ${manufacturer.marque_name} les plus recherchés`,
+                'numberOfItems': apiVehicles.length,
+                'itemListElement': apiVehicles.slice(0, 10).map((v, idx) => ({
+                  '@type': 'ListItem',
+                  'position': idx + 1,
+                  'item': {
+                    '@type': 'Car',
+                    'name': `${v.marque_name} ${v.modele_name} ${v.type_name}`,
+                    'brand': { '@type': 'Brand', 'name': v.marque_name },
+                    'model': v.modele_name,
+                    'vehicleEngine': {
+                      '@type': 'EngineSpecification',
+                      'enginePower': { '@type': 'QuantitativeValue', 'value': v.type_power_ps, 'unitCode': 'HP' }
+                    },
+                    'url': `https://www.automecanik.com${v.vehicle_url || '#'}`
+                  }
+                }))
+              },
+              // ItemList - Pièces populaires
+              {
+                '@type': 'ItemList',
+                'name': `Pièces ${manufacturer.marque_name} populaires`,
+                'numberOfItems': apiParts.length,
+                'itemListElement': apiParts.slice(0, 10).map((p, idx) => ({
+                  '@type': 'ListItem',
+                  'position': idx + 1,
+                  'item': {
+                    '@type': 'Product',
+                    'name': `${p.pg_name} ${manufacturer.marque_name}`,
+                    'category': p.pg_name,
+                    'url': `https://www.automecanik.com${p.part_url || '#'}`,
+                    'image': p.image_url
+                  }
+                }))
+              }
+            ]
+          })
+        }}
+      />
     </div>
   );
 }
 
-// 🚗 Composant Carte de véhicule API
+// 🚗 Composant Carte de véhicule API - Version améliorée avec SEO complet
 function VehicleCard({ vehicle, brandPrimary }: { vehicle: PopularVehicle; brandPrimary: string }) {
-  const yearRange = vehicle.type_year_to 
+  // 🔒 Gestion des valeurs nulles et formatage
+  const yearRange = vehicle.seo_year_range || (vehicle.type_year_to 
     ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
-    : `depuis ${vehicle.type_year_from}`;
+    : `depuis ${vehicle.type_year_from}`);
+  
+  // Titre SEO complet : "Pièces auto RENAULT CLIO II 1.9 D"
+  const seoTitle = `Pièces auto ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`;
+  
+  // Détection du carburant depuis type_fuel ou type_name
+  const detectFuel = (): string | null => {
+    const fuel = vehicle.type_fuel?.toLowerCase() || '';
+    const typeName = vehicle.type_name?.toLowerCase() || '';
+    
+    if (fuel.includes('diesel') || typeName.includes('dti') || typeName.includes('dci') || typeName.includes(' d ') || typeName.match(/\bd\b/)) {
+      return 'Diesel';
+    }
+    if (fuel.includes('essence') || fuel.includes('petrol') || typeName.includes('tsi') || typeName.includes('tfsi')) {
+      return 'Essence';
+    }
+    if (fuel.includes('hybrid')) return 'Hybride';
+    if (fuel.includes('electr')) return 'Électrique';
+    // Par défaut, détecter depuis le nom de motorisation
+    if (typeName.match(/^\d+\.\d+$/)) return 'Essence'; // Ex: "1.2" sans suffixe = essence
+    return null;
+  };
+  
+  const fuelLabel = detectFuel();
 
   return (
     <Link
       to={vehicle.vehicle_url || '#'}
-      className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 overflow-hidden group border border-gray-200"
+      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      aria-label={`Voir les pièces pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch - ${yearRange}`}
     >
-      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
-        <img 
+      {/* 🖼️ Image responsive du véhicule avec srcset */}
+      <div className="relative h-40 md:h-44 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+        <VehicleImage 
           src={vehicle.image_url || '/images/default-vehicle.png'}
-          alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`}
+          alt={seoTitle}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            e.currentTarget.src = '/images/default-vehicle.png';
-          }}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
         />
-        <div className="absolute top-2 right-2 px-2 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: brandPrimary }}>
-          {vehicle.type_power_ps} ch
+        {/* Badges superposés sur l'image */}
+        <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end">
+          {/* Badge puissance */}
+          {vehicle.type_power_ps && (
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg" style={{ backgroundColor: brandPrimary }}>
+              {vehicle.type_power_ps} ch
+            </span>
+          )}
+          {/* Badge carburant */}
+          {fuelLabel && (
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${
+              fuelLabel === 'Diesel' ? 'bg-gray-800 text-white' : 
+              fuelLabel === 'Essence' ? 'bg-green-600 text-white' :
+              fuelLabel === 'Hybride' ? 'bg-blue-500 text-white' :
+              'bg-purple-600 text-white'
+            }`}>
+              {fuelLabel}
+            </span>
+          )}
+        </div>
+        {/* Titre SEO en overlay bas */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-6">
+          <h3 className="font-bold text-sm text-white line-clamp-2 leading-tight">
+            {seoTitle}
+          </h3>
         </div>
       </div>
       
       <div className="p-4">
-        <h3 className="font-bold text-lg text-gray-900 mb-1 group-hover:text-gray-700 transition-colors">
-          {vehicle.modele_name}
-        </h3>
-        <p className="font-semibold text-base mb-2" style={{ color: brandPrimary }}>
+        {/* Marque + Modèle */}
+        <p className="font-bold text-base md:text-lg text-gray-900 mb-0.5 line-clamp-1">
+          {vehicle.marque_name} {vehicle.modele_name}
+        </p>
+        
+        {/* Motorisation */}
+        <p className="font-semibold text-sm md:text-base mb-2 line-clamp-1" style={{ color: brandPrimary }}>
           {vehicle.type_name}
         </p>
         
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-          <span className="flex items-center gap-1">
-            <Zap className="w-4 h-4" />
-            {vehicle.type_power_ps} ch
+        {/* Description SEO enrichie - toujours visible */}
+        <p className="text-xs md:text-sm text-gray-600 mb-3 line-clamp-2 min-h-[2.25rem] italic">
+          {vehicle.seo_benefit 
+            ? `Pièces ${vehicle.seo_benefit}`
+            : `Pièces détachées disponibles pour votre ${vehicle.marque_name}`
+          }
+        </p>
+        
+        {/* Infos techniques */}
+        <div className="flex items-center justify-between text-xs md:text-sm text-gray-500 mb-3 py-2 px-3 bg-gray-50 rounded-lg">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Zap className="w-3.5 h-3.5" style={{ color: brandPrimary }} />
+            {vehicle.type_power_ps || '?'} ch
           </span>
-          <span>{yearRange}</span>
+          <span className="font-medium">{yearRange}</span>
         </div>
         
-        <div className="pt-3 border-t border-gray-200">
-          <span className="text-sm font-medium group-hover:underline" style={{ color: brandPrimary }}>
-            Voir les pièces →
+        {/* CTA */}
+        <div className="pt-2">
+          <span className="text-xs md:text-sm font-bold group-hover:underline flex items-center justify-center gap-1 py-2 px-4 rounded-lg transition-all" 
+                style={{ backgroundColor: `${brandPrimary}15`, color: brandPrimary }}>
+            Voir les pièces
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
         </div>
       </div>
@@ -429,56 +605,83 @@ function VehicleCard({ vehicle, brandPrimary }: { vehicle: PopularVehicle; brand
   );
 }
 
-// 📦 Composant Carte de pièce API - Style moderne inspiré de MotorisationsSection
+// 📦 Composant Carte de pièce API - Version améliorée style ancien HTML avec multi-alias SEO
 function ApiPartCard({ part, brandAlias, brandPrimary }: { part: ApiPopularPart; brandAlias: string; brandPrimary: string }) {
+  // 🔒 Contexte véhicule avec gestion des valeurs nulles/undefined
+  const vehicleContext = [part.marque_name, part.modele_name, part.type_name]
+    .filter(Boolean)
+    .join(' ') || part.pg_name;
+  const powerSuffix = part.type_power_ps ? `${part.type_power_ps} ch` : '';
+  const fullContext = powerSuffix ? `${vehicleContext} ${powerSuffix}` : vehicleContext;
+  
   return (
     <Link
       to={part.part_url || '#'}
-      className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+      className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-red-300 hover:shadow-xl transition-all duration-300"
     >
-      {/* Bordure gradient au hover - couleur de marque */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl" style={{
-        background: `linear-gradient(135deg, ${brandPrimary}, ${brandPrimary}dd, ${brandPrimary}aa)`
-      }}></div>
-      <div className="absolute inset-0 bg-white m-0.5 rounded-lg group-hover:m-[3px] transition-all duration-300"></div>
-      
       {/* Contenu */}
-      <div className="relative p-4">
-        <div className="flex items-center justify-center h-24 mb-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden relative">
-          {/* Effet glow sur l'image - couleur de marque */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-10 blur-xl transition-all duration-300" style={{
-            background: `linear-gradient(135deg, ${brandPrimary}, ${brandPrimary}dd, ${brandPrimary}aa)`
-          }}></div>
-          <img 
-            src={part.image_url || '/images/default-part.png'}
-            alt={part.pg_name}
-            className="relative h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300 z-10"
-            onError={(e) => {
-              e.currentTarget.src = '/images/default-part.png';
-            }}
-          />
+      <div className="p-3 md:p-4 flex flex-col h-full">
+        {/* En-tête : Image + Titre */}
+        <div className="flex items-start gap-3 mb-3">
+          {/* 🖼️ Image responsive de la pièce avec srcset */}
+          <div className="flex-shrink-0 w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+            <PartImage 
+              src={part.image_url || '/images/default-part.png'}
+              alt={`${part.pg_name} ${part.marque_name}`}
+              className="h-full w-auto object-contain group-hover:scale-105 transition-transform duration-300 p-1"
+              sizes="80px"
+            />
+          </div>
+          
+          {/* Titres */}
+          <div className="flex-1 min-w-0">
+            {/* Nom de la gamme */}
+            <h4 className="font-bold text-sm md:text-base text-gray-900 mb-0.5 group-hover:text-red-600 transition-colors">
+              {part.pg_name}
+            </h4>
+            {/* Sous-titre avec contexte véhicule */}
+            <p className="text-xs text-gray-500 line-clamp-2">
+              {part.seo_title || `${part.pg_name} pour ${vehicleContext}`}
+            </p>
+          </div>
         </div>
         
-        <h4 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-gray-700 transition-colors line-clamp-2">
-          {part.pg_name}
-        </h4>
+        {/* 🎯 Description SEO dynamique multi-alias */}
+        <div className="flex-1 mb-2">
+          {part.seo_switch_content ? (
+            <p className="text-xs md:text-sm text-gray-700 leading-relaxed line-clamp-3">
+              {part.seo_switch_content}
+            </p>
+          ) : (
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Pièce de qualité pour {fullContext}
+            </p>
+          )}
+        </div>
         
-        {/* 🎯 Description SEO dynamique depuis __seo_gamme_car_switch */}
-        {part.seo_switch_content ? (
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2 leading-relaxed">
-            {part.seo_switch_content}
-          </p>
-        ) : (
-          <p className="text-xs text-gray-500 mb-2 line-clamp-1">
-            {part.modele_name} • {part.type_name}
+        {/* Sous-description commerciale (nouveau champ SEO) */}
+        {part.seo_commercial && (
+          <p className="text-[10px] md:text-xs text-gray-400 italic mb-2 line-clamp-1">
+            {part.seo_commercial}
           </p>
         )}
         
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-          <span className="text-xs font-medium group-hover:underline" style={{ color: brandPrimary }}>
-            Voir →
+        {/* Footer avec CTA et badge puissance */}
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <span className="text-xs md:text-sm font-semibold group-hover:underline flex items-center gap-1" style={{ color: brandPrimary }}>
+            Voir les pièces
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </span>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-all" style={{ color: `${brandPrimary}80` }} />
+          {/* Badge motorisation - affiché uniquement si puissance disponible */}
+          {part.type_power_ps ? (
+            <span className="text-[10px] md:text-xs font-medium text-white px-2 py-0.5 rounded-full" style={{ backgroundColor: brandPrimary }}>
+              {part.type_power_ps} ch
+            </span>
+          ) : (
+            <span className="text-[10px] md:text-xs font-medium text-gray-500 px-2 py-0.5 rounded-full bg-gray-100">
+              Universel
+            </span>
+          )}
         </div>
       </div>
     </Link>

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from '../../database/database.module';
 import { CacheModule } from '../../cache/cache.module';
@@ -68,7 +68,7 @@ import { OemPlatformMappingService } from './services/oem-platform-mapping.servi
     DatabaseModule,
     CacheModule, // ⚡ Cache Redis pour optimisation validations (optionnel)
     NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
-    VehiclesModule, // 🚗 Import pour batch-loader vehicleInfo
+    forwardRef(() => VehiclesModule), // 🚗 Import pour batch-loader vehicleInfo (forwardRef pour éviter dépendance circulaire)
   ],
   controllers: [
     CatalogController,

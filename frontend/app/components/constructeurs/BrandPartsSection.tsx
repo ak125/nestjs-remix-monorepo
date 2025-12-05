@@ -1,5 +1,6 @@
 import { Link } from '@remix-run/react';
 import { Package, TrendingUp } from 'lucide-react';
+import { PartImage } from '~/components/ui/ResponsiveImage';
 
 interface Part {
   pg_id: number;
@@ -84,16 +85,14 @@ function PartCard({ part }: { part: Part }) {
       
       {/* Contenu */}
       <div className="relative p-4">
-        {/* Image avec effet hover */}
+        {/* Image responsive avec srcset */}
         <div className="flex items-center justify-center h-24 mb-3 bg-gray-50 rounded-lg overflow-hidden relative">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-          <img 
+          <PartImage 
             src={part.image_url || '/images/default-part.png'}
             alt={part.pg_name}
             className="relative h-full w-auto object-contain group-hover:scale-110 transition-transform duration-300"
-            onError={(e) => {
-              e.currentTarget.src = '/images/default-part.png';
-            }}
+            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 200px"
           />
         </div>
         

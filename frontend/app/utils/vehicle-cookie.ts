@@ -115,7 +115,7 @@ export function getVehicleBreadcrumbData(
 ): VehicleBreadcrumbData {
   return {
     label: `${vehicle.marque_name} ${vehicle.modele_name}`,
-    href: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_id}.html`
+    href: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`
   };
 }
 

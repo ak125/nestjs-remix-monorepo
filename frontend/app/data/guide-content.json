@@ -134,6 +134,11 @@
             "type": "info",
             "text": "Pensez à vérifier l'état des disques de frein simultanément"
           }
+        ],
+        "related_gammes": [
+          { "pg_id": 405, "pg_name": "Disque de frein", "pg_alias": "disque-de-frein" },
+          { "pg_id": 408, "pg_name": "Étrier de frein", "pg_alias": "etrier-de-frein" },
+          { "pg_id": 409, "pg_name": "Témoin d'usure", "pg_alias": "temoin-d-usure" }
         ]
       }
     },
@@ -200,6 +205,11 @@
             "type": "info",
             "text": "Remplacez les plaquettes lors du changement de disques"
           }
+        ],
+        "related_gammes": [
+          { "pg_id": 402, "pg_name": "Plaquette de frein", "pg_alias": "plaquette-de-frein" },
+          { "pg_id": 408, "pg_name": "Étrier de frein", "pg_alias": "etrier-de-frein" },
+          { "pg_id": 409, "pg_name": "Témoin d'usure", "pg_alias": "temoin-d-usure" }
         ]
       }
     },

@@ -455,7 +455,12 @@ export class GammeResponseBuilderService {
               items: conseils,
             }
           : null,
-      informations: informations.length > 0 ? informations : null,
+      informations: informations.length > 0 
+        ? {
+            title: `Informations sur ${pgNameSite || 'ce produit'}`,
+            items: informations,
+          }
+        : null,
       guideAchat,
       motorisationsBlog:
         motorisationsBlog.length > 0

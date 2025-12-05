@@ -105,7 +105,7 @@ export class GammeRpcService extends SupabaseBaseService {
 
     const rpcPromise = this.client.rpc(
       'get_gamme_page_data_optimized',
-      { p_pg_id: pgId },
+      { p_pg_id: pgIdNum },
     );
 
     // Race entre RPC et timeout

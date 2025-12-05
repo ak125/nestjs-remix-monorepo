@@ -2,6 +2,8 @@ import { Controller, Get, Query, Param, Res, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
+import { VehicleBrandsService } from './services/data/vehicle-brands.service';
+import { CatalogGammeService } from '../catalog/services/catalog-gamme.service';
 
 // ✅ VEHICLES CONTROLLER PRINCIPAL - Pour sélecteur véhicule
 // Routes: /api/vehicles
@@ -9,7 +11,11 @@ import { VehiclePaginationDto } from './dto/vehicles.dto';
 export class VehiclesController {
   private readonly logger = new Logger(VehiclesController.name);
   
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly vehicleBrandsService: VehicleBrandsService,
+    private readonly catalogGammeService: CatalogGammeService,
+  ) {}
 
   /**
    * Transformer les query params string en VehiclePaginationDto
@@ -167,5 +173,62 @@ export class VehiclesController {
       limitVehiclesNum,
       limitPartsNum,
     );
+  }
+
+  /**
+   * GET /api/vehicles/brand/:brandId/maillage
+   * 🔗 Récupérer les données de maillage interne pour une marque
+   * - Marques similaires (même pays d'origine ou populaires)
+   * - Gammes populaires pour liens croisés
+   */
+  @Get('brand/:brandId/maillage')
+  async getBrandMaillageData(
+    @Param('brandId') brandId: string,
+    @Query('limitBrands') limitBrands?: string,
+    @Query('limitGammes') limitGammes?: string,
+  ) {
+    const brandIdNum = parseInt(brandId, 10);
+    const limitBrandsNum = limitBrands ? parseInt(limitBrands, 10) : 6;
+    const limitGammesNum = limitGammes ? parseInt(limitGammes, 10) : 8;
+
+    this.logger.log(
+      `🔗 GET /api/vehicles/brand/${brandIdNum}/maillage - Récupération données maillage SEO`,
+    );
+
+    try {
+      // Récupération parallèle des données de maillage
+      const [relatedBrands, popularGammes] = await Promise.all([
+        this.vehicleBrandsService.getRelatedBrands(brandIdNum, limitBrandsNum),
+        this.catalogGammeService.getPopularGammesForMaillage(limitGammesNum),
+      ]);
+
+      this.logger.log(
+        `✅ Maillage récupéré: ${relatedBrands.length} marques, ${popularGammes.data.length} gammes`,
+      );
+
+      return {
+        success: true,
+        data: {
+          related_brands: relatedBrands,
+          popular_gammes: popularGammes.data,
+        },
+        meta: {
+          brand_id: brandIdNum,
+          total_related_brands: relatedBrands.length,
+          total_popular_gammes: popularGammes.data.length,
+          generated_at: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      this.logger.error('❌ Erreur getBrandMaillageData:', error);
+      return {
+        success: false,
+        data: {
+          related_brands: [],
+          popular_gammes: [],
+        },
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+      };
+    }
   }
 }

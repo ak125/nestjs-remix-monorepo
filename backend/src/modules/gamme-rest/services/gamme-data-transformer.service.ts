@@ -85,35 +85,24 @@ export class GammeDataTransformerService {
 
   /**
    * Traite les équipementiers
+   * ✅ Utilise pm_name et pm_logo depuis la RPC (jointure pieces_marque)
    */
   processEquipementiers(equipementiersRaw: any[]): any[] {
     const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
     
-    // Mapping des IDs vers les noms d'équipementiers connus
-    const equipementierNames: Record<string, { name: string; logo: string }> = {
-      '730': { name: 'Bosch', logo: 'bosch.webp' },
-      '1780': { name: 'FEBI', logo: 'febi.webp' },
-      '1090': { name: 'CHAMPION', logo: 'champion.webp' },
-      '1070': { name: 'MANN-FILTER', logo: 'mann-filter.webp' },
-      '1120': { name: 'VALEO', logo: 'valeo.webp' },
-      '1450': { name: 'MAHLE', logo: 'mahle.webp' },
-      '1670': { name: 'HENGST', logo: 'hengst.webp' },
-    };
-    
     return equipementiersRaw.map((equip: any) => {
       const pmId = String(equip.seg_pm_id || equip.pm_id);
-      const equipInfo = equipementierNames[pmId] || {
-        name: equip.pm_name || 'Équipementier',
-        logo: equip.pm_logo || 'default.webp'
-      };
+      const pmName = equip.pm_name || 'Équipementier';
+      const pmLogo = equip.pm_logo || 'default.webp';
       
-      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${equipInfo.logo}`;
+      // Construire l'URL du logo
+      const logoUrl = `${SUPABASE_URL}/equipementiers-automobiles/${pmLogo}`;
       
       return {
         pm_id: pmId,
-        pm_name: equipInfo.name,
+        pm_name: pmName,
         pm_logo: logoUrl,
-        title: equipInfo.name,
+        title: pmName,
         image: logoUrl,
         description: this.contentCleaner(equip.seg_content || equip.content || ''),
       };
@@ -122,15 +111,50 @@ export class GammeDataTransformerService {
 
   /**
    * Traite le catalogue famille
+   * ✅ Génère les liens et URLs d'images corrects pour le maillage interne
    */
   processCatalogueFamille(catalogueFamilleRaw: any[]): any[] {
-    return catalogueFamilleRaw.map((piece: any) => ({
-      id: piece.pg_id,
-      name: piece.pg_name,
-      alias: piece.pg_alias,
-      image: piece.pg_pic,
-      description: this.contentCleaner(piece.description || ''),
-      meta_description: this.contentCleaner(piece.meta_description || ''),
-    }));
+    const SUPABASE_URL = 'https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads';
+    
+    return catalogueFamilleRaw.map((piece: any) => {
+      const pgId = piece.pg_id;
+      const pgAlias = piece.pg_alias;
+      const pgPic = piece.pg_pic;
+      
+      // 🔗 Générer le lien vers la page gamme
+      const link = `/pieces/${pgAlias}-${pgId}.html`;
+      
+      // 📷 Générer l'URL de l'image
+      // Les images sont stockées dans articles/gammes-produits/catalogue/{alias}.webp
+      let imageUrl: string;
+      if (pgPic) {
+        if (pgPic.startsWith('http')) {
+          imageUrl = pgPic;
+        } else if (pgPic.startsWith('/')) {
+          imageUrl = pgPic;
+        } else {
+          // Utiliser pg_alias pour construire le chemin correct
+          // Format: articles/gammes-produits/catalogue/nom-gamme.webp
+          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
+        }
+      } else {
+        // Fallback: essayer avec pg_alias si pg_pic est vide
+        if (pgAlias) {
+          imageUrl = `${SUPABASE_URL}/articles/gammes-produits/catalogue/${pgAlias}.webp`;
+        } else {
+          imageUrl = '/images/default-piece.jpg';
+        }
+      }
+      
+      return {
+        id: pgId,
+        name: piece.pg_name,
+        alias: pgAlias,
+        image: imageUrl,
+        link: link,
+        description: this.contentCleaner(piece.description || ''),
+        meta_description: this.contentCleaner(piece.meta_description || ''),
+      };
+    });
   }
 }

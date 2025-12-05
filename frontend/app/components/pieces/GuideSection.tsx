@@ -1,6 +1,7 @@
 import { Link } from '@remix-run/react';
 import React from 'react';
 import { BookOpen, Calendar, ArrowRight, Sparkles } from 'lucide-react';
+import { HtmlContent } from '../seo/HtmlContent';
 
 interface GuideItem {
   id: number;
@@ -136,9 +137,9 @@ export default function GuideSection({ guide, familleColor = 'from-emerald-600 t
                       </div>
                       Aperçu du contenu :
                     </h4>
-                    <div 
+                    <HtmlContent 
+                      html={guide.h2_content}
                       className="text-sm text-gray-600 leading-relaxed prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: guide.h2_content }}
                     />
                   </div>
                 )}

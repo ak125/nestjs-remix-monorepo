@@ -18,6 +18,20 @@ export interface SEOData {
   breadcrumbs?: BreadcrumbItem[];
   reviews?: ReviewData[];
   organization?: OrganizationData;
+  // Schema ItemList pour pages catégories
+  itemList?: ItemListData;
+}
+
+export interface ItemListData {
+  name: string;
+  description?: string;
+  items: Array<{
+    name: string;
+    url: string;
+    image?: string;
+    description?: string;
+    position?: number;
+  }>;
 }
 
 export interface BreadcrumbItem {
@@ -71,6 +85,11 @@ export function SEOHelmet({ seo }: SEOHelmetProps) {
   if (seo.reviews && seo.reviews.length > 0) {
     const reviewSchemas = generateReviewSchemas(seo.reviews);
     schemas.push(...reviewSchemas);
+  }
+
+  // 5. ItemList schema pour pages catégories (motorisations, produits)
+  if (seo.itemList && seo.itemList.items.length > 0) {
+    schemas.push(generateItemListSchema(seo.itemList));
   }
 
   return (
@@ -256,4 +275,26 @@ function generateReviewSchemas(reviews: ReviewData[]) {
   });
 
   return schemas;
+}
+
+/**
+ * Génère ItemList schema.org pour pages catégories
+ * Améliore le SEO en listant les produits/motorisations de la catégorie
+ */
+function generateItemListSchema(itemList: ItemListData) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": itemList.name,
+    ...(itemList.description && { "description": itemList.description }),
+    "numberOfItems": itemList.items.length,
+    "itemListElement": itemList.items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": item.position || index + 1,
+      "name": item.name,
+      "url": item.url.startsWith('http') ? item.url : `https://automecanik.com${item.url}`,
+      ...(item.image && { "image": item.image }),
+      ...(item.description && { "description": item.description })
+    }))
+  };
 }
