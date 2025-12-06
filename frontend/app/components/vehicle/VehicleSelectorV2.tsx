@@ -49,7 +49,7 @@ interface VehicleSelectorV2Props {
 
 export default function VehicleSelectorV2({
   mode = 'full',
-  showVinSearch = false,
+  showVinSearch: _showVinSearch = false,
   showRecommendation: _showRecommendation = false,
   enableTypeMineSearch = false,
   onVehicleSelect,

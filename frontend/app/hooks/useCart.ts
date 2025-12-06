@@ -6,8 +6,9 @@
  */
 
 import { useState, useCallback } from 'react';
-import { cartApi, formatPrice, getProductImageUrl } from '../services/cart.api';
+
 import { useRootCart } from '../root';
+import { cartApi, formatPrice, getProductImageUrl } from '../services/cart.api';
 
 // Re-export les utilitaires
 export { formatPrice, getProductImageUrl };

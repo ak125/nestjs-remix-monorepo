@@ -146,7 +146,9 @@ export class AdviceService {
       const client = this.supabaseService.client;
       const offset = (page - 1) * limit;
 
-      let query = client.from(TABLES.blog_advice).select('*', { count: 'exact' });
+      let query = client
+        .from(TABLES.blog_advice)
+        .select('*', { count: 'exact' });
 
       // Filtres avancés
       if (filters.category) {
