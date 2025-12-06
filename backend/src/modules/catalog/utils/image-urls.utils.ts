@@ -46,13 +46,13 @@ export function buildRackImageUrl(imageData?: PieceImageData | null): string {
  * ⚠️ À utiliser avec précaution : peut impacter le SEO (change l'URL)
  *
  * @param imageData - Données image (pmi_folder, pmi_name)
- * @param width - Largeur cible (optionnel)
+ * @param _width - Largeur cible (optionnel) - non utilisé actuellement
  * @param _quality - Qualité 1-100 (défaut: 85) - non utilisé actuellement
  * @returns URL avec transformation WebP
  */
 export function buildRackImageUrlWithTransform(
   imageData?: PieceImageData | null,
-  width?: number,
+  _width?: number,
   _quality?: number,
 ): string {
   // Si pas de données, retourner défaut

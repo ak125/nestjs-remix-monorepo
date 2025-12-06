@@ -134,7 +134,8 @@ export class GammeResponseBuilderService {
           return '';
         };
 
-        const _explicationTechnique = getExplication();
+        // Note: getExplication() est appelé pour effet de bord potentiel mais le résultat n'est pas utilisé
+        getExplication();
 
         // Construire l'URL de l'image de la voiture en utilisant modele_pic de la DB
         let carImage = null;

@@ -5,7 +5,7 @@ import { CacheService } from '../../cache/cache.service';
 
 /**
  * 🚀 Service pour les appels RPC optimisés avec cache Redis
- * 
+ *
  * STRATÉGIES D'OPTIMISATION:
  * 1. Cache Redis avec TTL 1h pour données gamme (statiques)
  * 2. Pattern "stale-while-revalidate" pour éviter les blocages
@@ -15,7 +15,7 @@ import { CacheService } from '../../cache/cache.service';
 @Injectable()
 export class GammeRpcService extends SupabaseBaseService {
   protected override readonly logger = new Logger(GammeRpcService.name);
-  
+
   // TTL Cache: 1 heure pour données gamme (quasi-statiques)
   private readonly CACHE_TTL_SECONDS = 3600;
   // TTL Stale: 24h - données expirées mais utilisables en fallback
@@ -62,7 +62,9 @@ export class GammeRpcService extends SupabaseBaseService {
     const cached = await this.cacheService.get<any>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
-      this.logger.debug(`🎯 CACHE HIT gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`);
+      this.logger.debug(
+        `🎯 CACHE HIT gamme ${pgIdNum} en ${cacheTime.toFixed(1)}ms`,
+      );
       return {
         ...cached,
         timings: {
@@ -76,13 +78,13 @@ export class GammeRpcService extends SupabaseBaseService {
 
     // 2. Cache miss → Appel RPC avec timeout
     this.logger.debug(`❌ CACHE MISS gamme ${pgIdNum}, appel RPC...`);
-    
+
     try {
       const result = await this.fetchRpcWithTimeout(pgId, startTime);
-      
+
       // 3. Stocker en cache (async, non-bloquant)
-      this.cacheResult(pgId, result).catch(err => 
-        this.logger.error(`Erreur cache gamme ${pgIdNum}:`, err)
+      this.cacheResult(pgId, result).catch((err) =>
+        this.logger.error(`Erreur cache gamme ${pgIdNum}:`, err),
       );
 
       return result;
@@ -97,29 +99,30 @@ export class GammeRpcService extends SupabaseBaseService {
    */
   private async fetchRpcWithTimeout(pgId: string, startTime: number) {
     const pgIdNum = parseInt(pgId, 10);
-    
+
     // Créer une Promise avec timeout
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
-    const rpcPromise = this.client.rpc(
-      'get_gamme_page_data_optimized',
-      { p_pg_id: pgIdNum },
-    );
+    const rpcPromise = this.client.rpc('get_gamme_page_data_optimized', {
+      p_pg_id: pgIdNum,
+    });
 
     // Race entre RPC et timeout
-    const { data: aggregatedData, error: rpcError } = await Promise.race([
+    const { data: aggregatedData, error: rpcError } = (await Promise.race([
       rpcPromise,
       timeoutPromise,
-    ]) as any;
+    ])) as any;
 
     if (rpcError) {
       throw rpcError;
     }
 
     const rpcTime = performance.now();
-    this.logger.log(`✅ RPC gamme ${pgIdNum} en ${(rpcTime - startTime).toFixed(1)}ms`);
+    this.logger.log(
+      `✅ RPC gamme ${pgIdNum} en ${(rpcTime - startTime).toFixed(1)}ms`,
+    );
 
     // Extraction page_info depuis le RPC
     const pageInfo = aggregatedData?.page_info;
@@ -147,11 +150,13 @@ export class GammeRpcService extends SupabaseBaseService {
 
     // Cache frais (1h)
     await this.cacheService.set(cacheKey, result, this.CACHE_TTL_SECONDS);
-    
+
     // Cache stale (24h) pour fallback
     await this.cacheService.set(staleCacheKey, result, this.STALE_TTL_SECONDS);
-    
-    this.logger.debug(`💾 Cache stocké pour gamme ${pgId} (TTL: ${this.CACHE_TTL_SECONDS}s)`);
+
+    this.logger.debug(
+      `💾 Cache stocké pour gamme ${pgId} (TTL: ${this.CACHE_TTL_SECONDS}s)`,
+    );
   }
 
   /**
@@ -160,12 +165,12 @@ export class GammeRpcService extends SupabaseBaseService {
   private async handleRpcError(pgId: string, error: any, startTime: number) {
     const pgIdNum = parseInt(pgId, 10);
     const staleCacheKey = this.getStaleCacheKey(pgId);
-    
+
     this.logger.warn(`⚠️ RPC gamme ${pgIdNum} failed: ${error.message}`);
 
     // Tenter le cache stale
     const staleData = await this.cacheService.get<any>(staleCacheKey);
-    
+
     if (staleData) {
       this.logger.log(`📦 STALE CACHE utilisé pour gamme ${pgIdNum}`);
       return {
@@ -187,7 +192,9 @@ export class GammeRpcService extends SupabaseBaseService {
   /**
    * 🔄 Préchauffe le cache pour les gammes populaires
    */
-  async warmCache(pgIds: string[]): Promise<{ success: number; failed: number }> {
+  async warmCache(
+    pgIds: string[],
+  ): Promise<{ success: number; failed: number }> {
     let success = 0;
     let failed = 0;
 
@@ -203,7 +210,9 @@ export class GammeRpcService extends SupabaseBaseService {
       }
     }
 
-    this.logger.log(`✅ Warm cache terminé: ${success} succès, ${failed} échecs`);
+    this.logger.log(
+      `✅ Warm cache terminé: ${success} succès, ${failed} échecs`,
+    );
     return { success, failed };
   }
 
@@ -213,10 +222,10 @@ export class GammeRpcService extends SupabaseBaseService {
   async invalidateCache(pgId: string): Promise<void> {
     const cacheKey = this.getCacheKey(pgId);
     const staleCacheKey = this.getStaleCacheKey(pgId);
-    
+
     await this.cacheService.del(cacheKey);
     await this.cacheService.del(staleCacheKey);
-    
+
     this.logger.log(`🗑️ Cache invalidé pour gamme ${pgId}`);
   }
 
