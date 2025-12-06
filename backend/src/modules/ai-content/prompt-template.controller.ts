@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { PromptTemplateService } from './prompt-template.service';
 import {
   CreatePromptTemplateDto,
@@ -22,7 +31,9 @@ export class PromptTemplateController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createTemplate(@Body() dto: CreatePromptTemplateDto): Promise<PromptTemplate> {
+  async createTemplate(
+    @Body() dto: CreatePromptTemplateDto,
+  ): Promise<PromptTemplate> {
     return this.promptService.createTemplate(dto);
   }
 
