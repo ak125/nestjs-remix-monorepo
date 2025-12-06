@@ -1,16 +1,16 @@
 /**
  * Utilitaires de décodage des entités HTML
- * 
+ *
  * Utilisé pour nettoyer les données provenant de sources externes
  * ou de bases de données legacy avec encodage HTML
  */
 
 /**
  * Décode toutes les entités HTML (nommées et numériques) en caractères UTF-8
- * 
+ *
  * @param text - Texte contenant potentiellement des entités HTML
  * @returns Texte décodé en UTF-8
- * 
+ *
  * @example
  * decodeHtmlEntities('&eacute;t&eacute;') // 'été'
  * decodeHtmlEntities('caf&#233;') // 'café'
@@ -109,11 +109,11 @@ export function decodeHtmlEntities(text: string | null | undefined): string {
 
 /**
  * Remplace les variables de template dans un texte
- * 
+ *
  * @param text - Texte contenant des variables
  * @param variables - Map des variables à remplacer
  * @returns Texte avec variables remplacées
- * 
+ *
  * @example
  * replaceTemplateVariables(
  *   'Le constructeur #VMarque# recommande...',
@@ -137,11 +137,11 @@ export function replaceTemplateVariables(
 
 /**
  * Nettoie complètement un texte SEO (entités + variables)
- * 
+ *
  * @param text - Texte à nettoyer
  * @param variables - Variables de template à remplacer
  * @returns Texte nettoyé et prêt à l'affichage
- * 
+ *
  * @example
  * cleanSeoText(
  *   'Le contr&ocirc;le selon #VMarque#',
@@ -165,7 +165,7 @@ export function cleanSeoText(
 
 /**
  * Vérifie si un texte contient des entités HTML
- * 
+ *
  * @param text - Texte à vérifier
  * @returns true si des entités HTML sont présentes
  */
@@ -176,7 +176,7 @@ export function hasHtmlEntities(text: string): boolean {
 
 /**
  * Nettoie un objet en décodant toutes ses propriétés textuelles
- * 
+ *
  * @param obj - Objet à nettoyer
  * @returns Nouvel objet avec propriétés nettoyées
  */
