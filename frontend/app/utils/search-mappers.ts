@@ -3,7 +3,7 @@
  * Permet d'utiliser PiecesGridView et usePiecesFilters sur la page search
  */
 
-import type { PieceData } from '../types/pieces-route.types';
+import { type PieceData } from '../types/pieces-route.types';
 
 /**
  * Interface pour les items retournés par l'API search
@@ -203,14 +203,14 @@ export function groupSearchResultsByGamme(
   // 🎯 NOUVEAU: Si la query est un match exact d'une référence OU d'une référence OEM,
   // prioriser les groupes avec matchKind = 2-3 (OEM constructeur comme PSA 1109.91)
   // Normaliser en enlevant espaces/tirets/points pour matcher les variantes
-  const normalizedQueryClean = normalizedQuery.replace(/[\s\-\.]/g, '');
+  const normalizedQueryClean = normalizedQuery.replace(/[\s.-]/g, '');
   
   // Fonction helper pour vérifier si une pièce matche la query
   const itemMatchesQuery = (item: PieceData) => {
     const refUpper = item.reference?.toUpperCase() || '';
-    const refClean = refUpper.replace(/[\s\-\.]/g, '');
+    const refClean = refUpper.replace(/[\s.-]/g, '');
     const oemUpper = item.oemRef?.toUpperCase() || '';
-    const oemClean = oemUpper.replace(/[\s\-\.]/g, '');
+    const oemClean = oemUpper.replace(/[\s.-]/g, '');
     
     // Match sur référence équipementier (exact ou normalisé)
     if (refUpper === normalizedQuery || refClean === normalizedQueryClean) return true;

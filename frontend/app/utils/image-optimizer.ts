@@ -50,7 +50,7 @@ export class ImageOptimizer {
       width,
       height,
       quality = this.DEFAULT_QUALITY,
-      format = 'webp'
+      format: _format = 'webp'
     } = options;
 
     // Nettoyer le chemin de l'image

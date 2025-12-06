@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { CartData, CartItem, CartSummary } from '../types/cart';
+import { type CartData, type CartItem, type CartSummary } from '../types/cart';
 
 // ============================================================================
 // TYPES
